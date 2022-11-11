@@ -1,4 +1,4 @@
-import {type AnyToastAction} from '#3sc/components/generic/Snackbar';
+import {type AnyToastAction, type ToastAction} from '#3sc/components/generic/Snackbar';
 import {type IconSet} from '~/common/types';
 import {WritableStore} from '~/common/utils/store';
 
@@ -26,6 +26,9 @@ export interface Toast {
 
 export const snackbarStore = new WritableStore<Toast[]>([]);
 
+/**
+ * Add a persistent toast that must be actively dismissed.
+ */
 function addDismissable(message: string, icon?: ToastIcon): void {
     addToast({
         message,
@@ -37,7 +40,13 @@ function addDismissable(message: string, icon?: ToastIcon): void {
     });
 }
 
-function addAction(message: string, action: AnyToastAction, icon?: ToastIcon): void {
+/**
+ * Add a toast with an action link. The action link can be clicked.
+ *
+ * Example: When deleting a message, the toast contains an "undo" button that can be clicked to undo
+ * the message deletion.
+ */
+function addAction(message: string, action: ToastAction<'action'>, icon?: ToastIcon): void {
     addToast({
         message,
         icon,
@@ -46,6 +55,9 @@ function addAction(message: string, action: AnyToastAction, icon?: ToastIcon): v
     });
 }
 
+/**
+ * Add simple toast with a success icon.
+ */
 function addSimpleSuccess(message: string): void {
     addSimple(message, {
         type: 'md-icon',
@@ -55,6 +67,9 @@ function addSimpleSuccess(message: string): void {
     });
 }
 
+/**
+ * Add simple toast with an error icon.
+ */
 function addSimpleFailure(message: string): void {
     addSimple(message, {
         type: 'md-icon',
@@ -64,6 +79,9 @@ function addSimpleFailure(message: string): void {
     });
 }
 
+/**
+ * Add simple toast with a custom icon.
+ */
 function addSimple(message: string, icon?: ToastIcon): void {
     addToast({
         message,
