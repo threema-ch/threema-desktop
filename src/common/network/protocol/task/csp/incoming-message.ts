@@ -5,6 +5,7 @@ import {type EncryptedData, type Nonce} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {type DbContact} from '~/common/db';
 import {
+    type D2dCspMessageType,
     AcquaintanceLevel,
     ActivityState,
     ConversationCategory,
@@ -150,7 +151,7 @@ type D2dIncomingMessageFragment = Omit<
 >;
 
 function getD2dIncomingReflectFragment(
-    d2dMessageType: protobuf.d2d.MessageType,
+    d2dMessageType: D2dCspMessageType,
     cspMessageBody: ReadonlyUint8Array,
     createdAt: Date,
 ): D2dIncomingMessageFragment {
@@ -743,14 +744,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             identity: senderIdentity,
         };
 
-        function reflectFragmentFor(
-            d2dMessageType: protobuf.d2d.MessageType,
-        ): D2dIncomingMessageFragment {
+        function reflectFragmentFor(d2dMessageType: D2dCspMessageType): D2dIncomingMessageFragment {
             return getD2dIncomingReflectFragment(d2dMessageType, cspMessageBody, clampedCreatedAt);
         }
 
         function unhandled(
-            d2dMessageType: protobuf.d2d.MessageType,
+            d2dMessageType: D2dCspMessageType,
             deliveryReceipt: boolean,
             runCommonGroupReceiveSteps = false,
             conversationId: ContactConversationId | GroupConversationId = senderConversationId,
@@ -778,7 +777,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         function unhandledGroupCreatorMessage(
-            d2dMessageType: protobuf.d2d.MessageType,
+            d2dMessageType:
+                | CspE2eGroupConversationType
+                | CspE2eGroupStatusUpdateType
+                | CspE2eGroupControlType,
             creatorIdentity: IdentityString,
         ): UnhandledMessageInstructions {
             const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
@@ -793,7 +795,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         function unhandledGroupMemberMessage(
-            d2dMessageType: protobuf.d2d.MessageType,
+            d2dMessageType: CspE2eGroupConversationType | CspE2eGroupStatusUpdateType,
         ): UnhandledMessageInstructions {
             const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
@@ -823,7 +825,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     missingContactHandling: 'create',
                     deliveryReceipt: true,
                     initFragment,
-                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.TEXT),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -851,7 +853,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     missingContactHandling: 'ignore',
                     deliveryReceipt: false,
                     initFragment,
-                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.GROUP_TEXT),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -882,7 +884,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 const reflectGroupSetup = getD2dIncomingMessage(
                     this._id,
                     senderIdentity,
-                    reflectFragmentFor(protobuf.d2d.MessageType.GROUP_SETUP),
+                    reflectFragmentFor(maybeCspE2eType),
                 );
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
@@ -923,7 +925,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedContainer,
                         validatedGroupName,
                     ),
-                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.GROUP_NAME),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -942,7 +944,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderContactOrInit,
                         validatedContainer,
                     ),
-                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.GROUP_LEAVE),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -961,9 +963,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderContactOrInit,
                         validatedContainer,
                     ),
-                    reflectFragment: reflectFragmentFor(
-                        protobuf.d2d.MessageType.GROUP_REQUEST_SYNC,
-                    ),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -986,7 +986,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedDeliveryReceipt,
                         clampedCreatedAt,
                     ),
-                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.DELIVERY_RECEIPT),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
                 return instructions;
             }
@@ -998,55 +998,49 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             // discarded. The messages won't appear in Threema Desktop, but they will appear on
             // synchronized devices that support these message types.
             case CspE2eConversationType.LOCATION: // TODO(WEBMD-248)
-                return unhandled(protobuf.d2d.MessageType.LOCATION, true);
+                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(WEBMD-586)
-                return unhandled(protobuf.d2d.MessageType.DEPRECATED_IMAGE, true);
+                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(WEBMD-586)
-                return unhandled(protobuf.d2d.MessageType.DEPRECATED_AUDIO, true);
+                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(WEBMD-586)
-                return unhandled(protobuf.d2d.MessageType.DEPRECATED_VIDEO, true);
+                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.FILE: // TODO(WEBMD-307)
-                return unhandled(protobuf.d2d.MessageType.FILE, true);
+                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.POLL_SETUP: // TODO(WEBMD-244)
-                return unhandled(protobuf.d2d.MessageType.POLL_SETUP, true);
+                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.POLL_VOTE: // TODO(WEBMD-244)
-                return unhandled(protobuf.d2d.MessageType.POLL_VOTE, false);
+                return unhandled(maybeCspE2eType, false);
             case CspE2eConversationType.CALL_OFFER: // TODO(WEBMD-243)
-                return unhandled(protobuf.d2d.MessageType.CALL_OFFER, false);
+                return unhandled(maybeCspE2eType, false);
             case CspE2eConversationType.CALL_ANSWER: // TODO(WEBMD-243)
-                return unhandled(protobuf.d2d.MessageType.CALL_ANSWER, false);
+                return unhandled(maybeCspE2eType, false);
             case CspE2eConversationType.CALL_ICE_CANDIDATE: // TODO(WEBMD-243)
-                return unhandled(protobuf.d2d.MessageType.CALL_ICE_CANDIDATE, false);
+                return unhandled(maybeCspE2eType, false);
             case CspE2eConversationType.CALL_HANGUP: // TODO(WEBMD-243)
-                return unhandled(protobuf.d2d.MessageType.CALL_HANGUP, false);
+                return unhandled(maybeCspE2eType, false);
             case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
-                return unhandled(protobuf.d2d.MessageType.CALL_RINGING, false);
+                return unhandled(maybeCspE2eType, false);
             case CspE2eGroupConversationType.GROUP_LOCATION: // TODO(WEBMD-248)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_LOCATION);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_IMAGE);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(WEBMD-586)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_AUDIO);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(WEBMD-586)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_VIDEO);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_FILE: // TODO(WEBMD-307)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_FILE);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(WEBMD-244)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_POLL_SETUP);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(WEBMD-244)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_POLL_VOTE);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(WEBMD-594)
-                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_DELIVERY_RECEIPT);
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE: // TODO(WEBMD-561)
-                return unhandledGroupCreatorMessage(
-                    protobuf.d2d.MessageType.GROUP_SET_PROFILE_PICTURE,
-                    senderIdentity,
-                );
+                return unhandledGroupCreatorMessage(maybeCspE2eType, senderIdentity);
             case CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE: // TODO(WEBMD-561)
-                return unhandledGroupCreatorMessage(
-                    protobuf.d2d.MessageType.GROUP_DELETE_PROFILE_PICTURE,
-                    senderIdentity,
-                );
+                return unhandledGroupCreatorMessage(maybeCspE2eType, senderIdentity);
 
             default:
                 return exhausted(maybeCspE2eType, 'forward');

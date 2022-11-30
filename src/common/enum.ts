@@ -1098,6 +1098,140 @@ export namespace GlobalPropertyKeyUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace D2dCspMessageType {
+    export const INVALID = 0;
+    export type INVALID = typeof INVALID;
+    export const TEXT = 1;
+    export type TEXT = typeof TEXT;
+    export const DEPRECATED_IMAGE = 2;
+    export type DEPRECATED_IMAGE = typeof DEPRECATED_IMAGE;
+    export const LOCATION = 16;
+    export type LOCATION = typeof LOCATION;
+    export const DEPRECATED_AUDIO = 20;
+    export type DEPRECATED_AUDIO = typeof DEPRECATED_AUDIO;
+    export const DEPRECATED_VIDEO = 19;
+    export type DEPRECATED_VIDEO = typeof DEPRECATED_VIDEO;
+    export const FILE = 23;
+    export type FILE = typeof FILE;
+    export const POLL_SETUP = 21;
+    export type POLL_SETUP = typeof POLL_SETUP;
+    export const POLL_VOTE = 22;
+    export type POLL_VOTE = typeof POLL_VOTE;
+    export const CALL_OFFER = 96;
+    export type CALL_OFFER = typeof CALL_OFFER;
+    export const CALL_ANSWER = 97;
+    export type CALL_ANSWER = typeof CALL_ANSWER;
+    export const CALL_ICE_CANDIDATE = 98;
+    export type CALL_ICE_CANDIDATE = typeof CALL_ICE_CANDIDATE;
+    export const CALL_HANGUP = 99;
+    export type CALL_HANGUP = typeof CALL_HANGUP;
+    export const CALL_RINGING = 100;
+    export type CALL_RINGING = typeof CALL_RINGING;
+    export const DELIVERY_RECEIPT = 128;
+    export type DELIVERY_RECEIPT = typeof DELIVERY_RECEIPT;
+    export const TYPING_INDICATOR = 144;
+    export type TYPING_INDICATOR = typeof TYPING_INDICATOR;
+    export const CONTACT_SET_PROFILE_PICTURE = 24;
+    export type CONTACT_SET_PROFILE_PICTURE = typeof CONTACT_SET_PROFILE_PICTURE;
+    export const CONTACT_DELETE_PROFILE_PICTURE = 25;
+    export type CONTACT_DELETE_PROFILE_PICTURE = typeof CONTACT_DELETE_PROFILE_PICTURE;
+    export const CONTACT_REQUEST_PROFILE_PICTURE = 26;
+    export type CONTACT_REQUEST_PROFILE_PICTURE = typeof CONTACT_REQUEST_PROFILE_PICTURE;
+    export const GROUP_SETUP = 74;
+    export type GROUP_SETUP = typeof GROUP_SETUP;
+    export const GROUP_NAME = 75;
+    export type GROUP_NAME = typeof GROUP_NAME;
+    export const GROUP_LEAVE = 76;
+    export type GROUP_LEAVE = typeof GROUP_LEAVE;
+    export const GROUP_SET_PROFILE_PICTURE = 80;
+    export type GROUP_SET_PROFILE_PICTURE = typeof GROUP_SET_PROFILE_PICTURE;
+    export const GROUP_DELETE_PROFILE_PICTURE = 84;
+    export type GROUP_DELETE_PROFILE_PICTURE = typeof GROUP_DELETE_PROFILE_PICTURE;
+    export const GROUP_REQUEST_SYNC = 81;
+    export type GROUP_REQUEST_SYNC = typeof GROUP_REQUEST_SYNC;
+    export const GROUP_TEXT = 65;
+    export type GROUP_TEXT = typeof GROUP_TEXT;
+    export const GROUP_LOCATION = 66;
+    export type GROUP_LOCATION = typeof GROUP_LOCATION;
+    export const GROUP_IMAGE = 67;
+    export type GROUP_IMAGE = typeof GROUP_IMAGE;
+    export const GROUP_AUDIO = 69;
+    export type GROUP_AUDIO = typeof GROUP_AUDIO;
+    export const GROUP_VIDEO = 68;
+    export type GROUP_VIDEO = typeof GROUP_VIDEO;
+    export const GROUP_FILE = 70;
+    export type GROUP_FILE = typeof GROUP_FILE;
+    export const GROUP_POLL_SETUP = 82;
+    export type GROUP_POLL_SETUP = typeof GROUP_POLL_SETUP;
+    export const GROUP_POLL_VOTE = 83;
+    export type GROUP_POLL_VOTE = typeof GROUP_POLL_VOTE;
+    export const GROUP_DELIVERY_RECEIPT = 129;
+    export type GROUP_DELIVERY_RECEIPT = typeof GROUP_DELIVERY_RECEIPT;
+}
+/**
+ * PROTOBUF
+ * ========
+ *
+ * WARNING: Do not change the internal representation of these enums since those values are used
+ *          directly by the protocol **and** are stored directly in the database!
+ *
+ * TODO(WEBMD-48): These enums are pulled from protobuf-generated files. We should generate them directly!
+ */
+/** @generate convert */
+export type D2dCspMessageType = typeof D2dCspMessageType[keyof typeof D2dCspMessageType];
+export namespace D2dCspMessageTypeUtils {
+    export const ALL: ReadonlySet<D2dCspMessageType> = new Set([
+        D2dCspMessageType.INVALID,
+        D2dCspMessageType.TEXT,
+        D2dCspMessageType.DEPRECATED_IMAGE,
+        D2dCspMessageType.LOCATION,
+        D2dCspMessageType.DEPRECATED_AUDIO,
+        D2dCspMessageType.DEPRECATED_VIDEO,
+        D2dCspMessageType.FILE,
+        D2dCspMessageType.POLL_SETUP,
+        D2dCspMessageType.POLL_VOTE,
+        D2dCspMessageType.CALL_OFFER,
+        D2dCspMessageType.CALL_ANSWER,
+        D2dCspMessageType.CALL_ICE_CANDIDATE,
+        D2dCspMessageType.CALL_HANGUP,
+        D2dCspMessageType.CALL_RINGING,
+        D2dCspMessageType.DELIVERY_RECEIPT,
+        D2dCspMessageType.TYPING_INDICATOR,
+        D2dCspMessageType.CONTACT_SET_PROFILE_PICTURE,
+        D2dCspMessageType.CONTACT_DELETE_PROFILE_PICTURE,
+        D2dCspMessageType.CONTACT_REQUEST_PROFILE_PICTURE,
+        D2dCspMessageType.GROUP_SETUP,
+        D2dCspMessageType.GROUP_NAME,
+        D2dCspMessageType.GROUP_LEAVE,
+        D2dCspMessageType.GROUP_SET_PROFILE_PICTURE,
+        D2dCspMessageType.GROUP_DELETE_PROFILE_PICTURE,
+        D2dCspMessageType.GROUP_REQUEST_SYNC,
+        D2dCspMessageType.GROUP_TEXT,
+        D2dCspMessageType.GROUP_LOCATION,
+        D2dCspMessageType.GROUP_IMAGE,
+        D2dCspMessageType.GROUP_AUDIO,
+        D2dCspMessageType.GROUP_VIDEO,
+        D2dCspMessageType.GROUP_FILE,
+        D2dCspMessageType.GROUP_POLL_SETUP,
+        D2dCspMessageType.GROUP_POLL_VOTE,
+        D2dCspMessageType.GROUP_DELIVERY_RECEIPT,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: D2dCspMessageType): D2dCspMessageType {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as D2dCspMessageType;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid D2dCspMessageType`);
+    }
+    export function containsNumber(value: u53): value is D2dCspMessageType {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is D2dCspMessageType {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
 export namespace AcquaintanceLevel {
     export const DIRECT = 0;
     /**
@@ -1112,15 +1246,6 @@ export namespace AcquaintanceLevel {
      */
     export type GROUP = typeof GROUP;
 }
-/**
- * PROTOBUF
- * ========
- *
- * WARNING: Do not change the internal representation of these enums since those values are used
- *          directly by the protocol **and** are stored directly in the database!
- *
- * TODO(WEBMD-48): These enums are pulled from protobuf-generated files. We should generate them directly!
- */
 /** @generate convert */
 export type AcquaintanceLevel = typeof AcquaintanceLevel[keyof typeof AcquaintanceLevel];
 export namespace AcquaintanceLevelUtils {

@@ -2,6 +2,7 @@ import {type ServicesForBackend} from '~/common/backend';
 import {type NonceGuard} from '~/common/crypto';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {
+    type D2dCspMessageType,
     type MessageFilterInstruction,
     type TransactionScope,
     CspE2eConversationType,
@@ -330,7 +331,7 @@ export class TaskError extends BaseError {
 }
 
 export function placeholderTextForUnhandledMessage(
-    d2dMessageType: protobuf.d2d.MessageType,
+    d2dMessageType: D2dCspMessageType,
 ): string | undefined {
     let messageTitle = undefined;
 

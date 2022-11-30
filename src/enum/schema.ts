@@ -457,6 +457,44 @@ export enum GlobalPropertyKey {
  */
 
 /** @generate convert */
+export enum D2dCspMessageType {
+    INVALID = 0,
+    TEXT = 1,
+    DEPRECATED_IMAGE = 2,
+    LOCATION = 16,
+    DEPRECATED_AUDIO = 20,
+    DEPRECATED_VIDEO = 19,
+    FILE = 23,
+    POLL_SETUP = 21,
+    POLL_VOTE = 22,
+    CALL_OFFER = 96,
+    CALL_ANSWER = 97,
+    CALL_ICE_CANDIDATE = 98,
+    CALL_HANGUP = 99,
+    CALL_RINGING = 100,
+    DELIVERY_RECEIPT = 128,
+    TYPING_INDICATOR = 144,
+    CONTACT_SET_PROFILE_PICTURE = 24,
+    CONTACT_DELETE_PROFILE_PICTURE = 25,
+    CONTACT_REQUEST_PROFILE_PICTURE = 26,
+    GROUP_SETUP = 74,
+    GROUP_NAME = 75,
+    GROUP_LEAVE = 76,
+    GROUP_SET_PROFILE_PICTURE = 80,
+    GROUP_DELETE_PROFILE_PICTURE = 84,
+    GROUP_REQUEST_SYNC = 81,
+    GROUP_CALL_START = 79,
+    GROUP_TEXT = 65,
+    GROUP_LOCATION = 66,
+    GROUP_IMAGE = 67,
+    GROUP_AUDIO = 69,
+    GROUP_VIDEO = 68,
+    GROUP_FILE = 70,
+    GROUP_POLL_SETUP = 82,
+    GROUP_POLL_VOTE = 83,
+    GROUP_DELIVERY_RECEIPT = 129,
+}
+/** @generate convert */
 export enum AcquaintanceLevel {
     /**
      * The contact was explicitly added by the user or a 1:1 conversation with
