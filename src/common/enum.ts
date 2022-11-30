@@ -648,6 +648,8 @@ export namespace CspE2eGroupControlType {
     export type GROUP_DELETE_PROFILE_IMAGE = typeof GROUP_DELETE_PROFILE_IMAGE;
     export const GROUP_REQUEST_SYNC = 81;
     export type GROUP_REQUEST_SYNC = typeof GROUP_REQUEST_SYNC;
+    export const GROUP_CALL_START = 79;
+    export type GROUP_CALL_START = typeof GROUP_CALL_START;
 }
 /**
  * E2EE group control type.
@@ -664,6 +666,7 @@ export namespace CspE2eGroupControlTypeUtils {
         CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE,
         CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE,
         CspE2eGroupControlType.GROUP_REQUEST_SYNC,
+        CspE2eGroupControlType.GROUP_CALL_START,
     ] as const);
     export function fromNumber(
         value: u53,
@@ -690,6 +693,7 @@ export namespace CspE2eGroupControlTypeUtils {
         [CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE]: 'GROUP_SET_PROFILE_IMAGE',
         [CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE]: 'GROUP_DELETE_PROFILE_IMAGE',
         [CspE2eGroupControlType.GROUP_REQUEST_SYNC]: 'GROUP_REQUEST_SYNC',
+        [CspE2eGroupControlType.GROUP_CALL_START]: 'GROUP_CALL_START',
     } as const;
     export function nameOf<T extends u53>(value: T): string | undefined {
         return (NAME_OF as Record<u53, string | undefined>)[value];
@@ -1149,6 +1153,8 @@ export namespace D2dCspMessageType {
     export type GROUP_DELETE_PROFILE_PICTURE = typeof GROUP_DELETE_PROFILE_PICTURE;
     export const GROUP_REQUEST_SYNC = 81;
     export type GROUP_REQUEST_SYNC = typeof GROUP_REQUEST_SYNC;
+    export const GROUP_CALL_START = 79;
+    export type GROUP_CALL_START = typeof GROUP_CALL_START;
     export const GROUP_TEXT = 65;
     export type GROUP_TEXT = typeof GROUP_TEXT;
     export const GROUP_LOCATION = 66;
@@ -1206,6 +1212,7 @@ export namespace D2dCspMessageTypeUtils {
         D2dCspMessageType.GROUP_SET_PROFILE_PICTURE,
         D2dCspMessageType.GROUP_DELETE_PROFILE_PICTURE,
         D2dCspMessageType.GROUP_REQUEST_SYNC,
+        D2dCspMessageType.GROUP_CALL_START,
         D2dCspMessageType.GROUP_TEXT,
         D2dCspMessageType.GROUP_LOCATION,
         D2dCspMessageType.GROUP_IMAGE,

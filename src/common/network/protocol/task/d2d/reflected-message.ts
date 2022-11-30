@@ -25,7 +25,10 @@ function unhandled(
               maybeReflectedE2eType: CspE2eConversationType;
           }
         | {
-              maybeReflectedE2eType: CspE2eGroupConversationType | CspE2eGroupStatusUpdateType;
+              maybeReflectedE2eType:
+                  | CspE2eGroupControlType
+                  | CspE2eGroupConversationType
+                  | CspE2eGroupStatusUpdateType;
               body: Uint8Array;
           },
 ): structbuf.validate.csp.e2e.ValidatedCspE2eTypes | undefined {
@@ -225,6 +228,7 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eConversationType.CALL_HANGUP: // TODO(WEBMD-243)
                 case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
                     return unhandled({maybeReflectedE2eType});
+                case CspE2eGroupControlType.GROUP_CALL_START: // TODO(WEBMD-858)
                 case CspE2eGroupConversationType.GROUP_LOCATION: // TODO(WEBMD-248)
                 case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
                 case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(WEBMD-586)

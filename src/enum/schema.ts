@@ -280,6 +280,7 @@ export enum CspE2eGroupControlType {
     GROUP_SET_PROFILE_IMAGE = 0x50,
     GROUP_DELETE_PROFILE_IMAGE = 0x54,
     GROUP_REQUEST_SYNC = 0x51,
+    GROUP_CALL_START = 0x4f,
 }
 
 /**

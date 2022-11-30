@@ -780,7 +780,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             d2dMessageType:
                 | CspE2eGroupConversationType
                 | CspE2eGroupStatusUpdateType
-                | CspE2eGroupControlType,
+                | CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE
+                | CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE,
             creatorIdentity: IdentityString,
         ): UnhandledMessageInstructions {
             const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
@@ -795,7 +796,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         function unhandledGroupMemberMessage(
-            d2dMessageType: CspE2eGroupConversationType | CspE2eGroupStatusUpdateType,
+            d2dMessageType:
+                | CspE2eGroupConversationType
+                | CspE2eGroupStatusUpdateType
+                | CspE2eGroupControlType.GROUP_CALL_START,
         ): UnhandledMessageInstructions {
             const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
@@ -1021,6 +1025,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandled(maybeCspE2eType, false);
             case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
                 return unhandled(maybeCspE2eType, false);
+            case CspE2eGroupControlType.GROUP_CALL_START: // TODO(WEBMD-858)
+                return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_LOCATION: // TODO(WEBMD-248)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
