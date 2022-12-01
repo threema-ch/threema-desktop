@@ -1,0 +1,90 @@
+@use 'sass:color';
+@use 'sass:map';
+@use 'threema-svelte-components/src/sass/css-var' as *;
+@use 'threema-svelte-components/src/sass/utils' as *;
+@use 'threema-svelte-components/src/sass/theme';
+
+$light: (
+  app: (
+    // Scrollbar
+    scrollbar-thumb: rgba(#000000, 12%),
+    scrollbar-thumb--hover: rgba(#000000, 26%),
+    // Global
+    background-lightness--hover: -4%,
+    background-lightness--active: -8%,
+    text-e1: theme.$light-text-e1,
+    text-e2: theme.$light-text-e2,
+    text-e3: theme.$light-text-e2,
+    text-anchor: theme.$work-blue-800,
+    // Colors
+    color-primary: theme.$consumer-green-600,
+    // Main panels
+    panel-gap: color.scale(theme.$light-background, $lightness: -12%),
+    nav-background: color.scale(theme.$light-background, $lightness: -4%),
+    main-background: theme.$light-background,
+    aside-background: theme.$light-background,
+    pairing-background: #ffffff,
+    main-welcome-icon-fill-opacity: 6%,
+  ),
+  individual-components: (
+    // List Elements
+    list-element-background-color--hover: rgba(#000000, 4%),
+    list-element-color: rgba(#000000, 88%),
+    // Divider
+    divider-background-color: rgba(#000000, 12%),
+    // ContactNavigationContext Button
+    contact-navigation-context-button-color: theme.$consumer-green-600,
+    contact-navigation-context-button-border-color--hover: rgba(#000000, 4%),
+    contact-navigation-context-button-background-color--hover: rgba(#000000, 4%),
+    contact-navigation-context-button-border-color--focus: #000000,
+    contact-navigation-context-button-background-color--focus: rgba(#000000, 4%),
+    contact-navigation-context-button-color--active: theme.$primary-text-e1,
+    contact-navigation-context-button-border-color--active: theme.$consumer-green-600,
+    contact-navigation-context-button-background-color--active: theme.$consumer-green-600,
+    contact-navigation-context-button-opacity--disabled: 26%,
+  ),
+  compound-components: (
+    // Avatar upload
+    avatar-upload-background-color: rgba(#000000, 4%),
+    // Avatar overlay
+    avatar-overlay-unread-background: theme.$consumer-green-600,
+    avatar-overlay-unread-text: theme.$primary-text-e1,
+    avatar-overlay-badge-icon: theme.$light-text-e2,
+    avatar-overlay-badge-icon-consumer: purple,
+    avatar-overlay-badge-icon-work: theme.$work-blue-800,
+    // Conversation
+    conversation-message-options-caret-color: rgba(#000000, 88%),
+    // Conversation preview
+    conversation-preview-archived-background: rgba(#000000, 88%),
+    conversation-preview-archived-text: theme.$dark-text-e1,
+    conversation-preview-inactive-background: rgba(#000000, 88%),
+    conversation-preview-inactive-text: theme.$dark-text-e1,
+    conversation-preview-draft-text: theme.$alert-red,
+    conversation-preview-properties-background: theme.$light-background,
+    conversation-preview-properties-icon: theme.$light-text-e2,
+    conversation-preview-properties-icon-pin: theme.$pin-yellow,
+    conversation-preview-message-text: theme.$light-text-e2,
+    conversation-preview-status-text: theme.$light-text-e2,
+    conversation-preview-swipe-area-gap-lightness: -12%,
+    // Contact preview
+    contact-preview-inactive-background: rgba(#ffffff, 88%),
+    contact-preview-inactive-text: theme.$light-text-e1,
+    contact-preview-creator-background: theme.$light-text-e1,
+    contact-preview-creator-text: rgba(#ffffff, 88%),
+    // Search input
+    search-input-background: rgba(#000000, 4%),
+    search-input-background--hover: rgba(#000000, 8%),
+    search-input-background--focus: rgba(#000000, 12%),
+    // Icon text
+    menu-item-icon-text-background-color--hover: rgba(#000000, 4%),
+    menu-item-icon-text-background-color--active: rgba(#000000, 8%),
+    // Compose Area
+    compose-area-placeholder-text: theme.$light-text-e2,
+    // Modal Dialog
+    modal-dialog-background-color: rgba(#ffffff, 74%),
+  ),
+  debug-components: (
+    // Top bar
+    top-bar-background-color: color.scale(theme.$light-background, $lightness: -20%),
+  ),
+);

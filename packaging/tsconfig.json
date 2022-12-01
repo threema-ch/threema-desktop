@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["node"],
+    "moduleResolution": "node",
+
+    "allowUnreachableCode": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "importsNotUsedAsValues": "remove",
+    "isolatedModules": true,
+    "newLine": "lf",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true
+  },
+
+  "include": ["*.ts"]
+}

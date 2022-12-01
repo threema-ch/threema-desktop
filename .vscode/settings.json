@@ -1,0 +1,18 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[svelte]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.flatpak-builder": true
+  },
+  "eslint.validate": ["svelte"],
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "rewrap.wrappingColumn": 100
+}

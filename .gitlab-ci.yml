@@ -1,0 +1,638 @@
+# Clone git repository recursively
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+# Workflow: Run for tags and commits to branches
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH
+
+# Default base image
+image: docker.io/node:16.17-bullseye
+
+# CI stages
+stages:
+  - build
+  - test
+  - package
+
+# Caching config for npm based jobs
+.cache: &cache
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+      - node_modules/
+
+# Generic "before script" that shows versions
+.before_script: &before_script
+  before_script:
+    - node --version
+    - npm --version
+
+build:web:
+  stage: build
+  needs: []
+  <<: *cache
+  <<: *before_script
+  script:
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    - npm run "web:build:consumer-sandbox"
+
+dist:electron:
+  stage: build
+  needs: []
+  <<: *cache
+  <<: *before_script
+  script:
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    - npm run "electron:dist:consumer-sandbox"
+
+lint:
+  stage: test
+  needs: []
+  <<: *cache
+  <<: *before_script
+  script:
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    - npm run "lint:$TARGET"
+  parallel:
+    matrix:
+      - TARGET:
+          - tsc:parallel
+          - eslint
+          - prettier
+          - svelte
+
+audit:
+  stage: test
+  needs: []
+  <<: *cache
+  <<: *before_script
+  script:
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    - npm audit
+  allow_failure: true
+
+test:karma:
+  image: $CI_REGISTRY/operations/dockerfiles/node-browsers:16
+  stage: test
+  needs: []
+  cache:
+    key:
+      files:
+        - package-lock.json
+      prefix: node-browsers
+    paths:
+      - .npm/
+      - node_modules/
+  <<: *before_script
+  script:
+    # Install deps
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    # Run tests
+    - npm run "test:karma" -- --browsers FirefoxHeadless,ChromiumHeadlessNoSandbox
+    # Generate JUnit test report
+    - npm run "test:karma" -- --browsers ChromiumHeadlessNoSandbox --reporters junit
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - junit/karma.xml
+
+test:mocha:
+  stage: test
+  needs: []
+  <<: *cache
+  <<: *before_script
+  script:
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    # Run tests
+    - npm run "test:mocha"
+    # Generate JUnit test report
+    - npm run "test:mocha" -- --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/mocha.xml
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - junit/mocha.xml
+
+# TODO(WEBMD-321): Fix! Right now this segfaults.
+# Additionally, the kill-on-error functionality was removed, so in
+# order to get the smoke test to run:
+#
+# - Call `electron.app.exit(EXIT_CODE_UNCAUGHT_ERROR)` from within `handleCriticalError`
+#   if a certain env var is set
+# - Set that env var in CI
+#test:smoketest:
+#  stage: test
+#  needs: []
+#  <<: *cache
+#  before_script:
+#    - apt-get update && apt-get install -y xvfb libxshmfence1 libnss3 libatk1.0-0 libatk-bridge2.0-0 libdrm2 libgtk-3-0 libgbm1 libasound2
+#  script:
+#    - npm ci --cache .npm
+#    - npm run electron:rebuild
+#    # Start electron application and wait for up to 45s
+#    - (xvfb-run npm run electron:dev:consumer-sandbox -- --no-sandbox && echo "success" > "result.txt") || echo "error" > result.txt &
+#    - for i in $(seq 45); do if [[ -f result.txt ]]; then break; else sleep 1; fi; done
+#    # Make sure application is stopped
+#    - if [[ -f "electron.pid" ]]; then kill -INT $(cat electron.pid); fi
+#    # Check result
+#    - 'echo "Result: $(<result.txt)"'
+#    - if [[ "$(<result.txt)" != "success" ]]; then exit 1; fi
+
+package-lock-in-sync:
+  stage: test
+  needs: []
+  <<: *cache
+  before_script:
+    - node --version
+    - npm --version
+  script:
+    # Install npm dependencies
+    # Note: Use "npm install", not "npm ci"!
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm install --cache .npm
+    # Ensure that there are no local changes to package-lock.json
+    - |
+      DIFF="$(git diff)"
+      if [[ -n "$DIFF" ]]; then
+        echo -e "\e[31mFound local changes after running 'npm install'. Lockfile out of sync?\e[0m"
+        echo -e "\n$ git diff:\n$DIFF"
+        exit 1
+      else
+        echo -e "\e[32mNo changes detected after running 'npm install'\e[0m"
+      fi
+
+protobuf-in-sync:
+  stage: test
+  needs: []
+  <<: *cache
+  before_script:
+    - node --version
+    - npm --version
+    - apt-get update && apt-get install -y protobuf-compiler
+  script:
+    # Install npm dependencies
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    # Re-generate protobuf bindings
+    - npm run protobuf:generate
+    # Ensure that there are no local changes
+    - |
+      DIFF="$(git diff)"
+      if [[ -n "$DIFF" ]]; then
+        echo -e "\e[31mFound local changes after generating protobuf files. Schema out of sync?\e[0m"
+        echo -e "\n$ git diff:\n$DIFF"
+        exit 1
+      else
+        echo ""
+        echo -e "\e[32mNo changes detected after re-generating protobuf files\e[0m"
+      fi
+
+validate-metainfo:
+  stage: test
+  needs: []
+  before_script:
+    - apt-get update && apt-get install -y appstream-util
+  script:
+    - G_DEBUG=fatal-criticals appstream-util validate packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+
+package:source:
+  stage: package
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+  <<: *cache
+  before_script:
+    - apt-get update && apt-get install -y p7zip
+  script:
+    # Handle ref
+    - |
+      echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
+      if [[ "$CI_COMMIT_REF_NAME" = "main" ]]; then
+        export BUILD_TYPE=nightly
+      elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
+        export BUILD_TYPE=release
+      else
+        echo "Error: Invalid ref"
+        exit 1
+      fi
+      echo "Build type is $BUILD_TYPE"
+    # Install deps
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    # Bundle source
+    - npm run package source "$CI_COMMIT_REF_NAME"
+    # Upload source bundle
+    - |
+      if [ "$BUILD_TYPE" = "release" ]; then
+        pushd build/out/
+        for FILENAME in *-source.*; do
+          # Ensure that file wasn't already uploaded
+          FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES" || true)
+          if [ "$FTP_STATUS" = "350" ]; then echo "File already exists"; exit 42; fi
+          # Upload
+          curl -T "$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES"
+        done
+        popd
+      fi
+  variables:
+    FTP_HOST: $FTP_RELEASE_HOST
+    FTP_PROTO: $FTP_RELEASE_PROTO
+    FTP_PATH: /
+    FTP_USER: threema-desktop
+    # Set FTP_PASS_RELEASES masked variable in CI!
+  artifacts:
+    paths:
+      - build/out/
+    expire_in: 2d
+
+.flatpak: &flatpak
+  stage: package
+  # Build using a privileged runner, required for Flatpak
+  # https://github.com/flatpak/flatpak/issues/3027
+  tags:
+    - docker-privileged
+  before_script:
+    # Base dependencies
+    - apt-get update && apt-get install -y flatpak python3-aiohttp elfutils lftp jq
+    # Build flatpak-builder 1.2
+    - apt-get install -y libsoup2.4-dev libostree-dev libjson-glib-dev libelf-dev libdw-dev
+    - |
+      pushd /opt/
+      wget https://github.com/flatpak/flatpak-builder/releases/download/1.2.2/flatpak-builder-1.2.2.tar.xz
+      tar xf flatpak-builder-1.2.2.tar.xz
+      cd flatpak-builder-1.2.2
+      ./configure --disable-documentation
+      make -j4
+      make install
+      popd
+    # Add flathub remote
+    - flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    # Import PGP key
+    - KEYFILE_ENV_VAR="GPG_KEY_${GPG_ID}"; gpg --import ${!KEYFILE_ENV_VAR}
+  script:
+    # Handle ref
+    - |
+      echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
+      if [[ "$CI_COMMIT_REF_NAME" = "main" ]]; then
+        export BUILD_TYPE=nightly
+      elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
+        export BUILD_TYPE=release
+      else
+        echo "Error: Invalid ref"
+        exit 1
+      fi
+      echo "Build type is $BUILD_TYPE"
+    # Install build script deps
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci
+    # Determine some build type dependent parameters
+    - |
+      case "$BUILD_TYPE" in
+        nightly)
+          BRANCH=master
+          REPO="$REPO-nightly"
+          REMOTE="$REMOTE-nightly"
+          ;;
+        release)
+          BRANCH=master
+          ;;
+        *)
+          echo "Invalid build type: $BUILD_TYPE"
+          exit 1
+      esac
+    # Patch metadata for nightlies
+    - |
+      if [ "$BUILD_TYPE" = "nightly" ]; then
+        VERSION=$(jq -r '.version' package.json)
+        GIT_DESCRIBE=$(git describe --always)
+        DATE=$(date +%Y-%m-%d)
+        # Metainfo file
+        sed -i "s/\(^.*version=\"$VERSION\".*\)/<release version=\"$GIT_DESCRIBE\" date=\"$DATE\" \/>\n\1/" packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+      fi
+    # Build flatpak
+    - |
+      export THREEMADESKTOP_FLATPAK_BRANCH=$BRANCH
+      export THREEMADESKTOP_FLATPAK_GPG_KEY=$GPG_ID
+      npm run package flatpak "$FLAVORS"
+    # Create .flatpakref files
+    - |
+      IFS=',' read -ra flavors <<< "$FLAVORS"
+      for flavor in "${flavors[@]}"; do
+        case "$flavor" in
+          consumer-live)
+            APPID="ch.threema.threema-desktop"
+            TITLE="Threema Tech Preview"
+            ;;
+          work-sandbox)
+            APPID="ch.threema.threema-red-desktop"
+            TITLE="Threema Red Tech Preview"
+            ;;
+          *)
+            echo "Invalid build flavor: $flavor"
+            exit 1
+        esac
+
+        FREF="packaging/flatpak/repo/${APPID}.flatpakref"
+        cat <<__EOF__ > $FREF
+      [Flatpak Ref]
+      Version=1
+      Name=$APPID
+      Branch=$BRANCH
+      Title=$TITLE
+      Homepage=https://threema.ch/
+      Url=$REPO_BASE_URL/$REPO/
+      SuggestRemoteName=$REMOTE
+      RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
+      IsRuntime=false
+      GPGKey=$(gpg --export $GPG_ID | base64 --wrap=0)
+      __EOF__
+        echo "$FREF:"
+        cat $FREF
+        echo "---"
+      done
+    # Copy screenshot(s)
+    - cp packaging/flatpak/screenshot-1.png packaging/flatpak/repo/
+    # Dump gpg public key
+    - gpg --export --armor $GPG_ID > packaging/flatpak/repo/signkey.pub
+    # Sync to server
+    - |
+      mkdir -p sync
+      mv packaging/flatpak/repo sync/$REPO
+      echo "Syncing $REPO to FTP server"
+      lftp -e "mirror -R sync/$REPO /$REPO; exit" -u $FTP_USER,"$FTP_PASS" $FTP_HOST
+  cache:
+    # npm cache
+    - key:
+        files:
+          - package-lock.json
+      paths:
+        - .npm/
+        - node_modules/
+    # flatpak-builder cache and ccache
+    - key: $CI_COMMIT_REF_SLUG
+      paths:
+        - packaging/flatpak/.flatpak-builder/
+
+package:flatpak-internal:
+  <<: *flatpak
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+  variables:
+    REPO: repo
+    REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
+    REMOTE: threema-internal
+    FLAVORS: consumer-live,work-sandbox
+    FTP_HOST: $FLATPAK_INTERNAL_FTP_HOST
+    FTP_USER: flatpak-internal
+    GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
+    # Set FTP_PASS variable in CI!
+
+# Note: Public builds are also pushed to the internal fileserver, and are then
+#       published using a separate script.
+package:flatpak-public:
+  <<: *flatpak
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+  variables:
+    REPO_BASE_URL: $FLATPAK_PUBLIC_REPO_BASE_URL
+    REPO: threema-desktop
+    REMOTE: threema-desktop
+    FLAVORS: consumer-live
+    FTP_HOST: $FLATPAK_PUBLIC_FTP_HOST
+    FTP_USER: flatpak-internal
+    GPG_ID: 8BC90B39A3DEA043F88607CA74463EA2AF62F4C6
+    # Set FTP_PASS variable in CI!
+
+package:dmg:
+  stage: package
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+  parallel:
+    matrix:
+      - OS: [macos]
+        ARCH: [arm64, x64]
+  tags:
+    - ${OS}-${ARCH}
+  before_script:
+    # Handle ref
+    - |
+      echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
+      if [[ "$CI_COMMIT_REF_NAME" = "main" ]]; then
+        export BUILD_TYPE=nightly
+      elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
+        export BUILD_TYPE=release
+      else
+        echo "Error: Invalid ref"
+        exit 1
+      fi
+      echo "Build type is $BUILD_TYPE"
+    # Ensure the proper node version is available
+    - nvm install $(cat .nvmrc)
+    - nvm use
+    # Ensure curl is available
+    - curl --version
+    # Ensure coreutils are installed
+    - brew install coreutils
+  script:
+    # Install build script deps
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci
+    # Patch version
+    - |
+      if [ "$BUILD_TYPE" = "nightly" ]; then
+        sed -i '' \
+          's/"version": "\([^"]*\)"/"version": "\1-dev-'$(date +"%Y%m%d")'-'$(git rev-parse --short HEAD)'"/' \
+          package.json
+      fi
+    # Build DMGs (unsigned nightlies, signed releases)
+    - |
+      case "$BUILD_TYPE" in
+        nightly) buildTarget=dmg ;;
+        release) buildTarget=dmgSigned ;;
+        *) echo "Invalid build type: $BUILD_TYPE"; exit 1
+      esac
+      npm run package $buildTarget consumer-live,work-sandbox
+    # Rename and upload DMGs
+    - mkdir -p build/dmg/
+    - |
+      for flavor in 'consumer-live' 'work-sandbox'; do
+
+        # Determine filename
+        case "$flavor" in
+          consumer-live)
+            FILENAME="threema-desktop"
+            DMG="Threema.dmg"
+            ;;
+          work-sandbox)
+            FILENAME="threema-red-desktop"
+            DMG="ThreemaRed.dmg"
+            ;;
+          *)
+            echo "Invalid build flavor: $flavor"
+            exit 1
+        esac
+        case "$BUILD_TYPE" in
+          nightly)
+            FILENAME+="-nightly-$OS-$ARCH.dmg"
+            ;;
+          release)
+            FILENAME+="-$CI_COMMIT_REF_NAME-$OS-$ARCH.dmg"
+            ;;
+          *)
+            echo "Invalid build type: $BUILD_TYPE"
+            exit 1
+        esac
+
+        # Copy files (used for artifacts)
+        for ext in '' '.sha256' '.b2'; do
+          echo "Processing $FILENAME$ext"
+          cp "build/installers/mac/$DMG$ext" "build/dmg/$FILENAME$ext"
+          if [ -n "$ext" ]; then
+            cd build/dmg/
+            # Patch checksum file
+            sed -i '' "s/$DMG/$FILENAME/" "$FILENAME$ext"
+            # Test checksum
+            ${ext:1}sum -c $FILENAME$ext
+            cd -
+          fi
+        done
+        ls -lah build/dmg/
+
+        # Upload
+        case "$BUILD_TYPE" in
+          nightly)
+            # Upload, overwrite if it exists
+            curl -T "build/dmg/$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/nightly/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES"
+            ;;
+          release)
+            # Ensure that build wasn't already uploaded
+            FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES" || true)
+            if [ "$FTP_STATUS" = "350" ]; then echo "File already exists"; exit 42; fi
+            # Upload DMG and checksums
+            for ext in '' '.sha256' '.b2'; do
+              curl -T "build/dmg/$FILENAME$ext" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME$ext" --user "$FTP_USER:$FTP_PASS_RELEASES"
+            done
+            ;;
+          *)
+            echo "Invalid build type: $BUILD_TYPE"
+            exit 1
+        esac
+      done
+  variables:
+    FTP_HOST: $FTP_RELEASE_HOST
+    FTP_PROTO: $FTP_RELEASE_PROTO
+    FTP_PATH: /
+    FTP_USER: threema-desktop
+    # Set FTP_PASS_RELEASES masked variable in CI!
+  artifacts:
+    paths:
+      - build/dmg/
+    expire_in: 2d
+  cache:
+    # npm cache
+    - key:
+        files:
+          - package-lock.json
+      paths:
+        - .npm/
+        - node_modules/
+
+package:exe:
+  stage: package
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+  # Build on Windows (powershell)
+  tags:
+    - windows
+  before_script:
+    # Handle ref
+    - |
+      echo "`$CI_COMMIT_REF_NAME=$env:CI_COMMIT_REF_NAME"
+      if ($env:CI_COMMIT_REF_NAME -eq "main") {
+        $BUILD_TYPE = "nightly"
+      } elseif ($env:CI_COMMIT_REF_NAME -like "v*") {
+        $BUILD_TYPE = "release"
+      } Else {
+        throw "Error: Invalid ref"
+      }
+      echo "Build type is $BUILD_TYPE"
+    # Update env variables
+    - echo "`$Path is $env:Path"
+    - $env:Path += ";C:\\ProgramData\\nvm"
+    - $env:NVM_HOME = "C:\\ProgramData\\nvm"
+    - $env:NVM_SYMLINK = "C:\\Program Files\\nodejs"
+    # Ensure the proper node version is available
+    - echo "Installing and using node version "(cat .nvmrc)
+    - nvm version
+    # Note: Re-enable lines below once a release of nvm-windows >1.1.9 is released,
+    # which includes https://github.com/coreybutler/nvm-windows/pull/709
+    #- nvm install (cat .nvmrc)
+    #- nvm use (cat .nvmrc)
+    # Show versions
+    - node --version
+    - npm --version
+    - curl.exe --version
+  script:
+    # Install dependencies
+    - npm ci --cache .npm
+
+    # Build EXE
+    - npm run package binary consumer-live,work-sandbox
+    - dir build\out\
+
+    # Upload
+    - |
+      foreach ($flavor in "consumer-live","work-sandbox") {
+        switch ($flavor) {
+          "consumer-live" {
+            $name = "threema"
+          }
+          "work-sandbox" {
+            $name = "threema-red"
+          }
+        }
+        $sourceFile = "build/out/${name}-desktop-bin-win32-${env:ARCH}.zip"
+        switch ($BUILD_TYPE) {
+          "nightly" {
+            $filename = "$name-desktop-nightly-bin-windows-${env:ARCH}.zip"
+
+            # Upload, overwrite if it exists
+            echo "Uploading $filename"
+            curl.exe -T "$sourceFile" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$FILENAME" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+          }
+          "release" {
+            $filename = "$name-desktop-$CI_COMMIT_REF_NAME-bin-windows-${env:ARCH}.zip"
+
+            # Ensure that build wasn't already uploaded
+            $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filename" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
+            If ($ftp_status -eq 350) {
+              throw "File $filename already exists on FTP server"
+            }
+
+            # Upload ZIP and checksums
+            Foreach ($ext in '','.sha256') {
+              echo "Uploading $filename"
+              curl.exe -T "$sourceFile$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filename$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+            }
+          }
+          default {
+            throw "Error: Invalid build type: $BUILD_TYPE"
+          }
+        }
+      }
+  variables:
+    ARCH: 'x64'
+    FTP_HOST: $FTP_RELEASE_HOST
+    FTP_PROTO: $FTP_RELEASE_PROTO
+    FTP_PATH: /
+    FTP_USER: threema-desktop
+    # Set FTP_PASS_RELEASES masked variable in CI!
+  artifacts:
+    paths:
+      - build\out\
+    expire_in: 2d

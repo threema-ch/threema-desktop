@@ -1,0 +1,99 @@
+import {MessageDirection, ReceiverType} from '~/common/enum';
+import {type Logger} from '~/common/logging';
+import * as protobuf from '~/common/network/protobuf';
+import {toCommonConversationId} from '~/common/network/protobuf/validate/d2d/conversation-id';
+import {
+    type PassiveTask,
+    type PassiveTaskCodecHandle,
+    type PassiveTaskSymbol,
+    type ServicesForTasks,
+    PASSIVE_TASK,
+} from '~/common/network/protocol/task/';
+import {unreachable} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
+
+import {getConversationById} from '../message-processing-helpers';
+
+export class ReflectedIncomingMessageUpdateTask implements PassiveTask<void> {
+    public readonly type: PassiveTaskSymbol = PASSIVE_TASK;
+    public readonly persist = false;
+    private readonly _log: Logger;
+
+    public constructor(
+        private readonly _services: ServicesForTasks,
+        private readonly _unvalidatedMessage: protobuf.d2d.IncomingMessageUpdate,
+        private readonly _reflectedDate: Date,
+    ) {
+        this._log = _services.logging.logger(
+            `network.protocol.task.reflected-incoming-message-update`,
+        );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async run(handle: PassiveTaskCodecHandle): Promise<void> {
+        const {model} = this._services;
+
+        // Validate the Protobuf message
+        let validatedMessage;
+        try {
+            validatedMessage = protobuf.validate.d2d.IncomingMessageUpdate.SCHEMA.parse(
+                this._unvalidatedMessage,
+            );
+        } catch (error) {
+            this._log.error(
+                `Discarding reflected IncomingMessageUpdate message due to validation error: ${error}`,
+            );
+            return;
+        }
+
+        this._log.info(
+            `Received reflected IncomingMessageUpdate message referencing ${validatedMessage.updates.length} messages`,
+        );
+
+        // Process updates
+        for (const update of validatedMessage.updates) {
+            const {messageId} = update;
+
+            // Retrieve conversation
+            const conversationId = toCommonConversationId(update.conversation);
+            if (conversationId.type === ReceiverType.DISTRIBUTION_LIST) {
+                this._log.error(
+                    'Received a reflected incoming message update for a distribution list. Protocol error, discarding.',
+                );
+                continue;
+            }
+            const conversation = getConversationById(model, conversationId);
+            if (conversation === undefined) {
+                this._log.warn(`Skipping message update due to missing conversation`);
+                continue;
+            }
+
+            // Retrieve the associated message
+            const message = conversation.get().controller.getMessage(messageId)?.get();
+            if (message === undefined) {
+                this._log.warn(
+                    `Skipping message update due to missing message ${u64ToHexLe(messageId)}`,
+                );
+                continue;
+            }
+            if (message.view.direction !== MessageDirection.INBOUND) {
+                this._log.warn(
+                    `Skipping message update for ${u64ToHexLe(
+                        messageId,
+                    )} because it is not an inbound message`,
+                );
+                continue;
+            }
+
+            // Apply update
+            switch (update.update) {
+                case 'read':
+                    this._log.debug(`Marking incoming message ${u64ToHexLe(messageId)} as read`);
+                    void message.controller.read.fromSync(this._reflectedDate);
+                    continue;
+                default:
+                    unreachable(update.update);
+            }
+        }
+    }
+}

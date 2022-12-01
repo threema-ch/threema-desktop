@@ -1,0 +1,5 @@
+.flatpak-builder/
+build/
+repo/
+generated-sources.json
+ch.threema.*.yml

@@ -1,0 +1,195 @@
+@use 'sass:color';
+@use 'sass:map';
+@use 'threema-svelte-components/src/sass/css-var' as *;
+@use 'threema-svelte-components/src/sass/utils' as *;
+@use 'threema-svelte-components/src/sass/theme';
+@use './theme/light' as *;
+@use './theme/dark' as *;
+
+// prettier-ignore
+$themes: (
+  light: $light,
+  dark: $dark,
+);
+
+@function -g($map, $key, $keys...) {
+  @return map-get-req($map, $key, $keys...);
+}
+
+@function -app-theme($theme, $branding) {
+  $t: -g($theme, app);
+
+  // prettier-ignore
+  @return (
+    // Scrollbar
+    --t-scrollbar-thumb-color: -g($t, scrollbar-thumb),
+    --t-scrollbar-thumb-color--hover: -g($t, scrollbar-thumb--hover),
+
+    // Global
+    --t-text-e1-color: -g($t, text-e1),
+    --t-text-e2-color: -g($t, text-e2),
+    --t-text-e3-color: -g($t, text-e3),
+    --t-text-anchor-color: -g($t, text-anchor),
+
+    // Colors
+    --t-color-primary: -g($t, color-primary),
+
+    // Main panels
+    --t-panel-gap-color: color-conforms(-g($t, panel-gap), $alpha: false),
+    --t-nav-background-color: color-conforms(-g($t, nav-background), $alpha: false),
+    --t-main-background-color: color-conforms(-g($t, main-background), $alpha: false),
+    --t-aside-background-color: color-conforms(-g($t, aside-background), $alpha: false),
+    --t-pairing-background-color: color-conforms(-g($t, pairing-background), $alpha: false),
+
+    // Main Welcome
+    --t-main-welcome-icon-fill-opacity: -g($t, main-welcome-icon-fill-opacity),
+  );
+}
+
+@function -individual-components-theme($theme, $branding) {
+  $t: -g($theme, app);
+  $ic: -g($theme, individual-components);
+
+  // prettier-ignore
+  @return (
+    // List Element
+    --ic-list-element-background-color--hover: -g($ic, list-element-background-color--hover),
+    --ic-list-element-color: -g($ic, list-element-color),
+    // Divider
+    --ic-divider-background-color: -g($ic, divider-background-color),
+    // ContactNavigationContext Button
+    --ic-contact-navigation-context-button-color: -g($ic, contact-navigation-context-button-color),
+    --ic-contact-navigation-context-button-border-color--hover: -g($ic, contact-navigation-context-button-border-color--hover),
+    --ic-contact-navigation-context-button-background-color--hover: -g($ic, contact-navigation-context-button-background-color--hover),
+    --ic-contact-navigation-context-button-border-color--focus: -g($ic, contact-navigation-context-button-border-color--focus),
+    --ic-contact-navigation-context-button-background-color--focus: -g($ic, contact-navigation-context-button-background-color--focus),
+    --ic-contact-navigation-context-button-color--active: -g($ic, contact-navigation-context-button-color--active),
+    --ic-contact-navigation-context-button-border-color--active: -g($ic, contact-navigation-context-button-border-color--active),
+    --ic-contact-navigation-context-button-background-color--active: -g($ic, contact-navigation-context-button-background-color--active),
+    --ic-contact-navigation-context-button-opacity--disabled: -g($ic, contact-navigation-context-button-opacity--disabled),
+  );
+}
+
+@function -compound-components-theme($theme, $branding) {
+  $b: $branding;
+  $t: -g($theme, app);
+  $cc: -g($theme, compound-components);
+
+  // prettier-ignore
+  @return (
+    // Avatr upload
+    --cc-avatar-upload-background-color: -g($cc, avatar-upload-background-color),
+
+    // Avatar overlay
+    --cc-avatar-overlay-unread-background-color:
+    color-conforms(-g($cc, avatar-overlay-unread-background), $alpha: false),
+    --cc-avatar-overlay-unread-text-color:
+    color-conforms(-g($cc, avatar-overlay-unread-text), $alpha: false),
+    --cc-avatar-overlay-badge-icon-color:
+    -g($cc, avatar-overlay-badge-icon),
+    --cc-avatar-overlay-badge-icon-consumer-color:
+    -g($cc, avatar-overlay-badge-icon-consumer),
+    --cc-avatar-overlay-badge-icon-work-color:
+    -g($cc, avatar-overlay-badge-icon-work),
+
+    // Conversation
+    --cc-conversation-message-options-caret-color: -g($cc, conversation-message-options-caret-color),
+
+    // Conversation preview
+    --cc-conversation-preview-background-color:
+    color-conforms(-g($t, nav-background), $alpha: false),
+    --cc-conversation-preview-background-color--hover:
+    color-conforms(
+        color.scale(-g($t, nav-background), $lightness: -g($t, background-lightness--hover)),
+      $alpha: false
+    ),
+    --cc-conversation-preview-background-color--active:
+    color-conforms(
+        color.scale(-g($t, nav-background), $lightness: -g($t, background-lightness--active)),
+      $alpha: false
+    ),
+    --cc-conversation-preview-archived-background-color:
+    -g($cc, conversation-preview-archived-background),
+    --cc-conversation-preview-archived-text-color:
+    -g($cc, conversation-preview-archived-text),
+    --cc-conversation-preview-inactive-background-color:
+    -g($cc, conversation-preview-archived-background),
+    --cc-conversation-preview-inactive-text-color:
+    -g($cc, conversation-preview-archived-text),
+    --cc-conversation-preview-draft-text-color: -g($cc, conversation-preview-draft-text),
+    --cc-conversation-preview-properties-background-color:
+    color-conforms(-g($cc, conversation-preview-properties-background), $alpha: false),
+    --cc-conversation-preview-properties-icon-color:
+    -g($cc, conversation-preview-properties-icon),
+    --cc-conversation-preview-properties-icon-pin-color:
+    -g($cc, conversation-preview-properties-icon-pin),
+    --cc-conversation-preview-message-text-color:
+    -g($cc, conversation-preview-message-text),
+    --cc-conversation-preview-status-text-color:
+    -g($cc, conversation-preview-status-text),
+    --cc-conversation-preview-swipe-area-button-gap:
+    color.scale(
+        color-conforms(-g($b, primary-background), $alpha: false),
+      $lightness: -g($cc, conversation-preview-swipe-area-gap-lightness)
+    ),
+
+    // Contact preview
+    --cc-contact-preview-inactive-background-color:
+    -g($cc, contact-preview-inactive-background),
+    --cc-contact-preview-inactive-text-color:
+    -g($cc, contact-preview-inactive-text),
+    --cc-contact-preview-creator-background-color:
+    -g($cc, contact-preview-creator-background),
+    --cc-contact-preview-creator-text-color:
+    -g($cc, contact-preview-creator-text),
+
+    // Search input
+    --cc-search-input-background-color: -g($cc, search-input-background),
+    --cc-search-input-background-color--hover: -g($cc, search-input-background--hover),
+    --cc-search-input-background-color--focus: -g($cc, search-input-background--focus),
+    --cc-search-input-text-color: -g($t, text-e1),
+    --cc-search-input-placeholder-text-color: -g($t, text-e2),
+    --cc-search-input-icon-color: -g($t, text-e2),
+
+    // Menu items
+    --cc-menu-item-icon-text-background-color--hover: -g($cc, menu-item-icon-text-background-color--hover),
+    --cc-menu-item-icon-text-background-color--active: -g($cc, menu-item-icon-text-background-color--active),
+
+    // Compose Area
+    --cc-compose-area-placeholder-text-color: -g($cc, compose-area-placeholder-text),
+
+    // Modal Dialog
+    --cc-modal-dialog-background-color: -g($cc, modal-dialog-background-color),
+  );
+}
+
+@function -debug-components-theme($theme, $branding) {
+  $b: $branding;
+  $t: -g($theme, app);
+  $dc: -g($theme, debug-components);
+
+  // prettier-ignore
+  @return (
+    // Top bar
+    --dc-top-bar-background-color: color-conforms(-g($dc, top-bar-background-color), $alpha: false),
+    --dc-top-bar-border-color: -g($b, primary-background),
+  );
+}
+
+@mixin themes() {
+  @each $theme-name, $theme in $themes {
+    [data-theme='#{$theme-name}'] {
+      @each $branding-name, $branding in theme.$brandings {
+        &[data-branding='#{$branding-name}'] {
+          $theme: config-merge(-g(theme.$themes, $theme-name), $theme);
+
+          @include def-var(-app-theme($theme, $branding)...);
+          @include def-var(theme.components-theme($theme, $branding)...);
+          @include def-var(-individual-components-theme($theme, $branding)...);
+          @include def-var(-compound-components-theme($theme, $branding)...);
+          @include def-var(-debug-components-theme($theme, $branding)...);
+        }
+      }
+    }
+  }
+}

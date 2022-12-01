@@ -1,0 +1,91 @@
+import {type SystemInfo} from '~/common/electron-ipc';
+import {type ProxyMarked} from '~/common/utils/endpoint';
+
+/**
+ * Base interface for all system dialogs.
+ */
+interface SystemDialogBase {
+    readonly type: string;
+    readonly context: unknown;
+}
+
+/**
+ * Dialog indicating that an app update is available.
+ */
+export interface AppUpdateDialog extends SystemDialogBase {
+    readonly type: 'app-update';
+    readonly context: {
+        readonly currentVersion: string;
+        readonly latestVersion: string;
+        readonly systemInfo: SystemInfo;
+    };
+}
+
+/**
+ * Dialog blocking the application on a connection error which requires user interaction.
+ */
+export interface ConnectionErrorDialog extends SystemDialogBase {
+    readonly type: 'connection-error';
+    readonly context: ConnectionErrorContext;
+}
+type ConnectionErrorContext =
+    | {
+          readonly type: 'mediator-update-required';
+          readonly userCanReconnect: true;
+      }
+    | {
+          readonly type: 'client-update-required';
+          readonly userCanReconnect: false;
+      }
+    | {
+          readonly type: 'client-was-dropped';
+          readonly userCanReconnect: false;
+      };
+// TODO(WEBMD-487): Add other user interactions
+
+/**
+ * Message from the server. Sent with CSP alert and close-error messages.
+ */
+export interface ServerAlertDialog extends SystemDialogBase {
+    readonly type: 'server-alert';
+    readonly context: {
+        readonly title: string;
+        readonly text: string;
+    };
+}
+
+/**
+ * Dialog which is shown on state errors (e.g. in Groups) in production mode.
+ */
+export interface InvalidStateDialog extends SystemDialogBase {
+    readonly type: 'invalid-state';
+    readonly context: {
+        readonly message?: string | undefined;
+        readonly forceRelink: boolean;
+    };
+}
+
+/**
+ * All possible system dialogs.
+ * Note: All Properties must be structurally clonable.
+ */
+export type SystemDialog =
+    | AppUpdateDialog
+    | ConnectionErrorDialog
+    | ServerAlertDialog
+    | InvalidStateDialog;
+
+export type DialogAction = 'confirmed' | 'cancelled';
+
+export type SystemDialogHandle = {
+    closed: Promise<DialogAction>;
+} & ProxyMarked;
+
+/**
+ * Open a dialog window.
+ *
+ * Lives in the frontend / app thread.
+ */
+export interface SystemDialogService {
+    readonly open: (dialog: SystemDialog) => SystemDialogHandle;
+}

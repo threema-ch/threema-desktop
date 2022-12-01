@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["dom", "esnext"],
+    "types": ["svelte"],
+
+    // Needed for vite-tsconfig-paths to handle paths from non-TS files
+    // (such as Svelte components)
+    "allowJs": true
+  },
+
+  "include": ["../common/dom/vite-client.d.ts", "**/*.ts", "components/**/*.svelte"],
+  "exclude": ["electron/main/**"]
+}

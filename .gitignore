@@ -1,0 +1,19 @@
+# NodeJS
+/node_modules/
+
+# Build and tmp directories
+/build/
+/src/common/tmp/
+/export/
+
+# Electron
+/electron.pid
+
+# Testing
+/junit/
+
+# IDEs
+/.idea/
+
+# Identities
+/identities/*

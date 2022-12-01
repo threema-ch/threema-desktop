@@ -1,0 +1,22 @@
+{
+  "name": "eslint-plugin-threema",
+  "version": "0.0.1",
+  "description": "Custom ESLint rules used in Threema projects",
+  "main": "./build/index.js",
+  "type": "commonjs",
+  "files": [
+    "src/**",
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf build",
+    "install": "npm run build"
+  },
+  "author": "Threema GmbH",
+  "license": "AGPL-3.0+",
+  "devDependencies": {
+    "@typescript-eslint/utils": "^5.13.0",
+    "typescript": "~4.6.3"
+  }
+}

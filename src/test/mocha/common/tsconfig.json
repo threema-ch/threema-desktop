@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["chai", "mocha", "node"]
+  },
+
+  "include": ["../../../common/vite-client.d.ts", "../../common/chai.d.ts", "**/*.ts"]
+}

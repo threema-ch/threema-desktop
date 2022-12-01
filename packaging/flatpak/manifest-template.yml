@@ -1,0 +1,93 @@
+app-id: {{app-id}}
+runtime: org.freedesktop.Platform
+runtime-version: '21.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '21.08'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node16
+command: run.sh
+separate-locales: false
+finish-args:
+  # Share IPC namespace with the host (improves X11 performance)
+  - --share=ipc
+  # Show window using Wayland or X11
+  - --socket=wayland
+  - --socket=x11
+  # Play sound using pulseaudio
+  - --socket=pulseaudio
+  # Allow access to network
+  - --share=network
+  # OpenGL rendering
+  - --device=dri
+  # Access directories
+  - --filesystem=xdg-download
+  # Allow desktop notifications
+  - --talk-name=org.freedesktop.Notifications
+build-options:
+  append-path: /usr/lib/sdk/node16/bin
+  cflags: -O2 -g
+  cxxflags: -O2 -g
+  env:
+    NPM_CONFIG_LOGLEVEL: info
+modules:
+  - name: threema-desktop
+    buildsystem: simple
+    build-options:
+      env:
+        XDG_CACHE_HOME: /run/build/threema-desktop/flatpak-node/cache
+        npm_config_cache: /run/build/threema-desktop/flatpak-node/npm-cache
+        npm_config_offline: 'true'
+    sources:
+      # Project source code
+      - type: dir
+        path: ../../
+      # Dependencies, updated with flatpak-node-generator
+      - generated-sources.json
+      # Wrapper to launch the app
+      - type: script
+        dest-filename: run.sh
+        commands:
+          - cd /app/main/
+          - |
+            while true; do
+              zypak-wrapper.sh ./ThreemaDesktop \
+                --ozone-platform-hint=auto \
+                --enable-features="WaylandWindowDecorations" \
+                "$@"
+              if [ "$?" != "8" ]; then
+                break
+              fi
+            done
+    build-commands:
+      # Install npm dependencies
+      - npm install --offline
+      # Remove previous build artifacts
+      - rm -rf build/electron/packaged
+      # Build Threema Desktop
+      - |
+        ln -s $XDG_CACHE_HOME/node-gyp $HOME/.electron-gyp # https://github.com/flatpak/flatpak-builder-tools/pull/260#discussion_r822084602
+        npm run electron:dist:{{flavor}}
+      # Bundle app and dependencies
+      - ls -lah build/electron/packaged/
+      - cp -a build/electron/packaged/Threema*-linux-* /app/main
+      # Install app wrapper
+      - install -Dm755 -t /app/bin/ run.sh
+      # Install metadata
+      - install -Dm644 packaging/metadata/ch.threema.threema-desktop.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
+      - install -Dm644 packaging/metadata/ch.threema.threema-desktop.desktop /app/share/applications/{{app-id}}.desktop
+      - sed -i 's/ch.threema.threema-desktop/{{app-id}}/g' /app/share/metainfo/{{app-id}}.metainfo.xml
+      - sed -i 's/ch.threema.threema-desktop/{{app-id}}/g' /app/share/applications/{{app-id}}.desktop
+      - sed -i "s#name>Threema<#name>{{app_name}}<#" /app/share/metainfo/{{app-id}}.metainfo.xml
+      - sed -i "s#Name=Threema#Name={{app_name}}#" /app/share/applications/{{app-id}}.desktop
+      # Install Icons
+      - mkdir -p /app/share/icons/hicolor/{512x512,scalable}/apps/
+      - |
+        case {{flavor}} in
+          consumer-live) icon_base=icon-consumer ;;
+          work-sandbox) icon_base=icon-red ;;
+          work-live) icon_base=icon-work ;;
+          *) echo "Invalid flavor: {{flavor}}"; exit 1 ;;
+        esac
+        install -Dm644 packaging/assets/icons/${icon_base}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
+        install -Dm644 packaging/assets/icons/${icon_base}-512.png /app/share/icons/hicolor/512x512/apps/{{app-id}}.png

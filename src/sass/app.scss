@@ -1,0 +1,88 @@
+@use './config' as *;
+@use 'threema-svelte-components/src/sass/conversion' as * with (
+  $-config: $config
+);
+@use 'threema-svelte-components/src/sass/css-var' as * with (
+  $-config: $config
+);
+@use 'threema-svelte-components/src/sass/icons' with (
+  $-config: $config
+);
+@use 'threema-svelte-components/src/sass/typography' with (
+  $-config: $config
+);
+@use 'threema-svelte-components/src/sass/utils' as *;
+@use './theme';
+
+// Import main font
+@import url('https://static.threema.ch/fonts/labgrotesque.css');
+
+// Include emoji font
+@font-face {
+  font-family: 'Twemoji';
+  font-weight: normal;
+  font-style: normal;
+  src: map-get-req($config, emoji);
+}
+
+// Include icon fonts
+@include icons.material-icons();
+@include icons.threema-icons();
+
+// Include themes
+@include theme.themes();
+
+:root {
+  font-family: 'Lab Grotesque', Helvetica, 'Twemoji', sans-serif;
+  font-weight: 400;
+  font-size: map-get-req($config, font-size);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  // Scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: var(--t-scrollbar-thumb-color) transparent;
+
+  // Scrollbar (non-standard Chromium)
+  ::-webkit-scrollbar {
+    width: rem(12px);
+  }
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--t-scrollbar-thumb-color);
+    background-clip: content-box;
+    border: rem(4px) solid transparent;
+    border-radius: rem(8px);
+
+    &:hover {
+      background-color: var(--t-scrollbar-thumb-color--hover);
+      border: rem(2px) solid transparent;
+    }
+  }
+}
+
+body {
+  @extend %font-normal-400;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: var(--t-text-anchor-color);
+}
+
+// Special wip class to mark not ready implementations
+.wip {
+  cursor: not-allowed !important;
+}

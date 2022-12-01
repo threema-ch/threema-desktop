@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["dom", "esnext"],
+    "types": ["cypress"]
+  },
+
+  "include": ["../../../common/dom/vite-client.d.ts", "**/*.ts"]
+}

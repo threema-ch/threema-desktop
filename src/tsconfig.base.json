@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "types": [],
+    // All paths MUST be defined here to ensure resolving works in Svelte
+    // components (since the svelte-preprocessor can only refer to a single
+    // TS config file)
+    "baseUrl": ".",
+    "paths": {
+      "~/common/*": ["./common/*"],
+      "~/app/*": ["./app/*"],
+      "~/test/*": ["./test/*"],
+      "~/worker/*": ["./worker/*"],
+      "#3sc/*": ["../node_modules/threema-svelte-components/src/*"]
+    },
+    "allowUnreachableCode": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "importsNotUsedAsValues": "remove",
+    "isolatedModules": true,
+    "newLine": "lf",
+    "noEmitOnError": true,
+    "noErrorTruncation": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true
+  },
+  "include": []
+}

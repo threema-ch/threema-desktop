@@ -1,0 +1,17 @@
+DROP TABLE statusMessages;
+DROP TABLE pollVotes;
+DROP TABLE pollChoices;
+DROP TABLE polls;
+DROP TABLE messageLocationData;
+DROP TABLE messagePollData;
+DROP TABLE messageAudioData;
+DROP TABLE messageVideoData;
+DROP TABLE messageImageData;
+DROP TABLE messageFileData;
+DROP TABLE messageTextData;
+DROP TABLE messages;
+DROP TABLE conversations;
+DROP TABLE distributionLists;
+DROP TABLE groups;
+DROP TABLE contacts;
+DROP TABLE settings;

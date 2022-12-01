@@ -1,0 +1,11 @@
+node_modules/
+build/
+identities/
+libs/
+src/common/enum.ts
+src/common/network/protobuf/js
+src/common/crypto/blake2b/implementation.js
+# TODO(WEBMD-35)
+src/test/cypress/
+src/test/js/
+packaging/main.cjs

@@ -1,0 +1,150 @@
+import {type GroupData, type GroupUserState as GroupUserState3SC} from '#3sc/types';
+import {
+    type ReceiverNotificationPolicy,
+    transformNotificationPolicyFromGroup,
+} from '~/app/components/receiver';
+import {type DbReceiverLookup} from '~/common/db';
+import {GroupUserState, ReceiverType} from '~/common/enum';
+import {type Avatar, type Contact, type Group, type RemoteModelFor} from '~/common/model';
+import {type RemoteModelStore} from '~/common/model/utils/model-store';
+import {assertUnreachable} from '~/common/utils/assert';
+import {type IQueryableStore, DeprecatedDerivedStore} from '~/common/utils/store';
+import {type RemoteSetStore} from '~/common/utils/store/set-store';
+import {type GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
+
+/**
+ * Transformed data necessary to display a contact in several places in the UI.
+ */
+export type TransformedGroup = GroupData & {
+    readonly lookup: DbReceiverLookup;
+    readonly creator: string;
+    readonly name: string;
+    readonly displayName: string;
+    readonly isInactive: boolean;
+    readonly notifications: ReceiverNotificationPolicy;
+};
+
+/**
+ * Stores necessary to display a conversation preview.
+ */
+export interface GroupPreviewStores {
+    /**
+     * Avatar of the group
+     */
+    readonly avatar: RemoteModelStore<Avatar>;
+
+    /**
+     * Members of the group
+     */
+    readonly members: IQueryableStore<ReadonlySet<RemoteModelStore<Contact>>>;
+}
+
+/**
+ * Filter groups by user input string and sort result by group.displayName
+ */
+export function filterGroups(
+    set: ReadonlySet<RemoteModelStore<Group>>,
+    filter: string,
+): IQueryableStore<readonly RemoteModelStore<Group>[]> {
+    return new DeprecatedDerivedStore([...set.values()], (item) =>
+        [...item]
+            .filter((itemFilter) =>
+                [itemFilter[1].view.name, itemFilter[1].view.creatorIdentity]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(filter.trim().toLowerCase()),
+            )
+            .sort(([, {view: a}], [, {view: b}]) => {
+                const nameA = a.displayName;
+                const nameB = b.displayName;
+                if (nameA < nameB) {
+                    return -1;
+                } else if (nameA > nameB) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            })
+            .map(([store]) => store),
+    );
+}
+
+// TODO(WEBMD-577): This will be superseded by a new store with this ticket.
+function getMembersForGroup(
+    group: RemoteModelStore<Group>,
+    contacts: RemoteSetStore<RemoteModelStore<Contact>>,
+): IQueryableStore<ReadonlySet<RemoteModelStore<Contact>>> {
+    return new DeprecatedDerivedStore(
+        [group, contacts] as const,
+        ([[, groupModel], [, contactsSet]]) => {
+            const memberIdentities = groupModel.view.members;
+            const memberEntries = [...contactsSet.values()].filter((remoteContactModelStore) =>
+                memberIdentities.includes(remoteContactModelStore.get().view.identity),
+            );
+            return new Set(memberEntries);
+        },
+    );
+}
+
+export async function getAvatarAndMemberStores(
+    group: RemoteModelStore<Group>,
+    contacts: RemoteSetStore<RemoteModelStore<Contact>>,
+): Promise<GroupPreviewStores> {
+    return {
+        avatar: await group.get().controller.avatar(),
+        members: getMembersForGroup(group, contacts),
+    };
+}
+
+export function transformGroupUserState(userState: GroupUserState): GroupUserState3SC {
+    switch (userState) {
+        case GroupUserState.MEMBER:
+            return 'member';
+        case GroupUserState.KICKED:
+            return 'kicked';
+        case GroupUserState.LEFT:
+            return 'left';
+        default:
+            return assertUnreachable(userState);
+    }
+}
+
+export function isUserStateOfInactiveGroup(userState: GroupUserState3SC): boolean {
+    return userState !== 'member';
+}
+
+/**
+ * Return whether the {@link GroupView} matches the {@link filter}.
+ */
+export function matchesGroupSearchFilter(
+    filter: string,
+    group: Pick<GroupListItemViewModel, 'name' | 'members' | 'memberNames'>,
+): boolean {
+    const trimmedFilter = filter.trim();
+    if (trimmedFilter === '') {
+        return true;
+    }
+
+    return [group.name, group.members.join(''), group.memberNames.join('')]
+        .join(' ')
+        .toLowerCase()
+        .includes(trimmedFilter.toLowerCase());
+}
+
+export function transformGroup(group: RemoteModelFor<Group>): TransformedGroup {
+    const userState = transformGroupUserState(group.view.userState);
+
+    return {
+        lookup: {
+            type: ReceiverType.GROUP,
+            uid: group.ctx,
+        },
+        creator: group.view.creatorIdentity,
+        name: group.view.name,
+        displayName: group.view.displayName,
+        userState,
+        isInactive: isUserStateOfInactiveGroup(userState),
+        notifications: transformNotificationPolicyFromGroup(group.view),
+        members: [],
+    };
+}

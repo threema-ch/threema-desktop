@@ -1,0 +1,30 @@
+$-config: null !default;
+@use 'threema-svelte-components/src/sass/conversion' as *;
+
+%markup-bold {
+  font-weight: bold;
+}
+
+%markup-italic {
+  font-style: italic;
+}
+
+%markup-strike {
+  text-decoration: line-through;
+}
+
+%mention {
+  background-color: var(--c-message-mention-background-color);
+  color: var(--c-message-mention-color);
+  border-radius: rem(4px);
+  padding: 0 rem(4px);
+  text-decoration: none;
+}
+
+%mention-me,
+%mention-all {
+  background-color: var(--c-message-mention-me-background-color);
+  color: var(--c-message-mention-me-color);
+  cursor: text;
+  user-select: text;
+}

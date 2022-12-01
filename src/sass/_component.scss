@@ -1,0 +1,7 @@
+@use './config';
+@forward 'threema-svelte-components/src/sass/component' with (
+  $config: config.$config
+);
+@forward './mixins' with (
+  $-config: config.$config
+);

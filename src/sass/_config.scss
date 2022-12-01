@@ -1,0 +1,132 @@
+@use 'threema-svelte-components/src/sass/config' as components;
+@use 'threema-svelte-components/src/sass/utils' as *;
+
+// Exported configuration, merged with the base configuration.
+//
+// prettier-ignore
+$config: config-merge(components.$config, (
+  // Valid CSS variables
+  css-vars: (
+    app: (
+      // Scrollbar
+      --t-scrollbar-thumb-color,
+      --t-scrollbar-thumb-color--hover,
+
+      // Global
+      --t-text-e1-color,
+      --t-text-e2-color,
+      --t-text-e3-color,
+      --t-text-anchor-color,
+      --t-color-primary,
+
+      // Main panels
+      --t-panel-gap-color,
+      --t-nav-background-color,
+      --t-main-background-color,
+      --t-aside-background-color,
+      --t-pairing-background-color,
+
+      // Main Welcome
+      --t-main-welcome-icon-fill-opacity,
+    ),
+
+    individual-components: (
+      // List Element
+      --ic-list-element-background-color--hover,
+      --ic-list-element-color,
+
+      // Divider
+      --ic-divider-background-color,
+
+       // ContactNavigationContext Button
+      --ic-contact-navigation-context-button-color,
+      --ic-contact-navigation-context-button-border-color--hover,
+      --ic-contact-navigation-context-button-background-color--hover,
+      --ic-contact-navigation-context-button-border-color--focus,
+      --ic-contact-navigation-context-button-background-color--focus,
+      --ic-contact-navigation-context-button-color--active,
+      --ic-contact-navigation-context-button-border-color--active,
+      --ic-contact-navigation-context-button-background-color--active,
+      --ic-contact-navigation-context-button-opacity--disabled,
+    ),
+
+    compound-components: (
+      // Avatar upload
+      --cc-avatar-upload-background-color,
+
+      // Avatar overlay
+      --cc-avatar-overlay-background-color,
+      --cc-avatar-overlay-unread-background-color,
+      --cc-avatar-overlay-unread-text-color,
+      --cc-avatar-overlay-badge-icon-color,
+      --cc-avatar-overlay-badge-icon-consumer-color,
+      --cc-avatar-overlay-badge-icon-work-color,
+
+      // Conversation
+      --cc-conversation-message-options-caret-color,
+
+      // Conversation preview
+      --cc-conversation-preview-background-color,
+      --cc-conversation-preview-background-color--hover,
+      --cc-conversation-preview-background-color--active,
+      --cc-conversation-preview-archived-background-color,
+      --cc-conversation-preview-archived-text-color,
+      --cc-conversation-preview-inactive-background-color,
+      --cc-conversation-preview-inactive-text-color,
+      --cc-conversation-preview-draft-text-color,
+      --cc-conversation-preview-properties-background-color,
+      --cc-conversation-preview-properties-icon-color,
+      --cc-conversation-preview-properties-icon-pin-color,
+      --cc-conversation-preview-message-text-color,
+      --cc-conversation-preview-status-text-color,
+      --cc-conversation-preview-swipe-area-button-gap,
+
+      // Contact preview
+      --cc-contact-preview-inactive-background-color,
+      --cc-contact-preview-inactive-text-color,
+      --cc-contact-preview-creator-background-color,
+      --cc-contact-preview-creator-text-color,
+
+      // Search input
+      --cc-search-input-background-color,
+      --cc-search-input-background-color--hover,
+      --cc-search-input-background-color--focus,
+      --cc-search-input-background-border-color--focus,
+      --cc-search-input-text-color,
+      --cc-search-input-placeholder-text-color,
+      --cc-search-input-icon-color,
+      --cc-search-input-icon-color--hover,
+
+      // Menu items
+      --cc-menu-item-icon-text-background-color--hover,
+      --cc-menu-item-icon-text-background-color--active,
+
+      // Compose area
+      --cc-compose-area-placeholder-text-color,
+
+      // Modal Dialog
+      --cc-modal-dialog-background-color,
+    ),
+
+    debug-components: (
+      // Top bar
+      --dc-top-bar-background-color,
+      --dc-top-bar-border-color,
+    ),
+  ),
+
+  // Emoji sources
+  emoji: url('./res/3sc/font/Twemoji.woff2') format('woff2'),
+
+  // Material Icon sources
+  material-icons: (
+    src-filled: url('./res/3sc/font/MaterialIcons-Filled.woff2') format('woff2'),
+    src-outlined: url('./res/3sc/font/MaterialIcons-Outlined.woff2') format('woff2')
+  ),
+
+  // Threema Icon sources
+  threema-icons: (
+    src-filled: url('./res/3sc/font/ThreemaIcons-Filled.woff2') format('woff2'),
+    src-outlined: url('./res/3sc/font/ThreemaIcons-Outlined.woff2') format('woff2')
+  ),
+));

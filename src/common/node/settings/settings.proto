@@ -1,0 +1,10 @@
+// ## Settings
+//
+// The user settings. Each message corresponds roughly to a particular settings screen.
+
+syntax = "proto3";
+
+// Settings on the user profile.
+message ProfileSettings {
+    string public_nickname = 1;
+}

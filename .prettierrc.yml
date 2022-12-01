@@ -1,0 +1,22 @@
+# Global rules
+arrowParens: always
+bracketSpacing: false
+endOfLine: lf
+printWidth: 100
+quoteProps: consistent
+singleQuote: true
+tabWidth: 4
+trailingComma: all
+
+# Global svelte rules
+svelteSortOrder: options-scripts-markup-styles
+
+# Overrides
+overrides:
+  - files: '*.{css,json,md,scss,yml}'
+    options:
+      tabWidth: 2
+  - files: '*.{html,svelte}'
+    options:
+      printWidth: 100
+      tabWidth: 2

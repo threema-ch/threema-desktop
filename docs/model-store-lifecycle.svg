@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="1481px" preserveAspectRatio="none" style="width:946px;height:1481px;background:#FFFFFF;" version="1.1" viewBox="0 0 946 1481" width="946px" zoomAndPan="magnify"><defs/><g><rect height="29.0679" style="stroke:#00000000;stroke-width:1.0;fill:none;" width="157" x="390.5" y="10"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="147" x="395.5" y="29.9659">Model Store Lifecycle</text><rect fill="#FFFFFF" height="276.4398" style="stroke:#181818;stroke-width:1.0;" width="10" x="256" y="276.9599"/><rect fill="#FFFFFF" height="285.5011" style="stroke:#181818;stroke-width:1.0;" width="10" x="256" y="737.7828"/><rect fill="#FFFFFF" height="109.8419" style="stroke:#181818;stroke-width:1.0;" width="10" x="398.5" y="321.0278"/><rect fill="#FFFFFF" height="424.1782" style="stroke:#181818;stroke-width:1.0;" width="10" x="398.5" y="662.5178"/><rect fill="#FFFFFF" height="292.3541" style="stroke:#181818;stroke-width:1.0;" width="10" x="398.5" y="1164.108"/><rect fill="#FFFFFF" height="34.0679" style="stroke:#181818;stroke-width:1.0;" width="10" x="570.5" y="365.0957"/><rect fill="#FFFFFF" height="932.6215" style="stroke:#181818;stroke-width:1.0;" width="10" x="570.5" y="492.1347"/><rect fill="#FFFFFF" height="360.7662" style="stroke:#181818;stroke-width:1.0;" width="10" x="575.5" y="694.2238"/><rect fill="#FFFFFF" height="228.9421" style="stroke:#181818;stroke-width:1.0;" width="10" x="575.5" y="1195.8141"/><rect fill="#FFFFFF" height="31.706" style="stroke:#181818;stroke-width:1.0;" width="10" x="691" y="203.5479"/><rect fill="#FFFFFF" height="31.706" style="stroke:#181818;stroke-width:1.0;" width="10" x="691" y="863.4599"/><rect fill="#FFFFFF" height="31.706" style="stroke:#181818;stroke-width:1.0;" width="10" x="691" y="1309.6381"/><rect height="138.5301" style="stroke:#000000;stroke-width:1.5;fill:none;" width="581.5" x="159" y="764.6358"/><rect height="138.5301" style="stroke:#000000;stroke-width:1.5;fill:none;" width="464" x="465" y="1210.8141"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="89" x2="89" y1="124.1358" y2="1474.4622"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="260.5" x2="260.5" y1="275.2878" y2="1474.4622"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="403" x2="403" y1="319.3558" y2="1474.4622"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="575.5" x2="575.5" y1="363.4237" y2="1474.4622"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="695.5" x2="695.5" y1="124.1358" y2="1474.4622"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="819.5" x2="819.5" y1="124.1358" y2="1474.4622"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="95" x="39" y="120.0339">API Consumer</text><ellipse cx="89.5" cy="53.5679" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M89.5,61.5679 L89.5,88.5679 M76.5,69.5679 L102.5,69.5679 M89.5,88.5679 L76.5,103.5679 M89.5,88.5679 L102.5,103.5679 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63" x="661.5" y="120.0339">Database</text><path d="M678,69.0679 C678,59.0679 696,59.0679 696,59.0679 C696,59.0679 714,59.0679 714,69.0679 L714,95.0679 C714,105.0679 696,105.0679 696,105.0679 C696,105.0679 678,105.0679 678,95.0679 L678,69.0679 " fill="#E2E2F0" style="stroke:#181818;stroke-width:1.5;"/><path d="M678,69.0679 C678,79.0679 696,79.0679 696,79.0679 C696,79.0679 714,79.0679 714,69.0679 " fill="none" style="stroke:#181818;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="152" x="740.5" y="120.0339">LocalModelStoreCache</text><path d="M801.5,69.0679 C801.5,59.0679 819.5,59.0679 819.5,59.0679 C819.5,59.0679 837.5,59.0679 837.5,69.0679 L837.5,95.0679 C837.5,105.0679 819.5,105.0679 819.5,105.0679 C819.5,105.0679 801.5,105.0679 801.5,95.0679 L801.5,69.0679 " fill="#E2E2F0" style="stroke:#181818;stroke-width:1.5;"/><path d="M801.5,69.0679 C801.5,79.0679 819.5,79.0679 819.5,79.0679 C819.5,79.0679 837.5,79.0679 837.5,69.0679 " fill="none" style="stroke:#181818;stroke-width:1.5;"/><rect fill="#FFFFFF" height="276.4398" style="stroke:#181818;stroke-width:1.0;" width="10" x="256" y="276.9599"/><rect fill="#FFFFFF" height="285.5011" style="stroke:#181818;stroke-width:1.0;" width="10" x="256" y="737.7828"/><rect fill="#FFFFFF" height="109.8419" style="stroke:#181818;stroke-width:1.0;" width="10" x="398.5" y="321.0278"/><rect fill="#FFFFFF" height="424.1782" style="stroke:#181818;stroke-width:1.0;" width="10" x="398.5" y="662.5178"/><rect fill="#FFFFFF" height="292.3541" style="stroke:#181818;stroke-width:1.0;" width="10" x="398.5" y="1164.108"/><rect fill="#FFFFFF" height="34.0679" style="stroke:#181818;stroke-width:1.0;" width="10" x="570.5" y="365.0957"/><rect fill="#FFFFFF" height="932.6215" style="stroke:#181818;stroke-width:1.0;" width="10" x="570.5" y="492.1347"/><rect fill="#FFFFFF" height="360.7662" style="stroke:#181818;stroke-width:1.0;" width="10" x="575.5" y="694.2238"/><rect fill="#FFFFFF" height="228.9421" style="stroke:#181818;stroke-width:1.0;" width="10" x="575.5" y="1195.8141"/><rect fill="#FFFFFF" height="31.706" style="stroke:#181818;stroke-width:1.0;" width="10" x="691" y="203.5479"/><rect fill="#FFFFFF" height="31.706" style="stroke:#181818;stroke-width:1.0;" width="10" x="691" y="863.4599"/><rect fill="#FFFFFF" height="31.706" style="stroke:#181818;stroke-width:1.0;" width="10" x="691" y="1309.6381"/><rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1.0;" width="939" x="0" y="155.9888"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="939" y1="155.9888" y2="155.9888"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="939" y1="158.9888" y2="158.9888"/><rect fill="#EEEEEE" height="25.706" style="stroke:#000000;stroke-width:2.0;" width="61" x="439" y="144.1358"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="44" x="445" y="162.0328">Create</text><polygon fill="#181818" points="679,199.5479,689,203.5479,679,207.5479,683,203.5479" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="89.5" x2="685" y1="203.5479" y2="203.5479"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="62" x="96.5" y="197.7389">loadData()</text><polygon fill="#181818" points="100.5,231.2539,90.5,235.2539,100.5,239.2539,96.5,235.2539" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="94.5" x2="695" y1="235.2539" y2="235.2539"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="60" x="106.5" y="229.4449">(view, uid)</text><polygon fill="#181818" points="186.5,262.9599,196.5,266.9599,186.5,270.9599,190.5,266.9599" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="89.5" x2="192.5" y1="266.9599" y2="266.9599"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="85" x="96.5" y="261.1509">new(view, uid)</text><rect fill="#E2E2F0" height="33.0679" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125" x="198.5" y="243.2539"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111" x="205.5" y="265.2198">LocalModelStore</text><polygon fill="#181818" points="330,307.0278,340,311.0278,330,315.0278,334,311.0278" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="266" x2="336" y1="311.0278" y2="311.0278"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="52" x="273" y="305.2188">new(uid)</text><rect fill="#E2E2F0" height="33.0679" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="123" x="342" y="287.3218"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109" x="349" y="309.2877">ModelController</text><polygon fill="#181818" points="487.5,351.0957,497.5,355.0957,487.5,359.0957,491.5,355.0957" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="408.5" x2="493.5" y1="355.0957" y2="355.0957"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="33" x="415.5" y="349.2867">new()</text><rect fill="#E2E2F0" height="33.0679" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="152" x="499.5" y="331.3897"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138" x="506.5" y="353.3557">ModelLifetimeGuard</text><polygon fill="#181818" points="419.5,395.1637,409.5,399.1637,419.5,403.1637,415.5,399.1637" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="413.5" x2="574.5" y1="399.1637" y2="399.1637"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="81" x="425.5" y="393.3546">lifetimeGuard</text><polygon fill="#181818" points="277,426.8697,267,430.8697,277,434.8697,273,430.8697" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="271" x2="402.5" y1="430.8697" y2="430.8697"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="58" x="283" y="425.0607">controller</text><polygon fill="#181818" points="558.5,488.1347,568.5,492.1347,558.5,496.1347,562.5,492.1347" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="266" x2="564.5" y1="492.1347" y2="492.1347"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="182" x="273" y="486.3257">activate(getViewFn, updateFn)</text><path d="M585,443.8697 L585,523.8697 L842,523.8697 L842,453.8697 L832,443.8697 L585,443.8697 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M832,443.8697 L832,453.8697 L842,453.8697 L832,443.8697 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="236" x="591" y="462.7667">Activation of the lifetime guard exposes</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="236" x="591" y="480.4727">the view and the update function of the</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="212" x="591" y="498.1787">model store towards the guard and</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="188" x="591" y="515.8847">thus indirectly to the controller.</text><polygon fill="#181818" points="100.5,549.3997,90.5,553.3997,100.5,557.3997,96.5,553.3997" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="94.5" x2="260" y1="553.3997" y2="553.3997"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="70" x="106.5" y="547.5907">modelStore</text><polygon fill="#181818" points="807.5,581.1058,817.5,585.1058,807.5,589.1058,811.5,585.1058" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="89.5" x2="813.5" y1="585.1058" y2="585.1058"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="101" x="96.5" y="579.2968">add(modelStore)</text><rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1.0;" width="939" x="0" y="614.9588"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="939" y1="614.9588" y2="614.9588"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="939" y1="617.9588" y2="617.9588"/><rect fill="#EEEEEE" height="25.706" style="stroke:#000000;stroke-width:2.0;" width="65" x="437" y="603.1058"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="48" x="443" y="621.0028">Update</text><polygon fill="#181818" points="386.5,658.5178,396.5,662.5178,386.5,666.5178,390.5,662.5178" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="89.5" x2="392.5" y1="662.5178" y2="662.5178"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="116" x="96.5" y="656.7088">updateValue(value)</text><polygon fill="#181818" points="563.5,690.2238,573.5,694.2238,563.5,698.2238,567.5,694.2238" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="408.5" x2="569.5" y1="694.2238" y2="694.2238"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="119" x="415.5" y="688.4148">update(executorFn)</text><polygon fill="#181818" points="277,733.7828,267,737.7828,277,741.7828,273,737.7828" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="271" x2="574.5" y1="737.7828" y2="737.7828"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="119" x="283" y="731.9738">update(executorFn)</text><path d="M5,707.2238 L5,752.2238 L251,752.2238 L251,717.2238 L241,707.2238 L5,707.2238 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M241,707.2238 L241,717.2238 L251,717.2238 L241,707.2238 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="225" x="11" y="726.1208">The lifetime guard can only access the</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="180" x="11" y="743.8268">model store if it was activated.</text><path d="M159,764.6358 L376,764.6358 L376,774.3419 L366,784.3419 L159,784.3419 L159,764.6358 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="138.5301" style="stroke:#000000;stroke-width:1.5;" width="581.5" x="159" y="764.6358"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="172" x="174" y="779.5329">Update Executor Function</text><path d="M169,789.3419 L169,834.3419 L667,834.3419 L667,799.3419 L657,789.3419 L169,789.3419 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M657,789.3419 L657,799.3419 L667,799.3419 L657,789.3419 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="467" x="175" y="808.2389">The update executor function is passed in by the controller method. It receives</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="477" x="175" y="825.9449">the current view and returns a changeset: meta.update((view) =&gt; /*changeset*/)</text><polygon fill="#181818" points="679,859.4599,689,863.4599,679,867.4599,683,863.4599" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="266" x2="685" y1="863.4599" y2="863.4599"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="141" x="273" y="857.6509">updateData(changeset)</text><polygon fill="#181818" points="277,891.1659,267,895.1659,277,899.1659,273,895.1659" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="271" x2="695" y1="895.1659" y2="895.1659"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="18" x="283" y="889.3569">OK</text><line style="stroke:#181818;stroke-width:1.0;" x1="266" x2="308" y1="933.8719" y2="933.8719"/><line style="stroke:#181818;stroke-width:1.0;" x1="308" x2="308" y1="933.8719" y2="946.8719"/><line style="stroke:#181818;stroke-width:1.0;" x1="267" x2="308" y1="946.8719" y2="946.8719"/><polygon fill="#181818" points="277,942.8719,267,946.8719,277,950.8719,273,946.8719" style="stroke:#181818;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="91" x="273" y="928.0629">setStoreValue()</text><line style="stroke:#181818;stroke-width:1.0;" x1="266" x2="308" y1="978.578" y2="978.578"/><line style="stroke:#181818;stroke-width:1.0;" x1="308" x2="308" y1="978.578" y2="991.578"/><line style="stroke:#181818;stroke-width:1.0;" x1="267" x2="308" y1="991.578" y2="991.578"/><polygon fill="#181818" points="277,987.578,267,991.578,277,995.578,273,991.578" style="stroke:#181818;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="112" x="273" y="972.769">notifySubscribers()</text><polygon fill="#181818" points="563.5,1019.284,573.5,1023.284,563.5,1027.284,567.5,1023.284" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="261" x2="569.5" y1="1023.284" y2="1023.284"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="18" x="268" y="1017.475">OK</text><polygon fill="#181818" points="419.5,1050.99,409.5,1054.99,419.5,1058.99,415.5,1054.99" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="413.5" x2="569.5" y1="1054.99" y2="1054.99"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="18" x="425.5" y="1049.181">OK</text><polygon fill="#181818" points="100.5,1082.696,90.5,1086.696,100.5,1090.696,96.5,1086.696" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="94.5" x2="402.5" y1="1086.696" y2="1086.696"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="18" x="106.5" y="1080.887">OK</text><rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1.0;" width="939" x="0" y="1116.549"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="939" y1="1116.549" y2="1116.549"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="939" y1="1119.549" y2="1119.549"/><rect fill="#EEEEEE" height="25.706" style="stroke:#000000;stroke-width:2.0;" width="61" x="439" y="1104.696"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="44" x="445" y="1122.593">Delete</text><polygon fill="#181818" points="386.5,1160.108,396.5,1164.108,386.5,1168.108,390.5,1164.108" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="89.5" x2="392.5" y1="1164.108" y2="1164.108"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="54" x="96.5" y="1158.299">remove()</text><polygon fill="#181818" points="563.5,1191.8141,573.5,1195.8141,563.5,1199.8141,567.5,1195.8141" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="408.5" x2="569.5" y1="1195.8141" y2="1195.8141"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="138" x="415.5" y="1190.0051">deactivate(executorFn)</text><path d="M465,1210.8141 L706,1210.8141 L706,1220.5201 L696,1230.5201 L465,1230.5201 L465,1210.8141 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="138.5301" style="stroke:#000000;stroke-width:1.5;" width="464" x="465" y="1210.8141"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="196" x="480" y="1225.7111">Deactivate Executor Function</text><path d="M475,1235.5201 L475,1280.5201 L919,1280.5201 L919,1245.5201 L909,1235.5201 L475,1235.5201 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M909,1235.5201 L909,1245.5201 L919,1245.5201 L909,1235.5201 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="423" x="481" y="1254.4171">The deactivate executor function is passed in by the controller method.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="423" x="481" y="1272.1231">After it runs, the controller will not be able to access the store anymore.</text><polygon fill="#181818" points="679,1305.6381,689,1309.6381,679,1313.6381,683,1309.6381" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;" x1="585.5" x2="685" y1="1309.6381" y2="1309.6381"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="73" x="592.5" y="1303.8291">remove(uid)</text><polygon fill="#181818" points="596.5,1337.3441,586.5,1341.3441,596.5,1345.3441,592.5,1341.3441" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="590.5" x2="695" y1="1341.3441" y2="1341.3441"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="18" x="602.5" y="1335.5351">OK</text><line style="stroke:#181818;stroke-width:1.0;" x1="585.5" x2="627.5" y1="1380.0502" y2="1380.0502"/><line style="stroke:#181818;stroke-width:1.0;" x1="627.5" x2="627.5" y1="1380.0502" y2="1393.0502"/><line style="stroke:#181818;stroke-width:1.0;" x1="586.5" x2="627.5" y1="1393.0502" y2="1393.0502"/><polygon fill="#181818" points="596.5,1389.0502,586.5,1393.0502,596.5,1397.0502,592.5,1393.0502" style="stroke:#181818;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="70" x="592.5" y="1374.2412">deactivate()</text><polygon fill="#181818" points="419.5,1420.7562,409.5,1424.7562,419.5,1428.7562,415.5,1424.7562" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="413.5" x2="574.5" y1="1424.7562" y2="1424.7562"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="18" x="425.5" y="1418.9472">OK</text><polygon fill="#181818" points="100.5,1452.4622,90.5,1456.4622,100.5,1460.4622,96.5,1456.4622" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="94.5" x2="402.5" y1="1456.4622" y2="1456.4622"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="18" x="106.5" y="1450.6532">OK</text><!--MD5=[733fc6ed3e6bf0f2572e5fd6c155b3ee]
+@startuml
+title Model Store Lifecycle
+hide footbox
+
+database Database order 90
+database LocalModelStoreCache as Cache order 100
+actor "API Consumer" as User order 0
+
+== Create ==
+
+' Load data
+User -> Database : loadData()
+activate Database
+return (view, uid)
+deactivate Database
+
+' Instantiate model store
+create LocalModelStore as Store order 10
+User -> Store : new(view, uid)
+activate Store
+
+' Create model controller
+create ModelController as Controller order 20
+Store -> Controller : new(uid)
+
+' Create lifetime guard
+create ModelLifetimeGuard as Guard order 30
+activate Controller
+Controller -> Guard : new()
+activate Guard
+
+' Return values for model store
+Guard - -> Controller : lifetimeGuard
+deactivate Guard
+Controller - -> Store : controller
+deactivate Controller
+
+' Activate lifetime guard
+Store -> Guard : activate(getViewFn, updateFn)
+note right : Activation of the lifetime guard exposes\nthe view and the update function of the\nmodel store towards the guard and\nthus indirectly to the controller.
+activate Guard
+
+' Return value for user
+Store - -> User : modelStore
+deactivate Store
+
+User -> Cache : add(modelStore)
+
+== Update ==
+
+User -> Controller : updateValue(value)
+activate Controller
+Controller -> Guard : update(executorFn)
+activate Guard
+Guard -> Store : update(executorFn)
+note left : The lifetime guard can only access the\nmodel store if it was activated.
+activate Store
+group Update Executor Function
+  note over Store, Guard : The update executor function is passed in by the controller method. It receives\nthe current view and returns a changeset: meta.update((view) => /*changeset*/)
+  Store -> Database : updateData(changeset)
+  activate Database
+  Database - -> Store : OK
+  deactivate Database
+end
+Store -> Store : setStoreValue()
+Store -> Store : notifySubscribers()
+Store - -> Guard : OK
+deactivate Store
+Guard - -> Controller : OK
+deactivate Guard
+Controller -> User : OK
+deactivate Controller
+
+== Delete ==
+
+User -> Controller : remove()
+activate Controller
+Controller -> Guard : deactivate(executorFn)
+activate Guard
+group Deactivate Executor Function
+      note over Guard, Cache : The deactivate executor function is passed in by the controller method.\nAfter it runs, the controller will not be able to access the store anymore.
+  Guard -> Database : remove(uid)
+  activate Database
+  Database - -> Guard : OK
+  deactivate Database
+end
+
+Guard -> Guard : deactivate()
+Guard - -> Controller : OK
+deactivate Guard
+deactivate Guard
+Controller - -> User : OK
+deactivate Controller
+
+@enduml
+
+@startuml
+title Model Store Lifecycle
+hide footbox
+
+database Database order 90
+database LocalModelStoreCache as Cache order 100
+actor "API Consumer" as User order 0
+
+== Create ==
+
+User -> Database : loadData()
+activate Database
+return (view, uid)
+deactivate Database
+
+create LocalModelStore as Store order 10
+User -> Store : new(view, uid)
+activate Store
+
+create ModelController as Controller order 20
+Store -> Controller : new(uid)
+
+create ModelLifetimeGuard as Guard order 30
+activate Controller
+Controller -> Guard : new()
+activate Guard
+
+Guard - -> Controller : lifetimeGuard
+deactivate Guard
+Controller - -> Store : controller
+deactivate Controller
+
+Store -> Guard : activate(getViewFn, updateFn)
+note right : Activation of the lifetime guard exposes\nthe view and the update function of the\nmodel store towards the guard and\nthus indirectly to the controller.
+activate Guard
+
+Store - -> User : modelStore
+deactivate Store
+
+User -> Cache : add(modelStore)
+
+== Update ==
+
+User -> Controller : updateValue(value)
+activate Controller
+Controller -> Guard : update(executorFn)
+activate Guard
+Guard -> Store : update(executorFn)
+note left : The lifetime guard can only access the\nmodel store if it was activated.
+activate Store
+group Update Executor Function
+  note over Store, Guard : The update executor function is passed in by the controller method. It receives\nthe current view and returns a changeset: meta.update((view) => /*changeset*/)
+  Store -> Database : updateData(changeset)
+  activate Database
+  Database - -> Store : OK
+  deactivate Database
+end
+Store -> Store : setStoreValue()
+Store -> Store : notifySubscribers()
+Store - -> Guard : OK
+deactivate Store
+Guard - -> Controller : OK
+deactivate Guard
+Controller -> User : OK
+deactivate Controller
+
+== Delete ==
+
+User -> Controller : remove()
+activate Controller
+Controller -> Guard : deactivate(executorFn)
+activate Guard
+group Deactivate Executor Function
+      note over Guard, Cache : The deactivate executor function is passed in by the controller method.\nAfter it runs, the controller will not be able to access the store anymore.
+  Guard -> Database : remove(uid)
+  activate Database
+  Database - -> Guard : OK
+  deactivate Database
+end
+
+Guard -> Guard : deactivate()
+Guard - -> Controller : OK
+deactivate Guard
+deactivate Guard
+Controller - -> User : OK
+deactivate Controller
+
+@enduml
+
+PlantUML version 1.2022.6(Tue Jun 21 19:34:49 CEST 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

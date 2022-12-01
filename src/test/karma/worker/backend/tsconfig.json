@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["esnext", "webworker"],
+    "types": ["chai", "mocha"]
+  },
+
+  "include": ["../../../../common/dom/vite-client.d.ts", "../../../common/chai.d.ts", "**/*.ts"],
+  "exclude": ["electron/**"]
+}

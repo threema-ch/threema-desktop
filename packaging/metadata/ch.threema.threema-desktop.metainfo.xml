@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<component type="desktop-application">
+    <metadata_license>CC-BY-SA-3.0</metadata_license>
+    <id>ch.threema.threema-desktop</id>
+    <name>Threema</name>
+    <project_license>AGPL-3.0</project_license>
+    <summary>Threema for desktop allows using Threema from your computer.</summary>
+    <url type="homepage">https://threema.ch/</url>
+    <url type="help">https://threema.ch/support</url>
+    <url type="contact">https://threema.ch/en/request/default?i_have_read_the_faq=1</url>
+    <description>
+        <p>Threema for desktop is a desktop client for Threema, a privacy-focused end-to-end
+        encrypted mobile messenger hosted and developed in Switzerland.</p>
+    </description>
+    <screenshots>
+        <screenshot type="default">
+            <image type="source" width="1600" height="900">https://releases.threema.ch/flatpak/threema-desktop/screenshot-1.png</image>
+        </screenshot>
+    </screenshots>
+    <developer_name>Threema GmbH</developer_name>
+    <releases>
+        <!-- Note: First entry is used as the current version. For full spec, see
+        https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0.0-preview0" date="2022-12-01">
+            <description>
+                <p>First public release</p>
+            </description>
+        </release>
+    </releases>
+    <launchable type="desktop-id">ch.threema.threema-desktop.desktop</launchable>
+    <content_rating type="oars-1.1">
+        <content_attribute id="social-chat">intense</content_attribute>
+        <content_attribute id="social-audio">intense</content_attribute>
+    </content_rating>
+    <update_contact>help_AT_threema.ch</update_contact>
+</component>
