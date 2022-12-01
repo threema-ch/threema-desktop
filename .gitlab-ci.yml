@@ -310,7 +310,7 @@ package:source:
         GIT_DESCRIBE=$(git describe --always)
         DATE=$(date +%Y-%m-%d)
         # Metainfo file
-        sed -i "s/\(^.*version=\"$VERSION\".*\)/<release version=\"$GIT_DESCRIBE\" date=\"$DATE\" \/>\n\1/" packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+        sed -i "s/\(^.*version=\"$VERSION\".*\)/<release version=\"${GIT_DESCRIBE#v}-nightly\" date=\"$DATE\" \/>\n\1/" packaging/metadata/ch.threema.threema-desktop.metainfo.xml
       fi
     # Build flatpak
     - |
