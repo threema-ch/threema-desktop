@@ -176,20 +176,31 @@ $themes: (
   );
 }
 
+@mixin theme($theme-name, $theme) {
+  @each $branding-name, $branding in theme.$brandings {
+    &[data-branding='#{$branding-name}'] {
+      $theme: config-merge(-g(theme.$themes, $theme-name), $theme);
+
+      @include def-var(-app-theme($theme, $branding)...);
+      @include def-var(theme.components-theme($theme, $branding)...);
+      @include def-var(-individual-components-theme($theme, $branding)...);
+      @include def-var(-compound-components-theme($theme, $branding)...);
+      @include def-var(-debug-components-theme($theme, $branding)...);
+    }
+  }
+}
+
 @mixin themes() {
   @each $theme-name, $theme in $themes {
     [data-theme='#{$theme-name}'] {
-      @each $branding-name, $branding in theme.$brandings {
-        &[data-branding='#{$branding-name}'] {
-          $theme: config-merge(-g(theme.$themes, $theme-name), $theme);
+      @include theme($theme-name, $theme);
+    }
+  }
 
-          @include def-var(-app-theme($theme, $branding)...);
-          @include def-var(theme.components-theme($theme, $branding)...);
-          @include def-var(-individual-components-theme($theme, $branding)...);
-          @include def-var(-compound-components-theme($theme, $branding)...);
-          @include def-var(-debug-components-theme($theme, $branding)...);
-        }
-      }
+  [data-theme='system'] {
+    @include theme('light', $light);
+    @media (prefers-color-scheme: dark) {
+      @include theme('dark', $dark);
     }
   }
 }

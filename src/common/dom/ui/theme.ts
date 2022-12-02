@@ -1,9 +1,10 @@
 import {type u53} from '~/common/types';
 
 /**
- * Available themes.
+ * Available themes. The 'system' theme uses the light or dark theme following the current theme of
+ * the OS.
  */
-export const THEMES = ['light', 'dark'] as const;
+export const THEMES = ['light', 'dark', 'system'] as const;
 export type Theme = typeof THEMES[u53];
 
 /**
@@ -12,7 +13,7 @@ export type Theme = typeof THEMES[u53];
  */
 export function ensureTheme(theme: string): Theme {
     if (!(THEMES as readonly string[]).includes(theme)) {
-        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        theme = 'system';
     }
     return theme as Theme;
 }

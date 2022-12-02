@@ -140,11 +140,7 @@
       // preference.
       document
         .querySelector('#splash')
-        .setAttribute(
-          'data-theme',
-          localStorage.getItem('theme') ??
-            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-        );
+        .setAttribute('data-theme', localStorage.getItem('theme') ?? 'system');
     </script>
     <script type="module" src="./app/app.ts"></script>
   </body>
