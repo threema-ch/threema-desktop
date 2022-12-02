@@ -2,6 +2,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type AppServices} from '~/app/types';
+  import {Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
   import {
     type AnyMessage,
@@ -143,16 +144,29 @@
     });
     /* eslint-enable no-console */
   }
+
+  const themes: Theme[] = [...THEMES];
+
+  function cycleTheme(): void {
+    $theme = themes.shift() ?? THEMES[0];
+    themes.push($theme);
+  }
+
+  // Cycle theme once if the current theme is the first in the list to avoid a NoOp the first time
+  // we click on the "Cycle Theme" button
+  if ($theme === themes[0]) {
+    cycleTheme();
+  }
 </script>
 
 <template>
   <section class="storage">
     <h3>Local Storage</h3>
 
-    <Button flavor="filled" on:click={() => ($theme = $theme === 'light' ? 'dark' : 'light')}>
+    <Button flavor="filled" on:click={cycleTheme}>
       <span class="icon-and-text"
         ><MdIcon theme="Filled">invert_colors</MdIcon>
-        Toggle Theme [{$theme}]</span
+        Cycle Theme [{$theme}]</span
       >
     </Button>
 
