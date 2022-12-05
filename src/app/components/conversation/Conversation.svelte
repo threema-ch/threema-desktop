@@ -313,7 +313,7 @@
 <template>
   <div
     class="conversation"
-    data-private={$conversation.view.type === ConversationCategory.PROTECTED}
+    data-private={$conversation.view.category === ConversationCategory.PROTECTED}
   >
     <div class="top-bar">
       <ConversationTopBar
@@ -325,7 +325,7 @@
         <span class="top-title" slot="title">Conversation title</span>
       </ConversationTopBar>
     </div>
-    {#if $conversation.view.type === ConversationCategory.PROTECTED}
+    {#if $conversation.view.category === ConversationCategory.PROTECTED}
       <div class="private">
         <div class="box">
           <div class="header">Private Chat</div>
