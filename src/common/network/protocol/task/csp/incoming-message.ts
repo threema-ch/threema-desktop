@@ -777,7 +777,22 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             };
         }
 
-        function unhandledGroupConversationMessage(
+        function unhandledGroupCreatorMessage(
+            d2dMessageType: protobuf.d2d.MessageType,
+            creatorIdentity: IdentityString,
+        ): UnhandledMessageInstructions {
+            const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
+            );
+            const conversationId: GroupConversationId = {
+                type: ReceiverType.GROUP,
+                groupId: validatedContainer.groupId,
+                creatorIdentity,
+            };
+            return unhandled(d2dMessageType, false, true, conversationId);
+        }
+
+        function unhandledGroupMemberMessage(
             d2dMessageType: protobuf.d2d.MessageType,
         ): UnhandledMessageInstructions {
             const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
@@ -931,10 +946,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
-            case CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE:
-            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE:
-                // TODO(WEBMD-561): Implement
-                return 'discard';
             case CspE2eGroupControlType.GROUP_REQUEST_SYNC: {
                 // A group-sync-request message is wrapped in a group-creator-container
                 const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
@@ -1011,22 +1022,30 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
                 return unhandled(protobuf.d2d.MessageType.CALL_RINGING, false);
             case CspE2eGroupConversationType.GROUP_LOCATION: // TODO(WEBMD-248)
-                return unhandledGroupConversationMessage(protobuf.d2d.MessageType.GROUP_LOCATION);
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_LOCATION);
             case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
-                return unhandledGroupConversationMessage(protobuf.d2d.MessageType.GROUP_IMAGE);
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_IMAGE);
             case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(WEBMD-586)
-                return unhandledGroupConversationMessage(protobuf.d2d.MessageType.GROUP_AUDIO);
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_AUDIO);
             case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(WEBMD-586)
-                return unhandledGroupConversationMessage(protobuf.d2d.MessageType.GROUP_VIDEO);
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_VIDEO);
             case CspE2eGroupConversationType.GROUP_FILE: // TODO(WEBMD-307)
-                return unhandledGroupConversationMessage(protobuf.d2d.MessageType.GROUP_FILE);
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_FILE);
             case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(WEBMD-244)
-                return unhandledGroupConversationMessage(protobuf.d2d.MessageType.GROUP_POLL_SETUP);
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_POLL_SETUP);
             case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(WEBMD-244)
-                return unhandledGroupConversationMessage(protobuf.d2d.MessageType.GROUP_POLL_VOTE);
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_POLL_VOTE);
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(WEBMD-594)
-                return unhandledGroupConversationMessage(
-                    protobuf.d2d.MessageType.GROUP_DELIVERY_RECEIPT,
+                return unhandledGroupMemberMessage(protobuf.d2d.MessageType.GROUP_DELIVERY_RECEIPT);
+            case CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE: // TODO(WEBMD-561)
+                return unhandledGroupCreatorMessage(
+                    protobuf.d2d.MessageType.GROUP_SET_PROFILE_PICTURE,
+                    senderIdentity,
+                );
+            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE: // TODO(WEBMD-561)
+                return unhandledGroupCreatorMessage(
+                    protobuf.d2d.MessageType.GROUP_DELETE_PROFILE_PICTURE,
+                    senderIdentity,
                 );
 
             default:
