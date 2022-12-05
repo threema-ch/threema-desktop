@@ -11,16 +11,11 @@ import {
 } from '~/common/model';
 import {statusFromView} from '~/common/model/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {
-    type IdentityString,
-    type MessageId,
-    ensureMessageId,
-    isIdentityString,
-} from '~/common/network/types';
+import {type IdentityString, type MessageId, isIdentityString} from '~/common/network/types';
 import {type u53} from '~/common/types';
-import {assert, ensureError, unreachable} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
-import {hexLeToU64, u64ToHexLe} from '~/common/utils/number';
+import {u64ToHexLe} from '~/common/utils/number';
 import {type LocalStore} from '~/common/utils/store';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import {type ISetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
@@ -37,8 +32,6 @@ export type ConversationMessageSetStore = ISetStore<ConversationMessageViewModel
 
 // eslint-disable-next-line threema/ban-stateful-regex-flags
 const REGEX_MATCH_MENTION = /@\[(?<identity>[A-Z0-9*]{1}[A-Z0-9]{7}|@{8})\]/gu;
-
-const REGEX_MATCH_QUOTES = /^> quote #(?<messageId>[0-9a-f]{16})(?:\r?\n){2}(?<comment>.*)$/su;
 
 const MENTION_ALL = '@@@@@@@@';
 
@@ -133,17 +126,16 @@ function getViewModel(
 ): LocalStore<ConversationMessage> {
     const {endpoint, model} = services;
     return derive(messageStore, (message, getAndSubscribe) => {
-        // TODO(WEBMD-843): Parse quotes when message is received and add a database field.
-        const [quote, comment] = getQuotedMessageViewModel(
+        const quote = getQuotedMessageViewModel(
             services,
             log,
             message,
             conversationModel,
             resolveQuotedMessage,
-        ) ?? [undefined, undefined];
+        );
 
         const conversationMessage = {
-            body: getConversationMessageBody(message, model, getAndSubscribe, comment),
+            body: getConversationMessageBody(message, model, getAndSubscribe),
             mentions: getMentions(message, model),
             quote,
             ordinal: getMessageOrdinal(message),
@@ -197,45 +189,25 @@ function getQuotedMessageViewModel(
     messageModel: AnyMessageModel,
     conversationModel: Conversation,
     resolveQuotedMessage: boolean,
-): [store: LocalStore<ConversationMessage> | undefined | 'not-found', comment: string] | undefined {
+): LocalStore<ConversationMessage> | 'not-found' | undefined {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages
         return undefined;
     }
 
-    // Parse quote out of possible quote message text
-    const match = messageModel.view.text.match(REGEX_MATCH_QUOTES)?.groups;
-    if (match === undefined) {
-        return undefined;
-    }
-    let quotedMessageId: MessageId;
-    let comment: string;
-    try {
-        quotedMessageId = ensureMessageId(hexLeToU64(match.messageId));
-        comment = `${match.comment}`;
-    } catch (e) {
-        log.warn(
-            `Message ${u64ToHexLe(messageModel.view.id)} contains an invalid quote string: ${
-                ensureError(e).message
-            }`,
-        );
+    if (messageModel.view.quotedMessageId === undefined) {
+        // Not a quote
         return undefined;
     }
 
-    // Validate that the quoted message is not this message
-    if (quotedMessageId === messageModel.view.id) {
-        log.warn(`Message with id ${u64ToHexLe(messageModel.view.id)} quoted itself`);
-        return ['not-found', comment];
-    }
-
-    const messageStore = conversationModel.controller.getMessage(quotedMessageId);
+    const messageStore = conversationModel.controller.getMessage(messageModel.view.quotedMessageId);
     if (messageStore === undefined) {
         log.info(
             `Quoted message id ${u64ToHexLe(
-                quotedMessageId,
+                messageModel.view.quotedMessageId,
             )} could be found (quote message ${u64ToHexLe(messageModel.view.id)})`,
         );
-        return ['not-found', comment];
+        return 'not-found';
     }
 
     let quotedMessageStore = undefined;
@@ -243,7 +215,7 @@ function getQuotedMessageViewModel(
         quotedMessageStore = getViewModel(services, log, messageStore, conversationModel, false);
     }
 
-    return [quotedMessageStore, comment];
+    return quotedMessageStore;
 }
 
 function getMentions(messageModel: AnyMessageModel, model: Repositories): Mention[] {
@@ -300,7 +272,6 @@ function getConversationMessageBody(
     messageModel: AnyMessageModel,
     model: Repositories,
     getAndSubscribe: GetAndSubscribeFunction,
-    quoteComment: string | undefined,
 ): ConversationMessage['body'] {
     const baseMessage = getConversationMessageBodyBaseMessage(
         messageModel,
@@ -312,7 +283,7 @@ function getConversationMessageBody(
     switch (messageModel.type) {
         case 'text': {
             const type = 'text';
-            const body = {text: quoteComment ?? messageModel.view.text};
+            const body = {text: messageModel.view.text};
             if (baseMessage.direction === 'incoming') {
                 messageData = {
                     ...(baseMessage as Omit<IncomingMessage<AnyMessageBody>, 'type' | 'body'>),

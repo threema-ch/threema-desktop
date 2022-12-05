@@ -370,6 +370,10 @@ export type DbTextMessage = {
      * The message text.
      */
     readonly text: string;
+    /**
+     * The optional qouted message id.
+     */
+    readonly quotedMessageId?: MessageId;
 } & DbMessageCommon<MessageType.TEXT>;
 
 /**

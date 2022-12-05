@@ -54,6 +54,7 @@ import {
     placeholderTextForUnhandledMessage,
 } from '~/common/network/protocol/task';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
+import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {
     type AnyInboundMessageInitFragment,
     type InboundTextMessageInitFragment,
@@ -113,11 +114,20 @@ function getCommonMessageInitFragment(
 function getTextMessageInitFragment(
     payload: structbuf.csp.payload.LegacyMessageLike,
     cspTextMessageBody: ReadonlyUint8Array,
+    log: Logger,
+    messageId: MessageId,
 ): InboundTextMessageInitFragment {
+    const messageText = UTF8.decode(
+        structbuf.csp.e2e.Text.decode(cspTextMessageBody as Uint8Array).text,
+    );
+    const possibleQuote = parsePossibleTextQuote(messageText, log, messageId);
+
+    const text = possibleQuote?.comment ?? messageText;
     return {
         ...getCommonMessageInitFragment(payload, cspTextMessageBody),
         type: 'text',
-        text: UTF8.decode(structbuf.csp.e2e.Text.decode(cspTextMessageBody as Uint8Array).text),
+        text,
+        quotedMessageId: possibleQuote?.quotedMessageId,
     };
 }
 
@@ -786,7 +796,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         switch (maybeCspE2eType) {
             // Conversation messages
             case CspE2eConversationType.TEXT: {
-                const initFragment = getTextMessageInitFragment(message, cspMessageBody);
+                const initFragment = getTextMessageInitFragment(
+                    message,
+                    cspMessageBody,
+                    this._log,
+                    this._id,
+                );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: senderConversationId,
@@ -808,6 +823,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 const initFragment = getTextMessageInitFragment(
                     message,
                     validatedContainer.innerData,
+                    this._log,
+                    this._id,
                 );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',

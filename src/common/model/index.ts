@@ -997,12 +997,13 @@ export type OutboundBaseMessageController<TView extends OutboundBaseMessageView>
 
 export interface TextMessageViewFragment {
     readonly text: string;
+    readonly quotedMessageId?: MessageId;
 }
 type CommonTextMessageView = CommonBaseMessageView & TextMessageViewFragment;
 type InboundTextMessageView = InboundBaseMessageView & CommonTextMessageView;
 type OutboundTextMessageView = OutboundBaseMessageView & CommonTextMessageView;
 type CommonTextMessageInit = CommonBaseMessageInit<MessageType.TEXT> &
-    Pick<CommonTextMessageView, 'text'>;
+    Pick<CommonTextMessageView, 'text' | 'quotedMessageId'>;
 type InboundTextMessageInit = CommonTextMessageInit & InboundBaseMessageInit<MessageType.TEXT>;
 type OutboundTextMessageInit = CommonTextMessageInit & OutboundBaseMessageInit<MessageType.TEXT>;
 type CommonTextMessageController<TView extends CommonTextMessageView> =

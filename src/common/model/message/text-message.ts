@@ -38,6 +38,7 @@ export function createTextMessage<TDirection extends MessageDirection>(
         ...common,
         type: MessageType.TEXT,
         text: init.text,
+        quotedMessageId: init.quotedMessageId,
     };
     const uid = db.createTextMessage(message);
     return {...message, uid};
@@ -52,6 +53,7 @@ export function getTextMessageModelStore<TModelStore extends AnyTextMessageModel
 ): TModelStore {
     const text: TextMessageViewFragment = {
         text: message.text,
+        quotedMessageId: message.quotedMessageId,
     };
 
     switch (common.direction) {

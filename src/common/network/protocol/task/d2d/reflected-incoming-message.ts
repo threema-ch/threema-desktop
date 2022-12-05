@@ -7,6 +7,7 @@ import {
     MessageDirection,
     ReceiverType,
 } from '~/common/enum';
+import {type Logger} from '~/common/logging';
 import {type Contact, type MessageFor} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -18,6 +19,7 @@ import {
     type ServicesForTasks,
     PASSIVE_TASK,
 } from '~/common/network/protocol/task';
+import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {
     type AnyInboundMessageInitFragment,
@@ -219,6 +221,8 @@ export class ReflectedIncomingMessageTask
                 const initFragment = getTextMessageInitFragment(
                     validatedBody.message,
                     commonFragment,
+                    this._log,
+                    messageId,
                 );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
@@ -233,6 +237,8 @@ export class ReflectedIncomingMessageTask
                 const initFragment = getTextMessageInitFragment(
                     validatedBody.message,
                     commonFragment,
+                    this._log,
+                    messageId,
                 );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
@@ -332,10 +338,16 @@ export class ReflectedIncomingMessageTask
 function getTextMessageInitFragment(
     message: structbuf.validate.csp.e2e.Text.Type,
     commonFragment: CommonInboundMessageInitFragment,
+    log: Logger,
+    messageId: MessageId,
 ): InboundTextMessageInitFragment {
+    const possibleQuote = parsePossibleTextQuote(message.text, log, messageId);
+    const text = possibleQuote?.comment ?? message.text;
+
     return {
         ...commonFragment,
         type: 'text',
-        text: message.text,
+        text,
+        quotedMessageId: possibleQuote?.quotedMessageId,
     };
 }

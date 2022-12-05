@@ -878,7 +878,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             sync(
                 this._db
                     .insertInto(tMessageTextData)
-                    .set({messageUid, text: message.text})
+                    .set({
+                        messageUid,
+                        text: message.text,
+                        quotedMessageId: message.quotedMessageId,
+                    })
                     .executeInsert(),
             );
 
@@ -994,15 +998,18 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 const text = sync(
                     this._db
                         .selectFrom(tMessageTextData)
-                        .selectOneColumn(tMessageTextData.text)
+                        .select({
+                            text: tMessageTextData.text,
+                            quotedMessageId: tMessageTextData.quotedMessageId,
+                        })
                         .where(tMessageTextData.messageUid.equals(common.uid))
                         .executeSelectOne(),
                 );
                 return {
                     ...common,
+                    ...text,
                     lastReaction,
                     type: MessageType.TEXT,
-                    text,
                 };
             }
             case MessageType.FILE: {

@@ -8,6 +8,7 @@ import {
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
+import {type Logger} from '~/common/logging';
 import {type MessageFor} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -18,6 +19,7 @@ import {
     type ServicesForTasks,
     PASSIVE_TASK,
 } from '~/common/network/protocol/task';
+import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {
     type AnyOutboundMessageInitFragment,
@@ -244,6 +246,8 @@ export class ReflectedOutgoingMessageTask
                 const initFragment = getTextMessageInitFragment(
                     validatedBody.message,
                     commonFragment,
+                    this._log,
+                    messageId,
                 );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
@@ -258,6 +262,8 @@ export class ReflectedOutgoingMessageTask
                 const initFragment = getTextMessageInitFragment(
                     validatedBody.message,
                     commonFragment,
+                    this._log,
+                    messageId,
                 );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
@@ -358,10 +364,16 @@ export class ReflectedOutgoingMessageTask
 function getTextMessageInitFragment(
     message: structbuf.validate.csp.e2e.Text.Type,
     commonFragment: CommonOutboundMessageInitFragment,
+    log: Logger,
+    messageId: MessageId,
 ): OutboundTextMessageInitFragment {
+    const possibleQuote = parsePossibleTextQuote(message.text, log, messageId);
+    const text = possibleQuote?.comment ?? message.text;
+
     return {
         ...commonFragment,
         type: 'text',
-        text: message.text,
+        text,
+        quotedMessageId: possibleQuote?.quotedMessageId,
     };
 }

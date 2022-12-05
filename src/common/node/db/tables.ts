@@ -597,6 +597,15 @@ export const tMessageTextData = new (class TMessageTextData extends Table<
      */
     public text = this.column('text', 'string');
 
+    /**
+     * The optional quoted message id.
+     */
+    public quotedMessageId = this.optionalColumn<MessageId>(
+        'quotedMessageId',
+        'custom',
+        CUSTOM_TYPES.MESSAGE_ID,
+    );
+
     public constructor() {
         super('messageTextData'); // Table name in the database
     }
