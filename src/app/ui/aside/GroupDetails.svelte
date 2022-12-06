@@ -11,7 +11,7 @@
   import GroupMembers from '~/app/components/group/detail/GroupMembers.svelte';
   import AvatarDialog from '~/app/components/modal-dialog/ContactAvatar.svelte';
   import DeleteDialog from '~/app/components/modal-dialog/ContactDelete.svelte';
-  import {toast} from '~/app/components/snackbar';
+  import {toast} from '~/app/ui/snackbar';
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';

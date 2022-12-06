@@ -1,8 +1,8 @@
 <script lang="ts">
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import Conversation from '~/app/components/conversation/Conversation.svelte';
-  import Welcome from '~/app/components/panels/main/Welcome.svelte';
-  import {toast} from '~/app/components/snackbar';
+  import Welcome from '~/app/ui/main/Welcome.svelte';
+  import {toast} from '~/app/ui/snackbar';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';

@@ -9,6 +9,6 @@
     "allowJs": true
   },
 
-  "include": ["../common/dom/vite-client.d.ts", "**/*.ts", "components/**/*.svelte"],
+  "include": ["../common/dom/vite-client.d.ts", "**/*.ts", "**/*.svelte"],
   "exclude": ["electron/main/**"]
 }

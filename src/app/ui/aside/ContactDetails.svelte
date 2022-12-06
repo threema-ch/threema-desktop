@@ -11,7 +11,7 @@
   import IdenitityInformationDialog from '~/app/components/modal-dialog/ContactIdenitityInformation.svelte';
   import UnableToDeleteDialog from '~/app/components/modal-dialog/ContactUnableToDelete.svelte';
   import VerificationLevelsDialog from '~/app/components/modal-dialog/ContactVerificationLevels.svelte';
-  import {toast} from '~/app/components/snackbar';
+  import {toast} from '~/app/ui/snackbar';
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';

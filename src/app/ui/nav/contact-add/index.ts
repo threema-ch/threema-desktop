@@ -1,4 +1,4 @@
-import {toast} from '~/app/components/snackbar';
+import {toast} from '~/app/ui/snackbar';
 import {type BackendController} from '~/common/dom/backend/controller';
 import {ConnectionState} from '~/common/enum';
 

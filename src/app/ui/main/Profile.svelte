@@ -4,7 +4,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfileComponent from '~/app/components/settings/Profile.svelte';
   import Text from '~/app/components/settings/Text.svelte';
-  import {toast} from '~/app/components/snackbar';
+  import {toast} from '~/app/ui/snackbar';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';

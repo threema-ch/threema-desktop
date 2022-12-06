@@ -3,6 +3,7 @@ import '../sass/app.scss';
 import {default as initComposeArea} from '@threema/compose-area/web';
 
 import {attachSystemDialogs} from '~/app/components/system-dialogs';
+import App from '~/app/ui/App.svelte';
 import {CONFIG} from '~/common/config';
 import {type InitialBootstrapData, BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
@@ -24,7 +25,6 @@ import {type ISubscribableStore} from '~/common/utils/store';
 import {GlobalTimer} from '~/common/utils/timer';
 
 import {type BootstrapParams} from './components';
-import App from './components/App.svelte';
 import Bootstrap from './components/Bootstrap.svelte';
 import PasswordInput from './components/PasswordInput.svelte';
 import {APP_CONFIG} from './config';

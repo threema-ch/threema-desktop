@@ -6,7 +6,7 @@
   import AvatarUpload from '~/app/components/avatar/AvatarUpload.svelte';
   import HiddenSubmit from '~/app/components/form/HiddenSubmit.svelte';
   import ContactAddNavBar from '~/app/components/navigation/ContactAddNavBar.svelte';
-  import {checkContactCreationAllowed} from '~/app/components/panels/nav/contact-add';
+  import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';

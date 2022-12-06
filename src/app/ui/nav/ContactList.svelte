@@ -7,7 +7,7 @@
   import ContactNavBar from '~/app/components/navigation/ContactNavBar.svelte';
   import {type ContactTab} from '~/app/components/navigation/ContactTabSwitcher';
   import ContactTabSwitcher from '~/app/components/navigation/ContactTabSwitcher.svelte';
-  import {checkContactCreationAllowed} from '~/app/components/panels/nav/contact-add';
+  import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import SearchInput from '~/app/components/search/SearchInput.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
