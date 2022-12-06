@@ -7,10 +7,10 @@
     type TransformedGroup,
     getAvatarAndMemberStores,
     transformGroup,
-  } from '~/app/components/group';
-  import GroupMembers from '~/app/components/group/detail/GroupMembers.svelte';
-  import AvatarDialog from '~/app/components/modal-dialog/ContactAvatar.svelte';
-  import DeleteDialog from '~/app/components/modal-dialog/ContactDelete.svelte';
+  } from '~/app/ui/aside/group';
+  import GroupMembers from '~/app/ui/aside/group/detail/GroupMembers.svelte';
+  import AvatarDialog from '~/app/ui/modal/ContactAvatar.svelte';
+  import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';

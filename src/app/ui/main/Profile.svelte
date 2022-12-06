@@ -2,8 +2,8 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ProfileComponent from '~/app/components/settings/Profile.svelte';
-  import Text from '~/app/components/settings/Text.svelte';
+  import ProfileComponent from '~/app/ui/main/settings/Profile.svelte';
+  import Text from '~/app/ui/main/settings/Text.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';

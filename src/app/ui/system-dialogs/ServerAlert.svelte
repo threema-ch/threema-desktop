@@ -1,0 +1,43 @@
+<script lang="ts">
+  import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
+  import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
+  import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import {type ServerAlertDialog} from '~/common/system-dialog';
+
+  export let visible: boolean;
+
+  export let context: ServerAlertDialog['context'];
+</script>
+
+<template>
+  <Wrapper>
+    <ModalDialog
+      bind:visible
+      on:confirm
+      on:clickoutside
+      on:close
+      on:cancel
+      closableWithEscape={false}
+    >
+      <Title slot="header" title={context.title} />
+      <div class="body" slot="body">
+        {context.text}
+      </div>
+      <div slot="footer" let:modal>
+        <CancelAndConfirm {modal} showCancel={false} confirmText="OK" />
+      </div>
+    </ModalDialog>
+  </Wrapper>
+</template>
+
+<style lang="scss">
+  @use 'component' as *;
+
+  .body {
+    width: rem(480px);
+    padding: rem(16px);
+    border-radius: rem(8px);
+    overflow: hidden;
+  }
+</style>

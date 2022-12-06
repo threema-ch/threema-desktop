@@ -1,14 +1,14 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {contactListFilter} from '~/app/components/contact';
-  import ContactList from '~/app/components/contact/ContactList.svelte';
-  import GroupList from '~/app/components/contact/GroupList.svelte';
-  import IconText from '~/app/components/menu/item/IconText.svelte';
-  import ContactNavBar from '~/app/components/navigation/ContactNavBar.svelte';
-  import {type ContactTab} from '~/app/components/navigation/ContactTabSwitcher';
-  import ContactTabSwitcher from '~/app/components/navigation/ContactTabSwitcher.svelte';
+  import {contactListFilter} from '~/app/ui/nav/contact';
+  import ContactList from '~/app/ui/nav/contact/ContactList.svelte';
+  import GroupList from '~/app/ui/nav/contact/GroupList.svelte';
+  import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
+  import ContactNavBar from '~/app/ui/nav/ContactNavBar.svelte';
+  import {type ContactTab} from '~/app/ui/nav';
+  import ContactTabSwitcher from '~/app/ui/nav/ContactTabSwitcher.svelte';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
-  import SearchInput from '~/app/components/search/SearchInput.svelte';
+  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {unreachable} from '~/common/utils/assert';

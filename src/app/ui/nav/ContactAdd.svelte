@@ -4,9 +4,9 @@
   import WizardButton from '#3sc/components/blocks/Button/WizardButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Text from '#3sc/components/blocks/Input/Text.svelte';
-  import HiddenSubmit from '~/app/components/form/HiddenSubmit.svelte';
-  import IconText from '~/app/components/menu/item/IconText.svelte';
-  import ContactAddNavBar from '~/app/components/navigation/ContactAddNavBar.svelte';
+  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
+  import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
+  import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';

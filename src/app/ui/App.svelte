@@ -2,9 +2,9 @@
   import {type SvelteComponent, onMount} from 'svelte';
 
   import {dragEvents} from '#3sc/utils/dragdrop';
-  import SuccessLinked from '~/app/components/bootstrap/SuccessLinked.svelte';
-  import DebugPanel from '~/app/components/debug/DebugPanel.svelte';
-  import NetworkAlert from '~/app/components/notification/NetworkAlert.svelte';
+  import SuccessLinked from '~/app/ui/bootstrap/SuccessLinked.svelte';
+  import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
+  import NetworkAlert from '~/app/ui/notification/NetworkAlert.svelte';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
   import MainConversation from '~/app/ui/main/Conversation.svelte';
@@ -13,7 +13,7 @@
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
   import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';
   import NavContactAdd from '~/app/ui/nav/ContactAdd.svelte';
-  import NavContactAddDetail from '~/app/ui/nav/ContactAddDetail.svelte';
+  import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
   import NavContactList from '~/app/ui/nav/ContactList.svelte';
   import NavConversationList from '~/app/ui/nav/ConversationList.svelte';
   import Snackbar from '~/app/ui/snackbar/Snackbar.svelte';

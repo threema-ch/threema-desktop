@@ -5,10 +5,10 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import AvatarEdit from '~/app/components/avatar/AvatarEdit.svelte';
-  import {getStores} from '~/app/components/contact';
-  import HiddenSubmit from '~/app/components/form/HiddenSubmit.svelte';
-  import Wrapper from '~/app/components/modal-dialog/Wrapper.svelte';
+  import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
+  import {getStores} from '~/app/ui/nav/contact';
+  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
+  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
   import {assertRoute} from '~/app/routing';
   import {type AppServices} from '~/app/types';
   import {type Avatar, type Contact} from '~/common/model';

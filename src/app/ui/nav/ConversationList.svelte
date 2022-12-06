@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {conversationPreviewListFilter} from '~/app/components/conversation-preview';
-  import ConversationPreviewList from '~/app/components/conversation-preview/ConversationPreviewList.svelte';
-  import MainNavBar from '~/app/components/navigation/MainNavBar.svelte';
-  import SearchInput from '~/app/components/search/SearchInput.svelte';
+  import {conversationPreviewListFilter} from '~/app/ui/nav/conversation-preview';
+  import ConversationPreviewList from '~/app/ui/nav/conversation-preview/ConversationPreviewList.svelte';
+  import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
+  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
 
