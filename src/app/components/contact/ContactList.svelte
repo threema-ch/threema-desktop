@@ -5,10 +5,10 @@
   import {contactListFilter, matchesContactSearchFilter} from '~/app/components/contact';
   import ContactListItem from '~/app/components/contact/ContactListItem.svelte';
   import {contextMenuAction} from '~/app/components/context-menu';
-  import ContextMenu from '~/app/components/context-menu/ContactList.svelte';
+  import ContextMenu from '~/app/components/contact/ContactListContextMenu.svelte';
   import DeleteDialog from '~/app/components/modal-dialog/ContactDelete.svelte';
   import UnableToDeleteDialog from '~/app/components/modal-dialog/ContactUnableToDelete.svelte';
-  import {toast} from '~/app/components/snackbar';
+  import {toast} from '~/app/ui/snackbar';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {type DbContactUid} from '~/common/db';

@@ -2,11 +2,11 @@
   import {onDestroy} from 'svelte';
   import {type Writable} from 'svelte/store';
 
-  import {type ComposeData, type ComposeMode} from '~/app/components/compose';
-  import TextComposeArea from '~/app/components/compose/TextComposeArea/TextComposeArea.svelte';
+  import {type ComposeData, type ComposeMode} from '~/app/components/conversation/compose';
+  import TextComposeArea from '~/app/components/conversation/compose/TextComposeArea/TextComposeArea.svelte';
   import {conversationDrafts} from '~/app/components/conversation';
   import ConversationMessageList from '~/app/components/conversation/ConversationMessages/ConversationMessageList.svelte';
-  import ConversationTopBar from '~/app/components/conversation/ConversationTopBar/ConversationTopBar.svelte';
+  import ConversationTopBar from '~/app/components/conversation/top-bar/ConversationTopBar.svelte';
   import {isInactiveGroup} from '~/app/components/receiver';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';

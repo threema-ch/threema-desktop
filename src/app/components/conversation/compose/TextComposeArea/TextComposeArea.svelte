@@ -4,7 +4,7 @@
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ComposeArea from '~/app/components/compose/ComposeArea.svelte';
+  import ComposeArea from '~/app/components/conversation/compose/ComposeArea.svelte';
 
   /**
    * Text that will be used to initialize the compose area.

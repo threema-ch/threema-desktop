@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {toast} from '~/app/components/snackbar';
+  import {toast} from '~/app/ui/snackbar';
   import {type AppServices} from '~/app/types';
   import {assert} from '~/common/utils/assert';
   import {type SvelteAction} from '~/common/viewmodel/types';

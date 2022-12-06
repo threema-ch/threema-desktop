@@ -4,8 +4,8 @@
   import Avatar from '#3sc/components/threema/Avatar/Avatar.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {type ConversationData} from '~/app/components/conversation';
-  import TopBarMode from '~/app/components/top-bar/TopBarMode.svelte';
-  import TopBarSearch from '~/app/components/top-bar/TopBarSearch.svelte';
+  import TopBarMode from '~/app/components/conversation/top-bar/TopBarMode.svelte';
+  import TopBarSearch from '~/app/components/conversation/top-bar/TopBarSearch.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';
@@ -13,8 +13,7 @@
   import {ReceiverType} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
   import {eternalPromise} from '~/common/utils/promise';
-
-  import {type ConversationTopBarMode} from '.';
+  import {type ConversationTopBarMode} from '~/app/components/conversation/top-bar';
 
   /**
    * Current display mode.

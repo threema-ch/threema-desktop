@@ -16,12 +16,12 @@
     type ReceiverData as ReceiverData3SC,
   } from '#3sc/types';
   import {contextMenuAction} from '~/app/components/context-menu';
-  import ContextMenu from '~/app/components/context-menu/ConversationMessage.svelte';
+  import ContextMenu from '~/app/components/conversation/ConversationMessages/ConversationMessageContextMenu.svelte';
   import {type ConversationData} from '~/app/components/conversation';
   import MessageDelete from '~/app/components/modal-dialog/MessageDelete.svelte';
   import MessageDetail from '~/app/components/modal-dialog/MessageDetail.svelte';
   import MessageForward from '~/app/components/modal-dialog/MessageForward.svelte';
-  import {toast} from '~/app/components/snackbar';
+  import {toast} from '~/app/ui/snackbar';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';

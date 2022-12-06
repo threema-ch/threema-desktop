@@ -9,7 +9,7 @@
   import ContextMenuWrapper from '~/app/components/context-menu/ContextMenuWrapper.svelte';
   import {type u32} from '~/common/types';
 
-  import {type ContextMenuDirectionX} from '.';
+  import {type ContextMenuDirectionX} from '../../context-menu./../context-menu';
 
   export let x: u32;
   export let y: u32;
