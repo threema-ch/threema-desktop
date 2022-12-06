@@ -3,6 +3,14 @@
 This changelog lists the most important changes for each released version. For
 the full log, please refer to the git commit history.
 
+### v2.0.0-preview1 (2022-12-06)
+
+First public preview release!
+
+Bugfixes:
+
+- Fix handling of private conversations (WEBMD-874)
+
 ### v2.0.0-preview0 (2022-12-01)
 
 Release candidate for the first public preview release!

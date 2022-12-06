@@ -21,7 +21,7 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
-        <release version="2.0.0-preview0" date="2022-12-01">
+        <release version="2.0.0-preview1" date="2022-12-06">
             <description>
                 <p>First public release</p>
             </description>
