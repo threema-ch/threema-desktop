@@ -269,7 +269,7 @@ interface LogEntry {
 /**
  * Store logs in strings. Allow printing them.
  */
-class StringLogger implements Logger {
+export class StringLogger implements Logger {
     public readonly prefix: undefined;
     private readonly _logs: LogEntry[] = [];
 

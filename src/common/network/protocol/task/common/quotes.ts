@@ -6,8 +6,12 @@ import {hexLeToU64, u64ToHexLe} from '~/common/utils/number';
 const REGEX_MATCH_QUOTES = /^> quote #(?<messageId>[0-9a-f]{16})(?:\r?\n){2}(?<comment>.*)$/su;
 
 /**
- * Parse text from Textmessage for possible quoted message id
- * @returns quoted messageid and comment, or undefined if text is not a quote
+ * Parse text from text message for possible quoted message id.
+ *
+ * @param text The message text that might contain a quote
+ * @param log A {@link Logger} instance
+ * @param messageId The ID of the message that contained the {@link text}
+ * @returns quoted {@link MessageId} and comment, or undefined if text does not contain a quote
  */
 export function parsePossibleTextQuote(
     text: string,
