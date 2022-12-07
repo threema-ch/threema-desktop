@@ -3,7 +3,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {type VerificationLevelColors} from '#3sc/components/threema/VerificationDots';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let visible: boolean;
 
@@ -11,7 +11,7 @@
 </script>
 
 <template>
-  <Wrapper>
+  <ModalWrapper>
     <ModalDialog
       bind:visible
       on:confirm
@@ -72,7 +72,7 @@
         </div>
       </div>
     </ModalDialog>
-  </Wrapper>
+  </ModalWrapper>
 </template>
 
 <style lang="scss">

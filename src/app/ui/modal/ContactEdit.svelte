@@ -8,7 +8,7 @@
   import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
   import {getStores} from '~/app/ui/nav/contact';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {assertRoute} from '~/app/routing';
   import {type AppServices} from '~/app/types';
   import {type Avatar, type Contact} from '~/common/model';
@@ -79,7 +79,7 @@
 
 <template>
   {#if $contact !== undefined && avatar !== undefined}
-    <Wrapper>
+    <ModalWrapper>
       <ModalDialog
         visible={true}
         on:confirm={saveContactDetails}
@@ -103,7 +103,7 @@
         </form>
         <CancelAndConfirm slot="footer" let:modal {modal} />
       </ModalDialog>
-    </Wrapper>
+    </ModalWrapper>
   {/if}
 </template>
 

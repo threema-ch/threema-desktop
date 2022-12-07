@@ -2,7 +2,7 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let displayName: string;
 
@@ -10,7 +10,7 @@
 </script>
 
 <template>
-  <Wrapper>
+  <ModalWrapper>
     <ModalDialog
       bind:visible
       on:close={() => (visible = false)}
@@ -22,7 +22,7 @@
       </div>
       <CancelAndConfirm slot="footer" let:modal {modal} showCancel={false} confirmText="OK" />
     </ModalDialog>
-  </Wrapper>
+  </ModalWrapper>
 </template>
 
 <style lang="scss">

@@ -1,7 +1,7 @@
 <script lang="ts">
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type PublicKey} from '~/common/crypto';
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';
 
@@ -11,7 +11,7 @@
 </script>
 
 <template>
-  <Wrapper>
+  <ModalWrapper>
     <ModalDialog
       bind:visible
       on:confirm
@@ -38,7 +38,7 @@
         <pre><code>{publicKeyGrid(publicKey)}</code></pre>
       </div>
     </ModalDialog>
-  </Wrapper>
+  </ModalWrapper>
 </template>
 
 <style lang="scss">

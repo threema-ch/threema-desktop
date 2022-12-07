@@ -4,7 +4,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import Divider from '~/app/ui/nav/contact/detail/Divider.svelte';
   import ListElement from '~/app/ui/nav/contact/detail/ListElement.svelte';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {MessageDirection, MessageReaction, MessageReactionUtils} from '~/common/enum';
   import {type AnyMessageModel, type RemoteModelFor} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
@@ -26,7 +26,7 @@
 </script>
 
 <template>
-  <Wrapper>
+  <ModalWrapper>
     <ModalDialog
       bind:visible
       on:confirm
@@ -70,7 +70,7 @@
         </ListElement>
       </div>
     </ModalDialog>
-  </Wrapper>
+  </ModalWrapper>
 </template>
 
 <style lang="scss">

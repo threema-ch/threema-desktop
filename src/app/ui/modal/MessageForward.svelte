@@ -7,7 +7,7 @@
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {
     filterContacts,
     getStores,
@@ -78,7 +78,7 @@
 </script>
 
 <template>
-  <Wrapper>
+  <ModalWrapper>
     <ModalDialog
       bind:visible
       on:confirm
@@ -150,7 +150,7 @@
         </div>
       </div>
     </ModalDialog>
-  </Wrapper>
+  </ModalWrapper>
 </template>
 
 <style lang="scss">

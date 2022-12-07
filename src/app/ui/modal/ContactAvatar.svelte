@@ -2,13 +2,13 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let visible: boolean;
 </script>
 
 <template>
-  <Wrapper>
+  <ModalWrapper>
     <ModalDialog
       bind:visible
       on:confirm
@@ -25,7 +25,7 @@
         </IconButton>
       </div>
     {/if}
-  </Wrapper>
+  </ModalWrapper>
 </template>
 
 <style lang="scss">

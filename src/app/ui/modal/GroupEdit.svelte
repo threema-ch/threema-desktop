@@ -8,7 +8,7 @@
   import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import {getAvatarAndMemberStores} from '~/app/ui/aside/group';
-  import Wrapper from '~/app/ui/modal/Wrapper.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {assertRoute} from '~/app/routing';
   import {type AppServices} from '~/app/types';
   import {type Avatar, type Group} from '~/common/model';
@@ -81,7 +81,7 @@
 
 <template>
   {#if $group !== undefined && avatar !== undefined}
-    <Wrapper>
+    <ModalWrapper>
       <ModalDialog
         visible={true}
         on:confirm={saveGroupDetails}
@@ -114,7 +114,7 @@
           {modal}
         />
       </ModalDialog>
-    </Wrapper>
+    </ModalWrapper>
   {/if}
 </template>
 
