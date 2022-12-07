@@ -14,8 +14,8 @@
   import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';
   import NavContactAdd from '~/app/ui/nav/ContactAdd.svelte';
   import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
-  import NavContactList from '~/app/ui/nav/ContactList.svelte';
-  import NavConversationList from '~/app/ui/nav/ConversationList.svelte';
+  import NavContactList from '~/app/ui/nav/ContactNav.svelte';
+  import NavConversationList from '~/app/ui/nav/ConversationNav.svelte';
   import Snackbar from '~/app/ui/snackbar/Snackbar.svelte';
   import {type AppServices} from '~/app/types';
   import {DisplayModeObserver, manageLayout} from '~/common/dom/ui/layout';

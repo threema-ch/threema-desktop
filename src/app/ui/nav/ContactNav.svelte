@@ -4,7 +4,7 @@
   import ContactList from '~/app/ui/nav/contact/ContactList.svelte';
   import GroupList from '~/app/ui/nav/contact/GroupList.svelte';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
-  import ContactNavBar from '~/app/ui/nav/ContactNavBar.svelte';
+  import ContactNavBar from '~/app/ui/nav/contact/ContactNavBar.svelte';
   import {type ContactTab} from '~/app/ui/nav';
   import ContactTabSwitcher from '~/app/ui/nav/ContactTabSwitcher.svelte';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
