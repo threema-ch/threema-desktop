@@ -55,4 +55,7 @@ the release server:
     # cd /srv/www/releases/desktop-preview/
     # vim *.json
 
-Finally, update the internal Confluence documentation about the release.
+Finally:
+
+- Update the internal Confluence documentation about the release
+- Update the known issues page: FAQ-947
