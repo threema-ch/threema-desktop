@@ -16,7 +16,7 @@
     type ReceiverData as ReceiverData3SC,
   } from '#3sc/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import ContextMenu from '~/app/ui/main/conversation/ConversationMessages/ConversationMessageContextMenu.svelte';
+  import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
   import MessageDetail from '~/app/ui/modal/MessageDetail.svelte';

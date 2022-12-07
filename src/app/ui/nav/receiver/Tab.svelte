@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {type ContactTab} from '...';
+  import {type ContactTab} from '~/app/ui/nav';
 
   export let tab: ContactTab;
   export let activeTab: ContactTab;

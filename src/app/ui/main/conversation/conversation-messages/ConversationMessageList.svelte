@@ -4,9 +4,9 @@
     type SortedMessageListStore,
     hasDirectionChanged,
     sortMessages,
-  } from '~/app/ui/main/conversation/ConversationMessages';
-  import ConversationMessageComponent from '~/app/ui/main/conversation/ConversationMessages/ConversationMessage.svelte';
-  import Notification from '~/app/ui/main/conversation/Notification.svelte';
+  } from '~/app/ui/main/conversation/conversation-messages';
+  import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
+  import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
   import {type AppServices} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';
   import {type Conversation} from '~/common/model';
@@ -48,14 +48,6 @@
 </script>
 
 <template>
-  {#if $sortedMessages.length === 0}
-    <Notification>
-      <MdIcon slot="icon" theme="Outlined">info</MdIcon>
-      This chat is linked with your mobile device.<br />
-      All future messages will appear here.
-    </Notification>
-  {/if}
-
   {#each $sortedMessages as { messageStore, viewModel: viewModelStore, id }, index (id)}
     {#if hasDirectionChanged($sortedMessages, index)}
       <div class="direction-change-separator" />
@@ -71,5 +63,11 @@
       {conversation}
       {services}
     />
+  {:else}
+    <SystemMessage>
+      <MdIcon slot="icon" theme="Outlined">info</MdIcon>
+      This chat is linked with your mobile device.<br />
+      All future messages will appear here.
+    </SystemMessage>
   {/each}
 </template>

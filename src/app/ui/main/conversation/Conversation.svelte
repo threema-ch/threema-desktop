@@ -3,9 +3,9 @@
   import {type Writable} from 'svelte/store';
 
   import {type ComposeData, type ComposeMode} from '~/app/ui/main/conversation/compose';
-  import TextComposeArea from '~/app/ui/main/conversation/compose/TextComposeArea/TextComposeArea.svelte';
+  import ComposeAreaWrapper from '~/app/ui/main/conversation/compose/ComposeAreaWrapper.svelte';
   import {conversationDrafts} from '~/app/ui/main/conversation';
-  import ConversationMessageList from '~/app/ui/main/conversation/ConversationMessages/ConversationMessageList.svelte';
+  import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
   import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
   import {isInactiveGroup} from '~/app/ui/generic/receiver';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -66,7 +66,7 @@
     conversationViewModel.viewModel;
   $: innerConversationViewModel = conversationViewModel.viewModel;
 
-  let textComposeArea: TextComposeArea;
+  let textComposeArea: ComposeAreaWrapper;
 
   // Logger
   const log = logging.logger('component.conversation');
@@ -261,8 +261,8 @@
   // Detect route changes
   let lastReceiverLookup = receiverLookup;
 
-  function isTextComposeArea(x: unknown): x is TextComposeArea {
-    return x !== undefined && x !== null && x instanceof TextComposeArea;
+  function isTextComposeArea(x: unknown): x is ComposeAreaWrapper {
+    return x !== undefined && x !== null && x instanceof ComposeAreaWrapper;
   }
 
   // TODO(WEBMD-306): Replace with the real message drafts
@@ -350,7 +350,7 @@
         {#if isInactiveGroup($receiver)}
           <div class="deleted-group-message">You are no longer part of this group.</div>
         {:else if composeMode === 'text'}
-          <TextComposeArea
+          <ComposeAreaWrapper
             bind:this={textComposeArea}
             initialText={$composeData.text}
             on:recordAudio={() => {

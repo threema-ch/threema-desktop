@@ -3,27 +3,27 @@
 </script>
 
 <template>
-  <div class="message" data-slot-icon={$$slots.icon}>
+  <div class="system-message" data-slot-icon={$$slots.icon}>
     {#if $$slots.icon}
       <div class="icon"><slot name="icon" /></div>
     {/if}
-    <div class="message"><slot /></div>
+    <div class="content"><slot /></div>
   </div>
 </template>
 
 <style lang="scss">
   @use 'component' as *;
 
-  .message {
+  .system-message {
     display: grid;
-    grid-template: 'message';
+    grid-template: 'content';
     place-items: center;
     color: var(--t-text-e2-color);
     margin: 0px auto;
     user-select: none;
 
-    .message {
-      grid-area: message;
+    .content {
+      grid-area: content;
       @extend %font-small-400;
     }
 
@@ -36,7 +36,7 @@
     }
 
     &[data-slot-icon='true'] {
-      grid-template: 'icon message' auto / min-content max-content;
+      grid-template: 'icon content' auto / min-content max-content;
     }
   }
 </style>

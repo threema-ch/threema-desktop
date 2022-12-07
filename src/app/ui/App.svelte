@@ -7,7 +7,7 @@
   import NetworkAlert from '~/app/ui/notification/NetworkAlert.svelte';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
-  import MainConversation from '~/app/ui/main/Conversation.svelte';
+  import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
   import MainProfile from '~/app/ui/main/Profile.svelte';
   import MainWelcome from '~/app/ui/main/Welcome.svelte';
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
