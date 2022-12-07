@@ -19,7 +19,7 @@ import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type IdentityString} from '~/common/network/types';
 import {type u53} from '~/common/types';
-import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {GlobalTimer} from '~/common/utils/timer';
 
 import {type BootstrapParams} from './components';
@@ -383,18 +383,16 @@ export async function main(): Promise<App> {
     }
 
     function updateUnreadMessageAppBadge(count: u53 | undefined): void {
-        const ipc = window.app;
-        switch (import.meta.env.BUILD_TARGET) {
-            case 'electron':
-                assert(ipc !== undefined);
-                ipc.updateAppBadge(count ?? 0);
-                break;
-            case 'web':
-                // TODO(WEBMD-XXX): Consider updating the HTML title of the page.
-                break;
-            default:
-                unreachable(import.meta.env.BUILD_TARGET);
+        let title = import.meta.env.APP_NAME;
+        if (count === undefined || count < 1) {
+            // Do not append anything to the title
+        } else if (count > 99) {
+            title += ' (99+)';
+        } else {
+            title += ` (${count})`;
         }
+        document.title = title;
+        window.app?.updateAppBadge(count ?? 0);
     }
 
     totalUnreadMessageCountStore = await backend.model.conversations.totalUnreadMessageCount;
