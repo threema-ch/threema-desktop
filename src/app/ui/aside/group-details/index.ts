@@ -7,10 +7,45 @@ import {type DbReceiverLookup} from '~/common/db';
 import {GroupUserState, ReceiverType} from '~/common/enum';
 import {type Avatar, type Contact, type Group, type RemoteModelFor} from '~/common/model';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
+import {type IdentityString} from '~/common/network/types';
 import {assertUnreachable} from '~/common/utils/assert';
 import {type IQueryableStore, DeprecatedDerivedStore} from '~/common/utils/store';
 import {type RemoteSetStore} from '~/common/utils/store/set-store';
 import {type GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
+
+/**
+ * Sort group members by display name. Creator will always be shown as first member.
+ */
+export function sortGroupMembers(
+    members: ReadonlySet<RemoteModelStore<Contact>>,
+    creatorIdentity: IdentityString,
+): readonly RemoteModelStore<Contact>[] {
+    return (
+        [...members]
+            // Sort by display name
+            .sort((storeA, storeB) => {
+                const nameA = storeA.get().view.displayName;
+                const nameB = storeB.get().view.displayName;
+                if (nameA < nameB) {
+                    return -1;
+                } else if (nameA > nameB) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            })
+            // Sort by creator (creator should be always first member)
+            .sort((storeA, storeB) => {
+                if (storeA.get().view.identity === creatorIdentity) {
+                    return -1;
+                }
+                if (storeB.get().view.identity === creatorIdentity) {
+                    return 1;
+                }
+                return 0;
+            })
+    );
+}
 
 /**
  * Transformed data necessary to display a contact in several places in the UI.

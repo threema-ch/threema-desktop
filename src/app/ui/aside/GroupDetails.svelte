@@ -2,19 +2,19 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Avatar from '#3sc/components/threema/Avatar/Avatar.svelte';
+  import {type RouterState} from '~/app/routing/router';
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import {type AppServices} from '~/app/types';
   import {
     type GroupPreviewStores,
     type TransformedGroup,
     getAvatarAndMemberStores,
     transformGroup,
   } from '~/app/ui/aside/group';
-  import GroupMembers from '~/app/ui/aside/group/detail/GroupMembers.svelte';
+  import GroupMembers from '~/app/ui/aside/group/GroupMembers.svelte';
   import AvatarDialog from '~/app/ui/modal/ContactAvatar.svelte';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {type RouterState} from '~/app/routing/router';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
   import {transformAvatarPicture} from '~/common/dom/ui/avatar';
   import {ReceiverType} from '~/common/enum';
   import {type Contact, type Group} from '~/common/model';
