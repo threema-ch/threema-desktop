@@ -11,6 +11,7 @@ import {contextBridge, ipcRenderer} from 'electron';
 import {type ElectronIpc, type ErrorDetails} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
 import {CONSOLE_LOGGER} from '~/common/logging';
+import {type u53} from '~/common/types';
 
 const log = CONSOLE_LOGGER;
 
@@ -27,6 +28,8 @@ const appApi: ElectronIpc = {
     logToFile: (level, data) => ipcRenderer.invoke(ElectronIpcCommand.LOG_TO_FILE, level, data),
     deleteProfileAndRestartApp: () =>
         ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART),
+    updateAppBadge: (totalUnreadMessageCount: u53 | undefined) =>
+        ipcRenderer.send(ElectronIpcCommand.UPDATE_APP_BADGE, totalUnreadMessageCount),
 };
 /* eslint-enable @typescript-eslint/promise-function-async */
 contextBridge.exposeInMainWorld('app', appApi);

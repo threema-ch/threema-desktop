@@ -1657,6 +1657,8 @@ export namespace ElectronIpcCommand {
     export type LOG_TO_FILE = typeof LOG_TO_FILE;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';
     export type DELETE_PROFILE_AND_RESTART = typeof DELETE_PROFILE_AND_RESTART;
+    export const UPDATE_APP_BADGE = 'updateAppBadge';
+    export type UPDATE_APP_BADGE = typeof UPDATE_APP_BADGE;
 }
 /**
  * ELECTRON

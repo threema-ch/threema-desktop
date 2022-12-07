@@ -18,7 +18,8 @@ import {type ElectronIpc} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type IdentityString} from '~/common/network/types';
-import {assert, unwrap} from '~/common/utils/assert';
+import {type u53} from '~/common/types';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {GlobalTimer} from '~/common/utils/timer';
 
 import {type BootstrapParams} from './components';
@@ -381,10 +382,30 @@ export async function main(): Promise<App> {
         void updateCheck(services, window.app);
     }
 
+    function updateUnreadMessageAppBadge(count: u53 | undefined): void {
+        const ipc = window.app;
+        switch (import.meta.env.BUILD_TARGET) {
+            case 'electron':
+                assert(ipc !== undefined);
+                ipc.updateAppBadge(count ?? 0);
+                break;
+            case 'web':
+                // TODO(WEBMD-XXX): Consider updating the HTML title of the page.
+                break;
+            default:
+                unreachable(import.meta.env.BUILD_TARGET);
+        }
+    }
+
+    totalUnreadMessageCountStore = await backend.model.conversations.totalUnreadMessageCount;
+    totalUnreadMessageCountStore.subscribe(updateUnreadMessageAppBadge);
+
     // Attach app when DOM is loaded
     await domContentLoaded;
     log.debug('Attaching app');
     return attachApp(services, isNewIdentity, elements);
 }
+
+let totalUnreadMessageCountStore;
 
 export const app = main();

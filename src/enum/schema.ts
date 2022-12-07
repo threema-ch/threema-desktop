@@ -566,6 +566,7 @@ export enum ElectronIpcCommand {
     GET_SYSTEM_INFO = 'getSystemInfo',
     LOG_TO_FILE = 'logToFile',
     DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart',
+    UPDATE_APP_BADGE = 'updateAppBadge',
 }
 
 /**

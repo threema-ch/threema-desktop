@@ -70,7 +70,7 @@ import {
 import {type ProxyMarked, type Remote} from '~/common/utils/endpoint';
 import {type IdColor} from '~/common/utils/id-color';
 import {type SequenceNumberU53} from '~/common/utils/sequence-number';
-import {type IQueryableStore, type LocalStore} from '~/common/utils/store';
+import {type IQueryableStore, type ISubscribableStore, type LocalStore} from '~/common/utils/store';
 import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
 
 /**
@@ -835,6 +835,7 @@ export type ConversationListController = {
 } & ProxyMarked;
 
 export type ConversationRepository = {
+    readonly totalUnreadMessageCount: ISubscribableStore<u53>;
     getForReceiver: (receiver: DbReceiverLookup) => LocalModelStore<Conversation> | undefined;
     getAll: () => LocalSetStore<LocalModelStore<Conversation>>;
 } & ProxyMarked;

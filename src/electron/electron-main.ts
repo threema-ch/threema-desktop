@@ -535,7 +535,13 @@ function main(
             })
             .on(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, () => {
                 scheduleRenameUnlinkedProfileAndQuit();
-            });
+            })
+            .on(
+                ElectronIpcCommand.UPDATE_APP_BADGE,
+                (event: electron.IpcMainEvent, totalUnreadMessageCount: u53 | undefined) => {
+                    electron.app.setBadgeCount(totalUnreadMessageCount);
+                },
+            );
         electron.ipcMain.handle(
             ElectronIpcCommand.GET_SYSTEM_INFO,
             // eslint-disable-next-line @typescript-eslint/require-await

@@ -11,9 +11,10 @@ import {type Logger, getGroupTag} from '~/common/logging';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {type InternalActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
 import {type ConversationId, type MessageId} from '~/common/network/types';
-import {type i53, type Mutable} from '~/common/types';
+import {type i53, type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {
@@ -21,10 +22,14 @@ import {
     createExactPropertyValidator,
     OPTIONAL,
 } from '~/common/utils/property-validator';
-import {type IQueryableStore, DeprecatedDerivedStore} from '~/common/utils/store';
+import {
+    type IQueryableStore,
+    type ISubscribableStore,
+    DeprecatedDerivedStore,
+} from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 
-import {type InternalActiveTaskCodecHandle} from '../network/protocol/task';
 import {
     type AnyConversationPreviewMessageView,
     type AnyInboundMessageModelStore,
@@ -547,8 +552,17 @@ export class ConversationModelStore extends LocalModelStore<Conversation> {
 /** @inheritdoc */
 export class ConversationModelRepository implements ConversationRepository {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly totalUnreadMessageCount: ISubscribableStore<u53>;
 
-    public constructor(private readonly _services: ServicesForModel) {}
+    public constructor(private readonly _services: ServicesForModel) {
+        this.totalUnreadMessageCount = derive(this.getAll(), (conversations, getAndSubscribe) => {
+            let totalCount = 0;
+            for (const conversation of conversations) {
+                totalCount += getAndSubscribe(conversation).view.unreadMessageCount;
+            }
+            return totalCount;
+        });
+    }
 
     /** @inheritdoc */
     public getForReceiver(receiver: DbReceiverLookup): LocalModelStore<Conversation> | undefined {
