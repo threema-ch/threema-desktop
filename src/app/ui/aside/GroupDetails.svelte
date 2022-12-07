@@ -10,8 +10,8 @@
     type TransformedGroup,
     getAvatarAndMemberStores,
     transformGroup,
-  } from '~/app/ui/aside/group';
-  import GroupMembers from '~/app/ui/aside/group/GroupMembers.svelte';
+  } from '~/app/ui/aside/group-details';
+  import GroupMembers from '~/app/ui/aside/group-details/GroupMembers.svelte';
   import AvatarDialog from '~/app/ui/modal/ContactAvatar.svelte';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import {toast} from '~/app/ui/snackbar';

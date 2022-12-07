@@ -6,10 +6,10 @@
   import MessageStatus from '#3sc/components/threema/MessageStatus/MessageStatus.svelte';
   import SwipeAreaButton from '#3sc/components/threema/SwipeAreaButton/SwipeAreaButton.svelte';
   import Time from '#3sc/components/threema/Time/Time.svelte';
+  import {type Router} from '~/app/routing/router';
+  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {conversationDrafts, convertReceiverType} from '~/app/ui/main/conversation';
   import {conversationPreviewListFilter, isInactiveGroup} from '~/app/ui/nav/conversation';
-  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
-  import {type Router} from '~/app/routing/router';
   import {
     ConversationCategory,
     ConversationVisibility,

@@ -3,9 +3,10 @@
   import {type SwipeAreaGroup} from '#3sc/components/blocks/SwipeArea';
   import SwipeArea from '#3sc/components/blocks/SwipeArea/SwipeArea.svelte';
   import SwipeAreaButton from '#3sc/components/threema/SwipeAreaButton/SwipeAreaButton.svelte';
+  import {type Router} from '~/app/routing/router';
   import {type ContactReceiver} from '~/app/ui/generic/receiver';
   import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
-  import {type Router} from '~/app/routing/router';
+  import {contactListFilter, showFullNameAndNickname} from '~/app/ui/nav/receiver';
   import {type DbContactUid} from '~/common/db';
   import {ActivityState, ReceiverType} from '~/common/enum';
   import {type Avatar} from '~/common/model';
@@ -15,8 +16,6 @@
     type ContactListItemViewModel,
     type ContactListItemViewModelStore,
   } from '~/common/viewmodel/contact-list-item';
-
-  import {contactListFilter, showFullNameAndNickname} from '~/app/ui/nav/receiver';
 
   /**
    * Contact list item view model store.

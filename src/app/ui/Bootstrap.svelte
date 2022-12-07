@@ -2,11 +2,16 @@
   import {type SvelteComponentDev} from 'svelte/internal';
 
   import {isLinkingCode} from '~/app/ui/bootstrap';
+  import BootstrapWelcome from '~/app/ui/bootstrap/BootstrapWelcome.svelte';
   import EnterLinkingCode from '~/app/ui/bootstrap/EnterLinkingCode.svelte';
   import EnterNewPassword from '~/app/ui/bootstrap/EnterNewPassword.svelte';
   import EnterThreemaId from '~/app/ui/bootstrap/EnterThreemaId.svelte';
+  import {
+    type BootstrapParams,
+    type ContextStore,
+    type ProcessStep,
+  } from '~/app/ui/bootstrap/process-step';
   import SuccessLinked from '~/app/ui/bootstrap/SuccessLinked.svelte';
-  import Welcome from '~/app/ui/bootstrap/Welcome.svelte';
   import {randomU64} from '~/common/crypto/random';
   import {type InitialBootstrapData} from '~/common/dom/backend/controller';
   import {randomBytes} from '~/common/dom/crypto/random';
@@ -14,19 +19,13 @@
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
   import {WritableStore} from '~/common/utils/store';
 
-  import {
-    type BootstrapParams,
-    type ContextStore,
-    type ProcessStep,
-  } from '~/app/ui/bootstrap/process-step';
-
   /**
    * The information needed to lead the user through the bootstrap process.
    */
   export let params: BootstrapParams;
 
   const PROCESS_STEPS: {[Key in ProcessStep]: typeof SvelteComponentDev} = {
-    welcome: Welcome,
+    welcome: BootstrapWelcome,
     enterThreemaId: EnterThreemaId,
     enterLinkingCode: EnterLinkingCode,
     enterNewPassword: EnterNewPassword,

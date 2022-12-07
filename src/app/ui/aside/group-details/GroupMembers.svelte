@@ -1,10 +1,11 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
-  import GroupMember from '~/app/ui/aside/group/GroupMember.svelte';
-  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {type Router} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import {sortGroupMembers} from '~/app/ui/aside/group-details';
+  import GroupMember from '~/app/ui/aside/group-details/GroupMember.svelte';
+  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
+  import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
   import {type DbContactUid} from '~/common/db';
   import {type BackendController} from '~/common/dom/backend/controller';
   import {ReceiverType} from '~/common/enum';
@@ -14,8 +15,6 @@
   import {type u53} from '~/common/types';
   import {type Remote} from '~/common/utils/endpoint';
   import {type IQueryableStore} from '~/common/utils/store';
-
-  import {sortGroupMembers} from './detail';
 
   export let router: Router;
 

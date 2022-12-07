@@ -5,12 +5,12 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
-  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
-  import {getAvatarAndMemberStores} from '~/app/ui/aside/group';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {assertRoute} from '~/app/routing';
   import {type AppServices} from '~/app/types';
+  import {getAvatarAndMemberStores} from '~/app/ui/aside/group-details';
+  import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
+  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type Avatar, type Group} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
 
