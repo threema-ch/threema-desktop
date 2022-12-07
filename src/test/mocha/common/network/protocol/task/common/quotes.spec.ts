@@ -1,6 +1,9 @@
 import {expect} from 'chai';
 
-import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
+import {
+    parsePossibleTextQuote,
+    serializeQuoteText,
+} from '~/common/network/protocol/task/common/quotes';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {type MessageId, ensureMessageId} from '~/common/network/types';
 import {hexLeToU64} from '~/common/utils/number';
@@ -49,6 +52,24 @@ export function run(): void {
                 const messageId2 = ensureMessageId(hexLeToU64('ffffffffffffffff'));
                 expect(parse(text, messageId1)).to.be.undefined;
                 expect(parse(text, messageId2)).not.to.be.undefined;
+            });
+        });
+
+        describe('serializeQuoteText', function () {
+            const messageId1 = ensureMessageId(hexLeToU64('00112233ccddeeff'));
+
+            it('creates quotes v2 quote', function () {
+                const comment = 'This is the comment';
+
+                const serializedQuote = serializeQuoteText(messageId1, comment);
+                expect(serializedQuote).to.equal(
+                    '> quote #00112233ccddeeff\n\nThis is the comment',
+                );
+            });
+
+            it('creates quote with empty comment', function () {
+                const serializedQuote = serializeQuoteText(messageId1, '');
+                expect(serializedQuote).to.equal('> quote #00112233ccddeeff\n\n');
             });
         });
     });

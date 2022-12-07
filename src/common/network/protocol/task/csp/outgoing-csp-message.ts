@@ -53,7 +53,7 @@ const LEGACY_MESSAGE_RESERVED_METADATA_LENGTH = new Uint8Array(2);
 /**
  * Message properties required to send a legacy CSP Message.
  */
-interface MessageProperties<TMessageEncoder, MessageType extends CspE2eType> {
+export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eType> {
     readonly type: MessageType;
     readonly encoder: LayerEncoder<TMessageEncoder>;
     readonly cspMessageFlags: CspMessageFlags;

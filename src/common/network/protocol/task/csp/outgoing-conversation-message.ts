@@ -159,8 +159,18 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         let encoder;
         switch (this._messageModel.type) {
             case 'text': {
+                // Get message text (or quote V2 text)
+                const {quotedMessageId, text: viewText} = this._messageModel.view;
+                let textString;
+                if (quotedMessageId === undefined) {
+                    textString = viewText;
+                } else {
+                    textString = serializeQuoteText(quotedMessageId, viewText);
+                }
+
+                // Encode message
                 encoder = structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                    text: UTF8.encode(this._messageModel.view.text),
+                    text: UTF8.encode(textString),
                 });
                 break;
             }

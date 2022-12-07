@@ -48,3 +48,13 @@ export function parsePossibleTextQuote(
         quotedMessageId,
     };
 }
+
+/**
+ * Create a quote V2 message text string.
+ *
+ * @param quotedMessageId The message ID of the quoted message
+ * @param comment A comment which is shown with the quoted message.
+ */
+export function serializeQuoteText(quotedMessageId: MessageId, comment: string): string {
+    return `> quote #${u64ToHexLe(quotedMessageId)}\n\n${comment}`;
+}
