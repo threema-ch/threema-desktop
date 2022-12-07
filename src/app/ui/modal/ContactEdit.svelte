@@ -6,7 +6,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
-  import {getStores} from '~/app/ui/nav/contact';
+  import {getStores} from '~/app/ui/nav/receiver';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {assertRoute} from '~/app/routing';

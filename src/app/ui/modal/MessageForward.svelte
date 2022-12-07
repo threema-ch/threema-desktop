@@ -13,8 +13,8 @@
     getStores,
     showFullNameAndNickname,
     transformContact,
-  } from '~/app/ui/nav/contact';
-  import ContactTabSwitcher from '~/app/ui/nav/contact/ContactTabSwitcher.svelte';
+  } from '~/app/ui/nav/receiver';
+  import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import {type ContactTab} from '~/app/ui/nav/index';
   import {type DbReceiverLookup} from '~/common/db';
   import {type MessageId} from '~/common/network/types';
@@ -88,7 +88,7 @@
       <TitleAndClose let:modal {modal} slot="header" title="Select Recipient" />
       <div class="body" slot="body">
         <div class="switch">
-          <ContactTabSwitcher bind:activeTab tmpShowGroup={false} />
+          <ReceiverTabSwitcher bind:activeTab tmpShowGroup={false} />
         </div>
         <div class="search">
           <SearchInput

@@ -1,6 +1,6 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import LinkElement from '~/app/ui/nav/contact/detail/LinkElement.svelte';
+  import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
   import GroupMember from '~/app/ui/aside/group/detail/GroupMembers/GroupMember.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {type Router} from '~/app/routing/router';

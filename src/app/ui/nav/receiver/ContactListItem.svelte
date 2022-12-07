@@ -16,7 +16,7 @@
     type ContactListItemViewModelStore,
   } from '~/common/viewmodel/contact-list-item';
 
-  import {contactListFilter, showFullNameAndNickname} from '~/app/ui/nav/contact';
+  import {contactListFilter, showFullNameAndNickname} from '~/app/ui/nav/receiver';
 
   /**
    * Contact list item view model store.

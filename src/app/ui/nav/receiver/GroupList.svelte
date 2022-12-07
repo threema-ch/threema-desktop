@@ -1,6 +1,6 @@
 <script lang="ts">
   import {SwipeAreaGroup} from '#3sc/components/blocks/SwipeArea';
-  import GroupListItem from '~/app/ui/nav/contact/GroupListItem.svelte';
+  import GroupListItem from '~/app/ui/nav/receiver/GroupListItem.svelte';
   import {matchesGroupSearchFilter} from '~/app/ui/aside/group';
   import {type AppServices} from '~/app/types';
   import {type DbGroupUid} from '~/common/db';

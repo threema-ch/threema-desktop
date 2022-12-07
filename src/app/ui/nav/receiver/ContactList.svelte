@@ -2,10 +2,10 @@
   import {onDestroy} from 'svelte';
 
   import {SwipeAreaGroup} from '#3sc/components/blocks/SwipeArea';
-  import {contactListFilter, matchesContactSearchFilter} from '~/app/ui/nav/contact';
-  import ContactListItem from '~/app/ui/nav/contact/ContactListItem.svelte';
+  import {contactListFilter, matchesContactSearchFilter} from '~/app/ui/nav/receiver';
+  import ContactListItem from '~/app/ui/nav/receiver/ContactListItem.svelte';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import ContextMenu from '~/app/ui/nav/contact/ContactListContextMenu.svelte';
+  import ContextMenu from '~/app/ui/nav/receiver/ContactListContextMenu.svelte';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
   import {toast} from '~/app/ui/snackbar';

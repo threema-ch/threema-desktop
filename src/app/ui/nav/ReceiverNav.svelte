@@ -1,12 +1,12 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {contactListFilter} from '~/app/ui/nav/contact';
-  import ContactList from '~/app/ui/nav/contact/ContactList.svelte';
-  import GroupList from '~/app/ui/nav/contact/GroupList.svelte';
+  import {contactListFilter} from '~/app/ui/nav/receiver';
+  import ContactList from '~/app/ui/nav/receiver/ContactList.svelte';
+  import GroupList from '~/app/ui/nav/receiver/GroupList.svelte';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
-  import ContactNavBar from '~/app/ui/nav/contact/ContactNavBar.svelte';
+  import ContactNavBar from '~/app/ui/nav/receiver/ContactNavBar.svelte';
   import {type ContactTab} from '~/app/ui/nav';
-  import ContactTabSwitcher from '~/app/ui/nav/contact/ContactTabSwitcher.svelte';
+  import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -77,7 +77,7 @@
       <ContactNavBar on:back={navigateBack} />
     </div>
     <div class="context">
-      <ContactTabSwitcher bind:activeTab />
+      <ReceiverTabSwitcher bind:activeTab />
     </div>
     <div class="search">
       <SearchInput

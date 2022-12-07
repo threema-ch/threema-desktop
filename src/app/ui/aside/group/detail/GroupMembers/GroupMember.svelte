@@ -5,7 +5,7 @@
     getStores,
     showFullNameAndNickname,
     transformContact,
-  } from '~/app/ui/nav/contact';
+  } from '~/app/ui/nav/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {type Avatar, type Contact, type RemoteModelFor, type Settings} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';

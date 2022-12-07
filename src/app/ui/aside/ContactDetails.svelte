@@ -3,9 +3,9 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import AvatarComponent from '#3sc/components/threema/Avatar/Avatar.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import Divider from '~/app/ui/nav/contact/detail/Divider.svelte';
-  import LinkElement from '~/app/ui/nav/contact/detail/LinkElement.svelte';
-  import ListElement from '~/app/ui/nav/contact/detail/ListElement.svelte';
+  import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
+  import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
+  import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
   import AvatarDialog from '~/app/ui/modal/ContactAvatar.svelte';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import IdenitityInformationDialog from '~/app/ui/modal/ContactIdenitityInformation.svelte';

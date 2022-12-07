@@ -1,7 +1,7 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type ContactTab} from '~/app/ui/nav';
-  import Tab from '~/app/ui/nav/contact/Tab.svelte';
+  import Tab from '~/app/ui/nav/receiver/Tab.svelte';
 
   export let activeTab: ContactTab;
 
