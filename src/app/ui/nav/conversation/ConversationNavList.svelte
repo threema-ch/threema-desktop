@@ -4,8 +4,8 @@
   import {SwipeAreaGroup} from '#3sc/components/blocks/SwipeArea';
   import {type SvelteAction} from '#3sc/types';
   import {conversationListEvent} from '~/app/ui/main/conversation/index';
-  import {conversationPreviewListFilter} from '~/app/ui/nav/conversation-preview';
-  import ConversationPreview from '~/app/ui/nav/conversation-preview/ConversationPreview.svelte';
+  import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
+  import ConversationNavElement from '~/app/ui/nav/conversation/ConversationNavElement.svelte';
   import {type Router} from '~/app/routing/router';
   import {type DbReceiverLookup} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
@@ -156,7 +156,7 @@
         class:snap={anchorActive}
         use:rememberNodeForReceiver={conversationPreview.viewModel.get().receiverLookup}
       >
-        <ConversationPreview {conversationPreview} {settings} {router} {group} active={false} />
+        <ConversationNavElement {conversationPreview} {settings} {router} {group} active={false} />
       </div>
     {/each}
   </div>

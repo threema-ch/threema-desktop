@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {conversationPreviewListFilter} from '~/app/ui/nav/conversation-preview';
-  import ConversationPreviewList from '~/app/ui/nav/conversation-preview/ConversationPreviewList.svelte';
+  import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
+  import ConversationNavList from '~/app/ui/nav/conversation/ConversationNavList.svelte';
   import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -35,11 +35,7 @@
     </div>
     <div class="conversation-preview-list">
       {#await viewModel.conversationPreviews() then conversationPreviews}
-        <ConversationPreviewList
-          settings={backend.model.settings}
-          {conversationPreviews}
-          {router}
-        />
+        <ConversationNavList settings={backend.model.settings} {conversationPreviews} {router} />
       {/await}
     </div>
   </div>
