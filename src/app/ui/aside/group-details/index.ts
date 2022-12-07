@@ -1,4 +1,3 @@
-import {type GroupData, type GroupUserState as GroupUserState3SC} from '#3sc/types';
 import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromGroup,
@@ -12,6 +11,7 @@ import {assertUnreachable} from '~/common/utils/assert';
 import {type IQueryableStore, DeprecatedDerivedStore} from '~/common/utils/store';
 import {type RemoteSetStore} from '~/common/utils/store/set-store';
 import {type GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
+import {type GroupData, type GroupUserState as GroupUserState3SC} from '~/common/viewmodel/types';
 
 /**
  * Sort group members by display name. Creator will always be shown as first member.
@@ -181,5 +181,6 @@ export function transformGroup(group: RemoteModelFor<Group>): TransformedGroup {
         isInactive: isUserStateOfInactiveGroup(userState),
         notifications: transformNotificationPolicyFromGroup(group.view),
         members: [],
+        memberNames: [],
     };
 }

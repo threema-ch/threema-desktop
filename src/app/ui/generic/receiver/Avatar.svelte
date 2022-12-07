@@ -1,10 +1,10 @@
 <script lang="ts">
   import AvatarComponent from '#3sc/components/threema/Avatar/Avatar.svelte';
-  import {type ReceiverBadgeType} from '#3sc/types';
   import AvatarOverlay from '~/app/ui/generic/avatar/AvatarOverlay.svelte';
   import {transformAvatarPicture} from '~/common/dom/ui/avatar';
   import {type Avatar, type RemoteModelFor} from '~/common/model';
   import {type u53} from '~/common/types';
+  import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
   export let avatar: RemoteModelFor<Avatar>;
 

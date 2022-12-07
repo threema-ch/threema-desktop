@@ -1,4 +1,3 @@
-import {type ReceiverBadgeType} from '#3sc/types';
 import {
     ContactNotificationTriggerPolicy,
     GroupNotificationTriggerPolicy,
@@ -19,6 +18,7 @@ import {
     type VerificationLevel,
     type VerificationLevelColors,
 } from '~/common/viewmodel/contact-list-item';
+import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
 export interface ReceiverAvatar {
     readonly avatar: RemoteModelFor<Avatar>;

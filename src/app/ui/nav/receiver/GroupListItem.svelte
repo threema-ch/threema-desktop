@@ -1,11 +1,11 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type SwipeAreaGroup} from '#3sc/components/blocks/SwipeArea';
-  import SwipeArea from '#3sc/components/blocks/SwipeArea/SwipeArea.svelte';
-  import SwipeAreaButton from '#3sc/components/threema/SwipeAreaButton/SwipeAreaButton.svelte';
+  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
+  import {type Router} from '~/app/routing/router';
+  import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {type GroupReceiver} from '~/app/ui/generic/receiver';
   import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
-  import {type Router} from '~/app/routing/router';
   import {type DbGroupUid} from '~/common/db';
   import {GroupUserState, ReceiverType} from '~/common/enum';
   import {type Avatar} from '~/common/model';

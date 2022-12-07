@@ -12,7 +12,6 @@
  * - The `ContactListController` defines methods that can be used on lists of contact models
  * - The `Contacts` type is an entry point that is used to insert, list and retrieve contact models
  */
-import {type MessageStatus} from '#3sc/components/threema/MessageStatus';
 import {type ServicesForBackend} from '~/common/backend';
 import {type PublicKey} from '~/common/crypto';
 import {
@@ -72,6 +71,7 @@ import {type IdColor} from '~/common/utils/id-color';
 import {type SequenceNumberU53} from '~/common/utils/sequence-number';
 import {type IQueryableStore, type ISubscribableStore, type LocalStore} from '~/common/utils/store';
 import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
+import {type MessageStatus} from '~/common/viewmodel/types';
 
 /**
  * Services required by the model backend.

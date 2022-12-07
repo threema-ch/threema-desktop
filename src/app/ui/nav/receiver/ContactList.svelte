@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
 
-  import {SwipeAreaGroup} from '#3sc/components/blocks/SwipeArea';
+  import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import {contactListFilter, matchesContactSearchFilter} from '~/app/ui/nav/receiver';
   import ContactListItem from '~/app/ui/nav/receiver/ContactListItem.svelte';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';

@@ -1,4 +1,3 @@
-import {type MessageReaction as SCMessageReaction} from '#3sc/components/threema/MessageStatus';
 import {type DbContact} from '~/common/db';
 import {MessageDirection, MessageReaction, MessageType, ReceiverType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
@@ -25,6 +24,7 @@ import {
     type AnyMessageBody,
     type IncomingMessage,
     type Message,
+    type MessageReaction as SCMessageReaction,
     type OutgoingMessage,
 } from '~/common/viewmodel/types';
 

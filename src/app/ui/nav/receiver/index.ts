@@ -2,7 +2,6 @@ import {
     type VerificationLevel,
     type VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
-import {type ContactData, type ReceiverBadgeType} from '#3sc/types';
 import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromContact,
@@ -30,6 +29,7 @@ import {type Remote} from '~/common/utils/endpoint';
 import {type IQueryableStore, DeprecatedDerivedStore, WritableStore} from '~/common/utils/store';
 import {localeSort} from '~/common/utils/string';
 import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
+import {type ContactData, type ReceiverBadgeType} from '~/common/viewmodel/types';
 
 /**
  * Transformed data necessary to display a contact in several places in the UI.

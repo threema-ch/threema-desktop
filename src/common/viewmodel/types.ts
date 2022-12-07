@@ -1,4 +1,3 @@
-import {type MessageReaction, type MessageStatus} from '#3sc/components/threema/MessageStatus';
 import {
     type VerificationLevel,
     type VerificationLevelColors,
@@ -11,6 +10,16 @@ import {type AvatarData} from './avatar-index';
  * Branding type.
  */
 export type Branding = 'consumer' | 'work';
+
+/**
+ * Possible reactions towards a message.
+ */
+export type MessageReaction = 'acknowledged' | 'declined';
+
+/**
+ * Status of a message.
+ */
+export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'error';
 
 /**
  * Dimensions for a 2D pixel-based object.

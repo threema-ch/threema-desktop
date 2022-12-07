@@ -1,6 +1,5 @@
 import {SyncEvent} from 'ts-events';
 
-import {type ReceiverType as ReceiverType3SC} from '#3sc/types';
 import {type ReceiverNotificationPolicy} from '~/app/ui/generic/receiver';
 import {type DbConversationUid, type DbReceiverLookup} from '~/common/db';
 import {type ConversationCategory, type ConversationVisibility, ReceiverType} from '~/common/enum';
@@ -14,7 +13,7 @@ import {
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {assertUnreachable} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
-import {type AnyReceiverData} from '~/common/viewmodel/types';
+import {type AnyReceiverData, type ReceiverType as ReceiverType3SC} from '~/common/viewmodel/types';
 
 /**
  * Transformed data necessary to display a conversation.

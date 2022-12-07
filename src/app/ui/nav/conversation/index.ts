@@ -1,5 +1,3 @@
-import {type MessageReaction as SCMessageReaction} from '#3sc/components/threema/MessageStatus';
-import {type GroupUserState as GroupUserState3SC, type ReceiverBadgeType} from '#3sc/types';
 import {isUserStateOfInactiveGroup, transformGroupUserState} from '~/app/ui/aside/group-details';
 import {
     type ReceiverNotificationPolicy,
@@ -30,6 +28,11 @@ import {type u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
 import {type IQueryableStore, DeprecatedDerivedStore, WritableStore} from '~/common/utils/store';
+import {
+    type GroupUserState as GroupUserState3SC,
+    type MessageReaction as SCMessageReaction,
+    type ReceiverBadgeType,
+} from '~/common/viewmodel/types';
 
 /**
  * Transformed data necessary to display a conversation preview.

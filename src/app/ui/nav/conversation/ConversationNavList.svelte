@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import {SwipeAreaGroup} from '#3sc/components/blocks/SwipeArea';
+  import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import {type SvelteAction} from '#3sc/types';
   import {conversationListEvent} from '~/app/ui/main/conversation/index';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';

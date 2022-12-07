@@ -5,10 +5,10 @@
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
   import MenuItemDivider from '#3sc/components/generic/Menu/MenuItemDivider.svelte';
-  import {type AnyMessageBody, type Message} from '#3sc/types';
   import {type ContextMenuDirectionX} from '~/app/ui/generic/context-menu';
   import ContextMenuWrapper from '~/app/ui/generic/context-menu/ContextMenuWrapper.svelte';
   import {type u32} from '~/common/types';
+  import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
   export let x: u32;
   export let y: u32;

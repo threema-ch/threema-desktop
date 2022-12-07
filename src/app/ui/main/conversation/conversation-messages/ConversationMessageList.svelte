@@ -1,13 +1,13 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {type AppServices} from '~/app/types';
   import {
     type SortedMessageListStore,
     hasDirectionChanged,
     sortMessages,
-  } from '~/app/ui/main/conversation/conversation-messages';
+  } from '~/app/ui/generic/form';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
-  import {type AppServices} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';
   import {type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';

@@ -1,4 +1,3 @@
-import {type MessageStatus} from '#3sc/components/threema/MessageStatus';
 import {
     type DbAnyMessage,
     type DbConversation,
@@ -45,6 +44,7 @@ import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {bigintSortAsc} from '~/common/utils/number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
+import {type MessageStatus} from '~/common/viewmodel/types';
 
 export const NO_SENDER = Symbol('no-sender');
 

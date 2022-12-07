@@ -6,24 +6,18 @@
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import AvatarComponent from '#3sc/components/threema/Avatar/Avatar.svelte';
-  import FileMessage from '#3sc/components/threema/FileMessage/FileMessage.svelte';
-  import MessageOverlay from '#3sc/components/threema/MessageOverlay/MessageOverlay.svelte';
-  import {escapeHtmlUnsafeChars} from '#3sc/components/threema/Text';
-  import TextMessage from '#3sc/components/threema/TextMessage/TextMessage.svelte';
-  import UnsupportedMessage from '#3sc/components/threema/UnsupportedMessage/UnsupportedMessage.svelte';
-  import {
-    type AnyReceiverData as AnyReceiverData3SC,
-    type ReceiverData as ReceiverData3SC,
-  } from '#3sc/types';
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
+  import {escapeHtmlUnsafeChars} from '~/app/ui/generic/form';
   import {type ConversationData} from '~/app/ui/main/conversation';
+  import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
+  import TextMessage from '~/app/ui/main/conversation/conversation-messages/TextMessage.svelte';
+  import UnsupportedMessage from '~/app/ui/main/conversation/conversation-messages/UnsupportedMessage.svelte';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
   import MessageDetail from '~/app/ui/modal/MessageDetail.svelte';
   import MessageForward from '~/app/ui/modal/MessageForward.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';
   import {MessageDirection, MessageReaction, ReceiverType} from '~/common/enum';
   import {
@@ -32,19 +26,12 @@
     type RemoteModelStoreFor,
   } from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type ReadonlyUint8Array} from '~/common/types';
   import {assert, assertUnreachable} from '~/common/utils/assert';
   import {type RemoteObject} from '~/common/utils/endpoint';
   import {eternalPromise} from '~/common/utils/promise';
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessage, type Mention} from '~/common/viewmodel/conversation-messages';
-  import {
-    type AnyMessageBody,
-    type AnyReceiverData,
-    type Message,
-    type MessageBodyFor,
-    type ReceiverData,
-  } from '~/common/viewmodel/types';
+  import {type AnyMessageBody, type Message, type MessageBodyFor} from '~/common/viewmodel/types';
 
   /**
    * Receiver data.
@@ -308,33 +295,6 @@
       readObserver.unobserve(messageContainer);
     });
   }
-
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
-  function transformAvatarImage(image: ReadonlyUint8Array | undefined): Promise<Blob> {
-    return image !== undefined
-      ? Promise.resolve(new Blob([image], {type: 'image/jpeg'}))
-      : eternalPromise();
-  }
-
-  function transformContact(contact: ReceiverData<'contact'>): ReceiverData3SC<'contact'> {
-    return {
-      ...contact,
-      avatar: {
-        ...contact.avatar,
-        img: transformAvatarImage(contact.avatar.img),
-      },
-    };
-  }
-
-  function transformReceiver(receiverData: AnyReceiverData): AnyReceiverData3SC {
-    return {
-      ...receiverData,
-      avatar: {
-        ...receiverData.avatar,
-        img: transformAvatarImage(receiver.avatar.img),
-      },
-    };
-  }
 </script>
 
 <template>
@@ -373,23 +333,8 @@
         {#if messageBody.type === 'text'}
           <TextMessage
             body={messageBodyText}
-            receiver={transformReceiver(receiver)}
-            sender={messageBody.direction === 'incoming'
-              ? transformContact(messageBody.sender)
-              : undefined}
-            direction={messageBody.direction}
-            date={messageBody.updatedAt}
-            status={messageBody.direction === 'outgoing' ? messageBody.status : undefined}
-            reaction={messageBody.lastReaction}
-            {textProcessor}
-          />
-        {:else if messageBody.type === 'file'}
-          <FileMessage
-            body={messageBody.body}
-            receiver={transformReceiver(receiver)}
-            sender={messageBody.direction === 'incoming'
-              ? transformContact(messageBody.sender)
-              : undefined}
+            {receiver}
+            sender={messageBody.direction === 'incoming' ? messageBody.sender : undefined}
             direction={messageBody.direction}
             date={messageBody.updatedAt}
             status={messageBody.direction === 'outgoing' ? messageBody.status : undefined}
@@ -400,11 +345,6 @@
           <UnsupportedMessage message={messageBody} />
         {/if}
         <div class="hover" class:visible={isContextMenuVisible} />
-        {#if messageBody.direction === 'incoming' && messageBody.state.type !== 'local'}
-          <MessageOverlay incoming={messageBody.state} />
-        {:else if messageBody.direction === 'outgoing' && messageBody.state.type !== 'remote'}
-          <MessageOverlay outgoing={messageBody.state} />
-        {/if}
       </div>
       <div class="options">
         <div

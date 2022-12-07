@@ -1,8 +1,8 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
-  import {type ReceiverBadgeType} from '#3sc/types';
   import {type u53} from '~/common/types';
+  import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
   /**
    * Unread messages counter.
