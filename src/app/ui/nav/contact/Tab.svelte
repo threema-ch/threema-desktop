@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {type ContactTab} from '.';
+  import {type ContactTab} from '...';
 
   export let tab: ContactTab;
   export let activeTab: ContactTab;

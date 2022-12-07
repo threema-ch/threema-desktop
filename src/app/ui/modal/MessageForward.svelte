@@ -14,7 +14,7 @@
     showFullNameAndNickname,
     transformContact,
   } from '~/app/ui/nav/contact';
-  import ContactTabSwitcher from '~/app/ui/nav/ContactTabSwitcher.svelte';
+  import ContactTabSwitcher from '~/app/ui/nav/contact/ContactTabSwitcher.svelte';
   import {type ContactTab} from '~/app/ui/nav/index';
   import {type DbReceiverLookup} from '~/common/db';
   import {type MessageId} from '~/common/network/types';

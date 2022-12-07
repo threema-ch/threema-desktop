@@ -6,7 +6,7 @@
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
   import ContactNavBar from '~/app/ui/nav/contact/ContactNavBar.svelte';
   import {type ContactTab} from '~/app/ui/nav';
-  import ContactTabSwitcher from '~/app/ui/nav/ContactTabSwitcher.svelte';
+  import ContactTabSwitcher from '~/app/ui/nav/contact/ContactTabSwitcher.svelte';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
