@@ -18,7 +18,7 @@
   import NavConversationList from '~/app/components/panels/nav/ConversationList.svelte';
   import Snackbar from '~/app/components/snackbar/Snackbar.svelte';
   import {type AppServices} from '~/app/types';
-  import {DisplayModeObserver, LayoutManager} from '~/common/dom/ui/layout';
+  import {DisplayModeObserver, manageLayout} from '~/common/dom/ui/layout';
   import {display, layout} from '~/common/dom/ui/state';
   import {ConnectionState} from '~/common/network/protocol/state';
   import {unreachable} from '~/common/utils/assert';
@@ -27,24 +27,20 @@
 
   export let services: AppServices;
 
+  // Unpack router
+  const {router} = services;
+
   // Unpack stores
   const {debugPanelState} = services.storage;
+  const {connectionState} = services.backend;
 
-  // Unpack router
-  const {router, backend} = services;
+  // Create display mode observer
+  const displayModeObserver = new DisplayModeObserver(display);
 
-  // Unpack stores
-  const {connectionState} = backend;
-
-  // Set up layouting
-  const observer = new DisplayModeObserver(display);
-  // @ts-expect-error The layout manager must be assigned to a variable to prevent it from being garbage collected
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const layoutManager = new LayoutManager(display, router, layout);
-
-  // Set initial display mode
+  // Set initial display mode and manage the layout
   onMount(() => {
-    observer.update();
+    displayModeObserver.update();
+    return manageLayout({display, router}, layout);
   });
 
   function toggleDebugPanel(): void {

@@ -4,8 +4,10 @@ import {
     type IQueryableStore,
     type ISubscribableStore,
     type IWritableStore,
+    type StoreUnsubscriber,
     type WritableStore,
 } from '~/common/utils/store';
+import {concentrate} from '~/common/utils/store/concentrator-store';
 
 /**
  * Display modes and associated minimum pixel values of width.
@@ -81,64 +83,55 @@ export class DisplayModeObserver {
     }
 }
 
-export class LayoutManager {
-    private _displayMode: DisplayMode;
-    private _routerState: RouterState;
-
-    public constructor(
-        displayStore: IQueryableStore<DisplayMode>,
-        router: IQueryableStore<RouterState>,
-        private readonly _layoutStore: WritableStore<LayoutMode>,
-    ) {
-        this._displayMode = displayStore.get();
-        this._routerState = router.get();
-        displayStore.subscribe((displayMode) => {
-            this._displayMode = displayMode;
-            this._updateLayout();
-        });
-        router.subscribe((routerState) => {
-            this._routerState = routerState;
-            this._updateLayout();
-        });
-    }
-
-    private _updateLayout(): void {
-        switch (this._displayMode) {
-            case 'small':
-                this._layoutStore.update((mode) => {
-                    let small: LayoutMode['small'];
-                    if (this._routerState.aside !== undefined) {
-                        // Show the aside panel if present
-                        small = 'aside';
-                    } else if (this._routerState.main.id !== 'welcome') {
-                        // Show the main panel if it's not the welcome page
-                        small = 'main';
+/**
+ * Observe display mode and routes and update the layout mode accordingly.
+ */
+export function manageLayout(
+    source: {
+        readonly display: IQueryableStore<DisplayMode>;
+        readonly router: IQueryableStore<RouterState>;
+    },
+    layout: WritableStore<LayoutMode>,
+): StoreUnsubscriber {
+    return concentrate([source.display, source.router] as const).subscribe(
+        ([displayMode, routerState]) => {
+            switch (displayMode) {
+                case 'small':
+                    layout.update((mode) => {
+                        let small: LayoutMode['small'];
+                        if (routerState.aside !== undefined) {
+                            // Show the aside panel if present
+                            small = 'aside';
+                        } else if (routerState.main.id !== 'welcome') {
+                            // Show the main panel if it's not the welcome page
+                            small = 'main';
+                        } else {
+                            // Otherwise, show nav
+                            small = 'nav';
+                        }
+                        return {...mode, small};
+                    });
+                    break;
+                case 'medium':
+                case 'large':
+                    // Only show the aside panel in medium/large mode if there is an aside defined for it.
+                    if (routerState.aside !== undefined) {
+                        layout.update((mode) => ({
+                            ...mode,
+                            medium: 'nav-aside',
+                            large: 'nav-main-aside',
+                        }));
                     } else {
-                        // Otherwise, show nav
-                        small = 'nav';
+                        layout.update((mode) => ({
+                            ...mode,
+                            medium: 'nav-main',
+                            large: 'nav-main',
+                        }));
                     }
-                    return {...mode, small};
-                });
-                break;
-            case 'medium':
-            case 'large':
-                // Only show the aside panel in medium/large mode if there is an aside defined for it.
-                if (this._routerState.aside !== undefined) {
-                    this._layoutStore.update((mode) => ({
-                        ...mode,
-                        medium: 'nav-aside',
-                        large: 'nav-main-aside',
-                    }));
-                } else {
-                    this._layoutStore.update((mode) => ({
-                        ...mode,
-                        medium: 'nav-main',
-                        large: 'nav-main',
-                    }));
-                }
-                break;
-            default:
-                unreachable(this._displayMode);
-        }
-    }
+                    break;
+                default:
+                    unreachable(displayMode);
+            }
+        },
+    );
 }
