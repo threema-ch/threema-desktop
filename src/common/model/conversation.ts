@@ -178,14 +178,7 @@ export class ConversationModelController implements ConversationController {
             // Trigger task if this message was created locally
             const {taskManager} = this._services;
             void taskManager.schedule(
-                new OutgoingConversationMessageTask(
-                    this._services,
-                    {
-                        receiver: this._receiverLookup,
-                        messageId: init.id,
-                    },
-                    {receiver, message: store.get()},
-                ),
+                new OutgoingConversationMessageTask(this._services, receiver, store.get()),
             );
 
             // Return the added message

@@ -21,6 +21,12 @@ import {
     type ServicesForTasks,
     ACTIVE_TASK,
 } from '~/common/network/protocol/task';
+import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';
+import {
+    type IOutgoingCspMessageTaskConstructor,
+    type ValidCspMessageTypeForReceiver,
+    OutgoingCspMessageTask,
+} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import * as structbuf from '~/common/network/structbuf';
 import {
     type FileEncodable,
@@ -31,8 +37,6 @@ import {type MessageId} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToBytesLe, u64ToHexLe} from '~/common/utils/number';
-
-import {type ValidCspMessageTypeForReceiver, OutgoingCspMessageTask} from './outgoing-csp-message';
 
 /**
  * The outgoing message task has the following responsibilities:
@@ -51,60 +55,53 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
     public readonly transaction = undefined;
 
     private readonly _log: Logger;
-    private readonly _messageModel: OutboundMessageFor<MessageType>['model'];
-    private readonly _receiverModel: TReceiver;
 
     /**
-     * Create a new instance of this task.
-     *
-     * @param _services Task services.
-     * @param lookup The message lookup data that can be used to find the message and receiver in
-     *   the database.
-     * @param hints If the caller already has an instance of the receiver and message model, those
-     *   can be passed in here. If this hint is set to `undefined`, then the two objects will be
-     *   looked up in the database.
+     * Create a new instance of this task. Note that the {@param _messageModel} and {@param _receiverModel} must match.
      */
     public constructor(
         private readonly _services: ServicesForTasks,
-        lookup: {readonly receiver: DbReceiverLookup; readonly messageId: MessageId},
-        hints:
-            | {
-                  readonly receiver: TReceiver;
-                  readonly message: OutboundMessageFor<MessageType>['model'];
-              }
-            | undefined,
+        private readonly _receiverModel: TReceiver,
+        private readonly _messageModel: OutboundMessageFor<MessageType>['model'],
+        private readonly _outgoingCspMessageTaskConstructor: IOutgoingCspMessageTaskConstructor = OutgoingCspMessageTask,
     ) {
-        const {model, logging} = _services;
-
         // Instantiate logger
-        const messageIdHex = u64ToHexLe(lookup.messageId);
-        this._log = logging.logger(`network.protocol.task.out-message.${messageIdHex}`);
+        const messageIdHex = u64ToHexLe(_messageModel.view.id);
+        this._log = _services.logging.logger(`network.protocol.task.out-message.${messageIdHex}`);
+    }
 
-        // Look up receiver and message in database (if necessary)
-        if (hints !== undefined) {
-            this._messageModel = hints.message;
-            this._receiverModel = hints.receiver;
-        } else {
-            const conversationStore = model.conversations.getForReceiver(lookup.receiver);
-            if (conversationStore === undefined) {
-                throw new Error(
-                    `Conversation for receiver ${JSON.stringify(lookup.receiver)} not found`,
-                );
-            }
-            const messageStore = conversationStore.get().controller.getMessage(lookup.messageId);
-            if (messageStore === undefined) {
-                throw new Error(`Message with ID ${messageIdHex} not found`);
-            }
-            const messageModel = messageStore.get() as AnyMessage<'model'>;
-            assert(
-                messageModel.ctx === MessageDirection.OUTBOUND,
-                'Outgoing message task requires outbound messages',
-            );
-            this._messageModel = messageModel;
-            this._receiverModel = conversationStore.get().controller.receiver().get() as TReceiver;
+    /**
+     * Construct a  {@link OutgoingConversationMessageTask} from lookup params.
+     *
+     * @throws Error if the conversation for the receiver cannot be found
+     * @throws Error if the message does not exist in the conversation.
+     * @throws Error if the message is not an outbound message.
+     */
+    public static fromLookup<TReceiver extends AnyReceiver>(
+        services: ServicesForTasks,
+        receiver: DbReceiverLookup,
+        messageId: MessageId,
+    ): OutgoingConversationMessageTask<TReceiver> {
+        const {model} = services;
+        const messageIdHex = u64ToHexLe(messageId);
+
+        const conversationStore = model.conversations.getForReceiver(receiver);
+        if (conversationStore === undefined) {
+            throw new Error(`Conversation for receiver ${JSON.stringify(receiver)} not found`);
+        }
+        const messageStore = conversationStore.get().controller.getMessage(messageId);
+        if (messageStore === undefined) {
+            throw new Error(`Message with ID ${messageIdHex} not found`);
         }
 
-        this._log.debug('Created');
+        const receiverModel = conversationStore.get().controller.receiver().get() as TReceiver;
+        const messageModel = messageStore.get() as AnyMessage<'model'>;
+        assert(
+            messageModel.ctx === MessageDirection.OUTBOUND,
+            'Outgoing message task requires outbound messages',
+        );
+
+        return new OutgoingConversationMessageTask(services, receiverModel, messageModel);
     }
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
@@ -126,7 +123,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             messageId: messageView.id,
             createdAt: messageView.createdAt,
         } as const;
-        const outCspMessageTask = new OutgoingCspMessageTask(
+        const outCspMessageTask = new this._outgoingCspMessageTaskConstructor(
             this._services,
             this._receiverModel,
             messageProperties,

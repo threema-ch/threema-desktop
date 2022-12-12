@@ -89,6 +89,29 @@ export type ValidCspMessageTypeForReceiver<TReceiver extends AnyReceiver> =
     TReceiver['type'] extends ReceiverType.GROUP ? ValidGroupMessages : ValidContactMessages;
 
 /**
+ * Interface for the {@link OutgoingCspMessageTask}.
+ */
+export type IOutgoingCspMessageTask = ComposableTask<
+    ActiveTaskCodecHandle<'volatile'>,
+    Date | undefined
+>;
+
+/**
+ * Constructor function for a {@link IOutgoingCspMessageTask}
+ */
+export interface IOutgoingCspMessageTaskConstructor {
+    new <
+        TMessageEncoder,
+        TReceiver extends AnyReceiver,
+        TMessageType extends ValidCspMessageTypeForReceiver<TReceiver>,
+    >(
+        services: ServicesForTasks,
+        receiver: TReceiver,
+        properties: MessageProperties<TMessageEncoder, TMessageType>,
+    ): IOutgoingCspMessageTask;
+}
+
+/**
  * The outgoing message task has the following responsibilities:
  *
  * - Potentially reflect message via D2D
@@ -102,7 +125,7 @@ export class OutgoingCspMessageTask<
     TMessageEncoder,
     TReceiver extends AnyReceiver,
     TMessageType extends ValidCspMessageTypeForReceiver<TReceiver>,
-> implements ComposableTask<ActiveTaskCodecHandle<'volatile'>, Date | undefined>
+> implements IOutgoingCspMessageTask
 {
     private readonly _log: Logger;
     private readonly _reflect: boolean;
