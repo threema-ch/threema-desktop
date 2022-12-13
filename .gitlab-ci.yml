@@ -203,7 +203,7 @@ validate-metainfo:
 package:source:
   stage: package
   rules:
-    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == 'develop'
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   <<: *cache
   before_script:
@@ -212,7 +212,7 @@ package:source:
     # Handle ref
     - |
       echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
-      if [[ "$CI_COMMIT_REF_NAME" = "main" ]]; then
+      if [[ "$CI_COMMIT_REF_NAME" = "develop" ]]; then
         export BUILD_TYPE=nightly
       elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
         export BUILD_TYPE=release
@@ -277,7 +277,7 @@ package:source:
     # Handle ref
     - |
       echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
-      if [[ "$CI_COMMIT_REF_NAME" = "main" ]]; then
+      if [[ "$CI_COMMIT_REF_NAME" = "develop" ]]; then
         export BUILD_TYPE=nightly
       elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
         export BUILD_TYPE=release
@@ -379,7 +379,7 @@ package:source:
 package:flatpak-internal:
   <<: *flatpak
   rules:
-    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == 'develop'
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   variables:
     REPO: repo
@@ -410,7 +410,7 @@ package:flatpak-public:
 package:dmg:
   stage: package
   rules:
-    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == 'develop'
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   parallel:
     matrix:
@@ -422,7 +422,7 @@ package:dmg:
     # Handle ref
     - |
       echo "\$CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME"
-      if [[ "$CI_COMMIT_REF_NAME" = "main" ]]; then
+      if [[ "$CI_COMMIT_REF_NAME" = "develop" ]]; then
         export BUILD_TYPE=nightly
       elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
         export BUILD_TYPE=release
@@ -544,7 +544,7 @@ package:dmg:
 package:exe:
   stage: package
   rules:
-    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == 'develop'
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   # Build on Windows (powershell)
   tags:
@@ -553,7 +553,7 @@ package:exe:
     # Handle ref
     - |
       echo "`$CI_COMMIT_REF_NAME=$env:CI_COMMIT_REF_NAME"
-      if ($env:CI_COMMIT_REF_NAME -eq "main") {
+      if ($env:CI_COMMIT_REF_NAME -eq "develop") {
         $BUILD_TYPE = "nightly"
       } elseif ($env:CI_COMMIT_REF_NAME -like "v*") {
         $BUILD_TYPE = "release"
