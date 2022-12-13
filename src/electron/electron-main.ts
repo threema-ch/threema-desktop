@@ -538,7 +538,16 @@ function main(
             })
             .on(
                 ElectronIpcCommand.UPDATE_APP_BADGE,
-                (event: electron.IpcMainEvent, totalUnreadMessageCount: u53 | undefined) => {
+                (event: electron.IpcMainEvent, totalUnreadMessageCount: u53) => {
+                    // Set the badge count on supported systems (currently macOS and some Linux
+                    // versions).
+                    //
+                    // Note: macOS also supports an empty red dot instead of a number by passing
+                    //       `undefined` to `.setBadgeCount`. This is not currently implemented by
+                    //       our IPC API, but could be added if desired.
+                    //
+                    // For more details, see the Electron docs:
+                    // https://www.electronjs.org/docs/latest/api/app#appsetbadgecountcount-linux-macos
                     electron.app.setBadgeCount(totalUnreadMessageCount);
                 },
             );

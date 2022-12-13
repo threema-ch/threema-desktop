@@ -28,7 +28,7 @@ const appApi: ElectronIpc = {
     logToFile: (level, data) => ipcRenderer.invoke(ElectronIpcCommand.LOG_TO_FILE, level, data),
     deleteProfileAndRestartApp: () =>
         ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART),
-    updateAppBadge: (totalUnreadMessageCount: u53 | undefined) =>
+    updateAppBadge: (totalUnreadMessageCount: u53) =>
         ipcRenderer.send(ElectronIpcCommand.UPDATE_APP_BADGE, totalUnreadMessageCount),
 };
 /* eslint-enable @typescript-eslint/promise-function-async */

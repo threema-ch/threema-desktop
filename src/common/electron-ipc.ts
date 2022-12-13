@@ -50,16 +50,15 @@ export interface ElectronIpc {
     readonly deleteProfileAndRestartApp: () => void;
 
     /**
-     * Update app badge with the total unread messages count on macOS.
+     * Update app badge with the total unread messages count.
      *
-     * Currently this only affects macOS and it is ignored on other platforms. There is no need to
-     * add a setting for toggle this functionality since it can be managed at OS level on macOS on a
-     * per app basis.
+     * Currently this only affects macOS and some Linux versoins and it is ignored on other
+     * platforms. There is no need to add a setting for toggle this functionality since it can be
+     * managed at OS level on macOS on a per app basis.
      *
      * @param totalUnreadMessageCount The number of unread messages. If this value is 0, the badge
-     * is not shown (i.e. it is removed if it was previously shown). If the value is 100 or more,
-     * '99+' is displayed automatically by the OS. If it is `undefined` a dot ('•') is shown
-     * instead.
+     *   is not shown (i.e. it is removed if it was previously shown). If the value is 100 or more,
+     *   '99+' is displayed automatically by the OS on macOS.
      */
-    readonly updateAppBadge: (totalUnreadMessageCount: u53 | undefined) => void;
+    readonly updateAppBadge: (totalUnreadMessageCount: u53) => void;
 }
