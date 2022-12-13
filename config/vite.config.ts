@@ -121,7 +121,7 @@ function makeConfig(
         APP_NAME: determineAppName(env),
 
         // Version info
-        GIT_DESCRIBE: process.env.GIT_DESCRIBE ?? '',
+        GIT_REVISION: process.env.GIT_REVISION ?? '',
         BUILD_HASH: 'TODOTODOTODO', // TODO(WEBMD-154): Add build hash
 
         // Paths

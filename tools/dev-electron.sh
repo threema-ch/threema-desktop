@@ -19,9 +19,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ROOT="$DIR/.."
 cd "$ROOT"
 
-# Export GIT_DESCRIBE variable
-GIT_DESCRIBE=$(git describe --always --dirty || true)
-export GIT_DESCRIBE
+# Export GIT_REVISION variable
+GIT_REVISION=$(git rev-parse --short HEAD || true)
+export GIT_REVISION
 
 # Build main, preload and app
 VITE_MAKE=electron,electron-main,$variant,$environment npx vite build -m development -c config/vite.config.ts

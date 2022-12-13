@@ -98,8 +98,8 @@
         <Text label="Application Version" value={import.meta.env.BUILD_VERSION} />
       </div>
 
-      {#if `v${import.meta.env.BUILD_VERSION}` !== import.meta.env.GIT_DESCRIBE && import.meta.env.GIT_DESCRIBE !== ''}
-        <Text label="Version" value={import.meta.env.GIT_DESCRIBE} />
+      {#if `v${import.meta.env.BUILD_VERSION}` !== import.meta.env.GIT_REVISION && import.meta.env.GIT_REVISION !== ''}
+        <Text label="Git Revision" value={import.meta.env.GIT_REVISION} />
       {/if}
 
       <Text label="Copyright" value="Threema GmbH © 2022" />

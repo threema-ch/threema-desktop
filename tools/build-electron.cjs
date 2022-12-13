@@ -21,19 +21,19 @@ const environment = argv[1];
 const rootDir = path.join(__dirname, '..');
 
 // Determine git revision (if any)
-let gitDescribe;
+let gitRevision;
 try {
-    gitDescribe = childProcess
-        .execFileSync('git', ['describe', '--always', '--dirty'], {
+    gitRevision = childProcess
+        .execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
             cwd: rootDir,
             encoding: 'utf8',
             timeout: 10000,
         })
         .trim();
-    console.info(`Git revision: ${gitDescribe}`);
+    console.info(`Git revision: ${gitRevision}`);
 } catch (error) {
     console.warn(`Could not determine git revision: ${error.message.replace(/\n/u, '\\n')}`);
-    gitDescribe = '';
+    gitRevision = '';
 }
 
 // Build all vite make targets
@@ -55,7 +55,7 @@ for (const entry of ENTRIES) {
             cwd: rootDir,
             env: {
                 VITE_MAKE: `${TARGET},${entry},${variant},${environment}`,
-                GIT_DESCRIBE: gitDescribe,
+                GIT_REVISION: gitRevision,
                 PATH: process.env.PATH,
             },
             stdio: [0, 1, 2],

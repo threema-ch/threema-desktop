@@ -190,7 +190,7 @@ interface ImportMetaEnv extends BuildConfig {
     readonly APP_NAME: string;
 
     // Version info
-    readonly GIT_DESCRIBE: string;
+    readonly GIT_REVISION: string;
     readonly BUILD_HASH: string;
 
     // Paths

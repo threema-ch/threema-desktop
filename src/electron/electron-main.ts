@@ -59,9 +59,9 @@ const ABOUT_PANEL_OPTIONS: electron.AboutPanelOptionsOptions = {
         import.meta.env.BUILD_ENVIRONMENT
     })`,
     version:
-        `v${import.meta.env.BUILD_VERSION}` === import.meta.env.GIT_DESCRIBE
+        `v${import.meta.env.BUILD_VERSION}` === import.meta.env.GIT_REVISION
             ? ''
-            : import.meta.env.GIT_DESCRIBE,
+            : import.meta.env.GIT_REVISION,
     copyright: 'Threema © 2022',
     website: 'https://threema.ch/',
     iconPath: import.meta.env.DEBUG

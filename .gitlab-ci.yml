@@ -307,10 +307,10 @@ package:source:
     - |
       if [ "$BUILD_TYPE" = "nightly" ]; then
         VERSION=$(jq -r '.version' package.json)
-        GIT_DESCRIBE=$(git describe --always)
+        GIT_REVISION=$(git rev-parse --short HEAD)
         DATE=$(date +%Y-%m-%d)
         # Metainfo file
-        sed -i "s/\(^.*version=\"$VERSION\".*\)/<release version=\"${GIT_DESCRIBE#v}-nightly\" date=\"$DATE\" \/>\n\1/" packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+        sed -i "s/\(^.*version=\"$VERSION\".*\)/<release version=\"${VERSION}-nightly-${GIT_REVISION}\" date=\"$DATE\" \/>\n\1/" packaging/metadata/ch.threema.threema-desktop.metainfo.xml
       fi
     # Build flatpak
     - |
