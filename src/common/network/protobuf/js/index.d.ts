@@ -2,196 +2,6 @@ import type Long from "long";
 import type * as types from "~/common/types";
 import type * as tag from "../tag";
 import * as $protobuf from "protobufjs";
-/** Namespace callsignaling. */
-export namespace callsignaling {
-    /** Properties of an Envelope. */
-    interface IEnvelope {
-        /** Envelope padding */
-        padding?: (Uint8Array | null);
-        /** Envelope videoQualityProfile */
-        videoQualityProfile?: (callsignaling.VideoQualityProfile | null);
-        /** Envelope captureStateChange */
-        captureStateChange?: (callsignaling.CaptureState | null);
-    }
-    type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
-        readonly EnvelopeEncodable: unique symbol;
-    } & tag.ProtobufMessage>;
-    /** Represents an Envelope. */
-    class Envelope implements IEnvelope {
-        /**
-         * Constructs a new Envelope.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: callsignaling.IEnvelope);
-        /** Envelope padding. */
-        public padding: Uint8Array;
-        /** Envelope videoQualityProfile. */
-        public videoQualityProfile?: (callsignaling.VideoQualityProfile | null);
-        /** Envelope captureStateChange. */
-        public captureStateChange?: (callsignaling.CaptureState | null);
-        /** Envelope content. */
-        public content?: ("videoQualityProfile" | "captureStateChange");
-        /**
-         * Encodes the specified Envelope message. Does not implicitly {@link callsignaling.Envelope.verify|verify} messages.
-         * @param message Envelope message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: callsignaling.EnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-        /**
-         * Decodes an Envelope message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Envelope
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): callsignaling.Envelope;
-    }
-    /** Properties of a Resolution. */
-    interface IResolution {
-        /** Resolution width */
-        width?: (number | null);
-        /** Resolution height */
-        height?: (number | null);
-    }
-    type ResolutionEncodable = types.WeakOpaque<IResolution, {
-        readonly ResolutionEncodable: unique symbol;
-    } & tag.ProtobufMessage>;
-    /** Represents a Resolution. */
-    class Resolution implements IResolution {
-        /**
-         * Constructs a new Resolution.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: callsignaling.IResolution);
-        /** Resolution width. */
-        public width: number;
-        /** Resolution height. */
-        public height: number;
-        /**
-         * Encodes the specified Resolution message. Does not implicitly {@link callsignaling.Resolution.verify|verify} messages.
-         * @param message Resolution message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: callsignaling.ResolutionEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-        /**
-         * Decodes a Resolution message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Resolution
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): callsignaling.Resolution;
-    }
-    /** Properties of a VideoQualityProfile. */
-    interface IVideoQualityProfile {
-        /** VideoQualityProfile profile */
-        profile?: (callsignaling.VideoQualityProfile.QualityProfile | null);
-        /** VideoQualityProfile maxBitrateKbps */
-        maxBitrateKbps?: (number | null);
-        /** VideoQualityProfile maxResolution */
-        maxResolution?: (callsignaling.Resolution | null);
-        /** VideoQualityProfile maxFps */
-        maxFps?: (number | null);
-    }
-    type VideoQualityProfileEncodable = types.WeakOpaque<IVideoQualityProfile, {
-        readonly VideoQualityProfileEncodable: unique symbol;
-    } & tag.ProtobufMessage>;
-    /** Represents a VideoQualityProfile. */
-    class VideoQualityProfile implements IVideoQualityProfile {
-        /**
-         * Constructs a new VideoQualityProfile.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: callsignaling.IVideoQualityProfile);
-        /** VideoQualityProfile profile. */
-        public profile: callsignaling.VideoQualityProfile.QualityProfile;
-        /** VideoQualityProfile maxBitrateKbps. */
-        public maxBitrateKbps: number;
-        /** VideoQualityProfile maxResolution. */
-        public maxResolution?: (callsignaling.Resolution | null);
-        /** VideoQualityProfile maxFps. */
-        public maxFps: number;
-        /**
-         * Encodes the specified VideoQualityProfile message. Does not implicitly {@link callsignaling.VideoQualityProfile.verify|verify} messages.
-         * @param message VideoQualityProfile message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: callsignaling.VideoQualityProfileEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-        /**
-         * Decodes a VideoQualityProfile message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns VideoQualityProfile
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): callsignaling.VideoQualityProfile;
-    }
-    namespace VideoQualityProfile {
-        /** QualityProfile enum. */
-        enum QualityProfile {
-            MAX = 0,
-            HIGH = 1,
-            LOW = 2
-        }
-    }
-    /** Properties of a CaptureState. */
-    interface ICaptureState {
-        /** CaptureState state */
-        state?: (callsignaling.CaptureState.Mode | null);
-        /** CaptureState device */
-        device?: (callsignaling.CaptureState.CaptureDevice | null);
-    }
-    type CaptureStateEncodable = types.WeakOpaque<ICaptureState, {
-        readonly CaptureStateEncodable: unique symbol;
-    } & tag.ProtobufMessage>;
-    /** Represents a CaptureState. */
-    class CaptureState implements ICaptureState {
-        /**
-         * Constructs a new CaptureState.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: callsignaling.ICaptureState);
-        /** CaptureState state. */
-        public state: callsignaling.CaptureState.Mode;
-        /** CaptureState device. */
-        public device: callsignaling.CaptureState.CaptureDevice;
-        /**
-         * Encodes the specified CaptureState message. Does not implicitly {@link callsignaling.CaptureState.verify|verify} messages.
-         * @param message CaptureState message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: callsignaling.CaptureStateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-        /**
-         * Decodes a CaptureState message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CaptureState
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): callsignaling.CaptureState;
-    }
-    namespace CaptureState {
-        /** Mode enum. */
-        enum Mode {
-            OFF = 0,
-            ON = 1
-        }
-        /** CaptureDevice enum. */
-        enum CaptureDevice {
-            CAMERA = 0,
-            SCREEN_SHARING = 1,
-            MICROPHONE = 2
-        }
-    }
-}
 /** Namespace common. */
 export namespace common {
     /** Properties of an Unit. */
@@ -502,6 +312,44 @@ export namespace common {
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): common.Identities;
     }
+    /** Properties of a Resolution. */
+    interface IResolution {
+        /** Resolution width */
+        width?: (number | null);
+        /** Resolution height */
+        height?: (number | null);
+    }
+    type ResolutionEncodable = types.WeakOpaque<IResolution, {
+        readonly ResolutionEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a Resolution. */
+    class Resolution implements IResolution {
+        /**
+         * Constructs a new Resolution.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: common.IResolution);
+        /** Resolution width. */
+        public width: number;
+        /** Resolution height. */
+        public height: number;
+        /**
+         * Encodes the specified Resolution message. Does not implicitly {@link common.Resolution.verify|verify} messages.
+         * @param message Resolution message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: common.ResolutionEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a Resolution message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Resolution
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): common.Resolution;
+    }
 }
 /** Namespace csp_e2e_fs. */
 export namespace csp_e2e_fs {
@@ -793,6 +641,48 @@ export namespace csp_e2e {
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e.MessageMetadata;
     }
+    /** Properties of a GroupCallStart. */
+    interface IGroupCallStart {
+        /** GroupCallStart protocolVersion */
+        protocolVersion?: (number | null);
+        /** GroupCallStart gck */
+        gck?: (Uint8Array | null);
+        /** GroupCallStart sfuBaseUrl */
+        sfuBaseUrl?: (string | null);
+    }
+    type GroupCallStartEncodable = types.WeakOpaque<IGroupCallStart, {
+        readonly GroupCallStartEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a GroupCallStart. */
+    class GroupCallStart implements IGroupCallStart {
+        /**
+         * Constructs a new GroupCallStart.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e.IGroupCallStart);
+        /** GroupCallStart protocolVersion. */
+        public protocolVersion: number;
+        /** GroupCallStart gck. */
+        public gck: Uint8Array;
+        /** GroupCallStart sfuBaseUrl. */
+        public sfuBaseUrl: string;
+        /**
+         * Encodes the specified GroupCallStart message. Does not implicitly {@link csp_e2e.GroupCallStart.verify|verify} messages.
+         * @param message GroupCallStart message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e.GroupCallStartEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a GroupCallStart message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns GroupCallStart
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e.GroupCallStart;
+    }
     /** Properties of a GroupJoinRequest. */
     interface IGroupJoinRequest {
         /** GroupJoinRequest token */
@@ -957,6 +847,2012 @@ export namespace csp_e2e {
                  */
                 public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e.GroupJoinResponse.Response.Accept;
             }
+        }
+    }
+}
+/** Namespace groupcall. */
+export namespace groupcall {
+    /** Properties of a CallState. */
+    interface ICallState {
+        /** CallState padding */
+        padding?: (Uint8Array | null);
+        /** CallState stateCreatedBy */
+        stateCreatedBy?: (number | null);
+        /** CallState stateCreatedAt */
+        stateCreatedAt?: (Long | null);
+        /** CallState participants */
+        participants?: ({
+            [k: string]: groupcall.CallState.Participant;
+        } | null);
+    }
+    type CallStateEncodable = types.WeakOpaque<ICallState, {
+        readonly CallStateEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a CallState. */
+    class CallState implements ICallState {
+        /**
+         * Constructs a new CallState.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: groupcall.ICallState);
+        /** CallState padding. */
+        public padding: Uint8Array;
+        /** CallState stateCreatedBy. */
+        public stateCreatedBy: number;
+        /** CallState stateCreatedAt. */
+        public stateCreatedAt: Long;
+        /** CallState participants. */
+        public participants: {
+            [k: string]: groupcall.CallState.Participant;
+        };
+        /**
+         * Encodes the specified CallState message. Does not implicitly {@link groupcall.CallState.verify|verify} messages.
+         * @param message CallState message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: groupcall.CallStateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a CallState message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns CallState
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.CallState;
+    }
+    namespace CallState {
+        /** Properties of a Participant. */
+        interface IParticipant {
+            /** Participant participantId */
+            participantId?: (number | null);
+            /** Participant threema */
+            threema?: (groupcall.CallState.Participant.Normal | null);
+            /** Participant guest */
+            guest?: (groupcall.CallState.Participant.Guest | null);
+        }
+        type ParticipantEncodable = types.WeakOpaque<IParticipant, {
+            readonly ParticipantEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Participant. */
+        class Participant implements IParticipant {
+            /**
+             * Constructs a new Participant.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.CallState.IParticipant);
+            /** Participant participantId. */
+            public participantId: number;
+            /** Participant threema. */
+            public threema?: (groupcall.CallState.Participant.Normal | null);
+            /** Participant guest. */
+            public guest?: (groupcall.CallState.Participant.Guest | null);
+            /** Participant participant. */
+            public participant?: ("threema" | "guest");
+            /**
+             * Encodes the specified Participant message. Does not implicitly {@link groupcall.CallState.Participant.verify|verify} messages.
+             * @param message Participant message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.CallState.ParticipantEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Participant message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Participant
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.CallState.Participant;
+        }
+        namespace Participant {
+            /** Properties of a Normal. */
+            interface INormal {
+                /** Normal identity */
+                identity?: (string | null);
+                /** Normal nickname */
+                nickname?: (string | null);
+            }
+            type NormalEncodable = types.WeakOpaque<INormal, {
+                readonly NormalEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Normal. */
+            class Normal implements INormal {
+                /**
+                 * Constructs a new Normal.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.CallState.Participant.INormal);
+                /** Normal identity. */
+                public identity: string;
+                /** Normal nickname. */
+                public nickname: string;
+                /**
+                 * Encodes the specified Normal message. Does not implicitly {@link groupcall.CallState.Participant.Normal.verify|verify} messages.
+                 * @param message Normal message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.CallState.Participant.NormalEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Normal message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Normal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.CallState.Participant.Normal;
+            }
+            /** Properties of a Guest. */
+            interface IGuest {
+                /** Guest name */
+                name?: (string | null);
+            }
+            type GuestEncodable = types.WeakOpaque<IGuest, {
+                readonly GuestEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Guest. */
+            class Guest implements IGuest {
+                /**
+                 * Constructs a new Guest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.CallState.Participant.IGuest);
+                /** Guest name. */
+                public name: string;
+                /**
+                 * Encodes the specified Guest message. Does not implicitly {@link groupcall.CallState.Participant.Guest.verify|verify} messages.
+                 * @param message Guest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.CallState.Participant.GuestEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Guest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Guest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.CallState.Participant.Guest;
+            }
+        }
+    }
+    /** Properties of a SfuHttpRequest. */
+    interface ISfuHttpRequest {
+    }
+    type SfuHttpRequestEncodable = types.WeakOpaque<ISfuHttpRequest, {
+        readonly SfuHttpRequestEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a SfuHttpRequest. */
+    class SfuHttpRequest implements ISfuHttpRequest {
+        /**
+         * Constructs a new SfuHttpRequest.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: groupcall.ISfuHttpRequest);
+        /**
+         * Encodes the specified SfuHttpRequest message. Does not implicitly {@link groupcall.SfuHttpRequest.verify|verify} messages.
+         * @param message SfuHttpRequest message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: groupcall.SfuHttpRequestEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a SfuHttpRequest message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns SfuHttpRequest
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuHttpRequest;
+    }
+    namespace SfuHttpRequest {
+        /** Properties of a Peek. */
+        interface IPeek {
+            /** Peek callId */
+            callId?: (Uint8Array | null);
+        }
+        type PeekEncodable = types.WeakOpaque<IPeek, {
+            readonly PeekEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Peek. */
+        class Peek implements IPeek {
+            /**
+             * Constructs a new Peek.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuHttpRequest.IPeek);
+            /** Peek callId. */
+            public callId: Uint8Array;
+            /**
+             * Encodes the specified Peek message. Does not implicitly {@link groupcall.SfuHttpRequest.Peek.verify|verify} messages.
+             * @param message Peek message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuHttpRequest.PeekEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Peek message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Peek
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuHttpRequest.Peek;
+        }
+        /** Properties of a Join. */
+        interface IJoin {
+            /** Join callId */
+            callId?: (Uint8Array | null);
+            /** Join protocolVersion */
+            protocolVersion?: (number | null);
+            /** Join dtlsFingerprint */
+            dtlsFingerprint?: (Uint8Array | null);
+        }
+        type JoinEncodable = types.WeakOpaque<IJoin, {
+            readonly JoinEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Join. */
+        class Join implements IJoin {
+            /**
+             * Constructs a new Join.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuHttpRequest.IJoin);
+            /** Join callId. */
+            public callId: Uint8Array;
+            /** Join protocolVersion. */
+            public protocolVersion: number;
+            /** Join dtlsFingerprint. */
+            public dtlsFingerprint: Uint8Array;
+            /**
+             * Encodes the specified Join message. Does not implicitly {@link groupcall.SfuHttpRequest.Join.verify|verify} messages.
+             * @param message Join message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuHttpRequest.JoinEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Join message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Join
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuHttpRequest.Join;
+        }
+    }
+    /** Properties of a SfuHttpResponse. */
+    interface ISfuHttpResponse {
+    }
+    type SfuHttpResponseEncodable = types.WeakOpaque<ISfuHttpResponse, {
+        readonly SfuHttpResponseEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a SfuHttpResponse. */
+    class SfuHttpResponse implements ISfuHttpResponse {
+        /**
+         * Constructs a new SfuHttpResponse.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: groupcall.ISfuHttpResponse);
+        /**
+         * Encodes the specified SfuHttpResponse message. Does not implicitly {@link groupcall.SfuHttpResponse.verify|verify} messages.
+         * @param message SfuHttpResponse message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: groupcall.SfuHttpResponseEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a SfuHttpResponse message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns SfuHttpResponse
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuHttpResponse;
+    }
+    namespace SfuHttpResponse {
+        /** Properties of a Peek. */
+        interface IPeek {
+            /** Peek startedAt */
+            startedAt?: (Long | null);
+            /** Peek maxParticipants */
+            maxParticipants?: (number | null);
+            /** Peek encryptedCallState */
+            encryptedCallState?: (Uint8Array | null);
+        }
+        type PeekEncodable = types.WeakOpaque<IPeek, {
+            readonly PeekEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Peek. */
+        class Peek implements IPeek {
+            /**
+             * Constructs a new Peek.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuHttpResponse.IPeek);
+            /** Peek startedAt. */
+            public startedAt: Long;
+            /** Peek maxParticipants. */
+            public maxParticipants: number;
+            /** Peek encryptedCallState. */
+            public encryptedCallState?: (Uint8Array | null);
+            /** Peek _encryptedCallState. */
+            public _encryptedCallState?: "encryptedCallState";
+            /**
+             * Encodes the specified Peek message. Does not implicitly {@link groupcall.SfuHttpResponse.Peek.verify|verify} messages.
+             * @param message Peek message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuHttpResponse.PeekEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Peek message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Peek
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuHttpResponse.Peek;
+        }
+        /** Properties of a Join. */
+        interface IJoin {
+            /** Join startedAt */
+            startedAt?: (Long | null);
+            /** Join maxParticipants */
+            maxParticipants?: (number | null);
+            /** Join participantId */
+            participantId?: (number | null);
+            /** Join addresses */
+            addresses?: (readonly groupcall.SfuHttpResponse.Join.Address[] | null);
+            /** Join iceUsernameFragment */
+            iceUsernameFragment?: (string | null);
+            /** Join icePassword */
+            icePassword?: (string | null);
+            /** Join dtlsFingerprint */
+            dtlsFingerprint?: (Uint8Array | null);
+        }
+        type JoinEncodable = types.WeakOpaque<IJoin, {
+            readonly JoinEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Join. */
+        class Join implements IJoin {
+            /**
+             * Constructs a new Join.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuHttpResponse.IJoin);
+            /** Join startedAt. */
+            public startedAt: Long;
+            /** Join maxParticipants. */
+            public maxParticipants: number;
+            /** Join participantId. */
+            public participantId: number;
+            /** Join addresses. */
+            public addresses: readonly groupcall.SfuHttpResponse.Join.Address[];
+            /** Join iceUsernameFragment. */
+            public iceUsernameFragment: string;
+            /** Join icePassword. */
+            public icePassword: string;
+            /** Join dtlsFingerprint. */
+            public dtlsFingerprint: Uint8Array;
+            /**
+             * Encodes the specified Join message. Does not implicitly {@link groupcall.SfuHttpResponse.Join.verify|verify} messages.
+             * @param message Join message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuHttpResponse.JoinEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Join message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Join
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuHttpResponse.Join;
+        }
+        namespace Join {
+            /** Properties of an Address. */
+            interface IAddress {
+                /** Address protocol */
+                protocol?: (groupcall.SfuHttpResponse.Join.Address.Protocol | null);
+                /** Address port */
+                port?: (number | null);
+                /** Address ip */
+                ip?: (string | null);
+            }
+            type AddressEncodable = types.WeakOpaque<IAddress, {
+                readonly AddressEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an Address. */
+            class Address implements IAddress {
+                /**
+                 * Constructs a new Address.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.SfuHttpResponse.Join.IAddress);
+                /** Address protocol. */
+                public protocol: groupcall.SfuHttpResponse.Join.Address.Protocol;
+                /** Address port. */
+                public port: number;
+                /** Address ip. */
+                public ip: string;
+                /**
+                 * Encodes the specified Address message. Does not implicitly {@link groupcall.SfuHttpResponse.Join.Address.verify|verify} messages.
+                 * @param message Address message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.SfuHttpResponse.Join.AddressEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an Address message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Address
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuHttpResponse.Join.Address;
+            }
+            namespace Address {
+                /** Protocol enum. */
+                enum Protocol {
+                    UDP = 0
+                }
+            }
+        }
+    }
+    /** Properties of a SfuToParticipant. */
+    interface ISfuToParticipant {
+    }
+    type SfuToParticipantEncodable = types.WeakOpaque<ISfuToParticipant, {
+        readonly SfuToParticipantEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a SfuToParticipant. */
+    class SfuToParticipant implements ISfuToParticipant {
+        /**
+         * Constructs a new SfuToParticipant.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: groupcall.ISfuToParticipant);
+        /**
+         * Encodes the specified SfuToParticipant message. Does not implicitly {@link groupcall.SfuToParticipant.verify|verify} messages.
+         * @param message SfuToParticipant message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: groupcall.SfuToParticipantEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a SfuToParticipant message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns SfuToParticipant
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuToParticipant;
+    }
+    namespace SfuToParticipant {
+        /** Properties of an Envelope. */
+        interface IEnvelope {
+            /** Envelope padding */
+            padding?: (Uint8Array | null);
+            /** Envelope relay */
+            relay?: (groupcall.ParticipantToParticipant.OuterEnvelope | null);
+            /** Envelope hello */
+            hello?: (groupcall.SfuToParticipant.Hello | null);
+            /** Envelope participantJoined */
+            participantJoined?: (groupcall.SfuToParticipant.ParticipantJoined | null);
+            /** Envelope participantLeft */
+            participantLeft?: (groupcall.SfuToParticipant.ParticipantLeft | null);
+        }
+        type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
+            readonly EnvelopeEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an Envelope. */
+        class Envelope implements IEnvelope {
+            /**
+             * Constructs a new Envelope.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuToParticipant.IEnvelope);
+            /** Envelope padding. */
+            public padding: Uint8Array;
+            /** Envelope relay. */
+            public relay?: (groupcall.ParticipantToParticipant.OuterEnvelope | null);
+            /** Envelope hello. */
+            public hello?: (groupcall.SfuToParticipant.Hello | null);
+            /** Envelope participantJoined. */
+            public participantJoined?: (groupcall.SfuToParticipant.ParticipantJoined | null);
+            /** Envelope participantLeft. */
+            public participantLeft?: (groupcall.SfuToParticipant.ParticipantLeft | null);
+            /** Envelope content. */
+            public content?: ("relay" | "hello" | "participantJoined" | "participantLeft");
+            /**
+             * Encodes the specified Envelope message. Does not implicitly {@link groupcall.SfuToParticipant.Envelope.verify|verify} messages.
+             * @param message Envelope message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuToParticipant.EnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an Envelope message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Envelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuToParticipant.Envelope;
+        }
+        /** Properties of a Hello. */
+        interface IHello {
+            /** Hello participantIds */
+            participantIds?: (readonly number[] | null);
+        }
+        type HelloEncodable = types.WeakOpaque<IHello, {
+            readonly HelloEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Hello. */
+        class Hello implements IHello {
+            /**
+             * Constructs a new Hello.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuToParticipant.IHello);
+            /** Hello participantIds. */
+            public participantIds: readonly number[];
+            /**
+             * Encodes the specified Hello message. Does not implicitly {@link groupcall.SfuToParticipant.Hello.verify|verify} messages.
+             * @param message Hello message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuToParticipant.HelloEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Hello message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Hello
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuToParticipant.Hello;
+        }
+        /** Properties of a ParticipantJoined. */
+        interface IParticipantJoined {
+            /** ParticipantJoined participantId */
+            participantId?: (number | null);
+        }
+        type ParticipantJoinedEncodable = types.WeakOpaque<IParticipantJoined, {
+            readonly ParticipantJoinedEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a ParticipantJoined. */
+        class ParticipantJoined implements IParticipantJoined {
+            /**
+             * Constructs a new ParticipantJoined.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuToParticipant.IParticipantJoined);
+            /** ParticipantJoined participantId. */
+            public participantId: number;
+            /**
+             * Encodes the specified ParticipantJoined message. Does not implicitly {@link groupcall.SfuToParticipant.ParticipantJoined.verify|verify} messages.
+             * @param message ParticipantJoined message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuToParticipant.ParticipantJoinedEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a ParticipantJoined message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ParticipantJoined
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuToParticipant.ParticipantJoined;
+        }
+        /** Properties of a ParticipantLeft. */
+        interface IParticipantLeft {
+            /** ParticipantLeft participantId */
+            participantId?: (number | null);
+        }
+        type ParticipantLeftEncodable = types.WeakOpaque<IParticipantLeft, {
+            readonly ParticipantLeftEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a ParticipantLeft. */
+        class ParticipantLeft implements IParticipantLeft {
+            /**
+             * Constructs a new ParticipantLeft.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.SfuToParticipant.IParticipantLeft);
+            /** ParticipantLeft participantId. */
+            public participantId: number;
+            /**
+             * Encodes the specified ParticipantLeft message. Does not implicitly {@link groupcall.SfuToParticipant.ParticipantLeft.verify|verify} messages.
+             * @param message ParticipantLeft message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.SfuToParticipant.ParticipantLeftEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a ParticipantLeft message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ParticipantLeft
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.SfuToParticipant.ParticipantLeft;
+        }
+    }
+    /** Properties of a ParticipantToSfu. */
+    interface IParticipantToSfu {
+    }
+    type ParticipantToSfuEncodable = types.WeakOpaque<IParticipantToSfu, {
+        readonly ParticipantToSfuEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a ParticipantToSfu. */
+    class ParticipantToSfu implements IParticipantToSfu {
+        /**
+         * Constructs a new ParticipantToSfu.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: groupcall.IParticipantToSfu);
+        /**
+         * Encodes the specified ParticipantToSfu message. Does not implicitly {@link groupcall.ParticipantToSfu.verify|verify} messages.
+         * @param message ParticipantToSfu message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: groupcall.ParticipantToSfuEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a ParticipantToSfu message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ParticipantToSfu
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu;
+    }
+    namespace ParticipantToSfu {
+        /** Properties of an Envelope. */
+        interface IEnvelope {
+            /** Envelope padding */
+            padding?: (Uint8Array | null);
+            /** Envelope relay */
+            relay?: (groupcall.ParticipantToParticipant.OuterEnvelope | null);
+            /** Envelope updateCallState */
+            updateCallState?: (groupcall.ParticipantToSfu.UpdateCallState | null);
+            /** Envelope requestParticipantMicrophone */
+            requestParticipantMicrophone?: (groupcall.ParticipantToSfu.ParticipantMicrophone | null);
+            /** Envelope requestParticipantCamera */
+            requestParticipantCamera?: (groupcall.ParticipantToSfu.ParticipantCamera | null);
+            /** Envelope requestParticipantScreenShare */
+            requestParticipantScreenShare?: (groupcall.ParticipantToSfu.ParticipantScreen | null);
+        }
+        type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
+            readonly EnvelopeEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an Envelope. */
+        class Envelope implements IEnvelope {
+            /**
+             * Constructs a new Envelope.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToSfu.IEnvelope);
+            /** Envelope padding. */
+            public padding: Uint8Array;
+            /** Envelope relay. */
+            public relay?: (groupcall.ParticipantToParticipant.OuterEnvelope | null);
+            /** Envelope updateCallState. */
+            public updateCallState?: (groupcall.ParticipantToSfu.UpdateCallState | null);
+            /** Envelope requestParticipantMicrophone. */
+            public requestParticipantMicrophone?: (groupcall.ParticipantToSfu.ParticipantMicrophone | null);
+            /** Envelope requestParticipantCamera. */
+            public requestParticipantCamera?: (groupcall.ParticipantToSfu.ParticipantCamera | null);
+            /** Envelope requestParticipantScreenShare. */
+            public requestParticipantScreenShare?: (groupcall.ParticipantToSfu.ParticipantScreen | null);
+            /** Envelope content. */
+            public content?: ("relay" | "updateCallState" | "requestParticipantMicrophone" | "requestParticipantCamera" | "requestParticipantScreenShare");
+            /**
+             * Encodes the specified Envelope message. Does not implicitly {@link groupcall.ParticipantToSfu.Envelope.verify|verify} messages.
+             * @param message Envelope message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToSfu.EnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an Envelope message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Envelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.Envelope;
+        }
+        /** Properties of an UpdateCallState. */
+        interface IUpdateCallState {
+            /** UpdateCallState encryptedCallState */
+            encryptedCallState?: (Uint8Array | null);
+        }
+        type UpdateCallStateEncodable = types.WeakOpaque<IUpdateCallState, {
+            readonly UpdateCallStateEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an UpdateCallState. */
+        class UpdateCallState implements IUpdateCallState {
+            /**
+             * Constructs a new UpdateCallState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToSfu.IUpdateCallState);
+            /** UpdateCallState encryptedCallState. */
+            public encryptedCallState: Uint8Array;
+            /**
+             * Encodes the specified UpdateCallState message. Does not implicitly {@link groupcall.ParticipantToSfu.UpdateCallState.verify|verify} messages.
+             * @param message UpdateCallState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToSfu.UpdateCallStateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an UpdateCallState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns UpdateCallState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.UpdateCallState;
+        }
+        /** Properties of a ParticipantMicrophone. */
+        interface IParticipantMicrophone {
+            /** ParticipantMicrophone participantId */
+            participantId?: (number | null);
+            /** ParticipantMicrophone subscribe */
+            subscribe?: (groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe | null);
+            /** ParticipantMicrophone unsubscribe */
+            unsubscribe?: (groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe | null);
+        }
+        type ParticipantMicrophoneEncodable = types.WeakOpaque<IParticipantMicrophone, {
+            readonly ParticipantMicrophoneEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a ParticipantMicrophone. */
+        class ParticipantMicrophone implements IParticipantMicrophone {
+            /**
+             * Constructs a new ParticipantMicrophone.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToSfu.IParticipantMicrophone);
+            /** ParticipantMicrophone participantId. */
+            public participantId: number;
+            /** ParticipantMicrophone subscribe. */
+            public subscribe?: (groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe | null);
+            /** ParticipantMicrophone unsubscribe. */
+            public unsubscribe?: (groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe | null);
+            /** ParticipantMicrophone action. */
+            public action?: ("subscribe" | "unsubscribe");
+            /**
+             * Encodes the specified ParticipantMicrophone message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantMicrophone.verify|verify} messages.
+             * @param message ParticipantMicrophone message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToSfu.ParticipantMicrophoneEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a ParticipantMicrophone message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ParticipantMicrophone
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantMicrophone;
+        }
+        namespace ParticipantMicrophone {
+            /** Properties of a Subscribe. */
+            interface ISubscribe {
+            }
+            type SubscribeEncodable = types.WeakOpaque<ISubscribe, {
+                readonly SubscribeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Subscribe. */
+            class Subscribe implements ISubscribe {
+                /**
+                 * Constructs a new Subscribe.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToSfu.ParticipantMicrophone.ISubscribe);
+                /**
+                 * Encodes the specified Subscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe.verify|verify} messages.
+                 * @param message Subscribe message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToSfu.ParticipantMicrophone.SubscribeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Subscribe message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Subscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe;
+            }
+            /** Properties of an Unsubscribe. */
+            interface IUnsubscribe {
+            }
+            type UnsubscribeEncodable = types.WeakOpaque<IUnsubscribe, {
+                readonly UnsubscribeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an Unsubscribe. */
+            class Unsubscribe implements IUnsubscribe {
+                /**
+                 * Constructs a new Unsubscribe.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToSfu.ParticipantMicrophone.IUnsubscribe);
+                /**
+                 * Encodes the specified Unsubscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe.verify|verify} messages.
+                 * @param message Unsubscribe message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToSfu.ParticipantMicrophone.UnsubscribeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an Unsubscribe message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Unsubscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe;
+            }
+        }
+        /** Properties of a ParticipantCamera. */
+        interface IParticipantCamera {
+            /** ParticipantCamera participantId */
+            participantId?: (number | null);
+            /** ParticipantCamera subscribe */
+            subscribe?: (groupcall.ParticipantToSfu.ParticipantCamera.Subscribe | null);
+            /** ParticipantCamera unsubscribe */
+            unsubscribe?: (groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe | null);
+        }
+        type ParticipantCameraEncodable = types.WeakOpaque<IParticipantCamera, {
+            readonly ParticipantCameraEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a ParticipantCamera. */
+        class ParticipantCamera implements IParticipantCamera {
+            /**
+             * Constructs a new ParticipantCamera.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToSfu.IParticipantCamera);
+            /** ParticipantCamera participantId. */
+            public participantId: number;
+            /** ParticipantCamera subscribe. */
+            public subscribe?: (groupcall.ParticipantToSfu.ParticipantCamera.Subscribe | null);
+            /** ParticipantCamera unsubscribe. */
+            public unsubscribe?: (groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe | null);
+            /** ParticipantCamera action. */
+            public action?: ("subscribe" | "unsubscribe");
+            /**
+             * Encodes the specified ParticipantCamera message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantCamera.verify|verify} messages.
+             * @param message ParticipantCamera message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToSfu.ParticipantCameraEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a ParticipantCamera message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ParticipantCamera
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantCamera;
+        }
+        namespace ParticipantCamera {
+            /** Properties of a Subscribe. */
+            interface ISubscribe {
+                /** Subscribe desiredResolution */
+                desiredResolution?: (common.Resolution | null);
+                /** Subscribe desiredFps */
+                desiredFps?: (number | null);
+            }
+            type SubscribeEncodable = types.WeakOpaque<ISubscribe, {
+                readonly SubscribeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Subscribe. */
+            class Subscribe implements ISubscribe {
+                /**
+                 * Constructs a new Subscribe.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToSfu.ParticipantCamera.ISubscribe);
+                /** Subscribe desiredResolution. */
+                public desiredResolution?: (common.Resolution | null);
+                /** Subscribe desiredFps. */
+                public desiredFps: number;
+                /**
+                 * Encodes the specified Subscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantCamera.Subscribe.verify|verify} messages.
+                 * @param message Subscribe message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToSfu.ParticipantCamera.SubscribeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Subscribe message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Subscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantCamera.Subscribe;
+            }
+            /** Properties of an Unsubscribe. */
+            interface IUnsubscribe {
+            }
+            type UnsubscribeEncodable = types.WeakOpaque<IUnsubscribe, {
+                readonly UnsubscribeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an Unsubscribe. */
+            class Unsubscribe implements IUnsubscribe {
+                /**
+                 * Constructs a new Unsubscribe.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToSfu.ParticipantCamera.IUnsubscribe);
+                /**
+                 * Encodes the specified Unsubscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe.verify|verify} messages.
+                 * @param message Unsubscribe message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToSfu.ParticipantCamera.UnsubscribeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an Unsubscribe message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Unsubscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe;
+            }
+        }
+        /** Properties of a ParticipantScreen. */
+        interface IParticipantScreen {
+            /** ParticipantScreen participantId */
+            participantId?: (number | null);
+            /** ParticipantScreen subscribe */
+            subscribe?: (groupcall.ParticipantToSfu.ParticipantScreen.Subscribe | null);
+            /** ParticipantScreen unsubscribe */
+            unsubscribe?: (groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe | null);
+        }
+        type ParticipantScreenEncodable = types.WeakOpaque<IParticipantScreen, {
+            readonly ParticipantScreenEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a ParticipantScreen. */
+        class ParticipantScreen implements IParticipantScreen {
+            /**
+             * Constructs a new ParticipantScreen.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToSfu.IParticipantScreen);
+            /** ParticipantScreen participantId. */
+            public participantId: number;
+            /** ParticipantScreen subscribe. */
+            public subscribe?: (groupcall.ParticipantToSfu.ParticipantScreen.Subscribe | null);
+            /** ParticipantScreen unsubscribe. */
+            public unsubscribe?: (groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe | null);
+            /** ParticipantScreen action. */
+            public action?: ("subscribe" | "unsubscribe");
+            /**
+             * Encodes the specified ParticipantScreen message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantScreen.verify|verify} messages.
+             * @param message ParticipantScreen message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToSfu.ParticipantScreenEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a ParticipantScreen message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ParticipantScreen
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantScreen;
+        }
+        namespace ParticipantScreen {
+            /** Properties of a Subscribe. */
+            interface ISubscribe {
+            }
+            type SubscribeEncodable = types.WeakOpaque<ISubscribe, {
+                readonly SubscribeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Subscribe. */
+            class Subscribe implements ISubscribe {
+                /**
+                 * Constructs a new Subscribe.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToSfu.ParticipantScreen.ISubscribe);
+                /**
+                 * Encodes the specified Subscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantScreen.Subscribe.verify|verify} messages.
+                 * @param message Subscribe message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToSfu.ParticipantScreen.SubscribeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Subscribe message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Subscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantScreen.Subscribe;
+            }
+            /** Properties of an Unsubscribe. */
+            interface IUnsubscribe {
+            }
+            type UnsubscribeEncodable = types.WeakOpaque<IUnsubscribe, {
+                readonly UnsubscribeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an Unsubscribe. */
+            class Unsubscribe implements IUnsubscribe {
+                /**
+                 * Constructs a new Unsubscribe.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToSfu.ParticipantScreen.IUnsubscribe);
+                /**
+                 * Encodes the specified Unsubscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe.verify|verify} messages.
+                 * @param message Unsubscribe message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToSfu.ParticipantScreen.UnsubscribeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an Unsubscribe message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Unsubscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe;
+            }
+        }
+    }
+    /** Properties of a ParticipantToParticipant. */
+    interface IParticipantToParticipant {
+    }
+    type ParticipantToParticipantEncodable = types.WeakOpaque<IParticipantToParticipant, {
+        readonly ParticipantToParticipantEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a ParticipantToParticipant. */
+    class ParticipantToParticipant implements IParticipantToParticipant {
+        /**
+         * Constructs a new ParticipantToParticipant.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: groupcall.IParticipantToParticipant);
+        /**
+         * Encodes the specified ParticipantToParticipant message. Does not implicitly {@link groupcall.ParticipantToParticipant.verify|verify} messages.
+         * @param message ParticipantToParticipant message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: groupcall.ParticipantToParticipantEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a ParticipantToParticipant message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ParticipantToParticipant
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant;
+    }
+    namespace ParticipantToParticipant {
+        /** Properties of an OuterEnvelope. */
+        interface IOuterEnvelope {
+            /** OuterEnvelope sender */
+            sender?: (number | null);
+            /** OuterEnvelope receiver */
+            receiver?: (number | null);
+            /** OuterEnvelope encryptedData */
+            encryptedData?: (Uint8Array | null);
+        }
+        type OuterEnvelopeEncodable = types.WeakOpaque<IOuterEnvelope, {
+            readonly OuterEnvelopeEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an OuterEnvelope. */
+        class OuterEnvelope implements IOuterEnvelope {
+            /**
+             * Constructs a new OuterEnvelope.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToParticipant.IOuterEnvelope);
+            /** OuterEnvelope sender. */
+            public sender: number;
+            /** OuterEnvelope receiver. */
+            public receiver: number;
+            /** OuterEnvelope encryptedData. */
+            public encryptedData: Uint8Array;
+            /**
+             * Encodes the specified OuterEnvelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.OuterEnvelope.verify|verify} messages.
+             * @param message OuterEnvelope message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToParticipant.OuterEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an OuterEnvelope message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns OuterEnvelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.OuterEnvelope;
+        }
+        /** Properties of a Handshake. */
+        interface IHandshake {
+        }
+        type HandshakeEncodable = types.WeakOpaque<IHandshake, {
+            readonly HandshakeEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Handshake. */
+        class Handshake implements IHandshake {
+            /**
+             * Constructs a new Handshake.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToParticipant.IHandshake);
+            /**
+             * Encodes the specified Handshake message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.verify|verify} messages.
+             * @param message Handshake message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToParticipant.HandshakeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Handshake message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Handshake
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Handshake;
+        }
+        namespace Handshake {
+            /** Properties of a HelloEnvelope. */
+            interface IHelloEnvelope {
+                /** HelloEnvelope padding */
+                padding?: (Uint8Array | null);
+                /** HelloEnvelope hello */
+                hello?: (groupcall.ParticipantToParticipant.Handshake.Hello | null);
+                /** HelloEnvelope guestHello */
+                guestHello?: (groupcall.ParticipantToParticipant.Handshake.GuestHello | null);
+            }
+            type HelloEnvelopeEncodable = types.WeakOpaque<IHelloEnvelope, {
+                readonly HelloEnvelopeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a HelloEnvelope. */
+            class HelloEnvelope implements IHelloEnvelope {
+                /**
+                 * Constructs a new HelloEnvelope.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Handshake.IHelloEnvelope);
+                /** HelloEnvelope padding. */
+                public padding: Uint8Array;
+                /** HelloEnvelope hello. */
+                public hello?: (groupcall.ParticipantToParticipant.Handshake.Hello | null);
+                /** HelloEnvelope guestHello. */
+                public guestHello?: (groupcall.ParticipantToParticipant.Handshake.GuestHello | null);
+                /** HelloEnvelope content. */
+                public content?: ("hello" | "guestHello");
+                /**
+                 * Encodes the specified HelloEnvelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.HelloEnvelope.verify|verify} messages.
+                 * @param message HelloEnvelope message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Handshake.HelloEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a HelloEnvelope message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns HelloEnvelope
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Handshake.HelloEnvelope;
+            }
+            /** Properties of an AuthEnvelope. */
+            interface IAuthEnvelope {
+                /** AuthEnvelope padding */
+                padding?: (Uint8Array | null);
+                /** AuthEnvelope auth */
+                auth?: (groupcall.ParticipantToParticipant.Handshake.Auth | null);
+                /** AuthEnvelope guestAuth */
+                guestAuth?: (groupcall.ParticipantToParticipant.Handshake.GuestAuth | null);
+            }
+            type AuthEnvelopeEncodable = types.WeakOpaque<IAuthEnvelope, {
+                readonly AuthEnvelopeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an AuthEnvelope. */
+            class AuthEnvelope implements IAuthEnvelope {
+                /**
+                 * Constructs a new AuthEnvelope.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Handshake.IAuthEnvelope);
+                /** AuthEnvelope padding. */
+                public padding: Uint8Array;
+                /** AuthEnvelope auth. */
+                public auth?: (groupcall.ParticipantToParticipant.Handshake.Auth | null);
+                /** AuthEnvelope guestAuth. */
+                public guestAuth?: (groupcall.ParticipantToParticipant.Handshake.GuestAuth | null);
+                /** AuthEnvelope content. */
+                public content?: ("auth" | "guestAuth");
+                /**
+                 * Encodes the specified AuthEnvelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.AuthEnvelope.verify|verify} messages.
+                 * @param message AuthEnvelope message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Handshake.AuthEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an AuthEnvelope message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns AuthEnvelope
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Handshake.AuthEnvelope;
+            }
+            /** Properties of a Hello. */
+            interface IHello {
+                /** Hello identity */
+                identity?: (string | null);
+                /** Hello nickname */
+                nickname?: (string | null);
+                /** Hello pck */
+                pck?: (Uint8Array | null);
+                /** Hello pcck */
+                pcck?: (Uint8Array | null);
+            }
+            type HelloEncodable = types.WeakOpaque<IHello, {
+                readonly HelloEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Hello. */
+            class Hello implements IHello {
+                /**
+                 * Constructs a new Hello.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Handshake.IHello);
+                /** Hello identity. */
+                public identity: string;
+                /** Hello nickname. */
+                public nickname: string;
+                /** Hello pck. */
+                public pck: Uint8Array;
+                /** Hello pcck. */
+                public pcck: Uint8Array;
+                /**
+                 * Encodes the specified Hello message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.Hello.verify|verify} messages.
+                 * @param message Hello message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Handshake.HelloEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Hello message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Hello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Handshake.Hello;
+            }
+            /** Properties of an Auth. */
+            interface IAuth {
+                /** Auth pck */
+                pck?: (Uint8Array | null);
+                /** Auth pcck */
+                pcck?: (Uint8Array | null);
+                /** Auth mediaKeys */
+                mediaKeys?: (readonly groupcall.ParticipantToParticipant.MediaKey[] | null);
+            }
+            type AuthEncodable = types.WeakOpaque<IAuth, {
+                readonly AuthEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an Auth. */
+            class Auth implements IAuth {
+                /**
+                 * Constructs a new Auth.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Handshake.IAuth);
+                /** Auth pck. */
+                public pck: Uint8Array;
+                /** Auth pcck. */
+                public pcck: Uint8Array;
+                /** Auth mediaKeys. */
+                public mediaKeys: readonly groupcall.ParticipantToParticipant.MediaKey[];
+                /**
+                 * Encodes the specified Auth message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.Auth.verify|verify} messages.
+                 * @param message Auth message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Handshake.AuthEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an Auth message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Auth
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Handshake.Auth;
+            }
+            /** Properties of a GuestHello. */
+            interface IGuestHello {
+                /** GuestHello name */
+                name?: (string | null);
+                /** GuestHello pck */
+                pck?: (Uint8Array | null);
+                /** GuestHello pcck */
+                pcck?: (Uint8Array | null);
+            }
+            type GuestHelloEncodable = types.WeakOpaque<IGuestHello, {
+                readonly GuestHelloEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a GuestHello. */
+            class GuestHello implements IGuestHello {
+                /**
+                 * Constructs a new GuestHello.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Handshake.IGuestHello);
+                /** GuestHello name. */
+                public name: string;
+                /** GuestHello pck. */
+                public pck: Uint8Array;
+                /** GuestHello pcck. */
+                public pcck: Uint8Array;
+                /**
+                 * Encodes the specified GuestHello message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.GuestHello.verify|verify} messages.
+                 * @param message GuestHello message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Handshake.GuestHelloEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a GuestHello message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns GuestHello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Handshake.GuestHello;
+            }
+            /** Properties of a GuestAuth. */
+            interface IGuestAuth {
+                /** GuestAuth pck */
+                pck?: (Uint8Array | null);
+                /** GuestAuth pcck */
+                pcck?: (Uint8Array | null);
+                /** GuestAuth mediaKeys */
+                mediaKeys?: (readonly groupcall.ParticipantToParticipant.MediaKey[] | null);
+            }
+            type GuestAuthEncodable = types.WeakOpaque<IGuestAuth, {
+                readonly GuestAuthEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a GuestAuth. */
+            class GuestAuth implements IGuestAuth {
+                /**
+                 * Constructs a new GuestAuth.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Handshake.IGuestAuth);
+                /** GuestAuth pck. */
+                public pck: Uint8Array;
+                /** GuestAuth pcck. */
+                public pcck: Uint8Array;
+                /** GuestAuth mediaKeys. */
+                public mediaKeys: readonly groupcall.ParticipantToParticipant.MediaKey[];
+                /**
+                 * Encodes the specified GuestAuth message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.GuestAuth.verify|verify} messages.
+                 * @param message GuestAuth message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Handshake.GuestAuthEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a GuestAuth message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns GuestAuth
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Handshake.GuestAuth;
+            }
+        }
+        /** Properties of an Envelope. */
+        interface IEnvelope {
+            /** Envelope padding */
+            padding?: (Uint8Array | null);
+            /** Envelope encryptedAdminEnvelope */
+            encryptedAdminEnvelope?: (Uint8Array | null);
+            /** Envelope rekey */
+            rekey?: (groupcall.ParticipantToParticipant.MediaKey | null);
+            /** Envelope captureState */
+            captureState?: (groupcall.ParticipantToParticipant.CaptureState | null);
+            /** Envelope holdState */
+            holdState?: (groupcall.ParticipantToParticipant.HoldState | null);
+        }
+        type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
+            readonly EnvelopeEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an Envelope. */
+        class Envelope implements IEnvelope {
+            /**
+             * Constructs a new Envelope.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToParticipant.IEnvelope);
+            /** Envelope padding. */
+            public padding: Uint8Array;
+            /** Envelope encryptedAdminEnvelope. */
+            public encryptedAdminEnvelope?: (Uint8Array | null);
+            /** Envelope rekey. */
+            public rekey?: (groupcall.ParticipantToParticipant.MediaKey | null);
+            /** Envelope captureState. */
+            public captureState?: (groupcall.ParticipantToParticipant.CaptureState | null);
+            /** Envelope holdState. */
+            public holdState?: (groupcall.ParticipantToParticipant.HoldState | null);
+            /** Envelope content. */
+            public content?: ("encryptedAdminEnvelope" | "rekey" | "captureState" | "holdState");
+            /**
+             * Encodes the specified Envelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Envelope.verify|verify} messages.
+             * @param message Envelope message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToParticipant.EnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an Envelope message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Envelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Envelope;
+        }
+        /** Properties of an Admin. */
+        interface IAdmin {
+        }
+        type AdminEncodable = types.WeakOpaque<IAdmin, {
+            readonly AdminEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an Admin. */
+        class Admin implements IAdmin {
+            /**
+             * Constructs a new Admin.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToParticipant.IAdmin);
+            /**
+             * Encodes the specified Admin message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.verify|verify} messages.
+             * @param message Admin message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToParticipant.AdminEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an Admin message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Admin
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Admin;
+        }
+        namespace Admin {
+            /** Properties of an Envelope. */
+            interface IEnvelope {
+                /** Envelope reportAsAdmin */
+                reportAsAdmin?: (groupcall.ParticipantToParticipant.Admin.ReportAsAdmin | null);
+                /** Envelope promoteToAdmin */
+                promoteToAdmin?: (groupcall.ParticipantToParticipant.Admin.PromoteToAdmin | null);
+                /** Envelope forceLeave */
+                forceLeave?: (groupcall.ParticipantToParticipant.Admin.ForceLeave | null);
+                /** Envelope forceCaptureStateOff */
+                forceCaptureStateOff?: (groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff | null);
+                /** Envelope forceFocus */
+                forceFocus?: (groupcall.ParticipantToParticipant.Admin.ForceFocus | null);
+            }
+            type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
+                readonly EnvelopeEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an Envelope. */
+            class Envelope implements IEnvelope {
+                /**
+                 * Constructs a new Envelope.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Admin.IEnvelope);
+                /** Envelope reportAsAdmin. */
+                public reportAsAdmin?: (groupcall.ParticipantToParticipant.Admin.ReportAsAdmin | null);
+                /** Envelope promoteToAdmin. */
+                public promoteToAdmin?: (groupcall.ParticipantToParticipant.Admin.PromoteToAdmin | null);
+                /** Envelope forceLeave. */
+                public forceLeave?: (groupcall.ParticipantToParticipant.Admin.ForceLeave | null);
+                /** Envelope forceCaptureStateOff. */
+                public forceCaptureStateOff?: (groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff | null);
+                /** Envelope forceFocus. */
+                public forceFocus?: (groupcall.ParticipantToParticipant.Admin.ForceFocus | null);
+                /** Envelope content. */
+                public content?: ("reportAsAdmin" | "promoteToAdmin" | "forceLeave" | "forceCaptureStateOff" | "forceFocus");
+                /**
+                 * Encodes the specified Envelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.Envelope.verify|verify} messages.
+                 * @param message Envelope message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Admin.EnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an Envelope message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Envelope
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Admin.Envelope;
+            }
+            /** Properties of a ReportAsAdmin. */
+            interface IReportAsAdmin {
+            }
+            type ReportAsAdminEncodable = types.WeakOpaque<IReportAsAdmin, {
+                readonly ReportAsAdminEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a ReportAsAdmin. */
+            class ReportAsAdmin implements IReportAsAdmin {
+                /**
+                 * Constructs a new ReportAsAdmin.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Admin.IReportAsAdmin);
+                /**
+                 * Encodes the specified ReportAsAdmin message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ReportAsAdmin.verify|verify} messages.
+                 * @param message ReportAsAdmin message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Admin.ReportAsAdminEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a ReportAsAdmin message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ReportAsAdmin
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Admin.ReportAsAdmin;
+            }
+            /** Properties of a PromoteToAdmin. */
+            interface IPromoteToAdmin {
+                /** PromoteToAdmin gcak */
+                gcak?: (Uint8Array | null);
+            }
+            type PromoteToAdminEncodable = types.WeakOpaque<IPromoteToAdmin, {
+                readonly PromoteToAdminEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a PromoteToAdmin. */
+            class PromoteToAdmin implements IPromoteToAdmin {
+                /**
+                 * Constructs a new PromoteToAdmin.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Admin.IPromoteToAdmin);
+                /** PromoteToAdmin gcak. */
+                public gcak: Uint8Array;
+                /**
+                 * Encodes the specified PromoteToAdmin message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.PromoteToAdmin.verify|verify} messages.
+                 * @param message PromoteToAdmin message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Admin.PromoteToAdminEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a PromoteToAdmin message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns PromoteToAdmin
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Admin.PromoteToAdmin;
+            }
+            /** Properties of a ForceLeave. */
+            interface IForceLeave {
+            }
+            type ForceLeaveEncodable = types.WeakOpaque<IForceLeave, {
+                readonly ForceLeaveEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a ForceLeave. */
+            class ForceLeave implements IForceLeave {
+                /**
+                 * Constructs a new ForceLeave.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Admin.IForceLeave);
+                /**
+                 * Encodes the specified ForceLeave message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ForceLeave.verify|verify} messages.
+                 * @param message ForceLeave message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Admin.ForceLeaveEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a ForceLeave message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ForceLeave
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Admin.ForceLeave;
+            }
+            /** Properties of a ForceCaptureStateOff. */
+            interface IForceCaptureStateOff {
+                /** ForceCaptureStateOff device */
+                device?: (groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.Device | null);
+            }
+            type ForceCaptureStateOffEncodable = types.WeakOpaque<IForceCaptureStateOff, {
+                readonly ForceCaptureStateOffEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a ForceCaptureStateOff. */
+            class ForceCaptureStateOff implements IForceCaptureStateOff {
+                /**
+                 * Constructs a new ForceCaptureStateOff.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Admin.IForceCaptureStateOff);
+                /** ForceCaptureStateOff device. */
+                public device: groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.Device;
+                /**
+                 * Encodes the specified ForceCaptureStateOff message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.verify|verify} messages.
+                 * @param message ForceCaptureStateOff message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOffEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a ForceCaptureStateOff message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ForceCaptureStateOff
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff;
+            }
+            namespace ForceCaptureStateOff {
+                /** Device enum. */
+                enum Device {
+                    ALL = 0,
+                    MICROPHONE = 1,
+                    CAMERA = 2,
+                    SCREEN = 3
+                }
+            }
+            /** Properties of a ForceFocus. */
+            interface IForceFocus {
+                /** ForceFocus participantId */
+                participantId?: (number | null);
+            }
+            type ForceFocusEncodable = types.WeakOpaque<IForceFocus, {
+                readonly ForceFocusEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a ForceFocus. */
+            class ForceFocus implements IForceFocus {
+                /**
+                 * Constructs a new ForceFocus.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.Admin.IForceFocus);
+                /** ForceFocus participantId. */
+                public participantId: number;
+                /**
+                 * Encodes the specified ForceFocus message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ForceFocus.verify|verify} messages.
+                 * @param message ForceFocus message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.Admin.ForceFocusEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a ForceFocus message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ForceFocus
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.Admin.ForceFocus;
+            }
+        }
+        /** Properties of a MediaKey. */
+        interface IMediaKey {
+            /** MediaKey epoch */
+            epoch?: (number | null);
+            /** MediaKey ratchetCounter */
+            ratchetCounter?: (number | null);
+            /** MediaKey pcmk */
+            pcmk?: (Uint8Array | null);
+        }
+        type MediaKeyEncodable = types.WeakOpaque<IMediaKey, {
+            readonly MediaKeyEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a MediaKey. */
+        class MediaKey implements IMediaKey {
+            /**
+             * Constructs a new MediaKey.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToParticipant.IMediaKey);
+            /** MediaKey epoch. */
+            public epoch: number;
+            /** MediaKey ratchetCounter. */
+            public ratchetCounter: number;
+            /** MediaKey pcmk. */
+            public pcmk: Uint8Array;
+            /**
+             * Encodes the specified MediaKey message. Does not implicitly {@link groupcall.ParticipantToParticipant.MediaKey.verify|verify} messages.
+             * @param message MediaKey message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToParticipant.MediaKeyEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a MediaKey message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MediaKey
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.MediaKey;
+        }
+        /** Properties of a CaptureState. */
+        interface ICaptureState {
+            /** CaptureState microphone */
+            microphone?: (groupcall.ParticipantToParticipant.CaptureState.Microphone | null);
+            /** CaptureState camera */
+            camera?: (groupcall.ParticipantToParticipant.CaptureState.Camera | null);
+        }
+        type CaptureStateEncodable = types.WeakOpaque<ICaptureState, {
+            readonly CaptureStateEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a CaptureState. */
+        class CaptureState implements ICaptureState {
+            /**
+             * Constructs a new CaptureState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToParticipant.ICaptureState);
+            /** CaptureState microphone. */
+            public microphone?: (groupcall.ParticipantToParticipant.CaptureState.Microphone | null);
+            /** CaptureState camera. */
+            public camera?: (groupcall.ParticipantToParticipant.CaptureState.Camera | null);
+            /** CaptureState state. */
+            public state?: ("microphone" | "camera");
+            /**
+             * Encodes the specified CaptureState message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.verify|verify} messages.
+             * @param message CaptureState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToParticipant.CaptureStateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a CaptureState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns CaptureState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.CaptureState;
+        }
+        namespace CaptureState {
+            /** Properties of a Microphone. */
+            interface IMicrophone {
+                /** Microphone on */
+                on?: (common.Unit | null);
+                /** Microphone off */
+                off?: (common.Unit | null);
+            }
+            type MicrophoneEncodable = types.WeakOpaque<IMicrophone, {
+                readonly MicrophoneEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Microphone. */
+            class Microphone implements IMicrophone {
+                /**
+                 * Constructs a new Microphone.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.CaptureState.IMicrophone);
+                /** Microphone on. */
+                public on?: (common.Unit | null);
+                /** Microphone off. */
+                public off?: (common.Unit | null);
+                /** Microphone state. */
+                public state?: ("on" | "off");
+                /**
+                 * Encodes the specified Microphone message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.Microphone.verify|verify} messages.
+                 * @param message Microphone message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.CaptureState.MicrophoneEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Microphone message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Microphone
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.CaptureState.Microphone;
+            }
+            /** Properties of a Camera. */
+            interface ICamera {
+                /** Camera on */
+                on?: (common.Unit | null);
+                /** Camera off */
+                off?: (common.Unit | null);
+            }
+            type CameraEncodable = types.WeakOpaque<ICamera, {
+                readonly CameraEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Camera. */
+            class Camera implements ICamera {
+                /**
+                 * Constructs a new Camera.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.CaptureState.ICamera);
+                /** Camera on. */
+                public on?: (common.Unit | null);
+                /** Camera off. */
+                public off?: (common.Unit | null);
+                /** Camera state. */
+                public state?: ("on" | "off");
+                /**
+                 * Encodes the specified Camera message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.Camera.verify|verify} messages.
+                 * @param message Camera message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.CaptureState.CameraEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Camera message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Camera
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.CaptureState.Camera;
+            }
+            /** Properties of a Screen. */
+            interface IScreen {
+                /** Screen on */
+                on?: (common.Unit | null);
+                /** Screen off */
+                off?: (common.Unit | null);
+            }
+            type ScreenEncodable = types.WeakOpaque<IScreen, {
+                readonly ScreenEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Screen. */
+            class Screen implements IScreen {
+                /**
+                 * Constructs a new Screen.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: groupcall.ParticipantToParticipant.CaptureState.IScreen);
+                /** Screen on. */
+                public on?: (common.Unit | null);
+                /** Screen off. */
+                public off?: (common.Unit | null);
+                /** Screen state. */
+                public state?: ("on" | "off");
+                /**
+                 * Encodes the specified Screen message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.Screen.verify|verify} messages.
+                 * @param message Screen message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: groupcall.ParticipantToParticipant.CaptureState.ScreenEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Screen message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Screen
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.CaptureState.Screen;
+            }
+        }
+        /** Properties of a HoldState. */
+        interface IHoldState {
+        }
+        type HoldStateEncodable = types.WeakOpaque<IHoldState, {
+            readonly HoldStateEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a HoldState. */
+        class HoldState implements IHoldState {
+            /**
+             * Constructs a new HoldState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: groupcall.ParticipantToParticipant.IHoldState);
+            /**
+             * Encodes the specified HoldState message. Does not implicitly {@link groupcall.ParticipantToParticipant.HoldState.verify|verify} messages.
+             * @param message HoldState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: groupcall.ParticipantToParticipant.HoldStateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a HoldState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns HoldState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): groupcall.ParticipantToParticipant.HoldState;
         }
     }
 }
@@ -4336,10 +6232,8 @@ export namespace rendezvous {
                 pathId?: (number | null);
                 /** IpAddress networkCost */
                 networkCost?: (rendezvous.NetworkCost | null);
-                /** IpAddress ipv4 */
-                ipv4?: (Uint8Array | null);
-                /** IpAddress ipv6 */
-                ipv6?: (Uint8Array | null);
+                /** IpAddress ip */
+                ip?: (string | null);
             }
             type IpAddressEncodable = types.WeakOpaque<IIpAddress, {
                 readonly IpAddressEncodable: unique symbol;
@@ -4355,12 +6249,8 @@ export namespace rendezvous {
                 public pathId: number;
                 /** IpAddress networkCost. */
                 public networkCost: rendezvous.NetworkCost;
-                /** IpAddress ipv4. */
-                public ipv4?: (Uint8Array | null);
-                /** IpAddress ipv6. */
-                public ipv6?: (Uint8Array | null);
                 /** IpAddress ip. */
-                public ip?: ("ipv4" | "ipv6");
+                public ip: string;
                 /**
                  * Encodes the specified IpAddress message. Does not implicitly {@link rendezvous.RendezvousInit.DirectTcpServer.IpAddress.verify|verify} messages.
                  * @param message IpAddress message or plain object to encode
@@ -4388,9 +6278,7 @@ export namespace d2m {
         /** ClientUrlInfo deviceGroupId */
         deviceGroupId?: (Uint8Array | null);
         /** ClientUrlInfo serverGroup */
-        serverGroup?: (number | null);
-        /** ClientUrlInfo serverGroupString */
-        serverGroupString?: (string | null);
+        serverGroup?: (string | null);
     }
     type ClientUrlInfoEncodable = types.WeakOpaque<IClientUrlInfo, {
         readonly ClientUrlInfoEncodable: unique symbol;
@@ -4405,9 +6293,7 @@ export namespace d2m {
         /** ClientUrlInfo deviceGroupId. */
         public deviceGroupId: Uint8Array;
         /** ClientUrlInfo serverGroup. */
-        public serverGroup: number;
-        /** ClientUrlInfo serverGroupString. */
-        public serverGroupString: string;
+        public serverGroup: string;
         /**
          * Encodes the specified ClientUrlInfo message. Does not implicitly {@link d2m.ClientUrlInfo.verify|verify} messages.
          * @param message ClientUrlInfo message or plain object to encode
@@ -5067,6 +6953,158 @@ export namespace d2m {
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): d2m.TransactionEnded;
+    }
+}
+/** Namespace callsignaling. */
+export namespace callsignaling {
+    /** Properties of an Envelope. */
+    interface IEnvelope {
+        /** Envelope padding */
+        padding?: (Uint8Array | null);
+        /** Envelope videoQualityProfile */
+        videoQualityProfile?: (callsignaling.VideoQualityProfile | null);
+        /** Envelope captureStateChange */
+        captureStateChange?: (callsignaling.CaptureState | null);
+    }
+    type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
+        readonly EnvelopeEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents an Envelope. */
+    class Envelope implements IEnvelope {
+        /**
+         * Constructs a new Envelope.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: callsignaling.IEnvelope);
+        /** Envelope padding. */
+        public padding: Uint8Array;
+        /** Envelope videoQualityProfile. */
+        public videoQualityProfile?: (callsignaling.VideoQualityProfile | null);
+        /** Envelope captureStateChange. */
+        public captureStateChange?: (callsignaling.CaptureState | null);
+        /** Envelope content. */
+        public content?: ("videoQualityProfile" | "captureStateChange");
+        /**
+         * Encodes the specified Envelope message. Does not implicitly {@link callsignaling.Envelope.verify|verify} messages.
+         * @param message Envelope message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: callsignaling.EnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes an Envelope message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Envelope
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): callsignaling.Envelope;
+    }
+    /** Properties of a VideoQualityProfile. */
+    interface IVideoQualityProfile {
+        /** VideoQualityProfile profile */
+        profile?: (callsignaling.VideoQualityProfile.QualityProfile | null);
+        /** VideoQualityProfile maxBitrateKbps */
+        maxBitrateKbps?: (number | null);
+        /** VideoQualityProfile maxResolution */
+        maxResolution?: (common.Resolution | null);
+        /** VideoQualityProfile maxFps */
+        maxFps?: (number | null);
+    }
+    type VideoQualityProfileEncodable = types.WeakOpaque<IVideoQualityProfile, {
+        readonly VideoQualityProfileEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a VideoQualityProfile. */
+    class VideoQualityProfile implements IVideoQualityProfile {
+        /**
+         * Constructs a new VideoQualityProfile.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: callsignaling.IVideoQualityProfile);
+        /** VideoQualityProfile profile. */
+        public profile: callsignaling.VideoQualityProfile.QualityProfile;
+        /** VideoQualityProfile maxBitrateKbps. */
+        public maxBitrateKbps: number;
+        /** VideoQualityProfile maxResolution. */
+        public maxResolution?: (common.Resolution | null);
+        /** VideoQualityProfile maxFps. */
+        public maxFps: number;
+        /**
+         * Encodes the specified VideoQualityProfile message. Does not implicitly {@link callsignaling.VideoQualityProfile.verify|verify} messages.
+         * @param message VideoQualityProfile message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: callsignaling.VideoQualityProfileEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a VideoQualityProfile message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns VideoQualityProfile
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): callsignaling.VideoQualityProfile;
+    }
+    namespace VideoQualityProfile {
+        /** QualityProfile enum. */
+        enum QualityProfile {
+            MAX = 0,
+            HIGH = 1,
+            LOW = 2
+        }
+    }
+    /** Properties of a CaptureState. */
+    interface ICaptureState {
+        /** CaptureState state */
+        state?: (callsignaling.CaptureState.Mode | null);
+        /** CaptureState device */
+        device?: (callsignaling.CaptureState.CaptureDevice | null);
+    }
+    type CaptureStateEncodable = types.WeakOpaque<ICaptureState, {
+        readonly CaptureStateEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a CaptureState. */
+    class CaptureState implements ICaptureState {
+        /**
+         * Constructs a new CaptureState.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: callsignaling.ICaptureState);
+        /** CaptureState state. */
+        public state: callsignaling.CaptureState.Mode;
+        /** CaptureState device. */
+        public device: callsignaling.CaptureState.CaptureDevice;
+        /**
+         * Encodes the specified CaptureState message. Does not implicitly {@link callsignaling.CaptureState.verify|verify} messages.
+         * @param message CaptureState message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: callsignaling.CaptureStateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a CaptureState message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns CaptureState
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): callsignaling.CaptureState;
+    }
+    namespace CaptureState {
+        /** Mode enum. */
+        enum Mode {
+            OFF = 0,
+            ON = 1
+        }
+        /** CaptureDevice enum. */
+        enum CaptureDevice {
+            CAMERA = 0,
+            RESERVED_FOR_SCREEN_SHARE = 1,
+            MICROPHONE = 2
+        }
     }
 }
 /** Namespace url. */

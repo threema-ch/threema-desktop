@@ -60,8 +60,7 @@ export class MediatorWebSocketTransport implements MediatorTransport {
             protobuf.d2m.ClientUrlInfo.encode(
                 protobuf.utils.creator(protobuf.d2m.ClientUrlInfo, {
                     deviceGroupId: info.deviceGroupId as Uint8Array,
-                    serverGroup: 0,
-                    serverGroupString: info.serverGroup,
+                    serverGroup: info.serverGroup,
                 }),
             ).finish(),
         );

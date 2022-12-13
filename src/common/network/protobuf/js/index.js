@@ -7,500 +7,6 @@ const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.
 // Exported root namespace
 const $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
 
-export const callsignaling = $root.callsignaling = (() => {
-
-    /**
-     * Namespace callsignaling.
-     * @exports callsignaling
-     * @namespace
-     */
-    const callsignaling = {};
-
-    callsignaling.Envelope = (function() {
-
-        /**
-         * Properties of an Envelope.
-         * @memberof callsignaling
-         * @interface IEnvelope
-         * @property {Uint8Array|null} [padding] Envelope padding
-         * @property {callsignaling.VideoQualityProfile|null} [videoQualityProfile] Envelope videoQualityProfile
-         * @property {callsignaling.CaptureState|null} [captureStateChange] Envelope captureStateChange
-         */
-
-        /**
-         * Constructs a new Envelope.
-         * @memberof callsignaling
-         * @classdesc Represents an Envelope.
-         * @implements IEnvelope
-         * @constructor
-         * @param {callsignaling.IEnvelope=} [properties] Properties to set
-         */
-        function Envelope(properties) {
-            if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Envelope padding.
-         * @member {Uint8Array} padding
-         * @memberof callsignaling.Envelope
-         * @instance
-         */
-        Envelope.prototype.padding = $util.newBuffer([]);
-
-        /**
-         * Envelope videoQualityProfile.
-         * @member {callsignaling.VideoQualityProfile|null|undefined} videoQualityProfile
-         * @memberof callsignaling.Envelope
-         * @instance
-         */
-        Envelope.prototype.videoQualityProfile = null;
-
-        /**
-         * Envelope captureStateChange.
-         * @member {callsignaling.CaptureState|null|undefined} captureStateChange
-         * @memberof callsignaling.Envelope
-         * @instance
-         */
-        Envelope.prototype.captureStateChange = null;
-
-        // OneOf field names bound to virtual getters and setters
-        let $oneOfFields;
-
-        /**
-         * Envelope content.
-         * @member {"videoQualityProfile"|"captureStateChange"|undefined} content
-         * @memberof callsignaling.Envelope
-         * @instance
-         */
-        Object.defineProperty(Envelope.prototype, "content", {
-            get: $util.oneOfGetter($oneOfFields = ["videoQualityProfile", "captureStateChange"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Encodes the specified Envelope message. Does not implicitly {@link callsignaling.Envelope.verify|verify} messages.
-         * @function encode
-         * @memberof callsignaling.Envelope
-         * @static
-         * @param {callsignaling.Envelope} message Envelope message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Envelope.encode = function encode(message, writer) {
-            if (!writer)
-                writer = $Writer.create();
-            if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
-                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
-            if (message.videoQualityProfile != null && Object.hasOwnProperty.call(message, "videoQualityProfile"))
-                $root.callsignaling.VideoQualityProfile.encode(message.videoQualityProfile, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-            if (message.captureStateChange != null && Object.hasOwnProperty.call(message, "captureStateChange"))
-                $root.callsignaling.CaptureState.encode(message.captureStateChange, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-            return writer;
-        };
-
-        /**
-         * Decodes an Envelope message from the specified reader or buffer.
-         * @function decode
-         * @memberof callsignaling.Envelope
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {callsignaling.Envelope} Envelope
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Envelope.decode = function decode(reader, length) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.callsignaling.Envelope();
-            while (reader.pos < end) {
-                let tag = reader.uint32();
-                switch (tag >>> 3) {
-                case 1:
-                    message.padding = reader.bytes();
-                    break;
-                case 2:
-                    message.videoQualityProfile = $root.callsignaling.VideoQualityProfile.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.captureStateChange = $root.callsignaling.CaptureState.decode(reader, reader.uint32());
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        return Envelope;
-    })();
-
-    callsignaling.Resolution = (function() {
-
-        /**
-         * Properties of a Resolution.
-         * @memberof callsignaling
-         * @interface IResolution
-         * @property {number|null} [width] Resolution width
-         * @property {number|null} [height] Resolution height
-         */
-
-        /**
-         * Constructs a new Resolution.
-         * @memberof callsignaling
-         * @classdesc Represents a Resolution.
-         * @implements IResolution
-         * @constructor
-         * @param {callsignaling.IResolution=} [properties] Properties to set
-         */
-        function Resolution(properties) {
-            if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Resolution width.
-         * @member {number} width
-         * @memberof callsignaling.Resolution
-         * @instance
-         */
-        Resolution.prototype.width = 0;
-
-        /**
-         * Resolution height.
-         * @member {number} height
-         * @memberof callsignaling.Resolution
-         * @instance
-         */
-        Resolution.prototype.height = 0;
-
-        /**
-         * Encodes the specified Resolution message. Does not implicitly {@link callsignaling.Resolution.verify|verify} messages.
-         * @function encode
-         * @memberof callsignaling.Resolution
-         * @static
-         * @param {callsignaling.Resolution} message Resolution message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Resolution.encode = function encode(message, writer) {
-            if (!writer)
-                writer = $Writer.create();
-            if (message.width != null && Object.hasOwnProperty.call(message, "width"))
-                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.width);
-            if (message.height != null && Object.hasOwnProperty.call(message, "height"))
-                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.height);
-            return writer;
-        };
-
-        /**
-         * Decodes a Resolution message from the specified reader or buffer.
-         * @function decode
-         * @memberof callsignaling.Resolution
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {callsignaling.Resolution} Resolution
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Resolution.decode = function decode(reader, length) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.callsignaling.Resolution();
-            while (reader.pos < end) {
-                let tag = reader.uint32();
-                switch (tag >>> 3) {
-                case 1:
-                    message.width = reader.uint32();
-                    break;
-                case 2:
-                    message.height = reader.uint32();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        return Resolution;
-    })();
-
-    callsignaling.VideoQualityProfile = (function() {
-
-        /**
-         * Properties of a VideoQualityProfile.
-         * @memberof callsignaling
-         * @interface IVideoQualityProfile
-         * @property {callsignaling.VideoQualityProfile.QualityProfile|null} [profile] VideoQualityProfile profile
-         * @property {number|null} [maxBitrateKbps] VideoQualityProfile maxBitrateKbps
-         * @property {callsignaling.Resolution|null} [maxResolution] VideoQualityProfile maxResolution
-         * @property {number|null} [maxFps] VideoQualityProfile maxFps
-         */
-
-        /**
-         * Constructs a new VideoQualityProfile.
-         * @memberof callsignaling
-         * @classdesc Represents a VideoQualityProfile.
-         * @implements IVideoQualityProfile
-         * @constructor
-         * @param {callsignaling.IVideoQualityProfile=} [properties] Properties to set
-         */
-        function VideoQualityProfile(properties) {
-            if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * VideoQualityProfile profile.
-         * @member {callsignaling.VideoQualityProfile.QualityProfile} profile
-         * @memberof callsignaling.VideoQualityProfile
-         * @instance
-         */
-        VideoQualityProfile.prototype.profile = 0;
-
-        /**
-         * VideoQualityProfile maxBitrateKbps.
-         * @member {number} maxBitrateKbps
-         * @memberof callsignaling.VideoQualityProfile
-         * @instance
-         */
-        VideoQualityProfile.prototype.maxBitrateKbps = 0;
-
-        /**
-         * VideoQualityProfile maxResolution.
-         * @member {callsignaling.Resolution|null|undefined} maxResolution
-         * @memberof callsignaling.VideoQualityProfile
-         * @instance
-         */
-        VideoQualityProfile.prototype.maxResolution = null;
-
-        /**
-         * VideoQualityProfile maxFps.
-         * @member {number} maxFps
-         * @memberof callsignaling.VideoQualityProfile
-         * @instance
-         */
-        VideoQualityProfile.prototype.maxFps = 0;
-
-        /**
-         * Encodes the specified VideoQualityProfile message. Does not implicitly {@link callsignaling.VideoQualityProfile.verify|verify} messages.
-         * @function encode
-         * @memberof callsignaling.VideoQualityProfile
-         * @static
-         * @param {callsignaling.VideoQualityProfile} message VideoQualityProfile message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        VideoQualityProfile.encode = function encode(message, writer) {
-            if (!writer)
-                writer = $Writer.create();
-            if (message.profile != null && Object.hasOwnProperty.call(message, "profile"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.profile);
-            if (message.maxBitrateKbps != null && Object.hasOwnProperty.call(message, "maxBitrateKbps"))
-                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.maxBitrateKbps);
-            if (message.maxResolution != null && Object.hasOwnProperty.call(message, "maxResolution"))
-                $root.callsignaling.Resolution.encode(message.maxResolution, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-            if (message.maxFps != null && Object.hasOwnProperty.call(message, "maxFps"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.maxFps);
-            return writer;
-        };
-
-        /**
-         * Decodes a VideoQualityProfile message from the specified reader or buffer.
-         * @function decode
-         * @memberof callsignaling.VideoQualityProfile
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {callsignaling.VideoQualityProfile} VideoQualityProfile
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        VideoQualityProfile.decode = function decode(reader, length) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.callsignaling.VideoQualityProfile();
-            while (reader.pos < end) {
-                let tag = reader.uint32();
-                switch (tag >>> 3) {
-                case 1:
-                    message.profile = reader.int32();
-                    break;
-                case 2:
-                    message.maxBitrateKbps = reader.uint32();
-                    break;
-                case 3:
-                    message.maxResolution = $root.callsignaling.Resolution.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.maxFps = reader.uint32();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * QualityProfile enum.
-         * @name callsignaling.VideoQualityProfile.QualityProfile
-         * @enum {number}
-         * @property {number} MAX=0 MAX value
-         * @property {number} HIGH=1 HIGH value
-         * @property {number} LOW=2 LOW value
-         */
-        VideoQualityProfile.QualityProfile = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "MAX"] = 0;
-            values[valuesById[1] = "HIGH"] = 1;
-            values[valuesById[2] = "LOW"] = 2;
-            return values;
-        })();
-
-        return VideoQualityProfile;
-    })();
-
-    callsignaling.CaptureState = (function() {
-
-        /**
-         * Properties of a CaptureState.
-         * @memberof callsignaling
-         * @interface ICaptureState
-         * @property {callsignaling.CaptureState.Mode|null} [state] CaptureState state
-         * @property {callsignaling.CaptureState.CaptureDevice|null} [device] CaptureState device
-         */
-
-        /**
-         * Constructs a new CaptureState.
-         * @memberof callsignaling
-         * @classdesc Represents a CaptureState.
-         * @implements ICaptureState
-         * @constructor
-         * @param {callsignaling.ICaptureState=} [properties] Properties to set
-         */
-        function CaptureState(properties) {
-            if (properties)
-                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * CaptureState state.
-         * @member {callsignaling.CaptureState.Mode} state
-         * @memberof callsignaling.CaptureState
-         * @instance
-         */
-        CaptureState.prototype.state = 0;
-
-        /**
-         * CaptureState device.
-         * @member {callsignaling.CaptureState.CaptureDevice} device
-         * @memberof callsignaling.CaptureState
-         * @instance
-         */
-        CaptureState.prototype.device = 0;
-
-        /**
-         * Encodes the specified CaptureState message. Does not implicitly {@link callsignaling.CaptureState.verify|verify} messages.
-         * @function encode
-         * @memberof callsignaling.CaptureState
-         * @static
-         * @param {callsignaling.CaptureState} message CaptureState message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CaptureState.encode = function encode(message, writer) {
-            if (!writer)
-                writer = $Writer.create();
-            if (message.state != null && Object.hasOwnProperty.call(message, "state"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.state);
-            if (message.device != null && Object.hasOwnProperty.call(message, "device"))
-                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.device);
-            return writer;
-        };
-
-        /**
-         * Decodes a CaptureState message from the specified reader or buffer.
-         * @function decode
-         * @memberof callsignaling.CaptureState
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {callsignaling.CaptureState} CaptureState
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CaptureState.decode = function decode(reader, length) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.callsignaling.CaptureState();
-            while (reader.pos < end) {
-                let tag = reader.uint32();
-                switch (tag >>> 3) {
-                case 1:
-                    message.state = reader.int32();
-                    break;
-                case 2:
-                    message.device = reader.int32();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Mode enum.
-         * @name callsignaling.CaptureState.Mode
-         * @enum {number}
-         * @property {number} OFF=0 OFF value
-         * @property {number} ON=1 ON value
-         */
-        CaptureState.Mode = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "OFF"] = 0;
-            values[valuesById[1] = "ON"] = 1;
-            return values;
-        })();
-
-        /**
-         * CaptureDevice enum.
-         * @name callsignaling.CaptureState.CaptureDevice
-         * @enum {number}
-         * @property {number} CAMERA=0 CAMERA value
-         * @property {number} SCREEN_SHARING=1 SCREEN_SHARING value
-         * @property {number} MICROPHONE=2 MICROPHONE value
-         */
-        CaptureState.CaptureDevice = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "CAMERA"] = 0;
-            values[valuesById[1] = "SCREEN_SHARING"] = 1;
-            values[valuesById[2] = "MICROPHONE"] = 2;
-            return values;
-        })();
-
-        return CaptureState;
-    })();
-
-    return callsignaling;
-})();
-
 export const common = $root.common = (() => {
 
     /**
@@ -1286,6 +792,101 @@ export const common = $root.common = (() => {
         return Identities;
     })();
 
+    common.Resolution = (function() {
+
+        /**
+         * Properties of a Resolution.
+         * @memberof common
+         * @interface IResolution
+         * @property {number|null} [width] Resolution width
+         * @property {number|null} [height] Resolution height
+         */
+
+        /**
+         * Constructs a new Resolution.
+         * @memberof common
+         * @classdesc Represents a Resolution.
+         * @implements IResolution
+         * @constructor
+         * @param {common.IResolution=} [properties] Properties to set
+         */
+        function Resolution(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Resolution width.
+         * @member {number} width
+         * @memberof common.Resolution
+         * @instance
+         */
+        Resolution.prototype.width = 0;
+
+        /**
+         * Resolution height.
+         * @member {number} height
+         * @memberof common.Resolution
+         * @instance
+         */
+        Resolution.prototype.height = 0;
+
+        /**
+         * Encodes the specified Resolution message. Does not implicitly {@link common.Resolution.verify|verify} messages.
+         * @function encode
+         * @memberof common.Resolution
+         * @static
+         * @param {common.Resolution} message Resolution message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Resolution.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.width != null && Object.hasOwnProperty.call(message, "width"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.width);
+            if (message.height != null && Object.hasOwnProperty.call(message, "height"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.height);
+            return writer;
+        };
+
+        /**
+         * Decodes a Resolution message from the specified reader or buffer.
+         * @function decode
+         * @memberof common.Resolution
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {common.Resolution} Resolution
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Resolution.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.common.Resolution();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.width = reader.uint32();
+                    break;
+                case 2:
+                    message.height = reader.uint32();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return Resolution;
+    })();
+
     return common;
 })();
 
@@ -2031,6 +1632,115 @@ export const csp_e2e = $root.csp_e2e = (() => {
         return MessageMetadata;
     })();
 
+    csp_e2e.GroupCallStart = (function() {
+
+        /**
+         * Properties of a GroupCallStart.
+         * @memberof csp_e2e
+         * @interface IGroupCallStart
+         * @property {number|null} [protocolVersion] GroupCallStart protocolVersion
+         * @property {Uint8Array|null} [gck] GroupCallStart gck
+         * @property {string|null} [sfuBaseUrl] GroupCallStart sfuBaseUrl
+         */
+
+        /**
+         * Constructs a new GroupCallStart.
+         * @memberof csp_e2e
+         * @classdesc Represents a GroupCallStart.
+         * @implements IGroupCallStart
+         * @constructor
+         * @param {csp_e2e.IGroupCallStart=} [properties] Properties to set
+         */
+        function GroupCallStart(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * GroupCallStart protocolVersion.
+         * @member {number} protocolVersion
+         * @memberof csp_e2e.GroupCallStart
+         * @instance
+         */
+        GroupCallStart.prototype.protocolVersion = 0;
+
+        /**
+         * GroupCallStart gck.
+         * @member {Uint8Array} gck
+         * @memberof csp_e2e.GroupCallStart
+         * @instance
+         */
+        GroupCallStart.prototype.gck = $util.newBuffer([]);
+
+        /**
+         * GroupCallStart sfuBaseUrl.
+         * @member {string} sfuBaseUrl
+         * @memberof csp_e2e.GroupCallStart
+         * @instance
+         */
+        GroupCallStart.prototype.sfuBaseUrl = "";
+
+        /**
+         * Encodes the specified GroupCallStart message. Does not implicitly {@link csp_e2e.GroupCallStart.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e.GroupCallStart
+         * @static
+         * @param {csp_e2e.GroupCallStart} message GroupCallStart message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        GroupCallStart.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.protocolVersion != null && Object.hasOwnProperty.call(message, "protocolVersion"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.protocolVersion);
+            if (message.gck != null && Object.hasOwnProperty.call(message, "gck"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.gck);
+            if (message.sfuBaseUrl != null && Object.hasOwnProperty.call(message, "sfuBaseUrl"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.sfuBaseUrl);
+            return writer;
+        };
+
+        /**
+         * Decodes a GroupCallStart message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e.GroupCallStart
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e.GroupCallStart} GroupCallStart
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        GroupCallStart.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e.GroupCallStart();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.protocolVersion = reader.uint32();
+                    break;
+                case 2:
+                    message.gck = reader.bytes();
+                    break;
+                case 3:
+                    message.sfuBaseUrl = reader.string();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return GroupCallStart;
+    })();
+
     csp_e2e.GroupJoinRequest = (function() {
 
         /**
@@ -2454,6 +2164,5108 @@ export const csp_e2e = $root.csp_e2e = (() => {
     })();
 
     return csp_e2e;
+})();
+
+export const groupcall = $root.groupcall = (() => {
+
+    /**
+     * Namespace groupcall.
+     * @exports groupcall
+     * @namespace
+     */
+    const groupcall = {};
+
+    groupcall.CallState = (function() {
+
+        /**
+         * Properties of a CallState.
+         * @memberof groupcall
+         * @interface ICallState
+         * @property {Uint8Array|null} [padding] CallState padding
+         * @property {number|null} [stateCreatedBy] CallState stateCreatedBy
+         * @property {Long|null} [stateCreatedAt] CallState stateCreatedAt
+         * @property {Object.<string,groupcall.CallState.Participant>|null} [participants] CallState participants
+         */
+
+        /**
+         * Constructs a new CallState.
+         * @memberof groupcall
+         * @classdesc Represents a CallState.
+         * @implements ICallState
+         * @constructor
+         * @param {groupcall.ICallState=} [properties] Properties to set
+         */
+        function CallState(properties) {
+            this.participants = {};
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * CallState padding.
+         * @member {Uint8Array} padding
+         * @memberof groupcall.CallState
+         * @instance
+         */
+        CallState.prototype.padding = $util.newBuffer([]);
+
+        /**
+         * CallState stateCreatedBy.
+         * @member {number} stateCreatedBy
+         * @memberof groupcall.CallState
+         * @instance
+         */
+        CallState.prototype.stateCreatedBy = 0;
+
+        /**
+         * CallState stateCreatedAt.
+         * @member {Long} stateCreatedAt
+         * @memberof groupcall.CallState
+         * @instance
+         */
+        CallState.prototype.stateCreatedAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * CallState participants.
+         * @member {Object.<string,groupcall.CallState.Participant>} participants
+         * @memberof groupcall.CallState
+         * @instance
+         */
+        CallState.prototype.participants = $util.emptyObject;
+
+        /**
+         * Encodes the specified CallState message. Does not implicitly {@link groupcall.CallState.verify|verify} messages.
+         * @function encode
+         * @memberof groupcall.CallState
+         * @static
+         * @param {groupcall.CallState} message CallState message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        CallState.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
+            if (message.stateCreatedBy != null && Object.hasOwnProperty.call(message, "stateCreatedBy"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.stateCreatedBy);
+            if (message.stateCreatedAt != null && Object.hasOwnProperty.call(message, "stateCreatedAt"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.stateCreatedAt);
+            if (message.participants != null && Object.hasOwnProperty.call(message, "participants"))
+                for (let keys = Object.keys(message.participants), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 0 =*/8).uint32(keys[i]);
+                    $root.groupcall.CallState.Participant.encode(message.participants[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                }
+            return writer;
+        };
+
+        /**
+         * Decodes a CallState message from the specified reader or buffer.
+         * @function decode
+         * @memberof groupcall.CallState
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {groupcall.CallState} CallState
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        CallState.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.CallState(), key, value;
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.padding = reader.bytes();
+                    break;
+                case 2:
+                    message.stateCreatedBy = reader.uint32();
+                    break;
+                case 3:
+                    message.stateCreatedAt = reader.uint64();
+                    break;
+                case 4:
+                    if (message.participants === $util.emptyObject)
+                        message.participants = {};
+                    let end2 = reader.uint32() + reader.pos;
+                    key = 0;
+                    value = null;
+                    while (reader.pos < end2) {
+                        let tag2 = reader.uint32();
+                        switch (tag2 >>> 3) {
+                        case 1:
+                            key = reader.uint32();
+                            break;
+                        case 2:
+                            value = $root.groupcall.CallState.Participant.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag2 & 7);
+                            break;
+                        }
+                    }
+                    message.participants[key] = value;
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        CallState.Participant = (function() {
+
+            /**
+             * Properties of a Participant.
+             * @memberof groupcall.CallState
+             * @interface IParticipant
+             * @property {number|null} [participantId] Participant participantId
+             * @property {groupcall.CallState.Participant.Normal|null} [threema] Participant threema
+             * @property {groupcall.CallState.Participant.Guest|null} [guest] Participant guest
+             */
+
+            /**
+             * Constructs a new Participant.
+             * @memberof groupcall.CallState
+             * @classdesc Represents a Participant.
+             * @implements IParticipant
+             * @constructor
+             * @param {groupcall.CallState.IParticipant=} [properties] Properties to set
+             */
+            function Participant(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Participant participantId.
+             * @member {number} participantId
+             * @memberof groupcall.CallState.Participant
+             * @instance
+             */
+            Participant.prototype.participantId = 0;
+
+            /**
+             * Participant threema.
+             * @member {groupcall.CallState.Participant.Normal|null|undefined} threema
+             * @memberof groupcall.CallState.Participant
+             * @instance
+             */
+            Participant.prototype.threema = null;
+
+            /**
+             * Participant guest.
+             * @member {groupcall.CallState.Participant.Guest|null|undefined} guest
+             * @memberof groupcall.CallState.Participant
+             * @instance
+             */
+            Participant.prototype.guest = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * Participant participant.
+             * @member {"threema"|"guest"|undefined} participant
+             * @memberof groupcall.CallState.Participant
+             * @instance
+             */
+            Object.defineProperty(Participant.prototype, "participant", {
+                get: $util.oneOfGetter($oneOfFields = ["threema", "guest"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified Participant message. Does not implicitly {@link groupcall.CallState.Participant.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.CallState.Participant
+             * @static
+             * @param {groupcall.CallState.Participant} message Participant message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Participant.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
+                if (message.threema != null && Object.hasOwnProperty.call(message, "threema"))
+                    $root.groupcall.CallState.Participant.Normal.encode(message.threema, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                if (message.guest != null && Object.hasOwnProperty.call(message, "guest"))
+                    $root.groupcall.CallState.Participant.Guest.encode(message.guest, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes a Participant message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.CallState.Participant
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.CallState.Participant} Participant
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Participant.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.CallState.Participant();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.participantId = reader.uint32();
+                        break;
+                    case 2:
+                        message.threema = $root.groupcall.CallState.Participant.Normal.decode(reader, reader.uint32());
+                        break;
+                    case 3:
+                        message.guest = $root.groupcall.CallState.Participant.Guest.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            Participant.Normal = (function() {
+
+                /**
+                 * Properties of a Normal.
+                 * @memberof groupcall.CallState.Participant
+                 * @interface INormal
+                 * @property {string|null} [identity] Normal identity
+                 * @property {string|null} [nickname] Normal nickname
+                 */
+
+                /**
+                 * Constructs a new Normal.
+                 * @memberof groupcall.CallState.Participant
+                 * @classdesc Represents a Normal.
+                 * @implements INormal
+                 * @constructor
+                 * @param {groupcall.CallState.Participant.INormal=} [properties] Properties to set
+                 */
+                function Normal(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Normal identity.
+                 * @member {string} identity
+                 * @memberof groupcall.CallState.Participant.Normal
+                 * @instance
+                 */
+                Normal.prototype.identity = "";
+
+                /**
+                 * Normal nickname.
+                 * @member {string} nickname
+                 * @memberof groupcall.CallState.Participant.Normal
+                 * @instance
+                 */
+                Normal.prototype.nickname = "";
+
+                /**
+                 * Encodes the specified Normal message. Does not implicitly {@link groupcall.CallState.Participant.Normal.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.CallState.Participant.Normal
+                 * @static
+                 * @param {groupcall.CallState.Participant.Normal} message Normal message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Normal.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.identity != null && Object.hasOwnProperty.call(message, "identity"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.identity);
+                    if (message.nickname != null && Object.hasOwnProperty.call(message, "nickname"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.nickname);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Normal message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.CallState.Participant.Normal
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.CallState.Participant.Normal} Normal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Normal.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.CallState.Participant.Normal();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.identity = reader.string();
+                            break;
+                        case 2:
+                            message.nickname = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Normal;
+            })();
+
+            Participant.Guest = (function() {
+
+                /**
+                 * Properties of a Guest.
+                 * @memberof groupcall.CallState.Participant
+                 * @interface IGuest
+                 * @property {string|null} [name] Guest name
+                 */
+
+                /**
+                 * Constructs a new Guest.
+                 * @memberof groupcall.CallState.Participant
+                 * @classdesc Represents a Guest.
+                 * @implements IGuest
+                 * @constructor
+                 * @param {groupcall.CallState.Participant.IGuest=} [properties] Properties to set
+                 */
+                function Guest(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Guest name.
+                 * @member {string} name
+                 * @memberof groupcall.CallState.Participant.Guest
+                 * @instance
+                 */
+                Guest.prototype.name = "";
+
+                /**
+                 * Encodes the specified Guest message. Does not implicitly {@link groupcall.CallState.Participant.Guest.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.CallState.Participant.Guest
+                 * @static
+                 * @param {groupcall.CallState.Participant.Guest} message Guest message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Guest.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Guest message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.CallState.Participant.Guest
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.CallState.Participant.Guest} Guest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Guest.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.CallState.Participant.Guest();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.name = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Guest;
+            })();
+
+            return Participant;
+        })();
+
+        return CallState;
+    })();
+
+    groupcall.SfuHttpRequest = (function() {
+
+        /**
+         * Properties of a SfuHttpRequest.
+         * @memberof groupcall
+         * @interface ISfuHttpRequest
+         */
+
+        /**
+         * Constructs a new SfuHttpRequest.
+         * @memberof groupcall
+         * @classdesc Represents a SfuHttpRequest.
+         * @implements ISfuHttpRequest
+         * @constructor
+         * @param {groupcall.ISfuHttpRequest=} [properties] Properties to set
+         */
+        function SfuHttpRequest(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encodes the specified SfuHttpRequest message. Does not implicitly {@link groupcall.SfuHttpRequest.verify|verify} messages.
+         * @function encode
+         * @memberof groupcall.SfuHttpRequest
+         * @static
+         * @param {groupcall.SfuHttpRequest} message SfuHttpRequest message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        SfuHttpRequest.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            return writer;
+        };
+
+        /**
+         * Decodes a SfuHttpRequest message from the specified reader or buffer.
+         * @function decode
+         * @memberof groupcall.SfuHttpRequest
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {groupcall.SfuHttpRequest} SfuHttpRequest
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        SfuHttpRequest.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuHttpRequest();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        SfuHttpRequest.Peek = (function() {
+
+            /**
+             * Properties of a Peek.
+             * @memberof groupcall.SfuHttpRequest
+             * @interface IPeek
+             * @property {Uint8Array|null} [callId] Peek callId
+             */
+
+            /**
+             * Constructs a new Peek.
+             * @memberof groupcall.SfuHttpRequest
+             * @classdesc Represents a Peek.
+             * @implements IPeek
+             * @constructor
+             * @param {groupcall.SfuHttpRequest.IPeek=} [properties] Properties to set
+             */
+            function Peek(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Peek callId.
+             * @member {Uint8Array} callId
+             * @memberof groupcall.SfuHttpRequest.Peek
+             * @instance
+             */
+            Peek.prototype.callId = $util.newBuffer([]);
+
+            /**
+             * Encodes the specified Peek message. Does not implicitly {@link groupcall.SfuHttpRequest.Peek.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuHttpRequest.Peek
+             * @static
+             * @param {groupcall.SfuHttpRequest.Peek} message Peek message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Peek.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.callId != null && Object.hasOwnProperty.call(message, "callId"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.callId);
+                return writer;
+            };
+
+            /**
+             * Decodes a Peek message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuHttpRequest.Peek
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuHttpRequest.Peek} Peek
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Peek.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuHttpRequest.Peek();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.callId = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Peek;
+        })();
+
+        SfuHttpRequest.Join = (function() {
+
+            /**
+             * Properties of a Join.
+             * @memberof groupcall.SfuHttpRequest
+             * @interface IJoin
+             * @property {Uint8Array|null} [callId] Join callId
+             * @property {number|null} [protocolVersion] Join protocolVersion
+             * @property {Uint8Array|null} [dtlsFingerprint] Join dtlsFingerprint
+             */
+
+            /**
+             * Constructs a new Join.
+             * @memberof groupcall.SfuHttpRequest
+             * @classdesc Represents a Join.
+             * @implements IJoin
+             * @constructor
+             * @param {groupcall.SfuHttpRequest.IJoin=} [properties] Properties to set
+             */
+            function Join(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Join callId.
+             * @member {Uint8Array} callId
+             * @memberof groupcall.SfuHttpRequest.Join
+             * @instance
+             */
+            Join.prototype.callId = $util.newBuffer([]);
+
+            /**
+             * Join protocolVersion.
+             * @member {number} protocolVersion
+             * @memberof groupcall.SfuHttpRequest.Join
+             * @instance
+             */
+            Join.prototype.protocolVersion = 0;
+
+            /**
+             * Join dtlsFingerprint.
+             * @member {Uint8Array} dtlsFingerprint
+             * @memberof groupcall.SfuHttpRequest.Join
+             * @instance
+             */
+            Join.prototype.dtlsFingerprint = $util.newBuffer([]);
+
+            /**
+             * Encodes the specified Join message. Does not implicitly {@link groupcall.SfuHttpRequest.Join.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuHttpRequest.Join
+             * @static
+             * @param {groupcall.SfuHttpRequest.Join} message Join message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Join.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.callId != null && Object.hasOwnProperty.call(message, "callId"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.callId);
+                if (message.protocolVersion != null && Object.hasOwnProperty.call(message, "protocolVersion"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.protocolVersion);
+                if (message.dtlsFingerprint != null && Object.hasOwnProperty.call(message, "dtlsFingerprint"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.dtlsFingerprint);
+                return writer;
+            };
+
+            /**
+             * Decodes a Join message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuHttpRequest.Join
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuHttpRequest.Join} Join
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Join.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuHttpRequest.Join();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.callId = reader.bytes();
+                        break;
+                    case 2:
+                        message.protocolVersion = reader.uint32();
+                        break;
+                    case 3:
+                        message.dtlsFingerprint = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Join;
+        })();
+
+        return SfuHttpRequest;
+    })();
+
+    groupcall.SfuHttpResponse = (function() {
+
+        /**
+         * Properties of a SfuHttpResponse.
+         * @memberof groupcall
+         * @interface ISfuHttpResponse
+         */
+
+        /**
+         * Constructs a new SfuHttpResponse.
+         * @memberof groupcall
+         * @classdesc Represents a SfuHttpResponse.
+         * @implements ISfuHttpResponse
+         * @constructor
+         * @param {groupcall.ISfuHttpResponse=} [properties] Properties to set
+         */
+        function SfuHttpResponse(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encodes the specified SfuHttpResponse message. Does not implicitly {@link groupcall.SfuHttpResponse.verify|verify} messages.
+         * @function encode
+         * @memberof groupcall.SfuHttpResponse
+         * @static
+         * @param {groupcall.SfuHttpResponse} message SfuHttpResponse message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        SfuHttpResponse.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            return writer;
+        };
+
+        /**
+         * Decodes a SfuHttpResponse message from the specified reader or buffer.
+         * @function decode
+         * @memberof groupcall.SfuHttpResponse
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {groupcall.SfuHttpResponse} SfuHttpResponse
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        SfuHttpResponse.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuHttpResponse();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        SfuHttpResponse.Peek = (function() {
+
+            /**
+             * Properties of a Peek.
+             * @memberof groupcall.SfuHttpResponse
+             * @interface IPeek
+             * @property {Long|null} [startedAt] Peek startedAt
+             * @property {number|null} [maxParticipants] Peek maxParticipants
+             * @property {Uint8Array|null} [encryptedCallState] Peek encryptedCallState
+             */
+
+            /**
+             * Constructs a new Peek.
+             * @memberof groupcall.SfuHttpResponse
+             * @classdesc Represents a Peek.
+             * @implements IPeek
+             * @constructor
+             * @param {groupcall.SfuHttpResponse.IPeek=} [properties] Properties to set
+             */
+            function Peek(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Peek startedAt.
+             * @member {Long} startedAt
+             * @memberof groupcall.SfuHttpResponse.Peek
+             * @instance
+             */
+            Peek.prototype.startedAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+            /**
+             * Peek maxParticipants.
+             * @member {number} maxParticipants
+             * @memberof groupcall.SfuHttpResponse.Peek
+             * @instance
+             */
+            Peek.prototype.maxParticipants = 0;
+
+            /**
+             * Peek encryptedCallState.
+             * @member {Uint8Array|null|undefined} encryptedCallState
+             * @memberof groupcall.SfuHttpResponse.Peek
+             * @instance
+             */
+            Peek.prototype.encryptedCallState = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * Peek _encryptedCallState.
+             * @member {"encryptedCallState"|undefined} _encryptedCallState
+             * @memberof groupcall.SfuHttpResponse.Peek
+             * @instance
+             */
+            Object.defineProperty(Peek.prototype, "_encryptedCallState", {
+                get: $util.oneOfGetter($oneOfFields = ["encryptedCallState"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified Peek message. Does not implicitly {@link groupcall.SfuHttpResponse.Peek.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuHttpResponse.Peek
+             * @static
+             * @param {groupcall.SfuHttpResponse.Peek} message Peek message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Peek.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.startedAt != null && Object.hasOwnProperty.call(message, "startedAt"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.startedAt);
+                if (message.maxParticipants != null && Object.hasOwnProperty.call(message, "maxParticipants"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.maxParticipants);
+                if (message.encryptedCallState != null && Object.hasOwnProperty.call(message, "encryptedCallState"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.encryptedCallState);
+                return writer;
+            };
+
+            /**
+             * Decodes a Peek message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuHttpResponse.Peek
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuHttpResponse.Peek} Peek
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Peek.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuHttpResponse.Peek();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.startedAt = reader.uint64();
+                        break;
+                    case 2:
+                        message.maxParticipants = reader.uint32();
+                        break;
+                    case 3:
+                        message.encryptedCallState = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Peek;
+        })();
+
+        SfuHttpResponse.Join = (function() {
+
+            /**
+             * Properties of a Join.
+             * @memberof groupcall.SfuHttpResponse
+             * @interface IJoin
+             * @property {Long|null} [startedAt] Join startedAt
+             * @property {number|null} [maxParticipants] Join maxParticipants
+             * @property {number|null} [participantId] Join participantId
+             * @property {Array.<groupcall.SfuHttpResponse.Join.Address>|null} [addresses] Join addresses
+             * @property {string|null} [iceUsernameFragment] Join iceUsernameFragment
+             * @property {string|null} [icePassword] Join icePassword
+             * @property {Uint8Array|null} [dtlsFingerprint] Join dtlsFingerprint
+             */
+
+            /**
+             * Constructs a new Join.
+             * @memberof groupcall.SfuHttpResponse
+             * @classdesc Represents a Join.
+             * @implements IJoin
+             * @constructor
+             * @param {groupcall.SfuHttpResponse.IJoin=} [properties] Properties to set
+             */
+            function Join(properties) {
+                this.addresses = [];
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Join startedAt.
+             * @member {Long} startedAt
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @instance
+             */
+            Join.prototype.startedAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+            /**
+             * Join maxParticipants.
+             * @member {number} maxParticipants
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @instance
+             */
+            Join.prototype.maxParticipants = 0;
+
+            /**
+             * Join participantId.
+             * @member {number} participantId
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @instance
+             */
+            Join.prototype.participantId = 0;
+
+            /**
+             * Join addresses.
+             * @member {Array.<groupcall.SfuHttpResponse.Join.Address>} addresses
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @instance
+             */
+            Join.prototype.addresses = $util.emptyArray;
+
+            /**
+             * Join iceUsernameFragment.
+             * @member {string} iceUsernameFragment
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @instance
+             */
+            Join.prototype.iceUsernameFragment = "";
+
+            /**
+             * Join icePassword.
+             * @member {string} icePassword
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @instance
+             */
+            Join.prototype.icePassword = "";
+
+            /**
+             * Join dtlsFingerprint.
+             * @member {Uint8Array} dtlsFingerprint
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @instance
+             */
+            Join.prototype.dtlsFingerprint = $util.newBuffer([]);
+
+            /**
+             * Encodes the specified Join message. Does not implicitly {@link groupcall.SfuHttpResponse.Join.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @static
+             * @param {groupcall.SfuHttpResponse.Join} message Join message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Join.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.startedAt != null && Object.hasOwnProperty.call(message, "startedAt"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.startedAt);
+                if (message.maxParticipants != null && Object.hasOwnProperty.call(message, "maxParticipants"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.maxParticipants);
+                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                    writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.participantId);
+                if (message.addresses != null && message.addresses.length)
+                    for (let i = 0; i < message.addresses.length; ++i)
+                        $root.groupcall.SfuHttpResponse.Join.Address.encode(message.addresses[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                if (message.iceUsernameFragment != null && Object.hasOwnProperty.call(message, "iceUsernameFragment"))
+                    writer.uint32(/* id 5, wireType 2 =*/42).string(message.iceUsernameFragment);
+                if (message.icePassword != null && Object.hasOwnProperty.call(message, "icePassword"))
+                    writer.uint32(/* id 6, wireType 2 =*/50).string(message.icePassword);
+                if (message.dtlsFingerprint != null && Object.hasOwnProperty.call(message, "dtlsFingerprint"))
+                    writer.uint32(/* id 7, wireType 2 =*/58).bytes(message.dtlsFingerprint);
+                return writer;
+            };
+
+            /**
+             * Decodes a Join message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuHttpResponse.Join
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuHttpResponse.Join} Join
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Join.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuHttpResponse.Join();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.startedAt = reader.uint64();
+                        break;
+                    case 2:
+                        message.maxParticipants = reader.uint32();
+                        break;
+                    case 3:
+                        message.participantId = reader.uint32();
+                        break;
+                    case 4:
+                        if (!(message.addresses && message.addresses.length))
+                            message.addresses = [];
+                        message.addresses.push($root.groupcall.SfuHttpResponse.Join.Address.decode(reader, reader.uint32()));
+                        break;
+                    case 5:
+                        message.iceUsernameFragment = reader.string();
+                        break;
+                    case 6:
+                        message.icePassword = reader.string();
+                        break;
+                    case 7:
+                        message.dtlsFingerprint = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            Join.Address = (function() {
+
+                /**
+                 * Properties of an Address.
+                 * @memberof groupcall.SfuHttpResponse.Join
+                 * @interface IAddress
+                 * @property {groupcall.SfuHttpResponse.Join.Address.Protocol|null} [protocol] Address protocol
+                 * @property {number|null} [port] Address port
+                 * @property {string|null} [ip] Address ip
+                 */
+
+                /**
+                 * Constructs a new Address.
+                 * @memberof groupcall.SfuHttpResponse.Join
+                 * @classdesc Represents an Address.
+                 * @implements IAddress
+                 * @constructor
+                 * @param {groupcall.SfuHttpResponse.Join.IAddress=} [properties] Properties to set
+                 */
+                function Address(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Address protocol.
+                 * @member {groupcall.SfuHttpResponse.Join.Address.Protocol} protocol
+                 * @memberof groupcall.SfuHttpResponse.Join.Address
+                 * @instance
+                 */
+                Address.prototype.protocol = 0;
+
+                /**
+                 * Address port.
+                 * @member {number} port
+                 * @memberof groupcall.SfuHttpResponse.Join.Address
+                 * @instance
+                 */
+                Address.prototype.port = 0;
+
+                /**
+                 * Address ip.
+                 * @member {string} ip
+                 * @memberof groupcall.SfuHttpResponse.Join.Address
+                 * @instance
+                 */
+                Address.prototype.ip = "";
+
+                /**
+                 * Encodes the specified Address message. Does not implicitly {@link groupcall.SfuHttpResponse.Join.Address.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.SfuHttpResponse.Join.Address
+                 * @static
+                 * @param {groupcall.SfuHttpResponse.Join.Address} message Address message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Address.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.protocol != null && Object.hasOwnProperty.call(message, "protocol"))
+                        writer.uint32(/* id 1, wireType 0 =*/8).int32(message.protocol);
+                    if (message.port != null && Object.hasOwnProperty.call(message, "port"))
+                        writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.port);
+                    if (message.ip != null && Object.hasOwnProperty.call(message, "ip"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.ip);
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Address message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.SfuHttpResponse.Join.Address
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.SfuHttpResponse.Join.Address} Address
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Address.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuHttpResponse.Join.Address();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.protocol = reader.int32();
+                            break;
+                        case 2:
+                            message.port = reader.uint32();
+                            break;
+                        case 3:
+                            message.ip = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                /**
+                 * Protocol enum.
+                 * @name groupcall.SfuHttpResponse.Join.Address.Protocol
+                 * @enum {number}
+                 * @property {number} UDP=0 UDP value
+                 */
+                Address.Protocol = (function() {
+                    const valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "UDP"] = 0;
+                    return values;
+                })();
+
+                return Address;
+            })();
+
+            return Join;
+        })();
+
+        return SfuHttpResponse;
+    })();
+
+    groupcall.SfuToParticipant = (function() {
+
+        /**
+         * Properties of a SfuToParticipant.
+         * @memberof groupcall
+         * @interface ISfuToParticipant
+         */
+
+        /**
+         * Constructs a new SfuToParticipant.
+         * @memberof groupcall
+         * @classdesc Represents a SfuToParticipant.
+         * @implements ISfuToParticipant
+         * @constructor
+         * @param {groupcall.ISfuToParticipant=} [properties] Properties to set
+         */
+        function SfuToParticipant(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encodes the specified SfuToParticipant message. Does not implicitly {@link groupcall.SfuToParticipant.verify|verify} messages.
+         * @function encode
+         * @memberof groupcall.SfuToParticipant
+         * @static
+         * @param {groupcall.SfuToParticipant} message SfuToParticipant message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        SfuToParticipant.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            return writer;
+        };
+
+        /**
+         * Decodes a SfuToParticipant message from the specified reader or buffer.
+         * @function decode
+         * @memberof groupcall.SfuToParticipant
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {groupcall.SfuToParticipant} SfuToParticipant
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        SfuToParticipant.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuToParticipant();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        SfuToParticipant.Envelope = (function() {
+
+            /**
+             * Properties of an Envelope.
+             * @memberof groupcall.SfuToParticipant
+             * @interface IEnvelope
+             * @property {Uint8Array|null} [padding] Envelope padding
+             * @property {groupcall.ParticipantToParticipant.OuterEnvelope|null} [relay] Envelope relay
+             * @property {groupcall.SfuToParticipant.Hello|null} [hello] Envelope hello
+             * @property {groupcall.SfuToParticipant.ParticipantJoined|null} [participantJoined] Envelope participantJoined
+             * @property {groupcall.SfuToParticipant.ParticipantLeft|null} [participantLeft] Envelope participantLeft
+             */
+
+            /**
+             * Constructs a new Envelope.
+             * @memberof groupcall.SfuToParticipant
+             * @classdesc Represents an Envelope.
+             * @implements IEnvelope
+             * @constructor
+             * @param {groupcall.SfuToParticipant.IEnvelope=} [properties] Properties to set
+             */
+            function Envelope(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Envelope padding.
+             * @member {Uint8Array} padding
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.padding = $util.newBuffer([]);
+
+            /**
+             * Envelope relay.
+             * @member {groupcall.ParticipantToParticipant.OuterEnvelope|null|undefined} relay
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.relay = null;
+
+            /**
+             * Envelope hello.
+             * @member {groupcall.SfuToParticipant.Hello|null|undefined} hello
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.hello = null;
+
+            /**
+             * Envelope participantJoined.
+             * @member {groupcall.SfuToParticipant.ParticipantJoined|null|undefined} participantJoined
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.participantJoined = null;
+
+            /**
+             * Envelope participantLeft.
+             * @member {groupcall.SfuToParticipant.ParticipantLeft|null|undefined} participantLeft
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.participantLeft = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * Envelope content.
+             * @member {"relay"|"hello"|"participantJoined"|"participantLeft"|undefined} content
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @instance
+             */
+            Object.defineProperty(Envelope.prototype, "content", {
+                get: $util.oneOfGetter($oneOfFields = ["relay", "hello", "participantJoined", "participantLeft"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified Envelope message. Does not implicitly {@link groupcall.SfuToParticipant.Envelope.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @static
+             * @param {groupcall.SfuToParticipant.Envelope} message Envelope message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Envelope.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
+                if (message.relay != null && Object.hasOwnProperty.call(message, "relay"))
+                    $root.groupcall.ParticipantToParticipant.OuterEnvelope.encode(message.relay, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                if (message.hello != null && Object.hasOwnProperty.call(message, "hello"))
+                    $root.groupcall.SfuToParticipant.Hello.encode(message.hello, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                if (message.participantJoined != null && Object.hasOwnProperty.call(message, "participantJoined"))
+                    $root.groupcall.SfuToParticipant.ParticipantJoined.encode(message.participantJoined, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                if (message.participantLeft != null && Object.hasOwnProperty.call(message, "participantLeft"))
+                    $root.groupcall.SfuToParticipant.ParticipantLeft.encode(message.participantLeft, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes an Envelope message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuToParticipant.Envelope
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuToParticipant.Envelope} Envelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Envelope.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuToParticipant.Envelope();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.padding = reader.bytes();
+                        break;
+                    case 2:
+                        message.relay = $root.groupcall.ParticipantToParticipant.OuterEnvelope.decode(reader, reader.uint32());
+                        break;
+                    case 3:
+                        message.hello = $root.groupcall.SfuToParticipant.Hello.decode(reader, reader.uint32());
+                        break;
+                    case 4:
+                        message.participantJoined = $root.groupcall.SfuToParticipant.ParticipantJoined.decode(reader, reader.uint32());
+                        break;
+                    case 5:
+                        message.participantLeft = $root.groupcall.SfuToParticipant.ParticipantLeft.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Envelope;
+        })();
+
+        SfuToParticipant.Hello = (function() {
+
+            /**
+             * Properties of a Hello.
+             * @memberof groupcall.SfuToParticipant
+             * @interface IHello
+             * @property {Array.<number>|null} [participantIds] Hello participantIds
+             */
+
+            /**
+             * Constructs a new Hello.
+             * @memberof groupcall.SfuToParticipant
+             * @classdesc Represents a Hello.
+             * @implements IHello
+             * @constructor
+             * @param {groupcall.SfuToParticipant.IHello=} [properties] Properties to set
+             */
+            function Hello(properties) {
+                this.participantIds = [];
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Hello participantIds.
+             * @member {Array.<number>} participantIds
+             * @memberof groupcall.SfuToParticipant.Hello
+             * @instance
+             */
+            Hello.prototype.participantIds = $util.emptyArray;
+
+            /**
+             * Encodes the specified Hello message. Does not implicitly {@link groupcall.SfuToParticipant.Hello.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuToParticipant.Hello
+             * @static
+             * @param {groupcall.SfuToParticipant.Hello} message Hello message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Hello.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.participantIds != null && message.participantIds.length) {
+                    writer.uint32(/* id 1, wireType 2 =*/10).fork();
+                    for (let i = 0; i < message.participantIds.length; ++i)
+                        writer.uint32(message.participantIds[i]);
+                    writer.ldelim();
+                }
+                return writer;
+            };
+
+            /**
+             * Decodes a Hello message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuToParticipant.Hello
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuToParticipant.Hello} Hello
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Hello.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuToParticipant.Hello();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        if (!(message.participantIds && message.participantIds.length))
+                            message.participantIds = [];
+                        if ((tag & 7) === 2) {
+                            let end2 = reader.uint32() + reader.pos;
+                            while (reader.pos < end2)
+                                message.participantIds.push(reader.uint32());
+                        } else
+                            message.participantIds.push(reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Hello;
+        })();
+
+        SfuToParticipant.ParticipantJoined = (function() {
+
+            /**
+             * Properties of a ParticipantJoined.
+             * @memberof groupcall.SfuToParticipant
+             * @interface IParticipantJoined
+             * @property {number|null} [participantId] ParticipantJoined participantId
+             */
+
+            /**
+             * Constructs a new ParticipantJoined.
+             * @memberof groupcall.SfuToParticipant
+             * @classdesc Represents a ParticipantJoined.
+             * @implements IParticipantJoined
+             * @constructor
+             * @param {groupcall.SfuToParticipant.IParticipantJoined=} [properties] Properties to set
+             */
+            function ParticipantJoined(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * ParticipantJoined participantId.
+             * @member {number} participantId
+             * @memberof groupcall.SfuToParticipant.ParticipantJoined
+             * @instance
+             */
+            ParticipantJoined.prototype.participantId = 0;
+
+            /**
+             * Encodes the specified ParticipantJoined message. Does not implicitly {@link groupcall.SfuToParticipant.ParticipantJoined.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuToParticipant.ParticipantJoined
+             * @static
+             * @param {groupcall.SfuToParticipant.ParticipantJoined} message ParticipantJoined message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            ParticipantJoined.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
+                return writer;
+            };
+
+            /**
+             * Decodes a ParticipantJoined message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuToParticipant.ParticipantJoined
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuToParticipant.ParticipantJoined} ParticipantJoined
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            ParticipantJoined.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuToParticipant.ParticipantJoined();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.participantId = reader.uint32();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return ParticipantJoined;
+        })();
+
+        SfuToParticipant.ParticipantLeft = (function() {
+
+            /**
+             * Properties of a ParticipantLeft.
+             * @memberof groupcall.SfuToParticipant
+             * @interface IParticipantLeft
+             * @property {number|null} [participantId] ParticipantLeft participantId
+             */
+
+            /**
+             * Constructs a new ParticipantLeft.
+             * @memberof groupcall.SfuToParticipant
+             * @classdesc Represents a ParticipantLeft.
+             * @implements IParticipantLeft
+             * @constructor
+             * @param {groupcall.SfuToParticipant.IParticipantLeft=} [properties] Properties to set
+             */
+            function ParticipantLeft(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * ParticipantLeft participantId.
+             * @member {number} participantId
+             * @memberof groupcall.SfuToParticipant.ParticipantLeft
+             * @instance
+             */
+            ParticipantLeft.prototype.participantId = 0;
+
+            /**
+             * Encodes the specified ParticipantLeft message. Does not implicitly {@link groupcall.SfuToParticipant.ParticipantLeft.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.SfuToParticipant.ParticipantLeft
+             * @static
+             * @param {groupcall.SfuToParticipant.ParticipantLeft} message ParticipantLeft message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            ParticipantLeft.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
+                return writer;
+            };
+
+            /**
+             * Decodes a ParticipantLeft message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.SfuToParticipant.ParticipantLeft
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.SfuToParticipant.ParticipantLeft} ParticipantLeft
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            ParticipantLeft.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.SfuToParticipant.ParticipantLeft();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.participantId = reader.uint32();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return ParticipantLeft;
+        })();
+
+        return SfuToParticipant;
+    })();
+
+    groupcall.ParticipantToSfu = (function() {
+
+        /**
+         * Properties of a ParticipantToSfu.
+         * @memberof groupcall
+         * @interface IParticipantToSfu
+         */
+
+        /**
+         * Constructs a new ParticipantToSfu.
+         * @memberof groupcall
+         * @classdesc Represents a ParticipantToSfu.
+         * @implements IParticipantToSfu
+         * @constructor
+         * @param {groupcall.IParticipantToSfu=} [properties] Properties to set
+         */
+        function ParticipantToSfu(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encodes the specified ParticipantToSfu message. Does not implicitly {@link groupcall.ParticipantToSfu.verify|verify} messages.
+         * @function encode
+         * @memberof groupcall.ParticipantToSfu
+         * @static
+         * @param {groupcall.ParticipantToSfu} message ParticipantToSfu message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ParticipantToSfu.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            return writer;
+        };
+
+        /**
+         * Decodes a ParticipantToSfu message from the specified reader or buffer.
+         * @function decode
+         * @memberof groupcall.ParticipantToSfu
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {groupcall.ParticipantToSfu} ParticipantToSfu
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ParticipantToSfu.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        ParticipantToSfu.Envelope = (function() {
+
+            /**
+             * Properties of an Envelope.
+             * @memberof groupcall.ParticipantToSfu
+             * @interface IEnvelope
+             * @property {Uint8Array|null} [padding] Envelope padding
+             * @property {groupcall.ParticipantToParticipant.OuterEnvelope|null} [relay] Envelope relay
+             * @property {groupcall.ParticipantToSfu.UpdateCallState|null} [updateCallState] Envelope updateCallState
+             * @property {groupcall.ParticipantToSfu.ParticipantMicrophone|null} [requestParticipantMicrophone] Envelope requestParticipantMicrophone
+             * @property {groupcall.ParticipantToSfu.ParticipantCamera|null} [requestParticipantCamera] Envelope requestParticipantCamera
+             * @property {groupcall.ParticipantToSfu.ParticipantScreen|null} [requestParticipantScreenShare] Envelope requestParticipantScreenShare
+             */
+
+            /**
+             * Constructs a new Envelope.
+             * @memberof groupcall.ParticipantToSfu
+             * @classdesc Represents an Envelope.
+             * @implements IEnvelope
+             * @constructor
+             * @param {groupcall.ParticipantToSfu.IEnvelope=} [properties] Properties to set
+             */
+            function Envelope(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Envelope padding.
+             * @member {Uint8Array} padding
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @instance
+             */
+            Envelope.prototype.padding = $util.newBuffer([]);
+
+            /**
+             * Envelope relay.
+             * @member {groupcall.ParticipantToParticipant.OuterEnvelope|null|undefined} relay
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @instance
+             */
+            Envelope.prototype.relay = null;
+
+            /**
+             * Envelope updateCallState.
+             * @member {groupcall.ParticipantToSfu.UpdateCallState|null|undefined} updateCallState
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @instance
+             */
+            Envelope.prototype.updateCallState = null;
+
+            /**
+             * Envelope requestParticipantMicrophone.
+             * @member {groupcall.ParticipantToSfu.ParticipantMicrophone|null|undefined} requestParticipantMicrophone
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @instance
+             */
+            Envelope.prototype.requestParticipantMicrophone = null;
+
+            /**
+             * Envelope requestParticipantCamera.
+             * @member {groupcall.ParticipantToSfu.ParticipantCamera|null|undefined} requestParticipantCamera
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @instance
+             */
+            Envelope.prototype.requestParticipantCamera = null;
+
+            /**
+             * Envelope requestParticipantScreenShare.
+             * @member {groupcall.ParticipantToSfu.ParticipantScreen|null|undefined} requestParticipantScreenShare
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @instance
+             */
+            Envelope.prototype.requestParticipantScreenShare = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * Envelope content.
+             * @member {"relay"|"updateCallState"|"requestParticipantMicrophone"|"requestParticipantCamera"|"requestParticipantScreenShare"|undefined} content
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @instance
+             */
+            Object.defineProperty(Envelope.prototype, "content", {
+                get: $util.oneOfGetter($oneOfFields = ["relay", "updateCallState", "requestParticipantMicrophone", "requestParticipantCamera", "requestParticipantScreenShare"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified Envelope message. Does not implicitly {@link groupcall.ParticipantToSfu.Envelope.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @static
+             * @param {groupcall.ParticipantToSfu.Envelope} message Envelope message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Envelope.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
+                if (message.relay != null && Object.hasOwnProperty.call(message, "relay"))
+                    $root.groupcall.ParticipantToParticipant.OuterEnvelope.encode(message.relay, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                if (message.updateCallState != null && Object.hasOwnProperty.call(message, "updateCallState"))
+                    $root.groupcall.ParticipantToSfu.UpdateCallState.encode(message.updateCallState, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                if (message.requestParticipantCamera != null && Object.hasOwnProperty.call(message, "requestParticipantCamera"))
+                    $root.groupcall.ParticipantToSfu.ParticipantCamera.encode(message.requestParticipantCamera, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                if (message.requestParticipantScreenShare != null && Object.hasOwnProperty.call(message, "requestParticipantScreenShare"))
+                    $root.groupcall.ParticipantToSfu.ParticipantScreen.encode(message.requestParticipantScreenShare, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                if (message.requestParticipantMicrophone != null && Object.hasOwnProperty.call(message, "requestParticipantMicrophone"))
+                    $root.groupcall.ParticipantToSfu.ParticipantMicrophone.encode(message.requestParticipantMicrophone, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes an Envelope message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToSfu.Envelope
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToSfu.Envelope} Envelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Envelope.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.Envelope();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.padding = reader.bytes();
+                        break;
+                    case 2:
+                        message.relay = $root.groupcall.ParticipantToParticipant.OuterEnvelope.decode(reader, reader.uint32());
+                        break;
+                    case 3:
+                        message.updateCallState = $root.groupcall.ParticipantToSfu.UpdateCallState.decode(reader, reader.uint32());
+                        break;
+                    case 6:
+                        message.requestParticipantMicrophone = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.decode(reader, reader.uint32());
+                        break;
+                    case 4:
+                        message.requestParticipantCamera = $root.groupcall.ParticipantToSfu.ParticipantCamera.decode(reader, reader.uint32());
+                        break;
+                    case 5:
+                        message.requestParticipantScreenShare = $root.groupcall.ParticipantToSfu.ParticipantScreen.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Envelope;
+        })();
+
+        ParticipantToSfu.UpdateCallState = (function() {
+
+            /**
+             * Properties of an UpdateCallState.
+             * @memberof groupcall.ParticipantToSfu
+             * @interface IUpdateCallState
+             * @property {Uint8Array|null} [encryptedCallState] UpdateCallState encryptedCallState
+             */
+
+            /**
+             * Constructs a new UpdateCallState.
+             * @memberof groupcall.ParticipantToSfu
+             * @classdesc Represents an UpdateCallState.
+             * @implements IUpdateCallState
+             * @constructor
+             * @param {groupcall.ParticipantToSfu.IUpdateCallState=} [properties] Properties to set
+             */
+            function UpdateCallState(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * UpdateCallState encryptedCallState.
+             * @member {Uint8Array} encryptedCallState
+             * @memberof groupcall.ParticipantToSfu.UpdateCallState
+             * @instance
+             */
+            UpdateCallState.prototype.encryptedCallState = $util.newBuffer([]);
+
+            /**
+             * Encodes the specified UpdateCallState message. Does not implicitly {@link groupcall.ParticipantToSfu.UpdateCallState.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToSfu.UpdateCallState
+             * @static
+             * @param {groupcall.ParticipantToSfu.UpdateCallState} message UpdateCallState message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            UpdateCallState.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.encryptedCallState != null && Object.hasOwnProperty.call(message, "encryptedCallState"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.encryptedCallState);
+                return writer;
+            };
+
+            /**
+             * Decodes an UpdateCallState message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToSfu.UpdateCallState
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToSfu.UpdateCallState} UpdateCallState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            UpdateCallState.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.UpdateCallState();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.encryptedCallState = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return UpdateCallState;
+        })();
+
+        ParticipantToSfu.ParticipantMicrophone = (function() {
+
+            /**
+             * Properties of a ParticipantMicrophone.
+             * @memberof groupcall.ParticipantToSfu
+             * @interface IParticipantMicrophone
+             * @property {number|null} [participantId] ParticipantMicrophone participantId
+             * @property {groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe|null} [subscribe] ParticipantMicrophone subscribe
+             * @property {groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe|null} [unsubscribe] ParticipantMicrophone unsubscribe
+             */
+
+            /**
+             * Constructs a new ParticipantMicrophone.
+             * @memberof groupcall.ParticipantToSfu
+             * @classdesc Represents a ParticipantMicrophone.
+             * @implements IParticipantMicrophone
+             * @constructor
+             * @param {groupcall.ParticipantToSfu.IParticipantMicrophone=} [properties] Properties to set
+             */
+            function ParticipantMicrophone(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * ParticipantMicrophone participantId.
+             * @member {number} participantId
+             * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+             * @instance
+             */
+            ParticipantMicrophone.prototype.participantId = 0;
+
+            /**
+             * ParticipantMicrophone subscribe.
+             * @member {groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe|null|undefined} subscribe
+             * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+             * @instance
+             */
+            ParticipantMicrophone.prototype.subscribe = null;
+
+            /**
+             * ParticipantMicrophone unsubscribe.
+             * @member {groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe|null|undefined} unsubscribe
+             * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+             * @instance
+             */
+            ParticipantMicrophone.prototype.unsubscribe = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * ParticipantMicrophone action.
+             * @member {"subscribe"|"unsubscribe"|undefined} action
+             * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+             * @instance
+             */
+            Object.defineProperty(ParticipantMicrophone.prototype, "action", {
+                get: $util.oneOfGetter($oneOfFields = ["subscribe", "unsubscribe"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified ParticipantMicrophone message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantMicrophone.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+             * @static
+             * @param {groupcall.ParticipantToSfu.ParticipantMicrophone} message ParticipantMicrophone message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            ParticipantMicrophone.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
+                if (message.subscribe != null && Object.hasOwnProperty.call(message, "subscribe"))
+                    $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe.encode(message.subscribe, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                if (message.unsubscribe != null && Object.hasOwnProperty.call(message, "unsubscribe"))
+                    $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe.encode(message.unsubscribe, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes a ParticipantMicrophone message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToSfu.ParticipantMicrophone} ParticipantMicrophone
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            ParticipantMicrophone.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantMicrophone();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.participantId = reader.uint32();
+                        break;
+                    case 2:
+                        message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe.decode(reader, reader.uint32());
+                        break;
+                    case 3:
+                        message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            ParticipantMicrophone.Subscribe = (function() {
+
+                /**
+                 * Properties of a Subscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+                 * @interface ISubscribe
+                 */
+
+                /**
+                 * Constructs a new Subscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+                 * @classdesc Represents a Subscribe.
+                 * @implements ISubscribe
+                 * @constructor
+                 * @param {groupcall.ParticipantToSfu.ParticipantMicrophone.ISubscribe=} [properties] Properties to set
+                 */
+                function Subscribe(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Encodes the specified Subscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe
+                 * @static
+                 * @param {groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe} message Subscribe message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Subscribe.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Subscribe message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe} Subscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Subscribe.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Subscribe;
+            })();
+
+            ParticipantMicrophone.Unsubscribe = (function() {
+
+                /**
+                 * Properties of an Unsubscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+                 * @interface IUnsubscribe
+                 */
+
+                /**
+                 * Constructs a new Unsubscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone
+                 * @classdesc Represents an Unsubscribe.
+                 * @implements IUnsubscribe
+                 * @constructor
+                 * @param {groupcall.ParticipantToSfu.ParticipantMicrophone.IUnsubscribe=} [properties] Properties to set
+                 */
+                function Unsubscribe(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Encodes the specified Unsubscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe
+                 * @static
+                 * @param {groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe} message Unsubscribe message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Unsubscribe.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Unsubscribe message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe} Unsubscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Unsubscribe.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Unsubscribe;
+            })();
+
+            return ParticipantMicrophone;
+        })();
+
+        ParticipantToSfu.ParticipantCamera = (function() {
+
+            /**
+             * Properties of a ParticipantCamera.
+             * @memberof groupcall.ParticipantToSfu
+             * @interface IParticipantCamera
+             * @property {number|null} [participantId] ParticipantCamera participantId
+             * @property {groupcall.ParticipantToSfu.ParticipantCamera.Subscribe|null} [subscribe] ParticipantCamera subscribe
+             * @property {groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe|null} [unsubscribe] ParticipantCamera unsubscribe
+             */
+
+            /**
+             * Constructs a new ParticipantCamera.
+             * @memberof groupcall.ParticipantToSfu
+             * @classdesc Represents a ParticipantCamera.
+             * @implements IParticipantCamera
+             * @constructor
+             * @param {groupcall.ParticipantToSfu.IParticipantCamera=} [properties] Properties to set
+             */
+            function ParticipantCamera(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * ParticipantCamera participantId.
+             * @member {number} participantId
+             * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+             * @instance
+             */
+            ParticipantCamera.prototype.participantId = 0;
+
+            /**
+             * ParticipantCamera subscribe.
+             * @member {groupcall.ParticipantToSfu.ParticipantCamera.Subscribe|null|undefined} subscribe
+             * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+             * @instance
+             */
+            ParticipantCamera.prototype.subscribe = null;
+
+            /**
+             * ParticipantCamera unsubscribe.
+             * @member {groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe|null|undefined} unsubscribe
+             * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+             * @instance
+             */
+            ParticipantCamera.prototype.unsubscribe = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * ParticipantCamera action.
+             * @member {"subscribe"|"unsubscribe"|undefined} action
+             * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+             * @instance
+             */
+            Object.defineProperty(ParticipantCamera.prototype, "action", {
+                get: $util.oneOfGetter($oneOfFields = ["subscribe", "unsubscribe"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified ParticipantCamera message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantCamera.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+             * @static
+             * @param {groupcall.ParticipantToSfu.ParticipantCamera} message ParticipantCamera message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            ParticipantCamera.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
+                if (message.subscribe != null && Object.hasOwnProperty.call(message, "subscribe"))
+                    $root.groupcall.ParticipantToSfu.ParticipantCamera.Subscribe.encode(message.subscribe, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                if (message.unsubscribe != null && Object.hasOwnProperty.call(message, "unsubscribe"))
+                    $root.groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe.encode(message.unsubscribe, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes a ParticipantCamera message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToSfu.ParticipantCamera} ParticipantCamera
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            ParticipantCamera.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantCamera();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.participantId = reader.uint32();
+                        break;
+                    case 2:
+                        message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantCamera.Subscribe.decode(reader, reader.uint32());
+                        break;
+                    case 3:
+                        message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            ParticipantCamera.Subscribe = (function() {
+
+                /**
+                 * Properties of a Subscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+                 * @interface ISubscribe
+                 * @property {common.Resolution|null} [desiredResolution] Subscribe desiredResolution
+                 * @property {number|null} [desiredFps] Subscribe desiredFps
+                 */
+
+                /**
+                 * Constructs a new Subscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+                 * @classdesc Represents a Subscribe.
+                 * @implements ISubscribe
+                 * @constructor
+                 * @param {groupcall.ParticipantToSfu.ParticipantCamera.ISubscribe=} [properties] Properties to set
+                 */
+                function Subscribe(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Subscribe desiredResolution.
+                 * @member {common.Resolution|null|undefined} desiredResolution
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera.Subscribe
+                 * @instance
+                 */
+                Subscribe.prototype.desiredResolution = null;
+
+                /**
+                 * Subscribe desiredFps.
+                 * @member {number} desiredFps
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera.Subscribe
+                 * @instance
+                 */
+                Subscribe.prototype.desiredFps = 0;
+
+                /**
+                 * Encodes the specified Subscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantCamera.Subscribe.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera.Subscribe
+                 * @static
+                 * @param {groupcall.ParticipantToSfu.ParticipantCamera.Subscribe} message Subscribe message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Subscribe.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.desiredResolution != null && Object.hasOwnProperty.call(message, "desiredResolution"))
+                        $root.common.Resolution.encode(message.desiredResolution, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    if (message.desiredFps != null && Object.hasOwnProperty.call(message, "desiredFps"))
+                        writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.desiredFps);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Subscribe message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera.Subscribe
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToSfu.ParticipantCamera.Subscribe} Subscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Subscribe.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantCamera.Subscribe();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.desiredResolution = $root.common.Resolution.decode(reader, reader.uint32());
+                            break;
+                        case 2:
+                            message.desiredFps = reader.uint32();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Subscribe;
+            })();
+
+            ParticipantCamera.Unsubscribe = (function() {
+
+                /**
+                 * Properties of an Unsubscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+                 * @interface IUnsubscribe
+                 */
+
+                /**
+                 * Constructs a new Unsubscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera
+                 * @classdesc Represents an Unsubscribe.
+                 * @implements IUnsubscribe
+                 * @constructor
+                 * @param {groupcall.ParticipantToSfu.ParticipantCamera.IUnsubscribe=} [properties] Properties to set
+                 */
+                function Unsubscribe(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Encodes the specified Unsubscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe
+                 * @static
+                 * @param {groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe} message Unsubscribe message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Unsubscribe.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Unsubscribe message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe} Unsubscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Unsubscribe.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Unsubscribe;
+            })();
+
+            return ParticipantCamera;
+        })();
+
+        ParticipantToSfu.ParticipantScreen = (function() {
+
+            /**
+             * Properties of a ParticipantScreen.
+             * @memberof groupcall.ParticipantToSfu
+             * @interface IParticipantScreen
+             * @property {number|null} [participantId] ParticipantScreen participantId
+             * @property {groupcall.ParticipantToSfu.ParticipantScreen.Subscribe|null} [subscribe] ParticipantScreen subscribe
+             * @property {groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe|null} [unsubscribe] ParticipantScreen unsubscribe
+             */
+
+            /**
+             * Constructs a new ParticipantScreen.
+             * @memberof groupcall.ParticipantToSfu
+             * @classdesc Represents a ParticipantScreen.
+             * @implements IParticipantScreen
+             * @constructor
+             * @param {groupcall.ParticipantToSfu.IParticipantScreen=} [properties] Properties to set
+             */
+            function ParticipantScreen(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * ParticipantScreen participantId.
+             * @member {number} participantId
+             * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+             * @instance
+             */
+            ParticipantScreen.prototype.participantId = 0;
+
+            /**
+             * ParticipantScreen subscribe.
+             * @member {groupcall.ParticipantToSfu.ParticipantScreen.Subscribe|null|undefined} subscribe
+             * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+             * @instance
+             */
+            ParticipantScreen.prototype.subscribe = null;
+
+            /**
+             * ParticipantScreen unsubscribe.
+             * @member {groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe|null|undefined} unsubscribe
+             * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+             * @instance
+             */
+            ParticipantScreen.prototype.unsubscribe = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * ParticipantScreen action.
+             * @member {"subscribe"|"unsubscribe"|undefined} action
+             * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+             * @instance
+             */
+            Object.defineProperty(ParticipantScreen.prototype, "action", {
+                get: $util.oneOfGetter($oneOfFields = ["subscribe", "unsubscribe"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified ParticipantScreen message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantScreen.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+             * @static
+             * @param {groupcall.ParticipantToSfu.ParticipantScreen} message ParticipantScreen message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            ParticipantScreen.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
+                if (message.subscribe != null && Object.hasOwnProperty.call(message, "subscribe"))
+                    $root.groupcall.ParticipantToSfu.ParticipantScreen.Subscribe.encode(message.subscribe, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                if (message.unsubscribe != null && Object.hasOwnProperty.call(message, "unsubscribe"))
+                    $root.groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe.encode(message.unsubscribe, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes a ParticipantScreen message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToSfu.ParticipantScreen} ParticipantScreen
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            ParticipantScreen.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantScreen();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.participantId = reader.uint32();
+                        break;
+                    case 2:
+                        message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantScreen.Subscribe.decode(reader, reader.uint32());
+                        break;
+                    case 3:
+                        message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            ParticipantScreen.Subscribe = (function() {
+
+                /**
+                 * Properties of a Subscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+                 * @interface ISubscribe
+                 */
+
+                /**
+                 * Constructs a new Subscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+                 * @classdesc Represents a Subscribe.
+                 * @implements ISubscribe
+                 * @constructor
+                 * @param {groupcall.ParticipantToSfu.ParticipantScreen.ISubscribe=} [properties] Properties to set
+                 */
+                function Subscribe(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Encodes the specified Subscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantScreen.Subscribe.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen.Subscribe
+                 * @static
+                 * @param {groupcall.ParticipantToSfu.ParticipantScreen.Subscribe} message Subscribe message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Subscribe.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Subscribe message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen.Subscribe
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToSfu.ParticipantScreen.Subscribe} Subscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Subscribe.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantScreen.Subscribe();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Subscribe;
+            })();
+
+            ParticipantScreen.Unsubscribe = (function() {
+
+                /**
+                 * Properties of an Unsubscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+                 * @interface IUnsubscribe
+                 */
+
+                /**
+                 * Constructs a new Unsubscribe.
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen
+                 * @classdesc Represents an Unsubscribe.
+                 * @implements IUnsubscribe
+                 * @constructor
+                 * @param {groupcall.ParticipantToSfu.ParticipantScreen.IUnsubscribe=} [properties] Properties to set
+                 */
+                function Unsubscribe(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Encodes the specified Unsubscribe message. Does not implicitly {@link groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe
+                 * @static
+                 * @param {groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe} message Unsubscribe message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Unsubscribe.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Unsubscribe message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe} Unsubscribe
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Unsubscribe.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Unsubscribe;
+            })();
+
+            return ParticipantScreen;
+        })();
+
+        return ParticipantToSfu;
+    })();
+
+    groupcall.ParticipantToParticipant = (function() {
+
+        /**
+         * Properties of a ParticipantToParticipant.
+         * @memberof groupcall
+         * @interface IParticipantToParticipant
+         */
+
+        /**
+         * Constructs a new ParticipantToParticipant.
+         * @memberof groupcall
+         * @classdesc Represents a ParticipantToParticipant.
+         * @implements IParticipantToParticipant
+         * @constructor
+         * @param {groupcall.IParticipantToParticipant=} [properties] Properties to set
+         */
+        function ParticipantToParticipant(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encodes the specified ParticipantToParticipant message. Does not implicitly {@link groupcall.ParticipantToParticipant.verify|verify} messages.
+         * @function encode
+         * @memberof groupcall.ParticipantToParticipant
+         * @static
+         * @param {groupcall.ParticipantToParticipant} message ParticipantToParticipant message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ParticipantToParticipant.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            return writer;
+        };
+
+        /**
+         * Decodes a ParticipantToParticipant message from the specified reader or buffer.
+         * @function decode
+         * @memberof groupcall.ParticipantToParticipant
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {groupcall.ParticipantToParticipant} ParticipantToParticipant
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ParticipantToParticipant.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        ParticipantToParticipant.OuterEnvelope = (function() {
+
+            /**
+             * Properties of an OuterEnvelope.
+             * @memberof groupcall.ParticipantToParticipant
+             * @interface IOuterEnvelope
+             * @property {number|null} [sender] OuterEnvelope sender
+             * @property {number|null} [receiver] OuterEnvelope receiver
+             * @property {Uint8Array|null} [encryptedData] OuterEnvelope encryptedData
+             */
+
+            /**
+             * Constructs a new OuterEnvelope.
+             * @memberof groupcall.ParticipantToParticipant
+             * @classdesc Represents an OuterEnvelope.
+             * @implements IOuterEnvelope
+             * @constructor
+             * @param {groupcall.ParticipantToParticipant.IOuterEnvelope=} [properties] Properties to set
+             */
+            function OuterEnvelope(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * OuterEnvelope sender.
+             * @member {number} sender
+             * @memberof groupcall.ParticipantToParticipant.OuterEnvelope
+             * @instance
+             */
+            OuterEnvelope.prototype.sender = 0;
+
+            /**
+             * OuterEnvelope receiver.
+             * @member {number} receiver
+             * @memberof groupcall.ParticipantToParticipant.OuterEnvelope
+             * @instance
+             */
+            OuterEnvelope.prototype.receiver = 0;
+
+            /**
+             * OuterEnvelope encryptedData.
+             * @member {Uint8Array} encryptedData
+             * @memberof groupcall.ParticipantToParticipant.OuterEnvelope
+             * @instance
+             */
+            OuterEnvelope.prototype.encryptedData = $util.newBuffer([]);
+
+            /**
+             * Encodes the specified OuterEnvelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.OuterEnvelope.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToParticipant.OuterEnvelope
+             * @static
+             * @param {groupcall.ParticipantToParticipant.OuterEnvelope} message OuterEnvelope message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            OuterEnvelope.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.sender);
+                if (message.receiver != null && Object.hasOwnProperty.call(message, "receiver"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.receiver);
+                if (message.encryptedData != null && Object.hasOwnProperty.call(message, "encryptedData"))
+                    writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.encryptedData);
+                return writer;
+            };
+
+            /**
+             * Decodes an OuterEnvelope message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToParticipant.OuterEnvelope
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToParticipant.OuterEnvelope} OuterEnvelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            OuterEnvelope.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.OuterEnvelope();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.sender = reader.uint32();
+                        break;
+                    case 2:
+                        message.receiver = reader.uint32();
+                        break;
+                    case 4:
+                        message.encryptedData = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return OuterEnvelope;
+        })();
+
+        ParticipantToParticipant.Handshake = (function() {
+
+            /**
+             * Properties of a Handshake.
+             * @memberof groupcall.ParticipantToParticipant
+             * @interface IHandshake
+             */
+
+            /**
+             * Constructs a new Handshake.
+             * @memberof groupcall.ParticipantToParticipant
+             * @classdesc Represents a Handshake.
+             * @implements IHandshake
+             * @constructor
+             * @param {groupcall.ParticipantToParticipant.IHandshake=} [properties] Properties to set
+             */
+            function Handshake(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Encodes the specified Handshake message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToParticipant.Handshake
+             * @static
+             * @param {groupcall.ParticipantToParticipant.Handshake} message Handshake message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Handshake.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                return writer;
+            };
+
+            /**
+             * Decodes a Handshake message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToParticipant.Handshake
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToParticipant.Handshake} Handshake
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Handshake.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Handshake();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            Handshake.HelloEnvelope = (function() {
+
+                /**
+                 * Properties of a HelloEnvelope.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @interface IHelloEnvelope
+                 * @property {Uint8Array|null} [padding] HelloEnvelope padding
+                 * @property {groupcall.ParticipantToParticipant.Handshake.Hello|null} [hello] HelloEnvelope hello
+                 * @property {groupcall.ParticipantToParticipant.Handshake.GuestHello|null} [guestHello] HelloEnvelope guestHello
+                 */
+
+                /**
+                 * Constructs a new HelloEnvelope.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @classdesc Represents a HelloEnvelope.
+                 * @implements IHelloEnvelope
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Handshake.IHelloEnvelope=} [properties] Properties to set
+                 */
+                function HelloEnvelope(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * HelloEnvelope padding.
+                 * @member {Uint8Array} padding
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.HelloEnvelope
+                 * @instance
+                 */
+                HelloEnvelope.prototype.padding = $util.newBuffer([]);
+
+                /**
+                 * HelloEnvelope hello.
+                 * @member {groupcall.ParticipantToParticipant.Handshake.Hello|null|undefined} hello
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.HelloEnvelope
+                 * @instance
+                 */
+                HelloEnvelope.prototype.hello = null;
+
+                /**
+                 * HelloEnvelope guestHello.
+                 * @member {groupcall.ParticipantToParticipant.Handshake.GuestHello|null|undefined} guestHello
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.HelloEnvelope
+                 * @instance
+                 */
+                HelloEnvelope.prototype.guestHello = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                /**
+                 * HelloEnvelope content.
+                 * @member {"hello"|"guestHello"|undefined} content
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.HelloEnvelope
+                 * @instance
+                 */
+                Object.defineProperty(HelloEnvelope.prototype, "content", {
+                    get: $util.oneOfGetter($oneOfFields = ["hello", "guestHello"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified HelloEnvelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.HelloEnvelope.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.HelloEnvelope
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Handshake.HelloEnvelope} message HelloEnvelope message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                HelloEnvelope.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
+                    if (message.hello != null && Object.hasOwnProperty.call(message, "hello"))
+                        $root.groupcall.ParticipantToParticipant.Handshake.Hello.encode(message.hello, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    if (message.guestHello != null && Object.hasOwnProperty.call(message, "guestHello"))
+                        $root.groupcall.ParticipantToParticipant.Handshake.GuestHello.encode(message.guestHello, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a HelloEnvelope message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.HelloEnvelope
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Handshake.HelloEnvelope} HelloEnvelope
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                HelloEnvelope.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Handshake.HelloEnvelope();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.padding = reader.bytes();
+                            break;
+                        case 2:
+                            message.hello = $root.groupcall.ParticipantToParticipant.Handshake.Hello.decode(reader, reader.uint32());
+                            break;
+                        case 3:
+                            message.guestHello = $root.groupcall.ParticipantToParticipant.Handshake.GuestHello.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return HelloEnvelope;
+            })();
+
+            Handshake.AuthEnvelope = (function() {
+
+                /**
+                 * Properties of an AuthEnvelope.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @interface IAuthEnvelope
+                 * @property {Uint8Array|null} [padding] AuthEnvelope padding
+                 * @property {groupcall.ParticipantToParticipant.Handshake.Auth|null} [auth] AuthEnvelope auth
+                 * @property {groupcall.ParticipantToParticipant.Handshake.GuestAuth|null} [guestAuth] AuthEnvelope guestAuth
+                 */
+
+                /**
+                 * Constructs a new AuthEnvelope.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @classdesc Represents an AuthEnvelope.
+                 * @implements IAuthEnvelope
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Handshake.IAuthEnvelope=} [properties] Properties to set
+                 */
+                function AuthEnvelope(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * AuthEnvelope padding.
+                 * @member {Uint8Array} padding
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.AuthEnvelope
+                 * @instance
+                 */
+                AuthEnvelope.prototype.padding = $util.newBuffer([]);
+
+                /**
+                 * AuthEnvelope auth.
+                 * @member {groupcall.ParticipantToParticipant.Handshake.Auth|null|undefined} auth
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.AuthEnvelope
+                 * @instance
+                 */
+                AuthEnvelope.prototype.auth = null;
+
+                /**
+                 * AuthEnvelope guestAuth.
+                 * @member {groupcall.ParticipantToParticipant.Handshake.GuestAuth|null|undefined} guestAuth
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.AuthEnvelope
+                 * @instance
+                 */
+                AuthEnvelope.prototype.guestAuth = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                /**
+                 * AuthEnvelope content.
+                 * @member {"auth"|"guestAuth"|undefined} content
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.AuthEnvelope
+                 * @instance
+                 */
+                Object.defineProperty(AuthEnvelope.prototype, "content", {
+                    get: $util.oneOfGetter($oneOfFields = ["auth", "guestAuth"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified AuthEnvelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.AuthEnvelope.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.AuthEnvelope
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Handshake.AuthEnvelope} message AuthEnvelope message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                AuthEnvelope.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
+                    if (message.auth != null && Object.hasOwnProperty.call(message, "auth"))
+                        $root.groupcall.ParticipantToParticipant.Handshake.Auth.encode(message.auth, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    if (message.guestAuth != null && Object.hasOwnProperty.call(message, "guestAuth"))
+                        $root.groupcall.ParticipantToParticipant.Handshake.GuestAuth.encode(message.guestAuth, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes an AuthEnvelope message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.AuthEnvelope
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Handshake.AuthEnvelope} AuthEnvelope
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                AuthEnvelope.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Handshake.AuthEnvelope();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.padding = reader.bytes();
+                            break;
+                        case 2:
+                            message.auth = $root.groupcall.ParticipantToParticipant.Handshake.Auth.decode(reader, reader.uint32());
+                            break;
+                        case 3:
+                            message.guestAuth = $root.groupcall.ParticipantToParticipant.Handshake.GuestAuth.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return AuthEnvelope;
+            })();
+
+            Handshake.Hello = (function() {
+
+                /**
+                 * Properties of a Hello.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @interface IHello
+                 * @property {string|null} [identity] Hello identity
+                 * @property {string|null} [nickname] Hello nickname
+                 * @property {Uint8Array|null} [pck] Hello pck
+                 * @property {Uint8Array|null} [pcck] Hello pcck
+                 */
+
+                /**
+                 * Constructs a new Hello.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @classdesc Represents a Hello.
+                 * @implements IHello
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Handshake.IHello=} [properties] Properties to set
+                 */
+                function Hello(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Hello identity.
+                 * @member {string} identity
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Hello
+                 * @instance
+                 */
+                Hello.prototype.identity = "";
+
+                /**
+                 * Hello nickname.
+                 * @member {string} nickname
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Hello
+                 * @instance
+                 */
+                Hello.prototype.nickname = "";
+
+                /**
+                 * Hello pck.
+                 * @member {Uint8Array} pck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Hello
+                 * @instance
+                 */
+                Hello.prototype.pck = $util.newBuffer([]);
+
+                /**
+                 * Hello pcck.
+                 * @member {Uint8Array} pcck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Hello
+                 * @instance
+                 */
+                Hello.prototype.pcck = $util.newBuffer([]);
+
+                /**
+                 * Encodes the specified Hello message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.Hello.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Hello
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Handshake.Hello} message Hello message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Hello.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.identity != null && Object.hasOwnProperty.call(message, "identity"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.identity);
+                    if (message.nickname != null && Object.hasOwnProperty.call(message, "nickname"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.nickname);
+                    if (message.pck != null && Object.hasOwnProperty.call(message, "pck"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.pck);
+                    if (message.pcck != null && Object.hasOwnProperty.call(message, "pcck"))
+                        writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.pcck);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Hello message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Hello
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Handshake.Hello} Hello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Hello.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Handshake.Hello();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.identity = reader.string();
+                            break;
+                        case 2:
+                            message.nickname = reader.string();
+                            break;
+                        case 3:
+                            message.pck = reader.bytes();
+                            break;
+                        case 4:
+                            message.pcck = reader.bytes();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Hello;
+            })();
+
+            Handshake.Auth = (function() {
+
+                /**
+                 * Properties of an Auth.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @interface IAuth
+                 * @property {Uint8Array|null} [pck] Auth pck
+                 * @property {Uint8Array|null} [pcck] Auth pcck
+                 * @property {Array.<groupcall.ParticipantToParticipant.MediaKey>|null} [mediaKeys] Auth mediaKeys
+                 */
+
+                /**
+                 * Constructs a new Auth.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @classdesc Represents an Auth.
+                 * @implements IAuth
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Handshake.IAuth=} [properties] Properties to set
+                 */
+                function Auth(properties) {
+                    this.mediaKeys = [];
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Auth pck.
+                 * @member {Uint8Array} pck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Auth
+                 * @instance
+                 */
+                Auth.prototype.pck = $util.newBuffer([]);
+
+                /**
+                 * Auth pcck.
+                 * @member {Uint8Array} pcck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Auth
+                 * @instance
+                 */
+                Auth.prototype.pcck = $util.newBuffer([]);
+
+                /**
+                 * Auth mediaKeys.
+                 * @member {Array.<groupcall.ParticipantToParticipant.MediaKey>} mediaKeys
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Auth
+                 * @instance
+                 */
+                Auth.prototype.mediaKeys = $util.emptyArray;
+
+                /**
+                 * Encodes the specified Auth message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.Auth.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Auth
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Handshake.Auth} message Auth message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Auth.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.pck != null && Object.hasOwnProperty.call(message, "pck"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.pck);
+                    if (message.pcck != null && Object.hasOwnProperty.call(message, "pcck"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.pcck);
+                    if (message.mediaKeys != null && message.mediaKeys.length)
+                        for (let i = 0; i < message.mediaKeys.length; ++i)
+                            $root.groupcall.ParticipantToParticipant.MediaKey.encode(message.mediaKeys[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Auth message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.Auth
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Handshake.Auth} Auth
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Auth.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Handshake.Auth();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.pck = reader.bytes();
+                            break;
+                        case 2:
+                            message.pcck = reader.bytes();
+                            break;
+                        case 3:
+                            if (!(message.mediaKeys && message.mediaKeys.length))
+                                message.mediaKeys = [];
+                            message.mediaKeys.push($root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32()));
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Auth;
+            })();
+
+            Handshake.GuestHello = (function() {
+
+                /**
+                 * Properties of a GuestHello.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @interface IGuestHello
+                 * @property {string|null} [name] GuestHello name
+                 * @property {Uint8Array|null} [pck] GuestHello pck
+                 * @property {Uint8Array|null} [pcck] GuestHello pcck
+                 */
+
+                /**
+                 * Constructs a new GuestHello.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @classdesc Represents a GuestHello.
+                 * @implements IGuestHello
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Handshake.IGuestHello=} [properties] Properties to set
+                 */
+                function GuestHello(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * GuestHello name.
+                 * @member {string} name
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestHello
+                 * @instance
+                 */
+                GuestHello.prototype.name = "";
+
+                /**
+                 * GuestHello pck.
+                 * @member {Uint8Array} pck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestHello
+                 * @instance
+                 */
+                GuestHello.prototype.pck = $util.newBuffer([]);
+
+                /**
+                 * GuestHello pcck.
+                 * @member {Uint8Array} pcck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestHello
+                 * @instance
+                 */
+                GuestHello.prototype.pcck = $util.newBuffer([]);
+
+                /**
+                 * Encodes the specified GuestHello message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.GuestHello.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestHello
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Handshake.GuestHello} message GuestHello message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                GuestHello.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                    if (message.pck != null && Object.hasOwnProperty.call(message, "pck"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.pck);
+                    if (message.pcck != null && Object.hasOwnProperty.call(message, "pcck"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.pcck);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a GuestHello message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestHello
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Handshake.GuestHello} GuestHello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                GuestHello.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Handshake.GuestHello();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.name = reader.string();
+                            break;
+                        case 2:
+                            message.pck = reader.bytes();
+                            break;
+                        case 3:
+                            message.pcck = reader.bytes();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return GuestHello;
+            })();
+
+            Handshake.GuestAuth = (function() {
+
+                /**
+                 * Properties of a GuestAuth.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @interface IGuestAuth
+                 * @property {Uint8Array|null} [pck] GuestAuth pck
+                 * @property {Uint8Array|null} [pcck] GuestAuth pcck
+                 * @property {Array.<groupcall.ParticipantToParticipant.MediaKey>|null} [mediaKeys] GuestAuth mediaKeys
+                 */
+
+                /**
+                 * Constructs a new GuestAuth.
+                 * @memberof groupcall.ParticipantToParticipant.Handshake
+                 * @classdesc Represents a GuestAuth.
+                 * @implements IGuestAuth
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Handshake.IGuestAuth=} [properties] Properties to set
+                 */
+                function GuestAuth(properties) {
+                    this.mediaKeys = [];
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * GuestAuth pck.
+                 * @member {Uint8Array} pck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestAuth
+                 * @instance
+                 */
+                GuestAuth.prototype.pck = $util.newBuffer([]);
+
+                /**
+                 * GuestAuth pcck.
+                 * @member {Uint8Array} pcck
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestAuth
+                 * @instance
+                 */
+                GuestAuth.prototype.pcck = $util.newBuffer([]);
+
+                /**
+                 * GuestAuth mediaKeys.
+                 * @member {Array.<groupcall.ParticipantToParticipant.MediaKey>} mediaKeys
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestAuth
+                 * @instance
+                 */
+                GuestAuth.prototype.mediaKeys = $util.emptyArray;
+
+                /**
+                 * Encodes the specified GuestAuth message. Does not implicitly {@link groupcall.ParticipantToParticipant.Handshake.GuestAuth.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestAuth
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Handshake.GuestAuth} message GuestAuth message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                GuestAuth.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.pck != null && Object.hasOwnProperty.call(message, "pck"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.pck);
+                    if (message.pcck != null && Object.hasOwnProperty.call(message, "pcck"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.pcck);
+                    if (message.mediaKeys != null && message.mediaKeys.length)
+                        for (let i = 0; i < message.mediaKeys.length; ++i)
+                            $root.groupcall.ParticipantToParticipant.MediaKey.encode(message.mediaKeys[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a GuestAuth message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Handshake.GuestAuth
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Handshake.GuestAuth} GuestAuth
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                GuestAuth.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Handshake.GuestAuth();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.pck = reader.bytes();
+                            break;
+                        case 2:
+                            message.pcck = reader.bytes();
+                            break;
+                        case 3:
+                            if (!(message.mediaKeys && message.mediaKeys.length))
+                                message.mediaKeys = [];
+                            message.mediaKeys.push($root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32()));
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return GuestAuth;
+            })();
+
+            return Handshake;
+        })();
+
+        ParticipantToParticipant.Envelope = (function() {
+
+            /**
+             * Properties of an Envelope.
+             * @memberof groupcall.ParticipantToParticipant
+             * @interface IEnvelope
+             * @property {Uint8Array|null} [padding] Envelope padding
+             * @property {Uint8Array|null} [encryptedAdminEnvelope] Envelope encryptedAdminEnvelope
+             * @property {groupcall.ParticipantToParticipant.MediaKey|null} [rekey] Envelope rekey
+             * @property {groupcall.ParticipantToParticipant.CaptureState|null} [captureState] Envelope captureState
+             * @property {groupcall.ParticipantToParticipant.HoldState|null} [holdState] Envelope holdState
+             */
+
+            /**
+             * Constructs a new Envelope.
+             * @memberof groupcall.ParticipantToParticipant
+             * @classdesc Represents an Envelope.
+             * @implements IEnvelope
+             * @constructor
+             * @param {groupcall.ParticipantToParticipant.IEnvelope=} [properties] Properties to set
+             */
+            function Envelope(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Envelope padding.
+             * @member {Uint8Array} padding
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.padding = $util.newBuffer([]);
+
+            /**
+             * Envelope encryptedAdminEnvelope.
+             * @member {Uint8Array|null|undefined} encryptedAdminEnvelope
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.encryptedAdminEnvelope = null;
+
+            /**
+             * Envelope rekey.
+             * @member {groupcall.ParticipantToParticipant.MediaKey|null|undefined} rekey
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.rekey = null;
+
+            /**
+             * Envelope captureState.
+             * @member {groupcall.ParticipantToParticipant.CaptureState|null|undefined} captureState
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.captureState = null;
+
+            /**
+             * Envelope holdState.
+             * @member {groupcall.ParticipantToParticipant.HoldState|null|undefined} holdState
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @instance
+             */
+            Envelope.prototype.holdState = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * Envelope content.
+             * @member {"encryptedAdminEnvelope"|"rekey"|"captureState"|"holdState"|undefined} content
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @instance
+             */
+            Object.defineProperty(Envelope.prototype, "content", {
+                get: $util.oneOfGetter($oneOfFields = ["encryptedAdminEnvelope", "rekey", "captureState", "holdState"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified Envelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Envelope.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @static
+             * @param {groupcall.ParticipantToParticipant.Envelope} message Envelope message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Envelope.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
+                if (message.encryptedAdminEnvelope != null && Object.hasOwnProperty.call(message, "encryptedAdminEnvelope"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.encryptedAdminEnvelope);
+                if (message.rekey != null && Object.hasOwnProperty.call(message, "rekey"))
+                    $root.groupcall.ParticipantToParticipant.MediaKey.encode(message.rekey, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                if (message.captureState != null && Object.hasOwnProperty.call(message, "captureState"))
+                    $root.groupcall.ParticipantToParticipant.CaptureState.encode(message.captureState, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                if (message.holdState != null && Object.hasOwnProperty.call(message, "holdState"))
+                    $root.groupcall.ParticipantToParticipant.HoldState.encode(message.holdState, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes an Envelope message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToParticipant.Envelope
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToParticipant.Envelope} Envelope
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Envelope.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Envelope();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.padding = reader.bytes();
+                        break;
+                    case 2:
+                        message.encryptedAdminEnvelope = reader.bytes();
+                        break;
+                    case 3:
+                        message.rekey = $root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32());
+                        break;
+                    case 4:
+                        message.captureState = $root.groupcall.ParticipantToParticipant.CaptureState.decode(reader, reader.uint32());
+                        break;
+                    case 5:
+                        message.holdState = $root.groupcall.ParticipantToParticipant.HoldState.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Envelope;
+        })();
+
+        ParticipantToParticipant.Admin = (function() {
+
+            /**
+             * Properties of an Admin.
+             * @memberof groupcall.ParticipantToParticipant
+             * @interface IAdmin
+             */
+
+            /**
+             * Constructs a new Admin.
+             * @memberof groupcall.ParticipantToParticipant
+             * @classdesc Represents an Admin.
+             * @implements IAdmin
+             * @constructor
+             * @param {groupcall.ParticipantToParticipant.IAdmin=} [properties] Properties to set
+             */
+            function Admin(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Encodes the specified Admin message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToParticipant.Admin
+             * @static
+             * @param {groupcall.ParticipantToParticipant.Admin} message Admin message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Admin.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                return writer;
+            };
+
+            /**
+             * Decodes an Admin message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToParticipant.Admin
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToParticipant.Admin} Admin
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Admin.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Admin();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            Admin.Envelope = (function() {
+
+                /**
+                 * Properties of an Envelope.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @interface IEnvelope
+                 * @property {groupcall.ParticipantToParticipant.Admin.ReportAsAdmin|null} [reportAsAdmin] Envelope reportAsAdmin
+                 * @property {groupcall.ParticipantToParticipant.Admin.PromoteToAdmin|null} [promoteToAdmin] Envelope promoteToAdmin
+                 * @property {groupcall.ParticipantToParticipant.Admin.ForceLeave|null} [forceLeave] Envelope forceLeave
+                 * @property {groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff|null} [forceCaptureStateOff] Envelope forceCaptureStateOff
+                 * @property {groupcall.ParticipantToParticipant.Admin.ForceFocus|null} [forceFocus] Envelope forceFocus
+                 */
+
+                /**
+                 * Constructs a new Envelope.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @classdesc Represents an Envelope.
+                 * @implements IEnvelope
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Admin.IEnvelope=} [properties] Properties to set
+                 */
+                function Envelope(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Envelope reportAsAdmin.
+                 * @member {groupcall.ParticipantToParticipant.Admin.ReportAsAdmin|null|undefined} reportAsAdmin
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @instance
+                 */
+                Envelope.prototype.reportAsAdmin = null;
+
+                /**
+                 * Envelope promoteToAdmin.
+                 * @member {groupcall.ParticipantToParticipant.Admin.PromoteToAdmin|null|undefined} promoteToAdmin
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @instance
+                 */
+                Envelope.prototype.promoteToAdmin = null;
+
+                /**
+                 * Envelope forceLeave.
+                 * @member {groupcall.ParticipantToParticipant.Admin.ForceLeave|null|undefined} forceLeave
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @instance
+                 */
+                Envelope.prototype.forceLeave = null;
+
+                /**
+                 * Envelope forceCaptureStateOff.
+                 * @member {groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff|null|undefined} forceCaptureStateOff
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @instance
+                 */
+                Envelope.prototype.forceCaptureStateOff = null;
+
+                /**
+                 * Envelope forceFocus.
+                 * @member {groupcall.ParticipantToParticipant.Admin.ForceFocus|null|undefined} forceFocus
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @instance
+                 */
+                Envelope.prototype.forceFocus = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                /**
+                 * Envelope content.
+                 * @member {"reportAsAdmin"|"promoteToAdmin"|"forceLeave"|"forceCaptureStateOff"|"forceFocus"|undefined} content
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @instance
+                 */
+                Object.defineProperty(Envelope.prototype, "content", {
+                    get: $util.oneOfGetter($oneOfFields = ["reportAsAdmin", "promoteToAdmin", "forceLeave", "forceCaptureStateOff", "forceFocus"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified Envelope message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.Envelope.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Admin.Envelope} message Envelope message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Envelope.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.reportAsAdmin != null && Object.hasOwnProperty.call(message, "reportAsAdmin"))
+                        $root.groupcall.ParticipantToParticipant.Admin.ReportAsAdmin.encode(message.reportAsAdmin, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    if (message.promoteToAdmin != null && Object.hasOwnProperty.call(message, "promoteToAdmin"))
+                        $root.groupcall.ParticipantToParticipant.Admin.PromoteToAdmin.encode(message.promoteToAdmin, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    if (message.forceLeave != null && Object.hasOwnProperty.call(message, "forceLeave"))
+                        $root.groupcall.ParticipantToParticipant.Admin.ForceLeave.encode(message.forceLeave, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    if (message.forceCaptureStateOff != null && Object.hasOwnProperty.call(message, "forceCaptureStateOff"))
+                        $root.groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.encode(message.forceCaptureStateOff, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                    if (message.forceFocus != null && Object.hasOwnProperty.call(message, "forceFocus"))
+                        $root.groupcall.ParticipantToParticipant.Admin.ForceFocus.encode(message.forceFocus, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Envelope message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.Envelope
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Admin.Envelope} Envelope
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Envelope.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Admin.Envelope();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.reportAsAdmin = $root.groupcall.ParticipantToParticipant.Admin.ReportAsAdmin.decode(reader, reader.uint32());
+                            break;
+                        case 2:
+                            message.promoteToAdmin = $root.groupcall.ParticipantToParticipant.Admin.PromoteToAdmin.decode(reader, reader.uint32());
+                            break;
+                        case 3:
+                            message.forceLeave = $root.groupcall.ParticipantToParticipant.Admin.ForceLeave.decode(reader, reader.uint32());
+                            break;
+                        case 4:
+                            message.forceCaptureStateOff = $root.groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.decode(reader, reader.uint32());
+                            break;
+                        case 5:
+                            message.forceFocus = $root.groupcall.ParticipantToParticipant.Admin.ForceFocus.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Envelope;
+            })();
+
+            Admin.ReportAsAdmin = (function() {
+
+                /**
+                 * Properties of a ReportAsAdmin.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @interface IReportAsAdmin
+                 */
+
+                /**
+                 * Constructs a new ReportAsAdmin.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @classdesc Represents a ReportAsAdmin.
+                 * @implements IReportAsAdmin
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Admin.IReportAsAdmin=} [properties] Properties to set
+                 */
+                function ReportAsAdmin(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Encodes the specified ReportAsAdmin message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ReportAsAdmin.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ReportAsAdmin
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Admin.ReportAsAdmin} message ReportAsAdmin message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ReportAsAdmin.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a ReportAsAdmin message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ReportAsAdmin
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Admin.ReportAsAdmin} ReportAsAdmin
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ReportAsAdmin.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Admin.ReportAsAdmin();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return ReportAsAdmin;
+            })();
+
+            Admin.PromoteToAdmin = (function() {
+
+                /**
+                 * Properties of a PromoteToAdmin.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @interface IPromoteToAdmin
+                 * @property {Uint8Array|null} [gcak] PromoteToAdmin gcak
+                 */
+
+                /**
+                 * Constructs a new PromoteToAdmin.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @classdesc Represents a PromoteToAdmin.
+                 * @implements IPromoteToAdmin
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Admin.IPromoteToAdmin=} [properties] Properties to set
+                 */
+                function PromoteToAdmin(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * PromoteToAdmin gcak.
+                 * @member {Uint8Array} gcak
+                 * @memberof groupcall.ParticipantToParticipant.Admin.PromoteToAdmin
+                 * @instance
+                 */
+                PromoteToAdmin.prototype.gcak = $util.newBuffer([]);
+
+                /**
+                 * Encodes the specified PromoteToAdmin message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.PromoteToAdmin.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.PromoteToAdmin
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Admin.PromoteToAdmin} message PromoteToAdmin message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                PromoteToAdmin.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.gcak != null && Object.hasOwnProperty.call(message, "gcak"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.gcak);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a PromoteToAdmin message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.PromoteToAdmin
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Admin.PromoteToAdmin} PromoteToAdmin
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                PromoteToAdmin.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Admin.PromoteToAdmin();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.gcak = reader.bytes();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return PromoteToAdmin;
+            })();
+
+            Admin.ForceLeave = (function() {
+
+                /**
+                 * Properties of a ForceLeave.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @interface IForceLeave
+                 */
+
+                /**
+                 * Constructs a new ForceLeave.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @classdesc Represents a ForceLeave.
+                 * @implements IForceLeave
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Admin.IForceLeave=} [properties] Properties to set
+                 */
+                function ForceLeave(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Encodes the specified ForceLeave message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ForceLeave.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceLeave
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Admin.ForceLeave} message ForceLeave message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ForceLeave.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a ForceLeave message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceLeave
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Admin.ForceLeave} ForceLeave
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ForceLeave.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Admin.ForceLeave();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return ForceLeave;
+            })();
+
+            Admin.ForceCaptureStateOff = (function() {
+
+                /**
+                 * Properties of a ForceCaptureStateOff.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @interface IForceCaptureStateOff
+                 * @property {groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.Device|null} [device] ForceCaptureStateOff device
+                 */
+
+                /**
+                 * Constructs a new ForceCaptureStateOff.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @classdesc Represents a ForceCaptureStateOff.
+                 * @implements IForceCaptureStateOff
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Admin.IForceCaptureStateOff=} [properties] Properties to set
+                 */
+                function ForceCaptureStateOff(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * ForceCaptureStateOff device.
+                 * @member {groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.Device} device
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff
+                 * @instance
+                 */
+                ForceCaptureStateOff.prototype.device = 0;
+
+                /**
+                 * Encodes the specified ForceCaptureStateOff message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff} message ForceCaptureStateOff message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ForceCaptureStateOff.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.device != null && Object.hasOwnProperty.call(message, "device"))
+                        writer.uint32(/* id 1, wireType 0 =*/8).int32(message.device);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a ForceCaptureStateOff message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff} ForceCaptureStateOff
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ForceCaptureStateOff.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.device = reader.int32();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                /**
+                 * Device enum.
+                 * @name groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.Device
+                 * @enum {number}
+                 * @property {number} ALL=0 ALL value
+                 * @property {number} MICROPHONE=1 MICROPHONE value
+                 * @property {number} CAMERA=2 CAMERA value
+                 * @property {number} SCREEN=3 SCREEN value
+                 */
+                ForceCaptureStateOff.Device = (function() {
+                    const valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "ALL"] = 0;
+                    values[valuesById[1] = "MICROPHONE"] = 1;
+                    values[valuesById[2] = "CAMERA"] = 2;
+                    values[valuesById[3] = "SCREEN"] = 3;
+                    return values;
+                })();
+
+                return ForceCaptureStateOff;
+            })();
+
+            Admin.ForceFocus = (function() {
+
+                /**
+                 * Properties of a ForceFocus.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @interface IForceFocus
+                 * @property {number|null} [participantId] ForceFocus participantId
+                 */
+
+                /**
+                 * Constructs a new ForceFocus.
+                 * @memberof groupcall.ParticipantToParticipant.Admin
+                 * @classdesc Represents a ForceFocus.
+                 * @implements IForceFocus
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.Admin.IForceFocus=} [properties] Properties to set
+                 */
+                function ForceFocus(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * ForceFocus participantId.
+                 * @member {number} participantId
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceFocus
+                 * @instance
+                 */
+                ForceFocus.prototype.participantId = 0;
+
+                /**
+                 * Encodes the specified ForceFocus message. Does not implicitly {@link groupcall.ParticipantToParticipant.Admin.ForceFocus.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceFocus
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.Admin.ForceFocus} message ForceFocus message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ForceFocus.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
+                        writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a ForceFocus message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.Admin.ForceFocus
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.Admin.ForceFocus} ForceFocus
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ForceFocus.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.Admin.ForceFocus();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.participantId = reader.uint32();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return ForceFocus;
+            })();
+
+            return Admin;
+        })();
+
+        ParticipantToParticipant.MediaKey = (function() {
+
+            /**
+             * Properties of a MediaKey.
+             * @memberof groupcall.ParticipantToParticipant
+             * @interface IMediaKey
+             * @property {number|null} [epoch] MediaKey epoch
+             * @property {number|null} [ratchetCounter] MediaKey ratchetCounter
+             * @property {Uint8Array|null} [pcmk] MediaKey pcmk
+             */
+
+            /**
+             * Constructs a new MediaKey.
+             * @memberof groupcall.ParticipantToParticipant
+             * @classdesc Represents a MediaKey.
+             * @implements IMediaKey
+             * @constructor
+             * @param {groupcall.ParticipantToParticipant.IMediaKey=} [properties] Properties to set
+             */
+            function MediaKey(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * MediaKey epoch.
+             * @member {number} epoch
+             * @memberof groupcall.ParticipantToParticipant.MediaKey
+             * @instance
+             */
+            MediaKey.prototype.epoch = 0;
+
+            /**
+             * MediaKey ratchetCounter.
+             * @member {number} ratchetCounter
+             * @memberof groupcall.ParticipantToParticipant.MediaKey
+             * @instance
+             */
+            MediaKey.prototype.ratchetCounter = 0;
+
+            /**
+             * MediaKey pcmk.
+             * @member {Uint8Array} pcmk
+             * @memberof groupcall.ParticipantToParticipant.MediaKey
+             * @instance
+             */
+            MediaKey.prototype.pcmk = $util.newBuffer([]);
+
+            /**
+             * Encodes the specified MediaKey message. Does not implicitly {@link groupcall.ParticipantToParticipant.MediaKey.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToParticipant.MediaKey
+             * @static
+             * @param {groupcall.ParticipantToParticipant.MediaKey} message MediaKey message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            MediaKey.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.epoch != null && Object.hasOwnProperty.call(message, "epoch"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.epoch);
+                if (message.ratchetCounter != null && Object.hasOwnProperty.call(message, "ratchetCounter"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.ratchetCounter);
+                if (message.pcmk != null && Object.hasOwnProperty.call(message, "pcmk"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.pcmk);
+                return writer;
+            };
+
+            /**
+             * Decodes a MediaKey message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToParticipant.MediaKey
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToParticipant.MediaKey} MediaKey
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            MediaKey.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.MediaKey();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.epoch = reader.uint32();
+                        break;
+                    case 2:
+                        message.ratchetCounter = reader.uint32();
+                        break;
+                    case 3:
+                        message.pcmk = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return MediaKey;
+        })();
+
+        ParticipantToParticipant.CaptureState = (function() {
+
+            /**
+             * Properties of a CaptureState.
+             * @memberof groupcall.ParticipantToParticipant
+             * @interface ICaptureState
+             * @property {groupcall.ParticipantToParticipant.CaptureState.Microphone|null} [microphone] CaptureState microphone
+             * @property {groupcall.ParticipantToParticipant.CaptureState.Camera|null} [camera] CaptureState camera
+             */
+
+            /**
+             * Constructs a new CaptureState.
+             * @memberof groupcall.ParticipantToParticipant
+             * @classdesc Represents a CaptureState.
+             * @implements ICaptureState
+             * @constructor
+             * @param {groupcall.ParticipantToParticipant.ICaptureState=} [properties] Properties to set
+             */
+            function CaptureState(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * CaptureState microphone.
+             * @member {groupcall.ParticipantToParticipant.CaptureState.Microphone|null|undefined} microphone
+             * @memberof groupcall.ParticipantToParticipant.CaptureState
+             * @instance
+             */
+            CaptureState.prototype.microphone = null;
+
+            /**
+             * CaptureState camera.
+             * @member {groupcall.ParticipantToParticipant.CaptureState.Camera|null|undefined} camera
+             * @memberof groupcall.ParticipantToParticipant.CaptureState
+             * @instance
+             */
+            CaptureState.prototype.camera = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * CaptureState state.
+             * @member {"microphone"|"camera"|undefined} state
+             * @memberof groupcall.ParticipantToParticipant.CaptureState
+             * @instance
+             */
+            Object.defineProperty(CaptureState.prototype, "state", {
+                get: $util.oneOfGetter($oneOfFields = ["microphone", "camera"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified CaptureState message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToParticipant.CaptureState
+             * @static
+             * @param {groupcall.ParticipantToParticipant.CaptureState} message CaptureState message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            CaptureState.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.microphone != null && Object.hasOwnProperty.call(message, "microphone"))
+                    $root.groupcall.ParticipantToParticipant.CaptureState.Microphone.encode(message.microphone, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                if (message.camera != null && Object.hasOwnProperty.call(message, "camera"))
+                    $root.groupcall.ParticipantToParticipant.CaptureState.Camera.encode(message.camera, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes a CaptureState message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToParticipant.CaptureState
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToParticipant.CaptureState} CaptureState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            CaptureState.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.CaptureState();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.microphone = $root.groupcall.ParticipantToParticipant.CaptureState.Microphone.decode(reader, reader.uint32());
+                        break;
+                    case 2:
+                        message.camera = $root.groupcall.ParticipantToParticipant.CaptureState.Camera.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            CaptureState.Microphone = (function() {
+
+                /**
+                 * Properties of a Microphone.
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState
+                 * @interface IMicrophone
+                 * @property {common.Unit|null} [on] Microphone on
+                 * @property {common.Unit|null} [off] Microphone off
+                 */
+
+                /**
+                 * Constructs a new Microphone.
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState
+                 * @classdesc Represents a Microphone.
+                 * @implements IMicrophone
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.CaptureState.IMicrophone=} [properties] Properties to set
+                 */
+                function Microphone(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Microphone on.
+                 * @member {common.Unit|null|undefined} on
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Microphone
+                 * @instance
+                 */
+                Microphone.prototype.on = null;
+
+                /**
+                 * Microphone off.
+                 * @member {common.Unit|null|undefined} off
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Microphone
+                 * @instance
+                 */
+                Microphone.prototype.off = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                /**
+                 * Microphone state.
+                 * @member {"on"|"off"|undefined} state
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Microphone
+                 * @instance
+                 */
+                Object.defineProperty(Microphone.prototype, "state", {
+                    get: $util.oneOfGetter($oneOfFields = ["on", "off"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified Microphone message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.Microphone.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Microphone
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.CaptureState.Microphone} message Microphone message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Microphone.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.on != null && Object.hasOwnProperty.call(message, "on"))
+                        $root.common.Unit.encode(message.on, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    if (message.off != null && Object.hasOwnProperty.call(message, "off"))
+                        $root.common.Unit.encode(message.off, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Microphone message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Microphone
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.CaptureState.Microphone} Microphone
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Microphone.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.CaptureState.Microphone();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.on = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        case 2:
+                            message.off = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Microphone;
+            })();
+
+            CaptureState.Camera = (function() {
+
+                /**
+                 * Properties of a Camera.
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState
+                 * @interface ICamera
+                 * @property {common.Unit|null} [on] Camera on
+                 * @property {common.Unit|null} [off] Camera off
+                 */
+
+                /**
+                 * Constructs a new Camera.
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState
+                 * @classdesc Represents a Camera.
+                 * @implements ICamera
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.CaptureState.ICamera=} [properties] Properties to set
+                 */
+                function Camera(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Camera on.
+                 * @member {common.Unit|null|undefined} on
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Camera
+                 * @instance
+                 */
+                Camera.prototype.on = null;
+
+                /**
+                 * Camera off.
+                 * @member {common.Unit|null|undefined} off
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Camera
+                 * @instance
+                 */
+                Camera.prototype.off = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                /**
+                 * Camera state.
+                 * @member {"on"|"off"|undefined} state
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Camera
+                 * @instance
+                 */
+                Object.defineProperty(Camera.prototype, "state", {
+                    get: $util.oneOfGetter($oneOfFields = ["on", "off"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified Camera message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.Camera.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Camera
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.CaptureState.Camera} message Camera message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Camera.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.on != null && Object.hasOwnProperty.call(message, "on"))
+                        $root.common.Unit.encode(message.on, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    if (message.off != null && Object.hasOwnProperty.call(message, "off"))
+                        $root.common.Unit.encode(message.off, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Camera message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Camera
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.CaptureState.Camera} Camera
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Camera.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.CaptureState.Camera();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.on = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        case 2:
+                            message.off = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Camera;
+            })();
+
+            CaptureState.Screen = (function() {
+
+                /**
+                 * Properties of a Screen.
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState
+                 * @interface IScreen
+                 * @property {common.Unit|null} [on] Screen on
+                 * @property {common.Unit|null} [off] Screen off
+                 */
+
+                /**
+                 * Constructs a new Screen.
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState
+                 * @classdesc Represents a Screen.
+                 * @implements IScreen
+                 * @constructor
+                 * @param {groupcall.ParticipantToParticipant.CaptureState.IScreen=} [properties] Properties to set
+                 */
+                function Screen(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Screen on.
+                 * @member {common.Unit|null|undefined} on
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Screen
+                 * @instance
+                 */
+                Screen.prototype.on = null;
+
+                /**
+                 * Screen off.
+                 * @member {common.Unit|null|undefined} off
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Screen
+                 * @instance
+                 */
+                Screen.prototype.off = null;
+
+                // OneOf field names bound to virtual getters and setters
+                let $oneOfFields;
+
+                /**
+                 * Screen state.
+                 * @member {"on"|"off"|undefined} state
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Screen
+                 * @instance
+                 */
+                Object.defineProperty(Screen.prototype, "state", {
+                    get: $util.oneOfGetter($oneOfFields = ["on", "off"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                /**
+                 * Encodes the specified Screen message. Does not implicitly {@link groupcall.ParticipantToParticipant.CaptureState.Screen.verify|verify} messages.
+                 * @function encode
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Screen
+                 * @static
+                 * @param {groupcall.ParticipantToParticipant.CaptureState.Screen} message Screen message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Screen.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.on != null && Object.hasOwnProperty.call(message, "on"))
+                        $root.common.Unit.encode(message.on, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    if (message.off != null && Object.hasOwnProperty.call(message, "off"))
+                        $root.common.Unit.encode(message.off, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Screen message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof groupcall.ParticipantToParticipant.CaptureState.Screen
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {groupcall.ParticipantToParticipant.CaptureState.Screen} Screen
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Screen.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.CaptureState.Screen();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.on = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        case 2:
+                            message.off = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Screen;
+            })();
+
+            return CaptureState;
+        })();
+
+        ParticipantToParticipant.HoldState = (function() {
+
+            /**
+             * Properties of a HoldState.
+             * @memberof groupcall.ParticipantToParticipant
+             * @interface IHoldState
+             */
+
+            /**
+             * Constructs a new HoldState.
+             * @memberof groupcall.ParticipantToParticipant
+             * @classdesc Represents a HoldState.
+             * @implements IHoldState
+             * @constructor
+             * @param {groupcall.ParticipantToParticipant.IHoldState=} [properties] Properties to set
+             */
+            function HoldState(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Encodes the specified HoldState message. Does not implicitly {@link groupcall.ParticipantToParticipant.HoldState.verify|verify} messages.
+             * @function encode
+             * @memberof groupcall.ParticipantToParticipant.HoldState
+             * @static
+             * @param {groupcall.ParticipantToParticipant.HoldState} message HoldState message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            HoldState.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                return writer;
+            };
+
+            /**
+             * Decodes a HoldState message from the specified reader or buffer.
+             * @function decode
+             * @memberof groupcall.ParticipantToParticipant.HoldState
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {groupcall.ParticipantToParticipant.HoldState} HoldState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            HoldState.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.groupcall.ParticipantToParticipant.HoldState();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return HoldState;
+        })();
+
+        return ParticipantToParticipant;
+    })();
+
+    return groupcall;
 })();
 
 export const history = $root.history = (() => {
@@ -11948,8 +16760,7 @@ export const rendezvous = $root.rendezvous = (() => {
                  * @interface IIpAddress
                  * @property {number|null} [pathId] IpAddress pathId
                  * @property {rendezvous.NetworkCost|null} [networkCost] IpAddress networkCost
-                 * @property {Uint8Array|null} [ipv4] IpAddress ipv4
-                 * @property {Uint8Array|null} [ipv6] IpAddress ipv6
+                 * @property {string|null} [ip] IpAddress ip
                  */
 
                 /**
@@ -11984,34 +16795,12 @@ export const rendezvous = $root.rendezvous = (() => {
                 IpAddress.prototype.networkCost = 0;
 
                 /**
-                 * IpAddress ipv4.
-                 * @member {Uint8Array|null|undefined} ipv4
-                 * @memberof rendezvous.RendezvousInit.DirectTcpServer.IpAddress
-                 * @instance
-                 */
-                IpAddress.prototype.ipv4 = null;
-
-                /**
-                 * IpAddress ipv6.
-                 * @member {Uint8Array|null|undefined} ipv6
-                 * @memberof rendezvous.RendezvousInit.DirectTcpServer.IpAddress
-                 * @instance
-                 */
-                IpAddress.prototype.ipv6 = null;
-
-                // OneOf field names bound to virtual getters and setters
-                let $oneOfFields;
-
-                /**
                  * IpAddress ip.
-                 * @member {"ipv4"|"ipv6"|undefined} ip
+                 * @member {string} ip
                  * @memberof rendezvous.RendezvousInit.DirectTcpServer.IpAddress
                  * @instance
                  */
-                Object.defineProperty(IpAddress.prototype, "ip", {
-                    get: $util.oneOfGetter($oneOfFields = ["ipv4", "ipv6"]),
-                    set: $util.oneOfSetter($oneOfFields)
-                });
+                IpAddress.prototype.ip = "";
 
                 /**
                  * Encodes the specified IpAddress message. Does not implicitly {@link rendezvous.RendezvousInit.DirectTcpServer.IpAddress.verify|verify} messages.
@@ -12029,10 +16818,8 @@ export const rendezvous = $root.rendezvous = (() => {
                         writer.uint32(/* id 1, wireType 5 =*/13).fixed32(message.pathId);
                     if (message.networkCost != null && Object.hasOwnProperty.call(message, "networkCost"))
                         writer.uint32(/* id 2, wireType 0 =*/16).int32(message.networkCost);
-                    if (message.ipv4 != null && Object.hasOwnProperty.call(message, "ipv4"))
-                        writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.ipv4);
-                    if (message.ipv6 != null && Object.hasOwnProperty.call(message, "ipv6"))
-                        writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.ipv6);
+                    if (message.ip != null && Object.hasOwnProperty.call(message, "ip"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.ip);
                     return writer;
                 };
 
@@ -12061,10 +16848,7 @@ export const rendezvous = $root.rendezvous = (() => {
                             message.networkCost = reader.int32();
                             break;
                         case 3:
-                            message.ipv4 = reader.bytes();
-                            break;
-                        case 4:
-                            message.ipv6 = reader.bytes();
+                            message.ip = reader.string();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -12102,8 +16886,7 @@ export const d2m = $root.d2m = (() => {
          * @memberof d2m
          * @interface IClientUrlInfo
          * @property {Uint8Array|null} [deviceGroupId] ClientUrlInfo deviceGroupId
-         * @property {number|null} [serverGroup] ClientUrlInfo serverGroup
-         * @property {string|null} [serverGroupString] ClientUrlInfo serverGroupString
+         * @property {string|null} [serverGroup] ClientUrlInfo serverGroup
          */
 
         /**
@@ -12131,19 +16914,11 @@ export const d2m = $root.d2m = (() => {
 
         /**
          * ClientUrlInfo serverGroup.
-         * @member {number} serverGroup
+         * @member {string} serverGroup
          * @memberof d2m.ClientUrlInfo
          * @instance
          */
-        ClientUrlInfo.prototype.serverGroup = 0;
-
-        /**
-         * ClientUrlInfo serverGroupString.
-         * @member {string} serverGroupString
-         * @memberof d2m.ClientUrlInfo
-         * @instance
-         */
-        ClientUrlInfo.prototype.serverGroupString = "";
+        ClientUrlInfo.prototype.serverGroup = "";
 
         /**
          * Encodes the specified ClientUrlInfo message. Does not implicitly {@link d2m.ClientUrlInfo.verify|verify} messages.
@@ -12160,9 +16935,7 @@ export const d2m = $root.d2m = (() => {
             if (message.deviceGroupId != null && Object.hasOwnProperty.call(message, "deviceGroupId"))
                 writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.deviceGroupId);
             if (message.serverGroup != null && Object.hasOwnProperty.call(message, "serverGroup"))
-                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.serverGroup);
-            if (message.serverGroupString != null && Object.hasOwnProperty.call(message, "serverGroupString"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.serverGroupString);
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.serverGroup);
             return writer;
         };
 
@@ -12187,11 +16960,8 @@ export const d2m = $root.d2m = (() => {
                 case 1:
                     message.deviceGroupId = reader.bytes();
                     break;
-                case 2:
-                    message.serverGroup = reader.uint32();
-                    break;
                 case 3:
-                    message.serverGroupString = reader.string();
+                    message.serverGroup = reader.string();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -13801,6 +18571,405 @@ export const d2m = $root.d2m = (() => {
     })();
 
     return d2m;
+})();
+
+export const callsignaling = $root.callsignaling = (() => {
+
+    /**
+     * Namespace callsignaling.
+     * @exports callsignaling
+     * @namespace
+     */
+    const callsignaling = {};
+
+    callsignaling.Envelope = (function() {
+
+        /**
+         * Properties of an Envelope.
+         * @memberof callsignaling
+         * @interface IEnvelope
+         * @property {Uint8Array|null} [padding] Envelope padding
+         * @property {callsignaling.VideoQualityProfile|null} [videoQualityProfile] Envelope videoQualityProfile
+         * @property {callsignaling.CaptureState|null} [captureStateChange] Envelope captureStateChange
+         */
+
+        /**
+         * Constructs a new Envelope.
+         * @memberof callsignaling
+         * @classdesc Represents an Envelope.
+         * @implements IEnvelope
+         * @constructor
+         * @param {callsignaling.IEnvelope=} [properties] Properties to set
+         */
+        function Envelope(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Envelope padding.
+         * @member {Uint8Array} padding
+         * @memberof callsignaling.Envelope
+         * @instance
+         */
+        Envelope.prototype.padding = $util.newBuffer([]);
+
+        /**
+         * Envelope videoQualityProfile.
+         * @member {callsignaling.VideoQualityProfile|null|undefined} videoQualityProfile
+         * @memberof callsignaling.Envelope
+         * @instance
+         */
+        Envelope.prototype.videoQualityProfile = null;
+
+        /**
+         * Envelope captureStateChange.
+         * @member {callsignaling.CaptureState|null|undefined} captureStateChange
+         * @memberof callsignaling.Envelope
+         * @instance
+         */
+        Envelope.prototype.captureStateChange = null;
+
+        // OneOf field names bound to virtual getters and setters
+        let $oneOfFields;
+
+        /**
+         * Envelope content.
+         * @member {"videoQualityProfile"|"captureStateChange"|undefined} content
+         * @memberof callsignaling.Envelope
+         * @instance
+         */
+        Object.defineProperty(Envelope.prototype, "content", {
+            get: $util.oneOfGetter($oneOfFields = ["videoQualityProfile", "captureStateChange"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Encodes the specified Envelope message. Does not implicitly {@link callsignaling.Envelope.verify|verify} messages.
+         * @function encode
+         * @memberof callsignaling.Envelope
+         * @static
+         * @param {callsignaling.Envelope} message Envelope message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Envelope.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.padding != null && Object.hasOwnProperty.call(message, "padding"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
+            if (message.videoQualityProfile != null && Object.hasOwnProperty.call(message, "videoQualityProfile"))
+                $root.callsignaling.VideoQualityProfile.encode(message.videoQualityProfile, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.captureStateChange != null && Object.hasOwnProperty.call(message, "captureStateChange"))
+                $root.callsignaling.CaptureState.encode(message.captureStateChange, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Decodes an Envelope message from the specified reader or buffer.
+         * @function decode
+         * @memberof callsignaling.Envelope
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {callsignaling.Envelope} Envelope
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Envelope.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.callsignaling.Envelope();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.padding = reader.bytes();
+                    break;
+                case 2:
+                    message.videoQualityProfile = $root.callsignaling.VideoQualityProfile.decode(reader, reader.uint32());
+                    break;
+                case 3:
+                    message.captureStateChange = $root.callsignaling.CaptureState.decode(reader, reader.uint32());
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return Envelope;
+    })();
+
+    callsignaling.VideoQualityProfile = (function() {
+
+        /**
+         * Properties of a VideoQualityProfile.
+         * @memberof callsignaling
+         * @interface IVideoQualityProfile
+         * @property {callsignaling.VideoQualityProfile.QualityProfile|null} [profile] VideoQualityProfile profile
+         * @property {number|null} [maxBitrateKbps] VideoQualityProfile maxBitrateKbps
+         * @property {common.Resolution|null} [maxResolution] VideoQualityProfile maxResolution
+         * @property {number|null} [maxFps] VideoQualityProfile maxFps
+         */
+
+        /**
+         * Constructs a new VideoQualityProfile.
+         * @memberof callsignaling
+         * @classdesc Represents a VideoQualityProfile.
+         * @implements IVideoQualityProfile
+         * @constructor
+         * @param {callsignaling.IVideoQualityProfile=} [properties] Properties to set
+         */
+        function VideoQualityProfile(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * VideoQualityProfile profile.
+         * @member {callsignaling.VideoQualityProfile.QualityProfile} profile
+         * @memberof callsignaling.VideoQualityProfile
+         * @instance
+         */
+        VideoQualityProfile.prototype.profile = 0;
+
+        /**
+         * VideoQualityProfile maxBitrateKbps.
+         * @member {number} maxBitrateKbps
+         * @memberof callsignaling.VideoQualityProfile
+         * @instance
+         */
+        VideoQualityProfile.prototype.maxBitrateKbps = 0;
+
+        /**
+         * VideoQualityProfile maxResolution.
+         * @member {common.Resolution|null|undefined} maxResolution
+         * @memberof callsignaling.VideoQualityProfile
+         * @instance
+         */
+        VideoQualityProfile.prototype.maxResolution = null;
+
+        /**
+         * VideoQualityProfile maxFps.
+         * @member {number} maxFps
+         * @memberof callsignaling.VideoQualityProfile
+         * @instance
+         */
+        VideoQualityProfile.prototype.maxFps = 0;
+
+        /**
+         * Encodes the specified VideoQualityProfile message. Does not implicitly {@link callsignaling.VideoQualityProfile.verify|verify} messages.
+         * @function encode
+         * @memberof callsignaling.VideoQualityProfile
+         * @static
+         * @param {callsignaling.VideoQualityProfile} message VideoQualityProfile message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        VideoQualityProfile.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.profile != null && Object.hasOwnProperty.call(message, "profile"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.profile);
+            if (message.maxBitrateKbps != null && Object.hasOwnProperty.call(message, "maxBitrateKbps"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.maxBitrateKbps);
+            if (message.maxResolution != null && Object.hasOwnProperty.call(message, "maxResolution"))
+                $root.common.Resolution.encode(message.maxResolution, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+            if (message.maxFps != null && Object.hasOwnProperty.call(message, "maxFps"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.maxFps);
+            return writer;
+        };
+
+        /**
+         * Decodes a VideoQualityProfile message from the specified reader or buffer.
+         * @function decode
+         * @memberof callsignaling.VideoQualityProfile
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {callsignaling.VideoQualityProfile} VideoQualityProfile
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        VideoQualityProfile.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.callsignaling.VideoQualityProfile();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.profile = reader.int32();
+                    break;
+                case 2:
+                    message.maxBitrateKbps = reader.uint32();
+                    break;
+                case 3:
+                    message.maxResolution = $root.common.Resolution.decode(reader, reader.uint32());
+                    break;
+                case 4:
+                    message.maxFps = reader.uint32();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * QualityProfile enum.
+         * @name callsignaling.VideoQualityProfile.QualityProfile
+         * @enum {number}
+         * @property {number} MAX=0 MAX value
+         * @property {number} HIGH=1 HIGH value
+         * @property {number} LOW=2 LOW value
+         */
+        VideoQualityProfile.QualityProfile = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "MAX"] = 0;
+            values[valuesById[1] = "HIGH"] = 1;
+            values[valuesById[2] = "LOW"] = 2;
+            return values;
+        })();
+
+        return VideoQualityProfile;
+    })();
+
+    callsignaling.CaptureState = (function() {
+
+        /**
+         * Properties of a CaptureState.
+         * @memberof callsignaling
+         * @interface ICaptureState
+         * @property {callsignaling.CaptureState.Mode|null} [state] CaptureState state
+         * @property {callsignaling.CaptureState.CaptureDevice|null} [device] CaptureState device
+         */
+
+        /**
+         * Constructs a new CaptureState.
+         * @memberof callsignaling
+         * @classdesc Represents a CaptureState.
+         * @implements ICaptureState
+         * @constructor
+         * @param {callsignaling.ICaptureState=} [properties] Properties to set
+         */
+        function CaptureState(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * CaptureState state.
+         * @member {callsignaling.CaptureState.Mode} state
+         * @memberof callsignaling.CaptureState
+         * @instance
+         */
+        CaptureState.prototype.state = 0;
+
+        /**
+         * CaptureState device.
+         * @member {callsignaling.CaptureState.CaptureDevice} device
+         * @memberof callsignaling.CaptureState
+         * @instance
+         */
+        CaptureState.prototype.device = 0;
+
+        /**
+         * Encodes the specified CaptureState message. Does not implicitly {@link callsignaling.CaptureState.verify|verify} messages.
+         * @function encode
+         * @memberof callsignaling.CaptureState
+         * @static
+         * @param {callsignaling.CaptureState} message CaptureState message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        CaptureState.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.state != null && Object.hasOwnProperty.call(message, "state"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.state);
+            if (message.device != null && Object.hasOwnProperty.call(message, "device"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.device);
+            return writer;
+        };
+
+        /**
+         * Decodes a CaptureState message from the specified reader or buffer.
+         * @function decode
+         * @memberof callsignaling.CaptureState
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {callsignaling.CaptureState} CaptureState
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        CaptureState.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.callsignaling.CaptureState();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.state = reader.int32();
+                    break;
+                case 2:
+                    message.device = reader.int32();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Mode enum.
+         * @name callsignaling.CaptureState.Mode
+         * @enum {number}
+         * @property {number} OFF=0 OFF value
+         * @property {number} ON=1 ON value
+         */
+        CaptureState.Mode = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "OFF"] = 0;
+            values[valuesById[1] = "ON"] = 1;
+            return values;
+        })();
+
+        /**
+         * CaptureDevice enum.
+         * @name callsignaling.CaptureState.CaptureDevice
+         * @enum {number}
+         * @property {number} CAMERA=0 CAMERA value
+         * @property {number} RESERVED_FOR_SCREEN_SHARE=1 RESERVED_FOR_SCREEN_SHARE value
+         * @property {number} MICROPHONE=2 MICROPHONE value
+         */
+        CaptureState.CaptureDevice = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "CAMERA"] = 0;
+            values[valuesById[1] = "RESERVED_FOR_SCREEN_SHARE"] = 1;
+            values[valuesById[2] = "MICROPHONE"] = 2;
+            return values;
+        })();
+
+        return CaptureState;
+    })();
+
+    return callsignaling;
 })();
 
 export const url = $root.url = (() => {
