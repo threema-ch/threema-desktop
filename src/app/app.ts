@@ -20,6 +20,7 @@ import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/l
 import {type IdentityString} from '~/common/network/types';
 import {type u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
+import {type ISubscribableStore} from '~/common/utils/store';
 import {GlobalTimer} from '~/common/utils/timer';
 
 import {type BootstrapParams} from './components';
@@ -130,7 +131,7 @@ async function updateCheck(
     }
 }
 
-export async function main(): Promise<App> {
+export async function main(appState: AppState): Promise<App> {
     // Set up logging
     let logging = TagLogger.styled(CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
     if (
@@ -382,6 +383,7 @@ export async function main(): Promise<App> {
         void updateCheck(services, window.app);
     }
 
+    // Subscribe to unread message count changes and update all counters.
     function updateUnreadMessageAppBadge(count: u53 | undefined): void {
         let title = import.meta.env.APP_NAME;
         if (count === undefined || count < 1) {
@@ -394,9 +396,9 @@ export async function main(): Promise<App> {
         document.title = title;
         window.app?.updateAppBadge(count ?? 0);
     }
-
-    totalUnreadMessageCountStore = await backend.model.conversations.totalUnreadMessageCount;
+    const totalUnreadMessageCountStore = await backend.model.conversations.totalUnreadMessageCount;
     totalUnreadMessageCountStore.subscribe(updateUnreadMessageAppBadge);
+    appState.totalUnreadMessageCountStore = totalUnreadMessageCountStore;
 
     // Attach app when DOM is loaded
     await domContentLoaded;
@@ -404,6 +406,12 @@ export async function main(): Promise<App> {
     return attachApp(services, isNewIdentity, elements);
 }
 
-let totalUnreadMessageCountStore;
+// Global app state
+interface AppState {
+    // This store is subscribed in the `main` function. Its reference must be kept alive to prevent
+    // it from being garbage collected.
+    totalUnreadMessageCountStore?: ISubscribableStore<u53>;
+}
+const appState: AppState = {};
 
-export const app = main();
+export const app = main(appState);
