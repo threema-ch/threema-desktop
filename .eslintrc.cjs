@@ -231,6 +231,7 @@ module.exports = {
         'require-atomic-updates': 'error',
 
         // Best practices
+        'a11y-click-events-have-key-events': 'off', // TODO(WEBMD-839): Reenable
         'array-callback-return': 'error',
         'block-scoped-var': 'error',
         'consistent-return': 'error',
