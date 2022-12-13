@@ -48,6 +48,48 @@ $config: config-merge(components.$config, (
       --ic-contact-navigation-context-button-border-color--active,
       --ic-contact-navigation-context-button-background-color--active,
       --ic-contact-navigation-context-button-opacity--disabled,
+
+      // Swipe area
+      --ic-swipe-area-main-size,
+      --ic-swipe-area-left-size,
+      --ic-swipe-area-right-size,
+
+      // Swipe area button
+      --ic-swipe-area-button-background-color,
+      --ic-swipe-area-button-background-color--hover,
+      --ic-swipe-area-button-background-color--active,
+      --ic-swipe-area-button-outline--focus,
+      --ic-swipe-area-button-icon-color,
+      --ic-swipe-area-button-name-color,
+    ),
+
+    message-components: (
+      // Message footer
+      --mc-message-footer-time,
+      --mc-message-footer-column-gap,
+      --mc-message-footer-icon-size,
+
+      // General message container
+      --mc-message-row-gap,
+      --mc-message-hover-background-color,
+      --mc-message-border-radius,
+      --mc-message-background-color-incoming,
+      --mc-message-background-color-outgoing,
+      --mc-message-mention-background-color,
+      --mc-message-mention-color,
+      --mc-message-mention-me-background-color,
+      --mc-message-mention-me-color,
+
+      // Message status
+      --mc-message-status-acknowledged-color,
+      --mc-message-status-declined-color,
+      --mc-message-status-error-color,
+
+      // Unsupported message
+      --mc-message-unsupported-padding,
+
+      // Text message
+      --mc-message-text-padding,
     ),
 
     compound-components: (

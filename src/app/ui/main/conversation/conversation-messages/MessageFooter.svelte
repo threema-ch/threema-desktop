@@ -58,19 +58,19 @@
     grid-area: footer;
     display: grid;
     grid-template: 'time status' auto / 1fr;
-    grid-column-gap: var(--c-message-footer-column-gap);
+    grid-column-gap: var(--mc-message-footer-column-gap);
     justify-items: end;
     align-items: center;
 
     .time {
       @extend %font-small-400;
       grid-area: time;
-      color: var(--c-message-footer-time);
+      color: var(--mc-message-footer-time);
     }
 
     .status {
       grid-area: status;
-      @include def-var(--c-icon-font-size, var(--c-message-footer-icon-size));
+      @include def-var(--c-icon-font-size, var(--mc-message-footer-icon-size));
     }
   }
 </style>

@@ -48,15 +48,15 @@
     display: grid;
 
     &[data-status='error'] {
-      color: var(--c-message-status-error-color, default);
+      color: var(--mc-message-status-error-color);
     }
 
     &[data-reaction='acknowledged'] {
-      color: var(--c-message-status-acknowledged-color, default);
+      color: var(--mc-message-status-acknowledged-color);
     }
 
     &[data-reaction='declined'] {
-      color: var(--c-message-status-declined-color, default);
+      color: var(--mc-message-status-declined-color);
     }
 
     // On Group conversations, only show pending state

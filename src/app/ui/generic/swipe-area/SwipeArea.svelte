@@ -2,8 +2,7 @@
   import {onDestroy, onMount} from 'svelte';
 
   import {ElementResizeObserver} from '#3sc/utils/observer';
-
-  import type {SwipeAreaGroup} from '.';
+  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
 
   /**
    * Optional swipe area group. Grouped swipe areas will reset each other on
@@ -24,6 +23,7 @@
 
   /**
    * Scroll back to the original position, i.e. showing the main content.
+   *
    * @param behavior Optional scrolling behaviour.
    */
   export function reset(behavior?: 'smooth'): void {
@@ -100,19 +100,19 @@
     &[data-swipe-area='left'] {
       grid-template:
         'left main'
-        / var(--c-swipe-area-left-size, default) var(--c-swipe-area-main-size, default);
+        / var(--ic-swipe-area-left-size) var(--ic-swipe-area-main-size);
     }
 
     &[data-swipe-area='right'] {
       grid-template:
         'main right'
-        / var(--c-swipe-area-main-size, default) var(--c-swipe-area-right-size, default);
+        / var(--ic-swipe-area-main-size) var(--ic-swipe-area-right-size);
     }
 
     &[data-swipe-area='both'] {
       grid-template:
         'left main right'
-        / var(--c-swipe-area-left-size, default) var(--c-swipe-area-main-size, default) var(--c-swipe-area-right-size, default);
+        / var(--ic-swipe-area-left-size) var(--ic-swipe-area-main-size) var(--ic-swipe-area-right-size);
     }
   }
 

@@ -15,6 +15,6 @@
   @use 'component' as *;
 
   div {
-    padding: var(--c-message-unsupported-padding);
+    padding: var(--mc-message-unsupported-padding);
   }
 </style>

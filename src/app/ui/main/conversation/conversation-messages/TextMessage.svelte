@@ -96,8 +96,8 @@
       'footer' auto
       / auto;
 
-    grid-row-gap: var(--c-message-row-gap);
-    padding: var(--c-message-text-padding);
+    grid-row-gap: var(--mc-message-row-gap);
+    padding: var(--mc-message-text-padding);
 
     .contact {
       grid-area: contact;

@@ -2,9 +2,9 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {MessageDirection, MessageReaction, MessageReactionUtils} from '~/common/enum';
   import {type AnyMessageModel, type RemoteModelFor} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
@@ -89,10 +89,10 @@
         display: grid;
         align-items: center;
         &[data-reaction='ACKNOWLEDGE'] {
-          color: var(--c-message-status-acknowledged-color, default);
+          color: var(--mc-message-status-acknowledged-color);
         }
         &[data-reaction='DECLINE'] {
-          color: var(--c-message-status-declined-color, default);
+          color: var(--mc-message-status-declined-color);
         }
       }
     }

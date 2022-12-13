@@ -408,8 +408,8 @@
         display: grid;
         position: relative;
         justify-self: start;
-        border-radius: var(--c-message-border-radius);
-        background-color: var(--c-message-background-color-incoming);
+        border-radius: var(--mc-message-border-radius);
+        background-color: var(--mc-message-background-color-incoming);
 
         .hover {
           position: absolute;
@@ -419,8 +419,8 @@
           height: 100%;
           pointer-events: none;
           display: none;
-          border-radius: var(--c-message-border-radius);
-          background-color: var(--c-message-hover-background-color);
+          border-radius: var(--mc-message-border-radius);
+          background-color: var(--mc-message-hover-background-color);
 
           &.visible {
             display: block;
@@ -493,7 +493,7 @@
 
         .message {
           justify-self: end;
-          background-color: var(--c-message-background-color-outgoing);
+          background-color: var(--mc-message-background-color-outgoing);
         }
         .options {
           padding-right: 4px;
@@ -517,7 +517,7 @@
 
         &[data-direction='outgoing'] {
           .message {
-            background-color: var(--c-message-background-color-outgoing);
+            background-color: var(--mc-message-background-color-outgoing);
           }
         }
 

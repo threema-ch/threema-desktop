@@ -48,6 +48,7 @@ $themes: (
 
 @function -individual-components-theme($theme, $branding) {
   $t: -g($theme, app);
+  $b: $branding;
   $ic: -g($theme, individual-components);
 
   // prettier-ignore
@@ -67,12 +68,59 @@ $themes: (
     --ic-contact-navigation-context-button-border-color--active: -g($ic, contact-navigation-context-button-border-color--active),
     --ic-contact-navigation-context-button-background-color--active: -g($ic, contact-navigation-context-button-background-color--active),
     --ic-contact-navigation-context-button-opacity--disabled: -g($ic, contact-navigation-context-button-opacity--disabled),
+    // Swipe area
+    --ic-swipe-area-main-size: 100%,
+    --ic-swipe-area-left-size: 50%,
+    --ic-swipe-area-right-size: 50%,
+    // Swipe area button
+    --ic-swipe-area-button-background-color: -g($b, primary-background),
+    --ic-swipe-area-button-background-color--hover: -g($b, primary-background--hover),
+    --ic-swipe-area-button-background-color--active: -g($b, primary-background--active),
+    --ic-swipe-area-button-outline--focus: rem(1px) solid -g($b, primary-outline--focus),
+    --ic-swipe-area-button-icon-color: -g($b, primary-text-e1),
+    --ic-swipe-area-button-name-color: -g($b, primary-text-e1),
+  );
+}
+
+@function -message-components-theme($theme, $branding) {
+  $t: -g($theme, app);
+  $b: $branding;
+  $mc: -g($theme, message-components);
+
+  // prettier-ignore
+  @return (
+      // Message footer
+      --mc-message-footer-time: -g($mc, message-footer-time),
+      --mc-message-footer-column-gap: rem(4px),
+      --mc-message-footer-icon-size: rem(12px),
+
+      // General message container
+      --mc-message-row-gap: rem(2px),
+      --mc-message-border-radius: rem(8px),
+      --mc-message-hover-background-color: -g($mc, message-hover-background-color),
+      --mc-message-background-color-incoming: -g($mc, message-background-color-incoming),
+      --mc-message-background-color-outgoing: -g($mc, message-background-color-outgoing),
+      --mc-message-mention-background-color: -g($mc, message-mention-background-color),
+      --mc-message-mention-color: -g($mc, message-mention-color),
+      --mc-message-mention-me-background-color: -g($mc, message-mention-me-background-color),
+      --mc-message-mention-me-color: -g($mc, message-mention-me-color),
+
+      // Message status
+      --mc-message-status-acknowledged-color: -g($mc, message-status-acknowledged),
+      --mc-message-status-declined-color: -g($mc, message-status-declined),
+      --mc-message-status-error-color: -g($mc, message-status-error),
+
+      // Unsupported message
+      --mc-message-unsupported-padding: rem(8px),
+
+      // Text Message
+      --mc-message-text-padding: rem(8px),
   );
 }
 
 @function -compound-components-theme($theme, $branding) {
-  $b: $branding;
   $t: -g($theme, app);
+  $b: $branding;
   $cc: -g($theme, compound-components);
 
   // prettier-ignore
@@ -164,8 +212,8 @@ $themes: (
 }
 
 @function -debug-components-theme($theme, $branding) {
-  $b: $branding;
   $t: -g($theme, app);
+  $b: $branding;
   $dc: -g($theme, debug-components);
 
   // prettier-ignore
@@ -184,6 +232,7 @@ $themes: (
       @include def-var(-app-theme($theme, $branding)...);
       @include def-var(theme.components-theme($theme, $branding)...);
       @include def-var(-individual-components-theme($theme, $branding)...);
+      @include def-var(-message-components-theme($theme, $branding)...);
       @include def-var(-compound-components-theme($theme, $branding)...);
       @include def-var(-debug-components-theme($theme, $branding)...);
     }

@@ -43,6 +43,24 @@ $light: (
     contact-navigation-context-button-background-color--active: theme.$consumer-green-600,
     contact-navigation-context-button-opacity--disabled: 26%,
   ),
+  message-components: (
+    // Message footer
+    message-footer-time: theme.$light-text-e2,
+
+    // Message status
+    message-status-acknowledged: theme.$consumer-green-600,
+    message-status-declined: theme.$warning-orange,
+    message-status-error: theme.$alert-red,
+
+    // General message container
+    message-hover-background-color: rgba(#000000, 4%),
+    message-background-color-incoming: theme.$grey-100,
+    message-background-color-outgoing: theme.$consumer-green-50,
+    message-mention-background-color: rgba(#000000, 12%),
+    message-mention-color: rgba(#000000, 88%),
+    message-mention-me-background-color: theme.$consumer-green-600,
+    message-mention-me-color: #ffffff,
+  ),
   compound-components: (
     // Avatar upload
     avatar-upload-background-color: rgba(#000000, 4%),

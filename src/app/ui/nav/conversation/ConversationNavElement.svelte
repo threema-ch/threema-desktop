@@ -241,7 +241,7 @@
       var(--cc-conversation-preview-background-color)
     );
     @include def-var(
-      $--c-swipe-area-right-size: 75%,
+      $--ic-swipe-area-right-size: 75%,
       $--cc-avatar-overlay-background-color: var($-temp-vars, --cc-t-background-color)
     );
     background-color: var($-temp-vars, --cc-t-background-color);

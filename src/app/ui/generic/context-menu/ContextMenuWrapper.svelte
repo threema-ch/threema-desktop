@@ -164,7 +164,7 @@
   div {
     position: absolute;
     z-index: $z-index-context-menu;
-    background-color: var(--c-modal-dialog-background-color, default);
+    background-color: var(--c-modal-dialog-background-color);
     @extend %elevation-060;
     overflow-y: auto;
     max-height: 100vh;

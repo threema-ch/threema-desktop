@@ -19,7 +19,7 @@
 
   button {
     @extend %neutral-input;
-    background-color: var(--c-swipe-area-button-background-color, default);
+    background-color: var(--ic-swipe-area-button-background-color);
     display: grid;
     grid-template:
       'icon' 9fr
@@ -28,26 +28,26 @@
     cursor: pointer;
 
     &:hover {
-      background-color: var(--c-swipe-area-button-background-color--hover, default);
+      background-color: var(--ic-swipe-area-button-background-color--hover);
     }
 
     &:focus {
-      background-color: var(--c-swipe-area-button-background-color--hover, default);
-      outline: var(--c-swipe-area-button-outline--focus, default);
+      background-color: var(--ic-swipe-area-button-background-color--hover);
+      outline: var(--ic-swipe-area-button-outline--focus);
     }
 
     &:active {
-      background-color: var(--c-swipe-area-button-background-color--active, default);
+      background-color: var(--ic-swipe-area-button-background-color--active);
     }
   }
 
   .icon {
     align-self: end;
-    color: var(--c-swipe-area-button-icon-color, default);
+    color: var(--ic-swipe-area-button-icon-color);
   }
   .name {
     @extend %font-meta-400;
     align-self: start;
-    color: var(--c-swipe-area-button-name-color, default);
+    color: var(--ic-swipe-area-button-name-color);
   }
 </style>
