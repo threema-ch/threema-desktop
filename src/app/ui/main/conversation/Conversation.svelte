@@ -129,6 +129,9 @@
 
     // Clear draft
     conversationDraftStore.set(undefined);
+
+    // Scroll to the bottom of the conversation when sending a new message.
+    anchorActive = true;
   }
 
   let conversationDraftStore = conversationDrafts.getOrCreateStore(receiverLookup);
@@ -143,14 +146,14 @@
     attachment: undefined,
   });
 
-  // Determine wheter scroll snapping anchor is active.
+  // Determine whether scroll snapping anchor is active.
   let anchorActive = true;
 
   /**
    * Detect and switch if the scroll snapping anchor should be active based on element visibility.
    */
   function scrollSnap(node: HTMLElement): SvelteAction {
-    // Make sure that the scoll anchor is initially visible if active
+    // Make sure that the scroll anchor is initially visible if active
     if (anchorActive) {
       scrollToCenterOfView(node);
     }
