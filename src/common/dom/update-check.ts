@@ -41,8 +41,8 @@ export async function checkForUpdate(
         log.warn(`Unsupported OS, cannot check for updates.`);
         return undefined;
     }
-    const updateJson = `${import.meta.env.BUILD_VARIANT}-alpha-${systemInfo.os}.json`;
-    const downloadCheckUrl = `${config.UPDATE_SERVER_URL}/${updateJson}`;
+    const updateJson = `latest-version-${import.meta.env.BUILD_VARIANT}-${systemInfo.os}.json`;
+    const downloadCheckUrl = `${config.UPDATE_SERVER_URL}${updateJson}`;
 
     // Download JSON
     let response: Response;

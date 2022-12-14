@@ -60,7 +60,7 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.threema.ch/{prefix8}', // TODO(WEBMD-763): Production server
                 DIRECTORY_SERVER_URL: 'https://ds-apip.threema.ch',
                 BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}', // TODO(WEBMD-763): Production server
-                UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop-preview/',
+                UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
             };
         case 'sandbox':
             return {
@@ -74,7 +74,7 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 MEDIATOR_SERVER_URL: 'wss://mediator-test.threema.ch',
                 DIRECTORY_SERVER_URL: 'https://ds-apip.test.threema.ch',
                 BLOB_SERVER_URL: 'https://blob-mirror-test.threema.ch',
-                UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop-preview/',
+                UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
             };
         default:
             return unreachable(environment);
