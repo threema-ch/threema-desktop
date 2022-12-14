@@ -275,7 +275,7 @@ export class BackendController {
                     credentials: {
                         identity: credentialsAndDeviceIds.identity,
                         password: credentialsAndDeviceIds.password,
-                        serverUrl: credentialsAndDeviceIds.serverUrl,
+                        customSafeServer: credentialsAndDeviceIds.customSafeServer,
                     },
                     deviceIds: {
                         d2mDeviceId: credentialsAndDeviceIds.d2mDeviceId,

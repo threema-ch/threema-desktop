@@ -38,7 +38,13 @@ export interface ContextStore {
     identity?: IdentityString;
     linkingCode?: LinkingCode;
     linkingCodeParts: [one: string, two: string, three: string, four: string];
-    customUrl?: string;
+    customSafeServer?: {
+        url: string;
+        auth?: {
+            username: string;
+            password: string;
+        };
+    };
     cspDeviceId?: CspDeviceId;
     d2mDeviceId?: D2mDeviceId;
     newPassword?: string;

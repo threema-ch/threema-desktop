@@ -15,6 +15,7 @@ import {type BaseErrorOptions, BaseError} from '~/common/error';
 import {type IdentityString, ensureIdentityString} from '~/common/network/types';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
+import {u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
@@ -36,7 +37,13 @@ export type ServicesForSafeBackup = Pick<
 export interface SafeCredentials {
     readonly identity: IdentityString;
     readonly password: string;
-    readonly serverUrl?: string;
+    readonly customSafeServer?: {
+        readonly url: string;
+        readonly auth?: {
+            readonly username: string;
+            readonly password: string;
+        };
+    };
 }
 
 const SAFE_INFO_SCHEMA = v
@@ -245,9 +252,9 @@ function deriveKey({
 async function fetchBackupBytes(
     hexBackupId: string,
     config: ServicesForSafeBackup['config'],
-    customUrl?: URL,
+    customSafeServer?: SafeCredentials['customSafeServer'],
 ): Promise<Uint8Array> {
-    const response = await requestSafeBackupUrl(hexBackupId, config, 'GET', customUrl);
+    const response = await requestSafeBackupUrl(hexBackupId, config, 'GET', customSafeServer);
     return new Uint8Array(await response.arrayBuffer());
 }
 
@@ -258,21 +265,23 @@ async function requestSafeBackupUrl(
     hexBackupId: string,
     config: ServicesForSafeBackup['config'],
     httpMethod: 'GET' | 'HEAD',
-    customUrl?: URL,
+    customSafeServer?: SafeCredentials['customSafeServer'],
 ): Promise<Response> {
+    // Determine URL
     let server: string;
     let path: string;
-    if (customUrl === undefined) {
+    const customSafeServerUrl =
+        customSafeServer !== undefined ? new URL(customSafeServer.url) : undefined;
+    if (customSafeServerUrl === undefined) {
         server = SAFE_SERVER_TEMPLATE.replace('{prefix}', hexBackupId.slice(0, 2));
         path = '/';
     } else {
-        server = customUrl.origin;
-        path = customUrl.pathname;
+        server = customSafeServerUrl.origin;
+        path = customSafeServerUrl.pathname;
         if (!path.endsWith('/')) {
             path += '/';
         }
     }
-
     const url = new URL(`${path}backups/${hexBackupId}`, server);
 
     // Send download request
@@ -283,6 +292,12 @@ async function requestSafeBackupUrl(
             'user-agent': config.USER_AGENT,
             'accept': 'application/octet-stream',
         });
+        if (customSafeServer?.auth !== undefined) {
+            // Note: Username may not contain a colon. However, we leave that to the user's server to validate.
+            const credentials = `${customSafeServer.auth.username}:${customSafeServer.auth.password}`;
+            const encoded = u8aToBase64(UTF8.encode(credentials));
+            headers.set('authorization', `Basic ${encoded}`);
+        }
         response = await fetch(`${url}`, {
             method: httpMethod,
             cache: 'no-store',
@@ -396,11 +411,8 @@ export async function isSafeBackupAvailable(
         const hexBackupId = bytesToHex(backupId);
         log.debug(`Backup ID is ${hexBackupId}`);
 
-        const url =
-            credentials.serverUrl !== undefined ? new URL(credentials.serverUrl) : undefined;
-
         // If the HEAD request succeeds, the backup exists on the server.
-        await requestSafeBackupUrl(hexBackupId, config, 'HEAD', url);
+        await requestSafeBackupUrl(hexBackupId, config, 'HEAD', credentials.customSafeServer);
         return true;
     } catch (error) {
         // TODO(WEBMD-729): We currently return only false if we were unable to get a 200 from the
@@ -451,11 +463,12 @@ export async function downloadSafeBackup(
             const hexBackupId = bytesToHex(backupId);
             log.debug(`Backup ID is ${hexBackupId}`);
 
-            const url =
-                credentials.serverUrl !== undefined ? new URL(credentials.serverUrl) : undefined;
-
             // Download, decrypt, decode
-            const encrypted = await fetchBackupBytes(hexBackupId, config, url);
+            const encrypted = await fetchBackupBytes(
+                hexBackupId,
+                config,
+                credentials.customSafeServer,
+            );
             decrypted = decryptBackupBytes(new Uint8Array(encrypted), encryptionKey, services);
         } finally {
             encryptionKey.purge();

@@ -1,6 +1,7 @@
 <script lang="ts">
   import {createEventDispatcher, onMount} from 'svelte';
 
+  import Password from '#3sc/components/blocks/Input/Password.svelte';
   import Text from '#3sc/components/blocks/Input/Text.svelte';
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
@@ -10,24 +11,33 @@
   import {type u64, ensureU64} from '~/common/types';
   import {type WritableStore} from '~/common/utils/store';
 
+  // Context
   export let contextStore: WritableStore<ContextStore>;
   const initialContext = contextStore.get();
 
+  // Event dispatcher
   const dispatchEvent = createEventDispatcher();
-  const identityStringError = 'This Threema ID is not valid';
 
+  // Data input holders
   let threemaId = initialContext.identity ?? '';
   let threemaIdInput: Text;
-  let customSafeUrl = initialContext.customUrl ?? '';
+  let customSafeUrl = initialContext.customSafeServer?.url ?? '';
+  let customSafeUsername = initialContext.customSafeServer?.auth?.username ?? '';
+  let customSafePassword = initialContext.customSafeServer?.auth?.password ?? '';
   let d2mDeviceId = isD2mDeviceId(initialContext.d2mDeviceId)
     ? initialContext.d2mDeviceId.toString()
     : '';
   let cspDeviceId = isCspDeviceId(initialContext.cspDeviceId)
     ? initialContext.cspDeviceId.toString()
     : '';
+
+  // Error messages
+  const identityStringError = 'This Threema ID is not valid';
   let showIdentityStringError = false;
-  let showAdvancedOptions = false;
   let urlError: string | undefined;
+
+  // Advanced options
+  let showAdvancedOptions = false;
 
   async function checkThreemaId(event: Event): Promise<void> {
     // Prevent close of this modal dialog
@@ -101,14 +111,26 @@
     }));
   }
 
-  $: {
+  function updateCustomSafeServer(url: string, username: string, password: string): void {
     urlError = undefined;
+
     const parsedUrl = customSafeUrl !== '' ? parseUrl(customSafeUrl) : undefined;
+    const hasUsernamePassword = username !== '' && password !== '';
+
+    let customSafeServer: ContextStore['customSafeServer'] = undefined;
+    if (parsedUrl !== undefined) {
+      customSafeServer = {
+        url: parsedUrl,
+        auth: hasUsernamePassword ? {username, password} : undefined,
+      };
+    }
+
     contextStore.update((currentValue) => ({
       ...currentValue,
-      customUrl: parsedUrl,
+      customSafeServer,
     }));
   }
+  $: updateCustomSafeServer(customSafeUrl, customSafeUsername, customSafePassword);
 </script>
 
 <template>
@@ -140,6 +162,11 @@
           on:click={() => {
             showAdvancedOptions = !showAdvancedOptions;
           }}
+          on:keydown={(ev) => {
+            if (ev.key === 'Enter' || ev.key === 'Space') {
+              showAdvancedOptions = !showAdvancedOptions;
+            }
+          }}
         >
           {showAdvancedOptions ? 'Hide' : 'Show'} advanced options
         </span>
@@ -151,6 +178,15 @@
             label="Custom Threema Safe URL"
             bind:value={customSafeUrl}
             spellcheck={false}
+          />
+          <Text
+            label="Custom Threema Safe Username (Optional)"
+            bind:value={customSafeUsername}
+            spellcheck={false}
+          />
+          <Password
+            label="Custom Threema Safe Password (Optional)"
+            bind:value={customSafePassword}
           />
           {#if import.meta.env.DEBUG}
             <Text

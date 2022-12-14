@@ -39,7 +39,7 @@
     error: params.error,
     linkingCode: undefined,
     linkingCodeParts: ['', '', '', ''],
-    customUrl: undefined,
+    customSafeServer: undefined,
     cspDeviceId: undefined,
     d2mDeviceId: undefined,
     newPassword: undefined,
@@ -88,7 +88,7 @@
         initialBootstrapData.resolve({
           identity: currentIdentity,
           password: currentLinkingCode,
-          serverUrl: currentStorageValues.customUrl,
+          customSafeServer: currentStorageValues.customSafeServer,
           d2mDeviceId,
           cspDeviceId,
           newPassword: currentNewPassword,

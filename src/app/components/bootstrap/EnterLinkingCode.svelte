@@ -38,7 +38,7 @@
   let isValidLinkingCodeFormat = false;
   let isLinkingCodeBeingValidated = false;
 
-  function handleCodeValidation(event: Event): void {
+  function submitLinkingCode(event: Event): void {
     event.preventDefault();
 
     if (isLinkingCodeBeingValidated) {
@@ -74,7 +74,7 @@
     const currentSafeCredentials: SafeCredentials = {
       identity: initialContext.identity,
       password: linkingCode,
-      serverUrl: initialContext.customUrl,
+      customSafeServer: initialContext.customSafeServer,
     };
 
     const isValidLinkingCode = await initialContext.isSafeBackupAvailable(currentSafeCredentials);
@@ -208,7 +208,7 @@
   <ModalDialog
     visible={true}
     closableWithEscape={false}
-    on:confirm={handleCodeValidation}
+    on:confirm={submitLinkingCode}
     on:cancel={() => dispatchEvent('prev')}
   >
     <Title slot="header" title="Enter Linking Code" />
@@ -267,7 +267,7 @@
           on:input={(event) => handleCodeInput(event)}
           on:keydown={(event) => {
             if (event.key === 'Enter') {
-              handleCodeValidation(event);
+              submitLinkingCode(event);
             } else if (event.key === 'Backspace') {
               handleBackspace(event, 3, inputThree);
             }
@@ -276,7 +276,14 @@
         />
       </div>
       {#if showCodeError}
-        <div class="error">Please enter a valid link code.</div>
+        {#if initialContext.customSafeServer === undefined}
+          <div class="error">Please enter a valid link code.</div>
+        {:else}
+          <div class="error">
+            Please enter a valid link code and ensure that your custom Safe server credentials and
+            configuration (including CORS) are correct.
+          </div>
+        {/if}
       {:else if $contextStore.error !== undefined}
         <div class="error">
           <div>{$contextStore.error.message}</div>
