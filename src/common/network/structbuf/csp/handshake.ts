@@ -1049,6 +1049,8 @@ export interface ExtensionLike {
      *
      * - `0x00`: `client-info`
      * - `0x01`: `csp-device-id`
+     * - `0x02`: `message-payload-version`
+     * - `0x03`: `device-cookie`
      */
     readonly type: types.u8;
 
@@ -1620,6 +1622,146 @@ export class MessagePayloadVersion extends base.Struct implements MessagePayload
         const array = new Uint8Array(this._array.byteLength);
         array.set(this._array);
         return new MessagePayloadVersion(array);
+    }
+}
+
+/**
+ * A 16 byte random value chosen by the client and stored in a secure,
+ * device-specific location (not included in any backups etc., not
+ * viewable/exportable).
+ *
+ * Its purpose is to allow detection when a different (rogue) device has
+ * connected to the chat server, e.g. because an attacker has obtained
+ * the private key of a user.
+ *
+ * The server will store the device cookie of the last connection, and if a
+ * different cookie is sent by the client, it will set a flag on the identity
+ * and send a
+ * [`device-cookie-change-indication`](ref:payload.device-cookie-change-indication)
+ * payload to the client every time it connects. The client should then show
+ * a warning in form of a notification or a dialog to the user. Note that the
+ * normal protocol flow should continue regardless of whether the user has
+ * acknowledged the warning or not.
+ *
+ * If this extension is not sent by the client, then the server's behavior
+ * depends on whether it has already stored a device cookie for this
+ * identity or not. If not, then nothing will happen. If yes, then it will
+ * act as if the client had sent an all-zero device cookie.
+ */
+export interface DeviceCookieLike {
+    /**
+     * Device cookie, randomly generated **once** per device.
+     */
+    readonly deviceCookie: Uint8Array;
+}
+
+/**
+ * Encodable of {@link DeviceCookieLike}.
+ */
+interface DeviceCookieEncodable_ {
+    /**
+     * 'device-cookie' field value or encoder. See {@link DeviceCookieLike#deviceCookie} for
+     * the field's description.
+     */
+    readonly deviceCookie: Uint8Array | types.ByteLengthEncoder;
+}
+
+/**
+ * New-type for DeviceCookieEncodable.
+ */
+export type DeviceCookieEncodable = types.WeakOpaque<
+    DeviceCookieEncodable_,
+    {readonly DeviceCookieEncodable: unique symbol}
+>;
+
+/** @inheritdoc */
+export class DeviceCookie extends base.Struct implements DeviceCookieLike {
+    private readonly _array: Uint8Array;
+
+    /**
+     * Create a DeviceCookie from an array for accessing properties.
+     *
+     * Note: When accessing, attributes will be decoded on-the-fly which may be expensive.
+     */
+    private constructor(array: Uint8Array) {
+        super();
+        this._array = array;
+    }
+
+    /**
+     * Decode a device-cookie struct from an array.
+     *
+     * @param array Array to decode from.
+     * @returns DeviceCookie instance.
+     */
+    public static decode(array: Uint8Array): DeviceCookie {
+        return new DeviceCookie(array);
+    }
+
+    /**
+     * Encode a device-cookie struct into an array.
+     *
+     * @param struct DeviceCookieEncodable to encode.
+     * @param array Array to encode into.
+     * @returns A subarray of array containing the encoded struct.
+     */
+    public static encode(
+        struct: types.EncoderPick<DeviceCookieEncodable, 'encode'>,
+        array: Uint8Array,
+    ): Uint8Array {
+        // Encode `device-cookie`
+        utils.encodeBytes(struct.deviceCookie, array, 0);
+
+        return array.subarray(0, 16);
+    }
+
+    /**
+     * Get the amount of bytes that would be written when encoding a device-cookie struct into an
+     * array.
+     *
+     * @param struct DeviceCookieEncodable to encode.
+     * @returns The amount of bytes that would be required to encode the struct.
+     */
+    public static byteLength(
+        struct: types.EncoderPick<DeviceCookieEncodable, 'byteLength'>,
+    ): types.u53 {
+        return 16;
+    }
+
+    /**
+     * 'device-cookie' field accessor. See {@link DeviceCookieLike#deviceCookie} for the
+     * field's description.
+     */
+    public get deviceCookie(): Uint8Array {
+        const offset = 0;
+        return this._array.subarray(offset, offset + 16);
+    }
+
+    /**
+     * Create a snapshot of DeviceCookieLike.
+     *
+     * Note: This is **not** a deep-copy, so byte arrays will still be views of the underlying
+     *       buffer.
+     *
+     * @returns DeviceCookieLike snapshot.
+     */
+    public snapshot(): DeviceCookieLike {
+        return {
+            deviceCookie: this.deviceCookie,
+        };
+    }
+
+    /**
+     * Create a clone of DeviceCookieLike.
+     *
+     * Note: This is a deep-copy that will copy the underlying buffer.
+     *
+     * @returns DeviceCookieLike clone.
+     */
+    public clone(): DeviceCookie {
+        const array = new Uint8Array(this._array.byteLength);
+        array.set(this._array);
+        return new DeviceCookie(array);
     }
 }
 

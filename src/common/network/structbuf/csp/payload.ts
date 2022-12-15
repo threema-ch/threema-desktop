@@ -200,7 +200,9 @@ export interface ContainerLike {
      * - `0x30`: [`set-connection-idle-timeout`](ref:payload.set-connection-idle-timeout)
      * - `0x31`: (obsolete)
      * - `0xd0`: [`queue-send-complete`](ref:payload.queue-send-complete)
-     * - `0xd1`: [`last-ephemeral-key-hash`](ref:payload.last-ephemeral-key-hash)
+     * - `0xd1`: (obsolete)
+     * - `0xd2`: [`device-cookie-change-indication`](ref:payload.device-cookie-change-indication)
+     * - `0xd3`: [`clear-device-cookie-change-indication`](ref:payload.clear-device-cookie-change-indication)
      * - `0xe0`: [`close-error`](ref:payload.close-error)
      * - `0xe1`: [`alert`](ref:payload.alert)
      */
@@ -706,10 +708,11 @@ export interface LegacyMessageLike {
      *   to the server could be established.
      * - `0x20`: Short-lived server queuing. Messages with this flag will
      *   only be queued for 60 seconds.
-     * - `0x80`: No delivery receipts. A receiver of a message with this
-     *   flag must not send automatic delivery receipt of any type. This may
-     *   not be used by the apps but can be used by Threema Gateway IDs
-     *   which do not necessarily want a delivery receipt for a message.
+     * - `0x80`: No automatic delivery receipts. A receiver of a message with this
+     *   flag must not send automatic delivery receipt of any type. This does
+     *   **not** include manual delivery receipts. This may not be used by
+     *   the apps but can be used by Threema Gateway IDs which do not
+     *   necessarily want a delivery receipt for a message.
      */
     readonly flags: types.u8;
 
@@ -1107,10 +1110,11 @@ export interface MessageWithMetadataBoxLike {
      *   to the server could be established.
      * - `0x20`: Short-lived server queuing. Messages with this flag will
      *   only be queued for 60 seconds.
-     * - `0x80`: No delivery receipts. A receiver of a message with this
-     *   flag must not send automatic delivery receipt of any type. This may
-     *   not be used by the apps but can be used by Threema Gateway IDs
-     *   which do not necessarily want a delivery receipt for a message.
+     * - `0x80`: No automatic delivery receipts. A receiver of a message with this
+     *   flag must not send automatic delivery receipt of any type. This does
+     *   **not** include manual delivery receipts. This may not be used by
+     *   the apps but can be used by Threema Gateway IDs which do not
+     *   necessarily want a delivery receipt for a message.
      */
     readonly flags: types.u8;
 
@@ -1954,57 +1958,45 @@ export class QueueSendComplete extends base.Struct implements QueueSendCompleteL
 }
 
 /**
- * Indicates a hash over the ephemeral public keys that the client and the
- * server have used for the last successful login with this Threema ID.
+ * Indicates to the client that a device cookie mismatch has been detected
+ * since the last time that the device cookie change indication has been
+ * cleared (using the
+ * [`clear-device-cookie-change-indication`](ref:clear-device-cookie-change-indication)
+ * payload).
  *
- * The client can store a list of the last few ephemeral public key hashes
- * to detect if a different/unauthorized client has logged into the
- * account in the meantime. The client should store around 10 previous
- * ephemeral public key hashes in a round-robin fashion. Storing only the
- * last ephemeral key hash in the client could lead to a race condition in
- * case the connection between the client and the server is severed while
- * the login packet is still in-flight.
- *
- * The server will store the last ephemeral key hash on a best-effort
- * basis. Sending of this payload is not guaranteed.
+ * The client should display a warning in form of a notification and/or
+ * dialog to the user, informing them that a new and potentially unauthorized
+ * device has accessed the account. When the user confirms, the client should
+ * send a
+ * [`clear-device-cookie-change-indication`](ref:clear-device-cookie-change-indication)
+ * payload to clear the indication.
  *
  * Direction: Client <-- Server
  */
-export interface LastEphemeralKeyHashLike {
-    /**
-     * A hash over the ephemeral public keys that the client and the server
-     * have used for the last successful login with this Threema ID.
-     *
-     * BLAKE2b(out-length=32, input=<TCK.public><TSK.public>)
-     */
-    readonly ephemeralKeyHash: Uint8Array;
-}
+export interface DeviceCookieChangeIndicationLike {}
 
 /**
- * Encodable of {@link LastEphemeralKeyHashLike}.
+ * Encodable of {@link DeviceCookieChangeIndicationLike}.
  */
-interface LastEphemeralKeyHashEncodable_ {
-    /**
-     * 'ephemeral-key-hash' field value or encoder. See {@link LastEphemeralKeyHashLike#ephemeralKeyHash} for
-     * the field's description.
-     */
-    readonly ephemeralKeyHash: Uint8Array | types.ByteLengthEncoder;
-}
+interface DeviceCookieChangeIndicationEncodable_ {}
 
 /**
- * New-type for LastEphemeralKeyHashEncodable.
+ * New-type for DeviceCookieChangeIndicationEncodable.
  */
-export type LastEphemeralKeyHashEncodable = types.WeakOpaque<
-    LastEphemeralKeyHashEncodable_,
-    {readonly LastEphemeralKeyHashEncodable: unique symbol}
+export type DeviceCookieChangeIndicationEncodable = types.WeakOpaque<
+    DeviceCookieChangeIndicationEncodable_,
+    {readonly DeviceCookieChangeIndicationEncodable: unique symbol}
 >;
 
 /** @inheritdoc */
-export class LastEphemeralKeyHash extends base.Struct implements LastEphemeralKeyHashLike {
+export class DeviceCookieChangeIndication
+    extends base.Struct
+    implements DeviceCookieChangeIndicationLike
+{
     private readonly _array: Uint8Array;
 
     /**
-     * Create a LastEphemeralKeyHash from an array for accessing properties.
+     * Create a DeviceCookieChangeIndication from an array for accessing properties.
      *
      * Note: When accessing, attributes will be decoded on-the-fly which may be expensive.
      */
@@ -2014,79 +2006,170 @@ export class LastEphemeralKeyHash extends base.Struct implements LastEphemeralKe
     }
 
     /**
-     * Decode a last-ephemeral-key-hash struct from an array.
+     * Decode a device-cookie-change-indication struct from an array.
      *
      * @param array Array to decode from.
-     * @returns LastEphemeralKeyHash instance.
+     * @returns DeviceCookieChangeIndication instance.
      */
-    public static decode(array: Uint8Array): LastEphemeralKeyHash {
-        return new LastEphemeralKeyHash(array);
+    public static decode(array: Uint8Array): DeviceCookieChangeIndication {
+        return new DeviceCookieChangeIndication(array);
     }
 
     /**
-     * Encode a last-ephemeral-key-hash struct into an array.
+     * Encode a device-cookie-change-indication struct into an array.
      *
-     * @param struct LastEphemeralKeyHashEncodable to encode.
+     * @param struct DeviceCookieChangeIndicationEncodable to encode.
      * @param array Array to encode into.
      * @returns A subarray of array containing the encoded struct.
      */
     public static encode(
-        struct: types.EncoderPick<LastEphemeralKeyHashEncodable, 'encode'>,
+        struct: types.EncoderPick<DeviceCookieChangeIndicationEncodable, 'encode'>,
         array: Uint8Array,
     ): Uint8Array {
-        // Encode `ephemeral-key-hash`
-        utils.encodeBytes(struct.ephemeralKeyHash, array, 0);
-
-        return array.subarray(0, 32);
+        return array.subarray(0, 0);
     }
 
     /**
-     * Get the amount of bytes that would be written when encoding a last-ephemeral-key-hash struct into an
+     * Get the amount of bytes that would be written when encoding a device-cookie-change-indication struct into an
      * array.
      *
-     * @param struct LastEphemeralKeyHashEncodable to encode.
+     * @param struct DeviceCookieChangeIndicationEncodable to encode.
      * @returns The amount of bytes that would be required to encode the struct.
      */
     public static byteLength(
-        struct: types.EncoderPick<LastEphemeralKeyHashEncodable, 'byteLength'>,
+        struct: types.EncoderPick<DeviceCookieChangeIndicationEncodable, 'byteLength'>,
     ): types.u53 {
-        return 32;
+        return 0;
     }
 
     /**
-     * 'ephemeral-key-hash' field accessor. See {@link LastEphemeralKeyHashLike#ephemeralKeyHash} for the
-     * field's description.
-     */
-    public get ephemeralKeyHash(): Uint8Array {
-        const offset = 0;
-        return this._array.subarray(offset, offset + 32);
-    }
-
-    /**
-     * Create a snapshot of LastEphemeralKeyHashLike.
+     * Create a snapshot of DeviceCookieChangeIndicationLike.
      *
      * Note: This is **not** a deep-copy, so byte arrays will still be views of the underlying
      *       buffer.
      *
-     * @returns LastEphemeralKeyHashLike snapshot.
+     * @returns DeviceCookieChangeIndicationLike snapshot.
      */
-    public snapshot(): LastEphemeralKeyHashLike {
-        return {
-            ephemeralKeyHash: this.ephemeralKeyHash,
-        };
+    public snapshot(): DeviceCookieChangeIndicationLike {
+        return {};
     }
 
     /**
-     * Create a clone of LastEphemeralKeyHashLike.
+     * Create a clone of DeviceCookieChangeIndicationLike.
      *
      * Note: This is a deep-copy that will copy the underlying buffer.
      *
-     * @returns LastEphemeralKeyHashLike clone.
+     * @returns DeviceCookieChangeIndicationLike clone.
      */
-    public clone(): LastEphemeralKeyHash {
+    public clone(): DeviceCookieChangeIndication {
         const array = new Uint8Array(this._array.byteLength);
         array.set(this._array);
-        return new LastEphemeralKeyHash(array);
+        return new DeviceCookieChangeIndication(array);
+    }
+}
+
+/**
+ * Causes the server to clear the flag that triggers sending the
+ * [`device-cookie-change-indication`](ref:device-cookie-change-indication)
+ * on each connection.
+ *
+ * The flag will be set again by the server if another device cookie
+ * mismatch is detected.
+ *
+ * Direction: Client --> Server
+ */
+export interface ClearDeviceCookieChangeIndicationLike {}
+
+/**
+ * Encodable of {@link ClearDeviceCookieChangeIndicationLike}.
+ */
+interface ClearDeviceCookieChangeIndicationEncodable_ {}
+
+/**
+ * New-type for ClearDeviceCookieChangeIndicationEncodable.
+ */
+export type ClearDeviceCookieChangeIndicationEncodable = types.WeakOpaque<
+    ClearDeviceCookieChangeIndicationEncodable_,
+    {readonly ClearDeviceCookieChangeIndicationEncodable: unique symbol}
+>;
+
+/** @inheritdoc */
+export class ClearDeviceCookieChangeIndication
+    extends base.Struct
+    implements ClearDeviceCookieChangeIndicationLike
+{
+    private readonly _array: Uint8Array;
+
+    /**
+     * Create a ClearDeviceCookieChangeIndication from an array for accessing properties.
+     *
+     * Note: When accessing, attributes will be decoded on-the-fly which may be expensive.
+     */
+    private constructor(array: Uint8Array) {
+        super();
+        this._array = array;
+    }
+
+    /**
+     * Decode a clear-device-cookie-change-indication struct from an array.
+     *
+     * @param array Array to decode from.
+     * @returns ClearDeviceCookieChangeIndication instance.
+     */
+    public static decode(array: Uint8Array): ClearDeviceCookieChangeIndication {
+        return new ClearDeviceCookieChangeIndication(array);
+    }
+
+    /**
+     * Encode a clear-device-cookie-change-indication struct into an array.
+     *
+     * @param struct ClearDeviceCookieChangeIndicationEncodable to encode.
+     * @param array Array to encode into.
+     * @returns A subarray of array containing the encoded struct.
+     */
+    public static encode(
+        struct: types.EncoderPick<ClearDeviceCookieChangeIndicationEncodable, 'encode'>,
+        array: Uint8Array,
+    ): Uint8Array {
+        return array.subarray(0, 0);
+    }
+
+    /**
+     * Get the amount of bytes that would be written when encoding a clear-device-cookie-change-indication struct into an
+     * array.
+     *
+     * @param struct ClearDeviceCookieChangeIndicationEncodable to encode.
+     * @returns The amount of bytes that would be required to encode the struct.
+     */
+    public static byteLength(
+        struct: types.EncoderPick<ClearDeviceCookieChangeIndicationEncodable, 'byteLength'>,
+    ): types.u53 {
+        return 0;
+    }
+
+    /**
+     * Create a snapshot of ClearDeviceCookieChangeIndicationLike.
+     *
+     * Note: This is **not** a deep-copy, so byte arrays will still be views of the underlying
+     *       buffer.
+     *
+     * @returns ClearDeviceCookieChangeIndicationLike snapshot.
+     */
+    public snapshot(): ClearDeviceCookieChangeIndicationLike {
+        return {};
+    }
+
+    /**
+     * Create a clone of ClearDeviceCookieChangeIndicationLike.
+     *
+     * Note: This is a deep-copy that will copy the underlying buffer.
+     *
+     * @returns ClearDeviceCookieChangeIndicationLike clone.
+     */
+    public clone(): ClearDeviceCookieChangeIndication {
+        const array = new Uint8Array(this._array.byteLength);
+        array.set(this._array);
+        return new ClearDeviceCookieChangeIndication(array);
     }
 }
 

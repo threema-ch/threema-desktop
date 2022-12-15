@@ -57,15 +57,16 @@ export {payload};
  * `ServerHello` message. The client then chooses a `ClientHello.version` <=
  * `ServerHello.version`.
  *
- * If the server version sent in `ServerHello` is too old for the client, the
- * client disconnects with a [close code](ref:index#close-codes) of 4110
+ * If the server version sent in `ServerHello` is unsupported by the client,
+ * the client disconnects with a [close code](ref:index#close-codes) of 4110
  * (Unsupported Protocol Version).
  *
- * If the client version sent in `ClientHello` is too old for the server, the
- * server disconnects with a [close code](ref:index#close-codes) of 4110
+ * If the client version sent in `ClientHello` is unsupported by the server,
+ * the server disconnects with a [close code](ref:index#close-codes) of 4110
  * (Unsupported Protocol Version).
  *
- * Otherwise, the version from `ClientHello.version` is used for further communication.
+ * Otherwise, the version from `ClientHello.version` is used for further
+ * communication.
  *
  * ## Close Codes
  *

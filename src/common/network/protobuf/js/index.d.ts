@@ -482,6 +482,8 @@ export namespace csp_e2e_fs {
         interface IReject {
             /** Reject rejectedMessageId */
             rejectedMessageId?: (Long | null);
+            /** Reject cause */
+            cause?: (csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause | null);
         }
         type RejectEncodable = types.WeakOpaque<IReject, {
             readonly RejectEncodable: unique symbol;
@@ -495,6 +497,8 @@ export namespace csp_e2e_fs {
             constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.IReject);
             /** Reject rejectedMessageId. */
             public rejectedMessageId: Long;
+            /** Reject cause. */
+            public cause: csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause;
             /**
              * Encodes the specified Reject message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Reject.verify|verify} messages.
              * @param message Reject message or plain object to encode
@@ -511,6 +515,14 @@ export namespace csp_e2e_fs {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.ForwardSecurityEnvelope.Reject;
+        }
+        namespace Reject {
+            /** Cause enum. */
+            enum Cause {
+                STATE_MISMATCH = 0,
+                UNKNOWN_SESSION = 1,
+                DISABLED = 2
+            }
         }
         /** Properties of a Terminate. */
         interface ITerminate {

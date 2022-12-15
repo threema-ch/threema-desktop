@@ -744,7 +744,7 @@ module.exports = {
             },
         },
         {
-            files: 'src/common/network/structbuf/{csp,extra,md-d2d,md-d2d-rendezvous,md-d2m}/**',
+            files: 'src/common/network/structbuf/{csp,extra,group-call,md-d2d,md-d2d-rendezvous,md-d2m}/**',
             rules: {
                 '@typescript-eslint/no-empty-function': 'off',
                 '@typescript-eslint/no-unused-vars': 'off',

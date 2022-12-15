@@ -65,10 +65,11 @@ import * as utils from '../utils';
  * - Automatic: "received" and "read"
  * - Manual: "acknowledged" and "declined"
  *
- * For each message, we will define whether or not automatic delivery receipts
- * are to be sent or not. However, two exceptions apply:
+ * For each message, we will define whether automatic delivery receipts should
+ * be sent and whether it is eligible for sending manual delivery receipts
+ * (e.g. acknowledge/decline). However, two general exceptions apply:
  *
- * 1. No automatic delivery receipts are sent to group members (i.e. when
+ * 1. Automatic delivery receipts are not sent to group members (i.e. when
  *    any message struct is wrapped in a `group` message struct).
  * 2. Messages whose flags include `0x80` must not trigger any automatic
  *    delivery receipts.
@@ -428,6 +429,10 @@ export interface ContainerLike {
      *   - `0x19`: [`delete-profile-picture`](ref:e2e.delete-profile-picture) of a contact
      *   - `0x1a`: [`contact-request-profile-picture`](ref:e2e.contact-request-profile-picture)
      *
+     * Group invitations:
+     *   - `0x4d`: `csp-e2e.GroupJoinRequest`
+     *   - `0x4e`: `csp-e2e.GroupJoinResponse`
+     *
      * Group control:
      *   - `0x4a`: [`group-setup`](ref:e2e.group-setup) wrapped by
      *     [`group-creator-container`](ref:e2e.group-creator-container)
@@ -444,10 +449,8 @@ export interface ContainerLike {
      *   - `0x51`: [`group-sync-request`](ref:e2e.group-sync-request)
      *     wrapped by
      *     [`group-creator-container`](ref:e2e.group-creator-container)
-     *
-     * Group invitations:
-     *   - `0x4d`: `csp-e2e.GroupJoinRequest`
-     *   - `0x4e`: `csp-e2e.GroupJoinResponse`
+     *   - `0x4f`: `csp-e2e.GroupCallStart` wrapped by
+     *     [`group-member-container`](ref:e2e.group-member-container)
      *
      * Group conversation messages:
      *   - `0x41`: [`text`](ref:e2e.text) wrapped by
@@ -975,7 +978,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** Yes.
+ * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1111,7 +1114,7 @@ export class Text extends base.Struct implements TextLike {
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** Yes.
+ * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1303,7 +1306,7 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  *   - `0x01`: Send push notification.
  *   - `0x10`: Group message marker (DEPRECATED).
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1495,7 +1498,7 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** Yes.
+ * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1665,7 +1668,7 @@ export class Location extends base.Struct implements LocationLike {
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** Yes.
+ * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1886,7 +1889,7 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** Yes.
+ * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -2157,7 +2160,7 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** Yes.
+ * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -2362,7 +2365,7 @@ export class File extends base.Struct implements FileLike {
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** Yes.
+ * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -2592,7 +2595,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -2785,7 +2788,7 @@ export class PollVote extends base.Struct implements PollVoteLike {
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -2931,7 +2934,7 @@ export class CallOffer extends base.Struct implements CallOfferLike {
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -3089,7 +3092,7 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: No.
  */
@@ -3236,7 +3239,7 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: no.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -3375,7 +3378,7 @@ export class CallHangup extends base.Struct implements CallHangupLike {
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -3512,7 +3515,7 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No, that would be silly!
+ * **Delivery receipts:** No, that would be silly!
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -3686,7 +3689,7 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  *   - `0x02`: No server queuing.
  *   - `0x04`: No server acknowledgement.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes, with ephemeral marker. Outgoing: No.
  */
@@ -3812,7 +3815,7 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect (contacts):** Incoming: No. Outgoing: No.
  *
@@ -4018,7 +4021,7 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect (contacts):** Incoming: No. Outgoing: No.
  *
@@ -4133,7 +4136,7 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: No. Outgoing: No.
  *
@@ -4256,7 +4259,7 @@ export class ContactRequestProfilePicture
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -4266,35 +4269,49 @@ export class ContactRequestProfilePicture
  *
  * When sending this message to all group members:
  *
- * 1. If the user is not the creator of the group, abort these steps.
- * 2. Let `members-after-remove` be the member list of the group. Remove
- *    all members from this list that are to be removed from the group.
- * 3. Create a `group-setup` message with the members present in
- *    `members-after-remove`. Send this message only to the group members
- *    that are to be removed from the group.
- * 4. Let `members-after-remove-and-add` be a copy of
- *    `members-after-remove`. Add all members to this list that are to be
- *    added to the group (i.e. this represents the updated member set with
- *    all removed and added members).
- * 5. For each member of `members-after-remove-and-add`, create a contact
- *    with acquaintance level _group_ if not already present in the contact
- *    list.
- * 6. Create a `group-setup` message with the members present in
- *    `members-after-remove-and-add`. Send this message to all group
- *    members present in `members-after-remove-and-add`.
- * 7. If the action of the user triggering these steps was to disband or
- *    delete the group (and consequently `members-after-remove-and-add` is
- *    empty), mark the group as _left_ and abort these steps. Persist this
- *    mark even if the group and its history is being removed by the user.
- *    When disbanding but not deleting, the client should persist the
- *    previous member setup, ignoring the content of
- *    `members-after-remove-and-add` to give the user the possibility to
- *    view the message history and the member setup prior to the user being
- *    removed. The user must not be able to send any more messages to the
- *    group but may be allowed to _reopen_ the group with the previous
- *    member setup, when desired.
- * 8. Update the group with the given `members-after-remove-and-add`.
- * 9. If the group was previously marked as _left_, remove the _left_ mark.
+ * 1.  If the user is not the creator of the group, abort these steps.
+ * 2.  Let `members-after-remove` be the member list of the group. Remove
+ *     all members from this list that are to be removed from the group.
+ * 3.  Create a `group-setup` message with the members present in
+ *     `members-after-remove`. Send this message only to the group members
+ *     that are to be removed from the group.
+ * 4.  Let `members-after-remove-and-add` be a copy of
+ *     `members-after-remove`. Add all members to this list that are to be
+ *     added to the group (i.e. this represents the updated member set with
+ *     all removed and added members).
+ * 5.  For each member of `members-after-remove-and-add`, create a contact
+ *     with acquaintance level _group_ if not already present in the contact
+ *     list.
+ * 6.  Create a `group-setup` message with the members present in
+ *     `members-after-remove-and-add`. Send this message to all group
+ *     members present in `members-after-remove-and-add`.
+ * 7.  For each newly added `member` in `members-after-remove-and-add`,
+ *     additionally:
+ *     1. If the group has a profile picture, send a
+ *        [`set-profile-picture`](ref:e2e.set-profile-picture) group control
+ *        message to the newly added `member`.
+ *     2. If the group has no profile picture, send a
+ *        [`delete-profile-picture`](ref:e2e.delete-profile-picture) group
+ *        control message to the newly added `member`.
+ *     3. If a group call is currently considered running within this group,
+ *        run the _Group Call Refresh Steps_ and let `chosen-call` be the
+ *        result. If `chosen-call` is defined, repeat
+ *        `csp-e2e.GroupCallStart` that is associated to `chosen-call` with
+ *        the _created_ timestamp set to the `started_at` value associated to
+ *        `chosen-call`.
+ * 8.  If the action of the user triggering these steps was to disband or
+ *     delete the group (and consequently `members-after-remove-and-add` is
+ *     empty), mark the group as _left_ and abort these steps. Persist this
+ *     mark even if the group and its history is being removed by the user.
+ *     When disbanding but not deleting, the client should persist the
+ *     previous member setup, ignoring the content of
+ *     `members-after-remove-and-add` to give the user the possibility to
+ *     view the message history and the member setup prior to the user being
+ *     removed. The user must not be able to send any more messages to the
+ *     group but may be allowed to _reopen_ the group with the previous
+ *     member setup, when desired.
+ * 9.  Update the group with the given `members-after-remove-and-add`.
+ * 10. If the group was previously marked as _left_, remove the _left_ mark.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -4455,7 +4472,7 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -4598,7 +4615,7 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -4719,7 +4736,7 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  *
  * **Flags:** None.
  *
- * **Automatic delivery receipts:** No.
+ * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -4740,6 +4757,11 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * 5. If the group has no profile picture, send a
  *    [`delete-profile-picture`](ref:e2e.delete-profile-picture) group
  *    control message to the sender.
+ * 6. If a group call is currently considered running within this group,
+ *    run the _Group Call Refresh Steps_ and let `chosen-call` be the result.
+ *    If `chosen-call` is defined, repeat `csp-e2e.GroupCallStart` that is
+ *    associated to `chosen-call` with the _created_ timestamp set to the
+ *    `started_at` value associated to `chosen-call`.
  */
 export interface GroupSyncRequestLike {}
 

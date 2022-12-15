@@ -1230,6 +1230,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
              * @memberof csp_e2e_fs.ForwardSecurityEnvelope
              * @interface IReject
              * @property {Long|null} [rejectedMessageId] Reject rejectedMessageId
+             * @property {csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause|null} [cause] Reject cause
              */
 
             /**
@@ -1256,6 +1257,14 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             Reject.prototype.rejectedMessageId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
             /**
+             * Reject cause.
+             * @member {csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause} cause
+             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Reject
+             * @instance
+             */
+            Reject.prototype.cause = 0;
+
+            /**
              * Encodes the specified Reject message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Reject.verify|verify} messages.
              * @function encode
              * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Reject
@@ -1269,6 +1278,8 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                     writer = $Writer.create();
                 if (message.rejectedMessageId != null && Object.hasOwnProperty.call(message, "rejectedMessageId"))
                     writer.uint32(/* id 1, wireType 1 =*/9).fixed64(message.rejectedMessageId);
+                if (message.cause != null && Object.hasOwnProperty.call(message, "cause"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).int32(message.cause);
                 return writer;
             };
 
@@ -1293,6 +1304,9 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                     case 1:
                         message.rejectedMessageId = reader.fixed64();
                         break;
+                    case 2:
+                        message.cause = reader.int32();
+                        break;
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -1300,6 +1314,22 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 }
                 return message;
             };
+
+            /**
+             * Cause enum.
+             * @name csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause
+             * @enum {number}
+             * @property {number} STATE_MISMATCH=0 STATE_MISMATCH value
+             * @property {number} UNKNOWN_SESSION=1 UNKNOWN_SESSION value
+             * @property {number} DISABLED=2 DISABLED value
+             */
+            Reject.Cause = (function() {
+                const valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "STATE_MISMATCH"] = 0;
+                values[valuesById[1] = "UNKNOWN_SESSION"] = 1;
+                values[valuesById[2] = "DISABLED"] = 2;
+                return values;
+            })();
 
             return Reject;
         })();
