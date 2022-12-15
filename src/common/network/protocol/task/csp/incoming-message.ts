@@ -24,6 +24,7 @@ import {
     SyncState,
     VerificationLevel,
     WorkVerificationLevel,
+    CspE2eForwardSecurityType,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
@@ -997,6 +998,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case CspE2eStatusUpdateType.TYPING_INDICATOR:
                 // TODO(WEBMD-589): Implement
+                return 'discard';
+
+            // Forward security messages (not currently supported)
+            case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE:
+                // TODO(WEBMD-878): Reject
+                // TODO(WEBMD-887): Implement support for PFS
                 return 'discard';
 
             // Forwarding of known but unhandled messages. These messages will be reflected and

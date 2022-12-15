@@ -786,6 +786,25 @@ export namespace CspE2eGroupStatusUpdateTypeUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace CspE2eForwardSecurityType {
+    export const FORWARD_SECURITY_ENVELOPE = 160;
+    export type FORWARD_SECURITY_ENVELOPE = typeof FORWARD_SECURITY_ENVELOPE;
+}
+/**
+ * E2EE forward security type.
+ *
+ * @generate name
+ */
+export type CspE2eForwardSecurityType =
+    typeof CspE2eForwardSecurityType[keyof typeof CspE2eForwardSecurityType];
+export namespace CspE2eForwardSecurityTypeUtils {
+    export const NAME_OF = {
+        [CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE]: 'FORWARD_SECURITY_ENVELOPE',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
 export namespace CspE2eDeliveryReceiptStatus {
     export const RECEIVED = 1;
     export type RECEIVED = typeof RECEIVED;

@@ -1,6 +1,7 @@
 import {
     type CspE2eContactControlType,
     type CspE2eConversationType,
+    type CspE2eForwardSecurityType,
     type CspE2eGroupControlType,
     type CspE2eGroupConversationType,
     type CspE2eGroupStatusUpdateType,
@@ -8,6 +9,7 @@ import {
     type MessageType,
     CspE2eContactControlTypeUtils,
     CspE2eConversationTypeUtils,
+    CspE2eForwardSecurityTypeUtils,
     CspE2eGroupControlTypeUtils,
     CspE2eGroupConversationTypeUtils,
     CspE2eGroupStatusUpdateTypeUtils,
@@ -276,7 +278,8 @@ export type CspE2eType =
     | CspE2eGroupControlType
     | CspE2eContactControlType
     | CspE2eGroupConversationType
-    | CspE2eGroupStatusUpdateType;
+    | CspE2eGroupStatusUpdateType
+    | CspE2eForwardSecurityType;
 export const CSP_E2E_TYPE_NAME_OF = {
     ...CspE2eConversationTypeUtils.NAME_OF,
     ...CspE2eStatusUpdateTypeUtils.NAME_OF,
@@ -284,6 +287,7 @@ export const CSP_E2E_TYPE_NAME_OF = {
     ...CspE2eContactControlTypeUtils.NAME_OF,
     ...CspE2eGroupConversationTypeUtils.NAME_OF,
     ...CspE2eGroupStatusUpdateTypeUtils.NAME_OF,
+    ...CspE2eForwardSecurityTypeUtils.NAME_OF,
 } as const;
 export function cspE2eTypeNameOf<T extends u53>(value: T): string | undefined {
     return (CSP_E2E_TYPE_NAME_OF as Record<u53, string | undefined>)[value];

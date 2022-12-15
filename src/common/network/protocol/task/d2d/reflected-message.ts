@@ -2,6 +2,7 @@ import type * as v from '@badrap/valita';
 
 import {
     CspE2eConversationType,
+    CspE2eForwardSecurityType,
     CspE2eGroupControlType,
     CspE2eGroupConversationType,
     CspE2eGroupStatusUpdateType,
@@ -212,6 +213,11 @@ export abstract class ReflectedMessageTaskBase<
                     };
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
                     // TODO(WEBMD-589): Implement
+                    return undefined;
+
+                // Forward security messages (not currently supported, should not get reflected)
+                case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE:
+                    // TODO(WEBMD-887): Implement support for PFS
                     return undefined;
 
                 // Unhandled messages

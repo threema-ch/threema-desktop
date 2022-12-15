@@ -309,6 +309,15 @@ export enum CspE2eGroupStatusUpdateType {
 }
 
 /**
+ * E2EE forward security type.
+ *
+ * @generate name
+ */
+export enum CspE2eForwardSecurityType {
+    FORWARD_SECURITY_ENVELOPE = 0xa0,
+}
+
+/**
  * E2EE delivery receipt status.
  *
  * @generate convert name
