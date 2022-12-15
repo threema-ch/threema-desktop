@@ -2,6 +2,7 @@
 @use 'sass:map';
 @use 'threema-svelte-components/src/sass/css-var' as *;
 @use 'threema-svelte-components/src/sass/utils' as *;
+@use 'threema-svelte-components/src/sass/conversion' as *;
 @use 'threema-svelte-components/src/sass/theme';
 @use './theme/light' as *;
 @use './theme/dark' as *;
