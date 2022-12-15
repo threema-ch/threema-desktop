@@ -13,6 +13,7 @@ import {
     CspE2eContactControlType,
     CspE2eConversationType,
     CspE2eDeliveryReceiptStatus,
+    CspE2eForwardSecurityType,
     CspE2eGroupControlType,
     CspE2eGroupControlTypeUtils,
     CspE2eGroupConversationType,
@@ -24,7 +25,6 @@ import {
     SyncState,
     VerificationLevel,
     WorkVerificationLevel,
-    CspE2eForwardSecurityType,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
@@ -86,6 +86,7 @@ import {
 } from '~/common/utils/number';
 
 import {IncomingDeliveryReceiptTask} from './incoming-delivery-receipt';
+import {IncomingForwardSecurityEnvelopeTask} from './incoming-fs-envelope';
 import {IncomingGroupLeaveTask} from './incoming-group-leave';
 import {IncomingGroupNameTask} from './incoming-group-name';
 import {IncomingGroupSetupTask} from './incoming-group-setup';
@@ -185,6 +186,7 @@ type MessageProcessingInstructions =
     | ConversationMessageInstructions
     | GroupControlMessageInstructions
     | StatusUpdateInstructions
+    | ForwardSecurityMessageInstructions
     | UnhandledMessageInstructions;
 
 interface BaseProcessingInstructions {
@@ -233,6 +235,14 @@ interface StatusUpdateInstructions extends BaseProcessingInstructions {
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'discard';
     readonly reflectFragment: D2dIncomingMessageFragment;
+    readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
+}
+
+interface ForwardSecurityMessageInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'forward-security';
+    readonly deliveryReceipt: false;
+    readonly missingContactHandling: 'create';
+    readonly reflectFragment: undefined;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -561,6 +571,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case 'group-control':
             case 'status-update':
+            case 'forward-security':
                 this._log.debug('Running the sub-task');
                 await instructions.task.run(handle);
                 break;
@@ -1001,10 +1012,26 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return 'discard';
 
             // Forward security messages (not currently supported)
-            case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE:
-                // TODO(WEBMD-878): Reject
+            case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE: {
                 // TODO(WEBMD-887): Implement support for PFS
-                return 'discard';
+                const fsEnvelope = protobuf.csp_e2e_fs.ForwardSecurityEnvelope.decode(
+                    cspMessageBody as Uint8Array,
+                    cspMessageBody.byteLength,
+                );
+                const instructions: ForwardSecurityMessageInstructions = {
+                    messageCategory: 'forward-security',
+                    deliveryReceipt: false,
+                    missingContactHandling: 'create',
+                    reflectFragment: undefined,
+                    task: new IncomingForwardSecurityEnvelopeTask(
+                        this._services,
+                        messageId,
+                        senderContactOrInit,
+                        fsEnvelope,
+                    ),
+                };
+                return instructions;
+            }
 
             // Forwarding of known but unhandled messages. These messages will be reflected and
             // discarded. The messages won't appear in Threema Desktop, but they will appear on

@@ -8,6 +8,7 @@ import {
     CspE2eContactControlType,
     CspE2eConversationType,
     CspE2eConversationTypeUtils,
+    CspE2eForwardSecurityType,
     CspE2eGroupConversationTypeUtils,
     CspE2eStatusUpdateType,
     MessageFilterInstruction,
@@ -76,6 +77,7 @@ const NO_REFLECT = [
     CspE2eContactControlType.CONTACT_SET_PROFILE_IMAGE,
     CspE2eContactControlType.CONTACT_DELETE_PROFILE_IMAGE,
     CspE2eContactControlType.CONTACT_REQUEST_PROFILE_IMAGE,
+    CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
 ];
 
 type ValidGroupMessages =
@@ -86,7 +88,8 @@ type ValidContactMessages =
     | CspE2eConversationType
     | CspE2eStatusUpdateType
     | CspE2eContactControlType
-    | CspE2eGroupControlType;
+    | CspE2eGroupControlType
+    | CspE2eForwardSecurityType;
 
 /**
  * All valid {@link CspE2eType} types that may be sent for a specific receiver.
