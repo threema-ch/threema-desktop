@@ -2,12 +2,22 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
   import {type u53} from '~/common/types';
+  import {debounce} from '~/common/utils/timer';
   import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
   /**
    * Unread messages counter.
    */
   export let unread: u53 | undefined = undefined;
+
+  let debouncedUnreadCount = unread;
+
+  const updateDebouncedUnreadCount = debounce((newCount: u53 | undefined) => {
+    debouncedUnreadCount = newCount;
+  }, 300);
+
+  $: updateDebouncedUnreadCount(unread);
+
   /**
    * Receiver badge type.
    */
@@ -16,8 +26,8 @@
 
 <template>
   <div class="overlay">
-    {#if unread !== undefined && unread > 0}
-      <div class="unread">{unread < 100 ? unread : '99+'}</div>
+    {#if debouncedUnreadCount !== undefined && debouncedUnreadCount > 0}
+      <div class="unread">{debouncedUnreadCount < 100 ? debouncedUnreadCount : '99+'}</div>
     {/if}
 
     {#if badge !== undefined}
