@@ -11,21 +11,13 @@
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';
-  import {appVisibility, display, layout} from '~/common/dom/ui/state';
+  import {display, layout} from '~/common/dom/ui/state';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationCategory, MessageDirection} from '~/common/enum';
-  import {
-    type AnyMessageModelStore,
-    type AnyReceiverStore,
-    type Conversation,
-    type RemoteModelStoreFor,
-  } from '~/common/model';
+  import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {randomMessageId} from '~/common/network/protocol/utils';
-  import {ensureMessageId} from '~/common/network/types';
-  import {assert} from '~/common/utils/assert';
   import {type RemoteObject} from '~/common/utils/endpoint';
-  import {hexLeToU64} from '~/common/utils/number';
   import {WritableStore} from '~/common/utils/store';
   import {
     type ConversationViewModel,
@@ -171,79 +163,6 @@
     };
   }
 
-  // Mark messages as read as soon as the customer focus the app again
-  const messagesToMarkAsReadQueue: Promise<
-    RemoteModelStoreFor<AnyMessageModelStore> | undefined
-  >[] = [];
-
-  $: if ($appVisibility === 'focused') {
-    while (messagesToMarkAsReadQueue.length > 0) {
-      const msg = messagesToMarkAsReadQueue.pop();
-      if (msg !== undefined) {
-        void flagMessageAsRead(msg);
-      }
-    }
-  }
-
-  /**
-   * Mark a promised message as read, if it is an inbound message.
-   *
-   * Note: This does a RPC-call to the backend.
-   */
-  async function flagMessageAsRead(
-    msg: Promise<RemoteModelStoreFor<AnyMessageModelStore> | undefined>,
-  ): Promise<void> {
-    const message = await msg;
-    if (message?.ctx === MessageDirection.INBOUND) {
-      await message?.get().controller.read.fromLocal(new Date());
-    }
-  }
-
-  /**
-   * This function is called every time an observed message comes into view.
-   *
-   * Implements {@link IntersectionObserverCallback}. See
-   * https://w3c.github.io/IntersectionObserver/#intersection-observer-api for more details.
-   */
-  function observeMessageContainer(
-    entries: IntersectionObserverEntry[],
-    observer: IntersectionObserver,
-  ): void {
-    const visibleEntries = entries.filter((entry) => entry.isIntersecting);
-
-    // Unsubscribe element subscribers
-    for (const element of visibleEntries) {
-      observer.unobserve(element.target);
-    }
-
-    // Get MessageIDs
-    const readMessageIds = visibleEntries.map((entry) => {
-      const messageContainer = entry.target as HTMLDivElement;
-      const stringMessageId = messageContainer.dataset.id;
-      assert(stringMessageId !== undefined, 'Conversation message must have a messageId');
-      return ensureMessageId(hexLeToU64(stringMessageId));
-    });
-
-    // Asynchronously fetch message stores
-    const messageStorePromises = readMessageIds.map(
-      async (messageId) => await conversation.get().controller.getMessage(messageId),
-    );
-
-    // Mark messages as read (asynchronously) or add them to the queue
-    for (const messageStorePromise of messageStorePromises) {
-      if ($appVisibility === 'focused') {
-        void flagMessageAsRead(messageStorePromise);
-      } else {
-        messagesToMarkAsReadQueue.push(messageStorePromise);
-      }
-    }
-  }
-
-  // Start message read intersection observer
-  const readObserver = new IntersectionObserver(observeMessageContainer, {
-    threshold: 0.0,
-  });
-
   /**
    * Save the message draft for the specified receiver and clear the compose area.
    */
@@ -309,7 +228,6 @@
   onDestroy(() => {
     saveMessageDraftAndClear(lastReceiverLookup);
     routerUnsubscribe();
-    readObserver.disconnect();
   });
 </script>
 
@@ -342,7 +260,6 @@
             {conversationMessagesSet}
             {receiverLookup}
             receiver={$innerConversationViewModel.receiver}
-            {readObserver}
             {conversation}
             {services}
           />

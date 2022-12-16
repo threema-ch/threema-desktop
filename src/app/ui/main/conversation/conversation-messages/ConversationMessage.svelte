@@ -1,7 +1,6 @@
 <script lang="ts">
   import {markify, TokenType} from '@threema/threema-markup';
   import Autolinker from 'autolinker';
-  import {onDestroy, onMount} from 'svelte';
 
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
@@ -45,10 +44,6 @@
    * The parent conversation, to which this message belongs.
    */
   export let conversation: RemoteModelStore<Conversation>;
-  /**
-   * The intersection observer to detect ui read of messages.
-   */
-  export let readObserver: IntersectionObserver;
   /**
    * Determine whether the message is currently selectable via displayed checkbox.
    */
@@ -111,8 +106,6 @@
   let isDeleteMessageConfirmationModalVisible = false;
   let isForwardMessageModalVisible = false;
   let isMessageDetailModalVisible = false;
-
-  let messageContainer: HTMLDivElement;
 
   function openContextMenuOnMouseEvent(event: MouseEvent): void {
     if (selectable) {
@@ -285,16 +278,6 @@
       );
     }
   }
-
-  if (messageBody.direction === 'incoming' && !messageBody.isRead) {
-    onMount(() => {
-      readObserver.observe(messageContainer);
-    });
-
-    onDestroy(() => {
-      readObserver.unobserve(messageContainer);
-    });
-  }
 </script>
 
 <template>
@@ -303,7 +286,6 @@
     class:selectable
     class:avatar={messageBody.direction === 'incoming' && receiver.type === 'group'}
     data-direction={messageBody.direction}
-    bind:this={messageContainer}
     data-id={messageBody.id}
     on:click={toggleSelect}
   >

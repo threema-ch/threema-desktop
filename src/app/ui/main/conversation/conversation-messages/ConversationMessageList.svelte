@@ -13,6 +13,8 @@
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
   import {type DbReceiverLookup} from '~/common/db';
+  import {appVisibility} from '~/common/dom/ui/state';
+  import {MessageDirection} from '~/common/enum';
   import {type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type u53} from '~/common/types';
@@ -44,11 +46,6 @@
    */
   export let conversation: RemoteModelStore<Conversation>;
 
-  /**
-   * The intersection observer to detect ui read of messages.
-   */
-  export let readObserver: IntersectionObserver;
-
   let sortedMessages: SortedMessageListStore;
   let unreadMessageInfo: UnreadMessageInfo;
 
@@ -72,6 +69,51 @@
 
     return `${unreadMessageCount} New Messages`;
   }
+
+  $: if ($appVisibility === 'focused') {
+    void markAllMessagesAsRead($sortedMessages);
+  }
+
+  /**
+   * Mark all messages as read. For now, this function marks each message individually to take
+   * advantage of the already existing mechanism to reflect the action to the peer devices. A future
+   * optimization could involve marking all unread messages at once and sending all message ids in a
+   * batch update.
+   *
+   * Note: For performance reasons (i.e. to avoid checking all messages of a conversation every
+   * time) this function starts from the most recent message and assumes that there are no more
+   * messages left unread as soon as it reaches either an outbound message or an inbound message
+   * that is already marked as read.
+   *
+   * @param messages The conversation messages sorted from oldest to newest, i.e. as
+   * {@link SortedMessageList}.
+   */
+  async function markAllMessagesAsRead(messages: SortedMessageList): Promise<void> {
+    if ($conversation.view.unreadMessageCount === 0) {
+      return;
+    }
+
+    for (let index = messages.length - 1; index >= 0; index--) {
+      const messageStore = messages[index].messageStore;
+
+      if (messageStore.ctx === MessageDirection.OUTBOUND) {
+        // We reached the most recent outbound message so we can assume that all previous messages
+        // were flagged as read and we can stop the loop.
+        return;
+      }
+
+      const message = messageStore.get();
+
+      if (message.view.readAt !== undefined) {
+        // We reached the most recent inbound message that was already read so we can assume that
+        // all previous messages were flagged as read and we can stop the loop.
+        return;
+      }
+
+      // Await instead of 'void' here to prevent race conditions with the scheduled tasks to reflect the read state.
+      await message.controller.read.fromLocal(new Date());
+    }
+  }
 </script>
 
 <template>
@@ -91,7 +133,6 @@
       {viewModelStore}
       {receiver}
       {receiverLookup}
-      {readObserver}
       selectable={false}
       {conversation}
       {services}
