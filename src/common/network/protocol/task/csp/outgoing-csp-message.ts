@@ -59,6 +59,14 @@ export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eTy
     readonly cspMessageFlags: CspMessageFlags;
     readonly messageId: MessageId;
     readonly createdAt: Date;
+    /**
+     * Whether the profile (nickname and profile picture) may be shared with the recipient of this
+     * outgoing message.
+     *
+     * Note(WEBMD-234): There are additional things to take into account when implementing profile
+     * picture distribution, e.g. whether the recipient is a gateway ID.
+     */
+    readonly allowUserProfileDistribution: boolean;
 }
 
 // Outgoing message types that should not be reflected.
@@ -268,10 +276,13 @@ export class OutgoingCspMessageTask<
         const flags = this._messageProperties.cspMessageFlags.toBitmask();
 
         // Determine own nickname (zero-padded)
-        const senderNickname = UTF8.encodeFullyInto(
-            model.user.profileSettings.get().view.publicNickname,
-            new Uint8Array(32),
-        ).array;
+        const senderNickname = new Uint8Array(32);
+        if (this._messageProperties.allowUserProfileDistribution) {
+            UTF8.encodeFullyInto(
+                model.user.profileSettings.get().view.publicNickname,
+                senderNickname,
+            );
+        }
 
         // TODO(WEBMD-573): Bundle sending of group messages
         for (const receiver of receivers) {

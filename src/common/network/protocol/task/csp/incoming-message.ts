@@ -598,6 +598,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 cspMessageFlags: CspMessageFlags.none(),
                 messageId: randomMessageId(this._services.crypto),
                 createdAt: instructions.initFragment?.receivedAt ?? new Date(),
+                allowUserProfileDistribution: false,
             }).run(handle);
         }
 

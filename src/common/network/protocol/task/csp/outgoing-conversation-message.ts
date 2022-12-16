@@ -122,6 +122,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             cspMessageFlags,
             messageId: messageView.id,
             createdAt: messageView.createdAt,
+            allowUserProfileDistribution: true,
         } as const;
         const outCspMessageTask = new this._outgoingCspMessageTaskConstructor(
             this._services,

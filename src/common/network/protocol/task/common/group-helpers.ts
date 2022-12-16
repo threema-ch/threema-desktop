@@ -211,6 +211,7 @@ export async function sendGroupSyncRequest<TPersistence extends ActiveTaskPersis
         cspMessageFlags: CspMessageFlags.none(),
         messageId: randomMessageId(services.crypto),
         createdAt: new Date(),
+        allowUserProfileDistribution: false,
     }).run(handle);
 }
 
@@ -235,6 +236,7 @@ export async function sendGroupSetup<TPersistence extends ActiveTaskPersistence>
         cspMessageFlags: CspMessageFlags.none(),
         messageId: randomMessageId(services.crypto),
         createdAt: new Date(),
+        allowUserProfileDistribution: true,
     }).run(handle);
 }
 
@@ -272,6 +274,7 @@ export async function sendGroupName<TPersistence extends ActiveTaskPersistence>(
         cspMessageFlags: CspMessageFlags.none(),
         messageId: randomMessageId(services.crypto),
         createdAt: new Date(),
+        allowUserProfileDistribution: true,
     }).run(handle);
 }
 
@@ -295,5 +298,6 @@ async function sendGroupLeave<TPersistence extends ActiveTaskPersistence>(
         cspMessageFlags: CspMessageFlags.none(),
         messageId: randomMessageId(services.crypto),
         createdAt: new Date(),
+        allowUserProfileDistribution: false,
     }).run(handle);
 }

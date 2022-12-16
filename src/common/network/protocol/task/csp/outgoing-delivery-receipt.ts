@@ -1,5 +1,5 @@
 import {
-    type CspE2eDeliveryReceiptStatus,
+    CspE2eDeliveryReceiptStatus,
     CspE2eDeliveryReceiptStatusUtils,
     CspE2eStatusUpdateType,
 } from '~/common/enum';
@@ -21,7 +21,24 @@ import {
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {type MessageId} from '~/common/network/types';
+import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
+
+/**
+ * Return whether or not {@link status} is a reaction.
+ */
+function isReaction(status: CspE2eDeliveryReceiptStatus): boolean {
+    switch (status) {
+        case CspE2eDeliveryReceiptStatus.RECEIVED:
+        case CspE2eDeliveryReceiptStatus.READ:
+            return false;
+        case CspE2eDeliveryReceiptStatus.ACKNOWLEDGED:
+        case CspE2eDeliveryReceiptStatus.DECLINED:
+            return true;
+        default:
+            return unreachable(status);
+    }
+}
 
 export class OutgoingDeliveryReceiptTask implements ActiveTask<void, 'persistent'> {
     public readonly type: ActiveTaskSymbol = ACTIVE_TASK;
@@ -65,6 +82,7 @@ export class OutgoingDeliveryReceiptTask implements ActiveTask<void, 'persistent
             cspMessageFlags: CspMessageFlags.none(),
             messageId: randomMessageId(this._services.crypto),
             createdAt,
+            allowUserProfileDistribution: isReaction(this._status),
         } as const;
 
         // Delegate reflecting and sending to the OutgoingCspMessageTask
