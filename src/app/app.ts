@@ -25,7 +25,7 @@ import {type IdentityString} from '~/common/network/types';
 import {type u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {type ISubscribableStore} from '~/common/utils/store';
-import {GlobalTimer} from '~/common/utils/timer';
+import {debounce, GlobalTimer} from '~/common/utils/timer';
 
 import {APP_CONFIG} from './config';
 import {type RouterState, Router} from './routing/router';
@@ -397,7 +397,7 @@ export async function main(appState: AppState): Promise<App> {
         window.app?.updateAppBadge(count ?? 0);
     }
     const totalUnreadMessageCountStore = await backend.model.conversations.totalUnreadMessageCount;
-    totalUnreadMessageCountStore.subscribe(updateUnreadMessageAppBadge);
+    totalUnreadMessageCountStore.subscribe(debounce(updateUnreadMessageAppBadge, 300));
     appState.totalUnreadMessageCountStore = totalUnreadMessageCountStore;
 
     // Attach app when DOM is loaded

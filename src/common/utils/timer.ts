@@ -45,8 +45,9 @@ export interface Timer {
 type TimeoutId = WeakOpaque<u53, {readonly TimeoutId: unique symbol}>;
 type IntervalId = WeakOpaque<u53, {readonly TimeoutId: unique symbol}>;
 declare const setTimeout: (callback: () => void, delayMs: u53) => TimeoutId;
+declare const clearTimeout: (id: TimeoutId) => void;
 declare const setInterval: (callback: () => void, intervalMs: u53) => IntervalId;
-declare const clearInterval: (id: IntervalId | TimeoutId) => void;
+declare const clearInterval: (id: IntervalId) => void;
 
 /** @inheritdoc */
 export class GlobalTimer implements Timer {
@@ -65,7 +66,7 @@ export class GlobalTimer implements Timer {
             // Note: We know the id will exist prior to the canceller being
             //       callable.
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            clearInterval(id!);
+            clearTimeout(id!);
         }
 
         // Create timeout and return canceller.
@@ -88,4 +89,26 @@ export class GlobalTimer implements Timer {
         id = setInterval(() => callback(canceller), intervalMs);
         return canceller;
     }
+}
+
+/**
+ * Create a version of `func` with the same signature but that is executed only once if it is
+ * called multiple times with less that `waitForMillis` milliseconds between calls.
+ *
+ * Source: {@url https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940?permalink_comment_id=4307328#gistcomment-4307328}
+ *
+ * @param func The function to debounce
+ * @param waitForMillis The number of milliseconds to wait after the last call to `func` before
+ *   effectively calling it.
+ * @returns A debounced version of `func`
+ */
+export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
+    func: F,
+    waitForMillis: u53,
+): (...args: Parameters<F>) => void {
+    let timeout: TimeoutId;
+    return (...args: Parameters<F>): void => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), waitForMillis);
+    };
 }
