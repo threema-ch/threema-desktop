@@ -58,6 +58,20 @@
     setUnreadMessageInfo($sortedMessages);
   }
 
+  function scheduleUnreadMessageInfoReset(): void {
+    unreadMessageInfo.isResetPending = true;
+  }
+
+  function unscheduleUnreadMessageInfoReset(): void {
+    unreadMessageInfo.isResetPending = false;
+  }
+
+  $: if ($appVisibility !== 'focused') {
+    scheduleUnreadMessageInfoReset();
+  } else {
+    unscheduleUnreadMessageInfoReset();
+  }
+
   function unreadMessageSeparatorLabel(unreadMessageCount: u53): string {
     if (unreadMessageCount < 1) {
       return '';

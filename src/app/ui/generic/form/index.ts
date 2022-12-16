@@ -53,11 +53,40 @@ export function hasDirectionChanged(messages: SortedMessageList, index: u53): bo
     return lastMessageDirection !== currentMessageDirection;
 }
 
+/**
+ * Precalculated information about the unread messages. See doc for each property.
+ */
 export interface UnreadMessageInfo {
+    /**
+     * This is the index of the earliest unread message, above which a separator will be displayed.
+     */
     readonly earliestUnreadMessageIndex?: u53;
+
+    /**
+     * Instead of iterating over the whole message list, we cache the last message that we checked
+     * so that we don't need to check again older messages, and their read status cannot change.
+     */
     readonly latestCheckedMessageIndex: u53;
+
+    /**
+     * This indicates how many inbound messages are since the message at index
+     * `earliestUnreadMessageIndex`. This is relevant because we don't want to count the outbound
+     * messages that can potentially be written after the message at index
+     * `earliestUnreadMessageIndex`.
+     */
     readonly inboundMessageCount: u53;
+
+    /**
+     * Indicates whether any outbound messages has been written after the message at index
+     * `earliestUnreadMessageIndex` so that we can adapt the UI accordingly.
+     */
     readonly hasOutboundMessageAfterEarliestUnreadMessage: boolean;
+
+    /**
+     * This property is mutable because the user of the {@link UnreadMessageInfo} object can set it
+     * to `true` to request a reset of the unread message info the next time it is calculated.
+     */
+    isResetPending: boolean;
 }
 
 export function getUnreadMessageInfo(
@@ -65,7 +94,10 @@ export function getUnreadMessageInfo(
     messages: SortedMessageList,
     currentUnreadMessageInfo: UnreadMessageInfo | undefined,
 ): UnreadMessageInfo {
-    if (currentUnreadMessageInfo?.earliestUnreadMessageIndex === undefined) {
+    if (
+        currentUnreadMessageInfo?.earliestUnreadMessageIndex === undefined ||
+        currentUnreadMessageInfo.isResetPending
+    ) {
         return getInitialUnreadMessageInfo(conversation, messages);
     }
 
@@ -80,29 +112,30 @@ function getInitialUnreadMessageInfo(
     conversation: RemoteModelFor<Conversation>,
     messages: SortedMessageList,
 ): UnreadMessageInfo {
-    const info: Mutable<UnreadMessageInfo> = {
+    const initialInfo: Mutable<UnreadMessageInfo> = {
         earliestUnreadMessageIndex: undefined,
         latestCheckedMessageIndex: messages.length - 1,
         inboundMessageCount: 0,
         hasOutboundMessageAfterEarliestUnreadMessage: false,
+        isResetPending: false,
     };
 
     if (conversation.view.unreadMessageCount < 1) {
-        return info;
+        return initialInfo;
     }
 
     for (let index = messages.length - 1; index >= 0; index--) {
         const msgView = messages[index].messageStore.get().view;
 
         if (msgView.direction === MessageDirection.INBOUND && msgView.readAt === undefined) {
-            info.earliestUnreadMessageIndex = index;
-            info.inboundMessageCount++;
+            initialInfo.earliestUnreadMessageIndex = index;
+            initialInfo.inboundMessageCount++;
         } else {
             break;
         }
     }
 
-    return info;
+    return initialInfo;
 }
 
 function updateUnreadMessageInfo(
