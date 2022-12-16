@@ -25,16 +25,23 @@
         title="Update available: {context.currentVersion} → {context.latestVersion}"
       />
       <div class="body" slot="body">
-        An update for Threema is available!
-        <br />
+        <p>An update for Threema is available!</p>
         {#if context.systemInfo.os === 'linux'}
-          Please install the update through your system package manager, or by running
-          <code>flatpak update</code> in your terminal.
+          <p>
+            Please install the update through your system package manager, or by running
+            <code>flatpak update</code> in your terminal.
+          </p>
+          <p>
+            For more information about this update, see
+            <a href="https://three.ma/md" target="_blank" rel="noopener noreferrer">three.ma/md</a>.
+          </p>
         {:else if ['windows', 'macos'].includes(context.systemInfo.os)}
-          Please update by downloading and installing the latest release from
-          <a href="https://three.ma/md" target="_blank" rel="noopener noreferrer">three.ma/md</a>.
+          <p>
+            Please update by downloading and installing the latest release from
+            <a href="https://three.ma/md" target="_blank" rel="noopener noreferrer">three.ma/md</a>.
+          </p>
         {:else}
-          Please update {import.meta.env.APP_NAME}.
+          <p>Please update {import.meta.env.APP_NAME}.</p>
         {/if}
       </div>
       <CancelAndConfirm slot="footer" let:modal {modal} showCancel={false} confirmText="OK" />
@@ -50,5 +57,9 @@
     padding: rem(16px);
     border-radius: rem(8px);
     overflow: hidden;
+  }
+
+  div > p:first-child {
+    margin-top: 0;
   }
 </style>
