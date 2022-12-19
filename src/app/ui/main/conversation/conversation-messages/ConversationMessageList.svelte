@@ -137,7 +137,8 @@
         return;
       }
 
-      // Await instead of 'void' here to prevent race conditions with the scheduled tasks to reflect the read state.
+      // Await instead of 'void' here to prevent race conditions with the scheduled tasks to reflect
+      // the read state.
       await message.controller.read.fromLocal(new Date());
     }
   }
@@ -148,7 +149,7 @@
     {#if index === unreadMessageInfo.earliestUnreadMessageIndex}
       <div class="unread-messages-separator">
         {#if !unreadMessageInfo.hasOutboundMessageAfterEarliestUnreadMessage}
-          {unreadMessageSeparatorLabel(unreadMessageInfo.inboundMessageCount)}
+          {unreadMessageSeparatorLabel(unreadMessageInfo.inboundUnreadMessageCount)}
         {/if}
       </div>
     {:else if hasDirectionChanged($sortedMessages, index)}

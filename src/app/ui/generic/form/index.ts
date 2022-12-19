@@ -35,7 +35,13 @@ import {
     type ConversationMessageViewModel,
 } from '~/common/viewmodel/conversation-messages';
 
+/**
+ * A list of messages sorted from oldest to newest.
+ */
 export type SortedMessageList = RemoteObject<ConversationMessageViewModel>[];
+/**
+ * A store containing a {@link SortedMessageList}.
+ */
 export type SortedMessageListStore = IQueryableStore<SortedMessageList>;
 
 /**
@@ -58,32 +64,30 @@ export function hasDirectionChanged(messages: SortedMessageList, index: u53): bo
  */
 export interface UnreadMessageInfo {
     /**
-     * This is the index of the earliest unread message, above which a separator will be displayed.
+     * Index of the earliest unread message, above which a separator will be displayed.
+     * Undefined if no message is unread.
      */
     readonly earliestUnreadMessageIndex?: u53;
 
     /**
      * Instead of iterating over the whole message list, we cache the last message that we checked
-     * so that we don't need to check again older messages, and their read status cannot change.
+     * so that we don't need to re-check messages that have already been checked.
      */
     readonly latestCheckedMessageIndex: u53;
 
     /**
-     * This indicates how many inbound messages are since the message at index
-     * `earliestUnreadMessageIndex`. This is relevant because we don't want to count the outbound
-     * messages that can potentially be written after the message at index
-     * `earliestUnreadMessageIndex`.
+     * Number of unread inbound messages after `earliestUnreadMessageIndex`.
      */
-    readonly inboundMessageCount: u53;
+    readonly inboundUnreadMessageCount: u53;
 
     /**
-     * Indicates whether any outbound messages has been written after the message at index
+     * Indicates whether any outbound messages have been written after the message at index
      * `earliestUnreadMessageIndex` so that we can adapt the UI accordingly.
      */
     readonly hasOutboundMessageAfterEarliestUnreadMessage: boolean;
 
     /**
-     * This property is mutable because the user of the {@link UnreadMessageInfo} object can set it
+     * This property is mutable because the caller of the {@link UnreadMessageInfo} object can set it
      * to `true` to force a recount of the unread messages the next time it is calculated.
      */
     isRecountPending: boolean;
@@ -115,21 +119,24 @@ function getInitialUnreadMessageInfo(
     const initialInfo: Mutable<UnreadMessageInfo> = {
         earliestUnreadMessageIndex: undefined,
         latestCheckedMessageIndex: messages.length - 1,
-        inboundMessageCount: 0,
+        inboundUnreadMessageCount: 0,
         hasOutboundMessageAfterEarliestUnreadMessage: false,
         isRecountPending: false,
     };
 
+    // Optimization: No need to scan for unread messages if there aren't any
     if (conversation.view.unreadMessageCount < 1) {
         return initialInfo;
     }
 
+    // Search for unread messages, starting at the newest message. From there, we search backwards
+    // until we find the first message that's either outbound, or that has already been read.
     for (let index = messages.length - 1; index >= 0; index--) {
         const msgView = messages[index].messageStore.get().view;
 
         if (msgView.direction === MessageDirection.INBOUND && msgView.readAt === undefined) {
             initialInfo.earliestUnreadMessageIndex = index;
-            initialInfo.inboundMessageCount++;
+            initialInfo.inboundUnreadMessageCount++;
         } else {
             break;
         }
@@ -151,7 +158,7 @@ function updateUnreadMessageInfo(
         const msgView = messages[index].messageStore.get().view;
 
         if (msgView.direction === MessageDirection.INBOUND) {
-            updatedInfo.inboundMessageCount++;
+            updatedInfo.inboundUnreadMessageCount++;
         } else {
             updatedInfo.hasOutboundMessageAfterEarliestUnreadMessage = true;
         }
