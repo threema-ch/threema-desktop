@@ -56,6 +56,7 @@ import {
     placeholderTextForUnhandledMessage,
 } from '~/common/network/protocol/task';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
+import {parseLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {
     type AnyInboundMessageInitFragment,
@@ -131,6 +132,32 @@ function getTextMessageInitFragment(
         type: 'text',
         text,
         quotedMessageId: possibleQuote?.quotedMessageId,
+    };
+}
+
+function getLocationMessageInitFragment(
+    payload: structbuf.csp.payload.LegacyMessageLike,
+    cspLocationMessageBody: ReadonlyUint8Array,
+    log: Logger,
+): InboundTextMessageInitFragment {
+    // Decode location message as text message for now.
+    // TODO(WEBMD-248): Full implementation
+    const rawLocation = UTF8.decode(
+        structbuf.csp.e2e.Location.decode(cspLocationMessageBody as Uint8Array).location,
+    );
+    const parsedLocation = parseLocation(rawLocation);
+    if (parsedLocation === undefined) {
+        log.warn(`Invalid location message: ${rawLocation}`);
+        throw new Error('Invalid location message, could not parse');
+    }
+    return {
+        ...getCommonMessageInitFragment(payload, cspLocationMessageBody),
+        type: 'text',
+        text: `📍 _Location:_ ${
+            parsedLocation.name ?? parsedLocation.address
+        }\nhttps://www.openstreetmap.org/?mlat=${parsedLocation.coordinates.lat}&mlon=${
+            parsedLocation.coordinates.lon
+        }&zoom=15`,
     };
 }
 
@@ -874,6 +901,44 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
+            case CspE2eConversationType.LOCATION: {
+                const instructions: ConversationMessageInstructions = {
+                    messageCategory: 'conversation-message',
+                    conversationId: senderConversationId,
+                    missingContactHandling: 'create',
+                    deliveryReceipt: true,
+                    initFragment: getLocationMessageInitFragment(
+                        message,
+                        cspMessageBody,
+                        this._log,
+                    ),
+                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.LOCATION),
+                };
+                return instructions;
+            }
+            case CspE2eGroupConversationType.GROUP_LOCATION: {
+                // A group location message is wrapped in a group-member-container
+                const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                    structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                );
+                const instructions: ConversationMessageInstructions = {
+                    messageCategory: 'conversation-message',
+                    conversationId: {
+                        type: ReceiverType.GROUP,
+                        groupId: validatedContainer.groupId,
+                        creatorIdentity: validatedContainer.creatorIdentity,
+                    },
+                    missingContactHandling: 'ignore',
+                    deliveryReceipt: false,
+                    initFragment: getLocationMessageInitFragment(
+                        message,
+                        validatedContainer.innerData,
+                        this._log,
+                    ),
+                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.GROUP_LOCATION),
+                };
+                return instructions;
+            }
 
             // Contact control messages
             case CspE2eContactControlType.CONTACT_SET_PROFILE_IMAGE:
@@ -1036,8 +1101,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             // Forwarding of known but unhandled messages. These messages will be reflected and
             // discarded. The messages won't appear in Threema Desktop, but they will appear on
             // synchronized devices that support these message types.
-            case CspE2eConversationType.LOCATION: // TODO(WEBMD-248)
-                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(WEBMD-586)
                 return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(WEBMD-586)
@@ -1061,8 +1124,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
                 return unhandled(maybeCspE2eType, false);
             case CspE2eGroupControlType.GROUP_CALL_START: // TODO(WEBMD-858)
-                return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.GROUP_LOCATION: // TODO(WEBMD-248)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
