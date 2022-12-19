@@ -84,9 +84,9 @@ export interface UnreadMessageInfo {
 
     /**
      * This property is mutable because the user of the {@link UnreadMessageInfo} object can set it
-     * to `true` to request a reset of the unread message info the next time it is calculated.
+     * to `true` to force a recount of the unread messages the next time it is calculated.
      */
-    isResetPending: boolean;
+    isRecountPending: boolean;
 }
 
 export function getUnreadMessageInfo(
@@ -96,7 +96,7 @@ export function getUnreadMessageInfo(
 ): UnreadMessageInfo {
     if (
         currentUnreadMessageInfo?.earliestUnreadMessageIndex === undefined ||
-        currentUnreadMessageInfo.isResetPending
+        currentUnreadMessageInfo.isRecountPending
     ) {
         return getInitialUnreadMessageInfo(conversation, messages);
     }
@@ -117,7 +117,7 @@ function getInitialUnreadMessageInfo(
         latestCheckedMessageIndex: messages.length - 1,
         inboundMessageCount: 0,
         hasOutboundMessageAfterEarliestUnreadMessage: false,
-        isResetPending: false,
+        isRecountPending: false,
     };
 
     if (conversation.view.unreadMessageCount < 1) {

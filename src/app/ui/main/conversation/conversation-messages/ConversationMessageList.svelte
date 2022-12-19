@@ -19,6 +19,7 @@
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type u53} from '~/common/types';
   import {type RemoteObject} from '~/common/utils/endpoint';
+  import {debounce} from '~/common/utils/timer';
   import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-messages';
 
   /**
@@ -56,20 +57,32 @@
   $: {
     sortedMessages = sortMessages(conversationMessagesSet);
     setUnreadMessageInfo($sortedMessages);
+    scheduleUnreadMessageInfoRecountDebounced();
   }
 
-  function scheduleUnreadMessageInfoReset(): void {
-    unreadMessageInfo.isResetPending = true;
+  function scheduleUnreadMessageInfoRecount(): void {
+    unreadMessageInfo.isRecountPending = true;
   }
 
-  function unscheduleUnreadMessageInfoReset(): void {
-    unreadMessageInfo.isResetPending = false;
+  const DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS = 2 * 60 * 1000; // 2 minutes
+
+  /**
+   * Ensure that two minutes after the last inbound or outbound message the unread message separator
+   * is recalculated so that it is relevant.
+   */
+  const scheduleUnreadMessageInfoRecountDebounced = debounce(
+    scheduleUnreadMessageInfoRecount,
+    DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS,
+  );
+
+  function unscheduleUnreadMessageInfoRecount(): void {
+    unreadMessageInfo.isRecountPending = false;
   }
 
   $: if ($appVisibility !== 'focused') {
-    scheduleUnreadMessageInfoReset();
+    scheduleUnreadMessageInfoRecount();
   } else {
-    unscheduleUnreadMessageInfoReset();
+    unscheduleUnreadMessageInfoRecount();
   }
 
   function unreadMessageSeparatorLabel(unreadMessageCount: u53): string {
