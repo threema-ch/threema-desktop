@@ -28,6 +28,7 @@ import {MessageDirection} from '~/common/enum';
 import {type Conversation, type RemoteModelFor} from '~/common/model';
 import {type Mutable, type u53} from '~/common/types';
 import {type RemoteObject} from '~/common/utils/endpoint';
+import {dateToUnixTimestampMs} from '~/common/utils/number';
 import {type IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {
@@ -64,6 +65,13 @@ export function hasDirectionChanged(messages: SortedMessageList, index: u53): bo
  */
 export interface UnreadMessageInfo {
     /**
+     * Only true when no unread info has been yet calculated for a given conversation. Given how
+     * {@link UnreadMessageInfo} is used, this attribute is easier to use than checking for an
+     * undefined object.
+     */
+    readonly isUnset: boolean;
+
+    /**
      * Index of the earliest unread message, above which a separator will be displayed.
      * Undefined if no message is unread.
      */
@@ -96,13 +104,14 @@ export interface UnreadMessageInfo {
 export function getUnreadMessageInfo(
     conversation: RemoteModelFor<Conversation>,
     messages: SortedMessageList,
-    currentUnreadMessageInfo: UnreadMessageInfo | undefined,
+    currentUnreadMessageInfo: UnreadMessageInfo,
 ): UnreadMessageInfo {
     if (
-        currentUnreadMessageInfo?.earliestUnreadMessageIndex === undefined ||
+        currentUnreadMessageInfo.isUnset ||
+        currentUnreadMessageInfo.earliestUnreadMessageIndex === undefined ||
         currentUnreadMessageInfo.isRecountPending
     ) {
-        return getInitialUnreadMessageInfo(conversation, messages);
+        return newUnreadMessageInfo(conversation, messages);
     }
 
     return updateUnreadMessageInfo(messages, {
@@ -112,21 +121,28 @@ export function getUnreadMessageInfo(
     });
 }
 
-function getInitialUnreadMessageInfo(
+export const unsetUnreadMessageInfo: UnreadMessageInfo = {
+    isUnset: true,
+    earliestUnreadMessageIndex: undefined,
+    latestCheckedMessageIndex: -1,
+    inboundUnreadMessageCount: 0,
+    hasOutboundMessageAfterEarliestUnreadMessage: false,
+    isRecountPending: false,
+};
+
+function newUnreadMessageInfo(
     conversation: RemoteModelFor<Conversation>,
     messages: SortedMessageList,
 ): UnreadMessageInfo {
-    const initialInfo: Mutable<UnreadMessageInfo> = {
-        earliestUnreadMessageIndex: undefined,
+    const info: Mutable<UnreadMessageInfo> = {
+        ...unsetUnreadMessageInfo,
+        isUnset: false,
         latestCheckedMessageIndex: messages.length - 1,
-        inboundUnreadMessageCount: 0,
-        hasOutboundMessageAfterEarliestUnreadMessage: false,
-        isRecountPending: false,
     };
 
     // Optimization: No need to scan for unread messages if there aren't any
     if (conversation.view.unreadMessageCount < 1) {
-        return initialInfo;
+        return info;
     }
 
     // Search for unread messages, starting at the newest message. From there, we search backwards
@@ -135,14 +151,14 @@ function getInitialUnreadMessageInfo(
         const msgView = messages[index].messageStore.get().view;
 
         if (msgView.direction === MessageDirection.INBOUND && msgView.readAt === undefined) {
-            initialInfo.earliestUnreadMessageIndex = index;
-            initialInfo.inboundUnreadMessageCount++;
+            info.earliestUnreadMessageIndex = index;
+            info.inboundUnreadMessageCount++;
         } else {
             break;
         }
     }
 
-    return initialInfo;
+    return info;
 }
 
 function updateUnreadMessageInfo(
@@ -165,6 +181,36 @@ function updateUnreadMessageInfo(
     }
 
     return updatedInfo;
+}
+
+export function isLastMessageOutbound(messageList: SortedMessageList): boolean {
+    const lastMessage = messageList.at(-1);
+    return lastMessage?.direction === MessageDirection.OUTBOUND;
+}
+
+export function isLastOutboundMessageOlderThan(
+    messageList: SortedMessageList,
+    thresholdAgeInMillis: u53,
+): boolean {
+    for (let index = messageList.length - 1; index >= 0; index--) {
+        const messageStore = messageList[index].messageStore;
+
+        if (messageStore.ctx === MessageDirection.OUTBOUND) {
+            const lastOutboundMessageCreatedAt = messageStore.get().view.createdAt;
+            const lastOutboundMessageAgeMillis =
+                dateToUnixTimestampMs(new Date()) -
+                dateToUnixTimestampMs(lastOutboundMessageCreatedAt);
+
+            return lastOutboundMessageAgeMillis > thresholdAgeInMillis;
+        }
+
+        if (messageStore.get().view.readAt === undefined) {
+            continue;
+        }
+    }
+
+    // We reached the most recent read inbound message so we can stop the loop and return true.
+    return true;
 }
 
 /**

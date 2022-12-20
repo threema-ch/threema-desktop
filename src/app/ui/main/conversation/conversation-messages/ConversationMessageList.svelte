@@ -1,13 +1,16 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {onDestroy} from 'svelte';
   import {type AppServices} from '~/app/types';
   import {
     type SortedMessageList,
     type SortedMessageListStore,
-    type UnreadMessageInfo,
     getUnreadMessageInfo,
     hasDirectionChanged,
     sortMessages,
+    unsetUnreadMessageInfo,
+    isLastOutboundMessageOlderThan,
+    isLastMessageOutbound,
   } from '~/app/ui/generic/form';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
@@ -19,6 +22,7 @@
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type u53} from '~/common/types';
   import {type RemoteObject} from '~/common/utils/endpoint';
+  import {derive} from '~/common/utils/store/derived-store';
   import {debounce} from '~/common/utils/timer';
   import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-messages';
 
@@ -47,42 +51,75 @@
    */
   export let conversation: RemoteModelStore<Conversation>;
 
+  /**
+   * A store that only triggers updates when the conversation ID changes.
+   *
+   * Note that the `conversation` store will trigger updates for many other things, such as changing
+   * the number of unread messages.
+   */
+  const conversationId = derive(conversation, (c) => c.ctx);
+
   let sortedMessages: SortedMessageListStore;
-  let unreadMessageInfo: UnreadMessageInfo;
+  let unreadMessageInfo = unsetUnreadMessageInfo;
+
+  const conversationIdUnsubscribe = conversationId.subscribe(() => {
+    // Reset unreadMessageInfo when changing conversations.
+    unreadMessageInfo = unsetUnreadMessageInfo;
+  });
+  onDestroy(conversationIdUnsubscribe);
 
   function setUnreadMessageInfo(messageList: SortedMessageList): void {
-    unreadMessageInfo = getUnreadMessageInfo($conversation, messageList, unreadMessageInfo);
+    const currentUnreadMessageInfo = unreadMessageInfo;
+
+    if (isLastMessageOutbound(messageList)) {
+      // Cancel forced recounting if the last message is outbound.
+      currentUnreadMessageInfo.isRecountPending = false;
+    }
+
+    unreadMessageInfo = getUnreadMessageInfo($conversation, messageList, currentUnreadMessageInfo);
   }
 
-  $: {
-    sortedMessages = sortMessages(conversationMessagesSet);
-    setUnreadMessageInfo($sortedMessages);
-    scheduleUnreadMessageInfoRecountDebounced();
-  }
-
-  function scheduleUnreadMessageInfoRecount(): void {
-    unreadMessageInfo.isRecountPending = true;
+  /**
+   * Determine if the unread message info should be calculated, as there are many different cases.
+   */
+  function shouldSetUnreadMessageInfo(messageList: SortedMessageList): boolean {
+    const isUnreadMessageLineCurrentlyDisplayed =
+      unreadMessageInfo.earliestUnreadMessageIndex !== undefined;
+    return (
+      unreadMessageInfo.isUnset ||
+      $appVisibility !== 'focused' ||
+      isUnreadMessageLineCurrentlyDisplayed ||
+      isLastOutboundMessageOlderThan(
+        messageList,
+        DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS,
+      )
+    );
   }
 
   const DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS = 2 * 60 * 1000; // 2 minutes
 
   /**
-   * Ensure that two minutes after the last inbound or outbound message the unread message separator
-   * is recalculated so that it is relevant.
+   * Ensure that some give time (i.e. {@link DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS})
+   * after the last inbound message the unread message separator is recalculated so that it is
+   * relevant.
    */
-  const scheduleUnreadMessageInfoRecountDebounced = debounce(
-    scheduleUnreadMessageInfoRecount,
-    DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS,
-  );
+  const scheduleUnreadMessageInfoRecount = debounce(() => {
+    unreadMessageInfo.isRecountPending = true;
+  }, DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS);
 
-  function unscheduleUnreadMessageInfoRecount(): void {
-    unreadMessageInfo.isRecountPending = false;
+  function scheduleUnreadMessageInfoRecountWhenFocused() {
+    if ($appVisibility === 'focused') {
+      scheduleUnreadMessageInfoRecount();
+    }
   }
 
-  $: if ($appVisibility !== 'focused') {
-    scheduleUnreadMessageInfoRecount();
-  } else {
-    unscheduleUnreadMessageInfoRecount();
+  $: {
+    sortedMessages = sortMessages(conversationMessagesSet);
+
+    if (shouldSetUnreadMessageInfo($sortedMessages)) {
+      setUnreadMessageInfo($sortedMessages);
+      scheduleUnreadMessageInfoRecountWhenFocused();
+    }
   }
 
   function unreadMessageSeparatorLabel(unreadMessageCount: u53): string {
