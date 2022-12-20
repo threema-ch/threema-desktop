@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {type TextProcessor} from '~/app/ui/generic/form';
   import Text from '~/app/ui/generic/form/Text.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
@@ -11,6 +10,7 @@
     type Reaction,
     type ReceiverData,
   } from '~/common/viewmodel/types';
+  import {Mention} from '~/common/viewmodel/utils/mentions';
 
   /**
    * The text to be parsed and displayed with the requested features.
@@ -48,12 +48,9 @@
   export let reaction: undefined | Reaction;
 
   /**
-   * Optional text processor function. HTML-unsafe characters will be escaped in
-   * the original string before applying this text processor function, and not
-   * after. I.e. if the output of this text processor function contains HTML, it
-   * will be injected in the template as is and must therefore be trusted.
+   * Mentions parsed from the message
    */
-  export let textProcessor: TextProcessor | undefined = undefined;
+  export let mentions: Mention[];
 
   // Check if we will display the contact informations.
   const showContact =
@@ -73,7 +70,7 @@
       </span>
     {/if}
     <span class="text">
-      <Text text={body.text} {textProcessor} />
+      <Text text={body.text} {mentions} />
     </span>
     <MessageFooter
       {direction}

@@ -2,9 +2,8 @@ import {
     type VerificationLevel,
     type VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
-
-import {type u53} from '../types';
-import {type AvatarData} from './avatar-index';
+import {type u53} from '~/common/types';
+import {type AvatarData} from '~/common/viewmodel/avatar-index';
 
 /**
  * Branding type.

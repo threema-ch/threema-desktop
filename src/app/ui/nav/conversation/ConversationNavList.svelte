@@ -1,12 +1,11 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
+  import {type Router} from '~/app/routing/router';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
-  import {type SvelteAction} from '#3sc/types';
   import {conversationListEvent} from '~/app/ui/main/conversation/index';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavElement from '~/app/ui/nav/conversation/ConversationNavElement.svelte';
-  import {type Router} from '~/app/routing/router';
   import {type DbReceiverLookup} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {type Settings} from '~/common/model';
@@ -14,6 +13,7 @@
   import {type Remote, type RemoteObject} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {type ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
+  import {type SvelteAction} from '~/common/viewmodel/types';
 
   /**
    * App settings.

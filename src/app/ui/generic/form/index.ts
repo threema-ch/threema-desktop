@@ -1,3 +1,19 @@
+import {markify, TokenType} from '@threema/threema-markup';
+import autolinker from 'autolinker';
+
+import {MessageDirection} from '~/common/enum';
+import {type Conversation, type RemoteModelFor} from '~/common/model';
+import {type Mutable, type u53} from '~/common/types';
+import {type RemoteObject} from '~/common/utils/endpoint';
+import {dateToUnixTimestampMs} from '~/common/utils/number';
+import {type IQueryableStore} from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
+import {
+    type ConversationMessageSetStore,
+    type ConversationMessageViewModel,
+} from '~/common/viewmodel/conversation-messages';
+import {type Mention} from '~/common/viewmodel/utils/mentions';
+
 /**
  * A function that takes a (possibly undefined) string and returns a processed
  * string. If the input is undefined an empty string must be returned.
@@ -23,18 +39,6 @@ export function escapeHtmlUnsafeChars(text: string | undefined): string {
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
 }
-
-import {MessageDirection} from '~/common/enum';
-import {type Conversation, type RemoteModelFor} from '~/common/model';
-import {type Mutable, type u53} from '~/common/types';
-import {type RemoteObject} from '~/common/utils/endpoint';
-import {dateToUnixTimestampMs} from '~/common/utils/number';
-import {type IQueryableStore} from '~/common/utils/store';
-import {derive} from '~/common/utils/store/derived-store';
-import {
-    type ConversationMessageSetStore,
-    type ConversationMessageViewModel,
-} from '~/common/viewmodel/conversation-messages';
 
 /**
  * A list of messages sorted from oldest to newest.
@@ -252,4 +256,41 @@ export function getDateTimeIsoString(date: Date): string {
  */
 export function getTimeIsoString(date: Date): string {
     return getDateTimeIsoString(date).split(' ')[1];
+}
+
+export function getMentionHtml(mention: Mention): string {
+    if (mention.type === 'all') {
+        return `<span class="mention all">@All</span>`;
+    }
+
+    const mentionDisplay = `@${escapeHtmlUnsafeChars(mention.name)}`;
+
+    if (mention.type === 'self') {
+        return `<span class="mention me">${mentionDisplay}</span>`;
+    }
+
+    const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
+    return `<a href="${href}" draggable="false" class="mention">${mentionDisplay}</a>`;
+}
+
+/**
+ * Default Textprocessor for text in messages
+ */
+export function textProcessor(text: string | undefined, mentions: Mention[]): string {
+    if (text === undefined || text === '') {
+        return '';
+    }
+
+    // Replace mentions
+    for (const mention of mentions) {
+        text = text.replaceAll(`@[${mention.identityString}]`, getMentionHtml(mention));
+    }
+
+    text = markify(text, {
+        [TokenType.Asterisk]: 'md-bold',
+        [TokenType.Underscore]: 'md-italic',
+        [TokenType.Tilde]: 'md-strike',
+    });
+
+    return autolinker.link(text);
 }

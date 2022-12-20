@@ -1,10 +1,10 @@
 <script lang="ts">
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import {type AppServices} from '~/app/types';
+  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavList from '~/app/ui/nav/conversation/ConversationNavList.svelte';
   import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
-  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
 
   export let services: AppServices;
   const {backend, router} = services;

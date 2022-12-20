@@ -1,14 +1,10 @@
 <script lang="ts">
-  import {markify, TokenType} from '@threema/threema-markup';
-  import Autolinker from 'autolinker';
-
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import AvatarComponent from '#3sc/components/threema/Avatar/Avatar.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import {escapeHtmlUnsafeChars} from '~/app/ui/generic/form';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import TextMessage from '~/app/ui/main/conversation/conversation-messages/TextMessage.svelte';
@@ -29,7 +25,7 @@
   import {type RemoteObject} from '~/common/utils/endpoint';
   import {eternalPromise} from '~/common/utils/promise';
   import {type RemoteStore} from '~/common/utils/store';
-  import {type ConversationMessage, type Mention} from '~/common/viewmodel/conversation-messages';
+  import {type ConversationMessage} from '~/common/viewmodel/conversation-messages';
   import {type AnyMessageBody, type Message, type MessageBodyFor} from '~/common/viewmodel/types';
 
   /**
@@ -185,65 +181,6 @@
     selected = !selected;
   }
 
-  const autolinker = new Autolinker({
-    // Open links in new window
-    newWindow: true,
-    // Don't strip protocol prefix
-    stripPrefix: false,
-    // Don't strip trailing slashes
-    stripTrailingSlash: false,
-    // Don't truncate links
-    truncate: 99999,
-    // Add class name to linked links
-    className: 'autolinked',
-    // Link urls
-    urls: true,
-    // Link e-mails
-    email: true,
-    // Don't link phone numbers (doesn't work reliably)
-    phone: false,
-    // Don't link mentions
-    mention: false,
-    // Don't link hashtags
-    hashtag: false,
-  });
-
-  const mentions = $viewModelStore.mentions;
-
-  function getMentionHtml(mention: Mention): string {
-    if (mention.type === 'all') {
-      return `<span class="mention all">@All</span>`;
-    }
-
-    const mentionDisplay = `@${escapeHtmlUnsafeChars(mention.name)}`;
-
-    if (mention.type === 'self') {
-      return `<span class="mention me">${mentionDisplay}</span>`;
-    }
-
-    const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
-    return `<a href="${href}" draggable="false" class="mention">${mentionDisplay}</a>`;
-  }
-
-  function textProcessor(text: string | undefined): string {
-    if (text === undefined || text === '') {
-      return '';
-    }
-
-    // Replace mentions
-    for (const mention of mentions) {
-      text = text.replaceAll(`@[${mention.identityString}]`, getMentionHtml(mention));
-    }
-
-    text = markify(text, {
-      [TokenType.Asterisk]: 'md-bold',
-      [TokenType.Underscore]: 'md-italic',
-      [TokenType.Tilde]: 'md-strike',
-    });
-
-    return autolinker.link(text);
-  }
-
   async function navigateToContact(): Promise<void> {
     assert($messageStore.ctx === MessageDirection.INBOUND);
     const sender = await $messageStore.controller.sender();
@@ -321,7 +258,7 @@
             date={messageBody.updatedAt}
             status={messageBody.direction === 'outgoing' ? messageBody.status : undefined}
             reaction={messageBody.lastReaction}
-            {textProcessor}
+            mentions={$viewModelStore.mentions}
           />
         {:else}
           <UnsupportedMessage message={messageBody} />

@@ -1,5 +1,4 @@
-import {type DbContact} from '~/common/db';
-import {MessageDirection, MessageReaction, MessageType, ReceiverType} from '~/common/enum';
+import {MessageDirection, MessageReaction, MessageType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
     type AnyMessageModel,
@@ -10,7 +9,7 @@ import {
 } from '~/common/model';
 import {statusFromView} from '~/common/model/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString, type MessageId, isIdentityString} from '~/common/network/types';
+import {type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
@@ -27,13 +26,9 @@ import {
     type MessageReaction as SCMessageReaction,
     type OutgoingMessage,
 } from '~/common/viewmodel/types';
+import {type Mention, getMentions} from '~/common/viewmodel/utils/mentions';
 
 export type ConversationMessageSetStore = ISetStore<ConversationMessageViewModel>;
-
-// eslint-disable-next-line threema/ban-stateful-regex-flags
-const REGEX_MATCH_MENTION = /@\[(?<identity>[A-Z0-9*]{1}[A-Z0-9]{7}|@{8})\]/gu;
-
-const MENTION_ALL = '@@@@@@@@';
 
 /**
  * Get a SetStore that contains a ConversationPreview for a receiver.
@@ -75,23 +70,6 @@ function getConversationMessageViewModel(
         viewModel: getViewModel(services, log, messageStore, conversationModel),
     });
 }
-
-export type Mention =
-    | {
-          readonly type: 'self';
-          readonly identityString: IdentityString;
-          readonly name: string;
-      }
-    | {
-          readonly type: 'all';
-          readonly identityString: typeof MENTION_ALL;
-      }
-    | {
-          readonly type: 'other';
-          readonly identityString: IdentityString;
-          readonly name: string;
-          readonly lookup: Pick<DbContact, 'type' | 'uid'>;
-      };
 
 export interface Quote extends PropertiesMarked {
     readonly messageId: MessageId;
@@ -145,39 +123,6 @@ function getViewModel(
 }
 
 /**
- * Parse and return mention strings of text
- * @returns Set of parsed identystrings or `@@@@@@@`
- */
-function getMentionedIdentityStrings(
-    messageModel: AnyMessageModel,
-): Set<IdentityString | typeof MENTION_ALL> {
-    let text: string;
-
-    switch (messageModel.type) {
-        case 'text': {
-            text = messageModel.view.text;
-            break;
-        }
-        case 'file':
-            text = messageModel.view.caption ?? '';
-            break;
-        default:
-            unreachable(messageModel);
-    }
-
-    const mentionedIdentities = new Set<IdentityString | typeof MENTION_ALL>();
-
-    for (const match of text.matchAll(REGEX_MATCH_MENTION)) {
-        const identity = match.groups?.identity;
-        if (isIdentityString(identity) || identity === MENTION_ALL) {
-            mentionedIdentities.add(identity);
-        }
-    }
-
-    return mentionedIdentities;
-}
-
-/**
  * Parse text messages for possible quotes, and return the quoted message view model and this
  * message's comment text without the quote reference.
  *
@@ -216,44 +161,6 @@ function getQuotedMessageViewModel(
     }
 
     return quotedMessageStore;
-}
-
-function getMentions(messageModel: AnyMessageModel, model: Repositories): Mention[] {
-    const mentions: Mention[] = [];
-
-    for (const identityString of getMentionedIdentityStrings(messageModel)) {
-        if (identityString === MENTION_ALL) {
-            mentions.push({
-                type: 'all',
-                identityString: MENTION_ALL,
-            });
-            continue;
-        }
-
-        if (identityString === model.user.identity) {
-            mentions.push({
-                type: 'self',
-                identityString,
-                name: model.user.displayName.get(),
-            });
-            continue;
-        }
-
-        const otherContact = model.contacts.getByIdentity(identityString);
-        if (otherContact !== undefined) {
-            mentions.push({
-                type: 'other',
-                identityString,
-                name: otherContact.get().view.displayName,
-                lookup: {
-                    type: ReceiverType.CONTACT,
-                    uid: otherContact.ctx,
-                },
-            });
-        }
-    }
-
-    return mentions;
 }
 
 /**

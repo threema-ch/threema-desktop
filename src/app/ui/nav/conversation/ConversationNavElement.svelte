@@ -1,12 +1,12 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
-  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
-  import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import {type Router} from '~/app/routing/router';
-  import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import Time from '~/app/ui/generic/form/Time.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
+  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
+  import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {conversationDrafts, convertReceiverType} from '~/app/ui/main/conversation';
   import MessageStatus from '~/app/ui/main/conversation/conversation-messages/MessageStatus.svelte';
   import {conversationPreviewListFilter, isInactiveGroup} from '~/app/ui/nav/conversation';

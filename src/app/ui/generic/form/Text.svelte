@@ -1,5 +1,6 @@
 <script lang="ts">
-  import {type TextProcessor, escapeHtmlUnsafeChars} from '~/app/ui/generic/form';
+  import {escapeHtmlUnsafeChars, textProcessor} from '~/app/ui/generic/form';
+  import {Mention} from '~/common/viewmodel/utils/mentions';
 
   /**
    * The text to be parsed and displayed with the requested features.
@@ -8,17 +9,14 @@
   export let text: string;
 
   /**
-   * Optional text processor function. HTML-unsafe characters will be escaped in
-   * the original string before applying this text processor function, and not
-   * after. I.e. if the output of this text processor function contains HTML, it
-   * will be injected in the template as is and must therefore be trusted.
+   * Parsed Mentions in the text
    */
-  export let textProcessor: TextProcessor | undefined = undefined;
+  export let mentions: Mention[] = [];
 
   let processedText = escapeHtmlUnsafeChars(text);
 
   if (textProcessor !== undefined) {
-    processedText = textProcessor(processedText);
+    processedText = textProcessor(processedText, mentions);
   }
 </script>
 
