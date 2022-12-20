@@ -36,7 +36,7 @@ export class FrontendSystemDialogService implements SystemDialogService {
     public open(dialog: SystemDialog): SystemDialogHandle {
         const handle = new FrontendSystemDialogHandle();
         // TODO(WEBMD-487): Return backchannel like in notifications for user interaction
-        systemDialogStore.update((currentDialogs) => [...currentDialogs, {dialog, handle}]);
+        systemDialogStore.update((currentDialogs) => [{dialog, handle}, ...currentDialogs]);
 
         return handle;
     }

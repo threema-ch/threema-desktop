@@ -3,8 +3,8 @@
 
   import AppUpdate from '~/app/ui/system-dialogs/AppUpdate.svelte';
   import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
-  import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import InvalidState from '~/app/ui/system-dialogs/InvalidState.svelte';
+  import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import {type Config} from '~/common/config';
   import {display, layout} from '~/common/dom/ui/state';
   import {systemDialogStore} from '~/common/dom/ui/system-dialog';
@@ -32,7 +32,7 @@
   function closeDialog(action: DialogAction): void {
     log.debug(`System dialog ${action}`);
     const dialogs = systemDialogStore.get();
-    const dialog = dialogs.shift();
+    const dialog = dialogs.pop();
     if (dialog !== undefined) {
       dialog.handle.closed.resolve(action);
     }
@@ -41,12 +41,11 @@
 </script>
 
 <template>
-  {#if $systemDialogStore.length > 0}
-    {@const dialog = $systemDialogStore[0].dialog}
+  {#each $systemDialogStore as systemDialog}
     <div class="wrapper">
       <div class="app" data-display={$display} data-layout={$layout[$display]}>
         <svelte:component
-          this={dialogComponents[dialog.type]}
+          this={dialogComponents[systemDialog.dialog.type]}
           on:confirm={() => closeDialog('confirmed')}
           on:cancel={() => closeDialog('cancelled')}
           on:close={() => closeDialog('cancelled')}
@@ -54,11 +53,11 @@
           visible={true}
           {config}
           {log}
-          context={dialog.context}
+          context={systemDialog.dialog.context}
         />
       </div>
     </div>
-  {/if}
+  {/each}
 </template>
 
 <style lang="scss">
