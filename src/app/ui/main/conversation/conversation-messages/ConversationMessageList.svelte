@@ -237,6 +237,9 @@
       margin-top: #{rem(15px)};
       margin-bottom: #{rem(15px)};
     }
+    &:empty {
+      opacity: 0.4;
+    }
     &:not(:empty) {
       &::before {
         margin-right: #{rem(10px)};
