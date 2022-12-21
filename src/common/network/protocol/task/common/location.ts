@@ -9,7 +9,7 @@ export interface Coordinates {
 export interface Location {
     readonly coordinates: Coordinates;
     readonly name?: string;
-    readonly address: string;
+    readonly address?: string;
 }
 
 /**
@@ -20,9 +20,6 @@ export interface Location {
 export function parseLocation(location: string): Location | undefined {
     // Split lines
     const lines = location.trim().split('\n');
-    if (lines.length < 2) {
-        return undefined;
-    }
 
     // Parse coordinates
     const coordParts = lines[0].trim().split(',');
@@ -45,11 +42,11 @@ export function parseLocation(location: string): Location | undefined {
     // Parse name and address
     let name;
     let address;
-    if (lines.length >= 3) {
+    if (lines.length === 2) {
+        address = lines[1].trim();
+    } else if (lines.length >= 3) {
         name = lines[1].trim();
         address = lines[2].trim();
-    } else {
-        address = lines[1].trim();
     }
 
     return {

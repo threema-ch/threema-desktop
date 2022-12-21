@@ -154,7 +154,9 @@ function getLocationMessageInitFragment(
         ...getCommonMessageInitFragment(payload, cspLocationMessageBody),
         type: 'text',
         text: `📍 _Location:_ ${
-            parsedLocation.name ?? parsedLocation.address
+            parsedLocation.name ??
+            parsedLocation.address ??
+            `${parsedLocation.coordinates.lat},${parsedLocation.coordinates.lon}`
         }\nhttps://www.openstreetmap.org/?mlat=${parsedLocation.coordinates.lat}&mlon=${
             parsedLocation.coordinates.lon
         }&zoom=15`,

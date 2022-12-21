@@ -81,11 +81,25 @@ export function run(): void {
         });
 
         it('parse a location messages with only 1 line', function () {
-            expect(parseLocation('47.228524,8.787622')).to.be.undefined;
+            assertParsedLocation('47.228524,8.787622', {
+                coordinates: {
+                    lat: 47.228524,
+                    lon: 8.787622,
+                },
+                name: undefined,
+                address: undefined,
+            });
         });
 
         it('parse a location messages with only 1 line and a newline', function () {
-            expect(parseLocation('47.228524,8.787622\n')).to.be.undefined;
+            assertParsedLocation('47.228524,8.787622\n', {
+                coordinates: {
+                    lat: 47.228524,
+                    lon: 8.787622,
+                },
+                name: undefined,
+                address: undefined,
+            });
         });
 
         it('parse a location messages with invalid coordinates', function () {
