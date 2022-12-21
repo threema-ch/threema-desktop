@@ -1,16 +1,17 @@
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {onDestroy} from 'svelte';
+
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type AppServices} from '~/app/types';
   import {
     type SortedMessageList,
     type SortedMessageListStore,
     getUnreadMessageInfo,
     hasDirectionChanged,
+    isLastMessageOutbound,
+    isLastOutboundMessageOlderThan,
     sortMessages,
     unsetUnreadMessageInfo,
-    isLastOutboundMessageOlderThan,
-    isLastMessageOutbound,
   } from '~/app/ui/generic/form';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
@@ -107,7 +108,7 @@
     unreadMessageInfo.isRecountPending = true;
   }, DEBOUNCE_TIMEOUT_TO_RECOUNT_UNREAD_SEPARATOR_MILLIS);
 
-  function scheduleUnreadMessageInfoRecountWhenFocused() {
+  function scheduleUnreadMessageInfoRecountWhenFocused(): void {
     if ($appVisibility === 'focused') {
       scheduleUnreadMessageInfoRecount();
     }
@@ -140,43 +141,42 @@
 
   /**
    * Mark all messages as read. For now, this function marks each message individually to take
-   * advantage of the already existing mechanism to reflect the action to the peer devices. A future
-   * optimization could involve marking all unread messages at once and sending all message ids in a
-   * batch update.
+   * advantage of the already existing mechanism to reflect the action to the peer devices.
    *
-   * Note: For performance reasons (i.e. to avoid checking all messages of a conversation every
-   * time) this function starts from the most recent message and assumes that there are no more
-   * messages left unread as soon as it reaches either an outbound message or an inbound message
-   * that is already marked as read.
+   * TODO(WEBMD-892): Mark all unread messages at once and sending all message ids in a batch
+   * update.
    *
    * @param messages The conversation messages sorted from oldest to newest, i.e. as
-   * {@link SortedMessageList}.
+   *   {@link SortedMessageList}.
    */
   async function markAllMessagesAsRead(messages: SortedMessageList): Promise<void> {
-    if ($conversation.view.unreadMessageCount === 0) {
+    let unreadMessageCount = $conversation.view.unreadMessageCount;
+
+    if (unreadMessageCount < 1) {
       return;
     }
 
-    for (let index = messages.length - 1; index >= 0; index--) {
-      const messageStore = messages[index].messageStore;
+    // TODO(WEBMD-892): Remove this loop
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const messageStore = messages[i].messageStore;
 
       if (messageStore.ctx === MessageDirection.OUTBOUND) {
-        // We reached the most recent outbound message so we can assume that all previous messages
-        // were flagged as read and we can stop the loop.
-        return;
+        // Message can't be unread if it's outbound
+        continue;
       }
 
       const message = messageStore.get();
 
       if (message.view.readAt !== undefined) {
-        // We reached the most recent inbound message that was already read so we can assume that
-        // all previous messages were flagged as read and we can stop the loop.
-        return;
+        // Message is already read
+        continue;
       }
 
-      // Await instead of 'void' here to prevent race conditions with the scheduled tasks to reflect
-      // the read state.
       await message.controller.read.fromLocal(new Date());
+      unreadMessageCount--;
+      if (unreadMessageCount < 1) {
+        return;
+      }
     }
   }
 </script>
