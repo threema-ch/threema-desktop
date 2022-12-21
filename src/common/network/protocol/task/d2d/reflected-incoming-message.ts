@@ -19,6 +19,7 @@ import {
     type ServicesForTasks,
     PASSIVE_TASK,
 } from '~/common/network/protocol/task';
+import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {
@@ -231,6 +232,18 @@ export class ReflectedIncomingMessageTask
                 };
                 return instructions;
             }
+            case CspE2eConversationType.LOCATION: {
+                const initFragment = getLocationMessageInitFragment(
+                    validatedBody.message,
+                    commonFragment,
+                );
+                const instructions: ConversationMessageInstructions = {
+                    messageCategory: 'conversation-message',
+                    conversationId: {type: ReceiverType.CONTACT, identity: senderIdentity},
+                    initFragment,
+                };
+                return instructions;
+            }
 
             // Group conversation messages
             case CspE2eGroupConversationType.GROUP_TEXT: {
@@ -239,6 +252,22 @@ export class ReflectedIncomingMessageTask
                     commonFragment,
                     this._log,
                     messageId,
+                );
+                const instructions: ConversationMessageInstructions = {
+                    messageCategory: 'conversation-message',
+                    conversationId: {
+                        type: ReceiverType.GROUP,
+                        creatorIdentity: validatedBody.container.creatorIdentity,
+                        groupId: validatedBody.container.groupId,
+                    },
+                    initFragment,
+                };
+                return instructions;
+            }
+            case CspE2eGroupConversationType.GROUP_LOCATION: {
+                const initFragment = getLocationMessageInitFragment(
+                    validatedBody.message,
+                    commonFragment,
                 );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
@@ -349,5 +378,16 @@ function getTextMessageInitFragment(
         type: 'text',
         text,
         quotedMessageId: possibleQuote?.quotedMessageId,
+    };
+}
+
+function getLocationMessageInitFragment(
+    message: structbuf.validate.csp.e2e.Location.Type,
+    commonFragment: CommonInboundMessageInitFragment,
+): InboundTextMessageInitFragment {
+    return {
+        ...commonFragment,
+        type: 'text',
+        text: getTextForLocation(message.location),
     };
 }

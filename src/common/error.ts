@@ -224,3 +224,10 @@ export class TypeTransformError extends BaseError {
         return new TypeTransformError(direction, message);
     }
 }
+
+/**
+ * An error that occurs when something could not be parsed.
+ */
+export class ParseError extends BaseError {
+    public [TRANSFER_MARKER] = MIGRATION_ERROR_TRANSFER_HANDLER;
+}

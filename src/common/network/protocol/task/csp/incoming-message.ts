@@ -56,7 +56,7 @@ import {
     placeholderTextForUnhandledMessage,
 } from '~/common/network/protocol/task';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
-import {parseLocation} from '~/common/network/protocol/task/common/location';
+import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {
     type AnyInboundMessageInitFragment,
@@ -142,24 +142,13 @@ function getLocationMessageInitFragment(
 ): InboundTextMessageInitFragment {
     // Decode location message as text message for now.
     // TODO(WEBMD-248): Full implementation
-    const rawLocation = UTF8.decode(
-        structbuf.csp.e2e.Location.decode(cspLocationMessageBody as Uint8Array).location,
+    const location = structbuf.validate.csp.e2e.Location.SCHEMA.parse(
+        structbuf.csp.e2e.Location.decode(cspLocationMessageBody as Uint8Array),
     );
-    const parsedLocation = parseLocation(rawLocation);
-    if (parsedLocation === undefined) {
-        log.warn(`Invalid location message: ${rawLocation}`);
-        throw new Error('Invalid location message, could not parse');
-    }
     return {
         ...getCommonMessageInitFragment(payload, cspLocationMessageBody),
         type: 'text',
-        text: `📍 _Location:_ ${
-            parsedLocation.name ??
-            parsedLocation.address ??
-            `${parsedLocation.coordinates.lat},${parsedLocation.coordinates.lon}`
-        }\nhttps://www.openstreetmap.org/?mlat=${parsedLocation.coordinates.lat}&mlon=${
-            parsedLocation.coordinates.lon
-        }&zoom=15`,
+        text: getTextForLocation(location.location),
     };
 }
 

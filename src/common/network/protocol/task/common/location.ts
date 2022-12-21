@@ -1,3 +1,4 @@
+import {ParseError} from '~/common/error';
 import {type f64} from '~/common/types';
 
 export interface Coordinates {
@@ -15,21 +16,22 @@ export interface Location {
 /**
  * Parse a location string.
  *
- * @returns either a {@link Location} instance, or `undefined` if the location could not be parsed.
+ * @returns either a {@link Location} instance
+ * @throws {ParseError} if the location could not be parsed
  */
-export function parseLocation(location: string): Location | undefined {
+export function parseLocation(location: string): Location {
     // Split lines
     const lines = location.trim().split('\n');
 
     // Parse coordinates
     const coordParts = lines[0].trim().split(',');
     if (coordParts.length < 2) {
-        return undefined;
+        throw new ParseError('Could not parse location: Did not find two coordinates');
     }
     const lat = parseFloat(coordParts[0]);
     const lon = parseFloat(coordParts[1]);
     if (isNaN(lat) || isNaN(lon)) {
-        return undefined;
+        throw new ParseError('Could not parse location: Coordinates are not valid numbers');
     }
     let accuracy;
     if (coordParts.length > 2) {
@@ -58,4 +60,19 @@ export function parseLocation(location: string): Location | undefined {
         name,
         address,
     };
+}
+
+/**
+ * Return a temporary text representation of a location.
+ *
+ * TODO(WEBMD-248): Remove
+ */
+export function getTextForLocation(location: Location): string {
+    return `📍 _Location:_ ${
+        location.name ??
+        location.address ??
+        `${location.coordinates.lat},${location.coordinates.lon}`
+    }\nhttps://www.openstreetmap.org/?mlat=${location.coordinates.lat}&mlon=${
+        location.coordinates.lon
+    }&zoom=15`;
 }

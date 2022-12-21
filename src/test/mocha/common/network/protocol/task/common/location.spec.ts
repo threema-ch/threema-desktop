@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
+import {ParseError} from '~/common/error';
 import {type Location, parseLocation} from '~/common/network/protocol/task/common/location';
-import {assert} from '~/common/utils/assert';
 
 /**
  * Config tests.
@@ -11,8 +11,6 @@ export function run(): void {
         function assertParsedLocation(locationString: string, expected: Location): void {
             const parsed = parseLocation(locationString);
             const coordinateDelta = 0.00001;
-            expect(parsed).not.to.be.undefined;
-            assert(parsed !== undefined);
             expect(parsed.coordinates.lat).to.be.closeTo(expected.coordinates.lat, coordinateDelta);
             expect(parsed.coordinates.lon).to.be.closeTo(expected.coordinates.lon, coordinateDelta);
             if (expected.coordinates.accuracy !== undefined) {
@@ -102,8 +100,14 @@ export function run(): void {
             });
         });
 
+        it('parse a location messages with missing coordinates', function () {
+            expect(() => parseLocation('47.228524\nZurich, Switzerland')).to.throw(ParseError);
+        });
+
         it('parse a location messages with invalid coordinates', function () {
-            expect(parseLocation('47.228524,q.787622\nZurich, Switzerland')).to.be.undefined;
+            expect(() => parseLocation('47.228524,q.787622\nZurich, Switzerland')).to.throw(
+                ParseError,
+            );
         });
 
         it('parse a location messages with invalid accuracy', function () {

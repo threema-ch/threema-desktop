@@ -137,6 +137,15 @@ export abstract class ReflectedMessageTaskBase<
                         ),
                         container: undefined,
                     };
+                case CspE2eConversationType.LOCATION:
+                    // TODO(WEBMD-248): Full implementation
+                    return {
+                        type: CspE2eConversationType.LOCATION,
+                        message: structbuf.validate.csp.e2e.Location.SCHEMA.parse(
+                            structbuf.csp.e2e.Location.decode(body),
+                        ),
+                        container: undefined,
+                    };
 
                 // Group conversation messages
                 case CspE2eGroupConversationType.GROUP_TEXT: {
@@ -147,6 +156,19 @@ export abstract class ReflectedMessageTaskBase<
                         type: CspE2eGroupConversationType.GROUP_TEXT,
                         message: structbuf.validate.csp.e2e.Text.SCHEMA.parse(
                             structbuf.csp.e2e.Text.decode(container.innerData),
+                        ),
+                        container,
+                    };
+                }
+                case CspE2eGroupConversationType.GROUP_LOCATION: {
+                    // TODO(WEBMD-248): Full implementation
+                    const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(body),
+                    );
+                    return {
+                        type: CspE2eGroupConversationType.GROUP_LOCATION,
+                        message: structbuf.validate.csp.e2e.Location.SCHEMA.parse(
+                            structbuf.csp.e2e.Location.decode(container.innerData),
                         ),
                         container,
                     };
@@ -221,7 +243,6 @@ export abstract class ReflectedMessageTaskBase<
                     return undefined;
 
                 // Unhandled messages
-                case CspE2eConversationType.LOCATION: // TODO(WEBMD-248)
                 case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(WEBMD-586)
                 case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(WEBMD-586)
                 case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(WEBMD-586)
@@ -235,7 +256,6 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
                     return unhandled({maybeReflectedE2eType});
                 case CspE2eGroupControlType.GROUP_CALL_START: // TODO(WEBMD-858)
-                case CspE2eGroupConversationType.GROUP_LOCATION: // TODO(WEBMD-248)
                 case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
                 case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(WEBMD-586)
                 case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(WEBMD-586)
