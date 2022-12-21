@@ -21,6 +21,30 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0.0-preview2" date="2022-12-21">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>Show line above unread messages</li>
+                    <li>Handle incoming location messages</li>
+                    <li>Dynamically switch between light and dark theme on macOS</li>
+                    <li>Display unread badge in macOS app icon</li>
+                    <li>Option to enter custom Threema Safe server credentials (authentication) when linking</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>When opening chat, always mark all messages as read</li>
+                    <li>Use Apple emoji on macOS</li>
+                </ul>
+                <p>Bugfixes:</p>
+                <ul>
+                    <li>Nickname is no longer disclosed immediately to unknown contacts</li>
+                    <li>Properly reflect group profile pictures towards iOS app</li>
+                    <li>Fix display of private chats</li>
+                </ul>
+                <p>...and a few other changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0.0-preview1" date="2022-12-06">
             <description>
                 <p>First public release</p>

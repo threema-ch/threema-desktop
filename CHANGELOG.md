@@ -3,6 +3,29 @@
 This changelog lists the most important changes for each released version. For
 the full log, please refer to the git commit history.
 
+### v2.0.0-preview2 (2022-12-21)
+
+New features:
+
+- Show line above unread messages (WEBMD-866)
+- Handle incoming location messages (WEBMD-890)
+- Dynamically switch between light and dark theme on macOS (WEBMD-802)
+- Display unread badge in macOS app icon (WEBMD-867)
+- Option to enter custom Threema Safe server credentials (authentication) when linking (WEBMD-885)
+
+Improvements:
+
+- When opening chat, always mark all messages as read (WEBMD-474)
+- Use Apple emoji on macOS (WEBMD-865)
+- Reject PFS messages (WEBMD-878)
+
+Bugfixes:
+
+- Nickname is no longer disclosed immediately to unknown contacts (WEBMD-374)
+- Properly reflect group profile pictures towards iOS app (WEBMD-871)
+- Fix display of private chats (WEBMD-874)
+- When more than one system dialog is opened, page no longer remains white (WEBMD-884)
+
 ### v2.0.0-preview1 (2022-12-06)
 
 First public preview release!
