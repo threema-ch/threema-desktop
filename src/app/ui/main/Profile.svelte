@@ -2,13 +2,15 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ProfileComponent from '~/app/ui/main/settings/Profile.svelte';
-  import Text from '~/app/ui/main/settings/Text.svelte';
-  import {toast} from '~/app/ui/snackbar';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import ProfileComponent from '~/app/ui/main/settings/Profile.svelte';
+  import Select from '~/app/ui/main/settings/Select.svelte';
+  import Text from '~/app/ui/main/settings/Text.svelte';
+  import {toast} from '~/app/ui/snackbar';
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';
   import {display} from '~/common/dom/ui/state';
+  import {THEMES} from '~/common/dom/ui/theme';
   import {type u53} from '~/common/types';
   import {type RemoteObject} from '~/common/utils/endpoint';
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
@@ -16,7 +18,7 @@
   export let services: AppServices;
   const {backend, logging, router, storage} = services;
   const {viewModel} = backend;
-  const {debugPanelState} = storage;
+  const {debugPanelState, theme} = storage;
 
   const log = logging.logger('component.profile');
 
@@ -103,6 +105,8 @@
       {/if}
 
       <Text label="Copyright" value="Threema GmbH © 2022" />
+
+      <Select label="Theme" bind:value={$theme} options={THEMES} />
 
       {#if showToggleDebugMode}
         <div class="debug-button">

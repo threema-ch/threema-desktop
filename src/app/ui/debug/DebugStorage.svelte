@@ -2,7 +2,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type AppServices} from '~/app/types';
-  import {Theme, THEMES} from '~/common/dom/ui/theme';
+  import {type Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
   import {
     type AnyMessage,
