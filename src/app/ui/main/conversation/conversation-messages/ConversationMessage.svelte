@@ -85,7 +85,7 @@
         quoteStore.body.direction === 'incoming' ? quoteStore.body.sender.name : 'me';
 
       messageBodyText = {
-        text: `--- 🗨️ Quote from ${senderName} ---\n${quoteStore.body.body.text}\n------\n\n${messageBody.body.text}`,
+        text: `_> ${senderName}: ${quoteStore.body.body.text}_\n\n${messageBody.body.text}`,
       };
     }
   }
