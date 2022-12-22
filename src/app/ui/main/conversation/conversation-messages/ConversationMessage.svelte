@@ -26,7 +26,7 @@
   import {eternalPromise} from '~/common/utils/promise';
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessage} from '~/common/viewmodel/conversation-messages';
-  import {type AnyMessageBody, type Message, type MessageBodyFor} from '~/common/viewmodel/types';
+  import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
   /**
    * Receiver data.
@@ -66,29 +66,6 @@
 
   let messageBody: Message<AnyMessageBody> = $viewModelStore.body;
   $: messageBody = $viewModelStore.body;
-
-  // TODO(WEBMD-145): Rewrite this properly with UI template
-  let messageBodyText: MessageBodyFor<'text'>;
-  $: if (messageBody.type === 'text') {
-    const quote = $viewModelStore.quote;
-    if (quote === undefined) {
-      messageBodyText = {text: messageBody.body.text};
-    } else if (quote === 'not-found') {
-      messageBodyText = {
-        text: `_Quoted message not found_\n\n${messageBody.body.text}`,
-      };
-    } else {
-      const quoteStore = quote.get();
-      assert(quoteStore.body.type === 'text');
-
-      const senderName =
-        quoteStore.body.direction === 'incoming' ? quoteStore.body.sender.name : 'me';
-
-      messageBodyText = {
-        text: `_> ${senderName}: ${quoteStore.body.body.text}_\n\n${messageBody.body.text}`,
-      };
-    }
-  }
 
   // Context menu
   let contextMenu: ContextMenu;
@@ -251,7 +228,7 @@
       <div class="message" use:contextMenuAction={openContextMenuOnMouseEvent}>
         {#if messageBody.type === 'text'}
           <TextMessage
-            body={messageBodyText}
+            body={messageBody.body}
             {receiver}
             sender={messageBody.direction === 'incoming' ? messageBody.sender : undefined}
             direction={messageBody.direction}
