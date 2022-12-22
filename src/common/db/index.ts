@@ -616,6 +616,16 @@ export interface DatabaseBackend {
     ) => void;
 
     /**
+     * Mark all incoming messages of the given conversation as read.
+     *
+     * @returns the UID and message ID for all messages marked as read.
+     */
+    readonly markConversationAsRead: (
+        conversationUid: DbConversationUid,
+        readAt: Date,
+    ) => DbList<DbAnyMessage, 'uid' | 'id'>;
+
+    /**
      * Return `limit` amount (or all) message UIDs associated to a conversation.
      *
      * If the reference message UID is not defined, fetch the newest `limit` message UIDs.

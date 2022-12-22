@@ -1095,6 +1095,134 @@ export function backendTests(
             expect(conversation?.lastUpdate).to.be.undefined;
         });
 
+        it('markConversationAsRead', function () {
+            // Add contact and get conversation
+            const uid = makeContact(db, {identity: 'TESTTEST'});
+            const receiver: DbReceiverLookup = {type: ReceiverType.CONTACT, uid};
+            let conversation = db.getConversationOfReceiver(receiver);
+            assert(conversation !== undefined);
+            expect(conversation.lastUpdate).to.be.undefined;
+
+            const numberOfOutgoingMessages = 3;
+            const outboundMessageUids: DbMessageUid[] = [];
+
+            const initialConversationCreatedAt = new Date('1973');
+
+            // Add a bunch of outgoing messages
+            for (let i = 0; i < numberOfOutgoingMessages; ++i) {
+                const newOutboundMessageUid = createTextMessage(db, {
+                    conversationUid: conversation.uid,
+                    senderContactUid: undefined,
+                    createdAt: initialConversationCreatedAt,
+                    readAt: undefined,
+                    text: `outgoing ${i}`,
+                });
+
+                outboundMessageUids.push(newOutboundMessageUid);
+            }
+
+            const numberOfIncomingMessages = 10;
+            const newUnreadMessageUids: DbMessageUid[] = [];
+
+            // Add a bunch of unread incoming messages and update the conversation
+            for (let i = 0; i < numberOfIncomingMessages; ++i) {
+                const newUnreadMessageUid = createTextMessage(db, {
+                    conversationUid: conversation.uid,
+                    senderContactUid: receiver.uid,
+                    createdAt: initialConversationCreatedAt,
+                    readAt: undefined,
+                    text: `incoming ${i}`,
+                });
+
+                newUnreadMessageUids.push(newUnreadMessageUid);
+            }
+
+            db.updateConversation({
+                uid: conversation.uid,
+                lastUpdate: initialConversationCreatedAt,
+            });
+
+            // Ensure that the conversation has the expected number of unread messages and lastUpdate date
+            conversation = db.getConversationOfReceiver(receiver);
+            expect(conversation).to.not.be.undefined;
+            assert(conversation !== undefined);
+            expect(conversation.lastUpdate).to.deep.equal(initialConversationCreatedAt);
+            expect(conversation.unreadMessageCount).to.be.eq(numberOfIncomingMessages);
+            expect(db.getMessageUids(conversation.uid, 200)).to.have.length(
+                numberOfOutgoingMessages + numberOfIncomingMessages,
+            );
+
+            const readAt = new Date('1984');
+
+            // Mark all messages as read
+            const readMessageUids = db.markConversationAsRead(conversation.uid, readAt);
+
+            // Ensure that all created messages have been effectively marked as read
+            expect(readMessageUids.length).to.be.eq(newUnreadMessageUids.length);
+            expect(readMessageUids.map((m) => m.uid)).contains.all.members(newUnreadMessageUids);
+            for (const messageUid of newUnreadMessageUids) {
+                expect(db.getMessageByUid(messageUid)?.readAt).to.deep.equal(readAt);
+            }
+            expect(readMessageUids.map((m) => m.uid)).does.not.contains.any.members(
+                outboundMessageUids,
+            );
+            for (const messageUid of outboundMessageUids) {
+                expect(db.getMessageByUid(messageUid)?.readAt).to.deep.equal(undefined);
+            }
+
+            // Ensure that the conversation has been updated accordingly
+            conversation = db.getConversationOfReceiver(receiver);
+            expect(conversation).to.not.be.undefined;
+            assert(conversation !== undefined);
+            expect(conversation.unreadMessageCount).to.be.eq(0);
+            expect(db.getMessageUids(conversation.uid, 200)).to.have.length(
+                numberOfOutgoingMessages + numberOfIncomingMessages,
+            );
+
+            // The `lastUpdate` date should not be affected by the the read action.
+            expect(conversation.lastUpdate).to.deep.equal(initialConversationCreatedAt);
+
+            // Ensure that the conversation is not modified if no messages are unread.
+            const newReadAt = new Date('1985');
+
+            // Try to mark all messages as read, even if there are none
+            const noUnreadMessageUids = db.markConversationAsRead(conversation.uid, newReadAt);
+
+            // Ensure that no messages have been effectively marked as read
+            expect(noUnreadMessageUids.length).to.be.eq(0);
+
+            // Ensure that the conversation has not been updated
+            conversation = db.getConversationOfReceiver(receiver);
+            expect(conversation).to.not.be.undefined;
+            assert(conversation !== undefined);
+            expect(conversation.lastUpdate).to.deep.equal(initialConversationCreatedAt);
+            expect(conversation.unreadMessageCount).to.be.eq(0);
+            expect(db.getMessageUids(conversation.uid, 200)).to.have.length(
+                numberOfOutgoingMessages + numberOfIncomingMessages,
+            );
+
+            const numberOfNewIncomingMessages = 5;
+
+            // Add a bunch of new unread incoming messages again
+            for (let i = 0; i < numberOfNewIncomingMessages; ++i) {
+                createTextMessage(db, {
+                    conversationUid: conversation.uid,
+                    senderContactUid: receiver.uid,
+                    readAt: undefined,
+                    text: `new incoming ${i}`,
+                });
+            }
+
+            // Ensure that the conversation and its messages have updated accordingly
+            conversation = db.getConversationOfReceiver(receiver);
+            expect(conversation).to.not.be.undefined;
+            assert(conversation !== undefined);
+            expect(conversation.unreadMessageCount).to.be.eq(numberOfNewIncomingMessages);
+            expect(db.getMessageUids(conversation.uid, 200)).to.have.length(
+                numberOfOutgoingMessages + numberOfIncomingMessages + numberOfNewIncomingMessages,
+            );
+        });
+
         if (!(features.doesNotImplementThreadIdTodoRemoveThis ?? false)) {
             it('getMessageUids', function () {
                 // Add contacts and get conversations

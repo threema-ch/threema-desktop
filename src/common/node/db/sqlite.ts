@@ -1167,6 +1167,25 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }
     }
 
+    public markConversationAsRead(
+        conversationUid: DbConversationUid,
+        readAt: Date,
+    ): DbList<DbAnyMessage, 'uid' | 'id'> {
+        return sync(
+            this._db
+                .update(tMessage)
+                .set({readAt})
+                .where(
+                    tMessage.conversationUid
+                        .equals(conversationUid)
+                        .and(tMessage.senderContactUid.isNotNull())
+                        .and(tMessage.readAt.isNull()),
+                )
+                .returning({uid: tMessage.uid, id: tMessage.messageId})
+                .executeUpdateMany(),
+        );
+    }
+
     /** @inheritdoc */
     public getMessageUids(
         conversationUid: DbConversationUid,

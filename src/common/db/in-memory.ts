@@ -653,6 +653,22 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
         }
     }
 
+    public markConversationAsRead(
+        conversationUid: DbConversationUid,
+        readAt: Date,
+    ): DbList<DbAnyMessage, 'uid' | 'id'> {
+        const conversationMessages = this._messages.get(conversationUid);
+        const unreadInboundMessageUids = conversationMessages
+            .all(['uid', 'id', 'senderContactUid', 'readAt'])
+            .filter((m) => m.senderContactUid !== undefined && m.readAt === undefined);
+
+        for (const {uid} of unreadInboundMessageUids) {
+            conversationMessages.set({uid, readAt});
+        }
+
+        return unreadInboundMessageUids;
+    }
+
     /** @inheritdoc */
     public getMessageUids(
         conversation: DbConversationUid,
