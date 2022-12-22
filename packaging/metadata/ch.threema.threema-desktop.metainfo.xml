@@ -27,7 +27,7 @@
                 <ul>
                     <li>Show line above unread messages</li>
                     <li>Handle incoming location messages</li>
-                    <li>Dynamically switch between light and dark theme on macOS</li>
+                    <li>Dynamically switch between light and dark theme on macOS (requires re-linking for existing installs)</li>
                     <li>Display unread badge in macOS app icon</li>
                     <li>Option to enter custom Threema Safe server credentials (authentication) when linking</li>
                 </ul>
@@ -40,7 +40,10 @@
                 <ul>
                     <li>Nickname is no longer disclosed immediately to unknown contacts</li>
                     <li>Properly reflect group profile pictures towards iOS app</li>
-                    <li>Fix display of private chats</li>
+                </ul>
+                <p>Known issues:</p>
+                <ul>
+                    <li>Old quotes in your message history are not displayed correctly</li>
                 </ul>
                 <p>...and a few other changes and improvements.</p>
             </description>

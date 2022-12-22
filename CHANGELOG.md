@@ -23,7 +23,6 @@ Bugfixes:
 
 - Nickname is no longer disclosed immediately to unknown contacts (WEBMD-374)
 - Properly reflect group profile pictures towards iOS app (WEBMD-871)
-- Fix display of private chats (WEBMD-874)
 - When more than one system dialog is opened, page no longer remains white (WEBMD-884)
 
 ### v2.0.0-preview1 (2022-12-06)
