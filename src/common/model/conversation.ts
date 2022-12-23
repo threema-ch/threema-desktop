@@ -383,7 +383,6 @@ export class ConversationModelController implements ConversationController {
         return this.meta.run(() => message.all(this._services, this._handle, MESSAGE_FACTORY));
     }
 
-    /** @inheritdoc */
     private _handleRead(source: TriggerSource.LOCAL, readAt: Date): void {
         this.meta.run((handle) => {
             if (handle.view().unreadMessageCount < 1) {
@@ -392,16 +391,24 @@ export class ConversationModelController implements ConversationController {
 
             handle.update((view) => {
                 const {db} = this._services;
-                const readMessageUids = db.markConversationAsRead(this.uid, readAt);
+                const readMessageIds = db.markConversationAsRead(this.uid, readAt).map((m) => m.id);
 
-                if (readMessageUids.length > 0) {
-                    const readMessageIds = readMessageUids.map((m) => m.id);
+                if (readMessageIds.length > 0) {
+                    this._updateReadInboundMessageStores(readMessageIds, readAt);
                     this._scheduleReflectMarkMessagesAsRead(readMessageIds, readAt);
                 }
 
                 return {unreadMessageCount: 0};
             });
         });
+    }
+
+    private _updateReadInboundMessageStores(readMessageIds: MessageId[], readAt: Date): void {
+        for (const readMessageId of readMessageIds) {
+            const messageModelStore = this.getMessage(readMessageId);
+            assert(messageModelStore?.ctx === MessageDirection.INBOUND);
+            messageModelStore.get().controller.meta.update(() => ({readAt}));
+        }
     }
 
     private _scheduleReflectMarkMessagesAsRead(readMessageIds: MessageId[], readAt: Date): void {
