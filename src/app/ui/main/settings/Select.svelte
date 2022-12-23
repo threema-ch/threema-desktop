@@ -52,6 +52,12 @@
       select {
         background-color: transparent;
         color: var(--t-text-e1-color);
+        option {
+          // Chromium does not allow styling the dropdown menu background color. The text color is
+          // applied only on some systems (e.g. Linux, but not macOS). We reset the text color to
+          // ensure that the text remains readable even if the background color wasn't styled.
+          color: initial;
+        }
         text-transform: capitalize;
       }
     }
