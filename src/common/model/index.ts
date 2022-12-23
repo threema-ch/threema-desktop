@@ -822,12 +822,12 @@ export interface ConversationControllerHandle {
     ) => void;
 
     /**
-     * Update the unread message count of the conversation.
+     * Decrement the unread message count of the conversation.
      *
-     * The unread message count will be incremented or decremented by the specified amount. Note
-     * that the unread message count can never go below 0.
+     * The unread message count will be decremented by the specified amount. Note that the unread
+     * message count can never go below 0.
      */
-    readonly modifyUnreadMessageCount: (delta: i53) => void;
+    readonly decrementUnreadMessageCount: () => void;
 }
 export type Conversation = LocalModel<
     ConversationView,

@@ -390,7 +390,9 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
         });
 
         // Update the unread count of the conversation
-        this._conversation.modifyUnreadMessageCount(isUnread && isInbound ? -1 : 0);
+        if (isUnread && isInbound) {
+            this._conversation.decrementUnreadMessageCount();
+        }
     }
 
     protected _reaction(

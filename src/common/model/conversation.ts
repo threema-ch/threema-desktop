@@ -262,7 +262,7 @@ export class ConversationModelController implements ConversationController {
             receiverLookup: _receiverLookup,
             conversationId: this.conversationId.bind(this),
             update: this.update.bind(this),
-            modifyUnreadMessageCount: this.modifyUnreadMessageCount.bind(this),
+            decrementUnreadMessageCount: this.decrementUnreadMessageCount.bind(this),
         };
 
         // Get the current last message and prepare the derived store to transform each last message
@@ -356,13 +356,11 @@ export class ConversationModelController implements ConversationController {
         });
     }
 
-    public modifyUnreadMessageCount(unreadMessageCountDelta: i53): void {
+    public decrementUnreadMessageCount(): void {
         this.meta.update((view) =>
-            // Apply the delta.
-            //
             // Note: The unread message count is not persisted in the database, so only the view
             //       must be updated!
-            ({unreadMessageCount: Math.max(view.unreadMessageCount + unreadMessageCountDelta, 0)}),
+            ({unreadMessageCount: Math.max(view.unreadMessageCount - 1, 0)}),
         );
     }
 
