@@ -10,7 +10,6 @@ import {
     Existence,
     MessageDirection,
     MessageReaction,
-    ReceiverType,
     TriggerSource,
 } from '~/common/enum';
 import {
@@ -37,7 +36,6 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
-import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import {type MessageId} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
@@ -422,8 +420,6 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
     public readonly read: InboundBaseMessageController<TView>['read'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
-        // eslint-disable-next-line @typescript-eslint/require-await
-        fromLocal: async (readAt: Date) => this._handleRead(TriggerSource.LOCAL, readAt),
         fromSync: (readAt: Date) => this._handleRead(TriggerSource.SYNC, readAt),
     };
 
@@ -469,7 +465,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     }
 
     /** @inheritdoc */
-    private _handleRead(source: TriggerSource.LOCAL | TriggerSource.SYNC, readAt: Date): void {
+    private _handleRead(source: TriggerSource.SYNC, readAt: Date): void {
         this.meta.run((handle) => {
             const view = handle.view();
 
@@ -480,41 +476,6 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
             // Update the conversation and the message
             this._read(handle, view, readAt, MessageDirection.INBOUND);
-
-            if (source === TriggerSource.LOCAL) {
-                // If delivery receipts are enabled and the conversation is a contact conversation,
-                // send and reflect a delivery receipt. Otherwise, reflect an IncomingMessageUpdate.
-                // TODO(WEBMD-612): Allow disabling delivery receipts
-                const deliveryReceiptsDisabled = false;
-                if (
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    !deliveryReceiptsDisabled &&
-                    this._conversation.receiverLookup.type === ReceiverType.CONTACT
-                ) {
-                    void this._services.taskManager.schedule(
-                        new OutgoingDeliveryReceiptTask(
-                            this._services,
-                            this._sender,
-                            CspE2eDeliveryReceiptStatus.READ,
-                            readAt,
-                            [view.id],
-                        ),
-                    );
-                } else {
-                    void this._services.taskManager.schedule(
-                        new ReflectIncomingMessageUpdateTask(
-                            this._services,
-                            [
-                                {
-                                    messageId: view.id,
-                                    conversation: this._conversation.conversationId(),
-                                },
-                            ],
-                            readAt,
-                        ),
-                    );
-                }
-            }
         });
     }
 

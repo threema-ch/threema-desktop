@@ -322,7 +322,7 @@ export interface GlobalPropertyValues extends Record<GlobalPropertyKey, unknown>
 
 export type IGlobalPropertyRepository = {
     /**
-     * Creat a system property with a certain value corresponding to the key-value type mapping in
+     * Create a system property with a certain value corresponding to the key-value type mapping in
      * {@link GlobalPropertyValues}. Note that the property must not yet exist.
      *
      * @param init The system property data
@@ -334,7 +334,7 @@ export type IGlobalPropertyRepository = {
     ) => LocalModelStore<IGlobalPropertyModel<K>>;
 
     /**
-     * Creat a system property with a certain value corresponding to the key-value type mapping in
+     * Create a system property with a certain value corresponding to the key-value type mapping in
      * {@link GlobalPropertyValues}. Note that the property may already exist and will be
      * overwritten.
      *
@@ -785,6 +785,10 @@ export type ConversationController = {
      * Return a {@link LocalModelStore} of every message in the current conversation.
      */
     readonly getAllMessages: () => SetOfAnyLocalMessageModelStore;
+    /**
+     * The user read (i.e. opened) the conversation on the current device.
+     */
+    readonly read: ControllerUpdateFromLocal<[readAt: Date]>;
 } & ProxyMarked;
 export interface ConversationControllerHandle {
     /**
@@ -951,9 +955,13 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
         readonly sender: () => LocalModelStore<Contact>;
 
         /**
-         * The user read the message (i.e. it was visible in the viewport).
+         * The user read the message on a linked device.
+         *
+         * Note: This interface does not allow updating `fromLocal`, because when viewing a
+         *       conversation on the local device, the _entire_ conversation should be marked as
+         *       read. Thus, use `ConversationController.read.fromLocal` instead.
          */
-        readonly read: Omit<ControllerUpdateFromSource<[readAt: Date]>, 'fromRemote'>;
+        readonly read: ControllerUpdateFromSync<[readAt: Date]>;
 
         /**
          * The user's reaction towards the message.

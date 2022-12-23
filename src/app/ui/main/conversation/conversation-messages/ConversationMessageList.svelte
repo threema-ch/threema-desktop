@@ -18,7 +18,6 @@
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
-  import {MessageDirection} from '~/common/enum';
   import {type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type u53} from '~/common/types';
@@ -136,48 +135,7 @@
   }
 
   $: if ($appVisibility === 'focused') {
-    void markAllMessagesAsRead($sortedMessages);
-  }
-
-  /**
-   * Mark all messages as read. For now, this function marks each message individually to take
-   * advantage of the already existing mechanism to reflect the action to the peer devices.
-   *
-   * TODO(WEBMD-892): Mark all unread messages at once and sending all message ids in a batch
-   * update.
-   *
-   * @param messages The conversation messages sorted from oldest to newest, i.e. as
-   *   {@link SortedMessageList}.
-   */
-  async function markAllMessagesAsRead(messages: SortedMessageList): Promise<void> {
-    let unreadMessageCount = $conversation.view.unreadMessageCount;
-
-    if (unreadMessageCount < 1) {
-      return;
-    }
-
-    // TODO(WEBMD-892): Remove this loop
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const messageStore = messages[i].messageStore;
-
-      if (messageStore.ctx === MessageDirection.OUTBOUND) {
-        // Message can't be unread if it's outbound
-        continue;
-      }
-
-      const message = messageStore.get();
-
-      if (message.view.readAt !== undefined) {
-        // Message is already read
-        continue;
-      }
-
-      await message.controller.read.fromLocal(new Date());
-      unreadMessageCount--;
-      if (unreadMessageCount < 1) {
-        return;
-      }
-    }
+    void $conversation.controller.read.fromLocal(new Date());
   }
 </script>
 

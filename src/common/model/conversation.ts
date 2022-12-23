@@ -2,6 +2,7 @@ import {type DatabaseBackend, type DbConversationUid, type DbReceiverLookup} fro
 import {
     type MessageType,
     AcquaintanceLevel,
+    CspE2eDeliveryReceiptStatus,
     Existence,
     MessageDirection,
     ReceiverType,
@@ -13,6 +14,8 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type InternalActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
+import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
+import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import {type ConversationId, type MessageId} from '~/common/network/types';
 import {type i53, type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -159,6 +162,12 @@ function update(
 export class ConversationModelController implements ConversationController {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<ConversationView>();
+
+    public readonly read = {
+        [TRANSFER_MARKER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (readAt: Date) => this._handleRead(TriggerSource.LOCAL, readAt),
+    };
 
     /** @inheritdoc */
     public readonly addMessage: ConversationController['addMessage'] = {
@@ -374,6 +383,68 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public getAllMessages(): SetOfAnyLocalMessageModelStore {
         return this.meta.run(() => message.all(this._services, this._handle, MESSAGE_FACTORY));
+    }
+
+    /** @inheritdoc */
+    private _handleRead(source: TriggerSource.LOCAL, readAt: Date): void {
+        this.meta.run((handle) => {
+            if (handle.view().unreadMessageCount < 1) {
+                return;
+            }
+
+            handle.update((view) => {
+                const {db} = this._services;
+                const readMessageUids = db.markConversationAsRead(this.uid, readAt);
+
+                if (readMessageUids.length > 0) {
+                    const readMessageIds = readMessageUids.map((m) => m.id);
+                    this._scheduleReflectMarkMessagesAsRead(readMessageIds, readAt);
+                }
+
+                return {unreadMessageCount: 0};
+            });
+        });
+    }
+
+    private _scheduleReflectMarkMessagesAsRead(readMessageIds: MessageId[], readAt: Date): void {
+        // If delivery receipts are enabled and the conversation is a contact conversation,
+        // send and reflect a delivery receipt. Otherwise, reflect an IncomingMessageUpdate.
+        // TODO(WEBMD-612): Allow disabling delivery receipts
+        const deliveryReceiptsDisabled = false;
+
+        if (
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            !deliveryReceiptsDisabled &&
+            this._receiverLookup.type === ReceiverType.CONTACT
+        ) {
+            const contactReceiver = this.receiver();
+            assert(contactReceiver.type === ReceiverType.CONTACT);
+
+            void this._services.taskManager.schedule(
+                new OutgoingDeliveryReceiptTask(
+                    this._services,
+                    contactReceiver,
+                    CspE2eDeliveryReceiptStatus.READ,
+                    readAt,
+                    readMessageIds,
+                ),
+            );
+        } else {
+            const conversation = this.conversationId();
+
+            const messageUniqueIdsToUpdate = readMessageIds.map((messageId) => ({
+                messageId,
+                conversation,
+            }));
+
+            void this._services.taskManager.schedule(
+                new ReflectIncomingMessageUpdateTask(
+                    this._services,
+                    messageUniqueIdsToUpdate,
+                    readAt,
+                ),
+            );
+        }
     }
 
     private async _ensureDirectAcquaintanceLevelForDirectMessages(
