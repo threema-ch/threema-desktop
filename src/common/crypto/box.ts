@@ -403,8 +403,9 @@ export class SharedBoxFactory {
      */
     public readonly public: PublicKey;
 
-    readonly #_secret: ReadonlyRawKey;
     private readonly _crypto: CryptoBackend;
+
+    readonly #_secret: ReadonlyRawKey;
 
     public constructor(crypto: CryptoBackend, secret: ReadonlyRawKey) {
         this._crypto = crypto;
