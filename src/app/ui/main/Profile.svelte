@@ -104,7 +104,7 @@
         <Text label="Git Revision" value={import.meta.env.GIT_REVISION} />
       {/if}
 
-      <Text label="Copyright" value="Threema GmbH © 2022" />
+      <Text label="Copyright" value="Threema GmbH © 2020-2023" />
 
       <Select label="Theme" bind:value={$theme} options={THEMES} />
 
