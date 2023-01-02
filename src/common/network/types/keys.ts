@@ -1,4 +1,10 @@
-import {type RawKey, type ReadonlyRawKey, NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
+import {
+    type PublicKey,
+    type RawKey,
+    type ReadonlyRawKey,
+    NACL_CONSTANTS,
+    wrapRawKey,
+} from '~/common/crypto';
 import {type SecureSharedBoxFactory, type SharedBoxFactory} from '~/common/crypto/box';
 import {type WeakOpaque} from '~/common/types';
 
@@ -46,11 +52,19 @@ export function wrapRawDeviceGroupKey(key: Uint8Array): RawDeviceGroupKey {
 }
 
 /**
- * Temporary Client Key (32 bytes). Should be replaced periodically (e.g. for every connection).
+ * Temporary Client Key (32 bytes). Should be different for every connection.
  */
 export type TemporaryClientKey = WeakOpaque<
     SharedBoxFactory,
     {readonly TemporaryClientKey: unique symbol}
+>;
+
+/**
+ * Temporary Server Key (32 bytes). Should be different for every connection.
+ */
+export type TemporaryServerKey = WeakOpaque<
+    PublicKey,
+    {readonly TemporaryServerKey: unique symbol}
 >;
 
 /**

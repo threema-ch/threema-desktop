@@ -511,6 +511,16 @@ export class SecureSharedBoxFactory {
     }
 
     /**
+     * Get the shared key (secret).
+     *
+     * IMPORTANT: Can you use {@link getSharedBox} or {@link deriveSharedKey} instead? Do not use
+     *            this method unless you absolutely need to!
+     */
+    public getSharedSecret(publicKey: PublicKey): RawKey<32> {
+        return this.#_makeSharedSecret(publicKey);
+    }
+
+    /**
      * Derive a subkey from the shared key with the provided Blake2b parameters.
      */
     public deriveSharedKey<

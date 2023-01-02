@@ -12,6 +12,7 @@ import {
     type NonceGuard,
     type PlainData,
     type PublicKey,
+    ensurePublicKey,
     NONCE_UNGUARDED_TOKEN,
 } from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
@@ -36,7 +37,11 @@ import {
     type ServerCookie,
     type ServerSequenceNumber,
 } from '~/common/network/types';
-import {type ClientKey, type TemporaryClientKey} from '~/common/network/types/keys';
+import {
+    type ClientKey,
+    type TemporaryClientKey,
+    type TemporaryServerKey,
+} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u32, type u53, type WeakOpaque} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {byteEncodeSequence, byteEquals, bytePadPkcs7, byteToHex} from '~/common/utils/byte';
@@ -349,16 +354,12 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 }
 
                 // Store the server cookie and a box for subsequent payloads
+                const tsk = ensurePublicKey(challengeResponse.tsk) as TemporaryServerKey;
                 csp.sck.set(serverHello.sck as ServerCookie);
-                csp.box.set(
-                    csp.tck.getSharedBox(
-                        challengeResponse.tsk as ReadonlyUint8Array as PublicKey,
-                        NONCE_UNGUARDED_TOKEN,
-                    ) as CspPayloadBox,
-                );
+                csp.box.set(csp.tck.getSharedBox(tsk, NONCE_UNGUARDED_TOKEN) as CspPayloadBox);
 
                 // Encode, encrypt and enqueue `login`
-                const loginMessage = this._createCspLogin();
+                const loginMessage = this._createCspLogin(tsk);
                 this._encoder.enqueue(loginMessage);
 
                 // Update state
@@ -503,7 +504,9 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
             .decrypt();
     }
 
-    private _createCspLogin(): CspMessage<LayerEncoder<structbuf.csp.handshake.LoginEncodable>> {
+    private _createCspLogin(
+        tsk: TemporaryServerKey,
+    ): CspMessage<LayerEncoder<structbuf.csp.handshake.LoginEncodable>> {
         const {csp} = this._controller;
 
         // Generate sequence numbers for `vouch-box` and the `extension`s.
@@ -517,7 +520,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
         const extensionsBox = this._createCspExtensions(csnTwo);
 
         // Encode and encrypt `login-data`
-        const loginDataBox = this._createCspLoginData(extensionsBox.byteLength, csnOne);
+        const loginDataBox = this._createCspLoginData(tsk, extensionsBox.byteLength, csnOne);
 
         // Return encoder
         return {
@@ -565,6 +568,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
     }
 
     private _createCspLoginData(
+        tsk: TemporaryServerKey,
         extensionsBoxLength: u53,
         csn: ClientSequenceNumberValue,
     ): EncryptedData {
@@ -588,17 +592,17 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     sck: csp.sck.unwrap(),
                     reserved1: VOUCH_RESERVED1_BYTES,
                     // TODO(WEBMD-812): Remove cast
-                    vouch: this._calculateCspVouchMac() as Uint8Array,
+                    vouch: this._calculateCspVouchMac(tsk) as Uint8Array,
                     reserved2: VOUCH_RESERVED2_BYTES,
                 }).encode,
             )
             .encryptWithCspNonce(csp.cck, csn);
     }
 
-    private _calculateCspVouchMac(): ReadonlyUint8Array {
+    private _calculateCspVouchMac(tsk: TemporaryServerKey): ReadonlyUint8Array {
         const {config} = this._services;
         const {csp} = this._controller;
-        const vouchKey = deriveVouchKey(config, csp.ck);
+        const vouchKey = deriveVouchKey(config, csp.ck, tsk);
         const vouchMac = hash(32, vouchKey.asReadonly(), undefined)
             .update(csp.sck.unwrap())
             .update(csp.tck.public)
