@@ -6,6 +6,7 @@ import {
     type NonceGuard,
     type PlainData,
     ensurePublicKey,
+    NACL_CONSTANTS,
     NONCE_UNGUARDED_TOKEN,
     wrapRawKey,
 } from '~/common/crypto';
@@ -58,7 +59,7 @@ export function run(): void {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             function createSecretBox(key: string): CryptoBox<never, never, never, never, any> {
                 return crypto.getSecretBox(
-                    wrapRawKey(hexToBytes(key)).asReadonly(),
+                    wrapRawKey(hexToBytes(key), NACL_CONSTANTS.KEY_LENGTH).asReadonly(),
                     NONCE_UNGUARDED_TOKEN,
                 );
             }
@@ -66,7 +67,7 @@ export function run(): void {
                 dgpk: encryptTestData(
                     crypto.getSharedBox(
                         publicKey,
-                        wrapRawKey(hexToBytes(keys.dgpk)).asReadonly(),
+                        wrapRawKey(hexToBytes(keys.dgpk), NACL_CONSTANTS.KEY_LENGTH).asReadonly(),
                         NONCE_UNGUARDED_TOKEN,
                     ),
                 ),

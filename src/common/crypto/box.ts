@@ -17,7 +17,7 @@ import {
     NONCE_UNGUARDED_TOKEN,
     wrapRawKey,
 } from '~/common/crypto';
-import {type Blake2bParameters, deriveKey} from '~/common/crypto/blake2b';
+import {type Blake2bKeyLength, type Blake2bParameters, deriveKey} from '~/common/crypto/blake2b';
 import {CryptoError} from '~/common/error';
 import {type ByteEncoder, type ByteLengthEncoder, type u53, type u64} from '~/common/types';
 import {byteView} from '~/common/utils/byte';
@@ -403,18 +403,14 @@ export class SharedBoxFactory {
      */
     public readonly public: PublicKey;
 
-    private readonly _crypto: CryptoBackend;
+    readonly #_secret: ReadonlyRawKey<32>;
 
-    readonly #_secret: ReadonlyRawKey;
-
-    public constructor(crypto: CryptoBackend, secret: ReadonlyRawKey) {
-        this._crypto = crypto;
-
+    public constructor(private readonly _crypto: CryptoBackend, secret: ReadonlyRawKey<32>) {
         // Store secret key
         this.#_secret = secret;
 
         // Derive the public key
-        this.public = crypto.derivePublicKey(secret);
+        this.public = _crypto.derivePublicKey(secret);
     }
 
     /**
@@ -450,7 +446,7 @@ export class SecureSharedBoxFactory {
      */
     public readonly public: PublicKey;
 
-    readonly #_makeSharedSecret: (publicKey: PublicKey) => RawKey;
+    readonly #_makeSharedSecret: (publicKey: PublicKey) => RawKey<32>;
     readonly #_makeSharedBox: <
         DCK extends Cookie,
         ECK extends Cookie,
@@ -462,14 +458,17 @@ export class SecureSharedBoxFactory {
         nonceGuard: NG,
     ) => CryptoBox<DCK, ECK, DSN, ESN, NG>;
 
-    private constructor(crypto: CryptoBackend, secret: RawKey) {
+    private constructor(crypto: CryptoBackend, secret: RawKey<32>) {
         // Derive the public key
         this.public = crypto.derivePublicKey(secret.asReadonly());
 
         // Encrypt the secret key with a random key and nonce, then purge the
         // plain form.
         const box = crypto.getSecretBox(
-            wrapRawKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))).asReadonly(),
+            wrapRawKey(
+                crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                NACL_CONSTANTS.KEY_LENGTH,
+            ).asReadonly(),
             NONCE_UNGUARDED_TOKEN,
         );
         const encryptedKey = box
@@ -484,9 +483,10 @@ export class SecureSharedBoxFactory {
         );
 
         // Declare protected operations for use with the key
-        function runWithKey<TResult>(executor: (key: RawKey) => TResult): TResult {
+        function runWithKey<TResult>(executor: (key: RawKey<32>) => TResult): TResult {
             const decryptedKey = wrapRawKey(
                 box.decryptorWithNonceAhead(decryptBuffer, encryptedKey).decrypt(),
+                NACL_CONSTANTS.KEY_LENGTH,
             );
             const result = executor(decryptedKey);
             decryptedKey.purge();
@@ -506,21 +506,21 @@ export class SecureSharedBoxFactory {
      *
      * IMPORTANT: After wrapping, the key will have been purged and cannot be used anymore.
      */
-    public static consume(crypto: CryptoBackend, secret: RawKey): SecureSharedBoxFactory {
+    public static consume(crypto: CryptoBackend, secret: RawKey<32>): SecureSharedBoxFactory {
         return new SecureSharedBoxFactory(crypto, secret);
     }
 
     /**
      * Derive a subkey from the shared key with the provided Blake2b parameters.
      */
-    public deriveSharedKey<TKey extends RawKey>(
-        publicKey: PublicKey,
-        parameters: Blake2bParameters,
-    ): TKey {
+    public deriveSharedKey<
+        TDerivedKeyLength extends Blake2bKeyLength,
+        TKey extends RawKey<TDerivedKeyLength>,
+    >(length: TDerivedKeyLength, publicKey: PublicKey, parameters: Blake2bParameters): TKey {
         const sharedKey = this.#_makeSharedSecret(publicKey);
-        const derivedKey = deriveKey(sharedKey, parameters);
+        const derivedKey = deriveKey(length, sharedKey, parameters);
         sharedKey.purge();
-        return derivedKey as TKey;
+        return derivedKey as RawKey<TDerivedKeyLength> as TKey;
     }
 
     /**

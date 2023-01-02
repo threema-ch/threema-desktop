@@ -3,6 +3,7 @@ import {
     type RawEncryptedData,
     type RawPlainData,
     type ReadonlyRawKey,
+    NACL_CONSTANTS,
     wrapRawKey,
 } from '~/common/crypto';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
@@ -16,7 +17,7 @@ export default function (
     encryptedHeadroom: u53,
 ): [
     publicKey: PublicKey,
-    secretKey: ReadonlyRawKey,
+    secretKey: ReadonlyRawKey<32>,
     plain: RawPlainData,
     encrypted: RawEncryptedData,
 ][] {
@@ -1559,7 +1560,7 @@ export default function (
         ],
     ].map(([publicKey, secretKey, plain, encrypted]) => [
         base64ToU8a(publicKey) as ReadonlyUint8Array as PublicKey,
-        wrapRawKey(base64ToU8a(secretKey)).asReadonly(),
+        wrapRawKey(base64ToU8a(secretKey), NACL_CONSTANTS.KEY_LENGTH).asReadonly(),
         base64ToU8a(plain, plainHeadroom) as RawPlainData,
         base64ToU8a(encrypted, encryptedHeadroom) as RawEncryptedData,
     ]);

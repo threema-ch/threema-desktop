@@ -302,7 +302,7 @@ export function run(): void {
             };
 
             let keys: {
-                filestoreEncryptionKey: RawKey;
+                filestoreEncryptionKey: RawKey<32>;
                 ck: Uint8Array;
                 dgk: Uint8Array;
                 databaseKey: Uint8Array;

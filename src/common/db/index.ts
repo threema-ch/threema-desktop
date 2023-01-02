@@ -57,7 +57,7 @@ export type NoDatabaseKeyToken = typeof NO_DATABASE_KEY_TOKEN;
  * IMPORTANT: DO NOT hold a reference to this key beyond construction
  *            of a {@link SqliteDatabaseBackend}.
  */
-export type RawDatabaseKey = WeakOpaque<RawKey, {readonly RawKey: unique symbol}>;
+export type RawDatabaseKey = WeakOpaque<RawKey<32>, {readonly RawKey: unique symbol}>;
 
 /**
  * Wrap a key into a {@link RawDatabaseKey}.
@@ -65,7 +65,7 @@ export type RawDatabaseKey = WeakOpaque<RawKey, {readonly RawKey: unique symbol}
  * @throws {CryptoError} in case the key is not 32 bytes long.
  */
 export function wrapRawDatabaseKey(key: Uint8Array): RawDatabaseKey {
-    return wrapRawKey(key) as RawDatabaseKey;
+    return wrapRawKey(key, DATABASE_KEY_LENGTH) as RawDatabaseKey;
 }
 
 /**

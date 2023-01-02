@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {wrapRawKey} from '~/common/crypto';
+import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, SharedBoxFactory} from '~/common/crypto/box';
 import {CspE2eGroupControlType} from '~/common/enum';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
@@ -94,7 +94,10 @@ export function run(): void {
                     identity: new Identity(me),
                     keypair: new SharedBoxFactory(
                         crypto,
-                        wrapRawKey(Uint8Array.from(services.rawClientKeyBytes)).asReadonly(),
+                        wrapRawKey(
+                            Uint8Array.from(services.rawClientKeyBytes),
+                            NACL_CONSTANTS.KEY_LENGTH,
+                        ).asReadonly(),
                     ),
                     nickname: 'me myself',
                 },

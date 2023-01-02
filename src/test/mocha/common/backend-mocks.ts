@@ -13,6 +13,7 @@ import {
     type Nonce,
     type NonceGuard,
     ensurePublicKey,
+    NACL_CONSTANTS,
     wrapRawKey,
 } from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
@@ -890,7 +891,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
  */
 export function makeKeypair(): SharedBoxFactory {
     const crypto = new TestTweetNaClBackend();
-    const rawKey = wrapRawKey(randomBytes(32));
+    const rawKey = wrapRawKey(randomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
     return new SharedBoxFactory(crypto, rawKey.asReadonly());
 }
 

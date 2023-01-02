@@ -99,9 +99,9 @@ assert(nacl.crypto_box_BEFORENMBYTES === NACL_CONSTANTS.KEY_LENGTH);
  * TweetNaCl.js box crypto implementation.
  */
 class TweetNaClBoxBackend implements CryptoBoxBackend {
-    readonly #_key: ReadonlyRawKey;
+    readonly #_key: ReadonlyRawKey<32>;
 
-    public constructor(key: ReadonlyRawKey) {
+    public constructor(key: ReadonlyRawKey<32>) {
         this.#_key = key;
     }
 
@@ -179,7 +179,7 @@ export class TweetNaClBackend implements CryptoBackend {
     }
 
     /** @inheritdoc */
-    public derivePublicKey(secretKey: ReadonlyRawKey): PublicKey {
+    public derivePublicKey(secretKey: ReadonlyRawKey<32>): PublicKey {
         // Sanity-check
         assert(secretKey.unwrap().byteLength === NACL_CONSTANTS.KEY_LENGTH);
 
@@ -198,7 +198,7 @@ export class TweetNaClBackend implements CryptoBackend {
         DSN extends u64,
         ESN extends u64,
         NG extends NonceGuard | NonceUnguarded,
-    >(secretKey: ReadonlyRawKey, nonceGuard: NG): CryptoBox<DCK, ECK, DSN, ESN, NG> {
+    >(secretKey: ReadonlyRawKey<32>, nonceGuard: NG): CryptoBox<DCK, ECK, DSN, ESN, NG> {
         // Sanity-check
         assert(secretKey.unwrap().byteLength === NACL_CONSTANTS.KEY_LENGTH);
 
@@ -207,13 +207,16 @@ export class TweetNaClBackend implements CryptoBackend {
     }
 
     /** @inheritdoc */
-    public getSharedKey(publicKey: PublicKey, secretKey: ReadonlyRawKey): RawKey {
+    public getSharedKey(publicKey: PublicKey, secretKey: ReadonlyRawKey<32>): RawKey<32> {
         // Sanity-check
         assert(publicKey.byteLength === NACL_CONSTANTS.KEY_LENGTH);
         assert(secretKey.unwrap().byteLength === NACL_CONSTANTS.KEY_LENGTH);
 
         // Calculate shared key
-        const sharedKey = wrapRawKey(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH));
+        const sharedKey = wrapRawKey(
+            new Uint8Array(NACL_CONSTANTS.KEY_LENGTH),
+            NACL_CONSTANTS.KEY_LENGTH,
+        );
         nacl.crypto_box_beforenm(
             sharedKey.unwrap() as SharedKey,
             publicKey,
@@ -231,7 +234,7 @@ export class TweetNaClBackend implements CryptoBackend {
         NG extends NonceGuard | NonceUnguarded,
     >(
         publicKey: PublicKey,
-        secretKey: ReadonlyRawKey,
+        secretKey: ReadonlyRawKey<32>,
         nonceGuard: NG,
     ): CryptoBox<DCK, ECK, DSN, ESN, NG> {
         return new CryptoBox(

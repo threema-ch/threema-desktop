@@ -989,7 +989,10 @@ class Connection {
         // Generate ephemeral TCK
         const tck = new SharedBoxFactory(
             crypto,
-            wrapRawKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))).asReadonly(),
+            wrapRawKey(
+                crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                NACL_CONSTANTS.KEY_LENGTH,
+            ).asReadonly(),
         ) as TemporaryClientKey;
 
         // Create protocol controller

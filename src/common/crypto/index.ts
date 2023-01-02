@@ -25,7 +25,12 @@ export const NACL_CONSTANTS = {
 } as const;
 
 /**
- * A secret key. Must be exactly 32 bytes long.
+ * Valid secret key lengths.
+ */
+export type SecretKeyLength = 32 | 64;
+
+/**
+ * A secret key.
  *
  * Rules of thumb:
  *
@@ -43,30 +48,33 @@ export const NACL_CONSTANTS = {
  * Note: As a nice side effect, the class instance prevents you from being able to transfer a key to
  *       another thread.
  */
-class SecretKey {
+class SecretKey<TLength extends SecretKeyLength> {
     #_key?: Uint8Array;
 
-    private constructor(key: Uint8Array) {
-        if (key.byteLength !== NACL_CONSTANTS.KEY_LENGTH) {
+    private constructor(key: Uint8Array, public readonly length: TLength) {
+        if (key.byteLength !== length) {
             throw new CryptoError(
-                `Expected key to be ${NACL_CONSTANTS.KEY_LENGTH} bytes but has ${key.byteLength} bytes`,
+                `Expected key to be ${length} bytes but has ${key.byteLength} bytes`,
             );
         }
         this.#_key = key;
     }
 
     /**
-     * Wrap raw key (bytes). Must be exactly 32 bytes long.
+     * Wrap raw key (bytes).
      */
-    public static wrap(key: Uint8Array): RawKey {
-        return new SecretKey(key) as RawKey;
+    public static wrap<TLength extends SecretKeyLength>(
+        key: Uint8Array,
+        length: TLength,
+    ): RawKey<TLength> {
+        return new SecretKey<TLength>(key, length) as RawKey<TLength>;
     }
 
     /**
      * Cast a {@link RawKey} to a {@link ReadonlyRawKey}.
      */
-    public asReadonly(): ReadonlyRawKey {
-        return this as ReadonlyRawKey;
+    public asReadonly(): ReadonlyRawKey<TLength> {
+        return this as ReadonlyRawKey<TLength>;
     }
 
     /**
@@ -104,36 +112,45 @@ class SecretKey {
 }
 
 /**
- * A raw key (bytes). Must be exactly 32 bytes long.
+ * A raw key (bytes). May be of any valid {@link SecretKeyLength}.
  *
  * IMPORTANT: Read the rules of thumb explained by {@link SecretKey}.
  */
-export type RawKey = WeakOpaque<SecretKey, {readonly RawKey: unique symbol}>;
+export type RawKey<TLength extends SecretKeyLength> = WeakOpaque<
+    SecretKey<TLength>,
+    {readonly RawKey: unique symbol}
+>;
 
 /**
- * Convert raw key (bytes). Must be exactly 32 bytes long.
+ * Convert raw key (bytes). May be of any valid {@link SecretKeyLength}.
  *
- * @throws {CryptoError} in case the key is not 32 bytes long.
+ * @throws {CryptoError} in case the key does not satisfy the `length` constraint.
  */
-export function wrapRawKey(key: Uint8Array): RawKey {
-    return SecretKey.wrap(key);
+export function wrapRawKey<TLength extends SecretKeyLength>(
+    key: Uint8Array,
+    length: TLength,
+): RawKey<TLength> {
+    return SecretKey.wrap<TLength>(key, length);
 }
 
 /**
- * A readonly raw key (bytes). Must be exactly 32 bytes long.
+ * A readonly raw key (bytes). May be of any valid {@link SecretKeyLength}.
  *
  * IMPORTANT: Read the rules of thumb explained by {@link SecretKey}.
  */
-export type ReadonlyRawKey = WeakOpaque<
-    Omit<SecretKey, 'purge'>,
+export type ReadonlyRawKey<TLength extends SecretKeyLength> = WeakOpaque<
+    Omit<SecretKey<TLength>, 'purge'>,
     {readonly ReadonlyRawKey: unique symbol}
 >;
 
 /**
- * Type guard for {@link ReadonlyRawKey}
+ * Type guard for {@link ReadonlyRawKey}.
  */
-export function isReadonlyRawKey(raw: unknown): raw is ReadonlyRawKey {
-    return raw instanceof SecretKey;
+export function isReadonlyRawKey<TLength extends SecretKeyLength>(
+    raw: unknown,
+    length: TLength,
+): raw is ReadonlyRawKey<TLength> {
+    return raw instanceof SecretKey && raw.length === length;
 }
 
 /**
@@ -142,7 +159,7 @@ export function isReadonlyRawKey(raw: unknown): raw is ReadonlyRawKey {
 export type PublicKey = WeakOpaque<ReadonlyUint8Array, {readonly PublicKey: unique symbol}>;
 
 /**
- * Type guard for {@link PublicKey}
+ * Type guard for {@link PublicKey}.
  */
 export function isPublicKey(raw: unknown): raw is PublicKey {
     return raw instanceof Uint8Array && raw.byteLength === NACL_CONSTANTS.KEY_LENGTH;
@@ -163,7 +180,7 @@ export function ensurePublicKey(key: ReadonlyUint8Array): PublicKey {
 }
 
 /**
- * An NaCl nonce.
+ * An NaCl nonce. Must be exactly 24 bytes long.
  */
 export type Nonce = WeakOpaque<Uint8Array, {readonly Nonce: unique symbol}>;
 
@@ -300,7 +317,7 @@ export interface CryptoBackend {
      *
      * @param secretKey The secret key to derive from.
      */
-    readonly derivePublicKey: (secretKey: ReadonlyRawKey) => PublicKey;
+    readonly derivePublicKey: (secretKey: ReadonlyRawKey<32>) => PublicKey;
 
     /**
      * Get a crypto box for secret-key cryptography.
@@ -318,7 +335,7 @@ export interface CryptoBackend {
         ESN extends u64,
         NG extends NonceGuard | NonceUnguarded,
     >(
-        secretKey: ReadonlyRawKey,
+        secretKey: ReadonlyRawKey<32>,
         nonceGuard: NG,
     ) => CryptoBox<DCK, ECK, DSN, ESN, NG>;
 
@@ -328,7 +345,7 @@ export interface CryptoBackend {
      * @param publicKey The public key (i.e. of the other party).
      * @param secretKey The secret key (i.e. yours).
      */
-    readonly getSharedKey: (publicKey: PublicKey, secretKey: ReadonlyRawKey) => RawKey;
+    readonly getSharedKey: (publicKey: PublicKey, secretKey: ReadonlyRawKey<32>) => RawKey<32>;
 
     /**
      * Get a crypto box for shared-key cryptography.
@@ -345,7 +362,7 @@ export interface CryptoBackend {
         NG extends NonceGuard | NonceUnguarded,
     >(
         publicKey: PublicKey,
-        secretKey: ReadonlyRawKey,
+        secretKey: ReadonlyRawKey<32>,
         nonceGuard: NG,
     ) => CryptoBox<DCK, ECK, DSN, ESN, NG>;
 }

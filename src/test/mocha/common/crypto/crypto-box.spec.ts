@@ -5,6 +5,7 @@ import {
     type PlainData,
     type PublicKey,
     ensurePublicKey,
+    NACL_CONSTANTS,
     NONCE_UNGUARDED_TOKEN,
     wrapRawKey,
 } from '~/common/crypto';
@@ -24,7 +25,10 @@ export function run(): void {
     describe('CryptoBox', function () {
         it('should properly handle encryption in both secret and shared variants', function () {
             const actual = testCases.map((testCase): CryptoBoxTestCase => {
-                const secretKey = wrapRawKey(hexToBytes(testCase.secretKey)).asReadonly();
+                const secretKey = wrapRawKey(
+                    hexToBytes(testCase.secretKey),
+                    NACL_CONSTANTS.KEY_LENGTH,
+                ).asReadonly();
                 const nonce = hexToBytes(testCase.nonce) as Nonce;
                 const plainData = hexToBytes(testCase.data.plain) as PlainData;
 
@@ -60,7 +64,10 @@ export function run(): void {
             describe('for the same nonce', function () {
                 it('should return the same encrypted data', function () {
                     for (const testCase of testCases) {
-                        const secretKey = wrapRawKey(hexToBytes(testCase.secretKey)).asReadonly();
+                        const secretKey = wrapRawKey(
+                            hexToBytes(testCase.secretKey),
+                            NACL_CONSTANTS.KEY_LENGTH,
+                        ).asReadonly();
                         const publicKey = ensurePublicKey(hexToBytes(testCase.publicKey));
                         const plainData = hexToBytes(testCase.data.plain) as PlainData;
 
@@ -84,7 +91,10 @@ export function run(): void {
             describe('for the same nonce', function () {
                 it('should return the same encrypted data', function () {
                     for (const testCase of testCases) {
-                        const secretKey = wrapRawKey(hexToBytes(testCase.secretKey)).asReadonly();
+                        const secretKey = wrapRawKey(
+                            hexToBytes(testCase.secretKey),
+                            NACL_CONSTANTS.KEY_LENGTH,
+                        ).asReadonly();
                         const plainData = hexToBytes(testCase.data.plain) as PlainData;
 
                         const [nonce, encryptedWithRandomNonce] = crypto
@@ -103,8 +113,14 @@ export function run(): void {
             });
 
             describe('for', function () {
-                const key1 = wrapRawKey(hexToBytes('00'.repeat(32))).asReadonly();
-                const key2 = wrapRawKey(hexToBytes('01'.repeat(32))).asReadonly();
+                const key1 = wrapRawKey(
+                    hexToBytes('00'.repeat(NACL_CONSTANTS.KEY_LENGTH)),
+                    NACL_CONSTANTS.KEY_LENGTH,
+                ).asReadonly();
+                const key2 = wrapRawKey(
+                    hexToBytes('01'.repeat(NACL_CONSTANTS.KEY_LENGTH)),
+                    NACL_CONSTANTS.KEY_LENGTH,
+                ).asReadonly();
                 const nonce1 = hexToBytes('00'.repeat(24)) as ReadonlyUint8Array as Nonce;
                 const nonce2 = hexToBytes('01'.repeat(24)) as ReadonlyUint8Array as Nonce;
                 const plainData = hexToBytes('abcdef') as PlainData;

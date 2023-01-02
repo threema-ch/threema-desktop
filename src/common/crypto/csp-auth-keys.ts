@@ -12,7 +12,7 @@ const PERSONAL = '3ma-csp';
  * Derive the Vouch Key for authentication towards the chat server.
  */
 export function deriveVouchKey(config: Config, ck: ClientKey): VouchKey {
-    return ck.deriveSharedKey(config.CHAT_SERVER_KEY, {
+    return ck.deriveSharedKey(32, config.CHAT_SERVER_KEY, {
         personal: PERSONAL,
         salt: 'v',
     });
@@ -25,7 +25,7 @@ export function deriveDirectoryChallengeResponseKey(
     ck: ClientKey,
     challengeRequestKey: PublicKey,
 ): DirectoryChallengeResponseKey {
-    return ck.deriveSharedKey(challengeRequestKey, {
+    return ck.deriveSharedKey(32, challengeRequestKey, {
         personal: PERSONAL,
         salt: 'dir',
     });

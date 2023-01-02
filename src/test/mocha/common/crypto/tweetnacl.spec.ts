@@ -20,12 +20,12 @@ import {fakeRandomBytes} from '~/test/mocha/common/utils';
 
 const {expect} = chai.use(chaiByteEqual);
 
-function mockReadonlyRawKey(key: Uint8Array): ReadonlyRawKey {
+function mockReadonlyRawKey(key: Uint8Array): ReadonlyRawKey<32> {
     const wrapped = {
         unwrap: () => key,
         asReadonly: () => wrapped,
     } as const;
-    return wrapped as unknown as ReadonlyRawKey;
+    return wrapped as unknown as ReadonlyRawKey<32>;
 }
 
 /**
@@ -93,7 +93,10 @@ export function run(): void {
 
                 describe('#encrypt()', function () {
                     const box = tweetnacl.getSecretBox(
-                        wrapRawKey(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)).asReadonly(),
+                        wrapRawKey(
+                            new Uint8Array(NACL_CONSTANTS.KEY_LENGTH),
+                            NACL_CONSTANTS.KEY_LENGTH,
+                        ).asReadonly(),
                         NONCE_UNGUARDED_TOKEN,
                     ).raw;
 
@@ -141,7 +144,10 @@ export function run(): void {
 
                 describe('#decrypt()', function () {
                     const box = tweetnacl.getSecretBox(
-                        wrapRawKey(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)).asReadonly(),
+                        wrapRawKey(
+                            new Uint8Array(NACL_CONSTANTS.KEY_LENGTH),
+                            NACL_CONSTANTS.KEY_LENGTH,
+                        ).asReadonly(),
                         NONCE_UNGUARDED_TOKEN,
                     ).raw;
 

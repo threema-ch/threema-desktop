@@ -303,7 +303,7 @@ export class FileSystemKeyStorage implements KeyStorage {
         password: string,
         params: Argon2idParameters,
         runtimeWarnBounds?: {min: u53; max: u53},
-    ): Promise<RawKey> {
+    ): Promise<RawKey<32>> {
         // Run KDF
         const start = performance.now();
         const rawHash = await argon2.hash(password, {
@@ -334,7 +334,7 @@ export class FileSystemKeyStorage implements KeyStorage {
         } else {
             this._log.debug(msg);
         }
-        return wrapRawKey(rawHash);
+        return wrapRawKey(rawHash, NACL_CONSTANTS.KEY_LENGTH);
     }
 
     /**

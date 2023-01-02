@@ -15,6 +15,7 @@ import {
     type DbGroupMemberUid,
     type DbGroupUid,
     type DbMessageUid,
+    DATABASE_KEY_LENGTH,
 } from '~/common/db';
 import {
     AcquaintanceLevelUtils,
@@ -384,7 +385,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
 
             // Mapped types (value constraints, mapping and optional tagging)
             case CUSTOM_TYPES.BLOB_KEY:
-                return isReadonlyRawKey(value) ? value.unwrap() : fail();
+                return isReadonlyRawKey(value, DATABASE_KEY_LENGTH) ? value.unwrap() : fail();
             case CUSTOM_TYPES.MESSAGE_ID:
             case CUSTOM_TYPES.GROUP_ID:
             case CUSTOM_TYPES.DISTRIBUTION_LIST_ID:

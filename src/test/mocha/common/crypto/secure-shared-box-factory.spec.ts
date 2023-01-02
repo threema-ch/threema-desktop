@@ -4,6 +4,7 @@ import {
     type Nonce,
     type PlainData,
     ensurePublicKey,
+    NACL_CONSTANTS,
     NONCE_UNGUARDED_TOKEN,
     wrapRawKey,
 } from '~/common/crypto';
@@ -24,7 +25,7 @@ export function run(): void {
             const actual = testCases.map((testCase): CryptoBoxTestCase => {
                 const boxFactory = SecureSharedBoxFactory.consume(
                     crypto,
-                    wrapRawKey(hexToBytes(testCase.secretKey)),
+                    wrapRawKey(hexToBytes(testCase.secretKey), NACL_CONSTANTS.KEY_LENGTH),
                 );
 
                 const nonce = hexToBytes(testCase.nonce) as Nonce;

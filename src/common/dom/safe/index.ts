@@ -6,6 +6,7 @@ import {
     type PlainData,
     type RawKey,
     ensureEncryptedDataWithNonceAhead,
+    NACL_CONSTANTS,
     NONCE_UNGUARDED_TOKEN,
     wrapRawKey,
 } from '~/common/crypto';
@@ -172,7 +173,7 @@ export type SafeBackupId = WeakOpaque<ReadonlyUint8Array, {readonly SafeBackupId
 /**
  * Safe Backup Encryption Key. Must be exactly 32 bytes long.
  */
-export type SafeEncryptionKey = WeakOpaque<RawKey, {readonly SafeEncryptionKey: unique symbol}>;
+export type SafeEncryptionKey = WeakOpaque<RawKey<32>, {readonly SafeEncryptionKey: unique symbol}>;
 
 /**
  * Error types that can happen in connection with Threema Safe.
@@ -238,7 +239,7 @@ function deriveKey({
     assert(masterKey.byteLength === 64);
     return [
         masterKey.slice(0, 32) as ReadonlyUint8Array as SafeBackupId,
-        wrapRawKey(masterKey.slice(32, 64)) as SafeEncryptionKey,
+        wrapRawKey(masterKey.slice(32, 64), NACL_CONSTANTS.KEY_LENGTH) as SafeEncryptionKey,
     ];
 }
 

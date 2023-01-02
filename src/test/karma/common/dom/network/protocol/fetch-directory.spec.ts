@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 
 import {CONFIG} from '~/common/config';
-import {wrapRawKey} from '~/common/crypto';
+import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {randomBytes} from '~/common/dom/crypto/random';
@@ -157,7 +157,10 @@ export function run(): void {
 
         const ck = SecureSharedBoxFactory.consume(
             crypto,
-            wrapRawKey(randomBytes(new Uint8Array(32))),
+            wrapRawKey(
+                randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                NACL_CONSTANTS.KEY_LENGTH,
+            ),
         ) as ClientKey;
 
         this.beforeEach(function () {

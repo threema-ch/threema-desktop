@@ -3,6 +3,7 @@ import {
     type CryptoBox,
     type RawKey,
     type ReadonlyRawKey,
+    NACL_CONSTANTS,
 } from '~/common/crypto';
 import {deriveKey} from '~/common/crypto/blake2b';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
@@ -22,7 +23,7 @@ interface DeviceGroupKeyMap {
      * Device Group Path Key
      */
     readonly dgpk: {
-        key: WeakOpaque<RawKey, {readonly DgpkKey: unique symbol}>;
+        key: WeakOpaque<RawKey<32>, {readonly DgpkKey: unique symbol}>;
         box: WeakOpaque<SecureSharedBoxFactory, {readonly DgpkBox: unique symbol}>;
         salt: 'p';
     };
@@ -30,7 +31,7 @@ interface DeviceGroupKeyMap {
      * Device Group Reflect Key
      */
     readonly dgrk: {
-        key: WeakOpaque<ReadonlyRawKey, {readonly DgrkKey: unique symbol}>;
+        key: WeakOpaque<ReadonlyRawKey<32>, {readonly DgrkKey: unique symbol}>;
         box: WeakOpaque<SecretBoxWithRandomNonce, {readonly DgrkBox: unique symbol}>;
         salt: 'r';
     };
@@ -38,7 +39,7 @@ interface DeviceGroupKeyMap {
      * Device Group Device Info Key
      */
     readonly dgdik: {
-        key: WeakOpaque<ReadonlyRawKey, {readonly DgdikKey: unique symbol}>;
+        key: WeakOpaque<ReadonlyRawKey<32>, {readonly DgdikKey: unique symbol}>;
         box: WeakOpaque<SecretBoxWithRandomNonce, {readonly DgdikBox: unique symbol}>;
         salt: 'di';
     };
@@ -46,7 +47,7 @@ interface DeviceGroupKeyMap {
      * Device Group Shared Device Data Key
      */
     readonly dgsddk: {
-        key: WeakOpaque<ReadonlyRawKey, {readonly DgsddkKey: unique symbol}>;
+        key: WeakOpaque<ReadonlyRawKey<32>, {readonly DgsddkKey: unique symbol}>;
         box: WeakOpaque<SecretBoxWithRandomNonce, {readonly DgsddkBox: unique symbol}>;
         salt: 'sdd';
     };
@@ -54,7 +55,7 @@ interface DeviceGroupKeyMap {
      * Device Group Transaction Scope Key
      */
     readonly dgtsk: {
-        key: WeakOpaque<ReadonlyRawKey, {readonly DgtskKey: unique symbol}>;
+        key: WeakOpaque<ReadonlyRawKey<32>, {readonly DgtskKey: unique symbol}>;
         box: WeakOpaque<SecretBoxWithRandomNonce, {readonly DgtskBox: unique symbol}>;
         salt: 'ts';
     };
@@ -102,7 +103,7 @@ export function deriveDeviceGroupKeys(
         TSalt extends DeviceGroupKeyMap[TKeyName]['salt'],
     >(keyName: TKeyName, salt: TSalt): TKey {
         try {
-            return deriveKey(dgk, {
+            return deriveKey(NACL_CONSTANTS.KEY_LENGTH, dgk, {
                 personal: '3ma-mdev',
                 salt,
             }) as TKey;
