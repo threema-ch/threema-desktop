@@ -31,11 +31,11 @@ export function createHash(
     noAssert?: boolean,
 ): Blake2b;
 
-export const BYTES_MIN: u53;
-export const BYTES_MAX: u53;
-export const BYTES: u53;
-export const KEYBYTES_MIN: u53;
-export const KEYBYTES_MAX: u53;
-export const KEYBYTES: u53;
-export const SALTBYTES: u53;
-export const PERSONALBYTES: u53;
+export const BYTES_MIN: 16;
+export const BYTES_MAX: 64;
+export const BYTES: 32;
+export const KEYBYTES_MIN: 16;
+export const KEYBYTES_MAX: 64;
+export const KEYBYTES: 32;
+export const SALTBYTES: 16;
+export const PERSONALBYTES: 16;
