@@ -21,7 +21,7 @@ import {type AbortRaiser} from '~/common/utils/signal';
 /**
  * A svelte-compatible store event subscriber.
  */
-export type StoreSubscriber<TValue> = (value: TValue) => void;
+export type StoreSubscriber<in TValue> = (value: TValue) => void;
 
 /**
  * A svelte-compatible store event unsubscriber.
@@ -31,7 +31,7 @@ export type StoreUnsubscriber = () => void;
 /**
  * A svelte-compatible store which can be subscribed to.
  */
-export interface ISubscribableStore<TValue> {
+export interface ISubscribableStore<out TValue> {
     /**
      * Subscribe to store update events.
      * The subscriber function must be called with an initial value during subscription.
@@ -46,7 +46,7 @@ export interface ISubscribableStore<TValue> {
  * A svelte-compatible listenable store of which the current state can be queried for the current
  * value.
  */
-export interface IQueryableStore<TValue> extends ISubscribableStore<TValue> {
+export interface IQueryableStore<out TValue> extends ISubscribableStore<TValue> {
     /**
      * Get the current value.
      *
@@ -65,7 +65,7 @@ export type IQueryableStoreValue<TStore extends IQueryableStore<unknown>> =
 /**
  * A svelte-compatible writable store.
  */
-export interface IWritableStore<TValue> {
+export interface IWritableStore<in TValue> {
     /**
      * Set the current value.
      * @param value The new value.
@@ -185,13 +185,16 @@ export type LazyStoreStates =
 /**
  * A svelte-compatible readable store..
  *
- * The {@param TOutValue} provides type variance for the output type inference.
+ * The split between {@param TInValue} and {@param TOutValue} allows returning a subtype of the
+ * input type when reading the store (e.g. for returning a readonly version of the type). However,
+ * the two type variables themselves are invariant. The "in out" annotations are left here both to
+ * document that this is the case, and to speed up the type checker a tiny bit.
  */
-export class ReadableStore<TValue extends TOutValue, TOutValue = TValue>
+export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue = TInValue>
     implements IQueryableStore<TOutValue>
 {
     public _deactivator?: StoreDeactivator;
-    protected readonly _representation: (value: TValue) => string;
+    protected readonly _representation: (value: TInValue) => string;
     protected readonly _subscribers: Set<StoreSubscriber<TOutValue>> = new Set();
 
     /**
@@ -200,8 +203,8 @@ export class ReadableStore<TValue extends TOutValue, TOutValue = TValue>
      * @param options Additional store options.
      */
     public constructor(
-        protected _value: TValue,
-        public readonly options?: StoreOptions<TValue | TOutValue>,
+        protected _value: TInValue,
+        public readonly options?: StoreOptions<TInValue | TOutValue>,
     ) {
         this._representation = options?.debug?.representation ?? defaultRepresentation;
     }
@@ -278,7 +281,7 @@ export class ReadableStore<TValue extends TOutValue, TOutValue = TValue>
      * @param value The new value.
      * @returns Whether the value has been updated.
      */
-    protected _update(value: TValue): boolean {
+    protected _update(value: TInValue): boolean {
         if (this._value !== value) {
             if (this.options?.debug?.log !== undefined) {
                 this.options.debug.log.debug(
