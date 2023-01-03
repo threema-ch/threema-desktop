@@ -16,7 +16,7 @@ export function getGraphemeClusters(text: string, count = 1): string[] {
     if ('Segmenter' in Intl) {
         // TODO(WEBMD-837): Remove the cast to any, once the type declaration is part of TS as well
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const segmenter = new (Intl as any).Segmenter('en', {granularity: 'grapheme'});
+        const segmenter = new Intl.Segmenter('en', {granularity: 'grapheme'});
         const segments = segmenter.segment(text);
         const iterator = segments[Symbol.iterator]();
         for (let i = 0; i < count; i++) {

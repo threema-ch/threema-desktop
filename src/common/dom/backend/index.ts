@@ -925,10 +925,6 @@ interface NavigatorUAData {
     platform: string;
 }
 
-interface WithUserAgentData {
-    readonly userAgentData: NavigatorUAData;
-}
-
 /**
  * Format: `<app-version>;<platform>;<lang>/<country-code>;<renderer>;<renderer-version>;<os-name>;<os-architecture>`
  */
@@ -945,7 +941,7 @@ function makeCspClientInfo(browserInfo: BrowserInfo): string {
     let osName = '';
     const osArchitecture = '';
     if ('userAgentData' in self.navigator) {
-        osName = (self.navigator as unknown as WithUserAgentData).userAgentData.platform;
+        osName = (self.navigator.userAgentData as NavigatorUAData).platform;
     }
 
     const version = import.meta.env.BUILD_VERSION;
