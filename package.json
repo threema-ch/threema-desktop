@@ -112,7 +112,7 @@
     "@types/estree": "1.0.0",
     "@types/fs-extra": "~9.0.13",
     "@types/mocha": "~10.0.0",
-    "@types/node": "~16.11.33",
+    "@types/node": "~18.11.18",
     "@types/pako": "2.0.0",
     "@types/sinon": "~10.0.11",
     "@types/sinon-chai": "~3.2.9",
@@ -152,7 +152,7 @@
     "svelte-preprocess": "4.10.7",
     "threema-svelte-components": "file:libs/threema-svelte-components",
     "ts-proto": "~1.137.0",
-    "typescript": "~4.6.3",
+    "typescript": "~4.9.4",
     "vite": "2.9.15",
     "vite-tsconfig-paths": "3.6.0"
   }

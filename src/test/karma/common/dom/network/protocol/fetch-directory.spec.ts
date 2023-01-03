@@ -98,7 +98,7 @@ function mockFetchResponse(
 ): void {
     const fakeFetch = sinon.fake(
         // eslint-disable-next-line @typescript-eslint/require-await
-        async (input: RequestInfo, init?: RequestInit | undefined) => {
+        async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
             // GET: No authentication
             if (init?.method === 'GET') {
                 return makeResponse(status, responseBody, 'none');

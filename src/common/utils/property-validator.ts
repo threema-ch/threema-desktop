@@ -32,7 +32,7 @@ export const OPTIONAL = Symbol('property-optional');
  * @param schema The property type declaration map.
  * @returns A data property validator.
  */
-export function createExactPropertyValidator<T>(
+export function createExactPropertyValidator<T extends object>(
     name: string,
     schema: {
         [K in keyof T]-?: undefined extends T[K] ? typeof OPTIONAL : typeof REQUIRED;

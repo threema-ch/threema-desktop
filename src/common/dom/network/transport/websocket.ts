@@ -262,7 +262,12 @@ export function createWebSocketStream(
                 // TODO(WEBMD-814): Remove the cast
                 ReadableStream as adapter.ReadableStreamLikeConstructor,
             );
-            const toPolyfillWritable = adapter.createWritableStreamWrapper(WritableStream);
+            const toPolyfillWritable = adapter.createWritableStreamWrapper(
+                // TODO(WEBMD-904): Unsafe cast, remove once
+                // https://github.com/MattiasBuelens/web-streams-polyfill has TypeScript 4.8+
+                // support.
+                WritableStream as adapter.WritableStreamLikeConstructor,
+            );
             const readable = toPolyfillReadable(
                 inner.readable as never,
             ) as unknown as ReadableStream<ArrayBuffer | string>;

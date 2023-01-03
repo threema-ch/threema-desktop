@@ -15,7 +15,7 @@ import {type u53} from './types';
  */
 export function extractErrorMessage(error: Error, format: 'short' | 'long'): string {
     let msg = `${(error as object).constructor.name}: ${error.message}`;
-    if (error.cause !== undefined) {
+    if (error.cause instanceof Error) {
         const separator = format === 'short' ? ' | ' : '\n  ';
         msg += `${separator}Caused by: ${extractErrorMessage(error.cause, format)}`;
     }
@@ -27,7 +27,7 @@ export function extractErrorMessage(error: Error, format: 'short' | 'long'): str
  */
 export function extractErrorTraceback(error: Error): string {
     let msg = error.stack ?? `${(error as object).constructor.name}: ${error.message}`;
-    if (error.cause !== undefined) {
+    if (error.cause instanceof Error) {
         msg += `\n\n${extractErrorTraceback(error.cause)}`;
     }
     return msg;
