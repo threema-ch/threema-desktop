@@ -120,7 +120,7 @@
     "@typescript-eslint/parser": "~5.47.1",
     "chai": "~4.3.4",
     "debug": "~4.3.3",
-    "electron": "19.1.8",
+    "electron": "22.0.0",
     "electron-installer-dmg": "~4.0.0",
     "electron-packager": "~17.1.1",
     "electron-rebuild": "3.2.9",
