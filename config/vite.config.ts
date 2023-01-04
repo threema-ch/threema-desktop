@@ -1,8 +1,8 @@
 import {svelte} from '@sveltejs/vite-plugin-svelte';
 import * as fs from 'fs';
 import {builtinModules} from 'module';
-import {type RollupOptions} from 'rollup';
 import {type ConfigEnv as ViteConfigEnv, type Plugin, type UserConfig} from 'vite';
+import {type RollupOptions} from 'vite/node_modules/rollup/dist/rollup.js';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // Imports cannot be absolute in this file.
