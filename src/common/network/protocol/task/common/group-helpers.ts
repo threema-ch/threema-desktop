@@ -26,7 +26,6 @@ import {type GroupId, type IdentityString} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {idColorIndex} from '~/common/utils/id-color';
-import {u64ToBytesLe} from '~/common/utils/number';
 
 /**
  * Run the common group receive steps as specified by the protocol.
@@ -205,7 +204,7 @@ export async function sendGroupSyncRequest<TPersistence extends ActiveTaskPersis
     await new OutgoingCspMessageTask(services, receiver, {
         type: CspE2eGroupControlType.GROUP_REQUEST_SYNC,
         encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId: u64ToBytesLe(groupId),
+            groupId,
             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSyncRequest, {}),
         }),
         cspMessageFlags: CspMessageFlags.none(),
@@ -228,7 +227,7 @@ export async function sendGroupSetup<TPersistence extends ActiveTaskPersistence>
     await new OutgoingCspMessageTask(services, receiver, {
         type: CspE2eGroupControlType.GROUP_SETUP,
         encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId: u64ToBytesLe(groupId),
+            groupId,
             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSetup, {
                 members: members.map((identity) => UTF8.encode(identity)),
             }),
@@ -266,7 +265,7 @@ export async function sendGroupName<TPersistence extends ActiveTaskPersistence>(
     await new OutgoingCspMessageTask(services, receiver, {
         type: CspE2eGroupControlType.GROUP_NAME,
         encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId: u64ToBytesLe(groupId),
+            groupId,
             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupName, {
                 name: UTF8.encode(name),
             }),
@@ -291,7 +290,7 @@ async function sendGroupLeave<TPersistence extends ActiveTaskPersistence>(
     await new OutgoingCspMessageTask(services, receiver, {
         type: CspE2eGroupControlType.GROUP_LEAVE,
         encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-            groupId: u64ToBytesLe(groupId),
+            groupId,
             creatorIdentity: UTF8.encode(creatorIdentity),
             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupLeave, {}),
         }),

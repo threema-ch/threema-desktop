@@ -23,7 +23,7 @@ import {
 import {assert} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
-import {dateToUnixTimestampMs, intoUnsignedLong, u64ToBytesLe} from '~/common/utils/number';
+import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {
     type TestServices,
     addTestGroup,
@@ -133,7 +133,7 @@ export function run(): void {
                     structbuf.csp.e2e.GroupMemberContainer,
                     {
                         creatorIdentity: user1.identity.bytes,
-                        groupId: u64ToBytesLe(groupId),
+                        groupId,
                         innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
                             text: UTF8.encode(text),
                         }),
@@ -194,7 +194,7 @@ export function run(): void {
                         structbuf.csp.e2e.GroupMemberContainer,
                         {
                             creatorIdentity: UTF8.encode(cspGroupContainer.creatorIdentity),
-                            groupId: u64ToBytesLe(cspGroupContainer.groupId),
+                            groupId: cspGroupContainer.groupId,
                             innerData: textMessageEncoder,
                         },
                     );

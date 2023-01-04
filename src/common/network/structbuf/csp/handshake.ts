@@ -673,8 +673,9 @@ export interface LoginDataLike {
     /**
      * The vouch value, calculated as follows:
      *
-     *     S = SharedSecret(CK.secret, SK.public)
-     *     VouchKey = BLAKE2b(key=S, salt='v', personal='3ma-csp')
+     *     SS1 = SharedSecret(CK.secret, SK.public)
+     *     SS2 = SharedSecret(CK.secret, TSK.public)
+     *     VouchKey = BLAKE2b(key=<SS1><SS2>, salt='v2', personal='3ma-csp')
      *     vouch = BLAKE2b(out-length=32, key=VouchKey, input=<SCK><TCK.public>)
      */
     readonly vouch: Uint8Array;

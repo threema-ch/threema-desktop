@@ -1136,10 +1136,12 @@ export interface MessageWithMetadataBoxLike {
      * Backwards compatibility field for the sender's public nickname.
      * Padded with zeroes if needed.
      *
-     * Note: This should be the same nickname as included in the encrypted
-     *       metadata box for compatibility reasons. After a brief
-     *       intermediate phase, this should be all zeroes for outgoing
-     *       messages (and the note be adjusted accordingly).
+     * When sending a message towards a Threema Gateway ID (starts with a
+     * `*`), add the same nickname as included in the encrypted metadata box.
+     * Otherwise, set it to all zeroes.
+     *
+     * Note: The backwards compatibility for Threema Gateway IDs will be
+     * removed eventually!
      */
     readonly legacySenderNickname: Uint8Array;
 

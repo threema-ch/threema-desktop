@@ -280,6 +280,21 @@ import * as utils from '../utils';
  * Apply the logic described for images to all thumbnails with recommended
  * maximum dimensions of 512x512.
  *
+ * ### User Profile Distribution
+ *
+ * The shareable part of the user profile consists of the user's public
+ * nickname and the profile picture:
+ *
+ * - The nickname is sent along with outgoing messages as `sender-nickname`
+ *   inside the [`legacy-message`](ref:payload.legacy-message) or as part of
+ *   the metadata in
+ *   [`message-with-metadata-box`](ref:payload.message-with-metadata-box).
+ * - The profile picture is distributed as described in
+ *   [Profile Picture Distribution](ref:e2e#profile-picture-distribution).
+ *
+ * Whether user profile distribution should be triggered by an outgoing message
+ * is specified in the description of every message type below.
+ *
  * ### Profile Pictures
  *
  * Apply the logic described for images to all profile pictures with
@@ -287,21 +302,15 @@ import * as utils from '../utils';
  *
  * #### Profile Picture Distribution
  *
- * Every time, one of the below listed messages is being sent to a specific
- * contact or a group of contacts, the sender needs to evaluate whether the
- * profile picture needs to be sent. If the receiver of the message is a
- * group, the evaluation needs to be done for each contact of that group:
+ * Every time a message is being sent to a specific contact or a group of
+ * contacts, the sender needs to evaluate whether the profile picture needs to
+ * be sent. If the receiver of the message is a group, the evaluation needs to
+ * be done for each contact of that group:
  *
- * 1. If the contact's Threema ID is `ECHOECHO` or a Threema Gateway ID
- *   (starts with a `*`), abort these steps.
- * 2. If the message is not one of the following, abort these steps:
- *     - [`text`](ref:e2e.text)
- *     - [`deprecated-image`](ref:e2e.deprecated-image)
- *     - [`location`](ref:e2e.location)
- *     - [`deprecated-audio`](ref:e2e.deprecated-audio)
- *     - [`deprecated-video`](ref:e2e.deprecated-video)
- *     - [`file`](ref:e2e.file)
- *     - (group equivalents of these messages)
+ * 1. If the message [does not allow user profile
+ *    distribution](ref:e2e#user-profile-distribution), abort these steps.
+ * 2. If the contact's Threema ID is `ECHOECHO` or a Threema Gateway ID
+ *    (starts with a `*`), abort these steps.
  * 3. Ensure the app settings require the profile picture to be distributed to
  *    all contacts or to that contact specifically. Otherwise, abort these
  *    steps.
@@ -315,6 +324,9 @@ import * as utils from '../utils';
  *    the contact using the cached blob ID and key.
  * 7. Store the cached blob ID as the most recently used blob ID for that
  *    contact.
+ *
+ * When the user changes the profile picture, remove the cached profile picture
+ * (i.e. any associated blob ID and key).
  *
  * #### Contact Profile Picture Precedence
  *
@@ -660,7 +672,7 @@ export interface GroupCreatorContainerLike {
      * 8 byte random group ID. Uniquely identifies the group when combined
      * with the creator's Threema ID.
      */
-    readonly groupId: Uint8Array;
+    readonly groupId: types.u64;
 
     /**
      * Inner message struct.
@@ -676,7 +688,7 @@ interface GroupCreatorContainerEncodable_ {
      * 'group-id' field value or encoder. See {@link GroupCreatorContainerLike#groupId} for
      * the field's description.
      */
-    readonly groupId: Uint8Array | types.ByteLengthEncoder;
+    readonly groupId: types.u64;
 
     /**
      * 'inner-data' field value or encoder. See {@link GroupCreatorContainerLike#innerData} for
@@ -696,6 +708,7 @@ export type GroupCreatorContainerEncodable = types.WeakOpaque<
 /** @inheritdoc */
 export class GroupCreatorContainer extends base.Struct implements GroupCreatorContainerLike {
     private readonly _array: Uint8Array;
+    private readonly _view: DataView;
 
     /**
      * Create a GroupCreatorContainer from an array for accessing properties.
@@ -705,6 +718,7 @@ export class GroupCreatorContainer extends base.Struct implements GroupCreatorCo
     private constructor(array: Uint8Array) {
         super();
         this._array = array;
+        this._view = new DataView(array.buffer, array.byteOffset, array.byteLength);
     }
 
     /**
@@ -728,10 +742,11 @@ export class GroupCreatorContainer extends base.Struct implements GroupCreatorCo
         struct: types.EncoderPick<GroupCreatorContainerEncodable, 'encode'>,
         array: Uint8Array,
     ): Uint8Array {
+        const view = new DataView(array.buffer, array.byteOffset, array.byteLength);
         let offset = 8;
 
         // Encode `group-id`
-        utils.encodeBytes(struct.groupId, array, 0);
+        view.setBigUint64(0, struct.groupId, true);
 
         // Encode `inner-data`
         offset += utils.encodeBytes(struct.innerData, array, offset);
@@ -758,9 +773,8 @@ export class GroupCreatorContainer extends base.Struct implements GroupCreatorCo
      * 'group-id' field accessor. See {@link GroupCreatorContainerLike#groupId} for the
      * field's description.
      */
-    public get groupId(): Uint8Array {
-        const offset = 0;
-        return this._array.subarray(offset, offset + 8);
+    public get groupId(): types.u64 {
+        return this._view.getBigUint64(0, true);
     }
 
     /**
@@ -813,7 +827,7 @@ export interface GroupMemberContainerLike {
     /**
      * 8 byte random group ID assigned to the group by the creator.
      */
-    readonly groupId: Uint8Array;
+    readonly groupId: types.u64;
 
     /**
      * Inner message struct.
@@ -835,7 +849,7 @@ interface GroupMemberContainerEncodable_ {
      * 'group-id' field value or encoder. See {@link GroupMemberContainerLike#groupId} for
      * the field's description.
      */
-    readonly groupId: Uint8Array | types.ByteLengthEncoder;
+    readonly groupId: types.u64;
 
     /**
      * 'inner-data' field value or encoder. See {@link GroupMemberContainerLike#innerData} for
@@ -855,6 +869,7 @@ export type GroupMemberContainerEncodable = types.WeakOpaque<
 /** @inheritdoc */
 export class GroupMemberContainer extends base.Struct implements GroupMemberContainerLike {
     private readonly _array: Uint8Array;
+    private readonly _view: DataView;
 
     /**
      * Create a GroupMemberContainer from an array for accessing properties.
@@ -864,6 +879,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
     private constructor(array: Uint8Array) {
         super();
         this._array = array;
+        this._view = new DataView(array.buffer, array.byteOffset, array.byteLength);
     }
 
     /**
@@ -887,13 +903,14 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
         struct: types.EncoderPick<GroupMemberContainerEncodable, 'encode'>,
         array: Uint8Array,
     ): Uint8Array {
+        const view = new DataView(array.buffer, array.byteOffset, array.byteLength);
         let offset = 16;
 
         // Encode `creator-identity`
         utils.encodeBytes(struct.creatorIdentity, array, 0);
 
         // Encode `group-id`
-        utils.encodeBytes(struct.groupId, array, 8);
+        view.setBigUint64(8, struct.groupId, true);
 
         // Encode `inner-data`
         offset += utils.encodeBytes(struct.innerData, array, offset);
@@ -929,9 +946,8 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
      * 'group-id' field accessor. See {@link GroupMemberContainerLike#groupId} for the
      * field's description.
      */
-    public get groupId(): Uint8Array {
-        const offset = 8;
-        return this._array.subarray(offset, offset + 8);
+    public get groupId(): types.u64 {
+        return this._view.getBigUint64(8, true);
     }
 
     /**
@@ -979,6 +995,8 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  *   - `0x01`: Send push notification.
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
+ *
+ * **User profile distribution:** Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1115,6 +1133,8 @@ export class Text extends base.Struct implements TextLike {
  *   - `0x01`: Send push notification.
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
+ *
+ * **User profile distribution:** Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1308,6 +1328,8 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  *
  * **Delivery receipts:** Automatic: No. Manual: Yes.
  *
+ * **User profile distribution:** Yes.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * The image must be in JPEG format, is uploaded to the blob server and
@@ -1500,6 +1522,8 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
+ * **User profile distribution:** Yes.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * When receiving this message as a group message (wrapped by
@@ -1669,6 +1693,8 @@ export class Location extends base.Struct implements LocationLike {
  *   - `0x01`: Send push notification.
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
+ *
+ * **User profile distribution:** Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -1890,6 +1916,8 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  *   - `0x01`: Send push notification.
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
+ *
+ * **User profile distribution:** Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -2162,6 +2190,8 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
+ * **User profile distribution:** Yes.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * The file is uploaded to the blob server and encrypted by:
@@ -2367,6 +2397,8 @@ export class File extends base.Struct implements FileLike {
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
  *
+ * **User profile distribution:** Yes.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * During the lifecycle of a poll, this message will be used exactly twice:
@@ -2393,7 +2425,7 @@ export interface PollSetupLike {
     /**
      * Random unique (per creator within this conversation) ID of the poll.
      */
-    readonly id: Uint8Array;
+    readonly id: types.u64;
 
     /**
      * UTF-8, JSON-encoded object with the following fields:
@@ -2466,7 +2498,7 @@ interface PollSetupEncodable_ {
      * 'id' field value or encoder. See {@link PollSetupLike#id} for
      * the field's description.
      */
-    readonly id: Uint8Array | types.ByteLengthEncoder;
+    readonly id: types.u64;
 
     /**
      * 'poll' field value or encoder. See {@link PollSetupLike#poll} for
@@ -2486,6 +2518,7 @@ export type PollSetupEncodable = types.WeakOpaque<
 /** @inheritdoc */
 export class PollSetup extends base.Struct implements PollSetupLike {
     private readonly _array: Uint8Array;
+    private readonly _view: DataView;
 
     /**
      * Create a PollSetup from an array for accessing properties.
@@ -2495,6 +2528,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
     private constructor(array: Uint8Array) {
         super();
         this._array = array;
+        this._view = new DataView(array.buffer, array.byteOffset, array.byteLength);
     }
 
     /**
@@ -2518,10 +2552,11 @@ export class PollSetup extends base.Struct implements PollSetupLike {
         struct: types.EncoderPick<PollSetupEncodable, 'encode'>,
         array: Uint8Array,
     ): Uint8Array {
+        const view = new DataView(array.buffer, array.byteOffset, array.byteLength);
         let offset = 8;
 
         // Encode `id`
-        utils.encodeBytes(struct.id, array, 0);
+        view.setBigUint64(0, struct.id, true);
 
         // Encode `poll`
         offset += utils.encodeBytes(struct.poll, array, offset);
@@ -2548,9 +2583,8 @@ export class PollSetup extends base.Struct implements PollSetupLike {
      * 'id' field accessor. See {@link PollSetupLike#id} for the
      * field's description.
      */
-    public get id(): Uint8Array {
-        const offset = 0;
-        return this._array.subarray(offset, offset + 8);
+    public get id(): types.u64 {
+        return this._view.getBigUint64(0, true);
     }
 
     /**
@@ -2597,6 +2631,8 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
+ * **User profile distribution:** Yes.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * When receiving this message as a group message (wrapped by
@@ -2607,7 +2643,7 @@ export interface PollVoteLike {
     /**
      * ID of the associated poll.
      */
-    readonly pollId: Uint8Array;
+    readonly pollId: types.u64;
 
     /**
      * The Threema ID of the creator of the poll.
@@ -2638,7 +2674,7 @@ interface PollVoteEncodable_ {
      * 'poll-id' field value or encoder. See {@link PollVoteLike#pollId} for
      * the field's description.
      */
-    readonly pollId: Uint8Array | types.ByteLengthEncoder;
+    readonly pollId: types.u64;
 
     /**
      * 'creator-identity' field value or encoder. See {@link PollVoteLike#creatorIdentity} for
@@ -2664,6 +2700,7 @@ export type PollVoteEncodable = types.WeakOpaque<
 /** @inheritdoc */
 export class PollVote extends base.Struct implements PollVoteLike {
     private readonly _array: Uint8Array;
+    private readonly _view: DataView;
 
     /**
      * Create a PollVote from an array for accessing properties.
@@ -2673,6 +2710,7 @@ export class PollVote extends base.Struct implements PollVoteLike {
     private constructor(array: Uint8Array) {
         super();
         this._array = array;
+        this._view = new DataView(array.buffer, array.byteOffset, array.byteLength);
     }
 
     /**
@@ -2696,10 +2734,11 @@ export class PollVote extends base.Struct implements PollVoteLike {
         struct: types.EncoderPick<PollVoteEncodable, 'encode'>,
         array: Uint8Array,
     ): Uint8Array {
+        const view = new DataView(array.buffer, array.byteOffset, array.byteLength);
         let offset = 16;
 
         // Encode `poll-id`
-        utils.encodeBytes(struct.pollId, array, 0);
+        view.setBigUint64(0, struct.pollId, true);
 
         // Encode `creator-identity`
         utils.encodeBytes(struct.creatorIdentity, array, 8);
@@ -2729,9 +2768,8 @@ export class PollVote extends base.Struct implements PollVoteLike {
      * 'poll-id' field accessor. See {@link PollVoteLike#pollId} for the
      * field's description.
      */
-    public get pollId(): Uint8Array {
-        const offset = 0;
-        return this._array.subarray(offset, offset + 8);
+    public get pollId(): types.u64 {
+        return this._view.getBigUint64(0, true);
     }
 
     /**
@@ -2789,6 +2827,8 @@ export class PollVote extends base.Struct implements PollVoteLike {
  *   - `0x20`: Short-lived server queuing.
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
+ *
+ * **User profile distribution:** Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -2935,6 +2975,8 @@ export class CallOffer extends base.Struct implements CallOfferLike {
  *   - `0x20`: Short-lived server queuing.
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
+ *
+ * **User profile distribution:** Only if accepting (action=1).
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -3094,6 +3136,8 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
+ * **User profile distribution:** No.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: No.
  */
 export interface CallIceCandidateLike {
@@ -3239,7 +3283,9 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
  * **Flags:**
  *   - `0x01`: Send push notification.
  *
- * **Delivery receipts:** Automatic: No. Manual: no.
+ * **Delivery receipts:** Automatic: No. Manual: No.
+ *
+ * **User profile distribution:** No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -3380,6 +3426,8 @@ export class CallHangup extends base.Struct implements CallHangupLike {
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
+ * **User profile distribution:** No.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3516,6 +3564,8 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  * **Flags:** None.
  *
  * **Delivery receipts:** No, that would be silly!
+ *
+ * **User profile distribution:** Only for reactions.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -3691,6 +3741,8 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
+ * **User profile distribution:** No.
+ *
  * **Reflect:** Incoming: Yes, with ephemeral marker. Outgoing: No.
  */
 export interface TypingIndicatorLike {
@@ -3816,6 +3868,8 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * **Flags:** None.
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
+ *
+ * **User profile distribution:** No.
  *
  * **Reflect (contacts):** Incoming: No. Outgoing: No.
  *
@@ -4023,6 +4077,8 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
+ * **User profile distribution:** No.
+ *
  * **Reflect (contacts):** Incoming: No. Outgoing: No.
  *
  * **Reflect (groups):** Incoming: Yes. Outgoing: Yes.
@@ -4137,6 +4193,8 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  *   - `0x01`: Send push notification.
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
+ *
+ * **User profile distribution:** No.
  *
  * **Reflect:** Incoming: No. Outgoing: No.
  *
@@ -4260,6 +4318,8 @@ export class ContactRequestProfilePicture
  * **Flags:** None.
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
+ *
+ * **User profile distribution:** Yes.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
@@ -4474,6 +4534,8 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
+ * **User profile distribution:** Yes.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * When receiving this message as a group control message (wrapped by
@@ -4617,6 +4679,8 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
+ * **User profile distribution:** No.
+ *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * When sending this message, mark the group as _left_. Persist this mark
@@ -4737,6 +4801,8 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * **Flags:** None.
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
+ *
+ * **User profile distribution:** No.
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *

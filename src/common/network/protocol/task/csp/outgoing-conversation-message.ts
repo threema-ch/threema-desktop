@@ -36,7 +36,7 @@ import {
 import {type MessageId} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
-import {u64ToBytesLe, u64ToHexLe} from '~/common/utils/number';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * The outgoing message task has the following responsibilities:
@@ -180,7 +180,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
 
         if (this._receiverModel.type === ReceiverType.GROUP) {
             return structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                groupId: u64ToBytesLe(this._receiverModel.view.groupId),
+                groupId: this._receiverModel.view.groupId,
                 creatorIdentity: UTF8.encode(this._receiverModel.view.creatorIdentity),
                 innerData: encoder,
             });

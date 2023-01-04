@@ -75,12 +75,12 @@ export {payload};
  * - `1001`: Server is shutting down
  * - `1011`: Server terminated the connection due to an internal error
  *
- * Chat Server Close Codes (400x):
+ * Chat Server Close Codes (400x and 410x):
  * - `4000`: Chat server connection closed
  * - `4001`: Chat server connection could not be established
  * - `4009`: Internal error related to chat server connection
  *
- * Mediator Server Close Codes (401x):
+ * Mediator Server Close Codes (40[1-9]x and 41[1-9]x):
  * - `4010`: Protocol error
  * - `4011`: Transaction TTL reached
  * - `4012`: Unknown message acked
@@ -95,10 +95,9 @@ export {payload};
  * - `4115`: Device slot state mismatch
  *
  * Reconnect policy:
- * - `1xxx` does allow for automatic reconnect.
- * - `400x` and `40xx` do allow for automatic reconnect.
- * - `410x` and `41xx` do not allow for automatic reconnect and require user
- *   interaction before a reconnect attempt may be made.
+ * - `1xxx` and `40xx` do allow for automatic reconnect.
+ * - `41xx` does not allow for automatic reconnect and require user interaction
+ *   before a reconnect attempt may be made.
  * - Any other close code should result in a warning in the log, but automatic
  *   reconnects are allowed.
  *

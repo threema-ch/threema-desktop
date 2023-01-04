@@ -32,7 +32,6 @@ import {
 import {type MessageId, ensureIdentityString} from '~/common/network/types';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
-import {bytesLeToU64} from '~/common/utils/number';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {
     type TestServices,
@@ -227,7 +226,7 @@ export function run(): void {
                             structbuf.csp.e2e.GroupMemberContainer.decode(encodedMessage);
                         const {innerData, creatorIdentity, groupId} = decodedGroupMemberContainer;
                         expect(UTF8.decode(creatorIdentity)).to.equal(user.view.identity);
-                        expect(bytesLeToU64(groupId)).to.equal(receiver.view.groupId);
+                        expect(groupId).to.equal(receiver.view.groupId);
 
                         const decodedMessage = structbuf.csp.e2e.Text.decode(innerData);
                         const decodedText = UTF8.decode(decodedMessage.text);
