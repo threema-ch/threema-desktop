@@ -31,7 +31,6 @@ import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 
 import {
-    type Avatar,
     type Contact,
     type ContactController,
     type ContactInit,
@@ -39,11 +38,12 @@ import {
     type ContactUpdate,
     type ContactView,
     type Conversation,
+    type ProfilePicture,
     type ServicesForModel,
 } from '.';
-import {AvatarModelStore} from './avatar';
 import {type ConversationModelStore} from './conversation';
 import * as conversation from './conversation';
+import {ProfilePictureModelStore} from './profile-picture';
 
 let cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
 
@@ -315,10 +315,10 @@ export class ContactModelController implements ContactController {
     }
 
     /** @inheritdoc */
-    public avatar(): LocalModelStore<Avatar> {
+    public profilePicture(): LocalModelStore<ProfilePicture> {
         return this.meta.run(
             (handle) =>
-                new AvatarModelStore(this._services, {
+                new ProfilePictureModelStore(this._services, {
                     color: idColorIndexToString(handle.view().colorIndex),
                 }),
         );

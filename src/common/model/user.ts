@@ -1,6 +1,11 @@
 import {ReceiverType} from '~/common/enum';
-import {type Avatar, type ProfileSettings, type ServicesForModel, type User} from '~/common/model/';
-import {AvatarModelStore} from '~/common/model/avatar';
+import {
+    type ProfilePicture,
+    type ProfileSettings,
+    type ServicesForModel,
+    type User,
+} from '~/common/model/';
+import {ProfilePictureModelStore} from '~/common/model/profile-picture';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString, ensurePublicNickname} from '~/common/network/types';
@@ -14,7 +19,7 @@ export class UserModel implements User {
 
     public readonly identity: IdentityString;
     public readonly displayName: LocalStore<string>;
-    public readonly avatar: LocalModelStore<Avatar>;
+    public readonly profilePicture: LocalModelStore<ProfilePicture>;
 
     public readonly profileSettings: LocalModelStore<ProfileSettings>;
 
@@ -31,8 +36,10 @@ export class UserModel implements User {
             return profileSettings.view.publicNickname;
         });
 
-        // TODO(WEBMD-624): Get avatar from DB
+        // TODO(WEBMD-624): Get profile picture from DB
         const colorIndex = idColorIndex({type: ReceiverType.CONTACT, identity: this.identity});
-        this.avatar = new AvatarModelStore(services, {color: idColorIndexToString(colorIndex)});
+        this.profilePicture = new ProfilePictureModelStore(services, {
+            color: idColorIndexToString(colorIndex),
+        });
     }
 }

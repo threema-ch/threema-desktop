@@ -126,20 +126,20 @@ $themes: (
 
   // prettier-ignore
   @return (
-    // Avatr upload
-    --cc-avatar-upload-background-color: -g($cc, avatar-upload-background-color),
+    // Proifle picture upload
+    --cc-profile-picture-upload-background-color: -g($cc, profile-picture-upload-background-color),
 
-    // Avatar overlay
-    --cc-avatar-overlay-unread-background-color:
-    color-conforms(-g($cc, avatar-overlay-unread-background), $alpha: false),
-    --cc-avatar-overlay-unread-text-color:
-    color-conforms(-g($cc, avatar-overlay-unread-text), $alpha: false),
-    --cc-avatar-overlay-badge-icon-color:
-    -g($cc, avatar-overlay-badge-icon),
-    --cc-avatar-overlay-badge-icon-consumer-color:
-    -g($cc, avatar-overlay-badge-icon-consumer),
-    --cc-avatar-overlay-badge-icon-work-color:
-    -g($cc, avatar-overlay-badge-icon-work),
+    // Proifle picture overlay
+    --cc-profile-picture-overlay-unread-background-color:
+    color-conforms(-g($cc, profile-picture-overlay-unread-background), $alpha: false),
+    --cc-profile-picture-overlay-unread-text-color:
+    color-conforms(-g($cc, profile-picture-overlay-unread-text), $alpha: false),
+    --cc-profile-picture-overlay-badge-icon-color:
+    -g($cc, profile-picture-overlay-badge-icon),
+    --cc-profile-picture-overlay-badge-icon-consumer-color:
+    -g($cc, profile-picture-overlay-badge-icon-consumer),
+    --cc-profile-picture-overlay-badge-icon-work-color:
+    -g($cc, profile-picture-overlay-badge-icon-work),
 
     // Conversation
     --cc-conversation-message-options-caret-color: -g($cc, conversation-message-options-caret-color),

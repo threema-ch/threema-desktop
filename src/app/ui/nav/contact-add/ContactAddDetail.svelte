@@ -3,13 +3,13 @@
 
   import WizardButton from '#3sc/components/blocks/Button/WizardButton.svelte';
   import Text from '#3sc/components/blocks/Input/Text.svelte';
-  import AvatarUpload from '~/app/ui/generic/avatar/AvatarUpload.svelte';
-  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
-  import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
-  import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
+  import ProfilePictureUpload from '~/app/ui/generic/profile-picture/ProfilePictureUpload.svelte';
+  import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
+  import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
   import {
     AcquaintanceLevel,
     ConversationCategory,
@@ -118,8 +118,8 @@
     <div class="bar">
       <ContactAddNavBar on:back={navigateBack} on:cancel={navigateToContactList} />
     </div>
-    <span class="avatar-upload">
-      <AvatarUpload />
+    <span class="profile-picture-upload">
+      <ProfilePictureUpload />
     </span>
     <div class="threema-id">
       <Text disabled={true} value={identityData.identity} label="Threema ID" />
@@ -151,7 +151,7 @@
     background-color: var(--t-nav-background-color);
     grid-template:
       'bar' rem(40px)
-      'avatar-upload' auto
+      'profile-picture-upload' auto
       'threema-id' auto
       'firstname' auto
       'lastname' auto
@@ -165,13 +165,13 @@
       display: grid;
     }
 
-    .avatar-upload,
+    .profile-picture-upload,
     .threema-id,
     .firstname,
     .lastname {
       padding: 0 rem(16px);
     }
-    .avatar-upload {
+    .profile-picture-upload {
       place-self: center;
     }
 

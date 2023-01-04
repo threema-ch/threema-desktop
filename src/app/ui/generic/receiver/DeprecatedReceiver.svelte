@@ -1,9 +1,9 @@
 <script lang="ts">
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
-  import RecipientAvatar from '~/app/ui/generic/receiver/Avatar.svelte';
+  import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import RecipientTitle from '~/app/ui/generic/receiver/Title.svelte';
 
-  import {type ReceiverAvatar, type ReceiverTitle} from '.';
+  import {type ReceiverProfilePicture, type ReceiverTitle} from '.';
 
   /**
    * Determine whether the contact is clickable.
@@ -22,9 +22,9 @@
    */
   export let filter: string | undefined = undefined;
   /**
-   * Avatar data bag
+   * Profile picture data bag
    */
-  export let avatar: ReceiverAvatar;
+  export let profilePicture: ReceiverProfilePicture;
   /**
    * Title data bag
    */
@@ -39,7 +39,7 @@
       </div>
     {/if}
 
-    <RecipientAvatar {...avatar} />
+    <RecipientProfilePicture {...profilePicture} />
 
     <RecipientTitle {...title} {filter} />
 
@@ -56,7 +56,7 @@
   @use 'component' as *;
 
   $-checkbox-size: rem(40px);
-  $-avatar-size: rem(68px);
+  $-profile-picture-size: rem(68px);
   $-fade-width: rem(48px);
 
   .receiver {
@@ -65,9 +65,9 @@
     scroll-snap-align: end;
     display: grid;
     grid-template:
-      'avatar name  additional-top    ' rem(20px)
-      'avatar name  additional-bottom ' rem(20px)
-      / #{$-avatar-size} 1fr auto;
+      'profile-picture name  additional-top    ' rem(20px)
+      'profile-picture name  additional-bottom ' rem(20px)
+      / #{$-profile-picture-size} 1fr auto;
     align-items: center;
 
     .checkbox {
@@ -98,9 +98,9 @@
 
     &.selectable {
       grid-template:
-        'checkbox avatar name  additional-top     ' rem(20px)
-        'checkbox avatar name  additional-bottom  ' rem(20px)
-        / #{$-checkbox-size} #{$-avatar-size} 1fr auto;
+        'checkbox profile-picture name  additional-top     ' rem(20px)
+        'checkbox profile-picture name  additional-bottom  ' rem(20px)
+        / #{$-checkbox-size} #{$-profile-picture-size} 1fr auto;
     }
   }
 </style>

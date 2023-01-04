@@ -1,8 +1,8 @@
 <script lang="ts">
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import RecipientAvatar from '~/app/ui/generic/receiver/Avatar.svelte';
   import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
+  import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
 
   import {type Receiver} from '.';
 
@@ -68,7 +68,7 @@
       </div>
     {/if}
 
-    <RecipientAvatar {...receiver.avatar} />
+    <RecipientProfilePicture {...receiver.profilePicture} />
 
     <div class="name">
       {#if subTitle !== undefined || hasBadge}
@@ -123,7 +123,7 @@
   @use 'component' as *;
 
   $-checkbox-size: rem(40px);
-  $-avatar-size: rem(68px);
+  $-profile-picture-size: rem(68px);
   $-fade-width: rem(48px);
   $-temp-vars: (--cc-t-background-color);
   $-fade-width: rem(48px);
@@ -156,16 +156,16 @@
     scroll-snap-align: end;
     display: grid;
     grid-template:
-      'avatar name  additional-top    ' rem(20px)
-      'avatar name  additional-bottom ' rem(20px)
-      / #{$-avatar-size} 1fr auto;
+      'profile-picture name  additional-top    ' rem(20px)
+      'profile-picture name  additional-bottom ' rem(20px)
+      / #{$-profile-picture-size} 1fr auto;
     align-items: center;
 
     &[data-type='contact'] {
       grid-template:
-        'avatar name  verification-level' rem(20px)
-        'avatar name  identity' rem(20px)
-        / #{$-avatar-size} 1fr auto;
+        'profile-picture name  verification-level' rem(20px)
+        'profile-picture name  identity' rem(20px)
+        / #{$-profile-picture-size} 1fr auto;
 
       .verification-level {
         height: rem(20px);
@@ -186,9 +186,9 @@
 
     &[data-type='group'] {
       grid-template:
-        'avatar name  ' rem(20px)
-        'avatar name  ' rem(20px)
-        / #{$-avatar-size} 1fr auto;
+        'profile-picture name  ' rem(20px)
+        'profile-picture name  ' rem(20px)
+        / #{$-profile-picture-size} 1fr auto;
 
       .name {
         grid-template:
@@ -217,9 +217,9 @@
 
     &.selectable {
       grid-template:
-        'checkbox avatar name  additional-top     ' rem(20px)
-        'checkbox avatar name  additional-bottom  ' rem(20px)
-        / #{$-checkbox-size} #{$-avatar-size} 1fr auto;
+        'checkbox profile-picture name  additional-top     ' rem(20px)
+        'checkbox profile-picture name  additional-bottom  ' rem(20px)
+        / #{$-checkbox-size} #{$-profile-picture-size} 1fr auto;
     }
 
     .name {

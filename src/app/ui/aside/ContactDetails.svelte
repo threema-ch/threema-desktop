@@ -1,23 +1,27 @@
 <script lang="ts">
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import AvatarComponent from '#3sc/components/threema/Avatar/Avatar.svelte';
+  import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
-  import AvatarDialog from '~/app/ui/modal/ContactAvatar.svelte';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import IdenitityInformationDialog from '~/app/ui/modal/ContactIdenitityInformation.svelte';
+  import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
   import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
   import VerificationLevelsDialog from '~/app/ui/modal/ContactVerificationLevels.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
   import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {transformAvatarPicture} from '~/common/dom/ui/avatar';
+  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {ReceiverType} from '~/common/enum';
-  import {type Avatar, type ContactController, type RemoteModelController} from '~/common/model';
+  import {
+    type ContactController,
+    type ProfilePicture,
+    type RemoteModelController,
+  } from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';
@@ -33,10 +37,10 @@
 
   let contactViewModel: Remote<LocalStore<ContactListItemViewModel>> | undefined;
   let contactController: RemoteModelController<ContactController> | undefined;
-  let avatar: RemoteModelStore<Avatar> | undefined;
+  let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
 
   /**
-   * Fetch contact viewmodel and avatar store.
+   * Fetch contact viewmodel and profile picture store.
    */
   async function fetchContact(routerState: RouterState): Promise<void> {
     const contactStore =
@@ -50,7 +54,7 @@
     const contactInfo = contactStore.get();
     contactViewModel = contactInfo.viewModelStore;
     contactController = contactInfo.contactModelStore.get().controller;
-    avatar = contactInfo.viewModelStore.get().avatar;
+    profilePicture = contactInfo.viewModelStore.get().profilePicture;
   }
 
   $: void fetchContact($router);
@@ -62,7 +66,7 @@
   // Switch different modal dialogs
   let deleteContactDialogVisible = false;
   let unableToDeleteContactDialogVisible = false;
-  let contactAvatarDialogVisible = false;
+  let contactProfilePictureDialogVisible = false;
   let verificationLevelsDialogVisible = false;
   let identityInformationDialogVisible = false;
 
@@ -136,15 +140,15 @@
       </IconButton>
     </header>
 
-    {#if $contactViewModel !== undefined && $avatar !== undefined}
-      <div class="avatar">
+    {#if $contactViewModel !== undefined && $profilePicture !== undefined}
+      <div class="profile-picture">
         <span>
-          <AvatarComponent
-            on:click={() => (contactAvatarDialogVisible = true)}
-            img={transformAvatarPicture($avatar.view.picture)}
-            alt="Avatar of {$contactViewModel.displayName}"
+          <ProfilePictureComponent
+            on:click={() => (contactProfilePictureDialogVisible = true)}
+            img={transformProfilePicture($profilePicture.view.picture)}
+            alt="Profile picture of {$contactViewModel.displayName}"
             initials={$contactViewModel.initials}
-            color={$avatar.view.color}
+            color={$profilePicture.view.color}
             shape={'circle'}
           />
         </span>
@@ -210,15 +214,15 @@
 
       <UnableToDeleteDialog bind:visible={unableToDeleteContactDialogVisible} {displayName} />
 
-      <AvatarDialog bind:visible={contactAvatarDialogVisible}
-        ><AvatarComponent
-          img={transformAvatarPicture($avatar.view.picture)}
-          alt="Avatar of {$contactViewModel.fullName}"
+      <ProfilePictureDialog bind:visible={contactProfilePictureDialogVisible}
+        ><ProfilePictureComponent
+          img={transformProfilePicture($profilePicture.view.picture)}
+          alt="Profile picture of {$contactViewModel.fullName}"
           initials={$contactViewModel.initials}
-          color={$avatar.view.color}
+          color={$profilePicture.view.color}
           shape={'square'}
         />
-      </AvatarDialog>
+      </ProfilePictureDialog>
     {/if}
   </div>
 
@@ -242,7 +246,7 @@
     display: grid;
     grid-template:
       'header' #{rem(64px)}
-      'avatar' min-content
+      'profile-picture' min-content
       'name' #{rem(24px)}
       'edit' #{rem(24px)}
       'identity' min-content
@@ -268,11 +272,11 @@
       user-select: none;
     }
 
-    .avatar {
+    .profile-picture {
       display: grid;
       place-items: center;
       margin: rem(8px) 0;
-      --c-avatar-size: #{rem(120px)};
+      --c-profile-picture-size: #{rem(120px)};
 
       span {
         cursor: pointer;

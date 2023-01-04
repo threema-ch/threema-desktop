@@ -8,6 +8,7 @@
   import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import {type ContactTab} from '~/app/ui/nav/index';
   import {
     filterContacts,
     getStores,
@@ -15,7 +16,6 @@
     transformContact,
   } from '~/app/ui/nav/receiver';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
-  import {type ContactTab} from '~/app/ui/nav/index';
   import {type DbReceiverLookup} from '~/common/db';
   import {type MessageId} from '~/common/network/types';
   import {unreachable} from '~/common/utils/assert';
@@ -111,9 +111,9 @@
                             uid: contact.ctx,
                           })}
                         {filter}
-                        avatar={{
-                          alt: `Avatar of ${transformedContact.displayName}`,
-                          avatar: stores.avatar.get(),
+                        profilePicture={{
+                          alt: `Profile picture of ${transformedContact.displayName}`,
+                          profilePicture: stores.profilePicture.get(),
                           initials: transformedContact.initials,
                           unread: 0,
                           badge: transformedContact.badge,

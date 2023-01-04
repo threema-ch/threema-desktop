@@ -1,19 +1,19 @@
 <script lang="ts">
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import Avatar from '#3sc/components/threema/Avatar/Avatar.svelte';
+  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import {type ConversationData} from '~/app/ui/main/conversation';
-  import TopBarMode from '~/app/ui/main/conversation/top-bar/TopBarMode.svelte';
-  import TopBarSearch from '~/app/ui/main/conversation/top-bar/TopBarSearch.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import {type ConversationData} from '~/app/ui/main/conversation';
+  import {type ConversationTopBarMode} from '~/app/ui/main/conversation/top-bar';
+  import TopBarMode from '~/app/ui/main/conversation/top-bar/TopBarMode.svelte';
+  import TopBarSearch from '~/app/ui/main/conversation/top-bar/TopBarSearch.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {display} from '~/common/dom/ui/state';
   import {ReceiverType} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
   import {eternalPromise} from '~/common/utils/promise';
-  import {type ConversationTopBarMode} from '~/app/ui/main/conversation/top-bar';
 
   /**
    * Current display mode.
@@ -95,12 +95,12 @@
             </IconButton>
           </div>
         {/if}
-        <div class="avatar" on:click={openAside}>
-          <Avatar
+        <div class="profile-picture" on:click={openAside}>
+          <ProfilePicture
             img={eternalPromise()}
-            alt="Avatar of {receiver.name}"
-            initials={receiver.avatar.initials}
-            color={receiver.avatar.color}
+            alt="Profile picture of {receiver.name}"
+            initials={receiver.profilePicture.initials}
+            color={receiver.profilePicture.color}
             shape={'circle'}
           />
         </div>
@@ -156,16 +156,16 @@
     .detail {
       display: grid;
       grid-template:
-        'avatar title   actions' #{rem(24px)}
-        'avatar details actions' #{rem(16px)}
+        'profile-picture title   actions' #{rem(24px)}
+        'profile-picture details actions' #{rem(16px)}
         / #{rem(40px)} 1fr auto;
       column-gap: rem(8px);
       padding: #{rem(12px)} #{rem(8px)} #{rem(12px)} #{rem(16px)};
 
       &[data-display='small'] {
         grid-template:
-          'back avatar title   actions' #{rem(24px)}
-          'back avatar details actions' #{rem(16px)}
+          'back profile-picture title   actions' #{rem(24px)}
+          'back profile-picture details actions' #{rem(16px)}
           / #{rem(40px)} #{rem(40px)} 1fr auto;
       }
 
@@ -175,8 +175,8 @@
         cursor: pointer;
       }
 
-      .avatar {
-        grid-area: avatar;
+      .profile-picture {
+        grid-area: profile-picture;
         user-select: none;
         cursor: pointer;
       }

@@ -16,12 +16,12 @@ import {
 } from '~/common/enum';
 import {
     type AnyReceiver,
-    type Avatar,
     type Contact,
     type ContactRepository,
     type ContactView,
     type Group,
     type GroupView,
+    type ProfilePicture,
     type Repositories,
     type Settings,
 } from '~/common/model';
@@ -46,7 +46,7 @@ export type ReceiverNotificationPolicy = 'default' | 'muted' | 'mentioned' | 'ne
 
 export function transformContact(
     contact: Contact,
-    avatar: Avatar,
+    profilePicture: ProfilePicture,
     settings: Settings,
 ): TransformedReceiverData {
     // Determine badge type.
@@ -72,9 +72,9 @@ export function transformContact(
     return {
         type: 'contact',
         name: contact.view.displayName,
-        avatar: {
+        profilePicture: {
             img: undefined,
-            color: avatar.view.color,
+            color: profilePicture.view.color,
             initials: contact.view.initials,
         },
         badge,
@@ -87,7 +87,7 @@ export function transformContact(
 
 function transformGroup(
     group: Group,
-    avatar: Avatar,
+    profilePicture: ProfilePicture,
     contacts: ContactRepository,
 ): TransformedReceiverData {
     const memberNames = getMemberNames(group.view.members, contacts);
@@ -95,9 +95,9 @@ function transformGroup(
     return {
         type: 'group',
         name: group.view.displayName,
-        avatar: {
+        profilePicture: {
             img: undefined,
-            color: avatar.view.color,
+            color: profilePicture.view.color,
             initials: group.view.displayName.slice(0, 2),
         },
         members: group.view.members,
@@ -109,16 +109,16 @@ function transformGroup(
 
 export function transformReceiver(
     receiver: AnyReceiver,
-    avatar: Avatar,
+    profilePicture: ProfilePicture,
     model: Repositories,
 ): TransformedReceiverData {
     switch (receiver.type) {
         case ReceiverType.CONTACT:
-            return transformContact(receiver, avatar, model.settings);
+            return transformContact(receiver, profilePicture, model.settings);
         case ReceiverType.DISTRIBUTION_LIST:
             throw new Error('TODO(WEBMD-236): Implement distribution list');
         case ReceiverType.GROUP:
-            return transformGroup(receiver, avatar, model.contacts);
+            return transformGroup(receiver, profilePicture, model.contacts);
         default:
             return unreachable(receiver);
     }

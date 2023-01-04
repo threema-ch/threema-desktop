@@ -5,8 +5,8 @@ import {type DbConversationUid, type DbReceiverLookup} from '~/common/db';
 import {type ConversationCategory, type ConversationVisibility, ReceiverType} from '~/common/enum';
 import {
     type AnyReceiverStore,
-    type Avatar,
     type Conversation,
+    type ProfilePicture,
     type RemoteModelFor,
     type RemoteModelStoreFor,
 } from '~/common/model';
@@ -57,9 +57,9 @@ export interface ConversationStores {
     readonly receiver: RemoteModelStoreFor<AnyReceiverStore>;
 
     /**
-     * Avatar of the receiver.
+     * Profile picture of the receiver.
      */
-    readonly avatar: RemoteModelStore<Avatar>;
+    readonly profilePicture: RemoteModelStore<ProfilePicture>;
 }
 
 export function transformConversation(

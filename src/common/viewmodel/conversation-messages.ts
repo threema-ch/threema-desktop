@@ -265,8 +265,8 @@ function getConversationMessageBodyBaseMessage(
     switch (messageModel.ctx) {
         case MessageDirection.INBOUND: {
             const sender = getAndSubscribe(messageModel.controller.sender());
-            const avatar = getAndSubscribe(sender.controller.avatar());
-            const contact = transformContact(sender, avatar, settings);
+            const profilePicture = getAndSubscribe(sender.controller.profilePicture());
+            const contact = transformContact(sender, profilePicture, settings);
             assert(contact.type === 'contact');
 
             const incomingBaseMessage: Omit<IncomingMessage<AnyMessageBody>, 'type' | 'body'> = {

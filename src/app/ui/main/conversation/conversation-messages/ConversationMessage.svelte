@@ -1,7 +1,7 @@
 <script lang="ts">
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import AvatarComponent from '#3sc/components/threema/Avatar/Avatar.svelte';
+  import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
@@ -221,7 +221,7 @@
   <div
     class="message-wrapper"
     class:selectable
-    class:avatar={messageBody.direction === 'incoming' && receiver.type === 'group'}
+    class:profile-picture={messageBody.direction === 'incoming' && receiver.type === 'group'}
     data-direction={messageBody.direction}
     data-id={messageBody.id}
     on:click={toggleSelect}
@@ -234,10 +234,10 @@
 
     <div class="container">
       {#if messageBody.direction === 'incoming' && receiver.type === 'group'}
-        <div class="avatar-container">
-          <span class="avatar" on:click={async () => await navigateToContact()}>
-            <AvatarComponent
-              {...messageBody.sender.avatar}
+        <div class="profile-picture-container">
+          <span class="profile-picture" on:click={async () => await navigateToContact()}>
+            <ProfilePictureComponent
+              {...messageBody.sender.profilePicture}
               img={eternalPromise()}
               alt=""
               title={messageBody.sender.name}
@@ -384,19 +384,19 @@
       }
     }
 
-    &.avatar {
+    &.profile-picture {
       .container {
         display: grid;
-        grid-template: 'avatar message options' auto / auto auto #{$optionsWidth};
+        grid-template: 'profile-picture message options' auto / auto auto #{$optionsWidth};
 
-        .avatar-container {
-          grid-area: avatar;
+        .profile-picture-container {
+          grid-area: profile-picture;
           margin-right: rem(8px);
           font-size: rem(4px);
 
-          .avatar {
+          .profile-picture {
             cursor: pointer;
-            --c-avatar-size: #{rem(24px)};
+            --c-profile-picture-size: #{rem(24px)};
           }
         }
       }

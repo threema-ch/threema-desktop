@@ -3,8 +3,8 @@
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type AvatarData} from '#3sc/components/threema/Avatar';
-  import Avatar from '#3sc/components/threema/Avatar/Avatar.svelte';
+  import {type ProfilePictureData} from '#3sc/components/threema/ProfilePicture';
+  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {unresolved} from '#3sc/utils/promise';
   import type * as model from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
@@ -14,19 +14,19 @@
 
   export let identity: IdentityString;
 
-  export let avatar: RemoteModelStore<model.Avatar>;
+  export let profilePicture: RemoteModelStore<model.ProfilePicture>;
 
   export let displayName: RemoteStore<string>;
 
   const dispatch = createEventDispatcher();
 
-  let avatar$: AvatarData;
+  let profilePicture$: ProfilePictureData;
 
-  $: avatar$ = {
-    color: $avatar.view.color,
+  $: profilePicture$ = {
+    color: $profilePicture.view.color,
     img:
-      $avatar.view.picture !== undefined
-        ? new Blob([$avatar.view.picture], {type: 'image/jpeg'})
+      $profilePicture.view.picture !== undefined
+        ? new Blob([$profilePicture.view.picture], {type: 'image/jpeg'})
         : unresolved(),
     initials: getGraphemeClusters($displayName !== '' ? $displayName : identity, 2).join(''),
   };
@@ -35,12 +35,12 @@
 <template>
   <header>
     <div
-      class="avatar"
+      class="profile-picture"
       on:click={() => {
-        dispatch('click-avatar');
+        dispatch('click-profile-picture');
       }}
     >
-      <Avatar {...avatar$} alt="Your avatar" shape={'circle'} />
+      <ProfilePicture {...profilePicture$} alt="Your profile picture" shape={'circle'} />
     </div>
     <!-- <IconButton flavor="naked" class="wip">
       <ThreemaIcon
@@ -73,22 +73,22 @@
 <style lang="scss">
   @use 'component' as *;
 
-  $-avatar-size: rem(40px);
+  $-profile-picture-size: rem(40px);
 
   header {
     display: grid;
     grid-template:
-      'avatar'
+      'profile-picture'
       / 1fr;
     grid-auto-flow: column;
-    grid-auto-columns: $-avatar-size;
+    grid-auto-columns: $-profile-picture-size;
     place-items: center;
     user-select: none;
 
-    .avatar {
+    .profile-picture {
       cursor: pointer;
-      height: $-avatar-size;
-      width: $-avatar-size;
+      height: $-profile-picture-size;
+      width: $-profile-picture-size;
       justify-self: start;
     }
   }

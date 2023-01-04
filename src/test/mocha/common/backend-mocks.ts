@@ -43,7 +43,6 @@ import {ConnectionClosed} from '~/common/error';
 import {type FileId, type FileStorage, FileStorageError, randomFileId} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, TagLogger} from '~/common/logging';
 import {
-    type Avatar,
     type Contact,
     type ContactInit,
     type ContactRepository,
@@ -51,17 +50,18 @@ import {
     type Group,
     type GroupRepository,
     type IGlobalPropertyRepository,
+    type ProfilePicture,
     type ProfileSettings,
     type Repositories,
     type ServicesForModel,
     type Settings,
     type User,
 } from '~/common/model';
-import {AvatarModelStore} from '~/common/model/avatar';
 import {ContactModelRepository} from '~/common/model/contact';
 import {ConversationModelRepository} from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
+import {ProfilePictureModelStore} from '~/common/model/profile-picture';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -352,13 +352,13 @@ class UserRepository implements User {
     public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
 
     public identity: IdentityString;
-    public avatar: LocalModelStore<Avatar>;
+    public profilePicture: LocalModelStore<ProfilePicture>;
     public readonly displayName: LocalStore<string>;
     public profileSettings: LocalModelStore<ProfileSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
-        this.avatar = new AvatarModelStore(services, {
+        this.profilePicture = new ProfilePictureModelStore(services, {
             color: 'teal',
         });
         this.profileSettings = new ProfileSettingsModelStore(services, {

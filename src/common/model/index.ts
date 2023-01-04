@@ -288,17 +288,17 @@ export type ControllerUpdateFromSync<
     TReturn = void,
 > = ProxyMarked & Pick<ControllerUpdateFromSource<TParams, TReturn>, 'fromSync'>;
 
-// Avatar
-export interface AvatarView {
+// Profile picture
+export interface ProfilePictureView {
     readonly color: IdColor;
     readonly picture?: BlobBytes;
 }
-export type AvatarUpdate = Partial<Omit<AvatarView, 'color'>>;
-export type AvatarController = {
-    readonly meta: ModelLifetimeGuard<AvatarView>;
-    readonly update: (change: AvatarUpdate) => void;
+export type ProfilePictureUpdate = Partial<Omit<ProfilePictureView, 'color'>>;
+export type ProfilePictureController = {
+    readonly meta: ModelLifetimeGuard<ProfilePictureView>;
+    readonly update: (change: ProfilePictureUpdate) => void;
 } & ProxyMarked;
-export type Avatar = LocalModel<AvatarView, AvatarController>;
+export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureController>;
 
 // Profile Settings
 
@@ -386,7 +386,7 @@ export type IGlobalPropertyModel<K extends GlobalPropertyKey> = LocalModel<
 export type User = {
     readonly identity: IdentityString;
     readonly displayName: LocalStore<string>;
-    readonly avatar: LocalModelStore<Avatar>;
+    readonly profilePicture: LocalModelStore<ProfilePicture>;
     readonly profileSettings: LocalModelStore<ProfileSettings>;
 } & ProxyMarked;
 
@@ -397,9 +397,9 @@ interface ReceiverController {
     readonly notificationTag: NotificationTag;
 
     /**
-     * Retrieve the avatar of the receiver.
+     * Retrieve the profile picture of the receiver.
      */
-    readonly avatar: () => LocalModelStore<Avatar>;
+    readonly profilePicture: () => LocalModelStore<ProfilePicture>;
 
     /**
      * Get the receiver's associated conversation.

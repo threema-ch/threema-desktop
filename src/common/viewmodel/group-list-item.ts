@@ -1,6 +1,6 @@
 import {type DbGroupUid} from '~/common/db';
 import {type GroupUserState} from '~/common/enum';
-import {type Avatar, type ContactRepository, type Group} from '~/common/model';
+import {type ContactRepository, type Group, type ProfilePicture} from '~/common/model';
 import {getDisplayName} from '~/common/model/group';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString} from '~/common/network/types';
@@ -46,7 +46,7 @@ export type GroupListItemViewModelStore = LocalStore<GroupListItemViewModel>;
  */
 export interface GroupListItemViewModel extends PropertiesMarked {
     readonly uid: DbGroupUid;
-    readonly avatar: LocalModelStore<Avatar>;
+    readonly profilePicture: LocalModelStore<ProfilePicture>;
     readonly name: string;
     readonly displayName: string;
     readonly initials: string;
@@ -84,7 +84,7 @@ function getViewModelStore(
 
         return endpoint.exposeProperties({
             uid: group.ctx,
-            avatar: group.controller.avatar(),
+            profilePicture: group.controller.profilePicture(),
             name: group.view.name,
             displayName: getDisplayName(
                 {

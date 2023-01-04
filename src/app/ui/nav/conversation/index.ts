@@ -15,10 +15,10 @@ import {
 import {
     type AnyReceiver,
     type AnyReceiverStore,
-    type Avatar,
     type Contact,
     type Conversation,
     type Group,
+    type ProfilePicture,
     type RemoteModelFor,
     type RemoteModelStoreFor,
     type Settings,
@@ -96,9 +96,9 @@ export interface ConversationPreviewStores {
     readonly receiver: RemoteModelStoreFor<AnyReceiverStore>;
 
     /**
-     * Avatar of the receiver.
+     * Profile picture of the receiver.
      */
-    readonly avatar: RemoteModelStore<Avatar>;
+    readonly profilePicture: RemoteModelStore<ProfilePicture>;
 }
 
 export function filterConversations(
@@ -127,10 +127,10 @@ export async function getStores(
 ): Promise<ConversationPreviewStores> {
     const {controller} = conversation;
     const [receiver] = await Promise.all([controller.receiver()]);
-    const avatar = await receiver.get().controller.avatar();
+    const profilePicture = await receiver.get().controller.profilePicture();
     return {
         receiver,
-        avatar,
+        profilePicture,
     };
 }
 

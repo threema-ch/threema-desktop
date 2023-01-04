@@ -7,11 +7,11 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {assertRoute} from '~/app/routing';
   import {type AppServices} from '~/app/types';
-  import {getAvatarAndMemberStores} from '~/app/ui/aside/group-details';
-  import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
+  import {getProfilePictureAndMemberStores} from '~/app/ui/aside/group-details';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
+  import ProfilePictureEdit from '~/app/ui/generic/profile-picture/ProfilePictureEdit.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {type Avatar, type Group} from '~/common/model';
+  import {type Group, type ProfilePicture} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
 
   export let services: AppServices;
@@ -26,7 +26,7 @@
   const groupUid = route.params.groupUid;
 
   let group: RemoteModelStore<Group> | undefined;
-  let avatar: RemoteModelStore<Avatar> | undefined;
+  let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
   let name = '';
   let inputName: TextInput;
 
@@ -44,8 +44,8 @@
     name = $group.view.name;
 
     const contacts = await backend.model.contacts.getAll();
-    const stores = await getAvatarAndMemberStores(group, contacts);
-    avatar = stores.avatar;
+    const stores = await getProfilePictureAndMemberStores(group, contacts);
+    profilePicture = stores.profilePicture;
   }
 
   async function saveGroupDetails(): Promise<void> {
@@ -80,7 +80,7 @@
 </script>
 
 <template>
-  {#if $group !== undefined && avatar !== undefined}
+  {#if $group !== undefined && profilePicture !== undefined}
     <ModalWrapper>
       <ModalDialog
         visible={true}
@@ -97,8 +97,8 @@
           }}
         >
           <HiddenSubmit />
-          <div class="avatar">
-            <AvatarEdit {avatar} {name} />
+          <div class="profile-picture">
+            <ProfilePictureEdit {profilePicture} {name} />
           </div>
           <TextInput
             bind:this={inputName}
@@ -127,12 +127,12 @@
     padding: rem(16px);
     display: grid;
     grid-template:
-      'avatar' auto
+      'profile-picture' auto
       'name' auto
       / minmax(min-content, #{rem(480px)});
     row-gap: rem(32px);
 
-    .avatar {
+    .profile-picture {
       justify-self: center;
     }
   }

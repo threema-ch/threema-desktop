@@ -1,12 +1,12 @@
 <script lang="ts">
-  import AvatarComponent from '#3sc/components/threema/Avatar/Avatar.svelte';
-  import AvatarOverlay from '~/app/ui/generic/avatar/AvatarOverlay.svelte';
-  import {transformAvatarPicture} from '~/common/dom/ui/avatar';
-  import {type Avatar, type RemoteModelFor} from '~/common/model';
+  import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import ProfilePictureOverlay from '~/app/ui/generic/profile-picture/ProfilePictureOverlay.svelte';
+  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
+  import {type ProfilePicture, type RemoteModelFor} from '~/common/model';
   import {type u53} from '~/common/types';
   import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
-  export let avatar: RemoteModelFor<Avatar>;
+  export let profilePicture: RemoteModelFor<ProfilePicture>;
 
   export let alt: string;
 
@@ -18,18 +18,18 @@
 </script>
 
 <template>
-  <div class="avatar">
+  <div class="profile-picture">
     <div class="inner">
-      <AvatarComponent
-        img={transformAvatarPicture(avatar.view.picture)}
+      <ProfilePictureComponent
+        img={transformProfilePicture(profilePicture.view.picture)}
         {alt}
         {initials}
-        color={avatar.view.color}
+        color={profilePicture.view.color}
         shape={'circle'}
       />
     </div>
     <div class="overlay">
-      <AvatarOverlay {unread} {badge} />
+      <ProfilePictureOverlay {unread} {badge} />
     </div>
   </div>
 </template>
@@ -37,8 +37,8 @@
 <style lang="scss">
   @use 'component' as *;
 
-  .avatar {
-    grid-area: avatar;
+  .profile-picture {
+    grid-area: profile-picture;
     height: rem(60px);
     width: rem(68px);
     position: relative;

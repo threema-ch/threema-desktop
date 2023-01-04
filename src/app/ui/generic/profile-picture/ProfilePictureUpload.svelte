@@ -23,7 +23,7 @@
     width: rem(120px);
     height: rem(120px);
     border-radius: 50%;
-    background-color: var(--cc-avatar-upload-background-color);
+    background-color: var(--cc-profile-picture-upload-background-color);
     display: grid;
     place-items: center;
     cursor: pointer;

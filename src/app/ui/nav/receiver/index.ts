@@ -16,9 +16,9 @@ import {
     WorkVerificationLevel,
 } from '~/common/enum';
 import {
-    type Avatar,
     type Contact,
     type ContactView,
+    type ProfilePicture,
     type RemoteModelFor,
     type Settings,
 } from '~/common/model';
@@ -56,9 +56,9 @@ export type TransformedContact = ContactData & {
  */
 export interface ContactPreviewStores {
     /**
-     * Avatar of the receiver.
+     * Profile picture of the receiver.
      */
-    readonly avatar: RemoteModelStore<Avatar>;
+    readonly profilePicture: RemoteModelStore<ProfilePicture>;
 }
 
 /**
@@ -126,9 +126,9 @@ export function filterContacts(
 
 export async function getStores(contact: RemoteModelFor<Contact>): Promise<ContactPreviewStores> {
     const {controller} = contact;
-    const [avatar] = await Promise.all([controller.avatar()]);
+    const [profilePicture] = await Promise.all([controller.profilePicture()]);
     return {
-        avatar,
+        profilePicture,
     };
 }
 

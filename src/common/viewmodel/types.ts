@@ -3,7 +3,7 @@ import {
     type VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
 import {type u53} from '~/common/types';
-import {type AvatarData} from '~/common/viewmodel/avatar-index';
+import {type ProfilePictureData} from '~/common/viewmodel/profile-picture';
 
 /**
  * Branding type.
@@ -130,9 +130,9 @@ export type ReceiverData<T extends ReceiverType> = {
      */
     name: string;
     /**
-     * Avatar of the receiver.
+     * Profile picture of the receiver.
      */
-    avatar: AvatarData;
+    profilePicture: ProfilePictureData;
 } & ReceiverDataFor<T>;
 
 /**

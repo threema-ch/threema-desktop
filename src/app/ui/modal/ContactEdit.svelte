@@ -5,13 +5,13 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import AvatarEdit from '~/app/ui/generic/avatar/AvatarEdit.svelte';
-  import {getStores} from '~/app/ui/nav/receiver';
-  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {assertRoute} from '~/app/routing';
   import {type AppServices} from '~/app/types';
-  import {type Avatar, type Contact} from '~/common/model';
+  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
+  import ProfilePictureEdit from '~/app/ui/generic/profile-picture/ProfilePictureEdit.svelte';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import {getStores} from '~/app/ui/nav/receiver';
+  import {type Contact, type ProfilePicture} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
 
   export let services: AppServices;
@@ -21,7 +21,7 @@
   const contactUid = route.params.contactUid;
 
   let contact: RemoteModelStore<Contact> | undefined;
-  let avatar: RemoteModelStore<Avatar> | undefined;
+  let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
   let firstName = '';
   let lastName = '';
   let displayName = '';
@@ -53,7 +53,7 @@
 
         getStores($contact)
           .then((stores) => {
-            avatar = stores.avatar;
+            profilePicture = stores.profilePicture;
           })
           .catch(closeModal);
       })
@@ -78,7 +78,7 @@
 </script>
 
 <template>
-  {#if $contact !== undefined && avatar !== undefined}
+  {#if $contact !== undefined && profilePicture !== undefined}
     <ModalWrapper>
       <ModalDialog
         visible={true}
@@ -95,8 +95,8 @@
           }}
         >
           <HiddenSubmit />
-          <div class="avatar">
-            <AvatarEdit {avatar} name={displayName} />
+          <div class="profile-picture">
+            <ProfilePictureEdit {profilePicture} name={displayName} />
           </div>
           <TextInput bind:this={inputFirstName} bind:value={firstName} label="First Name" />
           <TextInput bind:value={lastName} label="Last Name" />
@@ -116,13 +116,13 @@
     padding: rem(16px);
     display: grid;
     grid-template:
-      'avatar' auto
+      'profile-picture' auto
       'firstName' auto
       'lastName' auto
       / minmax(min-content, #{rem(480px)});
     row-gap: rem(32px);
 
-    .avatar {
+    .profile-picture {
       justify-self: center;
     }
   }

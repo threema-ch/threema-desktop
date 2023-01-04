@@ -10,7 +10,7 @@
     type Reaction,
     type ReceiverData,
   } from '~/common/viewmodel/types';
-  import {Mention} from '~/common/viewmodel/utils/mentions';
+  import {type Mention} from '~/common/viewmodel/utils/mentions';
 
   /**
    * The text to be parsed and displayed with the requested features.
@@ -66,7 +66,7 @@
   >
     {#if showContact && sender !== undefined}
       <span class="contact">
-        <MessageContact name={sender.name} color={sender.avatar.color} />
+        <MessageContact name={sender.name} color={sender.profilePicture.color} />
       </span>
     {/if}
     <span class="text">

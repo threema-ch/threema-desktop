@@ -93,16 +93,16 @@ $config: config-merge(components.$config, (
     ),
 
     compound-components: (
-      // Avatar upload
-      --cc-avatar-upload-background-color,
+      // Profile picture upload
+      --cc-profile-picture-upload-background-color,
 
-      // Avatar overlay
-      --cc-avatar-overlay-background-color,
-      --cc-avatar-overlay-unread-background-color,
-      --cc-avatar-overlay-unread-text-color,
-      --cc-avatar-overlay-badge-icon-color,
-      --cc-avatar-overlay-badge-icon-consumer-color,
-      --cc-avatar-overlay-badge-icon-work-color,
+      // Profile picture overlay
+      --cc-profile-picture-overlay-background-color,
+      --cc-profile-picture-overlay-unread-background-color,
+      --cc-profile-picture-overlay-unread-text-color,
+      --cc-profile-picture-overlay-badge-icon-color,
+      --cc-profile-picture-overlay-badge-icon-consumer-color,
+      --cc-profile-picture-overlay-badge-icon-work-color,
 
       // Conversation
       --cc-conversation-message-options-caret-color,

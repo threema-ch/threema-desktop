@@ -18,9 +18,9 @@
     <div class="bar">
       <MainNavBar
         identity={user.identity}
-        avatar={user.avatar}
+        profilePicture={user.profilePicture}
         displayName={user.displayName}
-        on:click-avatar={() =>
+        on:click-profile-picture={() =>
           router.go(
             router.get().nav,
             ROUTE_DEFINITIONS.main.profile.withTypedParams(undefined),

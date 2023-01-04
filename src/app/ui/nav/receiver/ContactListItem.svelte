@@ -1,15 +1,15 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
-  import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import {type Router} from '~/app/routing/router';
-  import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {type ContactReceiver} from '~/app/ui/generic/receiver';
   import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
+  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
+  import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {contactListFilter, showFullNameAndNickname} from '~/app/ui/nav/receiver';
   import {type DbContactUid} from '~/common/db';
   import {ActivityState, ReceiverType} from '~/common/enum';
-  import {type Avatar} from '~/common/model';
+  import {type ProfilePicture} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type Remote} from '~/common/utils/endpoint';
   import {
@@ -42,9 +42,9 @@
    */
   export let selected = false;
 
-  // Reactive avatar store
-  let avatar: RemoteModelStore<Avatar>;
-  $: avatar = $contact.avatar;
+  // Reactive profile picture store
+  let profilePicture: RemoteModelStore<ProfilePicture>;
+  $: profilePicture = $contact.profilePicture;
 
   function switchToConversation(contactUid: DbContactUid): void {
     router.openConversationAndDetailsForReceiver({
@@ -74,9 +74,9 @@
 
     return {
       type: 'contact',
-      avatar: {
-        avatar: $avatar,
-        alt: `Avatar of ${viewModel.displayName}`,
+      profilePicture: {
+        profilePicture: $profilePicture,
+        alt: `Profile picture of ${viewModel.displayName}`,
         initials: viewModel.initials,
         badge: viewModel.badge,
         unread: 0,
@@ -143,7 +143,7 @@
 
   $-temp-vars: (--cc-t-background-color);
   $-checkbox-size: rem(40px);
-  $-avatar-size: rem(68px);
+  $-profile-picture-size: rem(68px);
   $-fade-width: rem(48px);
 
   .container {
@@ -154,7 +154,7 @@
     );
     @include def-var(
       $--ic-swipe-area-right-size: 66%,
-      $--cc-avatar-overlay-background-color: var($-temp-vars, --cc-t-background-color)
+      $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
     );
     background-color: var($-temp-vars, --cc-t-background-color);
 

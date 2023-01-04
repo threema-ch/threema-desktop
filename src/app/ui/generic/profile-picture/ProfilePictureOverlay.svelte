@@ -66,7 +66,7 @@
 
   %bubble {
     height: $-height;
-    border: $-border-width solid var(--cc-avatar-overlay-background-color);
+    border: $-border-width solid var(--cc-profile-picture-overlay-background-color);
     display: grid;
     place-items: center;
   }
@@ -77,8 +77,8 @@
     min-width: $-width;
     padding: 0 $-border-width * 2;
     border-radius: $-border-radius;
-    color: var(--cc-avatar-overlay-unread-text-color);
-    background-color: var(--cc-avatar-overlay-unread-background-color);
+    color: var(--cc-profile-picture-overlay-unread-text-color);
+    background-color: var(--cc-profile-picture-overlay-unread-background-color);
     grid-area: unread;
     place-self: start center;
   }
@@ -89,17 +89,17 @@
     width: $-width;
     height: $-height;
     border-radius: 50%;
-    color: var(--cc-avatar-overlay-badge-icon-color);
-    background-color: var(--cc-avatar-overlay-background-color);
+    color: var(--cc-profile-picture-overlay-badge-icon-color);
+    background-color: var(--cc-profile-picture-overlay-background-color);
     grid-area: badge;
     place-self: end center;
 
     &[data-badge='contact-consumer'] {
-      color: var(--cc-avatar-overlay-badge-icon-consumer-color);
+      color: var(--cc-profile-picture-overlay-badge-icon-consumer-color);
     }
 
     &[data-badge='contact-work'] {
-      color: var(--cc-avatar-overlay-badge-icon-work-color);
+      color: var(--cc-profile-picture-overlay-badge-icon-work-color);
     }
   }
 </style>

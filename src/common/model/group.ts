@@ -9,7 +9,6 @@ import {
 import {Existence, GroupUserState, ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger, getGroupTag} from '~/common/logging';
 import {
-    type Avatar,
     type Contact,
     type Conversation,
     type ConversationUpdateFromToSync,
@@ -23,12 +22,13 @@ import {
     type GroupUpdateFromLocal,
     type GroupUpdateFromToSync,
     type GroupView,
+    type ProfilePicture,
     type ServicesForModel,
 } from '~/common/model';
-import {AvatarModelStore} from '~/common/model/avatar';
 import * as contact from '~/common/model/contact';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
+import {ProfilePictureModelStore} from '~/common/model/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -625,11 +625,11 @@ export class GroupModelController implements GroupController {
     }
 
     /** @inheritdoc */
-    public avatar(): LocalModelStore<Avatar> {
+    public profilePicture(): LocalModelStore<ProfilePicture> {
         // TODO(WEBMD-528): Implement profile pictures for groups
         return this.meta.run(
             (handle) =>
-                new AvatarModelStore(this._services, {
+                new ProfilePictureModelStore(this._services, {
                     color: idColorIndexToString(handle.view().colorIndex),
                 }),
         );

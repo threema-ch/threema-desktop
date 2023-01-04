@@ -1,12 +1,12 @@
 <script lang="ts">
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import Avatar from '#3sc/components/threema/Avatar/Avatar.svelte';
-  import {transformAvatarPicture} from '~/common/dom/ui/avatar';
-  import {type Avatar as AvatarModel} from '~/common/model';
+  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
+  import {type ProfilePicture as ProfilePictureModel} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
 
-  export let avatar: RemoteModelStore<AvatarModel>;
+  export let profilePicture: RemoteModelStore<ProfilePictureModel>;
 
   export let name: string;
 </script>
@@ -19,12 +19,12 @@
     <IconButton flavor="overlay" class="wip">
       <MdIcon theme="Outlined">add_a_photo</MdIcon>
     </IconButton>
-    <div class="avatar">
-      <Avatar
-        img={transformAvatarPicture($avatar.view.picture)}
-        alt={`Avatar of ${name}`}
+    <div class="profile-picture">
+      <ProfilePicture
+        img={transformProfilePicture($profilePicture.view.picture)}
+        alt={`Profile picture of ${name}`}
         initials=""
-        color={$avatar.view.color}
+        color={$profilePicture.view.color}
         shape={'circle'}
       />
     </div>
@@ -49,7 +49,7 @@
     --c-icon-button-padding: #{rem(8px)};
     --c-icon-button-icon-size: #{rem(20px)};
 
-    .avatar {
+    .profile-picture {
       width: 100%;
       height: 100%;
       position: absolute;

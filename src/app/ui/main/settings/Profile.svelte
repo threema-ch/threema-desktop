@@ -1,21 +1,21 @@
 <script lang="ts">
-  import Avatar from '#3sc/components/threema/Avatar/Avatar.svelte';
-  import {transformAvatarPicture} from '~/common/dom/ui/avatar';
-  import {type AvatarView} from '~/common/model';
+  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
+  import {type ProfilePictureView} from '~/common/model';
 
-  export let avatar: AvatarView;
+  export let profilePicture: ProfilePictureView;
   export let initials: string;
   export let displayName: string;
 </script>
 
 <template>
   <div class="profile">
-    <div class="avatar">
-      <Avatar
-        img={transformAvatarPicture(avatar.picture)}
-        alt={'Avatar of {displayName}'}
+    <div class="profile-picture">
+      <ProfilePicture
+        img={transformProfilePicture(profilePicture.picture)}
+        alt={'Profile picture of {displayName}'}
         {initials}
-        color={avatar.color}
+        color={profilePicture.color}
         shape={'circle'}
       />
     </div>
@@ -34,13 +34,13 @@
     display: grid;
     height: rem(92px);
     grid-template:
-      'avatar nickname qr-code'
+      'profile-picture nickname qr-code'
       / #{rem(60px)} 1fr #{rem(60px)};
     column-gap: rem(16px);
     padding: rem(16px);
 
-    .avatar {
-      grid-area: avatar;
+    .profile-picture {
+      grid-area: profile-picture;
     }
 
     .nickname {

@@ -4,7 +4,7 @@ import {
 } from '~/app/ui/generic/receiver';
 import {type DbReceiverLookup} from '~/common/db';
 import {GroupUserState, ReceiverType} from '~/common/enum';
-import {type Avatar, type Contact, type Group, type RemoteModelFor} from '~/common/model';
+import {type Contact, type Group, type ProfilePicture, type RemoteModelFor} from '~/common/model';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString} from '~/common/network/types';
 import {assertUnreachable} from '~/common/utils/assert';
@@ -65,9 +65,9 @@ export type TransformedGroup = GroupData & {
  */
 export interface GroupPreviewStores {
     /**
-     * Avatar of the group
+     * Profile picture of the group
      */
-    readonly avatar: RemoteModelStore<Avatar>;
+    readonly profilePicture: RemoteModelStore<ProfilePicture>;
 
     /**
      * Members of the group
@@ -122,12 +122,12 @@ function getMembersForGroup(
     );
 }
 
-export async function getAvatarAndMemberStores(
+export async function getProfilePictureAndMemberStores(
     group: RemoteModelStore<Group>,
     contacts: RemoteSetStore<RemoteModelStore<Contact>>,
 ): Promise<GroupPreviewStores> {
     return {
-        avatar: await group.get().controller.avatar(),
+        profilePicture: await group.get().controller.profilePicture(),
         members: getMembersForGroup(group, contacts),
     };
 }

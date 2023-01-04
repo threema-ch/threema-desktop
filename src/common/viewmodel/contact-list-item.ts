@@ -7,7 +7,7 @@ import {
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import {type Avatar, type Contact, type ContactView} from '~/common/model';
+import {type Contact, type ContactView, type ProfilePicture} from '~/common/model';
 import {getDisplayName} from '~/common/model/contact';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString} from '~/common/network/types';
@@ -98,7 +98,7 @@ export interface ContactListItemViewModel extends PropertiesMarked {
     readonly fullName: string;
     readonly displayName: string;
     readonly initials: string;
-    readonly avatar: LocalModelStore<Avatar>;
+    readonly profilePicture: LocalModelStore<ProfilePicture>;
     readonly badge: ContactBadge | undefined;
     readonly isNew: boolean;
     readonly verificationLevel: VerificationLevel;
@@ -127,7 +127,7 @@ function getViewModelStore(
             fullName: getFullName(contact.view),
             displayName: getDisplayName(contact.view),
             initials: contact.view.initials,
-            avatar: contact.controller.avatar(),
+            profilePicture: contact.controller.profilePicture(),
             badge: transformContactBadge(contact.view),
             // TODO(WEBMD-381): Determine whether contact is a new contact
             isNew: Math.random() < 0.5,

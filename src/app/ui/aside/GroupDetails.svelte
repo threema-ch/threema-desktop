@@ -1,21 +1,21 @@
 <script lang="ts">
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import Avatar from '#3sc/components/threema/Avatar/Avatar.svelte';
+  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {
     type GroupPreviewStores,
     type TransformedGroup,
-    getAvatarAndMemberStores,
+    getProfilePictureAndMemberStores,
     transformGroup,
   } from '~/app/ui/aside/group-details';
   import GroupMembers from '~/app/ui/aside/group-details/GroupMembers.svelte';
-  import AvatarDialog from '~/app/ui/modal/ContactAvatar.svelte';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
+  import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {transformAvatarPicture} from '~/common/dom/ui/avatar';
+  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {ReceiverType} from '~/common/enum';
   import {type Contact, type Group} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
@@ -31,7 +31,7 @@
   const {router, backend} = services;
 
   let group: RemoteModelStore<Group> | undefined;
-  let avatar: GroupPreviewStores['avatar'] | undefined;
+  let profilePicture: GroupPreviewStores['profilePicture'] | undefined;
   let group$: TransformedGroup | undefined;
 
   async function fetchGroup(routerState: RouterState): Promise<void> {
@@ -45,11 +45,13 @@
     }
   }
 
-  async function setGroupAndAvatarStore(groupParam: RemoteModelStore<Group>): Promise<void> {
+  async function setGroupAndProfilePictureStore(
+    groupParam: RemoteModelStore<Group>,
+  ): Promise<void> {
     const allContactsStore = await backend.model.contacts.getAll();
-    const stores = await getAvatarAndMemberStores(groupParam, allContactsStore);
+    const stores = await getProfilePictureAndMemberStores(groupParam, allContactsStore);
     group$ = transformGroup(groupParam.get());
-    ({avatar, members} = stores);
+    ({profilePicture, members} = stores);
   }
 
   $: void fetchGroup($router);
@@ -57,7 +59,7 @@
   let members: IQueryableStore<ReadonlySet<RemoteModelStore<Contact>>>;
 
   $: if (group !== undefined) {
-    void setGroupAndAvatarStore(group);
+    void setGroupAndProfilePictureStore(group);
   }
 
   function closeAside(): void {
@@ -66,7 +68,7 @@
 
   // Switch different modal dialogs
   let deleteGroupDialogVisible = false;
-  let groupAvatarDialogVisible = false;
+  let groupProfilePictureDialogVisible = false;
 
   // @ts-expect-error TODO(WEBMD-653): Implement this
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -121,15 +123,15 @@
       </IconButton>
     </header>
 
-    {#if group$ !== undefined && $avatar !== undefined}
-      <div class="avatar">
+    {#if group$ !== undefined && $profilePicture !== undefined}
+      <div class="profile-picture">
         <span>
-          <Avatar
-            on:click={() => (groupAvatarDialogVisible = true)}
-            img={transformAvatarPicture($avatar.view.picture)}
-            alt="Avatar of {group$.displayName}"
+          <ProfilePicture
+            on:click={() => (groupProfilePictureDialogVisible = true)}
+            img={transformProfilePicture($profilePicture.view.picture)}
+            alt="Profile picture of {group$.displayName}"
             initials={group$.displayName.slice(0, 2)}
-            color={$avatar.view.color}
+            color={$profilePicture.view.color}
             shape={'circle'}
           />
         </span>
@@ -198,15 +200,15 @@
         displayName={group$.displayName}
       />
 
-      <AvatarDialog bind:visible={groupAvatarDialogVisible}
-        ><Avatar
-          img={transformAvatarPicture($avatar.view.picture)}
-          alt="Avatar of {group$.displayName}"
+      <ProfilePictureDialog bind:visible={groupProfilePictureDialogVisible}
+        ><ProfilePicture
+          img={transformProfilePicture($profilePicture.view.picture)}
+          alt="Profile picture of {group$.displayName}"
           initials={group$.displayName.slice(0, 2)}
-          color={$avatar.view.color}
+          color={$profilePicture.view.color}
           shape={'square'}
         />
-      </AvatarDialog>
+      </ProfilePictureDialog>
     {/if}
   </div>
 </template>
@@ -218,7 +220,7 @@
     display: grid;
     grid-template:
       'header' #{rem(64px)}
-      'avatar' min-content
+      'profile-picture' min-content
       'name' #{rem(24px)}
       'edit' #{rem(24px)}
       'members' min-content
@@ -244,11 +246,11 @@
       user-select: none;
     }
 
-    .avatar {
+    .profile-picture {
       display: grid;
       place-items: center;
       margin: rem(8px) 0;
-      --c-avatar-size: #{rem(120px)};
+      --c-profile-picture-size: #{rem(120px)};
 
       span {
         cursor: pointer;

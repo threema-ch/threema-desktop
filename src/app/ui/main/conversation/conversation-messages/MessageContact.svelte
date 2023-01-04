@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {type AvatarColor} from '#3sc/components/threema/Avatar';
+  import {type ProfilePictureColor} from '#3sc/components/threema/ProfilePicture';
 
   export let name: string;
 
-  export let color: AvatarColor;
+  export let color: ProfilePictureColor;
 </script>
 
 <template>
-  <span style="color: var(--c-avatar-initials-{color});">
+  <span style="color: var(--c-profile-picture-initials-{color});">
     {name}
   </span>
 </template>

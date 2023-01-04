@@ -95,9 +95,9 @@
       {#if isCurrentUserGroupCreator}
         <DeprecatedReceiver
           clickable={false}
-          avatar={{
-            alt: `My Avatar`,
-            avatar: backend.user.avatar.get(),
+          profilePicture={{
+            alt: `My profile picture`,
+            profilePicture: backend.user.profilePicture.get(),
             initials: 'ME',
             unread: 0,
           }}
@@ -120,9 +120,9 @@
       {#if !isCurrentUserGroupCreator && !isInactiveGroup}
         <DeprecatedReceiver
           clickable={false}
-          avatar={{
-            alt: `My Avatar`,
-            avatar: backend.user.avatar.get(),
+          profilePicture={{
+            alt: `My profile picture`,
+            profilePicture: backend.user.profilePicture.get(),
             initials: 'ME',
             unread: 0,
           }}

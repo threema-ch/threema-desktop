@@ -66,13 +66,13 @@
    */
   export let active = false;
 
-  let {receiver, avatar}: Partial<ConversationPreviewStores> = {};
+  let {receiver, profilePicture}: Partial<ConversationPreviewStores> = {};
   let {conversation: conversation$, receiver: receiver$}: Partial<ConversationPreviewData> = {};
 
   // Transform conversation data and set store instances
   $: void getStores($conversation).then((stores) => {
     conversation$ = transformConversation($conversation);
-    ({receiver, avatar} = stores);
+    ({receiver, profilePicture} = stores);
   });
 
   // Transform receiver data
@@ -121,11 +121,11 @@
   <div class="container" class:active>
     <SwipeArea {group}>
       <section slot="main" class="conversation" on:click={() => switchToConversation(receiver$)}>
-        {#if conversation$ !== undefined && receiver$ !== undefined && $avatar !== undefined}
+        {#if conversation$ !== undefined && receiver$ !== undefined && $profilePicture !== undefined}
           <DeprecatedReceiver
-            avatar={{
-              alt: `Avatar of ${receiver$.name}`,
-              avatar: $avatar,
+            profilePicture={{
+              alt: `Profile picture of ${receiver$.name}`,
+              profilePicture: $profilePicture,
               initials: $viewModel.receiver.initials,
               unread: conversation$.unread,
               badge: receiver$.badge,
@@ -231,7 +231,7 @@
   @use 'component' as *;
 
   $-temp-vars: (--cc-t-background-color);
-  $-avatar-size: rem(48px);
+  $-profile-picture-size: rem(48px);
   $-fade-width: rem(48px);
 
   .container {
@@ -242,7 +242,7 @@
     );
     @include def-var(
       $--ic-swipe-area-right-size: 75%,
-      $--cc-avatar-overlay-background-color: var($-temp-vars, --cc-t-background-color)
+      $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
     );
     background-color: var($-temp-vars, --cc-t-background-color);
 

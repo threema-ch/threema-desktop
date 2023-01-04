@@ -78,7 +78,7 @@
       {/if}
 
       <ProfileComponent
-        avatar={$profile.avatar}
+        profilePicture={$profile.profilePicture}
         displayName={$profile.displayName}
         initials={$profile.initials}
         on:back={closeProfile}

@@ -1,5 +1,5 @@
 import {type PublicKey} from '~/common/crypto';
-import {type AvatarView} from '~/common/model';
+import {type ProfilePictureView} from '~/common/model';
 import {type IdentityString, type PublicNickname} from '~/common/network/types';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
@@ -17,7 +17,7 @@ function getMyDisplayName(publicNickname: PublicNickname, identity: IdentityStri
 }
 
 export interface ProfileViewModel extends PropertiesMarked {
-    readonly avatar: AvatarView;
+    readonly profilePicture: ProfilePictureView;
     readonly nickname: PublicNickname;
     readonly initials: string;
     readonly identity: IdentityString;
@@ -35,7 +35,7 @@ export function getProfileViewModelStore(services: ServicesForViewModel): Profil
         );
         const initials = getGraphemeClusters(displayName, 2).join('');
         return endpoint.exposeProperties({
-            avatar: getAndSubscribe(model.user.avatar).view,
+            profilePicture: getAndSubscribe(model.user.profilePicture).view,
             nickname: profileSettings.view.publicNickname,
             initials,
             identity: device.identity.string,

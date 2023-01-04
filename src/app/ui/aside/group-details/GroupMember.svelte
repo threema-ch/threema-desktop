@@ -1,13 +1,18 @@
 <script lang="ts">
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
+  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {
     type TransformedContact,
     getStores,
     showFullNameAndNickname,
     transformContact,
   } from '~/app/ui/nav/receiver';
-  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
-  import {type Avatar, type Contact, type RemoteModelFor, type Settings} from '~/common/model';
+  import {
+    type Contact,
+    type ProfilePicture,
+    type RemoteModelFor,
+    type Settings,
+  } from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type IdentityString} from '~/common/network/types';
   import {type Remote} from '~/common/utils/endpoint';
@@ -18,12 +23,12 @@
 
   export let creator: IdentityString;
 
-  let avatar: RemoteModelStore<Avatar> | undefined;
+  let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
   let contact$: TransformedContact | undefined = undefined;
 
   function resetContactData(): void {
     contact$ = undefined;
-    avatar = undefined;
+    profilePicture = undefined;
   }
 
   function loadContactData(c: RemoteModelFor<Contact>): void {
@@ -32,7 +37,7 @@
         contact$ = transformedContact;
         getStores(c)
           .then((stores) => {
-            avatar = stores.avatar;
+            profilePicture = stores.profilePicture;
           })
           .catch(resetContactData);
       })
@@ -43,12 +48,12 @@
 </script>
 
 <template>
-  {#if contact$ !== undefined && $avatar !== undefined}
+  {#if contact$ !== undefined && $profilePicture !== undefined}
     <DeprecatedReceiver
       on:click
-      avatar={{
-        alt: `Avatar of ${contact$.displayName}`,
-        avatar: $avatar,
+      profilePicture={{
+        alt: `Profile picture of ${contact$.displayName}`,
+        profilePicture: $profilePicture,
         initials: contact$.initials,
         unread: 0,
         badge: contact$.badge,

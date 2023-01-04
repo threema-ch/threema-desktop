@@ -7,7 +7,7 @@ import {SAFE_BACKUP_AUTORESTORE} from '~/common/dom/safe-autorestore';
 import {type D2mLeaderState, ActivityState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
-import {type Avatar, type Repositories} from '~/common/model';
+import {type ProfilePicture, type Repositories} from '~/common/model';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type DisplayPacket} from '~/common/network/protocol/capture';
 import {type DirectoryBackend} from '~/common/network/protocol/directory';
@@ -35,7 +35,7 @@ import {
 export interface UserData {
     readonly identity: IdentityString;
     readonly displayName: RemoteStore<string>;
-    readonly avatar: RemoteModelStore<Avatar>;
+    readonly profilePicture: RemoteModelStore<ProfilePicture>;
 }
 
 /**
@@ -351,13 +351,13 @@ export class BackendController {
 
         // Gather startup data
         log.debug('Waiting for startup data to be available');
-        const [connectionState, leaderState, identity, deviceIds, avatar, displayName] =
+        const [connectionState, leaderState, identity, deviceIds, profilePicture, displayName] =
             await Promise.all([
                 remote.connectionManager.state,
                 remote.connectionManager.leaderState,
                 remote.model.user.identity,
                 remote.deviceIds,
-                remote.model.user.avatar,
+                remote.model.user.profilePicture,
                 remote.model.user.displayName,
             ]);
 
@@ -366,7 +366,7 @@ export class BackendController {
         const controller = new BackendController(services, log, remote, deviceIds, {
             connectionState,
             leaderState,
-            user: {identity, avatar, displayName},
+            user: {identity, profilePicture, displayName},
         });
         return [controller, isNewIdentity];
     }

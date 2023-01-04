@@ -7,9 +7,9 @@ import {
 } from '~/common/enum';
 import {
     type AnyReceiver,
-    type Avatar,
     type ContactView,
     type GroupView,
+    type ProfilePicture,
     type RemoteModelFor,
 } from '~/common/model';
 import {type IdentityString} from '~/common/network/types';
@@ -20,8 +20,8 @@ import {
 } from '~/common/viewmodel/contact-list-item';
 import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
-export interface ReceiverAvatar {
-    readonly avatar: RemoteModelFor<Avatar>;
+export interface ReceiverProfilePicture {
+    readonly profilePicture: RemoteModelFor<ProfilePicture>;
     readonly alt: string;
     readonly initials: string;
     readonly unread: u53;
@@ -70,7 +70,7 @@ export function isInactiveGroup(receiver: RemoteModelFor<AnyReceiver>): boolean 
 }
 
 interface BaseReceiver {
-    readonly avatar: ReceiverAvatar;
+    readonly profilePicture: ReceiverProfilePicture;
     readonly title: {
         readonly text: string;
         readonly lineThrough?: boolean;
