@@ -11,14 +11,14 @@ const {
 /**
  * Convert interface name `IFoo` or `Foo` to `FooEncodable`.
  *
- * @param interface Interface name (`IFoo` or `Foo`).
+ * @param iface Interface name (`IFoo` or `Foo`).
  * @returns Converted interface name (`FooEncodable`).
  */
-function getEncodableInterfaceName(interface) {
+function getEncodableInterfaceName(iface) {
     const base =
-        interface.escapedText.match(/^I[A-Z]/u) !== null
-            ? interface.escapedText.slice(1)
-            : interface.escapedText;
+        iface.escapedText.match(/^I[A-Z]/u) !== null
+            ? iface.escapedText.slice(1)
+            : iface.escapedText;
     return `${base}Encodable`;
 }
 
@@ -28,9 +28,9 @@ function getEncodableInterfaceName(interface) {
  * - Make all array properties `readonly`
  * - Tag the interface with `tag.ProtobufMessage`
  */
-function updateMessageInterface(interface) {
+function updateMessageInterface(iface) {
     // Make all array properties `readonly`
-    for (const member of interface.members) {
+    for (const member of iface.members) {
         if (
             member.type.kind !== ts.SyntaxKind.ParenthesizedType ||
             member.type.type.kind !== ts.SyntaxKind.UnionType
@@ -43,16 +43,16 @@ function updateMessageInterface(interface) {
             if (type.kind !== ts.SyntaxKind.ArrayType) {
                 continue;
             }
-            union.types[i] = ts.createTypeOperatorNode(ts.SyntaxKind.ReadonlyKeyword, type);
+            union.types[i] = ts.factory.createTypeOperatorNode(ts.SyntaxKind.ReadonlyKeyword, type);
         }
     }
 
     // Tag the interface with `tag.ProtobufMessage`
-    return createNewtypeNode(getEncodableInterfaceName(interface.name), interface, [
-        ts.createTypeReferenceNode(
-            ts.createQualifiedName(
-                ts.createIdentifier('tag'),
-                ts.createIdentifier('ProtobufMessage'),
+    return createNewtypeNode(getEncodableInterfaceName(iface.name), iface, [
+        ts.factory.createTypeReferenceNode(
+            ts.factory.createQualifiedName(
+                ts.factory.createIdentifier('tag'),
+                ts.factory.createIdentifier('ProtobufMessage'),
             ),
             undefined,
         ),
@@ -74,7 +74,10 @@ function updateMessageClass(class_) {
             member.kind === ts.SyntaxKind.PropertyDeclaration &&
             member.type.kind === ts.SyntaxKind.ArrayType
         ) {
-            member.type = ts.createTypeOperatorNode(ts.SyntaxKind.ReadonlyKeyword, member.type);
+            member.type = ts.factory.createTypeOperatorNode(
+                ts.SyntaxKind.ReadonlyKeyword,
+                member.type,
+            );
         }
 
         // Update `encode` method interface reference
@@ -86,7 +89,7 @@ function updateMessageClass(class_) {
                 if (parameter.name.escapedText !== 'message') {
                     continue;
                 }
-                parameter.type.typeName.right = ts.createIdentifier(
+                parameter.type.typeName.right = ts.factory.createIdentifier(
                     getEncodableInterfaceName(parameter.type.typeName.right),
                 );
             }
@@ -96,17 +99,20 @@ function updateMessageClass(class_) {
 
 /**
  * Create tag import (for `ProtobufMessage`).
+ *
+ * Output:
+ *
+ *     import type * as tag from "../tag";
  */
 function createTagImportNode() {
-    return ts.createImportDeclaration(
+    return ts.factory.createImportDeclaration(
         undefined,
-        undefined,
-        ts.createImportClause(
-            undefined,
-            ts.createNamespaceImport(ts.createIdentifier('tag')),
+        ts.factory.createImportClause(
             true,
+            ts.factory.createNamespaceImport(ts.factory.createIdentifier('tag')),
+            undefined,
         ),
-        ts.createStringLiteral('../tag'),
+        ts.factory.createStringLiteral('../tag'),
     );
 }
 
@@ -153,7 +159,8 @@ function updateMessageNamespaces(root, matchers) {
 
 function main() {
     // Parse source from stdin
-    const source = createSource('index.d.ts', fs.readFileSync(0, 'utf8'));
+    const sourceFromStdin = fs.readFileSync(0, 'utf8');
+    const source = createSource('index.d.ts', sourceFromStdin);
 
     // Insert tag import
     source.statements.unshift(createTagImportNode());
@@ -164,11 +171,10 @@ function main() {
     // Insert 'Long' import
     // TODO(WEBMD-48): To be removed once we make use of BigInt
     source.statements.unshift(
-        ts.createImportDeclaration(
+        ts.factory.createImportDeclaration(
             undefined,
-            undefined,
-            ts.createImportClause(ts.createIdentifier('Long'), undefined, true),
-            ts.createStringLiteral('long'),
+            ts.factory.createImportClause(true, ts.factory.createIdentifier('Long'), undefined),
+            ts.factory.createStringLiteral('long'),
         ),
     );
 

@@ -33,17 +33,20 @@ function traverse(root, matchers, transform) {
 
 /**
  * Create types import (for `WeakOpaque`).
+ *
+ * Output:
+ *
+ *     import type * as types from "~/common/types";
  */
 function createTypesImportNode() {
-    return ts.createImportDeclaration(
+    return ts.factory.createImportDeclaration(
         undefined,
-        undefined,
-        ts.createImportClause(
-            undefined,
-            ts.createNamespaceImport(ts.createIdentifier('types')),
+        ts.factory.createImportClause(
             true,
+            ts.factory.createNamespaceImport(ts.factory.createIdentifier('types')),
+            undefined,
         ),
-        ts.createStringLiteral('~/common/types'),
+        ts.factory.createStringLiteral('~/common/types'),
     );
 }
 
@@ -56,24 +59,26 @@ function createTypesImportNode() {
  * @returns a new-type node.
  */
 function createNewtypeNode(name, target, tags) {
-    return ts.createTypeAliasDeclaration(
-        undefined,
+    return ts.factory.createTypeAliasDeclaration(
         undefined,
         name,
         undefined,
-        ts.createTypeReferenceNode(
-            ts.createQualifiedName(ts.createIdentifier('types'), ts.createIdentifier('WeakOpaque')),
+        ts.factory.createTypeReferenceNode(
+            ts.factory.createQualifiedName(
+                ts.factory.createIdentifier('types'),
+                ts.factory.createIdentifier('WeakOpaque'),
+            ),
             [
-                ts.createTypeReferenceNode(target.name, undefined),
-                ts.createIntersectionTypeNode([
-                    ts.createTypeLiteralNode([
-                        ts.createPropertySignature(
-                            [ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)],
+                ts.factory.createTypeReferenceNode(target.name, undefined),
+                ts.factory.createIntersectionTypeNode([
+                    ts.factory.createTypeLiteralNode([
+                        ts.factory.createPropertySignature(
+                            [ts.factory.createModifier(ts.SyntaxKind.ReadonlyKeyword)],
                             name,
                             undefined,
-                            ts.createTypeOperatorNode(
+                            ts.factory.createTypeOperatorNode(
                                 ts.SyntaxKind.UniqueKeyword,
-                                ts.createKeywordTypeNode(ts.SyntaxKind.SymbolKeyword),
+                                ts.factory.createKeywordTypeNode(ts.SyntaxKind.SymbolKeyword),
                             ),
                             undefined,
                         ),
