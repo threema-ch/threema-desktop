@@ -6,11 +6,14 @@
  */
 const fs = require('fs');
 const ts = require('typescript');
-const factory = ts.factory;
 const {getLeadingComments, createSource} = require('./generator-utils.cjs');
 
-const u53Keyword = ts.createTypeReferenceNode(ts.createIdentifier('u53'), undefined);
-const stringKeyword = ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+const factory = ts.factory;
+
+// Often-used keywords
+const u53Keyword = factory.createTypeReferenceNode(factory.createIdentifier('u53'), undefined);
+const stringKeyword = factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+
 function createEnumConversionAndConstantSet(name, members, initializerType) {
     let functionNameFrom;
     let functionNameContainsTyped;
@@ -33,27 +36,34 @@ function createEnumConversionAndConstantSet(name, members, initializerType) {
             throw new Error(`Invalid initializer type: ${initializerType}`);
     }
     return [
-        ts.createVariableStatement(
-            [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-            ts.createVariableDeclarationList(
+        factory.createVariableStatement(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            factory.createVariableDeclarationList(
                 [
-                    ts.createVariableDeclaration(
-                        ts.createIdentifier('ALL'),
-                        ts.createTypeReferenceNode(ts.createIdentifier('ReadonlySet'), [
-                            ts.createTypeReferenceNode(ts.createIdentifier(name), undefined),
+                    factory.createVariableDeclaration(
+                        factory.createIdentifier('ALL'),
+                        undefined,
+                        factory.createTypeReferenceNode(factory.createIdentifier('ReadonlySet'), [
+                            factory.createTypeReferenceNode(
+                                factory.createIdentifier(name),
+                                undefined,
+                            ),
                         ]),
-                        ts.createNew(ts.createIdentifier('Set'), undefined, [
-                            ts.createAsExpression(
-                                ts.createArrayLiteral(
+                        factory.createNewExpression(factory.createIdentifier('Set'), undefined, [
+                            factory.createAsExpression(
+                                factory.createArrayLiteralExpression(
                                     members.map((member) =>
-                                        ts.createPropertyAccess(
-                                            ts.createIdentifier(name),
-                                            ts.createIdentifier(member.identifier),
+                                        factory.createPropertyAccessExpression(
+                                            factory.createIdentifier(name),
+                                            factory.createIdentifier(member.identifier),
                                         ),
                                     ),
                                     true,
                                 ),
-                                ts.createTypeReferenceNode(ts.createIdentifier('const'), undefined),
+                                factory.createTypeReferenceNode(
+                                    factory.createIdentifier('const'),
+                                    undefined,
+                                ),
                             ),
                         ]),
                     ),
@@ -64,7 +74,6 @@ function createEnumConversionAndConstantSet(name, members, initializerType) {
 
         // Function: fromXxx
         factory.createFunctionDeclaration(
-            undefined,
             [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
             undefined,
             factory.createIdentifier(functionNameFrom),
@@ -73,14 +82,12 @@ function createEnumConversionAndConstantSet(name, members, initializerType) {
                 factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    undefined,
                     factory.createIdentifier('value'),
                     undefined,
                     paramType,
                     undefined,
                 ),
                 factory.createParameterDeclaration(
-                    undefined,
                     undefined,
                     undefined,
                     factory.createIdentifier('fallback'),
@@ -156,46 +163,44 @@ function createEnumConversionAndConstantSet(name, members, initializerType) {
         ),
 
         // Function: containsXxx
-        ts.createFunctionDeclaration(
+        factory.createFunctionDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
             undefined,
-            [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-            undefined,
-            ts.createIdentifier(functionNameContainsTyped),
+            factory.createIdentifier(functionNameContainsTyped),
             undefined,
             [
-                ts.createParameter(
+                factory.createParameterDeclaration(
                     undefined,
                     undefined,
-                    undefined,
-                    ts.createIdentifier('value'),
+                    factory.createIdentifier('value'),
                     undefined,
                     paramType,
                     undefined,
                 ),
             ],
-            ts.createTypePredicateNodeWithModifier(
+            factory.createTypePredicateNode(
                 undefined,
-                ts.createIdentifier('value'),
-                ts.createTypeReferenceNode(ts.createIdentifier(name), undefined),
+                factory.createIdentifier('value'),
+                factory.createTypeReferenceNode(factory.createIdentifier(name), undefined),
             ),
-            ts.createBlock(
+            factory.createBlock(
                 [
-                    ts.createReturn(
-                        ts.createCall(
-                            ts.createPropertyAccess(
-                                ts.createParen(
-                                    ts.createAsExpression(
-                                        ts.createIdentifier('ALL'),
-                                        ts.createTypeReferenceNode(
-                                            ts.createIdentifier('ReadonlySet'),
+                    factory.createReturnStatement(
+                        factory.createCallExpression(
+                            factory.createPropertyAccessExpression(
+                                factory.createParenthesizedExpression(
+                                    factory.createAsExpression(
+                                        factory.createIdentifier('ALL'),
+                                        factory.createTypeReferenceNode(
+                                            factory.createIdentifier('ReadonlySet'),
                                             [paramType],
                                         ),
                                     ),
                                 ),
-                                ts.createIdentifier('has'),
+                                factory.createIdentifier('has'),
                             ),
                             undefined,
-                            [ts.createIdentifier('value')],
+                            [factory.createIdentifier('value')],
                         ),
                     ),
                 ],
@@ -204,53 +209,51 @@ function createEnumConversionAndConstantSet(name, members, initializerType) {
         ),
 
         // Function: contains
-        ts.createFunctionDeclaration(
+        factory.createFunctionDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
             undefined,
-            [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-            undefined,
-            ts.createIdentifier('contains'),
+            factory.createIdentifier('contains'),
             undefined,
             [
-                ts.createParameter(
+                factory.createParameterDeclaration(
                     undefined,
                     undefined,
+                    factory.createIdentifier('value'),
                     undefined,
-                    ts.createIdentifier('value'),
-                    undefined,
-                    ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword),
+                    factory.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword),
                     undefined,
                 ),
             ],
-            ts.createTypePredicateNodeWithModifier(
+            factory.createTypePredicateNode(
                 undefined,
-                ts.createIdentifier('value'),
-                ts.createTypeReferenceNode(ts.createIdentifier(name), undefined),
+                factory.createIdentifier('value'),
+                factory.createTypeReferenceNode(factory.createIdentifier(name), undefined),
             ),
-            ts.createBlock(
+            factory.createBlock(
                 [
-                    ts.createReturn(
-                        ts.createBinary(
-                            ts.createBinary(
-                                ts.createTypeOf(ts.createIdentifier('value')),
-                                ts.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                                ts.createStringLiteral(paramTypeLiteral),
+                    factory.createReturnStatement(
+                        factory.createBinaryExpression(
+                            factory.createBinaryExpression(
+                                factory.createTypeOfExpression(factory.createIdentifier('value')),
+                                factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                                factory.createStringLiteral(paramTypeLiteral),
                             ),
-                            ts.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                            ts.createCall(
-                                ts.createPropertyAccess(
-                                    ts.createParen(
-                                        ts.createAsExpression(
-                                            ts.createIdentifier('ALL'),
-                                            ts.createTypeReferenceNode(
-                                                ts.createIdentifier('ReadonlySet'),
+                            factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                            factory.createCallExpression(
+                                factory.createPropertyAccessExpression(
+                                    factory.createParenthesizedExpression(
+                                        factory.createAsExpression(
+                                            factory.createIdentifier('ALL'),
+                                            factory.createTypeReferenceNode(
+                                                factory.createIdentifier('ReadonlySet'),
                                                 [paramType],
                                             ),
                                         ),
                                     ),
-                                    ts.createIdentifier('has'),
+                                    factory.createIdentifier('has'),
                                 ),
                                 undefined,
-                                [ts.createIdentifier('value')],
+                                [factory.createIdentifier('value')],
                             ),
                         ),
                     ),
@@ -263,77 +266,91 @@ function createEnumConversionAndConstantSet(name, members, initializerType) {
 
 function createEnumNameFunction(name, members) {
     return [
-        ts.createVariableStatement(
-            [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-            ts.createVariableDeclarationList(
+        factory.createVariableStatement(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+            factory.createVariableDeclarationList(
                 [
-                    ts.createVariableDeclaration(
-                        ts.createIdentifier('NAME_OF'),
+                    factory.createVariableDeclaration(
+                        factory.createIdentifier('NAME_OF'),
                         undefined,
-                        ts.createAsExpression(
-                            ts.createObjectLiteral(
+                        undefined,
+                        factory.createAsExpression(
+                            factory.createObjectLiteralExpression(
                                 [
                                     ...members.map((member) =>
-                                        ts.createPropertyAssignment(
-                                            ts.createComputedPropertyName(
-                                                ts.createPropertyAccess(
-                                                    ts.createIdentifier(name),
-                                                    ts.createIdentifier(member.identifier),
+                                        factory.createPropertyAssignment(
+                                            factory.createComputedPropertyName(
+                                                factory.createPropertyAccessExpression(
+                                                    factory.createIdentifier(name),
+                                                    factory.createIdentifier(member.identifier),
                                                 ),
                                             ),
-                                            ts.createStringLiteral(member.identifier),
+                                            factory.createStringLiteral(member.identifier),
                                         ),
                                     ),
                                 ],
                                 true,
                             ),
-                            ts.createTypeReferenceNode(ts.createIdentifier('const'), undefined),
+                            factory.createTypeReferenceNode(
+                                factory.createIdentifier('const'),
+                                undefined,
+                            ),
                         ),
                     ),
                 ],
                 ts.NodeFlags.Const,
             ),
         ),
-        ts.createFunctionDeclaration(
+        factory.createFunctionDeclaration(
+            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
             undefined,
-            [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-            undefined,
-            ts.createIdentifier('nameOf'),
-            [ts.createTypeParameterDeclaration(ts.createIdentifier('T'), u53Keyword, undefined)],
+            factory.createIdentifier('nameOf'),
             [
-                ts.createParameter(
+                factory.createTypeParameterDeclaration(
                     undefined,
-                    undefined,
-                    undefined,
-                    ts.createIdentifier('value'),
-                    undefined,
-                    ts.createTypeReferenceNode(ts.createIdentifier('T'), undefined),
+                    factory.createIdentifier('T'),
+                    u53Keyword,
                     undefined,
                 ),
             ],
-            ts.createUnionTypeNode([
-                ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-                ts.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+            [
+                factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    factory.createIdentifier('value'),
+                    undefined,
+                    factory.createTypeReferenceNode(factory.createIdentifier('T'), undefined),
+                    undefined,
+                ),
+            ],
+            factory.createUnionTypeNode([
+                factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+                factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
             ]),
-            ts.createBlock(
+            factory.createBlock(
                 [
-                    ts.createReturn(
-                        ts.createElementAccess(
-                            ts.createParen(
-                                ts.createAsExpression(
-                                    ts.createIdentifier('NAME_OF'),
-                                    ts.createTypeReferenceNode(ts.createIdentifier('Record'), [
-                                        u53Keyword,
-                                        ts.createUnionTypeNode([
-                                            ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-                                            ts.createKeywordTypeNode(
-                                                ts.SyntaxKind.UndefinedKeyword,
-                                            ),
-                                        ]),
-                                    ]),
+                    factory.createReturnStatement(
+                        factory.createElementAccessExpression(
+                            factory.createParenthesizedExpression(
+                                factory.createAsExpression(
+                                    factory.createIdentifier('NAME_OF'),
+                                    factory.createTypeReferenceNode(
+                                        factory.createIdentifier('Record'),
+                                        [
+                                            u53Keyword,
+                                            factory.createUnionTypeNode([
+                                                factory.createKeywordTypeNode(
+                                                    ts.SyntaxKind.StringKeyword,
+                                                ),
+                                                factory.createKeywordTypeNode(
+                                                    ts.SyntaxKind.UndefinedKeyword,
+                                                ),
+                                            ]),
+                                        ],
+                                    ),
                                 ),
                             ),
-                            ts.createIdentifier('value'),
+                            factory.createIdentifier('value'),
                         ),
                     ),
                 ],
@@ -344,157 +361,173 @@ function createEnumNameFunction(name, members) {
 }
 
 function createEnumStoreFactoryFunction(name) {
-    return ts.createFunctionDeclaration(
+    return factory.createFunctionDeclaration(
+        [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
         undefined,
-        [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-        undefined,
-        ts.createIdentifier('createStore'),
+        factory.createIdentifier('createStore'),
         [
-            ts.createTypeParameterDeclaration(
-                ts.createIdentifier('S'),
-                ts.createTypeReferenceNode(ts.createIdentifier('MonotonicEnumStore'), [
-                    ts.createTypeReferenceNode(ts.createIdentifier(name), undefined),
+            factory.createTypeParameterDeclaration(
+                undefined,
+                factory.createIdentifier('S'),
+                factory.createTypeReferenceNode(factory.createIdentifier('MonotonicEnumStore'), [
+                    factory.createTypeReferenceNode(factory.createIdentifier(name), undefined),
                 ]),
                 undefined,
             ),
         ],
         [
-            ts.createParameter(
+            factory.createParameterDeclaration(
                 undefined,
                 undefined,
+                factory.createIdentifier('constructor'),
                 undefined,
-                ts.createIdentifier('constructor'),
-                undefined,
-                ts.createConstructorTypeNode(
+                factory.createConstructorTypeNode(
+                    undefined,
                     undefined,
                     [
-                        ts.createParameter(
+                        factory.createParameterDeclaration(
                             undefined,
                             undefined,
+                            factory.createIdentifier('initial'),
                             undefined,
-                            ts.createIdentifier('initial'),
-                            undefined,
-                            ts.createTypeReferenceNode(ts.createIdentifier(name), undefined),
-                            undefined,
-                        ),
-                        ts.createParameter(
-                            undefined,
-                            undefined,
-                            undefined,
-                            ts.createIdentifier('activator'),
-                            ts.createToken(ts.SyntaxKind.QuestionToken),
-                            ts.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+                            factory.createTypeReferenceNode(
+                                factory.createIdentifier(name),
+                                undefined,
+                            ),
                             undefined,
                         ),
-                        ts.createParameter(
+                        factory.createParameterDeclaration(
                             undefined,
                             undefined,
+                            factory.createIdentifier('activator'),
+                            factory.createToken(ts.SyntaxKind.QuestionToken),
+                            factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
                             undefined,
-                            ts.createIdentifier('debug'),
-                            ts.createToken(ts.SyntaxKind.QuestionToken),
-                            ts.createTypeReferenceNode(ts.createIdentifier('StoreDebug'), [
-                                ts.createTypeReferenceNode(ts.createIdentifier(name), undefined),
-                            ]),
+                        ),
+                        factory.createParameterDeclaration(
+                            undefined,
+                            undefined,
+                            factory.createIdentifier('debug'),
+                            factory.createToken(ts.SyntaxKind.QuestionToken),
+                            factory.createTypeReferenceNode(
+                                factory.createIdentifier('StoreDebug'),
+                                [
+                                    factory.createTypeReferenceNode(
+                                        factory.createIdentifier(name),
+                                        undefined,
+                                    ),
+                                ],
+                            ),
                             undefined,
                         ),
                     ],
-                    ts.createTypeReferenceNode(ts.createIdentifier('S'), undefined),
+                    factory.createTypeReferenceNode(factory.createIdentifier('S'), undefined),
                 ),
                 undefined,
             ),
-            ts.createParameter(
+            factory.createParameterDeclaration(
                 undefined,
                 undefined,
+                factory.createIdentifier('initial'),
                 undefined,
-                ts.createIdentifier('initial'),
-                undefined,
-                ts.createTypeReferenceNode(ts.createIdentifier(name), undefined),
+                factory.createTypeReferenceNode(factory.createIdentifier(name), undefined),
                 undefined,
             ),
-            ts.createParameter(
+            factory.createParameterDeclaration(
                 undefined,
                 undefined,
-                undefined,
-                ts.createIdentifier('debug'),
-                ts.createToken(ts.SyntaxKind.QuestionToken),
-                ts.createTypeLiteralNode([
-                    ts.createPropertySignature(
+                factory.createIdentifier('debug'),
+                factory.createToken(ts.SyntaxKind.QuestionToken),
+                factory.createTypeLiteralNode([
+                    factory.createPropertySignature(
                         undefined,
-                        ts.createIdentifier('log'),
+                        factory.createIdentifier('log'),
                         undefined,
-                        ts.createTypeReferenceNode(ts.createIdentifier('Logger'), undefined),
+                        factory.createTypeReferenceNode(
+                            factory.createIdentifier('Logger'),
+                            undefined,
+                        ),
                         undefined,
                     ),
-                    ts.createPropertySignature(
+                    factory.createPropertySignature(
                         undefined,
-                        ts.createIdentifier('tag'),
+                        factory.createIdentifier('tag'),
                         undefined,
-                        ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+                        factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
                         undefined,
                     ),
                 ]),
                 undefined,
             ),
         ],
-        ts.createTypeReferenceNode(ts.createIdentifier('S'), undefined),
-        ts.createBlock(
+        factory.createTypeReferenceNode(factory.createIdentifier('S'), undefined),
+        factory.createBlock(
             [
-                ts.createReturn(
-                    ts.createNew(ts.createIdentifier('constructor'), undefined, [
-                        ts.createIdentifier('initial'),
-                        ts.createIdentifier('undefined'),
-                        ts.createConditional(
-                            ts.createBinary(
-                                ts.createIdentifier('debug'),
-                                ts.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                                ts.createIdentifier('undefined'),
-                            ),
-                            ts.createIdentifier('undefined'),
-                            ts.createObjectLiteral(
-                                [
-                                    ts.createPropertyAssignment(
-                                        ts.createIdentifier('log'),
-                                        ts.createPropertyAccess(
-                                            ts.createIdentifier('debug'),
-                                            ts.createIdentifier('log'),
-                                        ),
-                                    ),
-                                    ts.createPropertyAssignment(
-                                        ts.createIdentifier('tag'),
-                                        ts.createPropertyAccess(
-                                            ts.createIdentifier('debug'),
-                                            ts.createIdentifier('tag'),
-                                        ),
-                                    ),
-                                    ts.createPropertyAssignment(
-                                        ts.createIdentifier('representation'),
-                                        ts.createArrowFunction(
-                                            undefined,
-                                            undefined,
-                                            [
-                                                ts.createParameter(
-                                                    undefined,
-                                                    undefined,
-                                                    undefined,
-                                                    ts.createIdentifier('name'),
-                                                    undefined,
-                                                    undefined,
-                                                    undefined,
-                                                ),
-                                            ],
-                                            ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-                                            ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                                            ts.createElementAccess(
-                                                ts.createIdentifier('NAME_OF'),
-                                                ts.createIdentifier('name'),
+                factory.createReturnStatement(
+                    factory.createNewExpression(
+                        factory.createIdentifier('constructor'),
+                        undefined,
+                        [
+                            factory.createIdentifier('initial'),
+                            factory.createIdentifier('undefined'),
+                            factory.createConditionalExpression(
+                                factory.createBinaryExpression(
+                                    factory.createIdentifier('debug'),
+                                    factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                                    factory.createIdentifier('undefined'),
+                                ),
+                                undefined,
+                                factory.createIdentifier('undefined'),
+                                undefined,
+                                factory.createObjectLiteralExpression(
+                                    [
+                                        factory.createPropertyAssignment(
+                                            factory.createIdentifier('log'),
+                                            factory.createPropertyAccessExpression(
+                                                factory.createIdentifier('debug'),
+                                                factory.createIdentifier('log'),
                                             ),
                                         ),
-                                    ),
-                                ],
-                                true,
+                                        factory.createPropertyAssignment(
+                                            factory.createIdentifier('tag'),
+                                            factory.createPropertyAccessExpression(
+                                                factory.createIdentifier('debug'),
+                                                factory.createIdentifier('tag'),
+                                            ),
+                                        ),
+                                        factory.createPropertyAssignment(
+                                            factory.createIdentifier('representation'),
+                                            factory.createArrowFunction(
+                                                undefined,
+                                                undefined,
+                                                [
+                                                    factory.createParameterDeclaration(
+                                                        undefined,
+                                                        undefined,
+                                                        factory.createIdentifier('name'),
+                                                        undefined,
+                                                        undefined,
+                                                        undefined,
+                                                    ),
+                                                ],
+                                                factory.createKeywordTypeNode(
+                                                    ts.SyntaxKind.StringKeyword,
+                                                ),
+                                                factory.createToken(
+                                                    ts.SyntaxKind.EqualsGreaterThanToken,
+                                                ),
+                                                factory.createElementAccessExpression(
+                                                    factory.createIdentifier('NAME_OF'),
+                                                    factory.createIdentifier('name'),
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                    true,
+                                ),
                             ),
-                        ),
-                    ]),
+                        ],
+                    ),
                 ),
             ],
             true,
@@ -522,29 +555,28 @@ function createEnumUtilsNamespace(name, members, utils, initializerType) {
     }
 
     // Create utils namespace
-    return ts.createModuleDeclaration(
-        undefined,
-        [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-        ts.createIdentifier(`${name}Utils`),
-        ts.createModuleBlock(nodes),
+    return factory.createModuleDeclaration(
+        [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+        factory.createIdentifier(`${name}Utils`),
+        factory.createModuleBlock(nodes),
         ts.NodeFlags.Namespace,
     );
 }
 
 function createEnumNamespace(name, members) {
-    return ts.createModuleDeclaration(
-        undefined,
-        [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-        ts.createIdentifier(name),
-        ts.createModuleBlock(
+    return factory.createModuleDeclaration(
+        [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+        factory.createIdentifier(name),
+        factory.createModuleBlock(
             members
                 .map((member) => [
-                    ts.createVariableStatement(
-                        [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-                        ts.createVariableDeclarationList(
+                    factory.createVariableStatement(
+                        [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                        factory.createVariableDeclarationList(
                             [
-                                ts.createVariableDeclaration(
-                                    ts.createIdentifier(member.identifier),
+                                factory.createVariableDeclaration(
+                                    factory.createIdentifier(member.identifier),
+                                    undefined,
                                     undefined,
                                     member.initializer,
                                 ),
@@ -553,12 +585,13 @@ function createEnumNamespace(name, members) {
                         ),
                     ),
                     ts.setSyntheticLeadingComments(
-                        ts.createTypeAliasDeclaration(
+                        factory.createTypeAliasDeclaration(
+                            [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                            factory.createIdentifier(member.identifier),
                             undefined,
-                            [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-                            ts.createIdentifier(member.identifier),
-                            undefined,
-                            ts.createTypeQueryNode(ts.createIdentifier(member.identifier)),
+                            factory.createTypeQueryNode(
+                                factory.createIdentifier(member.identifier),
+                            ),
                         ),
                         member.comments,
                     ),
@@ -589,11 +622,11 @@ function getMembers(source, members) {
             hasInitializers = true;
             switch (member.initializer.kind) {
                 case ts.SyntaxKind.NumericLiteral:
-                    initializer = ts.createNumericLiteral(member.initializer.text);
+                    initializer = factory.createNumericLiteral(member.initializer.text);
                     initializerKinds.add('number');
                     break;
                 case ts.SyntaxKind.StringLiteral:
-                    initializer = ts.createStringLiteral(member.initializer.text);
+                    initializer = factory.createStringLiteral(member.initializer.text);
                     initializerKinds.add('string');
                     break;
                 default:
@@ -606,7 +639,7 @@ function getMembers(source, members) {
         const comments = getLeadingComments(member, source);
         results.push({
             identifier,
-            initializer: initializer ?? ts.createNumericLiteral(index),
+            initializer: initializer ?? factory.createNumericLiteral(index),
             comments,
         });
     }
@@ -647,14 +680,16 @@ function createSafeEnumNode(source, declaration) {
     // Create type alias for the namespaced enum
     nodes.push(
         ts.setSyntheticLeadingComments(
-            ts.createTypeAliasDeclaration(
+            factory.createTypeAliasDeclaration(
+                [factory.createModifier(ts.SyntaxKind.ExportKeyword)],
+                factory.createIdentifier(name),
                 undefined,
-                [ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-                ts.createIdentifier(name),
-                undefined,
-                ts.createIndexedAccessTypeNode(
-                    ts.createTypeQueryNode(ts.createIdentifier(name)),
-                    ts.createTypeOperatorNode(ts.createTypeQueryNode(ts.createIdentifier(name))),
+                factory.createIndexedAccessTypeNode(
+                    factory.createTypeQueryNode(factory.createIdentifier(name)),
+                    factory.createTypeOperatorNode(
+                        ts.SyntaxKind.KeyOfKeyword,
+                        factory.createTypeQueryNode(factory.createIdentifier(name)),
+                    ),
                 ),
             ),
             comments,
@@ -679,7 +714,6 @@ if (require.main === module) {
     output.statements.push(
         factory.createImportDeclaration(
             undefined,
-            undefined,
             factory.createImportClause(
                 false,
                 undefined,
@@ -696,7 +730,6 @@ if (require.main === module) {
         ),
         factory.createImportDeclaration(
             undefined,
-            undefined,
             factory.createImportClause(
                 false,
                 undefined,
@@ -708,7 +741,6 @@ if (require.main === module) {
             undefined,
         ),
         factory.createImportDeclaration(
-            undefined,
             undefined,
             factory.createImportClause(
                 false,
