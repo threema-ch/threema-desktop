@@ -9,6 +9,7 @@
 /src/common/network/protobuf/js
 /src/test/js/
 /threema-protocols/
+/docs/book/
 
 # Forked code, keep differences to original minimal
 /src/common/node/db/query-runner.ts

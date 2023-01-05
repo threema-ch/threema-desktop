@@ -1,0 +1,8 @@
+[book]
+authors = ["Threema Desktop Developers"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Threema Desktop Developer Docs"
+
+[preprocessor.plantuml]
