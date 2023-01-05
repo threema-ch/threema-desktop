@@ -636,3 +636,21 @@ package:exe:
     paths:
       - build\out\
     expire_in: 2d
+
+pages:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+  needs: []
+  image: nixery.dev/shell/git/busybox/mdbook/plantuml/mdbook-plantuml
+  before_script:
+    - mdbook --version
+  script:
+    - cd docs
+    - echo 'plantuml-cmd="/sbin/plantuml"' >> book.toml
+    - mdbook build
+    - mv book ../public
+  artifacts:
+    paths:
+      - public
+    expire_in: 3 days

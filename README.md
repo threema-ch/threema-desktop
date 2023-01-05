@@ -131,6 +131,9 @@ Possible targets:
 
 Below we'll provide a couple of hints and rules for working on this project.
 
+More developer docs can be found at
+<https://clients.pages.threema.dev/web/threema-desktop-web/>.
+
 ### NodeJS
 
 The project provides an `.nvmrc` file in case the default NodeJS installation
@@ -140,10 +143,6 @@ on your device is being rejected by `npm install`.
     nvm install
 
 [nvm]: https://github.com/nvm-sh/nvm
-
-### Code Structure / Architecture
-
-See [docs/architecture.md](docs/architecture.md).
 
 ### Auto-Restore Safe Backup
 
