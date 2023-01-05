@@ -35,8 +35,8 @@ export type SecretKeyLength = 32 | 64;
  * Rules of thumb:
  *
  * - All secret keys **must** be wrapped by this class.
- * - Our APIs **shall not** accept any other keys than `RawKey`, `ReadonlyRawKey` and derivates of
- *   that.
+ * - Our APIs **shall not** accept any other keys than {@link RawKey}, {@link ReadonlyRawKey} and
+ *   derivates of that.
  * - The unwrapped key (via {@link unwrap}) **must not** be used longer than necessary in
  *   combination with foreign APIs.
  * - If the key is used for public-key cryptography, it **must** be consumed by a
@@ -135,6 +135,8 @@ export function wrapRawKey<TLength extends SecretKeyLength>(
 
 /**
  * A readonly raw key (bytes). May be of any valid {@link SecretKeyLength}.
+ *
+ * In contrast to a {@link RawKey}, this type does not expose the `purge` method.
  *
  * IMPORTANT: Read the rules of thumb explained by {@link SecretKey}.
  */
