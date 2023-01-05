@@ -86,6 +86,6 @@ export type SystemDialogHandle = {
  *
  * Lives in the frontend / app thread.
  */
-export interface SystemDialogService {
+export interface SystemDialogService extends ProxyMarked {
     readonly open: (dialog: SystemDialog) => SystemDialogHandle;
 }

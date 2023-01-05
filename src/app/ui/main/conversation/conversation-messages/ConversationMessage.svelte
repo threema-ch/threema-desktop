@@ -22,7 +22,7 @@
   } from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {assert, assertUnreachable} from '~/common/utils/assert';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {eternalPromise} from '~/common/utils/promise';
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessage} from '~/common/viewmodel/conversation-messages';
@@ -57,7 +57,7 @@
   /**
    * The ConversationMessage ViewModel
    */
-  export let viewModelStore: RemoteStore<RemoteObject<ConversationMessage>>;
+  export let viewModelStore: RemoteStore<Remote<ConversationMessage>>;
 
   /**
    * The ModelStore for the Message

@@ -25,11 +25,7 @@ import {
     createExactPropertyValidator,
     OPTIONAL,
 } from '~/common/utils/property-validator';
-import {
-    type IQueryableStore,
-    type ISubscribableStore,
-    DeprecatedDerivedStore,
-} from '~/common/utils/store';
+import {type LocalStore, DeprecatedDerivedStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 
@@ -320,7 +316,7 @@ export class ConversationModelController implements ConversationController {
         });
     }
 
-    public preview(): IQueryableStore<AnyConversationPreviewMessageView | undefined> {
+    public preview(): LocalStore<AnyConversationPreviewMessageView | undefined> {
         return this._lastMessagePreview;
     }
 
@@ -621,7 +617,7 @@ export class ConversationModelStore extends LocalModelStore<Conversation> {
 /** @inheritdoc */
 export class ConversationModelRepository implements ConversationRepository {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
-    public readonly totalUnreadMessageCount: ISubscribableStore<u53>;
+    public readonly totalUnreadMessageCount: LocalStore<u53>;
 
     public constructor(private readonly _services: ServicesForModel) {
         this.totalUnreadMessageCount = derive(this.getAll(), (conversations, getAndSubscribe) => {

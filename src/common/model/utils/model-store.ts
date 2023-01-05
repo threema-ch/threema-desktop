@@ -16,6 +16,7 @@ import {
     type EndpointService,
     type MessageEvent,
     type ObjectId,
+    type ProxyEndpointMethods,
     type RegisteredTransferHandler,
     type Remote,
     type TransferMarked,
@@ -132,7 +133,7 @@ function releaseRemoteModelStore({
         readonly endpoint: Endpoint;
         readonly releaser?: AbortRaiser;
     };
-    readonly controller: Remote<unknown>;
+    readonly controller: Remote<unknown> & ProxyEndpointMethods;
 }): void {
     view.endpoint.postMessage(undefined);
     view.endpoint.close?.();
@@ -236,7 +237,7 @@ export class RemoteModelStore<
         const proxy = service.wrap(
             controller.endpoint,
             controller.log,
-        ) as RemoteModelController<TLocalController>; // Terrible cast!
+        ) as RemoteModelController<TLocalController> & ProxyEndpointMethods; // Terrible cast!
         const store = new RemoteModelStore(id, view, proxy, ctx, type, options);
 
         // Tell the local side to unsubscribe and release its endpoint when

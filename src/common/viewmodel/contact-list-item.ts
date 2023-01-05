@@ -15,7 +15,7 @@ import {unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type ISetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
+import {type LocalSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 
 /**
@@ -33,7 +33,10 @@ export type VerificationLevel = 'unverified' | 'server-verified' | 'fully-verifi
  */
 export type ContactBadge = 'contact-consumer' | 'contact-work';
 
-export type ContactListItemSetStore = ISetStore<ContactListItemSetEntry>;
+export type ContactListItemSetStore = LocalDerivedSetStore<
+    LocalSetStore<LocalModelStore<Contact>>,
+    ContactListItemSetEntry
+>;
 
 export interface ContactListItemSetEntry extends PropertiesMarked {
     readonly contactUid: DbContactUid;

@@ -21,7 +21,7 @@
   import {type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type u53} from '~/common/types';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {debounce} from '~/common/utils/timer';
   import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-messages';
@@ -34,7 +34,7 @@
   /**
    * Conversation Messages
    */
-  export let conversationMessagesSet: RemoteObject<ConversationMessageSetStore>;
+  export let conversationMessagesSet: Remote<ConversationMessageSetStore>;
 
   /**
    * Receiver data.

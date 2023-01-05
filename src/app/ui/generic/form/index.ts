@@ -4,7 +4,7 @@ import autolinker from 'autolinker';
 import {MessageDirection} from '~/common/enum';
 import {type Conversation, type RemoteModelFor} from '~/common/model';
 import {type Mutable, type u53} from '~/common/types';
-import {type RemoteObject} from '~/common/utils/endpoint';
+import {type Remote} from '~/common/utils/endpoint';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
 import {type IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -43,7 +43,7 @@ export function escapeHtmlUnsafeChars(text: string | undefined): string {
 /**
  * A list of messages sorted from oldest to newest.
  */
-export type SortedMessageList = RemoteObject<ConversationMessageViewModel>[];
+export type SortedMessageList = Remote<ConversationMessageViewModel>[];
 /**
  * A store containing a {@link SortedMessageList}.
  */
@@ -221,7 +221,7 @@ export function isLastOutboundMessageOlderThan(
  * Derive a sorted list of messages from a set of messages.
  */
 export function sortMessages(
-    setStore: RemoteObject<ConversationMessageSetStore>,
+    setStore: Remote<ConversationMessageSetStore>,
 ): SortedMessageListStore {
     return derive(setStore, (conversationMessageSet, getAndSubscribe) =>
         [...conversationMessageSet].sort(

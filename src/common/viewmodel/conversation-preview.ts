@@ -10,13 +10,16 @@ import {
 import {getDisplayName} from '~/common/model/contact';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
-import {type PropertiesMarked, type TransferMarked} from '~/common/utils/endpoint';
-import {type IQueryableStore} from '~/common/utils/store';
+import {type PropertiesMarked} from '~/common/utils/endpoint';
+import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type ISetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
+import {type LocalSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 
-export type ConversationPreviewSetStore = ISetStore<ConversationPreview>;
+export type ConversationPreviewSetStore = LocalDerivedSetStore<
+    LocalSetStore<LocalModelStore<Conversation>>,
+    ConversationPreview
+>;
 
 /**
  * Get a SetStore that contains a ConversationPreview for every existing Conversation.
@@ -51,12 +54,11 @@ function getConversationPreview(
     });
 }
 
-export type ConversationPreviewViewModel = IQueryableStore<ConversationPreviewItem> &
-    TransferMarked;
+export type ConversationPreviewViewModel = LocalStore<ConversationPreviewItem>;
 
 export type ConversationPreviewItem = {
     readonly receiver: ContactListItem | GroupListItem;
-    readonly lastMessage: IQueryableStore<AnyConversationPreviewMessageView | undefined>;
+    readonly lastMessage: LocalStore<AnyConversationPreviewMessageView | undefined>;
     readonly receiverLookup: DbReceiverLookup;
 } & ConversationView &
     PropertiesMarked;

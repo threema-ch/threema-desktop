@@ -230,7 +230,7 @@ export async function generateFakeGroupConversation(
 
     const group = await backend.model.groups.add.fromLocal(
         {
-            groupId: BigInt(Math.floor(Math.random() * 10000)) as unknown as GroupId,
+            groupId: randomU64(crypto) as GroupId,
             creatorIdentity: backend.model.user.identity,
             createdAt: new Date(),
             name: randomChoice<string>(crypto, ['groupsoup', 'OMG a group!', 'Grubb3']),

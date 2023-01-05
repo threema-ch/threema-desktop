@@ -8,6 +8,7 @@ import {type Avatar, type Contact, type Group, type RemoteModelFor} from '~/comm
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString} from '~/common/network/types';
 import {assertUnreachable} from '~/common/utils/assert';
+import {type Remote} from '~/common/utils/endpoint';
 import {type IQueryableStore, DeprecatedDerivedStore} from '~/common/utils/store';
 import {type RemoteSetStore} from '~/common/utils/store/set-store';
 import {type GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
@@ -153,7 +154,7 @@ export function isUserStateOfInactiveGroup(userState: GroupUserState3SC): boolea
  */
 export function matchesGroupSearchFilter(
     filter: string,
-    group: Pick<GroupListItemViewModel, 'name' | 'members' | 'memberNames'>,
+    group: Pick<Remote<GroupListItemViewModel>, 'name' | 'members' | 'memberNames'>,
 ): boolean {
     const trimmedFilter = filter.trim();
     if (trimmedFilter === '') {

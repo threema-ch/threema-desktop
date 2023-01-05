@@ -10,7 +10,7 @@
   import {GroupUserState, ReceiverType} from '~/common/enum';
   import {type Avatar} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {
     type GroupListItemViewModel,
     type GroupListItemViewModelStore,
@@ -21,7 +21,7 @@
   /**
    * Contact list item view model store.
    */
-  export let group: RemoteObject<GroupListItemViewModelStore>;
+  export let group: Remote<GroupListItemViewModelStore>;
   /**
    * Router
    */
@@ -64,7 +64,7 @@
     }
   }
 
-  function transformReceiver(viewModel: RemoteObject<GroupListItemViewModel>): GroupReceiver {
+  function transformReceiver(viewModel: Remote<GroupListItemViewModel>): GroupReceiver {
     return {
       type: 'group',
       avatar: {

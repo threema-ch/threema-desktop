@@ -66,10 +66,10 @@ import {
     type u8,
     type u53,
 } from '~/common/types';
-import {type ProxyMarked, type Remote} from '~/common/utils/endpoint';
+import {type ProxyMarked, type RemoteProxy} from '~/common/utils/endpoint';
 import {type IdColor} from '~/common/utils/id-color';
 import {type SequenceNumberU53} from '~/common/utils/sequence-number';
-import {type IQueryableStore, type ISubscribableStore, type LocalStore} from '~/common/utils/store';
+import {type LocalStore} from '~/common/utils/store';
 import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
 import {type MessageStatus} from '~/common/viewmodel/types';
 
@@ -146,7 +146,8 @@ export type LocalModelController<TView> = {
 /**
  * A remote controller of a model.
  */
-export type RemoteModelController<TLocalController> = Remote<
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type RemoteModelController<TLocalController extends LocalModelController<any>> = RemoteProxy<
     Omit<Readonly<TLocalController>, 'meta'>
 >;
 
@@ -159,7 +160,7 @@ export type RemoteModelController<TLocalController> = Remote<
  */
 export interface LocalModel<
     TView,
-    TController extends LocalModelController<TView> | undefined,
+    TController extends LocalModelController<TView>,
     TCtx = undefined,
     TType = undefined,
 > {
@@ -190,7 +191,7 @@ export interface LocalModel<
  */
 export interface RemoteModel<
     TView,
-    TRemoteController extends RemoteModelController<unknown>,
+    TRemoteController extends RemoteModelController<LocalModelController<TView>>,
     TCtx = undefined,
     TType = undefined,
 > {
@@ -746,7 +747,7 @@ export type ConversationController = {
     readonly uid: UidOf<DbConversation>;
     readonly meta: ModelLifetimeGuard<ConversationView>;
     readonly receiver: () => AnyReceiverStore;
-    readonly preview: () => IQueryableStore<AnyConversationPreviewMessageView | undefined>;
+    readonly preview: () => LocalStore<AnyConversationPreviewMessageView | undefined>;
     /**
      * Update a conversation.
      *
@@ -839,7 +840,7 @@ export type ConversationListController = {
 } & ProxyMarked;
 
 export type ConversationRepository = {
-    readonly totalUnreadMessageCount: ISubscribableStore<u53>;
+    readonly totalUnreadMessageCount: LocalStore<u53>;
     getForReceiver: (receiver: DbReceiverLookup) => LocalModelStore<Conversation> | undefined;
     getAll: () => LocalSetStore<LocalModelStore<Conversation>>;
 } & ProxyMarked;

@@ -17,7 +17,7 @@
     ReceiverType,
   } from '~/common/enum';
   import {type Settings} from '~/common/model';
-  import {type Remote, type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationPreview} from '~/common/viewmodel/conversation-preview';
 
   import {
@@ -32,7 +32,7 @@
   /**
    * ConversationPreview
    */
-  export let conversationPreview: RemoteObject<ConversationPreview>;
+  export let conversationPreview: Remote<ConversationPreview>;
 
   /**
    * Conversation data store.

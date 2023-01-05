@@ -4,12 +4,12 @@ import {
     generateFakeContactConversation,
     generateFakeGroupConversation,
 } from '~/common/dom/debug/fake';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {type ProxyMarked, PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
 /**
  * Exposed functionality used by the debug panels.
  */
-export class DebugBackend {
+export class DebugBackend implements ProxyMarked {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
 
     public constructor(

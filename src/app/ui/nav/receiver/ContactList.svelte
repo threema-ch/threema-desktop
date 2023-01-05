@@ -14,7 +14,7 @@
   import {type DbContactUid} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ReceiverType} from '~/common/enum';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {type SetValue} from '~/common/utils/set';
   import {type IQueryableStoreValue} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
@@ -28,7 +28,7 @@
   /**
    * Set of all contact view models.
    */
-  export let contacts: RemoteObject<ContactListItemSetStore>;
+  export let contacts: Remote<ContactListItemSetStore>;
 
   const {router} = services;
 

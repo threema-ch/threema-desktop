@@ -12,6 +12,8 @@ class ProxyNotification extends Notification {
 }
 
 export class FrontendNotificationCreator implements NotificationCreator {
+    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+
     private readonly _notifications = new Map<NotificationTag, ProxyNotification>();
 
     public constructor() {

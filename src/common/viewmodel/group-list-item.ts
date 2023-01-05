@@ -8,11 +8,14 @@ import {type u53} from '~/common/types';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type ISetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
+import {type LocalSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 
-export type GroupListItemSetStore = ISetStore<GroupListItemSetEntry>;
+export type GroupListItemSetStore = LocalDerivedSetStore<
+    LocalSetStore<LocalModelStore<Group>>,
+    GroupListItemSetEntry
+>;
 
 export interface GroupListItemSetEntry extends PropertiesMarked {
     readonly groupUid: DbGroupUid;

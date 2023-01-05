@@ -91,6 +91,7 @@ import {byteToHex} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
 import {
     type EndpointFor,
+    type ProxyMarked,
     PROXY_HANDLER,
     registerErrorTransferHandler,
     TRANSFER_MARKER,
@@ -202,7 +203,8 @@ export type SafeBackupSource =
  * The backend lives in the worker thread. It is exposed via its {@link BackendHandle} to the UI
  * thread through the {@link BackendController}.
  */
-export class Backend {
+export class Backend implements ProxyMarked {
+    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
     public readonly debug: DebugBackend;
     public readonly deviceIds: DeviceIds;
     public readonly directory: DirectoryBackend;

@@ -17,7 +17,7 @@
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {randomMessageId} from '~/common/network/protocol/utils';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {WritableStore} from '~/common/utils/store';
   import {
     type ConversationViewModel,
@@ -43,7 +43,7 @@
   /**
    * The Conversation ViewModel
    */
-  export let conversationViewModel: RemoteObject<ConversationViewModel>;
+  export let conversationViewModel: Remote<ConversationViewModel>;
 
   /**
    * The conversation model store.
@@ -51,10 +51,10 @@
   let conversation: RemoteModelStore<Conversation> = conversationViewModel.conversation;
   $: conversation = conversationViewModel.conversation;
 
-  let receiver: RemoteObject<AnyReceiverStore> = conversationViewModel.receiver;
+  let receiver: Remote<AnyReceiverStore> = conversationViewModel.receiver;
   $: receiver = conversationViewModel.receiver;
 
-  let innerConversationViewModel: RemoteObject<InnerConversationViewModelStore> =
+  let innerConversationViewModel: Remote<InnerConversationViewModelStore> =
     conversationViewModel.viewModel;
   $: innerConversationViewModel = conversationViewModel.viewModel;
 

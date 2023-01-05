@@ -16,7 +16,12 @@ import {type IdentityString} from '~/common/network/types';
 import {type NotificationCreator} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
-import {type EndpointFor, type Remote, RELEASE_PROXY} from '~/common/utils/endpoint';
+import {
+    type EndpointFor,
+    type Remote,
+    type RemoteProxy,
+    RELEASE_PROXY,
+} from '~/common/utils/endpoint';
 import {type IQueryableStore, type RemoteStore, DeprecatedDerivedStore} from '~/common/utils/store';
 import {type IViewModelBackend} from '~/common/viewmodel';
 
@@ -103,7 +108,7 @@ export class BackendController {
     public constructor(
         private readonly _services: ServicesForBackendController,
         private readonly _log: Logger,
-        private readonly _remote: Remote<BackendHandle>,
+        private readonly _remote: RemoteProxy<BackendHandle>,
         deviceIds: DeviceIds,
         data: EssentialStartupData,
     ) {
@@ -123,7 +128,7 @@ export class BackendController {
             readonly systemDialog: SystemDialogService;
         },
         services: ServicesForBackendController,
-        creator: Remote<BackendCreator>,
+        creator: RemoteProxy<BackendCreator>,
         requestSafeCredentials: (
             isIdentityValid: (identity: IdentityString) => Promise<boolean>,
             isSafeBackupAvailable: (safeCredentials: SafeCredentials) => Promise<boolean>,

@@ -27,6 +27,8 @@ export class FrontendSystemDialogHandle implements SystemDialogHandle {
 }
 
 export class FrontendSystemDialogService implements SystemDialogService {
+    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+
     /**
      * Show the specified system dialog.
      *

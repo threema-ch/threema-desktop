@@ -10,7 +10,7 @@
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {type Settings} from '~/common/model';
   import {unreachable, unwrap} from '~/common/utils/assert';
-  import {type Remote, type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {type ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
   import {type SvelteAction} from '~/common/viewmodel/types';
@@ -23,7 +23,7 @@
   /**
    * Set store of all conversation previews.
    */
-  export let conversationPreviews: RemoteObject<ConversationPreviewSetStore>;
+  export let conversationPreviews: Remote<ConversationPreviewSetStore>;
 
   /**
    * Router.

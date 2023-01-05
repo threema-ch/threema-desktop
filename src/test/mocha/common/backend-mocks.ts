@@ -130,6 +130,7 @@ import {
     type EndpointService,
     type PROXY_HANDLER,
     type Remote,
+    type RemoteProxy,
     LocalObjectMapper,
     RemoteObjectMapper,
     TRANSFER_MARKER,
@@ -456,7 +457,7 @@ export class TestNotificationService extends NotificationService {
         ): Promise<NotificationHandle | undefined> {
             return undefined;
         }
-        super(log, {create} as unknown as Remote<NotificationCreator>);
+        super(log, {create} as RemoteProxy<NotificationCreator>);
     }
 }
 

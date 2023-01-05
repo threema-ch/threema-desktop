@@ -8,7 +8,7 @@ import {
 import {type GroupId, type IdentityString} from '~/common/network/types';
 import {type u53, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {type ProxyMarked, type Remote} from '~/common/utils/endpoint';
+import {type ProxyMarked, type RemoteProxy} from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
 
 // Copied from lib.dom.d.ts
@@ -87,7 +87,7 @@ export type NotificationHandle = {
     close: () => void;
 } & ProxyMarked;
 
-export interface NotificationCreator {
+export interface NotificationCreator extends ProxyMarked {
     readonly create: (
         title: string,
         options: ExtendedNotificationOptions,
@@ -97,7 +97,7 @@ export interface NotificationCreator {
 export class NotificationService {
     public constructor(
         private readonly _log: Logger,
-        private readonly _creator: Remote<NotificationCreator>,
+        private readonly _creator: RemoteProxy<NotificationCreator>,
     ) {}
 
     public async notifyNewMessage(

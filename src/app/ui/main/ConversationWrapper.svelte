@@ -6,7 +6,7 @@
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {type DbReceiverLookup} from '~/common/db';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationViewModel} from '~/common/viewmodel/conversation';
 
   export let services: AppServices;
@@ -37,7 +37,7 @@
     forwardedMessageLookup = route.params.forwardedMessage;
   }
 
-  let conversationViewModel: RemoteObject<ConversationViewModel> | undefined;
+  let conversationViewModel: Remote<ConversationViewModel> | undefined;
 
   // Look up conversation
   $: if (receiverLookup !== undefined) {

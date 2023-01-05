@@ -5,6 +5,7 @@ import {
     type AnyMessageModelStore,
     type Conversation,
     type Repositories,
+    type SetOfAnyLocalMessageModelStore,
     type Settings,
 } from '~/common/model';
 import {statusFromView} from '~/common/model/message';
@@ -16,7 +17,7 @@ import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
 import {type LocalStore} from '~/common/utils/store';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
-import {type ISetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
+import {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 import {transformContact} from '~/common/viewmodel/svelte-components-transformations';
 import {
@@ -28,7 +29,10 @@ import {
 } from '~/common/viewmodel/types';
 import {type Mention, getMentions} from '~/common/viewmodel/utils/mentions';
 
-export type ConversationMessageSetStore = ISetStore<ConversationMessageViewModel>;
+export type ConversationMessageSetStore = LocalDerivedSetStore<
+    SetOfAnyLocalMessageModelStore,
+    ConversationMessageViewModel
+>;
 
 /**
  * Get a SetStore that contains a ConversationPreview for a receiver.

@@ -9,6 +9,7 @@ import {
     Backend,
 } from '~/common/dom/backend';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
 import {BACKEND_WORKER_CONFIG} from './config';
 
@@ -32,7 +33,7 @@ export function main(config: Config, factories: FactoriesForBackend): void {
     log.debug('Initialized protobufjs');
 
     const endpoint = createEndpointService({config, logging});
-    endpoint.expose(
+    const create = Object.assign(
         async (init: BackendInit, safeBackupSource?: SafeBackupSource) => {
             log.info('Creating backend');
             return await Backend.create(
@@ -46,7 +47,9 @@ export function main(config: Config, factories: FactoriesForBackend): void {
                 safeBackupSource,
             );
         },
-        self,
-        logging.logger('com.backend-creator'),
+        {
+            [TRANSFER_MARKER]: PROXY_HANDLER,
+        },
     );
+    endpoint.expose(create, self, logging.logger('com.backend-creator'));
 }

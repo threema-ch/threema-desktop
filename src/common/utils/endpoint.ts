@@ -15,13 +15,17 @@ import {type ServicesForBackend} from '~/common/backend';
 import {TransferTag} from '~/common/enum';
 import {type Logger, type LoggerFactory} from '~/common/logging';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type i53, type u53, type WeakOpaque} from '~/common/types';
+import {type i53, type Primitive, type u53, type WeakOpaque} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {AbortRaiser} from '~/common/utils/signal';
 import {type LocalStore, type RemoteStore} from '~/common/utils/store';
-import {type ISetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
+import {
+    type LocalDerivedSetStore,
+    type LocalSetStore,
+    type RemoteSetStore,
+} from '~/common/utils/store/set-store';
 
 // Minimal incomplete but DOM-compatible interfaces for MessagePort and co.
 export interface MessageEvent {
@@ -216,7 +220,9 @@ export interface PropertiesMarked extends TransferMarked<typeof PROPERTIES_HANDL
     readonly [TRANSFER_MARKER]: typeof PROPERTIES_HANDLER;
 }
 
-// Marks an object as *thrown*.
+/**
+ * Marks an object as *thrown*.
+ */
 interface ThrowMarked extends TransferMarked<typeof THROW_HANDLER> {
     readonly [TRANSFER_MARKER]: typeof THROW_HANDLER;
     readonly error: unknown;
@@ -226,26 +232,106 @@ interface ThrowMarked extends TransferMarked<typeof THROW_HANDLER> {
  * Takes a type and wraps it in a Promise, if it not already is one.
  * This is to avoid `Promise<Promise<T>>`.
  *
- * This is the inverse of `Unpromisify<T>`.
+ * This is the inverse of `Awaited<T>`.
  */
 type Promisify<T> = T extends Promise<unknown> ? T : Promise<T>;
-/**
- * Takes a type that may be Promise and unwraps the Promise type.
- * If `P` is not a Promise, it returns `P`.
- *
- * This is the inverse of `Promisify<T>`.
- */
-type Unpromisify<P> = P extends Promise<infer T> ? T : P;
 
 /**
- * Maps our custom local transfer marked types to the matching remote
- * counterpart type.
- *
- * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique
- *            key/value types may be used here, otherwise false positives are
- *            possible.
+ * Additional special methods available on each wrapped proxy.
  */
-type CustomRemoteFor<T, F> = T extends LocalModelStore<
+export interface ProxyEndpointMethods {
+    readonly [RELEASE_PROXY]: () => void;
+}
+
+//
+// Remote type
+//
+
+/**
+ * A Proxy type as returned by {@link EndpointService.wrap}.
+ *
+ * Use this type only directly when creating a proxy manually, otherwise use {@link Remote}.
+ */
+export type RemoteProxy<T> = RemoteProxyFunction<T> &
+    RemoteProxyObject<T> &
+    RemoteProxyPromise<T> &
+    ProxyEndpointMethods;
+
+/**
+ * A proxied remote function type. See {@link RemoteProxy}.
+ *
+ * Allows {@param T} to be called as a function - if it is a function.
+ */
+type RemoteProxyFunction<T> = T extends (...args: infer TArguments) => infer TReturn
+    ? (
+          ...args: {
+              [I in keyof TArguments]: TArguments[I];
+          }
+      ) => Promisify<Remote<Awaited<TReturn>>>
+    : unknown;
+
+/**
+ * A remote object proxy type. See {@link RemoteProxy}.
+ *
+ * Allows {@param T}'s properties to be proxy-accessed - if it is an object with properties.
+ */
+type RemoteProxyObject<T> = keyof Omit<T, typeof TRANSFER_MARKER> extends never
+    ? unknown // We're reducing a potential object T here to find out if it has any more keys
+    : {
+          readonly [TProperty in keyof T as Exclude<
+              TProperty,
+              typeof TRANSFER_MARKER
+          >]: ProxyMarkedRemoteObjectProperty<T[TProperty]>;
+      };
+
+/**
+ * Handle property access to a remote object, see {@link RemoteProxyObject}.
+ *
+ * See {@link EndpointService._createProxy}
+ */
+type ProxyMarkedRemoteObjectProperty<T> = T extends ProxyMarked // Access nested proxies directly without promise
+    ? RemoteProxy<T>
+    : T extends Promise<infer TPromised> // Promises are unwrapped and then transferred
+    ? Promisify<Remote<TPromised>>
+    : T extends Primitive // Required to be handled for OpaqueTag types
+    ? Promisify<T>
+    : T extends TransferMarked // For objects with a custom transferhandler, that one is used.
+    ? Promisify<TransferMarkedRemote<T>>
+    : T extends Function | object // Generic functions and objects calls handled by the proxy.
+    ? RemoteProxy<T>
+    : Promisify<Remote<T>>; // Default: Transfer element with handler or do structural cloning.
+
+/**
+ * A remote promise proxy type. See {@link RemoteProxy}.
+ *
+ * Allows {@param T} to be awaited to transfer/wrap it - if it can be transfered (as checked by the
+ * {@link Remote} type).
+ */
+type RemoteProxyPromise<T> = T extends ProxyMarked
+    ? unknown
+    : Remote<T> extends never
+    ? unknown
+    : Promisify<Remote<Awaited<T>>>;
+
+/**
+ * Map all properties of an object marked with {@link PropertiesMarked} to their remote type.
+ */
+export type PropertiesMarkedRemote<T> = {
+    readonly [P in keyof T as Exclude<P, typeof TRANSFER_MARKER>]: Remote<T[P]>;
+};
+
+/**
+ * Make sure that {@param T} extends an object.
+ */
+type MustExtendObject<T extends object> = T;
+
+/**
+ * Maps our custom local transfer marked types to the matching remote counterpart type.
+ *
+ * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
+ *            used here, otherwise false positives are possible.
+ */
+type TransferMarkedRemote<T extends TransferMarked> = T extends LocalModelStore<
     infer TModel,
     infer TView,
     infer TController,
@@ -253,125 +339,61 @@ type CustomRemoteFor<T, F> = T extends LocalModelStore<
     infer TType
 >
     ? RemoteModelStore<TModel, TView, TController, TCtx, TType>
-    : T extends ISetStore<infer TValue>
-    ? RemoteSetStore<CustomRemoteFor<TValue, TValue extends object ? TValue : never>>
+    : T extends LocalSetStore<infer TValue>
+    ? RemoteSetStore<MustExtendObject<Remote<TValue>>>
+    : T extends LocalDerivedSetStore<any, infer TDerived>
+    ? RemoteSetStore<Remote<TDerived>>
     : T extends LocalStore<infer TValue, RegisteredTransferHandler<any, any, any, any, TransferTag>>
-    ? RemoteStore<CustomRemoteFor<TValue, TValue>>
+    ? RemoteStore<Remote<TValue>>
     : T extends PropertiesMarked
+    ? PropertiesMarkedRemote<T>
+    : T extends ProxyMarked
+    ? RemoteProxy<T>
+    : never;
+
+/**
+ * Approximation of Structured Clone Algorithm result type. See
+ * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm for
+ * details.
+ */
+type StructuredCloneOf<T> = T extends StructuredCloneUnclonableTypes
+    ? never
+    : T extends Map<infer TKey, infer TValue>
+    ? Map<StructuredCloneOf<TKey>, StructuredCloneOf<TValue>>
+    : T extends Set<infer TValue>
+    ? Set<StructuredCloneOf<TValue>>
+    : T extends (infer TValue)[]
+    ? StructuredCloneOf<TValue>[]
+    : T extends ArrayBuffer | Boolean | DataView | Date | RegExp | String
+    ? T
+    : T extends Primitive // Required to be handled before object for OpaqueTag types
+    ? T
+    : T extends object
     ? {
-          readonly [P in keyof T as Exclude<P, typeof TRANSFER_MARKER>]: CustomRemoteFor<
-              T[P],
-              T[P] extends ProxyMarked ? RemoteObject<T[P]> : T[P]
-          >;
+          readonly [P in keyof T]: StructuredCloneOf<T[P]>;
       }
-    : F;
+    : unknown;
 
 /**
- * Maps a property to its remotely accessible counterpart type.
- */
-type RemoteProperty<T> = T extends Function | ProxyMarked
-    ? Remote<T>
-    : Promisify<CustomRemoteFor<T, T>>;
-
-/**
- * Map a property from a remote property to its local counterpart type.
- */
-type LocalProperty<T> = T extends Function | ProxyMarked ? Local<T> : Unpromisify<T>;
-
-/**
- * Proxies `T` if it is a `ProxyMarked`, clones it otherwise (as handled by
- * structured cloning and transfer handlers).
+ * Types that are not cloned by the structuredClone Algorithm, taken from
+ * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm and
+ * https://github.com/GoogleChromeLabs/comlink/blob/main/structured-clone-table.md
  *
- * - Maps {@link LocalModelStore} to {@link RemoteModelStore}, ensured by the
- *   `model-store` transfer handler.
+ * Note that we do not have DOM-Types available here so we just ignore them.
  */
-
-type ProxyOrClone<T> = T extends ProxyMarked ? Remote<T> : CustomRemoteFor<T, T>;
+type StructuredCloneUnclonableTypes = Promise<unknown> | Function;
 
 /**
- * Inverse of `ProxyOrClone<T>`.
- */
-export type UnproxyOrClone<T> = T extends RemoteObject<ProxyMarked> ? Local<T> : T;
-
-/**
- * Takes the raw type of a remote object in the other thread and returns the
- * type as it is visible to the local thread when proxied.
+ * Get the Remote type of an object wrapped through the {@link Endpoint} API.
  *
- * This does not handle call signatures, which is handled by the more general
- * `Remote<T>` type.
+ * Use {@link RemoteProxy} if you created the proxy manually with
+ * {@link EndpointService.wrap}.
  *
- * @template T The raw type of a remote object as seen in the other thread.
+ * @param T The Local Type.
  */
-export type RemoteObject<T> = CustomRemoteFor<
-    T,
-    {
-        readonly [P in keyof T]: RemoteProperty<T[P]>;
-    }
->;
-
-/**
- * Takes the type of an object as a remote thread would see it through a proxy
- * (e.g. when passed in as a function argument) and returns the type that the
- * local thread has to supply.
- *
- * This does not handle call signatures, which is handled by the more general
- * `Local<T>` type.
- *
- * This is the inverse of `RemoteObject<T>`.
- *
- * @template T The type of a proxied object.
- */
-export type LocalObject<T = CreatedEndpoint> = {
-    readonly [P in keyof T]: LocalProperty<T[P]>;
-};
-
-/**
- * Additional special methods available on each wrapped proxy.
- */
-export interface ProxyMethods {
-    readonly [RELEASE_PROXY]: () => void;
-}
-
-/**
- * Takes the raw type of a remote object, function or class in the other
- * thread and returns the type as it is visible to the local thread from the
- * proxy return value of `wrap` or `proxy`.
- */
-export type Remote<T> = RemoteObject<T> &
-    (T extends (...args: infer TArguments) => infer TReturn
-        ? (
-              ...args: {
-                  [I in keyof TArguments]: UnproxyOrClone<TArguments[I]>;
-              }
-          ) => Promisify<ProxyOrClone<Unpromisify<TReturn>>>
-        : unknown) &
-    ProxyMethods;
-
-/**
- * Expresses that a type can be either a sync or async.
- */
-type MaybePromise<T> = Promise<T> | T;
-
-/**
- * Takes the raw type of a remote object, function or class as a remote thread
- * would see it through a proxy (e.g. when passed in as a function argument)
- * and returns the type the local thread has to supply.
- *
- * This is the inverse of `Remote<T>`. It takes a `Remote<T>` and returns its
- * original input `T`.
- */
-export type Local<T = CreatedEndpoint> =
-    // Omit the special proxy methods
-    Omit<LocalObject<T>, keyof ProxyMethods> &
-        // Handle call signatures (if present)
-        (T extends (...args: infer TArguments) => infer TReturn
-            ? (
-                  ...args: {
-                      [I in keyof TArguments]: ProxyOrClone<TArguments[I]>;
-                  }
-              ) => // The raw function could either be sync or async, but is always proxied automatically
-              MaybePromise<UnproxyOrClone<Unpromisify<TReturn>>>
-            : unknown);
+export type Remote<TLocal> = TLocal extends TransferMarked
+    ? TransferMarkedRemote<TLocal>
+    : StructuredCloneOf<TLocal>;
 
 /**
  * Customizes the serialization of certain values.
@@ -651,7 +673,10 @@ export class EndpointService {
      * @param log Optional logger.
      * @returns The remote interface.
      */
-    public wrap<TTarget>(endpoint: Endpoint | DomEndpoint, log?: Logger): Remote<TTarget> {
+    public wrap<TTarget>(
+        endpoint: Endpoint | DomEndpoint,
+        log?: Logger,
+    ): TTarget extends ProxyMarked ? never : RemoteProxy<TTarget> {
         let releaser: AbortRaiser | undefined = undefined;
         if (this._debug !== undefined) {
             releaser = this.debug?.(
@@ -662,7 +687,10 @@ export class EndpointService {
                     ),
             );
         }
-        return this._createProxy<TTarget>(endpoint as Endpoint, releaser);
+        return this._createProxy<TTarget>(
+            endpoint as Endpoint,
+            releaser,
+        ) as TTarget extends ProxyMarked ? never : RemoteProxy<TTarget>;
     }
 
     /**
@@ -671,7 +699,11 @@ export class EndpointService {
      * @param target The target object to expose.
      * @param endpoint The endpoint to attach to.
      */
-    public expose(target: unknown, endpoint: Endpoint | DomEndpoint, log?: Logger): void {
+    public expose<TTarget extends ProxyMarked>(
+        target: TTarget,
+        endpoint: Endpoint | DomEndpoint,
+        log?: Logger,
+    ): void {
         let releaser: AbortRaiser | undefined = undefined;
         if (this._debug !== undefined) {
             releaser = this.debug?.(
@@ -781,7 +813,7 @@ export class EndpointService {
         path: (string | i53 | symbol)[] = [],
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         target: object = (): void => {},
-    ): Remote<T> {
+    ): RemoteProxy<T> {
         const service = this;
         let isReleasingOrReleased = false;
         const proxy = new Proxy(target, {
@@ -833,7 +865,7 @@ export class EndpointService {
 
                 // We just pretend that `bind()` didn’t happen.
                 if (last === 'bind') {
-                    return service._createProxy(ep, releaser, path.slice(0, -1));
+                    return service._createProxy<T>(ep, releaser, path.slice(0, -1));
                 }
                 const [argumentList, transfers] = service._processArguments(rawArgumentList);
                 return service

@@ -19,7 +19,7 @@
   import {ReceiverType} from '~/common/enum';
   import {type Avatar, type ContactController, type RemoteModelController} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';
   import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
 
@@ -31,7 +31,7 @@
   // Unpack services
   const {router, backend} = services;
 
-  let contactViewModel: RemoteObject<LocalStore<ContactListItemViewModel>> | undefined;
+  let contactViewModel: Remote<LocalStore<ContactListItemViewModel>> | undefined;
   let contactController: RemoteModelController<ContactController> | undefined;
   let avatar: RemoteModelStore<Avatar> | undefined;
 

@@ -12,7 +12,7 @@
   import {display} from '~/common/dom/ui/state';
   import {THEMES} from '~/common/dom/ui/theme';
   import {type u53} from '~/common/types';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   export let services: AppServices;
@@ -22,7 +22,7 @@
 
   const log = logging.logger('component.profile');
 
-  let profile: RemoteObject<ProfileViewModelStore>;
+  let profile: Remote<ProfileViewModelStore>;
   viewModel
     .profile()
     .then((loadedProfile) => {

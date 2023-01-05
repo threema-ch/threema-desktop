@@ -11,7 +11,7 @@
   import {ActivityState, ReceiverType} from '~/common/enum';
   import {type Avatar} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type RemoteObject} from '~/common/utils/endpoint';
+  import {type Remote} from '~/common/utils/endpoint';
   import {
     type ContactListItemViewModel,
     type ContactListItemViewModelStore,
@@ -20,7 +20,7 @@
   /**
    * Contact list item view model store.
    */
-  export let contact: RemoteObject<ContactListItemViewModelStore>;
+  export let contact: Remote<ContactListItemViewModelStore>;
   /**
    * Router
    */
@@ -63,7 +63,7 @@
     }
   }
 
-  function transformReceiver(viewModel: RemoteObject<ContactListItemViewModel>): ContactReceiver {
+  function transformReceiver(viewModel: Remote<ContactListItemViewModel>): ContactReceiver {
     // Determinetitle and subtitle
     let title = viewModel.displayName;
     let subtitle = undefined;
