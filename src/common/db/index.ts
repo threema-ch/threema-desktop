@@ -57,7 +57,7 @@ export type NoDatabaseKeyToken = typeof NO_DATABASE_KEY_TOKEN;
  * IMPORTANT: DO NOT hold a reference to this key beyond construction
  *            of a {@link SqliteDatabaseBackend}.
  */
-export type RawDatabaseKey = WeakOpaque<RawKey<32>, {readonly RawKey: unique symbol}>;
+export type RawDatabaseKey = WeakOpaque<RawKey<32>, {readonly RawDatabaseKey: unique symbol}>;
 
 /**
  * Wrap a key into a {@link RawDatabaseKey}.
