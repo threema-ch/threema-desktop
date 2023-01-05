@@ -288,7 +288,7 @@ export class MigrationHelper {
             const migration = builder.finish();
             migrations.set(index, migration);
         }
-        log.info(`Loaded ${migrations.size} migration(s)`);
+        log.info(`Loaded ${migrations.size} db migrations`);
 
         return new MigrationHelper(log, migrations, maxMigrationNumber);
     }

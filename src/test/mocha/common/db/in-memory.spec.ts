@@ -51,6 +51,7 @@ export function run(): void {
                 {
                     supportsForeignKeyConstraints: false,
                     doesNotImplementThreadIdTodoRemoveThis: true,
+                    doesNotImplementFileDataCleanup: true,
                 },
                 initInMemoryBackend as () => [backend: DatabaseBackend, cleanup: () => void],
             );

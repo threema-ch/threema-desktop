@@ -13,11 +13,15 @@ import {
     ensureFileId,
     FILE_ID_LENGTH_HEX_CHARS,
     FileStorageError,
+    generateRandomFileEncryptionKey,
     InMemoryFileStorage,
     randomFileId,
 } from '~/common/file-storage';
 import {NOOP_LOGGER} from '~/common/logging';
-import {FileSystemFileStorage} from '~/common/node/file-storage/system-file-storage';
+import {
+    FILE_STORAGE_FORMAT,
+    FileSystemFileStorage,
+} from '~/common/node/file-storage/system-file-storage';
 import {isNodeError} from '~/common/node/utils';
 import {assertError} from '~/common/utils/assert';
 import {byteView} from '~/common/utils/byte';
@@ -33,6 +37,9 @@ export function run(): void {
             array.set(randomBytes(array.byteLength));
             return buffer;
         });
+
+        // Generate two encryption keys
+        const encryptionKey1 = generateRandomFileEncryptionKey(crypto);
 
         /**
          * Helper function for asserting information about an exception.
@@ -123,16 +130,20 @@ export function run(): void {
                 const storage = makeStorage();
                 const fileId = ensureFileId('00112233445566778899aabbccddeeff0011223344556677');
                 await assertFileStorageError(
-                    storage.load(fileId),
+                    storage.load({
+                        fileId,
+                        encryptionKey: encryptionKey1,
+                        storageFormatVersion: FILE_STORAGE_FORMAT.V1,
+                    }),
                     'not-found',
                     'File with ID 00112233445566778899aabbccddeeff0011223344556677 not found',
                 );
             });
 
-            it('can load stored files', async function () {
+            it('can load stored files (roundtrip)', async function () {
                 const storage = makeStorage();
-                const fileId = await storage.store(Uint8Array.of(1, 2, 3, 4));
-                const readBytes = await storage.load(fileId);
+                const handle = await storage.store(Uint8Array.of(1, 2, 3, 4));
+                const readBytes = await storage.load(handle);
                 expect(readBytes, 'readBytes').not.to.be.undefined;
                 expect(readBytes).to.byteEqual(Uint8Array.of(1, 2, 3, 4));
             });
@@ -208,7 +219,7 @@ export function run(): void {
             });
 
             it('ensure proper file mode', async function () {
-                const fileId = await fileStorage.store(Uint8Array.of(1, 2, 3, 4));
+                const {fileId} = await fileStorage.store(Uint8Array.of(1, 2, 3, 4));
                 const stat = fs.statSync(path.join(storageDirPath, fileId));
                 // eslint-disable-next-line no-bitwise
                 const fileMode = `0${(stat.mode & 0o777).toString(8)}`;
@@ -217,10 +228,10 @@ export function run(): void {
 
             it('is backed by a cache', async function () {
                 const data = Uint8Array.of(1, 2, 3, 4);
-                const fileId = await fileStorage.store(data);
+                const handle = await fileStorage.store(data);
 
                 // Load should return the value from the cache
-                const data2 = await fileStorage.load(fileId);
+                const data2 = await fileStorage.load(handle);
 
                 // Compare references, should point to the same instance
                 expect(data2).to.equal(data);

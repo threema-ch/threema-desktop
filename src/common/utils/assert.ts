@@ -97,3 +97,10 @@ export function ensureError(error: unknown): Error {
     }
     return new Error(`${error}`);
 }
+
+/**
+ * Typeguard to ensure that a value is not undefined.
+ */
+export function isNotUndefined<T>(val: T | undefined): val is T {
+    return val !== undefined;
+}

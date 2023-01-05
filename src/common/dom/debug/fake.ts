@@ -164,8 +164,8 @@ export async function generateFakeContactConversation(
                 break;
             case MessageDirection.OUTBOUND:
                 if (Math.random() < 0.1) {
-                    const fileId = await file.store(TEST_IMAGE);
-                    const thumbnailFileId = await file.store(TEST_THUMBNAIL);
+                    const {fileId} = await file.store(TEST_IMAGE);
+                    const {fileId: thumbnailFileId} = await file.store(TEST_THUMBNAIL);
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
@@ -279,8 +279,8 @@ export async function generateFakeGroupConversation(
                 break;
             case MessageDirection.OUTBOUND:
                 if (Math.random() < 0.1) {
-                    const fileId = await file.store(TEST_IMAGE);
-                    const thumbnailFileId = await file.store(TEST_THUMBNAIL);
+                    const {fileId} = await file.store(TEST_IMAGE);
+                    const {fileId: thumbnailFileId} = await file.store(TEST_THUMBNAIL);
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,

@@ -2,6 +2,7 @@ import {expect} from 'chai';
 
 import {type PublicKey, NACL_CONSTANTS} from '~/common/crypto';
 import {randomString} from '~/common/crypto/random';
+import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
     type DatabaseBackend,
     type DbAnyMessage,
@@ -9,6 +10,7 @@ import {
     type DbConversationUid,
     type DbCreate,
     type DbCreateConversationMixin,
+    type DbFileData,
     type DbGroup,
     type DbGroupUid,
     type DbMessageCommon,
@@ -34,7 +36,12 @@ import {
     VerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import {type FileId, FILE_ID_LENGTH_BYTES} from '~/common/file-storage';
+import {
+    ensureFileId,
+    FILE_ENCRYPTION_KEY_LENGTH,
+    FILE_ID_LENGTH_BYTES,
+    wrapFileEncryptionKey,
+} from '~/common/file-storage';
 import {type BlobId, BLOB_ID_LENGTH} from '~/common/network/protocol/blob';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {
@@ -51,6 +58,8 @@ import {assert} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
 
+import {InMemoryFileStorage} from './backend-mocks';
+
 /**
  * Available features of the database backend.
  */
@@ -58,10 +67,12 @@ export interface DatabaseBackendFeatures {
     readonly supportsForeignKeyConstraints: boolean;
     // TODO(WEBMD-296): Add thread handling to in-memory db, then remove this
     readonly doesNotImplementThreadIdTodoRemoveThis?: true;
+    // TODO(WEBMD-530): Replace with sql.js?
+    readonly doesNotImplementFileDataCleanup?: true;
 }
 
 // Minimal crypto backend
-const crypto = {randomBytes: pseudoRandomBytes};
+const crypto = new TweetNaClBackend(pseudoRandomBytes);
 
 /**
  * Create a contact with optional default data.
@@ -157,6 +168,17 @@ export function makeGroup(
     return groupUid;
 }
 
+function makeFileData(): DbFileData {
+    return {
+        fileId: ensureFileId(bytesToHex(crypto.randomBytes(new Uint8Array(FILE_ID_LENGTH_BYTES)))),
+        encryptionKey: wrapFileEncryptionKey(
+            crypto.randomBytes(new Uint8Array(FILE_ENCRYPTION_KEY_LENGTH)),
+        ),
+        unencryptedByteCount: 123,
+        storageFormatVersion: 1,
+    };
+}
+
 interface CommonMessageInit<T extends MessageType> {
     id?: u64;
     type: T;
@@ -214,8 +236,8 @@ export function createFileMessage(
         blobId?: Uint8Array;
         thumbnailBlobId?: Uint8Array;
         encryptionKey?: RawBlobKey;
-        fileId?: string;
-        thumbnailFileId?: string;
+        fileData?: DbFileData;
+        thumbnailFileData?: DbFileData;
         mediaType?: string;
         thumbnailMediaType?: string;
         fileName?: string;
@@ -232,8 +254,8 @@ export function createFileMessage(
         encryptionKey:
             init.encryptionKey ??
             wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))),
-        fileId: init.fileId as FileId | undefined,
-        thumbnailFileId: init.thumbnailFileId as FileId | undefined,
+        fileData: init.fileData,
+        thumbnailFileData: init.thumbnailFileData,
         mediaType: init.mediaType ?? 'application/jpeg',
         thumbnailMediaType: init.thumbnailMediaType ?? 'application/jpeg',
         fileName: init.fileName,
@@ -862,14 +884,14 @@ export function backendTests(
 
             // Create file message
             const blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH));
-            const thumbnailFileId = bytesToHex(
-                crypto.randomBytes(new Uint8Array(FILE_ID_LENGTH_BYTES)),
-            );
+            const fileData = makeFileData();
+            const thumbnailFileData = makeFileData();
             const messageUid = createFileMessage(db, {
                 id: 1000n,
                 conversationUid: conversation.uid,
                 blobId,
-                thumbnailFileId,
+                fileData,
+                thumbnailFileData,
             });
 
             // Query message
@@ -878,7 +900,15 @@ export function backendTests(
             assert(msg?.type === MessageType.FILE);
             expect(msg.id).to.equal(1000n);
             expect(msg.blobId).to.byteEqual(blobId);
-            expect(msg.thumbnailFileId).to.equal(thumbnailFileId);
+            assert(msg.fileData !== undefined, 'File data should not be undefined');
+            expect(msg.fileData, 'Mismatch in fileData').to.deep.equal(fileData);
+            assert(
+                msg.thumbnailFileData !== undefined,
+                'Thumbnail file data should not be undefined',
+            );
+            expect(msg.thumbnailFileData, 'Mismatch in thumbnailFileData').to.deep.equal(
+                thumbnailFileData,
+            );
         });
 
         it('updateMessage', function () {
@@ -936,14 +966,15 @@ export function backendTests(
             expect(message1.text).to.equal('Aaa');
             expect(message2.text).to.equal('Bbb');
             expect(message2.raw).to.byteEqual(raw);
-            expect(message3.fileId).to.be.undefined;
+            expect(message3.fileData).to.be.undefined;
 
             // Update text of first message
-            db.updateMessage(conversation.uid, {
+            const updateInfo1 = db.updateMessage(conversation.uid, {
                 uid: message1.uid,
                 type: MessageType.TEXT,
                 text: 'Ccc',
             });
+            expect(updateInfo1.deletedFileIds).to.be.empty;
 
             // Update `readAt` and `lastReaction` of the second message
             const readAt = new Date(1981);
@@ -951,22 +982,24 @@ export function backendTests(
                 type: MessageReaction.ACKNOWLEDGE,
                 at: new Date(1980),
             };
-            db.updateMessage(conversation.uid, {
+            const updateInfo2 = db.updateMessage(conversation.uid, {
                 uid: message2.uid,
                 type: MessageType.TEXT,
                 readAt,
                 lastReaction,
             });
+            expect(updateInfo2.deletedFileIds).to.be.empty;
 
-            // Update fileId of the third message
-            const fileId = bytesToHex(
-                crypto.randomBytes(new Uint8Array(FILE_ID_LENGTH_BYTES)),
-            ) as FileId;
-            db.updateMessage(conversation.uid, {
+            // Update file data of the third message
+            const fileData = makeFileData();
+            const thumbnailFileData = makeFileData();
+            const updateInfo3 = db.updateMessage(conversation.uid, {
                 uid: message3.uid,
                 type: MessageType.FILE,
-                fileId,
+                fileData,
+                thumbnailFileData,
             });
+            expect(updateInfo3.deletedFileIds).to.be.empty;
 
             // Refresh messages
             message1 = db.getMessageByUid(messageUid1);
@@ -985,7 +1018,8 @@ export function backendTests(
             expect(message2.readAt).to.deep.equal(readAt);
             expect(message2.lastReaction).to.deep.equal(lastReaction);
             expect(message2.raw).to.byteEqual(raw);
-            expect(message3.fileId).to.equal(fileId);
+            expect(message3.fileData).to.deep.equal(fileData);
+            expect(message3.thumbnailFileData).to.deep.equal(thumbnailFileData);
 
             // Ensure `lastReaction` does not implicitly reset
             db.updateMessage(conversation.uid, {
@@ -1006,6 +1040,42 @@ export function backendTests(
             message2 = db.getMessageByUid(messageUid2);
             assert(message2?.type === MessageType.TEXT);
             expect(message2.lastReaction).to.be.undefined;
+
+            // Ensure that an update of the file data is processed
+            const fileData2 = makeFileData();
+            const updateInfoAfterFileDataUpdate = db.updateMessage(conversation.uid, {
+                uid: message3.uid,
+                type: MessageType.FILE,
+                fileData: fileData2,
+            });
+            if (!features.doesNotImplementFileDataCleanup) {
+                expect(
+                    updateInfoAfterFileDataUpdate.deletedFileIds,
+                    'after file data update',
+                ).to.have.members([fileData.fileId]);
+            }
+            message3 = db.getMessageByUid(messageUid3);
+            assert(message3?.type === MessageType.FILE);
+            expect(message3.fileData?.fileId).to.equal(fileData2.fileId);
+            expect(message3.thumbnailFileData?.fileId).to.equal(thumbnailFileData.fileId);
+
+            // Ensure that a removal of the file data is processed
+            const updateInfoAfterFileDataRemoval = db.updateMessage(conversation.uid, {
+                uid: message3.uid,
+                type: MessageType.FILE,
+                fileData: undefined,
+                thumbnailFileData: undefined,
+            });
+            message3 = db.getMessageByUid(message3.uid);
+            assert(message3?.type === MessageType.FILE);
+            expect(message3.fileData).to.be.undefined;
+            expect(message3.thumbnailFileData).to.be.undefined;
+            if (!features.doesNotImplementFileDataCleanup) {
+                expect(
+                    updateInfoAfterFileDataRemoval.deletedFileIds,
+                    'after file data removal',
+                ).to.have.members([fileData2.fileId, thumbnailFileData.fileId]);
+            }
         });
 
         it('removeMessage / getLastMessage', function () {
@@ -1035,8 +1105,9 @@ export function backendTests(
             expect(db.getLastMessage(conversation.uid)?.id).to.equal(2000n);
 
             // Delete first message
-            expect(db.removeMessage(conversation.uid, messageUid1), 'Message not deleted').to.be
-                .true;
+            const removeInfo1 = db.removeMessage(conversation.uid, messageUid1);
+            expect(removeInfo1.removed, 'Message not deleted').to.be.true;
+            expect(removeInfo1.deletedFileIds, 'deletedFileIds not empty').to.be.empty;
 
             // First message is gone.
             expect(db.getMessageByUid(messageUid1), 'Message 1 still exists').to.be.undefined;
@@ -1044,10 +1115,102 @@ export function backendTests(
             expect(db.getLastMessage(conversation.uid)?.id).to.equal(2000n);
 
             // Deleting again will not do anything
-            expect(
-                db.removeMessage(conversation.uid, messageUid1),
-                'Message reported as deleted, but it should be gone',
-            ).to.be.false;
+            const removeInfo2 = db.removeMessage(conversation.uid, messageUid1);
+            expect(removeInfo2.removed, 'Message reported as deleted, but it should be gone').to.be
+                .false;
+            expect(removeInfo2.deletedFileIds, 'deletedFileIds not empty').to.be.empty;
+        });
+
+        it('removeMessage with file data', async function () {
+            // Add contact and get conversation
+            const contactUid = makeContact(db, {identity: 'TESTTEST'});
+            const conversation = db.getConversationOfReceiver({
+                type: ReceiverType.CONTACT,
+                uid: contactUid,
+            });
+            assert(conversation !== undefined);
+
+            const storage = new InMemoryFileStorage(crypto);
+
+            // Create files
+            const file1Data = await storage.store(Uint8Array.of(1, 2, 3));
+            const file2Data = await storage.store(Uint8Array.of(2, 3, 4));
+            const file3Data = await storage.store(Uint8Array.of(3, 4, 5));
+            const file4Data = await storage.store(Uint8Array.of(4, 5, 6));
+
+            // Create file messages
+            const messageUid1 = createFileMessage(db, {
+                id: 1000n,
+                conversationUid: conversation.uid,
+                fileData: {
+                    ...file1Data,
+                    unencryptedByteCount: 3,
+                },
+                thumbnailFileData: {
+                    ...file2Data,
+                    unencryptedByteCount: 3,
+                },
+            });
+            const messageUid2 = createFileMessage(db, {
+                id: 2000n,
+                conversationUid: conversation.uid,
+                fileData: {
+                    ...file3Data,
+                    unencryptedByteCount: 3,
+                },
+                thumbnailFileData: {
+                    ...file4Data,
+                    unencryptedByteCount: 3,
+                },
+            });
+            const messageUid3 = createFileMessage(db, {
+                id: 3000n,
+                conversationUid: conversation.uid,
+                fileData: {
+                    ...file3Data,
+                    unencryptedByteCount: 3,
+                },
+                thumbnailFileData: undefined,
+            });
+
+            // Ensure messages exist
+            expect(db.getMessageByUid(messageUid1), 'Message 1 does not exist').not.to.be.undefined;
+            expect(db.getMessageByUid(messageUid2), 'Message 2 does not exist').not.to.be.undefined;
+            expect(db.getMessageByUid(messageUid3), 'Message 3 does not exist').not.to.be.undefined;
+
+            // Delete first message, this should return two file IDs
+            const removeInfo1 = db.removeMessage(conversation.uid, messageUid1);
+            expect(removeInfo1.removed, 'Message 1 not deleted').to.be.true;
+            if (!features.doesNotImplementFileDataCleanup) {
+                expect(removeInfo1.deletedFileIds).to.have.members([
+                    file1Data.fileId,
+                    file2Data.fileId,
+                ]);
+            }
+
+            // First message is gone
+            expect(db.getMessageByUid(messageUid1), 'Message 1 still exists').to.be.undefined;
+
+            // Deleting again will not do anything
+            const removeInfo1Again = db.removeMessage(conversation.uid, messageUid1);
+            expect(removeInfo1Again.removed, 'Message reported as deleted, but it should be gone')
+                .to.be.false;
+            expect(removeInfo1Again.deletedFileIds, 'deletedFileIds not empty').to.be.empty;
+
+            // Delete second message, this should return only return the thumbnail file ID, because
+            // the file data itself is still referenced in third message
+            const removeInfo2 = db.removeMessage(conversation.uid, messageUid2);
+            expect(removeInfo2.removed, 'Message 2 not deleted').to.be.true;
+            if (!features.doesNotImplementFileDataCleanup) {
+                expect(removeInfo2.deletedFileIds).to.have.members([file4Data.fileId]);
+            }
+
+            // Delete third message, now the data file ID will be returned as well
+            const removeInfo3 = db.removeMessage(conversation.uid, messageUid3);
+            expect(removeInfo3.removed, 'Message 3 not deleted').to.be.true;
+            if (!features.doesNotImplementFileDataCleanup) {
+                expect(removeInfo3.deletedFileIds).to.have.members([file3Data.fileId]);
+            }
         });
 
         it('removeAllMessages', function () {
@@ -1062,16 +1225,26 @@ export function backendTests(
             for (let i = 0; i < 10; ++i) {
                 createTextMessage(db, {conversationUid: conversation.uid, text: `${i}`});
             }
+            const fileData1 = makeFileData();
+            const fileData2 = makeFileData();
+            const thumbnailFileData = makeFileData();
+            createFileMessage(db, {
+                conversationUid: conversation.uid,
+                fileData: fileData1,
+                thumbnailFileData,
+            });
+            createFileMessage(db, {conversationUid: conversation.uid, fileData: fileData2});
             const lastUpdate = new Date(1973);
             db.updateConversation({
                 uid: conversation.uid,
                 lastUpdate,
             });
-            expect(db.getMessageUids(conversation.uid, 20)).to.have.length(10);
+            expect(db.getMessageUids(conversation.uid, 20)).to.have.length(12);
 
             // Now, remove all messages and ensure that they're gone
-            db.removeAllMessages(conversation.uid, false);
+            const removeInfo1 = db.removeAllMessages(conversation.uid, false);
             expect(db.getMessageUids(conversation.uid, 20)).to.have.length(0);
+            expect(removeInfo1.removed).to.equal(12);
 
             // Ensure that the conversation still exists and that `lastUpdate` remains untouched
             conversation = db.getConversationOfReceiver(receiver);
@@ -1079,14 +1252,25 @@ export function backendTests(
             assert(conversation !== undefined);
             expect(conversation.lastUpdate).to.deep.equal(lastUpdate);
 
+            // Ensure that the removed file IDs are returned
+            if (!features.doesNotImplementFileDataCleanup) {
+                expect(removeInfo1.deletedFileIds).have.members([
+                    fileData1.fileId,
+                    thumbnailFileData.fileId,
+                    fileData2.fileId,
+                ]);
+            }
+
             // Add a bunch of messages again
             for (let i = 0; i < 10; ++i) {
                 createTextMessage(db, {conversationUid: conversation.uid, text: `${i}`});
             }
 
             // Now, remove all messages and ensure that they're gone
-            db.removeAllMessages(conversation.uid, true);
+            const removeInfo2 = db.removeAllMessages(conversation.uid, true);
             expect(db.getMessageUids(conversation.uid, 20)).to.have.length(0);
+            expect(removeInfo2.removed).to.equal(10);
+            expect(removeInfo2.deletedFileIds).to.be.empty;
 
             // Ensure that the conversation still exists and that `lastUpdate` has been reset this
             // time.

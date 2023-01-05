@@ -40,7 +40,14 @@ import {
     WorkVerificationLevel,
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
-import {type FileId, type FileStorage, FileStorageError, randomFileId} from '~/common/file-storage';
+import {
+    type FileId,
+    type FileStorage,
+    type StoredFileHandle,
+    FileStorageError,
+    generateRandomFileEncryptionKey,
+    randomFileId,
+} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, TagLogger} from '~/common/logging';
 import {
     type Contact,
@@ -495,8 +502,8 @@ export class InMemoryFileStorage implements FileStorage {
     public constructor(private readonly _crypto: CryptoBackend) {}
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async load(id: FileId): Promise<ReadonlyUint8Array> {
-        const file = this._files[id];
+    public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
+        const file = this._files[handle.fileId];
         if (file === undefined) {
             throw new FileStorageError('not-found', 'Not found');
         }
@@ -504,10 +511,11 @@ export class InMemoryFileStorage implements FileStorage {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async store(data: ReadonlyUint8Array): Promise<FileId> {
+    public async store(data: ReadonlyUint8Array): Promise<StoredFileHandle> {
         const id = randomFileId(this._crypto);
         this._files[id] = data;
-        return id;
+        const key = generateRandomFileEncryptionKey(this._crypto);
+        return {fileId: id, encryptionKey: key, storageFormatVersion: 0};
     }
 }
 

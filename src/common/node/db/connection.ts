@@ -11,6 +11,7 @@ import {
     type DbContactUid,
     type DbConversationUid,
     type DbDistributionListUid,
+    type DbFileDataUid,
     type DbGlobalPropertyUid,
     type DbGroupMemberUid,
     type DbGroupUid,
@@ -35,7 +36,7 @@ import {
     WorkVerificationLevelUtils,
 } from '~/common/enum';
 import {TypeTransformError} from '~/common/error';
-import {isFileId} from '~/common/file-storage';
+import {isFileId, wrapFileEncryptionKey} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {isBlobId} from '~/common/network/protocol/blob';
 import {
@@ -65,6 +66,7 @@ export const CUSTOM_TYPES = {
     GROUP_UID: 'DbGroupUid',
     MESSAGE_UID: 'DbMessageUid',
     GROUP_MEMBER_UID: 'DbGroupMemberUid',
+    FILE_DATA_UID: 'DbFileDataUid',
     GLOBAL_PROPERTY_UID: 'DbGlobalPropertyUid',
 
     // Enums (value constraints)
@@ -93,6 +95,7 @@ export const CUSTOM_TYPES = {
 
     // Mapped types (value constraints, mapping and optional tagging)
     BLOB_KEY: 'RawBlobKey',
+    FILE_ENCRYPTION_KEY: 'FileEncryptionKey',
     MESSAGE_ID: 'MessageId',
     GROUP_ID: 'GroupId',
     DISTRIBUTION_LIST_ID: 'DistributionListId',
@@ -229,6 +232,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return typeof value === 'bigint' ? (value as DbGroupUid) : fail();
             case CUSTOM_TYPES.GROUP_MEMBER_UID:
                 return typeof value === 'bigint' ? (value as DbGroupMemberUid) : fail();
+            case CUSTOM_TYPES.FILE_DATA_UID:
+                return typeof value === 'bigint' ? (value as DbFileDataUid) : fail();
             case CUSTOM_TYPES.MESSAGE_UID:
                 return typeof value === 'bigint' ? (value as DbMessageUid) : fail();
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
@@ -281,6 +286,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             // Mapped types (value constraints, mapping and optional tagging)
             case CUSTOM_TYPES.BLOB_KEY:
                 return value instanceof Uint8Array ? wrapRawBlobKey(value) : fail();
+            case CUSTOM_TYPES.FILE_ENCRYPTION_KEY:
+                return value instanceof Uint8Array ? wrapFileEncryptionKey(value) : fail();
             case CUSTOM_TYPES.MESSAGE_ID:
                 return value instanceof Uint8Array && value.byteLength === 8
                     ? ensureMessageId(byteView(DataView, value).getBigUint64(0, true))
@@ -350,6 +357,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.DISTRIBUTION_LIST_UID:
             case CUSTOM_TYPES.GROUP_UID:
             case CUSTOM_TYPES.GROUP_MEMBER_UID:
+            case CUSTOM_TYPES.FILE_DATA_UID:
             case CUSTOM_TYPES.MESSAGE_UID:
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
                 // No transformation
@@ -385,6 +393,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
 
             // Mapped types (value constraints, mapping and optional tagging)
             case CUSTOM_TYPES.BLOB_KEY:
+            case CUSTOM_TYPES.FILE_ENCRYPTION_KEY:
                 return isReadonlyRawKey(value, DATABASE_KEY_LENGTH) ? value.unwrap() : fail();
             case CUSTOM_TYPES.MESSAGE_ID:
             case CUSTOM_TYPES.GROUP_ID:

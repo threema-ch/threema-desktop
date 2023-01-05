@@ -4,11 +4,12 @@ import {
     GroupUserState,
     ReceiverType,
 } from '~/common/enum';
+import {type FileId} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {type GroupId, type IdentityString, type MessageId} from '~/common/network/types';
 import {type Settings} from '~/common/settings';
 import {type i53, type i64, type u53, type u64} from '~/common/types';
-import {assert} from '~/common/utils/assert';
+import {assert, isNotUndefined} from '~/common/utils/assert';
 import {LazyMap} from '~/common/utils/map';
 
 import {
@@ -620,7 +621,7 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
     public updateMessage(
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyMessage, 'type'>,
-    ): void {
+    ): {deletedFileIds: FileId[]} {
         const messages = this._messages.get(conversationUid);
         const existing = messages.getByUid(message.uid);
         assert(
@@ -633,17 +634,43 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
                 `${existing.type}, got ${message.type}`,
         );
         messages.set(message);
+        // TODO(WEBMD-530): Implement this, or remove the InMemoryDatabaseBackend when we switch to sql.js
+        return {deletedFileIds: []};
     }
 
     /** @inheritdoc */
-    public removeMessage(conversationUid: DbConversationUid, uid: DbRemove<DbAnyMessage>): boolean {
-        return this._messages.get(conversationUid).remove(uid);
+    public removeMessage(
+        conversationUid: DbConversationUid,
+        uid: DbRemove<DbAnyMessage>,
+    ): {removed: boolean; deletedFileIds: FileId[]} {
+        const conversation = this._messages.get(conversationUid);
+        const message = conversation.getByUid(uid);
+        const fileIds = [];
+        if (message?.type === 'file') {
+            fileIds.push(
+                ...[message.fileData?.fileId, message.thumbnailFileData?.fileId].filter(
+                    isNotUndefined,
+                ),
+            );
+        }
+
+        // TODO(WEBMD-530): Right now we don't return the actual list of deleted (=unreferenced) file IDs.
+        // Either fix this, or remove the InMemoryDatabaseBackend when we switch to sql.js.
+        const deletedFileIds: FileId[] = [];
+
+        return {
+            removed: conversation.remove(uid),
+            deletedFileIds,
+        };
     }
 
     /** @inheritdoc */
-    public removeAllMessages(conversationUid: DbConversationUid, resetLastUpdate: boolean): void {
+    public removeAllMessages(
+        conversationUid: DbConversationUid,
+        resetLastUpdate: boolean,
+    ): {removed: u53; deletedFileIds: FileId[]} {
         // Remove all messages
-        this._messages.pop(conversationUid);
+        const messages = this._messages.pop(conversationUid);
 
         // Reset `lastUpdate` if requested
         if (resetLastUpdate) {
@@ -651,6 +678,10 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
             assert(conversation !== undefined, `Expected conversation ${conversationUid} to exist`);
             this._conversations.set({uid: conversationUid, lastUpdate: undefined});
         }
+
+        // TODO(WEBMD-530): Right now we don't return the actual list of deleted (=unreferenced) file IDs.
+        // Either fix this, or remove the InMemoryDatabaseBackend when we switch to sql.js.
+        return {removed: messages?.count() ?? 0, deletedFileIds: []};
     }
 
     public markConversationAsRead(

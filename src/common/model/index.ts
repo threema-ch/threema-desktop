@@ -43,7 +43,7 @@ import {
     type VerificationLevel,
     type WorkVerificationLevel,
 } from '~/common/enum';
-import {type FileId} from '~/common/file-storage';
+import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type BlobBytes, type BlobId} from '~/common/network/protocol/blob';
@@ -1050,6 +1050,13 @@ export interface OutboundTextMessage {
     readonly model: OutboundTextMessageModel;
 }
 
+export interface FileData {
+    readonly fileId: FileId;
+    readonly encryptionKey: FileEncryptionKey;
+    readonly unencryptedByteCount: u53;
+    readonly storageFormatVersion: u53;
+}
+
 export interface FileMessageViewFragment {
     readonly fileName?: string;
     readonly fileSize: u53;
@@ -1058,8 +1065,8 @@ export interface FileMessageViewFragment {
     readonly thumbnailMediaType: string;
     readonly blobId: BlobId;
     readonly thumbnailBlobId?: BlobId;
-    readonly fileId?: FileId;
-    readonly thumbnailFileId?: FileId;
+    readonly fileData?: FileData;
+    readonly thumbnailFileData?: FileData;
 }
 type CommonFileMessageView = CommonBaseMessageView & FileMessageViewFragment;
 type InboundFileMessageView = InboundBaseMessageView & CommonFileMessageView;
@@ -1074,8 +1081,8 @@ type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
         | 'thumbnailMediaType'
         | 'blobId'
         | 'thumbnailBlobId'
-        | 'fileId'
-        | 'thumbnailFileId'
+        | 'fileData'
+        | 'thumbnailFileData'
     > & {
         readonly encryptionKey: RawBlobKey;
         readonly correlationId?: string;

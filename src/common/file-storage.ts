@@ -3,10 +3,10 @@
  */
 
 import {type ServicesForBackend} from '~/common/backend';
-import {type CryptoBackend} from '~/common/crypto';
+import {type CryptoBackend, type RawKey, wrapRawKey} from '~/common/crypto';
 import {TransferTag} from '~/common/enum';
 import {type BaseErrorOptions, BaseError} from '~/common/error';
-import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
+import {type ReadonlyUint8Array, type u53, type WeakOpaque} from '~/common/types';
 import {bytesToHex} from '~/common/utils/byte';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
@@ -14,6 +14,35 @@ import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endp
  * A 24-byte File ID in lowercase hexadecimal string format.
  */
 export type FileId = WeakOpaque<string, {readonly FileId: unique symbol}>;
+
+/**
+ * File encryption key (32 bytes).
+ *
+ * Must be different for every file, and must be used for encrypting only one file.
+ */
+export type FileEncryptionKey = WeakOpaque<RawKey<32>, {readonly FileEncryptionKey: unique symbol}>;
+
+/**
+ * Use 256-bit key for AES.
+ */
+export const FILE_ENCRYPTION_KEY_LENGTH = 32;
+
+/**
+ * Wrap a key into a {@link FileEncryptionKey}.
+ *
+ * @throws {CryptoError} in case the key is not 32 bytes long.
+ */
+export function wrapFileEncryptionKey(key: Uint8Array): FileEncryptionKey {
+    return wrapRawKey(key, FILE_ENCRYPTION_KEY_LENGTH) as FileEncryptionKey;
+}
+
+/**
+ * Generate a random {@link FileEncryptionKey}.
+ */
+export function generateRandomFileEncryptionKey(crypto: CryptoBackend): FileEncryptionKey {
+    const keyBytes = crypto.randomBytes(new Uint8Array(FILE_ENCRYPTION_KEY_LENGTH));
+    return wrapFileEncryptionKey(keyBytes);
+}
 
 /**
  * Services required by the file storage factory.
@@ -86,6 +115,22 @@ export function byteToFileId(array: ReadonlyUint8Array): FileId {
     return bytesToHex(array) as FileId;
 }
 
+export interface StoredFileHandle {
+    /**
+     * The assigned file ID.
+     */
+    readonly fileId: FileId;
+    /**
+     * The encryption key used to encrypt the file.
+     */
+    readonly encryptionKey: FileEncryptionKey;
+    /**
+     * The file storage format version. The storage backend can use this to implement compatibility
+     * checks.
+     */
+    readonly storageFormatVersion: u53;
+}
+
 /**
  * Generic interface for a file storage.
  *
@@ -97,21 +142,22 @@ export function byteToFileId(array: ReadonlyUint8Array): FileId {
  */
 export interface FileStorage {
     /**
-     * Load a file from the storage and return its bytes.
+     * Load a file from the storage, decrypt it and return the decrypted bytes.
      *
      * @throws {FileStorageError} In case the file cannot be found or read (e.g.
      *   due to a permission problem).
      */
-    load: (id: FileId) => Promise<ReadonlyUint8Array>;
+    load: (handle: StoredFileHandle) => Promise<ReadonlyUint8Array>;
 
     /**
-     * Store the provided bytes in the file storage and return the assigned {@link FileId}.
+     * Encrypt and store the provided bytes in the file storage and return the assigned
+     * {@link StoredFileHandle}.
      *
-     * @param data Bytes to be stored. Note that these bytes must not be altered
-     *   by the caller after calling this function!
+     * @param data Bytes to be stored. Note that these bytes must not be altered by the caller after
+     *   calling this function!
      * @throws {FileStorageError} if file cannot be stored or already exists.
      */
-    store: (data: ReadonlyUint8Array) => Promise<FileId>;
+    store: (data: ReadonlyUint8Array) => Promise<StoredFileHandle>;
 }
 
 /**
@@ -159,19 +205,26 @@ export class InMemoryFileStorage implements FileStorage {
 
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async load(fileId: FileId): Promise<ReadonlyUint8Array> {
-        const file = this._files.get(fileId);
-        if (file === undefined) {
-            throw new FileStorageError('not-found', `File with ID ${fileId} not found`);
+    public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
+        const bytes = this._files.get(handle.fileId);
+        if (bytes === undefined) {
+            throw new FileStorageError('not-found', `File with ID ${handle.fileId} not found`);
         }
-        return file;
+        return bytes;
     }
 
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async store(data: ReadonlyUint8Array): Promise<FileId> {
+    public async store(data: ReadonlyUint8Array): Promise<StoredFileHandle> {
         const fileId = randomFileId(this._crypto);
         this._files.set(fileId, data);
-        return fileId;
+
+        // In-memory database does not encrypt! Thus, we can use an all-0 key.
+        const key = wrapFileEncryptionKey(new Uint8Array(FILE_ENCRYPTION_KEY_LENGTH));
+
+        // The in-memory storage is not persistent, thus we can hardcode the storage format version to 0
+        const storageFormatVersion = 0;
+
+        return {fileId, encryptionKey: key, storageFormatVersion};
     }
 }

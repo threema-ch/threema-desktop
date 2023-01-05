@@ -19,7 +19,7 @@ import {
     type VerificationLevel,
     type WorkVerificationLevel,
 } from '~/common/enum';
-import {type FileId} from '~/common/file-storage';
+import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
 import {type BlobId} from '~/common/network/protocol/blob';
 import {
     type FeatureMask,
@@ -376,6 +376,13 @@ export type DbTextMessage = {
     readonly quotedMessageId?: MessageId;
 } & DbMessageCommon<MessageType.TEXT>;
 
+export interface DbFileData {
+    readonly fileId: FileId;
+    readonly encryptionKey: FileEncryptionKey;
+    readonly unencryptedByteCount: u53;
+    readonly storageFormatVersion: u53;
+}
+
 /**
  * A database file message.
  */
@@ -383,8 +390,8 @@ export type DbFileMessage = {
     readonly blobId: BlobId;
     readonly thumbnailBlobId?: BlobId;
     readonly encryptionKey: RawBlobKey;
-    fileId?: FileId;
-    thumbnailFileId?: FileId;
+    fileData?: DbFileData;
+    thumbnailFileData?: DbFileData;
     readonly mediaType: string;
     readonly thumbnailMediaType: string;
     readonly fileName?: string;
@@ -392,6 +399,11 @@ export type DbFileMessage = {
     readonly caption?: string;
     readonly correlationId?: string;
 } & DbMessageCommon<MessageType.FILE>;
+
+/**
+ * A file data UID.
+ */
+export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique symbol}>;
 
 /**
  * Any database message.
@@ -587,33 +599,42 @@ export interface DatabaseBackend {
     /**
      * Update the specified message. Fields that are missing will be ignored.
      *
+     * When file messages are updated, it's possible that file message data is removed. If this
+     * happens, the list of {@link FileId}s that can now be deleted from the storage is returned. It
+     * is the responsibility of the caller to delete these files from the file storage.
+     *
      * IMPORTANT: The `conversation.type` field **must not** be altered!
      */
     readonly updateMessage: (
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyMessage, 'type'>,
-    ) => void;
+    ) => {deletedFileIds: FileId[]};
 
     /**
-     * Remove the message.
+     * Remove the message and associated data.
      *
-     * Return whether a message was found and removed.
+     * Return whether a message was found and removed. Additionally, the list of {@link FileId}s
+     * that were removed from the database is returned. This data should be used by the caller to
+     * clean up the file storage.
      */
     readonly removeMessage: (
         conversationUid: DbConversationUid,
         uid: DbRemove<DbAnyMessage>,
-    ) => boolean;
+    ) => {removed: boolean; deletedFileIds: FileId[]};
 
     /**
      * Remove all messages of a conversation.
      *
-     * @param resetLastUpdate whether the `lastUpdate` field of the conversation should be reset
-     *   in order to hide the conversation (`true`) or keep an empty conversation (`false`).
+     * @param resetLastUpdate whether the `lastUpdate` field of the conversation should be reset in
+     *   order to hide the conversation (`true`) or keep an empty conversation (`false`).
+     * @returns the number of removed messages, as well as the list of {@link FileId}s that were
+     *   removed from the database. This data should be used by the caller to clean up the file
+     *   storage.
      */
     readonly removeAllMessages: (
         conversationUid: DbConversationUid,
         resetLastUpdate: boolean,
-    ) => void;
+    ) => {removed: u53; deletedFileIds: FileId[]};
 
     /**
      * Mark all incoming messages of the given conversation as read.

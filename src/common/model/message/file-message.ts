@@ -11,6 +11,7 @@ import {
     type Contact,
     type ConversationControllerHandle,
     type DirectedMessageFor,
+    type FileData,
     type FileMessageViewFragment,
     type InboundConversationPreviewMessageView,
     type InboundFileMessage,
@@ -48,8 +49,8 @@ export function createFileMessage<TDirection extends MessageDirection>(
         blobId: init.blobId,
         thumbnailBlobId: init.thumbnailBlobId,
         encryptionKey: init.encryptionKey,
-        fileId: init.fileId,
-        thumbnailFileId: init.thumbnailFileId,
+        fileData: init.fileData,
+        thumbnailFileData: init.thumbnailFileData,
         mediaType: init.mediaType,
         thumbnailMediaType: init.thumbnailMediaType,
         fileName: init.fileName,
@@ -92,8 +93,8 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
         thumbnailMediaType: message.thumbnailMediaType,
         blobId: message.blobId,
         thumbnailBlobId: message.thumbnailBlobId,
-        fileId: message.fileId,
-        thumbnailFileId: message.thumbnailFileId,
+        fileData: message.fileData,
+        thumbnailFileData: message.thumbnailFileData,
     };
     switch (common.direction) {
         case MessageDirection.INBOUND: {
@@ -164,18 +165,18 @@ export class InboundFileMessageModelController
         // avoid races where the same blob is downloaded multiple times.
         return await this._lock.with(async () => {
             // If blob is already downloaded (i.e. a fileId is set), return it.
-            const fileId = this.meta.run((handle) => {
+            const existingFileData: FileData | undefined = this.meta.run((handle) => {
                 switch (type) {
                     case 'main':
-                        return handle.view().fileId;
+                        return handle.view().fileData;
                     case 'thumbnail':
-                        return handle.view().thumbnailFileId;
+                        return handle.view().thumbnailFileData;
                     default:
                         return unreachable(type);
                 }
             });
-            if (fileId !== undefined) {
-                return await file.load(fileId);
+            if (existingFileData !== undefined) {
+                return await file.load(existingFileData);
             }
 
             // Otherwise, download it from the blob mirror.
@@ -197,16 +198,22 @@ export class InboundFileMessageModelController
 
             // Blob downloaded, store in file storage
             const blobBytes = downloadResult.data;
-            const newFileId = await file.store(blobBytes);
+            const storedFile = await file.store(blobBytes);
+            const storedFileData = {
+                fileId: storedFile.fileId,
+                encryptionKey: storedFile.encryptionKey,
+                unencryptedByteCount: blobBytes.byteLength,
+                storageFormatVersion: storedFile.storageFormatVersion,
+            };
 
             // Update database
             let change: Partial<FileMessageViewFragment>;
             switch (type) {
                 case 'main':
-                    change = {fileId: newFileId};
+                    change = {fileData: storedFileData};
                     break;
                 case 'thumbnail':
-                    change = {thumbnailFileId: newFileId};
+                    change = {thumbnailFileData: storedFileData};
                     break;
                 default:
                     unreachable(type);
@@ -256,15 +263,17 @@ export class OutboundFileMessageModelController
 {
     /** @inheritdoc */
     public async blob(): Promise<ReadonlyUint8Array> {
-        const fileId = this.meta.run((handle) => handle.view().fileId);
-        assert(fileId !== undefined, 'File ID for outgoing message is undefined');
-        return await this._services.file.load(fileId);
+        const fileData = this.meta.run((handle) => handle.view().fileData);
+        assert(fileData !== undefined, 'File data for outgoing message is undefined');
+        return await this._services.file.load(fileData);
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<ReadonlyUint8Array | undefined> {
-        const fileId = this.meta.run((handle) => handle.view().thumbnailFileId);
-        return fileId === undefined ? undefined : await this._services.file.load(fileId);
+        const thumbnailFileData = this.meta.run((handle) => handle.view().thumbnailFileData);
+        return thumbnailFileData === undefined
+            ? undefined
+            : await this._services.file.load(thumbnailFileData);
     }
 
     /** @inheritdoc */

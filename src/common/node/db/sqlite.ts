@@ -1,6 +1,7 @@
 import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {SynchronousPromise} from 'synchronous-promise';
 import {type DynamicCondition} from 'ts-sql-query/expressions/dynamicConditionUsingFilters';
+import {type UpdateSets} from 'ts-sql-query/expressions/update';
 import {ConsoleLogQueryRunner} from 'ts-sql-query/queryRunners/ConsoleLogQueryRunner';
 import {type QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
 import {type ColumnsForSetOf} from 'ts-sql-query/utils/tableOrViewUtils';
@@ -16,6 +17,8 @@ import {
     type DbCreateConversationMixin,
     type DbCreated,
     type DbDistributionListUid,
+    type DbFileData,
+    type DbFileDataUid,
     type DbFileMessage,
     type DbGet,
     type DbGlobalProperty,
@@ -40,11 +43,12 @@ import {
     MessageType,
     ReceiverType,
 } from '~/common/enum';
+import {type FileId} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {type GroupId, type IdentityString, type MessageId} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
 import {type u53, type u64} from '~/common/types';
-import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
+import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {hasProperty} from '~/common/utils/object';
 
@@ -55,6 +59,7 @@ import {sync} from './sync';
 import {
     tContact,
     tConversation,
+    tFileData,
     tGlobalProperty,
     tGroup,
     tGroupMember,
@@ -891,13 +896,144 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }, this._log);
     }
 
+    /**
+     * Insert file data into the database.
+     *
+     * @throws if an entry with the specified file ID already exists
+     */
+    private _insertFileData(fileData: DbFileData): DbFileDataUid {
+        return sync(
+            this._db
+                .insertInto(tFileData)
+                .set({
+                    fileId: fileData.fileId,
+                    encryptionKey: fileData.encryptionKey,
+                    unencryptedByteCount: fileData.unencryptedByteCount,
+                    storageFormatVersion: fileData.storageFormatVersion,
+                })
+                .returningLastInsertedId()
+                .executeInsert(),
+        );
+    }
+
+    private _updateFileData(
+        fileData: DbFileData,
+        previousFileDataUid: DbFileDataUid,
+    ): {newUid: DbFileDataUid; previousUid: DbFileDataUid} | undefined {
+        // In order to be able to compare the file data, we first need to fetch the
+        // previous file data from the database.
+        const previousFileData = sync(
+            this._db
+                .selectFrom(tFileData)
+                .select({
+                    fileId: tFileData.fileId,
+                    encryptionKey: tFileData.encryptionKey,
+                    unencryptedByteCount: tFileData.unencryptedByteCount,
+                    storageFormatVersion: tFileData.storageFormatVersion,
+                })
+                .where(tFileData.uid.equals(previousFileDataUid))
+                .executeSelectOne(),
+        );
+
+        // Use the file ID to compare file data
+        if (fileData.fileId === previousFileData.fileId) {
+            // If file ID is the same, then the other data must be identical as well
+            if (!fileData.encryptionKey.equals(previousFileData.encryptionKey)) {
+                throw new Error(
+                    'Cannot insert file data with existing file ID but different encryption key',
+                );
+            }
+            if (fileData.unencryptedByteCount !== previousFileData.unencryptedByteCount) {
+                throw new Error(
+                    'Cannot insert file data with existing file ID but different byte count',
+                );
+            }
+            if (fileData.storageFormatVersion !== previousFileData.storageFormatVersion) {
+                throw new Error(
+                    'Cannot insert file data with existing file ID but different storage format version',
+                );
+            }
+
+            // Data is unchanged!
+            return undefined;
+        }
+
+        // File data was replaced! Insert new entry
+        return {newUid: this._insertFileData(fileData), previousUid: previousFileDataUid};
+    }
+
+    /**
+     * Try to insert file data into the database.
+     *
+     * @throws Error if an entry with the specified file ID already exists, but has mismatching
+     *   associated data (e.g. a different encryption key)
+     */
+    private _getOrInsertFileDataUid(fileData: DbFileData): DbFileDataUid {
+        // First, check whether file data with this file ID already exists in the database
+        const existingFileData = sync(
+            this._db
+                .selectFrom(tFileData)
+                .select({
+                    uid: tFileData.uid,
+                    fileId: tFileData.fileId,
+                    encryptionKey: tFileData.encryptionKey,
+                    unencryptedByteCount: tFileData.unencryptedByteCount,
+                    storageFormatVersion: tFileData.storageFormatVersion,
+                })
+                .where(tFileData.fileId.equals(fileData.fileId))
+                .executeSelectNoneOrOne(),
+        );
+
+        // If data is found, ensure that all fields are identical. Then, return the UID.
+        if (existingFileData !== null) {
+            assert(
+                existingFileData.fileId === fileData.fileId,
+                'Existing file data entry with fileId mismatch',
+            );
+            assert(
+                existingFileData.encryptionKey.equals(fileData.encryptionKey),
+                'Existing file data entry with encryptionKey mismatch',
+            );
+            assert(
+                existingFileData.unencryptedByteCount === fileData.unencryptedByteCount,
+                'Existing file data entry with unencryptedByteCount mismatch',
+            );
+            assert(
+                existingFileData.storageFormatVersion === fileData.storageFormatVersion,
+                'Existing file data entry with storageFormatVersion mismatch',
+            );
+            return existingFileData.uid;
+        }
+
+        // Otherwise, insert a new file data row
+        return this._insertFileData(fileData);
+    }
+
     /** @inheritdoc */
     public createFileMessage(message: DbCreate<DbFileMessage>): DbCreated<DbFileMessage> {
         return this._db.syncTransaction(() => {
             // Common message
             const messageUid: DbMessageUid = this._insertCommonMessageData(message);
 
-            // File data
+            // Write file data into `fileData` table, store UIDs
+            const fileDataUid =
+                message.fileData === undefined
+                    ? undefined
+                    : this._getOrInsertFileDataUid(message.fileData);
+            const thumbnailFileDataUid =
+                message.thumbnailFileData === undefined
+                    ? undefined
+                    : this._getOrInsertFileDataUid(message.thumbnailFileData);
+
+            // Sanity check: File and thumbnail data UIDs must be different
+            if (fileDataUid !== undefined || thumbnailFileDataUid !== undefined) {
+                assert(
+                    fileDataUid !== thumbnailFileDataUid,
+                    'fileDataUid and thumbnailFileDataUid must be different',
+                );
+            }
+
+            // Write message file data
             sync(
                 this._db
                     .insertInto(tMessageFileData)
@@ -906,8 +1042,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         blobId: message.blobId,
                         thumbnailBlobId: message.thumbnailBlobId,
                         encryptionKey: message.encryptionKey,
-                        fileId: message.fileId,
-                        thumbnailFileId: message.thumbnailFileId,
+                        fileDataUid,
+                        thumbnailFileDataUid,
                         mediaType: message.mediaType,
                         thumbnailMediaType: message.thumbnailMediaType,
                         fileName: message.fileName,
@@ -1013,15 +1149,42 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 };
             }
             case MessageType.FILE: {
+                const tFileDataJoinable = tFileData.forUseInLeftJoinAs('fileData');
+                const tThumbnailFileDataJoinable =
+                    tFileData.forUseInLeftJoinAs('thumbnailFileData');
                 const file = sync(
                     this._db
+                        // Main table
                         .selectFrom(tMessageFileData)
+                        // Join for fileData
+                        .leftJoin(tFileDataJoinable)
+                        .on(tMessageFileData.fileDataUid.equals(tFileDataJoinable.uid))
+                        // Join for thumbnailFileData
+                        .leftJoin(tThumbnailFileDataJoinable)
+                        .on(
+                            tMessageFileData.thumbnailFileDataUid.equals(
+                                tThumbnailFileDataJoinable.uid,
+                            ),
+                        )
+                        // Select data
                         .select({
                             blobId: tMessageFileData.blobId,
                             thumbnailBlobId: tMessageFileData.thumbnailBlobId,
                             encryptionKey: tMessageFileData.encryptionKey,
-                            fileId: tMessageFileData.fileId,
-                            thumbnailFileId: tMessageFileData.thumbnailFileId,
+                            fileData: {
+                                fileId: tFileDataJoinable.fileId,
+                                encryptionKey: tFileDataJoinable.encryptionKey,
+                                unencryptedByteCount: tFileDataJoinable.unencryptedByteCount,
+                                storageFormatVersion: tFileDataJoinable.storageFormatVersion,
+                            },
+                            thumbnailFileData: {
+                                fileId: tThumbnailFileDataJoinable.fileId,
+                                encryptionKey: tThumbnailFileDataJoinable.encryptionKey,
+                                unencryptedByteCount:
+                                    tThumbnailFileDataJoinable.unencryptedByteCount,
+                                storageFormatVersion:
+                                    tThumbnailFileDataJoinable.storageFormatVersion,
+                            },
                             mediaType: tMessageFileData.mediaType,
                             thumbnailMediaType: tMessageFileData.thumbnailMediaType,
                             fileName: tMessageFileData.fileName,
@@ -1077,11 +1240,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     public updateMessage(
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyMessage, 'type'>,
-    ): void {
+    ): {deletedFileIds: FileId[]} {
         return this._db.syncTransaction(() => {
             // Update common data
             //
-            // Note: This makes a sanity-check on the message type by filtering on it.
+            // Note: This makes a sanity-check on the message type and conversation uid by filtering on it.
             const updated = sync(
                 this._db
                     .update(tMessage)
@@ -1097,10 +1260,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     )
                     .where(tMessage.uid.equals(message.uid))
                     .and(tMessage.messageType.equals(message.type))
+                    .and(tMessage.conversationUid.equals(conversationUid))
                     .executeUpdate(),
             );
             assert(
-                updated < 2,
+                updated === 1,
                 `Expected to update exactly one message with UID ${message.uid} and type ` +
                     `${message.type}, but we updated ${updated} rows.`,
             );
@@ -1108,63 +1272,275 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             // Update associated data as well
             //
             // Note: At this point, we can be certain that the message type is correct!
-            let table: typeof tMessageTextData | typeof tMessageFileData;
             switch (message.type) {
                 case MessageType.TEXT:
-                    table = tMessageTextData;
-                    break;
-                case MessageType.FILE:
-                    table = tMessageFileData;
-                    break;
+                    sync(
+                        this._db
+                            .update(tMessageTextData)
+                            .set(message)
+                            .where(tMessageTextData.messageUid.equals(message.uid))
+                            .executeUpdate(),
+                    );
+                    return {deletedFileIds: []};
+                case MessageType.FILE: {
+                    // Prepare update
+                    const update: UpdateSets<typeof tMessageFileData, typeof tMessageFileData> = {
+                        ...message,
+                    };
+
+                    // To keep the file data table clean and remove entries that aren't referenced
+                    // anymore, we first need to query the current UIDs.
+                    const previousFileDataUids = sync(
+                        this._db
+                            .selectFrom(tMessageFileData)
+                            .select({
+                                fileDataUid: tMessageFileData.fileDataUid,
+                                thumbnailFileDataUid: tMessageFileData.thumbnailFileDataUid,
+                            })
+                            .where(tMessageFileData.uid.equals(message.uid))
+                            .executeSelectNoneOrOne(),
+                    );
+
+                    // If necessary, insert new file data rows
+                    if (
+                        message.fileData !== undefined &&
+                        previousFileDataUids?.fileDataUid === undefined
+                    ) {
+                        update.fileDataUid = this._insertFileData(message.fileData);
+                    }
+                    if (
+                        message.thumbnailFileData !== undefined &&
+                        previousFileDataUids?.thumbnailFileDataUid === undefined
+                    ) {
+                        update.thumbnailFileDataUid = this._insertFileData(
+                            message.thumbnailFileData,
+                        );
+                    }
+
+                    // If necessary, remove existing file data rows
+                    const removedFileDataUids: DbFileDataUid[] = [];
+                    if (
+                        hasProperty(message, 'fileData') &&
+                        message.fileData === undefined &&
+                        previousFileDataUids?.fileDataUid !== undefined
+                    ) {
+                        // File data was removed
+                        removedFileDataUids.push(previousFileDataUids.fileDataUid);
+                        update.fileDataUid = undefined;
+                    }
+                    if (
+                        hasProperty(message, 'thumbnailFileData') &&
+                        message.thumbnailFileData === undefined &&
+                        previousFileDataUids?.thumbnailFileDataUid !== undefined
+                    ) {
+                        // Thumbnail file data was removed
+                        removedFileDataUids.push(previousFileDataUids.thumbnailFileDataUid);
+                        update.thumbnailFileDataUid = undefined;
+                    }
+
+                    // If necessary, update existing file data rows
+                    if (
+                        message.fileData !== undefined &&
+                        previousFileDataUids?.fileDataUid !== undefined
+                    ) {
+                        const updateInfo = this._updateFileData(
+                            message.fileData,
+                            previousFileDataUids.fileDataUid,
+                        );
+                        if (updateInfo !== undefined) {
+                            update.fileDataUid = updateInfo.newUid;
+                            removedFileDataUids.push(updateInfo.previousUid);
+                        }
+                    }
+                    if (
+                        message.thumbnailFileData !== undefined &&
+                        previousFileDataUids?.thumbnailFileDataUid !== undefined
+                    ) {
+                        const updateInfo = this._updateFileData(
+                            message.thumbnailFileData,
+                            previousFileDataUids.thumbnailFileDataUid,
+                        );
+                        if (updateInfo !== undefined) {
+                            update.thumbnailFileDataUid = updateInfo.newUid;
+                            removedFileDataUids.push(updateInfo.previousUid);
+                        }
+                    }
+
+                    // Drop message file data
+                    sync(
+                        this._db
+                            .update(tMessageFileData)
+                            .set(update)
+                            .where(tMessageFileData.messageUid.equals(message.uid))
+                            .executeUpdate(),
+                    );
+
+                    // Delete file data rows that are now unreferenced
+                    //
+                    // NOTE: This must be called after the db update query! Otherwise rows are still
+                    //       referenced and aren't removed.
+                    const deletedFileIds =
+                        this._deleteFromMessageDataIfUnreferenced(removedFileDataUids);
+
+                    return {deletedFileIds};
+                }
                 default:
-                    unreachable(message);
+                    return unreachable(message);
             }
-            sync(
-                this._db
-                    .update(table)
-                    .set(message)
-                    .where(table.messageUid.equals(message.uid))
-                    .executeUpdate(),
-            );
         }, this._log);
     }
 
-    /** @inheritdoc */
-    public removeMessage(conversationUid: DbConversationUid, uid: DbRemove<DbAnyMessage>): boolean {
-        // Note: We only need to delete the row from the `messages` table.
-        //       The associated type-specific data will be dropped automatically
-        //       because we used ON DELETE CASCADE on all the foreign keys.
-        const deletedCount = sync(
-            this._db.deleteFrom(tMessage).where(tMessage.uid.equals(uid)).executeDelete(),
+    /**
+     * For each of the file data UIDs that is passed in, delete it from the "fileData" table if it
+     * is unreferenced.
+     *
+     * Return the list of {@link FileId}s that were removed from the database.
+     */
+    private _deleteFromMessageDataIfUnreferenced(fileDataUids: DbFileDataUid[]): FileId[] {
+        if (fileDataUids.length === 0) {
+            return [];
+        }
+        const tMessageFileDataJoinable = tMessageFileData.forUseInLeftJoin();
+        const unreferencedFileDataUids = this._db
+            .selectFrom(tFileData)
+            .leftJoin(tMessageFileDataJoinable)
+            .on(
+                tFileData.uid
+                    .equals(tMessageFileDataJoinable.fileDataUid)
+                    .or(tFileData.uid.equals(tMessageFileDataJoinable.thumbnailFileDataUid)),
+            )
+            .where(tFileData.uid.in(fileDataUids))
+            .and(tMessageFileDataJoinable.uid.isNull())
+            .selectOneColumn(tFileData.uid);
+        const unreferencedFileIds = sync(
+            this._db
+                .deleteFrom(tFileData)
+                .where(tFileData.uid.in(unreferencedFileDataUids))
+                .returningOneColumn(tFileData.fileId)
+                .executeDeleteMany(),
         );
-
-        // Sanity check
-        assert(
-            deletedCount < 2,
-            `Expected to remove at most one message but removed ${deletedCount}`,
-        );
-        return deletedCount === 1;
+        return unreferencedFileIds;
     }
 
-    public removeAllMessages(conversationUid: DbConversationUid, resetLastUpdate: boolean): void {
-        // Remove all messages
-        sync(
-            this._db
-                .deleteFrom(tMessage)
-                .where(tMessage.conversationUid.equals(conversationUid))
-                .executeDelete(),
-        );
-
-        // Reset `lastUpdate` if requested
-        if (resetLastUpdate) {
-            sync(
+    /** @inheritdoc */
+    public removeMessage(
+        conversationUid: DbConversationUid,
+        uid: DbRemove<DbAnyMessage>,
+    ): {removed: boolean; deletedFileIds: FileId[]} {
+        const [deletedCount, deletedFileIds] = this._db.syncTransaction(() => {
+            // In order to clean up unreferenced file data entries, we need to get a list of the
+            // file data UIDs that will be deleted.
+            const fileDataUidRows = sync(
                 this._db
-                    .update(tConversation)
-                    .set({lastUpdate: undefined})
-                    .where(tConversation.uid.equals(conversationUid))
-                    .executeUpdate(),
+                    .selectFrom(tMessageFileData)
+                    .innerJoin(tMessage)
+                    .on(tMessage.uid.equals(uid))
+                    .select({
+                        fileDataUid: tMessageFileData.fileDataUid,
+                        thumbnailFileDataUid: tMessageFileData.thumbnailFileDataUid,
+                    })
+                    .where(tMessageFileData.messageUid.equals(uid))
+                    .and(tMessage.conversationUid.equals(conversationUid))
+                    .and(
+                        tMessageFileData.fileDataUid
+                            .isNotNull()
+                            .or(tMessageFileData.thumbnailFileDataUid.isNotNull()),
+                    )
+                    .executeSelectMany(),
             );
-        }
+            const fileDataUids = fileDataUidRows
+                .flatMap((row) => [row.fileDataUid, row.thumbnailFileDataUid])
+                .filter(isNotUndefined);
+
+            // Delete rows from fileMessageData.
+            //
+            // Note: We only need to delete the row from the `messages` table.
+            //       The associated type-specific data will be dropped automatically
+            //       because we used ON DELETE CASCADE on all the foreign keys.
+            const rowsDeleted = sync(
+                this._db
+                    .deleteFrom(tMessage)
+                    .where(tMessage.uid.equals(uid))
+                    .and(tMessage.conversationUid.equals(conversationUid))
+                    .executeDelete(),
+            );
+
+            // After deleting the message file data, we can now determine whether there are now
+            // unreferenced file data entries that should be cleaned up.
+            //
+            // Note: Deleting the files from the file storage is the responsibility of the caller.
+            const unreferencedFileIds = this._deleteFromMessageDataIfUnreferenced(fileDataUids);
+
+            // Sanity check
+            assert(
+                rowsDeleted < 2,
+                `Expected to remove at most one message but removed ${rowsDeleted}`,
+            );
+            return [rowsDeleted, unreferencedFileIds];
+        }, this._log);
+
+        return {
+            removed: deletedCount === 1,
+            deletedFileIds,
+        };
+    }
+
+    /** @inheritdoc */
+    public removeAllMessages(
+        conversationUid: DbConversationUid,
+        resetLastUpdate: boolean,
+    ): {removed: u53; deletedFileIds: FileId[]} {
+        return this._db.syncTransaction(() => {
+            // In order to clean up unreferenced file data entries, we need to get a list of the file
+            // data UIDs that will be deleted.
+            const fileDataUidRows = sync(
+                this._db
+                    .selectFrom(tMessageFileData)
+                    .innerJoin(tMessage)
+                    .on(tMessage.uid.equals(tMessageFileData.messageUid))
+                    .select({
+                        fileDataUid: tMessageFileData.fileDataUid,
+                        thumbnailFileDataUid: tMessageFileData.thumbnailFileDataUid,
+                    })
+                    .where(tMessage.conversationUid.equals(conversationUid))
+                    .and(
+                        tMessageFileData.fileDataUid
+                            .isNotNull()
+                            .or(tMessageFileData.thumbnailFileDataUid.isNotNull()),
+                    )
+                    .executeSelectMany(),
+            );
+            const fileDataUids = fileDataUidRows
+                .flatMap((row) => [row.fileDataUid, row.thumbnailFileDataUid])
+                .filter(isNotUndefined);
+
+            // Remove all messages
+            const removed = sync(
+                this._db
+                    .deleteFrom(tMessage)
+                    .where(tMessage.conversationUid.equals(conversationUid))
+                    .executeDelete(),
+            );
+
+            // Reset `lastUpdate` if requested
+            if (resetLastUpdate) {
+                sync(
+                    this._db
+                        .update(tConversation)
+                        .set({lastUpdate: undefined})
+                        .where(tConversation.uid.equals(conversationUid))
+                        .executeUpdate(),
+                );
+            }
+
+            // After deleting the message file data, we can now determine whether there are now
+            // unreferenced file data entries that should be cleaned up.
+            //
+            // Note: Deleting the files from the file storage is the responsibility of the caller.
+            const deletedFileIds = this._deleteFromMessageDataIfUnreferenced(fileDataUids);
+
+            return {removed, deletedFileIds};
+        }, this._log);
     }
 
     public markConversationAsRead(

@@ -6,7 +6,9 @@ import {
     type FileId,
     type FileStorage,
     type ServicesForFileStorage,
+    type StoredFileHandle,
     FileStorageError,
+    generateRandomFileEncryptionKey,
     randomFileId,
 } from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
@@ -14,6 +16,17 @@ import {fileModeInternalIfPosix} from '~/common/node/fs';
 import {isNodeError} from '~/common/node/utils';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {AsyncWeakValueMap} from '~/common/utils/map';
+
+/**
+ * System file storage format version.
+ */
+export const FILE_STORAGE_FORMAT = {
+    /**
+     * 1 MiB chunks, encrypted with AES-256-GCM, with authenticator at the end. The chunks are
+     * concatenated into a single file.
+     */
+    V1: 1,
+} as const;
 
 /**
  * A file storage backed by the file system.
@@ -48,9 +61,10 @@ export class FileSystemFileStorage implements FileStorage {
     }
 
     /** @inheritdoc */
-    public async load(fileId: FileId): Promise<ReadonlyUint8Array> {
-        const filepath = this._getFilepath(fileId);
-        return await this._cache.getOrCreate(fileId, async () => {
+    public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
+        const filepath = this._getFilepath(handle.fileId);
+        // TODO(WEBMD-280): Use key and compare storage format version
+        return await this._cache.getOrCreate(handle.fileId, async () => {
             try {
                 return await fsPromises.readFile(filepath);
             } catch (error) {
@@ -59,24 +73,33 @@ export class FileSystemFileStorage implements FileStorage {
                     if (error.code === 'ENOENT') {
                         throw new FileStorageError(
                             'not-found',
-                            `File with ID ${fileId} not found`,
+                            `File with ID ${handle.fileId} not found`,
                             {from: error},
                         );
                     }
                 }
 
                 // Other errors: Wrap and re-throw
-                throw new FileStorageError('read-error', `Could not load file with ID ${fileId}`, {
-                    from: error,
-                });
+                throw new FileStorageError(
+                    'read-error',
+                    `Could not load file with ID ${handle.fileId}`,
+                    {
+                        from: error,
+                    },
+                );
             }
         });
     }
 
     /** @inheritdoc */
-    public async store(data: ReadonlyUint8Array): Promise<FileId> {
+    public async store(data: ReadonlyUint8Array): Promise<StoredFileHandle> {
         const fileId = randomFileId(this._services.crypto);
         const filepath = this._getFilepath(fileId);
+
+        // Generate random file encryption key
+        const key = generateRandomFileEncryptionKey(this._services.crypto);
+
+        // TODO(WEBMD-280): Encrypt
 
         // Store data in file system
         try {
@@ -99,7 +122,7 @@ export class FileSystemFileStorage implements FileStorage {
         // eslint-disable-next-line @typescript-eslint/require-await
         await this._cache.getOrCreate(fileId, async () => data);
 
-        return fileId;
+        return {fileId, encryptionKey: key, storageFormatVersion: FILE_STORAGE_FORMAT.V1};
     }
 
     /**

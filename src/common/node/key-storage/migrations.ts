@@ -62,7 +62,7 @@ export class MigrationHelper {
         private readonly _decryptedKeyStorageMigrations: Migration<DecryptedKeyStorage>[] = DECRYPTED_KEY_STORAGE_MIGRATIONS,
     ) {
         _log.debug(
-            `Loaded ${_encryptedKeyStorageMigrations.length} + ${_decryptedKeyStorageMigrations.length} migrations(s)`,
+            `Loaded ${_encryptedKeyStorageMigrations.length} encrypted + ${_decryptedKeyStorageMigrations.length} decrypted key storage migrations`,
         );
     }
 
