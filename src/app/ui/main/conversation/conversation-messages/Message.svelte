@@ -60,8 +60,17 @@
   >
     {#if showContactFor(receiver, message)}
       <span class="contact">
-        <MessageContact name={message.sender.name} color={message.sender.avatar.color} />
+        <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
       </span>
+    {/if}
+    {#if quote !== undefined}
+      <div class="quote">
+        {#if quote === 'not-found'}
+          <p class="quote-not-found">The quoted message could not be found.</p>
+        {:else}
+          <MessageQuote {quote} />
+        {/if}
+      </div>
     {/if}
     <span class="content">
       <MessageContent {message} {mentions} />
@@ -85,16 +94,28 @@
     display: grid;
     grid-template:
       'contact' auto
+      'quote' auto
       'content' auto
       'footer' auto
       / auto;
 
-    grid-row-gap: var(--mc-message-row-gap);
+    grid-row-gap: rem(2px);
+    padding: rem(8px);
 
     .contact {
       grid-area: contact;
-      padding: var(--mc-message-contact-padding) var(--mc-message-contact-padding) 0
-        var(--mc-message-contact-padding);
+    }
+
+    .quote {
+      grid-area: quote;
+      padding-bottom: rem(8px);
+
+      .quote-not-found {
+        margin: 0;
+        border-left: solid var(--mc-message-quote-border-width) $warning-orange;
+        padding: rem(8px);
+        font-style: italic;
+      }
     }
 
     .content {
@@ -103,9 +124,6 @@
 
     .footer {
       grid-area: footer;
-
-      padding: 0 var(--mc-message-footer-padding) var(--mc-message-footer-padding)
-        var(--mc-message-footer-padding);
     }
   }
 </style>

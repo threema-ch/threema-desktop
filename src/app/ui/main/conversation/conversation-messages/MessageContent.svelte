@@ -16,23 +16,32 @@
    * Mentions parsed from the message
    */
   export let mentions: Mention[];
+
+  /**
+   * Whether this is a quote display or not.
+   */
+  export let isQuoted = false;
 </script>
 
 <template>
-  {#if message.type === 'text'}
-    <div class="text">
-      <Text text={message.body.text} {mentions} />
-    </div>
-  {:else}
-    <div class="unsupported-message">Unsupported message type `{message.type}`</div>
-  {/if}
+  <div class:is-quoted={isQuoted}>
+    {#if message.type === 'text'}
+      <div class="text">
+        <Text text={message.body.text} {mentions} />
+      </div>
+    {:else}
+      <div class="unsupported-message">Unsupported message type `{message.type}`</div>
+    {/if}
+  </div>
 </template>
 
 <style lang="scss">
   @use 'component' as *;
 
-  .text,
-  .unsupported-message {
-    padding: var(--mc-message-content-padding);
+  .is-quoted {
+    .text,
+    .unsupported-message {
+      opacity: 0.6;
+    }
   }
 </style>

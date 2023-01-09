@@ -96,7 +96,6 @@ $themes: (
       --mc-message-footer-icon-size: rem(12px),
 
       // General message container
-      --mc-message-row-gap: rem(2px),
       --mc-message-border-radius: rem(8px),
       --mc-message-hover-background-color: -g($mc, message-hover-background-color),
       --mc-message-background-color-incoming: -g($mc, message-background-color-incoming),
@@ -105,9 +104,7 @@ $themes: (
       --mc-message-mention-color: -g($mc, message-mention-color),
       --mc-message-mention-me-background-color: -g($mc, message-mention-me-background-color),
       --mc-message-mention-me-color: -g($mc, message-mention-me-color),
-      --mc-message-footer-padding: rem(8px),
-      --mc-message-contact-padding: rem(8px),
-      --mc-message-content-padding: rem(8px),
+      --mc-message-quote-border-width: rem(2px),
 
       // Message status
       --mc-message-status-acknowledged-color: -g($mc, message-status-acknowledged),

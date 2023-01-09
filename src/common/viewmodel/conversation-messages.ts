@@ -7,6 +7,7 @@ import {
     type Repositories,
     type SetOfAnyLocalMessageModelStore,
     type Settings,
+    type User,
 } from '~/common/model';
 import {statusFromView} from '~/common/model/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
@@ -187,6 +188,7 @@ function getConversationMessageBody(
     const baseMessage = getConversationMessageBodyBaseMessage(
         messageModel,
         model.settings,
+        model.user,
         getAndSubscribe,
     );
     let messageData: ConversationMessage['body'];
@@ -244,6 +246,7 @@ function getConversationMessageBody(
 function getConversationMessageBodyBaseMessage(
     messageModel: AnyMessageModel,
     settings: Settings,
+    user: User,
     getAndSubscribe: GetAndSubscribeFunction,
 ): Omit<Message<AnyMessageBody>, 'type' | 'body'> {
     let lastReaction:
@@ -288,6 +291,10 @@ function getConversationMessageBodyBaseMessage(
                 state: {type: 'remote'},
                 id,
                 status,
+                sender: {
+                    name: getAndSubscribe(user.displayName),
+                    profilePicture: getAndSubscribe(user.profilePicture).view,
+                },
                 updatedAt:
                     messageModel.view.readAt ??
                     messageModel.view.deliveredAt ??

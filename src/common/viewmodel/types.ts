@@ -2,6 +2,7 @@ import {
     type VerificationLevel,
     type VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
+import {type ProfilePictureView} from '~/common/model';
 import {type u53} from '~/common/types';
 import {type ProfilePictureData} from '~/common/viewmodel/profile-picture';
 
@@ -386,6 +387,10 @@ export type OutgoingMessage<B extends AnyMessageBody> = {
     readonly state: AnyOutgoingMessageDataState;
     readonly id: string;
     readonly status: MessageStatus;
+    readonly sender: {
+        readonly name: string;
+        readonly profilePicture: ProfilePictureView;
+    };
     readonly updatedAt: Date;
     readonly lastReaction?: Reaction;
 } & B;
