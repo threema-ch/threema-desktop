@@ -9,3 +9,4 @@ src/common/crypto/blake2b/implementation.js
 src/test/cypress/
 src/test/js/
 packaging/main.cjs
+docs/book/
