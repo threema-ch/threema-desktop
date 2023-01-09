@@ -105,17 +105,14 @@ $themes: (
       --mc-message-mention-color: -g($mc, message-mention-color),
       --mc-message-mention-me-background-color: -g($mc, message-mention-me-background-color),
       --mc-message-mention-me-color: -g($mc, message-mention-me-color),
+      --mc-message-footer-padding: rem(8px),
+      --mc-message-contact-padding: rem(8px),
+      --mc-message-content-padding: rem(8px),
 
       // Message status
       --mc-message-status-acknowledged-color: -g($mc, message-status-acknowledged),
       --mc-message-status-declined-color: -g($mc, message-status-declined),
       --mc-message-status-error-color: -g($mc, message-status-error),
-
-      // Unsupported message
-      --mc-message-unsupported-padding: rem(8px),
-
-      // Text Message
-      --mc-message-text-padding: rem(8px),
   );
 }
 

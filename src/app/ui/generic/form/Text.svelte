@@ -1,6 +1,6 @@
 <script lang="ts">
   import {escapeHtmlUnsafeChars, textProcessor} from '~/app/ui/generic/form';
-  import {Mention} from '~/common/viewmodel/utils/mentions';
+  import {type Mention} from '~/common/viewmodel/utils/mentions';
 
   /**
    * The text to be parsed and displayed with the requested features.

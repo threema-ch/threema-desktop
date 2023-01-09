@@ -79,17 +79,14 @@ $config: config-merge(components.$config, (
       --mc-message-mention-color,
       --mc-message-mention-me-background-color,
       --mc-message-mention-me-color,
+      --mc-message-footer-padding,
+      --mc-message-contact-padding,
+      --mc-message-content-padding,
 
       // Message status
       --mc-message-status-acknowledged-color,
       --mc-message-status-declined-color,
       --mc-message-status-error-color,
-
-      // Unsupported message
-      --mc-message-unsupported-padding,
-
-      // Text message
-      --mc-message-text-padding,
     ),
 
     compound-components: (

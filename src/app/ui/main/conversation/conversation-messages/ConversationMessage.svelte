@@ -1,3 +1,7 @@
+<!--
+  @component
+  Message row as shown in a conversation list.
+-->
 <script lang="ts">
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
@@ -6,9 +10,8 @@
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import {type ConversationData} from '~/app/ui/main/conversation';
+  import MessageComponent from '~/app/ui/main/conversation/conversation-messages//Message.svelte';
   import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
-  import TextMessage from '~/app/ui/main/conversation/conversation-messages/TextMessage.svelte';
-  import UnsupportedMessage from '~/app/ui/main/conversation/conversation-messages/UnsupportedMessage.svelte';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
   import MessageDetail from '~/app/ui/modal/MessageDetail.svelte';
   import MessageForward from '~/app/ui/modal/MessageForward.svelte';
@@ -202,6 +205,7 @@
     data-direction={messageBody.direction}
     data-id={messageBody.id}
     on:click={toggleSelect}
+    on:keypress={toggleSelect}
   >
     {#if selectable}
       <div class="checkbox">
@@ -226,20 +230,12 @@
       {/if}
 
       <div class="message" use:contextMenuAction={openContextMenuOnMouseEvent}>
-        {#if messageBody.type === 'text'}
-          <TextMessage
-            body={messageBody.body}
-            {receiver}
-            sender={messageBody.direction === 'incoming' ? messageBody.sender : undefined}
-            direction={messageBody.direction}
-            date={messageBody.updatedAt}
-            status={messageBody.direction === 'outgoing' ? messageBody.status : undefined}
-            reaction={messageBody.lastReaction}
-            mentions={$viewModelStore.mentions}
-          />
-        {:else}
-          <UnsupportedMessage message={messageBody} />
-        {/if}
+        <MessageComponent
+          message={messageBody}
+          quote={$viewModelStore.quote}
+          {receiver}
+          mentions={$viewModelStore.mentions}
+        />
         <div class="hover" class:visible={isContextMenuVisible} />
       </div>
       <div class="options">
