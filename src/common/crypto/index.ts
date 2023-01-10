@@ -1,7 +1,7 @@
+import {type CryptoBox} from '~/common/crypto/box';
 import {CryptoError} from '~/common/error';
 import {type ReadonlyUint8Array, type u53, type u64, type WeakOpaque} from '~/common/types';
-
-import {type CryptoBox} from './box';
+import {byteEquals} from '~/common/utils/byte';
 export type {CryptoBox};
 
 /**
@@ -108,6 +108,20 @@ class SecretKey<TLength extends SecretKeyLength> {
             this.#_key[offset] = 0x23;
         }
         this.#_key = undefined;
+    }
+
+    /**
+     * Returns whether this key is identical to the other key.
+     *
+     * @param other The secret key to compare against
+     * @returns true if the key bytes are equal, false otherwise
+     * @throws {@link Error} if the other key was already purged
+     */
+    public equals(other: SecretKey<TLength>): boolean {
+        if (this.#_key === undefined) {
+            return false;
+        }
+        return byteEquals(this.#_key, other.unwrap());
     }
 }
 
