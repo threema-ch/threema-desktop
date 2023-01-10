@@ -2,6 +2,7 @@ import {randomBytes} from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import {env} from 'node:process';
 
 import {expect} from 'chai';
 
@@ -173,57 +174,81 @@ export function run(): void {
             // Run generic tests
             genericStorageTests(() => fileStorage);
 
-            it('propagates the I/O error if the storage directory cannot be written', async function () {
-                fs.rmSync(storageDirPath, {recursive: true});
-                await assertFileStorageError(
-                    fileStorage.store(Uint8Array.of(1, 2, 3, 4)),
-                    'write-error',
-                    undefined,
-                    'ENOENT',
-                    'no such file or directory',
-                );
+            describe('store', function () {
+                it('propagates the I/O error if the storage directory cannot be written', async function () {
+                    fs.rmSync(storageDirPath, {recursive: true});
+                    await assertFileStorageError(
+                        fileStorage.store(Uint8Array.of(1, 2, 3, 4)),
+                        'write-error',
+                        undefined,
+                        'ENOENT',
+                        'no such file or directory',
+                    );
+                });
+
+                it('will error if file already exists', async function () {
+                    // To test this, we'll use a RNG that always returns the same bytes.
+                    // This way, a File ID will always consist of 24 0-bytes.
+                    const nonRandomCrypto = new TweetNaClBackend((buffer) => buffer);
+                    const nonRandomFileStorage = new FileSystemFileStorage(
+                        {crypto: nonRandomCrypto},
+                        NOOP_LOGGER,
+                        storageDirPath,
+                    );
+
+                    // First, file does not exist
+                    const zeroFileId = '000000000000000000000000000000000000000000000000';
+                    expect(
+                        fs.existsSync(path.join(storageDirPath, zeroFileId)),
+                        'All-zero file should not yet exist',
+                    ).to.be.false;
+
+                    // Write file
+                    await nonRandomFileStorage.store(Uint8Array.of(1, 2, 3, 4));
+
+                    // Now the file should exist
+                    expect(
+                        fs.existsSync(path.join(storageDirPath, zeroFileId)),
+                        'All-zero file should exist',
+                    ).to.be.true;
+
+                    // If we try to write again, that should fail.
+                    await assertFileStorageError(
+                        nonRandomFileStorage.store(Uint8Array.of(1, 2, 3, 4)),
+                        'write-error',
+                        'File already exists',
+                    );
+                });
+
+                it('ensure proper file mode', async function () {
+                    const {fileId} = await fileStorage.store(Uint8Array.of(1, 2, 3, 4));
+                    const stat = fs.statSync(path.join(storageDirPath, fileId));
+                    // eslint-disable-next-line no-bitwise
+                    const fileMode = `0${(stat.mode & 0o777).toString(8)}`;
+                    expect(fileMode).to.equal('0600');
+                });
             });
 
-            it('will error if file already exists', async function () {
-                // To test this, we'll use a RNG that always returns the same bytes.
-                // This way, a File ID will always consist of 24 0-bytes.
-                const nonRandomCrypto = new TweetNaClBackend((buffer) => buffer);
-                const nonRandomFileStorage = new FileSystemFileStorage(
-                    {crypto: nonRandomCrypto},
-                    NOOP_LOGGER,
-                    storageDirPath,
-                );
+            describe('delete', function () {
+                it('returns false when deleting a file that does not exist', async function () {
+                    expect(await fileStorage.delete(randomFileId(crypto))).to.be.false;
+                });
 
-                // First, file does not exist
-                const zeroFileId = '000000000000000000000000000000000000000000000000';
-                expect(
-                    fs.existsSync(path.join(storageDirPath, zeroFileId)),
-                    'All-zero file should not yet exist',
-                ).to.be.false;
-
-                // Write file
-                await nonRandomFileStorage.store(Uint8Array.of(1, 2, 3, 4));
-
-                // Now the file should exist
-                expect(
-                    fs.existsSync(path.join(storageDirPath, zeroFileId)),
-                    'All-zero file should exist',
-                ).to.be.true;
-
-                // If we try to write again, that should fail.
-                await assertFileStorageError(
-                    nonRandomFileStorage.store(Uint8Array.of(1, 2, 3, 4)),
-                    'write-error',
-                    'File already exists',
-                );
-            });
-
-            it('ensure proper file mode', async function () {
-                const {fileId} = await fileStorage.store(Uint8Array.of(1, 2, 3, 4));
-                const stat = fs.statSync(path.join(storageDirPath, fileId));
-                // eslint-disable-next-line no-bitwise
-                const fileMode = `0${(stat.mode & 0o777).toString(8)}`;
-                expect(fileMode).to.equal('0600');
+                // Note: Unfortunately this test does not work in GitLab CI, due to the way
+                // permissions are set up there. On a normal development machine, it should work.
+                if (env.GITLAB_CI === undefined) {
+                    it('propagates the I/O error if the file is readonly', async function () {
+                        const fileId = randomFileId(crypto);
+                        fs.chmodSync(storageDirPath, 0o000); // Make it readonly
+                        await assertFileStorageError(
+                            fileStorage.delete(fileId),
+                            'delete-error',
+                            'Could not delete file with ID',
+                            'EACCES',
+                            'permission denied',
+                        );
+                    });
+                }
             });
 
             it('is backed by a cache', async function () {

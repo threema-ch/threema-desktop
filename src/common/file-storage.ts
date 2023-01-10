@@ -158,6 +158,14 @@ export interface FileStorage {
      * @throws {FileStorageError} if file cannot be stored or already exists.
      */
     store: (data: ReadonlyUint8Array) => Promise<StoredFileHandle>;
+
+    /**
+     * Delete the file with the specified {@link FileId}.
+     *
+     * @returns true if a file was deleted. false if no file was present.
+     * @throws {FileStorageError} if something went wrong during deletion.
+     */
+    delete: (fileId: FileId) => Promise<boolean>;
 }
 
 /**
@@ -166,9 +174,15 @@ export interface FileStorage {
  * - not-found: The requested file was not found in the file storage.
  * - dir-not-found: File storage directory could not be found.
  * - read-error: File could not be read from the storage.
- * - write-rror: File cound not be writtten to the storage.
+ * - write-error: File could not be written to the storage.
+ * - delete-rror: File could not be deleted from the storage.
  */
-export type FileStorageErrorType = 'not-found' | 'dir-not-found' | 'read-error' | 'write-error';
+export type FileStorageErrorType =
+    | 'not-found'
+    | 'dir-not-found'
+    | 'read-error'
+    | 'write-error'
+    | 'delete-error';
 
 const FILE_STORAGE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     FileStorageError,
@@ -226,5 +240,11 @@ export class InMemoryFileStorage implements FileStorage {
         const storageFormatVersion = 0;
 
         return {fileId, encryptionKey: key, storageFormatVersion};
+    }
+
+    /** @inheritdoc */
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async delete(fileId: FileId): Promise<boolean> {
+        return this._files.delete(fileId);
     }
 }

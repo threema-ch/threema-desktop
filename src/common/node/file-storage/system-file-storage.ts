@@ -113,6 +113,8 @@ export class FileSystemFileStorage implements FileStorage {
             if (isNodeError(error)) {
                 if (error.code === 'EEXIST') {
                     message += ': File already exists';
+                } else {
+                    message += ` (${error.code})`;
                 }
             }
             throw new FileStorageError('write-error', message, {from: error});
@@ -123,6 +125,25 @@ export class FileSystemFileStorage implements FileStorage {
         await this._cache.getOrCreate(fileId, async () => data);
 
         return {fileId, encryptionKey: key, storageFormatVersion: FILE_STORAGE_FORMAT.V1};
+    }
+
+    /** @inheritdoc */
+    public async delete(fileId: FileId): Promise<boolean> {
+        const filepath = this._getFilepath(fileId);
+        try {
+            await fsPromises.unlink(filepath);
+        } catch (error) {
+            let message = `Could not delete file with ID ${fileId}`;
+            if (isNodeError(error)) {
+                if (error.code === 'ENOENT') {
+                    // File does not exist
+                    return false;
+                }
+                message += ` (${error.code})`;
+            }
+            throw new FileStorageError('delete-error', message, {from: error});
+        }
+        return true;
     }
 
     /**
