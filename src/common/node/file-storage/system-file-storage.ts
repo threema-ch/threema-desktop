@@ -64,7 +64,9 @@ export class FileSystemFileStorage implements FileStorage {
     public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
         const filepath = this._getFilepath(handle.fileId);
         // TODO(WEBMD-280): Use key and compare storage format version
-        return await this._cache.getOrCreate(handle.fileId, async () => {
+        const cacheInfo = {hit: true};
+        const bytes = await this._cache.getOrCreate(handle.fileId, async () => {
+            cacheInfo.hit = false;
             try {
                 return await fsPromises.readFile(filepath);
             } catch (error) {
@@ -89,6 +91,12 @@ export class FileSystemFileStorage implements FileStorage {
                 );
             }
         });
+        this._log.debug(
+            `Loaded file with ID ${handle.fileId} (${bytes.byteLength} bytes from ${
+                cacheInfo.hit ? 'cache' : 'fs'
+            })`,
+        );
+        return bytes;
     }
 
     /** @inheritdoc */
@@ -124,6 +132,7 @@ export class FileSystemFileStorage implements FileStorage {
         // eslint-disable-next-line @typescript-eslint/require-await
         await this._cache.getOrCreate(fileId, async () => data);
 
+        this._log.debug(`Stored file with ID ${fileId} (${data.byteLength} bytes)`);
         return {fileId, encryptionKey: key, storageFormatVersion: FILE_STORAGE_FORMAT.V1};
     }
 
@@ -143,6 +152,7 @@ export class FileSystemFileStorage implements FileStorage {
             }
             throw new FileStorageError('delete-error', message, {from: error});
         }
+        this._log.debug(`Deleted file with ID ${fileId}`);
         return true;
     }
 
