@@ -9,7 +9,6 @@ import {type ServicesForBackend} from '~/common/backend';
 import {PakoCompressor} from '~/common/compressor/pako';
 import {type Config} from '~/common/config';
 import {
-    type CryptoBackend,
     type Nonce,
     type NonceGuard,
     ensurePublicKey,
@@ -40,14 +39,7 @@ import {
     WorkVerificationLevel,
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
-import {
-    type FileId,
-    type FileStorage,
-    type StoredFileHandle,
-    FileStorageError,
-    generateRandomFileEncryptionKey,
-    randomFileId,
-} from '~/common/file-storage';
+import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, TagLogger} from '~/common/logging';
 import {
     type Contact,
@@ -490,32 +482,6 @@ export class TestBlobBackend implements BlobBackend {
             // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-empty-function
             done: async (doneScope: BlobScope) => {},
         };
-    }
-}
-
-/**
- * Store files in-memory in a record.
- */
-export class InMemoryFileStorage implements FileStorage {
-    private readonly _files: Record<FileId, ReadonlyUint8Array | undefined> = {};
-
-    public constructor(private readonly _crypto: CryptoBackend) {}
-
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
-        const file = this._files[handle.fileId];
-        if (file === undefined) {
-            throw new FileStorageError('not-found', 'Not found');
-        }
-        return file;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/require-await
-    public async store(data: ReadonlyUint8Array): Promise<StoredFileHandle> {
-        const id = randomFileId(this._crypto);
-        this._files[id] = data;
-        const key = generateRandomFileEncryptionKey(this._crypto);
-        return {fileId: id, encryptionKey: key, storageFormatVersion: 0};
     }
 }
 

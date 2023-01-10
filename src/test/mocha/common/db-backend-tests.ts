@@ -40,6 +40,7 @@ import {
     ensureFileId,
     FILE_ENCRYPTION_KEY_LENGTH,
     FILE_ID_LENGTH_BYTES,
+    InMemoryFileStorage,
     wrapFileEncryptionKey,
 } from '~/common/file-storage';
 import {type BlobId, BLOB_ID_LENGTH} from '~/common/network/protocol/blob';
@@ -57,8 +58,6 @@ import {type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
-
-import {InMemoryFileStorage} from './backend-mocks';
 
 /**
  * Available features of the database backend.
