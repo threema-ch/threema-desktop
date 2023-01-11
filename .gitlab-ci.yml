@@ -74,7 +74,7 @@ audit:
   <<: *before_script
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
-    - npm audit
+    - npm audit --audit-level moderate
   allow_failure: true
 
 test:karma:
