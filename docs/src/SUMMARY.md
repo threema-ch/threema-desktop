@@ -3,8 +3,10 @@
 [Introduction](./intro.md)
 
 - [Architecture](./architecture.md)
-- [Models](./models.md)
+  - [Sequence Diagrams](./sequence-diagrams.md)
+- [Guidelines](./guidelines.md)
+  - [Dependencies](./dependencies.md)
+  - [Models](./models.md)
+  - [Cryptography](./cryptography.md)
 - [Database](./database.md)
-- [Cryptography](./cryptography.md)
 - [Electron](./electron.md)
-- [Sequence Diagrams](./sequence-diagrams.md)
