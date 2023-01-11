@@ -23,10 +23,6 @@ submodules are already included.)
   - [Use `undefined` over `null`](#use-undefined-over-null)
   - [JSDoc Rules](#jsdoc-rules)
   - [Pre-Commit](#pre-commit)
-  - [Mocha: Node Unit Tests](#mocha-node-unit-tests)
-  - [Karma: Unit / Integration Tests](#karma-unit-integration-tests)
-  - [Cypress: Integration / End-to-End Tests](#cypress-integration-end-to-end-tests)
-  - [Code Coverage](#code-coverage)
 - [License](#license)
 
 ## Building
@@ -214,79 +210,6 @@ If you want to check the formatting automatically when committing changes, add
 ```bash
 ln -s $PWD/.git-pre-commit.sh .git/hooks/pre-commit
 ```
-
-### Mocha: Node Unit Tests
-
-Root: `src/test/mocha/`
-
-Everything that needs access to NodeJS APIs and does not require a UI should be
-tested by a Mocha test.
-
-```bash
-# Run tests
-npm run test:mocha
-```
-
-To filter tests, you can pass arguments to mocha:
-
-```bash
-npm run test:mocha -- --grep "load stored files"
-```
-
-By default, for database tests, an in-memory database is used. If you prefer to
-use a temporary database in your temporary directory, which can be inspected
-when a test fails, set the `TEST_DATABASE=tempfile` env var before running the
-tests.
-
-### Karma: Unit / Integration Tests
-
-Root: `src/test/karma/`
-
-Karma tests run in the browser and have access to DOM APIs.
-
-```bash
-# Single run in all configured browsers
-npm run test:karma
-# Single run in Firefox (headless)
-npm run test:karma -- --browsers FirefoxHeadless
-```
-
-### Cypress: Integration / End-to-End Tests
-
-_(Note: Currently not working!)_
-
-Root: `src/test/cypress/`
-
-Cypress tests are intended for UI testing and are placed in
-`test/cypress/integration`.
-
-Cypress tests can be run in the following ways:
-
-```bash
-# Run all tests (headless)
-npm run cypress:web:test
-
-# Run interactive
-npm run cypress:web:open
-```
-
-### Code Coverage
-
-In order to create a full code coverage report, you will have to run the full
-test suite and then generate the coverage report:
-
-```bash
-npm run clean
-npm run cypress:web:test
-npm run karma:common:test
-npm run coverage:report
-```
-
-The test suites will place their raw coverage data in `build/test-coverage-data`
-which will be picked up and merged by the reporter. The reporter will create a
-HTML summary in `build/test-coverage-report`.
-
-Note that the test suites are allowed to run in parallel, if desired.
 
 ## License
 
