@@ -10,3 +10,4 @@
   - [Cryptography](./cryptography.md)
 - [Database](./database.md)
 - [Electron](./electron.md)
+- [Generated Code](./generated.md)

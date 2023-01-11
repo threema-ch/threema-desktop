@@ -26,8 +26,6 @@ submodules are already included.)
   - [Mocha: Node Unit Tests](#mocha-node-unit-tests)
   - [Karma: Unit / Integration Tests](#karma-unit-integration-tests)
   - [Cypress: Integration / End-to-End Tests](#cypress-integration-end-to-end-tests)
-  - [Generate Protobuf Files](#generate-protobuf-files)
-  - [Generate Structbuf Files](#generate-structbuf-files)
   - [Code Coverage](#code-coverage)
 - [License](#license)
 
@@ -270,33 +268,6 @@ npm run cypress:web:test
 
 # Run interactive
 npm run cypress:web:open
-```
-
-### Generate Protobuf Files
-
-To update the protobuf files, ensure you have cloned the repository recursively
-(`git clone --recursive ...`). Then, simply checkout the desired tag via git
-in the `threema-protocols` directory.
-
-Generating the static protobuf modules can be done in the following way:
-
-```bash
-npm run protobuf:generate
-```
-
-Note that `protoc`, the Protobuf compiler, needs to be installed in your system. If you need to
-install it, check the [official documentation](https://grpc.io/docs/protoc-installation/).
-
-### Generate Structbuf Files
-
-To update the structbuf files, ensure you have cloned the repository recursively
-(`git clone --recursive ...`). Then, simply checkout the desired tag via git
-in the `threema-protocols` directory.
-
-Generating the static structbuf modules can be done in the following way:
-
-```bash
-npm run structbuf:generate
 ```
 
 ### Code Coverage
