@@ -66,6 +66,23 @@ Some packages may require native modules. First of all, **do not use precompiled
 binaries should be built as part of the build steps (e.g. via GYP). You will also have to declare at
 least the `.node` files to be copied (see next paragraph).
 
+Additionally, make sure that native dependencies are not moved into the Electron ASAR archive,
+otherwise macOS signing will break. To avoid this, update the `asar.unpackDir` configuration option
+in `tools/dist-electron.cjs`. Example:
+
+```js
+asar: {
+    // Exclude binary dependencies from the ASAR file, to avoid issues with code
+    // signing on macOS.
+    //
+    // Context: If shared libraries are part of the ASAR file, they cannot be signed
+    // (only the ASAR file as a whole is signed). macOS rejects the loading of
+    // unsigned native libraries. By moving the libraries outside of the ASAR file,
+    // they can be signed.
+    unpackDir: join('node_modules', '{better-sqlcipher,argon2}', `**`),
+},
+```
+
 **Declaring Files to be Copied**
 
 As mentioned in the previous two paragraphs, some packages require files to be imported at runtime.
