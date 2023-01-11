@@ -29,7 +29,6 @@ submodules are already included.)
   - [Cypress: Integration / End-to-End Tests](#cypress-integration-end-to-end-tests)
   - [Generate Protobuf Files](#generate-protobuf-files)
   - [Generate Structbuf Files](#generate-structbuf-files)
-  - [Debugging Electron Issues](#debugging-electron-issues)
   - [Code Coverage](#code-coverage)
 - [License](#license)
 
@@ -393,34 +392,6 @@ Generating the static structbuf modules can be done in the following way:
 ```bash
 npm run structbuf:generate
 ```
-
-### Debugging Electron Issues
-
-Here are some hints on how to debug issues with Electron crashes:
-
-**Verbose Logging**
-
-To run the application with verbose logging, start it like this
-
-    $ npm run electron:dev:consumer-sandbox -- --enable-logging --v=2
-
-**Debugging Crashes**
-
-When Electron crashes, there will be a crash dump in the "minidump" format in
-the user profile, inside the `Crashpad/completed/` directory. These can be
-symbolicated with [`minidump-stackwalk`](https://crates.io/crates/minidump-stackwalk).
-
-First, install `minidump-stackwalk`:
-
-    $ cargo install minidump-stackwalk
-
-Download debug symbols for the used Electron version from
-<https://github.com/electron/electron/releases> and unzip the file.
-
-Then you can analyze the crash dump:
-
-    $ minidump-stackwalk <dump-file>.dmp \
-        --symbols-path /path/to/debugsymbols/breakpad_symbols/
 
 ### Code Coverage
 
