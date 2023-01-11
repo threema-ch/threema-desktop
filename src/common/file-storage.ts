@@ -5,8 +5,10 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {type CryptoBackend, type RawKey, wrapRawKey} from '~/common/crypto';
 import {TransferTag} from '~/common/enum';
-import {type BaseErrorOptions, BaseError} from '~/common/error';
+import {type BaseErrorOptions, BaseError, extractErrorMessage} from '~/common/error';
+import {type Logger} from '~/common/logging';
 import {type ReadonlyUint8Array, type u53, type WeakOpaque} from '~/common/types';
+import {ensureError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
@@ -39,7 +41,9 @@ export function wrapFileEncryptionKey(key: Uint8Array): FileEncryptionKey {
 /**
  * Generate a random {@link FileEncryptionKey}.
  */
-export function generateRandomFileEncryptionKey(crypto: CryptoBackend): FileEncryptionKey {
+export function generateRandomFileEncryptionKey(
+    crypto: Pick<CryptoBackend, 'randomBytes'>,
+): FileEncryptionKey {
     const keyBytes = crypto.randomBytes(new Uint8Array(FILE_ENCRYPTION_KEY_LENGTH));
     return wrapFileEncryptionKey(keyBytes);
 }
@@ -113,6 +117,20 @@ export function byteToFileId(array: ReadonlyUint8Array): FileId {
         );
     }
     return bytesToHex(array) as FileId;
+}
+
+/**
+ * Delete files with the specified file IDs in a background task.
+ *
+ * The result will not be awaited! If deletion fails, an error is logged.
+ */
+export function deleteFilesInBackground(file: FileStorage, log: Logger, fileIds: FileId[]): void {
+    for (const fileId of fileIds) {
+        file.delete(fileId).catch((e) => {
+            const error = ensureError(e);
+            log.error(`Error while deleting file: ${extractErrorMessage(error, 'short')}`);
+        });
+    }
 }
 
 export interface StoredFileHandle {
@@ -233,8 +251,8 @@ export class InMemoryFileStorage implements FileStorage {
         const fileId = randomFileId(this._crypto);
         this._files.set(fileId, data);
 
-        // In-memory database does not encrypt! Thus, we can use an all-0 key.
-        const key = wrapFileEncryptionKey(new Uint8Array(FILE_ENCRYPTION_KEY_LENGTH));
+        // Generate random file encryption key
+        const key = generateRandomFileEncryptionKey(this._crypto);
 
         // The in-memory storage is not persistent, thus we can hardcode the storage format version to 0
         const storageFormatVersion = 0;

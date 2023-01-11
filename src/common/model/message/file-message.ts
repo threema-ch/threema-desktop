@@ -5,6 +5,8 @@ import {
     type DbMessageCommon,
 } from '~/common/db';
 import {MessageDirection, MessageType, ReceiverType} from '~/common/enum';
+import {deleteFilesInBackground} from '~/common/file-storage';
+import {type Logger} from '~/common/logging';
 import {
     type AnyFileMessageModelStore,
     type BaseMessageView,
@@ -67,12 +69,18 @@ export function createFileMessage<TDirection extends MessageDirection>(
  */
 function updateFileMessage<TView extends FileMessageViewFragment>(
     services: ServicesForModel,
+    log: Logger,
     conversation: DbConversationUid,
     uid: UidOf<DbFileMessage>,
     change: Partial<TView>,
 ): void {
-    const {db} = services;
-    db.updateMessage(conversation, {...change, type: MessageType.FILE, uid});
+    const {db, file} = services;
+    const {deletedFileIds} = db.updateMessage(conversation, {
+        ...change,
+        type: MessageType.FILE,
+        uid,
+    });
+    deleteFilesInBackground(file, log, deletedFileIds);
 }
 
 /**
@@ -158,8 +166,7 @@ export class InboundFileMessageModelController
      * be updated. Once that is done, the promise will resolve with the blob data.
      */
     protected async _blob(type: 'main' | 'thumbnail'): Promise<ReadonlyUint8Array | undefined> {
-        const {blob, file, logging} = this._services;
-        const log = logging.logger(`controller.message.inbound.file.${this._uid}`);
+        const {blob, file} = this._services;
 
         // Because the download logic is async and consists of multiple steps, we need a lock to
         // avoid races where the same blob is downloaded multiple times.
@@ -219,7 +226,13 @@ export class InboundFileMessageModelController
                     unreachable(type);
             }
             this.meta.update(() => {
-                updateFileMessage(this._services, this._conversation.uid, this._uid, change);
+                updateFileMessage(
+                    this._services,
+                    this._log,
+                    this._conversation.uid,
+                    this._uid,
+                    change,
+                );
                 return change;
             });
 
@@ -242,8 +255,8 @@ export class InboundFileMessageModelController
                 default:
                     unreachable(this._conversation.receiverLookup);
             }
-            void downloadResult.done(blobDoneScope).catch((e) => {
-                log.error(`Failed to mark blob with id ${bytesToHex(blobId)} as done`, e);
+            downloadResult.done(blobDoneScope).catch((e) => {
+                this._log.error(`Failed to mark blob with id ${bytesToHex(blobId)} as done`, e);
             });
 
             // Return data

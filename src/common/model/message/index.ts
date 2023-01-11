@@ -12,6 +12,8 @@ import {
     MessageReaction,
     TriggerSource,
 } from '~/common/enum';
+import {deleteFilesInBackground} from '~/common/file-storage';
+import {type Logger} from '~/common/logging';
 import {
     type AnyMessageModelStore,
     type BaseMessageView,
@@ -291,6 +293,7 @@ export function getLastMessage(
  */
 function update(
     services: ServicesForModel,
+    log: Logger,
     conversationUid: UidOf<DbConversation>,
     uid: UidOf<DbMessageCommon<MessageType>>,
     type: MessageType,
@@ -298,8 +301,9 @@ function update(
         Omit<InboundBaseMessageView, 'receivedAt'> | Omit<OutboundBaseMessageView, 'sentAt'>
     >,
 ): void {
-    const {db} = services;
-    db.updateMessage(conversationUid, {...change, type, uid});
+    const {db, file} = services;
+    const {deletedFileIds} = db.updateMessage(conversationUid, {...change, type, uid});
+    deleteFilesInBackground(file, log, deletedFileIds);
 }
 
 /**
@@ -313,20 +317,33 @@ function updateOutboundMessageSentAt(
     sentAt: Date,
 ): void {
     const {db} = services;
+    // Note: Ignoring `deletedFileIds` since this update cannot result in file deletion
     db.updateMessage(conversationUid, {type, uid, processedAt: sentAt});
 }
 
 /**
- * Delete the message with the specified {@link uid} from the database.
+ * Delete the message with the specified {@link uid} from the database, the cache and the file
+ * system.
  */
 function remove(
     services: ServicesForModel,
+    log: Logger,
     conversationUid: UidOf<DbConversation>,
     uid: UidOf<DbMessageCommon<MessageType>>,
 ): void {
-    const {db} = services;
-    db.removeMessage(conversationUid, uid);
+    const {db, file} = services;
+
+    // Delete from database
+    const {removed, deletedFileIds} = db.removeMessage(conversationUid, uid);
+    if (!removed) {
+        throw new Error(`Could not delete message with UID ${uid} from database`);
+    }
+
+    // Delete from cache
     caches.get(conversationUid).remove(uid);
+
+    // Delete from file system
+    deleteFilesInBackground(file, log, deletedFileIds);
 }
 
 export function all(
@@ -359,18 +376,24 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<TView>();
 
+    protected readonly _log: Logger;
+
     public constructor(
         protected readonly _services: ServicesForModel,
         protected readonly _uid: UidOf<DbMessageCommon<MessageType>>,
         protected readonly _type: MessageType,
         protected readonly _conversation: ConversationControllerHandle,
-    ) {}
+    ) {
+        this._log = _services.logging.logger(`model.message.${_uid}`);
+    }
 
     /**
      * Remove the message.
      */
     public remove(): void {
-        this.meta.deactivate(() => remove(this._services, this._conversation.uid, this._uid));
+        this.meta.deactivate(() =>
+            remove(this._services, this._log, this._conversation.uid, this._uid),
+        );
     }
 
     protected _read(
@@ -385,7 +408,14 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
         // Update the message
         message.update(() => {
             const change = {readAt};
-            update(this._services, this._conversation.uid, this._uid, this._type, change);
+            update(
+                this._services,
+                this._log,
+                this._conversation.uid,
+                this._uid,
+                this._type,
+                change,
+            );
             return change as Partial<TView>;
         });
 
@@ -406,7 +436,14 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
             const change = {
                 lastReaction: {at: reactedAt, type: reaction},
             } as const;
-            update(this._services, this._conversation.uid, this._uid, this._type, change);
+            update(
+                this._services,
+                this._log,
+                this._conversation.uid,
+                this._uid,
+                this._type,
+                change,
+            );
             return change as Partial<TView>;
         });
     }
@@ -628,7 +665,14 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             // Update the message
             handle.update(() => {
                 const change = {deliveredAt};
-                update(this._services, this._conversation.uid, this._uid, this._type, change);
+                update(
+                    this._services,
+                    this._log,
+                    this._conversation.uid,
+                    this._uid,
+                    this._type,
+                    change,
+                );
                 return change as Partial<TView>;
             });
         });
