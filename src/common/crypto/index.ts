@@ -117,7 +117,7 @@ class SecretKey<TLength extends SecretKeyLength> {
      * @returns true if the key bytes are equal, false otherwise
      * @throws {@link Error} if the other key was already purged
      */
-    public equals(other: SecretKey<TLength>): boolean {
+    public equals(other: Pick<SecretKey<TLength>, 'unwrap'>): boolean {
         if (this.#_key === undefined) {
             return false;
         }

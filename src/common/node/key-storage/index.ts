@@ -78,7 +78,7 @@ import {
     KeyStorageError,
 } from '~/common/key-storage';
 import {type Logger} from '~/common/logging';
-import {fileModeInternalIfPosix} from '~/common/node/fs';
+import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
 import {type u53, KiB, MiB} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {intoUnsignedLong} from '~/common/utils/number';
@@ -402,7 +402,7 @@ export class FileSystemKeyStorage implements KeyStorage {
 
         // Write file
         try {
-            const options = {...fileModeInternalIfPosix()};
+            const options = {...fileModeInternalObjectIfPosix()};
             await fsPromises.writeFile(this._keyStoragePath, encryptedKeyStorageBytes, options);
         } catch (error) {
             throw new KeyStorageError(

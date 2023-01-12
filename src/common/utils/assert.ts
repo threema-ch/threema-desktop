@@ -13,6 +13,15 @@ export function assert(condition: boolean, message?: string): asserts condition 
 }
 
 /**
+ * Like {@link assert}, but only run if we're in debug mode.
+ */
+export function debugAssert(condition: boolean, message?: string): asserts condition {
+    if (import.meta.env.DEBUG) {
+        assert(condition, message);
+    }
+}
+
+/**
  * Assert a specific `Error` type instance. In case it doesn't match, throws with the original error
  * as cause.
  *

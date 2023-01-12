@@ -38,6 +38,15 @@ const MODE_FILE_INTERNAL = S_IRUSR | S_IWUSR;
  * On a POSIX system, this will return an object with the `mode` set to {@link MODE_FILE_INTERNAL}.
  * On Windows, an empty object is returned.
  */
-export function fileModeInternalIfPosix(): ModeOrEmpty {
+export function fileModeInternalObjectIfPosix(): ModeOrEmpty {
     return process.platform === 'win32' ? {} : {mode: MODE_FILE_INTERNAL};
+}
+
+/**
+ * On a POSIX system, this will return {@link MODE_FILE_INTERNAL}.
+ * On Windows, undefined is returned.
+ */
+// eslint-disable-next-line no-restricted-syntax
+export function fileModeInternalIfPosix(): number | undefined {
+    return process.platform === 'win32' ? undefined : MODE_FILE_INTERNAL;
 }

@@ -20,10 +20,13 @@ import {
 } from '~/common/file-storage';
 import {NOOP_LOGGER} from '~/common/logging';
 import {
+    CHUNK_AUTH_TAG_BYTES,
+    CHUNK_SIZE_BYTES,
     FILE_STORAGE_FORMAT,
     FileSystemFileStorage,
 } from '~/common/node/file-storage/system-file-storage';
 import {isNodeError} from '~/common/node/utils';
+import {MiB} from '~/common/types';
 import {assertError} from '~/common/utils/assert';
 import {byteView} from '~/common/utils/byte';
 
@@ -68,7 +71,8 @@ export function run(): void {
                     thrown = true;
                     error = caughtError;
                 }
-                expect(thrown, 'Exception should have been thrown').to.be.true;
+                expect(thrown, `Exception of type ${expectedErrorType} should have been thrown`).to
+                    .be.true;
             } else {
                 error = errorOrPromise;
             }
@@ -134,6 +138,7 @@ export function run(): void {
                     storage.load({
                         fileId,
                         encryptionKey: encryptionKey1,
+                        unencryptedByteCount: 123,
                         storageFormatVersion: FILE_STORAGE_FORMAT.V1,
                     }),
                     'not-found',
@@ -141,13 +146,25 @@ export function run(): void {
                 );
             });
 
-            it('can load stored files (roundtrip)', async function () {
-                const storage = makeStorage();
-                const handle = await storage.store(Uint8Array.of(1, 2, 3, 4));
-                const readBytes = await storage.load(handle);
-                expect(readBytes, 'readBytes').not.to.be.undefined;
-                expect(readBytes).to.byteEqual(Uint8Array.of(1, 2, 3, 4));
-            });
+            for (const byteCount of [
+                4,
+                MiB - 1,
+                MiB,
+                MiB + 1,
+                2 * MiB - 1,
+                2 * MiB,
+                2 * MiB + 1,
+                50 * MiB,
+            ]) {
+                it(`can load stored files (roundtrip with ${byteCount} bytes)`, async function () {
+                    const storage = makeStorage();
+                    const data = crypto.randomBytes(new Uint8Array(byteCount));
+                    const handle = await storage.store(data);
+                    const readBytes = await storage.load(handle);
+                    expect(readBytes, 'readBytes').not.to.be.undefined;
+                    expect(readBytes).to.deep.equal(data);
+                });
+            }
         }
 
         describe('InMemoryFileStorage', function () {
@@ -226,6 +243,22 @@ export function run(): void {
                     // eslint-disable-next-line no-bitwise
                     const fileMode = `0${(stat.mode & 0o777).toString(8)}`;
                     expect(fileMode).to.equal('0600');
+                });
+
+                it('files are encrypted and chunked', async function () {
+                    // Store data
+                    const data = crypto.randomBytes(new Uint8Array(2 * 1024 * 1024 + 100)); // 2 MiB + 100 B
+                    const {fileId} = await fileStorage.store(data);
+
+                    // Read encrypted file
+                    const fileContents = fs.readFileSync(path.join(storageDirPath, fileId));
+
+                    // Length must be the data length plus encryption overhead
+                    const chunkCount = Math.ceil(data.byteLength / CHUNK_SIZE_BYTES);
+                    expect(chunkCount).to.equal(3); // Sanity check
+                    expect(fileContents.byteLength).to.equal(
+                        data.byteLength + chunkCount * CHUNK_AUTH_TAG_BYTES,
+                    );
                 });
             });
 

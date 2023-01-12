@@ -3,7 +3,7 @@
  */
 
 import {type ServicesForBackend} from '~/common/backend';
-import {type CryptoBackend, type RawKey, wrapRawKey} from '~/common/crypto';
+import {type CryptoBackend, type ReadonlyRawKey, wrapRawKey} from '~/common/crypto';
 import {TransferTag} from '~/common/enum';
 import {type BaseErrorOptions, BaseError, extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
@@ -22,7 +22,10 @@ export type FileId = WeakOpaque<string, {readonly FileId: unique symbol}>;
  *
  * Must be different for every file, and must be used for encrypting only one file.
  */
-export type FileEncryptionKey = WeakOpaque<RawKey<32>, {readonly FileEncryptionKey: unique symbol}>;
+export type FileEncryptionKey = WeakOpaque<
+    ReadonlyRawKey<32>,
+    {readonly FileEncryptionKey: unique symbol}
+>;
 
 /**
  * Use 256-bit key for AES.
@@ -35,7 +38,7 @@ export const FILE_ENCRYPTION_KEY_LENGTH = 32;
  * @throws {CryptoError} in case the key is not 32 bytes long.
  */
 export function wrapFileEncryptionKey(key: Uint8Array): FileEncryptionKey {
-    return wrapRawKey(key, FILE_ENCRYPTION_KEY_LENGTH) as FileEncryptionKey;
+    return wrapRawKey(key, FILE_ENCRYPTION_KEY_LENGTH).asReadonly() as FileEncryptionKey;
 }
 
 /**
@@ -142,6 +145,10 @@ export interface StoredFileHandle {
      * The encryption key used to encrypt the file.
      */
     readonly encryptionKey: FileEncryptionKey;
+    /**
+     * Unencrypted file size in bytes.
+     */
+    readonly unencryptedByteCount: u53;
     /**
      * The file storage format version. The storage backend can use this to implement compatibility
      * checks.
@@ -257,7 +264,12 @@ export class InMemoryFileStorage implements FileStorage {
         // The in-memory storage is not persistent, thus we can hardcode the storage format version to 0
         const storageFormatVersion = 0;
 
-        return {fileId, encryptionKey: key, storageFormatVersion};
+        return {
+            fileId,
+            encryptionKey: key,
+            unencryptedByteCount: data.byteLength,
+            storageFormatVersion,
+        };
     }
 
     /** @inheritdoc */
