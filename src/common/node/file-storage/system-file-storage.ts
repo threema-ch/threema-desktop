@@ -17,9 +17,8 @@ import {type Logger} from '~/common/logging';
 import {CounterIv} from '~/common/node/file-storage/file-crypto';
 import {fileModeInternalIfPosix} from '~/common/node/fs';
 import {isNodeError} from '~/common/node/utils';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import {type ReadonlyUint8Array, type u53, MiB} from '~/common/types';
 import {assert, debugAssert} from '~/common/utils/assert';
-import {AsyncWeakValueMap} from '~/common/utils/map';
 
 /**
  * System file storage format version.
@@ -32,20 +31,15 @@ export const FILE_STORAGE_FORMAT = {
     V1: 1,
 } as const;
 
-export const CHUNK_SIZE_BYTES = 1 * 1024 * 1024; // 1 MiB
+export const CHUNK_SIZE_BYTES = 1 * MiB;
 export const CHUNK_AUTH_TAG_BYTES = 16; // 16 bytes (128 bits) AES-GCM auth tag
 
 /**
  * A file storage backed by the file system.
  *
- * Note: This storage is backed by a WeakRef based cache. That means that two concurrent calls to
- *       `load` will only result in a single value in memory (and a single file read call). A call
- *       to `load` following a call to `store` will return the cached value, as long as the value
- *       returned by `store` hasn't yet been garbage collected.
+ * Files are encrypted with AES-GCM (256 bit keys).
  */
 export class FileSystemFileStorage implements FileStorage {
-    private readonly _cache = new AsyncWeakValueMap();
-
     /**
      * Create a file storage backed by the file system.
      *
@@ -70,51 +64,45 @@ export class FileSystemFileStorage implements FileStorage {
     /** @inheritdoc */
     public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
         const filepath = this._getFilepath(handle.fileId);
-        // TODO(WEBMD-280): Use key and compare storage format version
-        const cacheInfo = {hit: true};
-        const bytes = await this._cache.getOrCreate(handle.fileId, async () => {
-            cacheInfo.hit = false;
-            let file: fsPromises.FileHandle | undefined;
-            try {
-                file = await fsPromises.open(filepath, 'r');
-                const decrypted = await this._readAndDecrypt(
-                    file,
-                    handle.encryptionKey,
-                    handle.unencryptedByteCount,
-                );
-                await file.close();
-                return decrypted;
-            } catch (error) {
-                // Close file
-                file?.close().catch((e) => this._log.warn(`Failed to close file: ${e}`));
 
-                // If file was not found: Return a 'not-found' error
-                if (isNodeError(error)) {
-                    if (error.code === 'ENOENT') {
-                        throw new FileStorageError(
-                            'not-found',
-                            `File with ID ${handle.fileId} not found`,
-                            {from: error},
-                        );
-                    }
+        // TODO(WEBMD-280): Compare storage format version
+
+        let file: fsPromises.FileHandle | undefined;
+        let decrypted: ReadonlyUint8Array;
+        try {
+            file = await fsPromises.open(filepath, 'r');
+            decrypted = await this._readAndDecrypt(
+                file,
+                handle.encryptionKey,
+                handle.unencryptedByteCount,
+            );
+        } catch (error) {
+            // If file was not found: Return a 'not-found' error
+            if (isNodeError(error)) {
+                if (error.code === 'ENOENT') {
+                    throw new FileStorageError(
+                        'not-found',
+                        `File with ID ${handle.fileId} not found`,
+                        {from: error},
+                    );
                 }
-
-                // Other errors: Wrap and re-throw
-                throw new FileStorageError(
-                    'read-error',
-                    `Could not load file with ID ${handle.fileId}: ${error}`,
-                    {
-                        from: error,
-                    },
-                );
             }
-        });
-        this._log.debug(
-            `Loaded file with ID ${handle.fileId} (${bytes.byteLength} bytes from ${
-                cacheInfo.hit ? 'cache' : 'fs'
-            })`,
-        );
-        return bytes;
+
+            // Other errors: Wrap and re-throw
+            throw new FileStorageError(
+                'read-error',
+                `Could not load file with ID ${handle.fileId}`,
+                {
+                    from: error,
+                },
+            );
+        } finally {
+            file?.close().catch((e) => this._log.warn(`Failed to close file: ${e}`));
+        }
+
+        this._log.debug(`Loaded file with ID ${handle.fileId} (${decrypted.byteLength} bytes)`);
+
+        return decrypted;
     }
 
     /** @inheritdoc */
@@ -148,15 +136,8 @@ export class FileSystemFileStorage implements FileStorage {
         // Encrypt data and write it to the specified file
         await this._encryptAndWrite(data, key, file);
 
-        // Close file descriptor
-        const closePromise = file.close();
-
-        // Update cache
-        // eslint-disable-next-line @typescript-eslint/require-await
-        await this._cache.getOrCreate(fileId, async () => data);
-
-        // Wait for file to be closed
-        await closePromise;
+        // Flush and close file descriptor
+        await file.close();
 
         this._log.debug(`Stored file with ID ${fileId} (${data.byteLength} bytes)`);
         return {

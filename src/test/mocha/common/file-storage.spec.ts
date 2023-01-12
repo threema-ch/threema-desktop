@@ -283,21 +283,6 @@ export function run(): void {
                     });
                 }
             });
-
-            it('is backed by a cache', async function () {
-                const data = Uint8Array.of(1, 2, 3, 4);
-                const handle = await fileStorage.store(data);
-
-                // Load should return the value from the cache
-                const data2 = await fileStorage.load(handle);
-
-                // Compare references, should point to the same instance
-                expect(data2).to.equal(data);
-
-                // Sanity check
-                const data3 = Uint8Array.of(1, 2, 3, 4);
-                expect(data2).not.to.equal(data3);
-            });
         });
     });
 }
