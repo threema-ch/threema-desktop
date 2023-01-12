@@ -14,19 +14,6 @@
   // Unpack services and backend
   const {router, backend} = services;
 
-  function dropContent(event: DragEvent): void {
-    const transfer = event.dataTransfer;
-    if (transfer !== null) {
-      const data = {
-        files: [...Array(transfer.files.length)].map((_, index) => transfer.files[index]),
-        items: [...Array(transfer.items.length)].map((_, index) => transfer.items[index]),
-      };
-      // TODO(WEBMD-195): Handle file content
-      // eslint-disable-next-line no-console
-      console.warn('Dropped:', data);
-    }
-  }
-
   // Get conversation lookup info
   let receiverLookup: DbReceiverLookup;
   let forwardedMessageLookup: ForwardedMessageLookup | undefined;
@@ -54,10 +41,13 @@
   }
 
   let zoneHover = false;
+  // TODO(WEBMD-195): Handle Drag'n'Drop
+  // eslint-disable-next-line prefer-const
   let bodyHover = false;
   $: zoneHover = zoneHover;
 </script>
 
+<!-- TODO(WEBMD-195): Handle Drag'n'Drop
 <svelte:body
   on:threema-drag-start={() => {
     bodyHover = true;
@@ -66,10 +56,11 @@
     bodyHover = false;
   }}
 />
+-->
 
 <template>
   {#if conversationViewModel !== undefined}
-    <DropZone bind:zoneHover on:drop={dropContent}>
+    <DropZone bind:zoneHover>
       <div class="drag-wrapper" class:bodyHover>
         <Conversation
           {conversationViewModel}
