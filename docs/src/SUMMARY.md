@@ -14,5 +14,6 @@
   - [Cypress: End-to-End Tests](./testing-cypress.md)
   - [Test Coverage](./testing-coverage.md)
 - [Database](./database.md)
+- [File Storage](./file-storage.md)
 - [Electron](./electron.md)
 - [Generated Code](./generated.md)
