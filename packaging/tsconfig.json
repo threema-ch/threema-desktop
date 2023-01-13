@@ -1,23 +1,11 @@
 {
+  "extends": "../src/tsconfig.base.json",
   "compilerOptions": {
+    "module": "commonjs",
     "lib": ["esnext"],
     "types": ["node"],
-    "moduleResolution": "node",
-
-    "allowUnreachableCode": false,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "remove",
-    "isolatedModules": true,
-    "newLine": "lf",
-    "noEmitOnError": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "removeComments": true,
-    "sourceMap": true,
-    "strict": true
+    "outDir": "./build/packaging",
+    "sourceMap": false
   },
-
   "include": ["*.ts"]
 }

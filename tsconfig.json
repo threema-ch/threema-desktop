@@ -4,6 +4,5 @@
     "lib": ["esnext"],
     "types": ["node"]
   },
-
   "include": ["src/common/vite-client.d.ts", "config/**/*.ts"]
 }

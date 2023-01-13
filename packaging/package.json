@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "type": "commonjs",
+  "main": "./build/packaging/main.js",
+  "sideEffects": false,
+  "scripts": {
+    "package": "tsc -p ./tsconfig.json && node ."
+  }
+}

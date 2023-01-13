@@ -7,6 +7,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as process from 'node:process';
 
+import type createDMG from 'electron-installer-dmg';
 import * as fsExtra from 'fs-extra';
 
 // ANSI escape codes
@@ -166,27 +167,6 @@ interface Directories {
 }
 
 /**
- * Contents of package.json
- */
-interface PackageJsonLike {
-    name: string;
-    version: string;
-    description: string;
-}
-
-/**
- * Type guard for a {@link PackageJsonLike}.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isPackageJsonLike(value: any): value is PackageJsonLike {
-    return (
-        typeof value.name === 'string' &&
-        typeof value.version === 'string' &&
-        typeof value.description === 'string'
-    );
-}
-
-/**
  * Print usage.
  */
 function printUsage(errormsg?: string): void {
@@ -216,20 +196,12 @@ function main(args: string[]): void {
         process.exit(1);
     }
 
-    // Load package.json
-    const pkg = JSON.parse(
-        fs.readFileSync(path.join(__dirname, '..', 'package.json'), {encoding: 'utf8'}),
-    );
-    if (!isPackageJsonLike(pkg)) {
-        fail(`Failed to parse package.json: ${JSON.stringify(pkg)}`);
-    }
-
     // Prepare build and output directories
-    const rootdir = path.join(__dirname, '..');
+    const rootDir = path.join(__dirname, '..', '..', '..');
     const dirs: Directories = {
-        root: rootdir,
-        tmp: path.join(rootdir, 'build', 'tmp'),
-        out: path.join(rootdir, 'build', 'out'),
+        root: rootDir,
+        tmp: path.join(rootDir, 'build', 'tmp'),
+        out: path.join(rootDir, 'build', 'out'),
     };
     if (fs.existsSync(dirs.tmp)) {
         if (!fs.lstatSync(dirs.tmp).isDirectory()) {
@@ -246,26 +218,26 @@ function main(args: string[]): void {
     const target: Target = args[0];
     switch (target) {
         case 'source':
-            buildSource(pkg, dirs, args.slice(1));
+            buildSource(dirs, args.slice(1));
             break;
         case 'binary':
-            buildBinaryArchives(pkg, dirs, args.slice(1));
+            buildBinaryArchives(dirs, args.slice(1));
             break;
         case 'dmg':
-            buildDmgs(pkg, dirs, false, args.slice(1)).catch((e) => {
+            buildDmgs(dirs, false, args.slice(1)).catch((e) => {
                 fail(`Building DMG failed: ${e}`);
             });
             break;
         case 'dmgSigned':
-            buildDmgs(pkg, dirs, true, args.slice(1)).catch((e) => {
+            buildDmgs(dirs, true, args.slice(1)).catch((e) => {
                 fail(`Building signed DMG failed: ${e}`);
             });
             break;
         case 'exe':
-            buildExe(pkg, dirs);
+            buildExe(dirs);
             break;
         case 'flatpak':
-            buildFlatpaks(pkg, dirs, args.slice(1));
+            buildFlatpaks(dirs, args.slice(1));
             break;
         default:
             throw new Error(`Invalid target: ${target}`);
@@ -284,7 +256,7 @@ function main(args: string[]): void {
  * - p7zip
  * - coreutils for 'sha256sum' and 'b2sum' (on macOS it can be installed with 'brew install coreutils')
  */
-function buildSource(pkg: PackageJsonLike, dirs: Directories, args: string[]): void {
+function buildSource(dirs: Directories, args: string[]): void {
     log.major('Building source tarball');
 
     requireCommand('bash');
@@ -373,7 +345,7 @@ function runElectronDistScript(
  *
  * - powershell
  */
-function buildBinaryArchives(pkg: PackageJsonLike, dirs: Directories, args: string[]): void {
+function buildBinaryArchives(dirs: Directories, args: string[]): void {
     log.major('Building binary archives for the current architecture');
 
     // Check requirements
@@ -391,11 +363,11 @@ function buildBinaryArchives(pkg: PackageJsonLike, dirs: Directories, args: stri
 
     // Build all flavors
     for (const flavor of flavors) {
-        buildBinaryArchive(pkg, dirs, flavor);
+        buildBinaryArchive(dirs, flavor);
     }
 }
 
-function buildBinaryArchive(pkg: PackageJsonLike, dirs: Directories, flavor: Flavor): void {
+function buildBinaryArchive(dirs: Directories, flavor: Flavor): void {
     const {binaryDirPath: binaryDirPathOld} = runElectronDistScript(dirs, flavor);
 
     log.minor(`Packaging binary: ${flavor}`);
@@ -457,13 +429,17 @@ function buildBinaryArchive(pkg: PackageJsonLike, dirs: Directories, flavor: Fla
     let args: string[];
     if (IS_WINDOWS) {
         shell = 'powershell.exe';
-        args = ['.\\generate-checksums.ps1', '-filepath', binaryOutPath];
+        args = [
+            path.join(dirs.root, 'packaging', 'generate-checksums.ps1'),
+            '-filepath',
+            binaryOutPath,
+        ];
     } else {
         shell = 'bash';
-        args = ['generate-checksums.sh', binaryOutPath];
+        args = [path.join(dirs.root, 'packaging', 'generate-checksums.sh'), binaryOutPath];
     }
     execFileSync(shell, args, {
-        cwd: __dirname,
+        cwd: dirs.root,
         encoding: 'utf8',
         shell: false,
     });
@@ -474,12 +450,7 @@ function buildBinaryArchive(pkg: PackageJsonLike, dirs: Directories, flavor: Fla
 /**
  * Build multiple macOS DMGs.
  */
-async function buildDmgs(
-    pkg: PackageJsonLike,
-    dirs: Directories,
-    signed: boolean,
-    args: string[],
-): Promise<void> {
+async function buildDmgs(dirs: Directories, signed: boolean, args: string[]): Promise<void> {
     log.major('Building macOS DMGs');
 
     // Parse args
@@ -491,7 +462,7 @@ async function buildDmgs(
 
     // Build all flavors
     for (const flavor of flavors) {
-        await buildDmg(pkg, dirs, flavor, signed, signed);
+        await buildDmg(dirs, flavor, signed, signed);
     }
 }
 
@@ -506,7 +477,6 @@ async function buildDmgs(
  * - `APPLE_NOTARIZE_KEYCHAIN_PROFILE`
  */
 async function buildDmg(
-    pkg: PackageJsonLike,
     dirs: Directories,
     flavor: Flavor,
     sign: boolean,
@@ -561,13 +531,12 @@ async function buildDmg(
 
     // Sign
     if (sign) {
-        const {signAsync} = require('@electron/osx-sign');
+        const {signAsync} = await import('@electron/osx-sign');
         log.minor(`Start signing at ${new Date().toLocaleTimeString()}`);
         // Docs: https://www.npmjs.com/package/@electron/osx-sign
         const appleTeamId = unwrap(process.env.APPLE_TEAM_ID, 'Missing APPLE_TEAM_ID env var');
         await signAsync({
             app: appPath,
-            hardenedRuntime: true,
             identity: `Developer ID Application: Threema GmbH (${appleTeamId})`,
             type: 'distribution',
             optionsForFile: (filePath: string) => {
@@ -583,7 +552,7 @@ async function buildDmg(
 
     // Notarize
     if (notarize) {
-        const notarizeAsync = require('@electron/notarize').notarize;
+        const {notarize: notarizeAsync} = await import('@electron/notarize');
         log.minor(`Start signing at ${new Date().toLocaleTimeString()}`);
         // Docs: https://www.npmjs.com/package/@electron/notarize
         const keychain = unwrap(process.env.APPLE_KEYCHAIN, 'Missing APPLE_KEYCHAIN env var');
@@ -625,24 +594,27 @@ async function buildDmg(
             {x: 458, y: 211, type: 'link', path: '/Applications'},
             {x: 218, y: 211, type: 'file', path: opts.appPath},
         ],
+    } satisfies Omit<createDMG.CreateOptions, 'contents'> & {
+        // TODO(WEBMD-910): Fix the `opts` parameter upstream
+        readonly contents: (opts: {readonly appPath: string}) => createDMG.Content[];
     };
     log.minor('Exporting DMG');
-    const createDmg = require('electron-installer-dmg');
-    await createDmg(options, (err: unknown): void => {
-        if (err !== undefined) {
-            console.error(err);
-            process.exit(1);
-        }
-    });
+    const {default: createDmg} = await import('electron-installer-dmg');
+    // TODO(WEBMD-910): Remove the cast
+    await createDmg(options as createDMG.CreateOptions);
     const dmgPath = path.join(outPath, `${dmgName}.dmg`);
 
     if (hasChecksumBinaries) {
         log.minor('Generating checksums');
-        execFileSync('bash', ['generate-checksums.sh', dmgPath], {
-            cwd: __dirname,
-            encoding: 'utf8',
-            shell: false,
-        });
+        execFileSync(
+            'bash',
+            [path.join(dirs.root, 'packaging', 'generate-checksums.sh'), dmgPath],
+            {
+                cwd: dirs.root,
+                encoding: 'utf8',
+                shell: false,
+            },
+        );
     } else {
         log.minor('Skipping generating checksums');
     }
@@ -687,7 +659,7 @@ function lockKeychain(): void {
  *
  * TBD: Portable or installer?
  */
-function buildExe(pkg: PackageJsonLike, dirs: Directories): void {
+function buildExe(dirs: Directories): void {
     log.major('Building Windows EXE');
     log.error('TODO(WEBMD-740)');
     process.exit(2);
@@ -709,7 +681,7 @@ function buildExe(pkg: PackageJsonLike, dirs: Directories): void {
  * - `THREEMADESKTOP_FLATPAK_BRANCH`: The branch to use for flatpak. Defaults
  *   to "master" if not specified.
  */
-function buildFlatpaks(pkg: PackageJsonLike, dirs: Directories, args: string[]): void {
+function buildFlatpaks(dirs: Directories, args: string[]): void {
     log.major('Building Linux Flatpaks');
 
     // Parse args

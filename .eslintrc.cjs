@@ -701,7 +701,6 @@ module.exports = {
                 'config/**/*.{cjs,js}',
                 'src/test/**/*.js',
                 'tools/**/*.{cjs,ts}',
-                'packaging/**/*.{cjs,ts}',
                 'svelte.config.js',
             ],
             env: {
@@ -730,6 +729,12 @@ module.exports = {
             files: 'packaging/**/*.ts',
             parserOptions: {
                 project: './packaging/tsconfig.json',
+            },
+            env: {
+                node: true,
+            },
+            rules: {
+                'no-console': 'off',
             },
         },
 

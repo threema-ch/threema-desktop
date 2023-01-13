@@ -17,7 +17,7 @@
   "main": "build/electron/electron-main/electron-main.cjs",
   "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf build",
+    "clean": "rm -rf build && rm -rf packaging/build",
     "coverage:report": "nyc report",
     "electron:build": "npm run electron:rebuild && node tools/build-electron.cjs",
     "electron:dist:consumer-sandbox": "npm run electron:build consumer sandbox && node tools/dist-electron.cjs consumer sandbox",
@@ -43,7 +43,7 @@
     "lint:prettier": "prettier -c \"**/*.{css,html,js,json,md,scss,svelte,ts,yml}\"",
     "lint:prettier:fix": "prettier --write \"**/*.{css,html,js,json,md,scss,svelte,ts,yml}\"",
     "lint:svelte": "svelte-check --ignore \"libs\" --compiler-warnings \"a11y-click-events-have-key-events:ignore\"",
-    "package": "tsc packaging/main.ts && node tools/rename.cjs packaging/main.js packaging/main.cjs && node packaging/main.cjs",
+    "package": "npm run package --prefix ./packaging",
     "protobuf:generate": "tools/generate-protobuf.sh",
     "safe-enums:generate": "npm run safe-enums:generate:module && npm run safe-enums:generate:prettify",
     "safe-enums:generate:module": "tools/generate-safe-enums.cjs < src/enum/schema.ts > src/common/enum.ts",
