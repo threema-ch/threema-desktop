@@ -1,3 +1,4 @@
+import * as v from '@badrap/valita';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
 import * as fs from 'fs';
 import {builtinModules} from 'module';
@@ -23,6 +24,23 @@ import {
 import cjsExternals from './vite-plugins/cjs-externals';
 import {tsWorkerPlugin} from './vite-plugins/ts-worker';
 import {wasmPackPlugin} from './vite-plugins/wasm-pack';
+
+/**
+ * Minimal package.json schema, extracting some components we need.
+ */
+const PACKAGE_JSON_SCHEMA = v
+    .object({
+        version: v.string(),
+        versionCode: v.number(),
+        electron: v
+            .object({
+                external: v.array(v.string()),
+            })
+            .rest(v.unknown()),
+    })
+    .rest(v.unknown());
+
+type PackageJson = Readonly<v.Infer<typeof PACKAGE_JSON_SCHEMA>>;
 
 interface ConfigEnv {
     command: ViteConfigEnv['command'];
@@ -102,7 +120,7 @@ function determineAppName(env: ConfigEnv): string {
 }
 
 function makeConfig(
-    pkg: Record<string, unknown>,
+    pkg: PackageJson,
     env: ConfigEnv,
 ): Omit<ImportMeta['env'], 'BASE_URL' | 'MODE'> {
     return {
@@ -114,8 +132,8 @@ function makeConfig(
 
         // Build variables
         BUILD_TARGET: env.target,
-        BUILD_VERSION: pkg.version as string,
-        BUILD_VERSION_CODE: pkg.versionCode as u53,
+        BUILD_VERSION: pkg.version,
+        BUILD_VERSION_CODE: pkg.versionCode,
         BUILD_VARIANT: env.variant,
         BUILD_ENVIRONMENT: env.environment,
         APP_NAME: determineAppName(env),
@@ -186,8 +204,8 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
     }
 
     // Load package.json
-    const pkg: Record<string, unknown> = JSON.parse(
-        fs.readFileSync('./package.json', {encoding: 'utf8'}),
+    const pkg = PACKAGE_JSON_SCHEMA.parse(
+        JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'})),
     );
 
     // Determine config
@@ -209,7 +227,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                       externals: [
                           ...external,
                           // Electron externals
-                          ...((pkg.electron as Record<string, unknown>).external as string[]),
+                          ...pkg.electron.external,
                       ].map(
                           (dependency: string) =>
                               new RegExp(`^${escapeRegex(dependency)}(\\/.+)?$`, 'u'),
