@@ -205,16 +205,20 @@ export function run(): void {
             genericStorageTests(() => fileStorage);
 
             describe('store', function () {
-                it('propagates the I/O error if the storage directory cannot be written', async function () {
-                    fs.rmSync(storageDirPath, {recursive: true});
-                    await assertFileStorageError(
-                        fileStorage.store(Uint8Array.of(1, 2, 3, 4)),
-                        'write-error',
-                        undefined,
-                        'ENOENT',
-                        'no such file or directory',
-                    );
-                });
+                // Note: Unfortunately this test does not work in GitLab CI, due to the way
+                // permissions are set up there. On a normal development machine, it should work.
+                if (env.GITLAB_CI === undefined) {
+                    it('propagates the I/O error if the storage directory cannot be written', async function () {
+                        fs.chmodSync(storageDirPath, 0o000); // Make it readonly
+                        await assertFileStorageError(
+                            fileStorage.store(Uint8Array.of(1, 2, 3, 4)),
+                            'write-error',
+                            undefined,
+                            'EACCES',
+                            'permission denied',
+                        );
+                    });
+                }
 
                 it('will error if file already exists', async function () {
                     // To test this, we'll use a RNG that always returns the same bytes.
@@ -229,7 +233,7 @@ export function run(): void {
                     // First, file does not exist
                     const zeroFileId = '000000000000000000000000000000000000000000000000';
                     expect(
-                        fs.existsSync(path.join(storageDirPath, zeroFileId)),
+                        fs.existsSync(path.join(storageDirPath, '00', zeroFileId)),
                         'All-zero file should not yet exist',
                     ).to.be.false;
 
@@ -238,7 +242,7 @@ export function run(): void {
 
                     // Now the file should exist
                     expect(
-                        fs.existsSync(path.join(storageDirPath, zeroFileId)),
+                        fs.existsSync(path.join(storageDirPath, '00', zeroFileId)),
                         'All-zero file should exist',
                     ).to.be.true;
 
@@ -252,7 +256,7 @@ export function run(): void {
 
                 it('ensure proper file mode', async function () {
                     const {fileId} = await fileStorage.store(Uint8Array.of(1, 2, 3, 4));
-                    const stat = fs.statSync(path.join(storageDirPath, fileId));
+                    const stat = fs.statSync(path.join(storageDirPath, fileId.slice(0, 2), fileId));
                     // eslint-disable-next-line no-bitwise
                     const fileMode = `0${(stat.mode & 0o777).toString(8)}`;
                     expect(fileMode).to.equal('0600');
@@ -264,7 +268,9 @@ export function run(): void {
                     const {fileId} = await fileStorage.store(data);
 
                     // Read encrypted file
-                    const fileContents = fs.readFileSync(path.join(storageDirPath, fileId));
+                    const fileContents = fs.readFileSync(
+                        path.join(storageDirPath, fileId.slice(0, 2), fileId),
+                    );
 
                     // Length must be the data length plus encryption overhead
                     const chunkCount = Math.ceil(data.byteLength / CHUNK_SIZE_BYTES);

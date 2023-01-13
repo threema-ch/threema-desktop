@@ -21,7 +21,7 @@ const MODE_DIRECTORY_INTERNAL =
  * On a POSIX system, this will return an object with the `mode` set to
  * {@link MODE_DIRECTORY_INTERNAL}. On Windows, an empty object is returned.
  */
-export function directoryModeInternalIfPosix(): ModeOrEmpty {
+export function directoryModeInternalObjectIfPosix(): ModeOrEmpty {
     return process.platform === 'win32' ? {} : {mode: MODE_DIRECTORY_INTERNAL};
 }
 

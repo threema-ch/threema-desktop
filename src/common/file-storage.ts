@@ -14,6 +14,8 @@ import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endp
 
 /**
  * A 24-byte File ID in lowercase hexadecimal string format.
+ *
+ * Note: The format of the FileID is validated using {@link FILE_ID_RE}.
  */
 export type FileId = WeakOpaque<string, {readonly FileId: unique symbol}>;
 

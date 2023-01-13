@@ -14,7 +14,7 @@ import {type Logger, CONSOLE_LOGGER, TagLogger, TeeLogger} from '~/common/loggin
 import {ZlibCompressor} from '~/common/node/compressor';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {FileSystemFileStorage} from '~/common/node/file-storage/system-file-storage';
-import {directoryModeInternalIfPosix} from '~/common/node/fs';
+import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {FileLogger} from '~/common/node/logging';
 import {assert} from '~/common/utils/assert';
@@ -40,7 +40,7 @@ export default async function run(): Promise<void> {
         try {
             fs.mkdirSync(path.dirname(logFilePath), {
                 recursive: true,
-                ...directoryModeInternalIfPosix(),
+                ...directoryModeInternalObjectIfPosix(),
             });
             fileLogger = await FileLogger.create(logFilePath);
         } catch (error) {
@@ -63,7 +63,7 @@ export default async function run(): Promise<void> {
             const keyStoragePath = path.join(appPath, ...config.KEY_STORAGE_PATH);
             fs.mkdirSync(path.dirname(keyStoragePath), {
                 recursive: true,
-                ...directoryModeInternalIfPosix(),
+                ...directoryModeInternalObjectIfPosix(),
             });
             return new FileSystemKeyStorage(services, log, keyStoragePath);
         },
@@ -73,7 +73,7 @@ export default async function run(): Promise<void> {
             const fileStoragePath = path.join(appPath, ...config.FILE_STORAGE_PATH);
             fs.mkdirSync(fileStoragePath, {
                 recursive: true,
-                ...directoryModeInternalIfPosix(),
+                ...directoryModeInternalObjectIfPosix(),
             });
             return new FileSystemFileStorage(services, log, fileStoragePath);
         },

@@ -15,7 +15,7 @@ import {
 } from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {CounterIv} from '~/common/node/file-storage/file-crypto';
-import {fileModeInternalIfPosix} from '~/common/node/fs';
+import {directoryModeInternalObjectIfPosix, fileModeInternalIfPosix} from '~/common/node/fs';
 import {isNodeError} from '~/common/node/utils';
 import {type ReadonlyUint8Array, type u53, MiB} from '~/common/types';
 import {assert, debugAssert} from '~/common/utils/assert';
@@ -65,7 +65,7 @@ export class FileSystemFileStorage implements FileStorage {
 
     /** @inheritdoc */
     public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
-        const filepath = this._getFilepath(handle.fileId);
+        const filepath = await this._getFilepath(handle.fileId);
 
         // Ensure that the storage format version is supported
         if (handle.storageFormatVersion !== FILE_STORAGE_FORMAT.V1) {
@@ -115,8 +115,16 @@ export class FileSystemFileStorage implements FileStorage {
 
     /** @inheritdoc */
     public async store(data: ReadonlyUint8Array): Promise<StoredFileHandle> {
+        // Determine file path
         const fileId = randomFileId(this._services.crypto);
-        const filepath = this._getFilepath(fileId);
+        let filepath;
+        try {
+            filepath = await this._getFilepath(fileId, {create: true});
+        } catch (error) {
+            throw new FileStorageError('write-error', `Could not create file directory`, {
+                from: error,
+            });
+        }
 
         // Generate random file encryption key
         const key = generateRandomFileEncryptionKey(this._services.crypto);
@@ -158,7 +166,7 @@ export class FileSystemFileStorage implements FileStorage {
 
     /** @inheritdoc */
     public async delete(fileId: FileId): Promise<boolean> {
-        const filepath = this._getFilepath(fileId);
+        const filepath = await this._getFilepath(fileId);
         try {
             await fsPromises.unlink(filepath);
         } catch (error) {
@@ -178,9 +186,27 @@ export class FileSystemFileStorage implements FileStorage {
 
     /**
      * Return the file path to the given file ID.
+     *
+     * If `options.create` is `true`, then the parent directory will be created if it doesn't yet
+     * exist.
+     *
+     * Note: Each file is stored in a subdirectory corresponding to the first byte (first two hex
+     * characters) of the {@link FileId}.
      */
-    private _getFilepath(id: FileId): string {
-        return path.join(this._storageDirPath, id);
+    private async _getFilepath(id: FileId, options?: {create?: boolean}): Promise<string> {
+        const prefix = id.substring(0, 2);
+        const filepath = path.join(this._storageDirPath, prefix, id);
+
+        if (options?.create ?? false) {
+            const dir = path.dirname(filepath);
+            this._log.debug(`Creating directory ${dir}`);
+            await fsPromises.mkdir(dir, {
+                recursive: true,
+                ...directoryModeInternalObjectIfPosix(),
+            });
+        }
+
+        return filepath;
     }
 
     /**

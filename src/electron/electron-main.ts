@@ -18,7 +18,7 @@ import {
     TagLogger,
     TeeLogger,
 } from '~/common/logging';
-import {directoryModeInternalIfPosix} from '~/common/node/fs';
+import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
 import {type u53} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
@@ -356,7 +356,7 @@ async function init(): Promise<MainInit> {
     );
     if (!fs.existsSync(appPath)) {
         log.info(`Creating app data directory at ${appPath}`);
-        fs.mkdirSync(appPath, {recursive: true, ...directoryModeInternalIfPosix()});
+        fs.mkdirSync(appPath, {recursive: true, ...directoryModeInternalObjectIfPosix()});
     }
     // Note: This call needs to be done as early as possible.
     electron.app.setPath(ELECTRON_PATH_USER_DATA, appPath);
@@ -370,7 +370,7 @@ async function init(): Promise<MainInit> {
         try {
             fs.mkdirSync(path.dirname(logFilePath), {
                 recursive: true,
-                ...directoryModeInternalIfPosix(),
+                ...directoryModeInternalObjectIfPosix(),
             });
             fileLogger = await FileLogger.create(logFilePath);
         } catch (error) {
