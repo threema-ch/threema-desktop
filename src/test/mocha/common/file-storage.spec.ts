@@ -22,7 +22,6 @@ import {NOOP_LOGGER} from '~/common/logging';
 import {
     CHUNK_AUTH_TAG_BYTES,
     CHUNK_SIZE_BYTES,
-    FILE_STORAGE_FORMAT,
     FileSystemFileStorage,
 } from '~/common/node/file-storage/system-file-storage';
 import {isNodeError} from '~/common/node/utils';
@@ -139,7 +138,7 @@ export function run(): void {
                         fileId,
                         encryptionKey: encryptionKey1,
                         unencryptedByteCount: 123,
-                        storageFormatVersion: FILE_STORAGE_FORMAT.V1,
+                        storageFormatVersion: storage.currentStorageFormatVersion,
                     }),
                     'not-found',
                     'File with ID 00112233445566778899aabbccddeeff0011223344556677 not found',
@@ -165,6 +164,20 @@ export function run(): void {
                     expect(readBytes).to.deep.equal(data);
                 });
             }
+
+            it('verifies the storage format version', async function () {
+                const storage = makeStorage();
+                const handle = await storage.store(Uint8Array.of(1, 2, 3, 4));
+                expect(async () => await storage.load(handle)).not.to.throw;
+                await assertFileStorageError(
+                    storage.load({
+                        ...handle,
+                        storageFormatVersion: handle.storageFormatVersion + 1,
+                    }),
+                    'unsupported-format',
+                    `Unsupported storage format version (${handle.storageFormatVersion + 1})`,
+                );
+            });
         }
 
         describe('InMemoryFileStorage', function () {

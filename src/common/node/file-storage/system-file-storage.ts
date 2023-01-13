@@ -40,6 +40,8 @@ export const CHUNK_AUTH_TAG_BYTES = 16; // 16 bytes (128 bits) AES-GCM auth tag
  * Files are encrypted with AES-GCM (256 bit keys).
  */
 export class FileSystemFileStorage implements FileStorage {
+    public readonly currentStorageFormatVersion = FILE_STORAGE_FORMAT.V1;
+
     /**
      * Create a file storage backed by the file system.
      *
@@ -65,7 +67,13 @@ export class FileSystemFileStorage implements FileStorage {
     public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
         const filepath = this._getFilepath(handle.fileId);
 
-        // TODO(WEBMD-280): Compare storage format version
+        // Ensure that the storage format version is supported
+        if (handle.storageFormatVersion !== FILE_STORAGE_FORMAT.V1) {
+            throw new FileStorageError(
+                'unsupported-format',
+                `Unsupported storage format version (${handle.storageFormatVersion})`,
+            );
+        }
 
         let file: fsPromises.FileHandle | undefined;
         let decrypted: ReadonlyUint8Array;
@@ -144,7 +152,7 @@ export class FileSystemFileStorage implements FileStorage {
             fileId,
             encryptionKey: key,
             unencryptedByteCount: data.byteLength,
-            storageFormatVersion: FILE_STORAGE_FORMAT.V1,
+            storageFormatVersion: this.currentStorageFormatVersion,
         };
     }
 

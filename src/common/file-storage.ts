@@ -167,12 +167,18 @@ export interface StoredFileHandle {
  */
 export interface FileStorage {
     /**
+     * The current / latest storage format version.
+     */
+    readonly currentStorageFormatVersion: u53;
+
+    /**
      * Load a file from the storage, decrypt it and return the decrypted bytes.
      *
-     * @throws {FileStorageError} In case the file cannot be found or read (e.g.
-     *   due to a permission problem).
+     * @throws {FileStorageError} In case the file cannot be found or read (e.g. due to a permission
+     *   problem).
+     * @throws {FileStorageError} In case the file storage format version is not supported.
      */
-    load: (handle: StoredFileHandle) => Promise<ReadonlyUint8Array>;
+    readonly load: (handle: StoredFileHandle) => Promise<ReadonlyUint8Array>;
 
     /**
      * Encrypt and store the provided bytes in the file storage and return the assigned
@@ -182,7 +188,7 @@ export interface FileStorage {
      *   calling this function!
      * @throws {FileStorageError} if file cannot be stored or already exists.
      */
-    store: (data: ReadonlyUint8Array) => Promise<StoredFileHandle>;
+    readonly store: (data: ReadonlyUint8Array) => Promise<StoredFileHandle>;
 
     /**
      * Delete the file with the specified {@link FileId}.
@@ -190,7 +196,7 @@ export interface FileStorage {
      * @returns true if a file was deleted. false if no file was present.
      * @throws {FileStorageError} if something went wrong during deletion.
      */
-    delete: (fileId: FileId) => Promise<boolean>;
+    readonly delete: (fileId: FileId) => Promise<boolean>;
 }
 
 /**
@@ -207,7 +213,8 @@ export type FileStorageErrorType =
     | 'dir-not-found'
     | 'read-error'
     | 'write-error'
-    | 'delete-error';
+    | 'delete-error'
+    | 'unsupported-format';
 
 const FILE_STORAGE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     FileStorageError,
@@ -238,6 +245,9 @@ export class FileStorageError extends BaseError {
  * A simple in-memory file storage backed by a {@link Map}.
  */
 export class InMemoryFileStorage implements FileStorage {
+    // The in-memory storage is not persistent, thus we can hardcode the storage format version to 0
+    public readonly currentStorageFormatVersion = 0;
+
     private readonly _files: Map<FileId, ReadonlyUint8Array> = new Map();
 
     public constructor(private readonly _crypto: Pick<CryptoBackend, 'randomBytes'>) {}
@@ -245,6 +255,12 @@ export class InMemoryFileStorage implements FileStorage {
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
     public async load(handle: StoredFileHandle): Promise<ReadonlyUint8Array> {
+        if (handle.storageFormatVersion !== this.currentStorageFormatVersion) {
+            throw new FileStorageError(
+                'unsupported-format',
+                `Unsupported storage format version (${handle.storageFormatVersion})`,
+            );
+        }
         const bytes = this._files.get(handle.fileId);
         if (bytes === undefined) {
             throw new FileStorageError('not-found', `File with ID ${handle.fileId} not found`);
@@ -261,14 +277,11 @@ export class InMemoryFileStorage implements FileStorage {
         // Generate random file encryption key
         const key = generateRandomFileEncryptionKey(this._crypto);
 
-        // The in-memory storage is not persistent, thus we can hardcode the storage format version to 0
-        const storageFormatVersion = 0;
-
         return {
             fileId,
             encryptionKey: key,
             unencryptedByteCount: data.byteLength,
-            storageFormatVersion,
+            storageFormatVersion: this.currentStorageFormatVersion,
         };
     }
 
