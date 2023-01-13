@@ -17,6 +17,7 @@ import {
     generateRandomFileEncryptionKey,
     InMemoryFileStorage,
     randomFileId,
+    wrapFileEncryptionKey,
 } from '~/common/file-storage';
 import {NOOP_LOGGER} from '~/common/logging';
 import {
@@ -27,7 +28,7 @@ import {
 import {isNodeError} from '~/common/node/utils';
 import {MiB} from '~/common/types';
 import {assertError} from '~/common/utils/assert';
-import {byteView} from '~/common/utils/byte';
+import {byteView, hexToBytes} from '~/common/utils/byte';
 
 /**
  * File storage tests.
@@ -278,6 +279,37 @@ export function run(): void {
                     expect(fileContents.byteLength).to.equal(
                         data.byteLength + chunkCount * CHUNK_AUTH_TAG_BYTES,
                     );
+                });
+
+                it('bytes are properly decrypted', async function () {
+                    const fileId = randomFileId(crypto);
+
+                    // Test vector, manually created
+                    const plaintextBytes = Uint8Array.of(1, 2, 3, 4, 5, 6, 7, 8);
+                    const encryptionKey = wrapFileEncryptionKey(
+                        hexToBytes(
+                            '9a71d0427b12028e07bf9c4fb6dd923ed9401ecf0aec0ca9e49ede49d8eed59f',
+                        ),
+                    );
+                    const encryptedBytes = hexToBytes(
+                        'fa4d6601416055199163c9c6ce30c8681aee6c6485f9646d',
+                    );
+
+                    // Write directory and encrypted bytes
+                    fs.mkdirSync(path.join(storageDirPath, fileId.slice(0, 2)));
+                    fs.writeFileSync(
+                        path.join(storageDirPath, fileId.slice(0, 2), fileId),
+                        encryptedBytes,
+                    );
+
+                    // Read encrypted file
+                    const decrypted = await fileStorage.load({
+                        fileId,
+                        encryptionKey,
+                        unencryptedByteCount: 8,
+                        storageFormatVersion: fileStorage.currentStorageFormatVersion,
+                    });
+                    expect(decrypted).to.deep.equal(plaintextBytes);
                 });
             });
 
