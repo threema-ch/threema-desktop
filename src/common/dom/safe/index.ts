@@ -13,6 +13,8 @@ import {
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TransferTag} from '~/common/enum';
 import {type BaseErrorOptions, BaseError} from '~/common/error';
+import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
+import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {type IdentityString, ensureIdentityString} from '~/common/network/types';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
@@ -60,7 +62,21 @@ const SAFE_USER_SCHEMA = v
         temporaryDeviceGroupKeyTodoRemove: v.string().optional(),
         nickname: v.string().optional(),
         profilePic: v.string().optional(),
-        profilePicRelease: v.array(v.union(v.string(), v.null())).optional(),
+        profilePicRelease: v
+            .array(v.union(v.string(), v.null()))
+            .optional()
+            .map<ProfilePictureShareWith | undefined>((release) => {
+                if (release === undefined || release.length === 0) {
+                    return undefined;
+                }
+                if (release[0] === '*') {
+                    return {group: 'everyone'};
+                }
+                if (release[0] === null) {
+                    return {group: 'nobody'};
+                }
+                return {group: 'allowList', allowList: IDENTITY_STRING_LIST_SCHEMA.parse(release)};
+            }),
         links: v
             .array(
                 v

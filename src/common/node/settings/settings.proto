@@ -4,7 +4,33 @@
 
 syntax = "proto3";
 
+message Unit {}
+
+// Container for a list of identities.
+message Identities {
+    // List of identities
+    repeated string identities = 1;
+}
+
 // Settings on the user profile.
 message ProfileSettings {
+    // Nickname
     string public_nickname = 1;
+
+    // Profile picture
+    optional bytes profile_picture = 2;
+    message ProfilePictureShareWith {
+        oneof policy {
+            // Don't share
+            Unit nobody = 1;
+            // Share with everyone
+            Unit everyone = 2;
+            // Share only with explicitly listed contacts
+            //
+            // When the user selected _allow list_ but did not select any contacts,
+            // send an empty list. Do not fall back to `nobody`.
+            Identities allow_list = 3;
+        }
+    }
+    optional ProfilePictureShareWith profile_picture_share_with = 3;
 }

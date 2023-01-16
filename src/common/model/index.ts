@@ -44,6 +44,7 @@ import {
     type WorkVerificationLevel,
 } from '~/common/enum';
 import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
+import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type BlobBytes, type BlobId} from '~/common/network/protocol/blob';
@@ -302,8 +303,11 @@ export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureContro
 
 // Profile Settings
 
+// Note: Type must be compatible with common.settings.ProfileSettings
 export interface ProfileSettingsView {
     readonly publicNickname: PublicNickname;
+    readonly profilePicture?: ReadonlyUint8Array;
+    readonly profilePictureShareWith: ProfilePictureShareWith;
 }
 export type ProfileSettingsUpdate = Partial<ProfileSettingsView>;
 export type ProfileSettingsController = {

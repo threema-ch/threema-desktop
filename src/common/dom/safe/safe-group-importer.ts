@@ -30,7 +30,7 @@ export class SafeGroupImporter {
      */
     public importFrom(backupData: SafeBackupData): void {
         if (backupData.groups.length < 1) {
-            this._log.info('No groups to import from backup');
+            this._log.debug('No groups to import from backup');
             return;
         }
         this._log.info(`Importing ${backupData.groups.length} groups from backup`);

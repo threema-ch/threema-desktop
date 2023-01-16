@@ -27,6 +27,7 @@ export class UserModel implements User {
         this.identity = services.device.identity.string;
         this.profileSettings = new ProfileSettingsModelStore(services, {
             publicNickname: ensurePublicNickname(this.identity),
+            profilePictureShareWith: {group: 'everyone'},
         });
 
         this.displayName = derive(this.profileSettings, (profileSettings) => {

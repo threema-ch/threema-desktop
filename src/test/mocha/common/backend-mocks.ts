@@ -362,6 +362,7 @@ class UserRepository implements User {
         });
         this.profileSettings = new ProfileSettingsModelStore(services, {
             publicNickname: ensurePublicNickname('Mocha Tests'),
+            profilePictureShareWith: {group: 'everyone'},
         });
         this.displayName = derive(this.profileSettings, (profileSettings) => {
             if (profileSettings.view.publicNickname.trim() === '') {

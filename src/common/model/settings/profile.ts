@@ -7,7 +7,16 @@ import {
 } from '~/common/model';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {type IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+
+/**
+ * Sharing policy for the user's own profile picture.
+ */
+export type ProfilePictureShareWith =
+    | {readonly group: 'nobody'}
+    | {readonly group: 'everyone'}
+    | {readonly group: 'allowList'; readonly allowList: readonly IdentityString[]};
 
 export class ProfileSettingsModelController implements ProfileSettingsController {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;

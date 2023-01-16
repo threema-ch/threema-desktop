@@ -1506,8 +1506,16 @@ export function backendTests(
     });
 
     describe('Settings', function () {
-        const settingsWithFooPublicNickname = {publicNickname: ensurePublicNickname('foo')};
-        const settingsWithBarPublicNickname = {publicNickname: ensurePublicNickname('bar')};
+        const settingsWithFooPublicNickname = {
+            publicNickname: ensurePublicNickname('foo'),
+            profilePicture: undefined,
+            profilePictureShareWith: {group: 'nobody'} as const,
+        };
+        const settingsWithBarPublicNickname = {
+            publicNickname: ensurePublicNickname('bar'),
+            profilePicture: new Uint8Array([1, 2, 3, 4]),
+            profilePictureShareWith: {group: 'everyone'} as const,
+        };
 
         it('returns undefined when the category does not exist in the underlying storage', function () {
             expect(db.getSettings('profile')).to.be.undefined;

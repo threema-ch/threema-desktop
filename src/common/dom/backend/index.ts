@@ -47,7 +47,7 @@ import {
     KeyStorageError,
 } from '~/common/key-storage';
 import {type Logger, type LoggerFactory} from '~/common/logging';
-import {type Repositories} from '~/common/model';
+import {type ProfileSettingsView, type Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
 import {type CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
@@ -74,6 +74,7 @@ import {
     type IdentityString,
     type ServerGroup,
     ensureIdentityString,
+    ensurePublicNickname,
     isPublicNickname,
 } from '~/common/network/types';
 import {
@@ -85,6 +86,7 @@ import {
 } from '~/common/network/types/keys';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
+import {type Mutable} from '~/common/types';
 import {assert, assertError, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {base64ToU8a} from '~/common/utils/base64';
 import {byteToHex} from '~/common/utils/byte';
@@ -585,7 +587,7 @@ export class Backend implements ProxyMarked {
         });
 
         if (backupData !== undefined) {
-            backend._importUserNicknameFromBackup(backupData);
+            backend._importUserDataFromBackup(backupData, identityData.identity);
             await backend._importContactsFromBackup(backupData);
             backend._importGroupsFromBackup(backupData);
         }
@@ -649,12 +651,33 @@ export class Backend implements ProxyMarked {
         importer.importFrom(backupData);
     }
 
-    private _importUserNicknameFromBackup(backupData: SafeBackupData): void {
+    private _importUserDataFromBackup(backupData: SafeBackupData, identity: IdentityString): void {
+        const profile: Mutable<ProfileSettingsView> = {
+            publicNickname: ensurePublicNickname(identity as string),
+            profilePictureShareWith: {group: 'everyone'},
+        };
+
+        // Nickname
         if (isPublicNickname(backupData.user.nickname)) {
-            this.model.user.profileSettings.get().controller.update({
-                publicNickname: backupData.user.nickname,
-            });
+            profile.publicNickname = backupData.user.nickname;
         }
+
+        // Profile picture
+        if (backupData.user.profilePic !== undefined) {
+            try {
+                profile.profilePicture = base64ToU8a(backupData.user.profilePic);
+            } catch (error) {
+                this._log.warn(`Restoring user profile picture failed: ${error}`);
+            }
+        }
+
+        // Profile picture sharing settings
+        if (backupData.user.profilePicRelease !== undefined) {
+            profile.profilePictureShareWith = backupData.user.profilePicRelease;
+        }
+
+        // Update profile settings in database
+        this.model.user.profileSettings.get().controller.update(profile);
     }
 }
 

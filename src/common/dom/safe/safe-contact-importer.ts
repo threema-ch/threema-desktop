@@ -45,7 +45,7 @@ export class SafeContactImporter {
      */
     public async importFrom(backupData: SafeBackupData): Promise<void> {
         if (backupData.contacts.length < 1) {
-            this._log.info('No contacts to import from backup');
+            this._log.debug('No contacts to import from backup');
             return;
         }
         this._log.info(`Importing ${backupData.contacts.length} contacts from backup`);
