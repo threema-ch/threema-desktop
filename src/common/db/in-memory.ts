@@ -731,17 +731,6 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public getSettingsWithDefaults<TKey extends keyof Settings>(
-        category: TKey,
-        defaults: Settings[TKey],
-    ): Settings[TKey] {
-        return {
-            ...defaults,
-            ...this.getSettings(category),
-        };
-    }
-
-    /** @inheritdoc */
     public updateGlobalProperty<TKey extends GlobalPropertyKey>(
         key: TKey,
         value: Uint8Array,

@@ -1675,16 +1675,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
         return SETTINGS_CODEC[category].decode(settingsBytes);
     }
-    /** @inheritdoc */
-    public getSettingsWithDefaults<TKey extends keyof Settings>(
-        category: TKey,
-        defaults: Settings[TKey],
-    ): Settings[TKey] {
-        return {
-            ...defaults,
-            ...this.getSettings(category),
-        };
-    }
 
     /** @inheritdoc */
     public updateGlobalProperty<TKey extends GlobalPropertyKey>(

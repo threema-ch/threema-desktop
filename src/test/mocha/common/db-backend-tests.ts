@@ -1513,19 +1513,6 @@ export function backendTests(
             expect(db.getSettings('profile')).to.be.undefined;
         });
 
-        it('returns the defaults when the category does not exist in the underlying storage', function () {
-            expect(db.getSettingsWithDefaults('profile', settingsWithFooPublicNickname)).to.be.eql(
-                settingsWithFooPublicNickname,
-            );
-        });
-
-        it('returns the value exiting in the underlying storage even if defaults are provided', function () {
-            db.setSettings('profile', settingsWithFooPublicNickname);
-            expect(db.getSettingsWithDefaults('profile', settingsWithBarPublicNickname)).to.be.eql(
-                settingsWithFooPublicNickname,
-            );
-        });
-
         it('allows setting and getting a value for a key', function () {
             expect(db.getSettings('profile')).to.be.undefined;
             db.setSettings('profile', settingsWithFooPublicNickname);

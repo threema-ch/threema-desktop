@@ -683,14 +683,6 @@ export interface DatabaseBackend {
     ) => Settings[TKey] | undefined;
 
     /**
-     * Get settings for a given category, using the defaults if needed.
-     */
-    readonly getSettingsWithDefaults: <TKey extends keyof Settings>(
-        category: TKey,
-        defaults: Settings[TKey],
-    ) => Settings[TKey];
-
-    /**
      * Update a property for a given key. It returns the property if the action was
      * successful.
      *
