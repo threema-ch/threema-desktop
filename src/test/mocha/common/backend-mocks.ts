@@ -49,7 +49,7 @@ import {
     type Group,
     type GroupRepository,
     type IGlobalPropertyRepository,
-    type ProfilePicture,
+    type ProfilePictureView,
     type ProfileSettings,
     type Repositories,
     type ServicesForModel,
@@ -60,7 +60,6 @@ import {ContactModelRepository} from '~/common/model/contact';
 import {ConversationModelRepository} from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
-import {ProfilePictureModelStore} from '~/common/model/profile-picture';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -351,15 +350,12 @@ class UserRepository implements User {
     public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
 
     public identity: IdentityString;
-    public profilePicture: LocalModelStore<ProfilePicture>;
+    public profilePicture: LocalStore<ProfilePictureView>;
     public readonly displayName: LocalStore<string>;
     public profileSettings: LocalModelStore<ProfileSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
-        this.profilePicture = new ProfilePictureModelStore(services, {
-            color: 'teal',
-        });
         this.profileSettings = new ProfileSettingsModelStore(services, {
             publicNickname: ensurePublicNickname('Mocha Tests'),
             profilePictureShareWith: {group: 'everyone'},
@@ -370,6 +366,14 @@ class UserRepository implements User {
             }
             return profileSettings.view.publicNickname;
         });
+        this.profilePicture = derive(
+            this.profileSettings,
+            (profileSettings) =>
+                ({
+                    color: 'teal',
+                    profilePicture: profileSettings.view.profilePicture,
+                } as const),
+        );
     }
 }
 

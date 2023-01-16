@@ -1,11 +1,10 @@
 import {ReceiverType} from '~/common/enum';
 import {
-    type ProfilePicture,
+    type ProfilePictureView,
     type ProfileSettings,
     type ServicesForModel,
     type User,
 } from '~/common/model/';
-import {ProfilePictureModelStore} from '~/common/model/profile-picture';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString, ensurePublicNickname} from '~/common/network/types';
@@ -19,8 +18,7 @@ export class UserModel implements User {
 
     public readonly identity: IdentityString;
     public readonly displayName: LocalStore<string>;
-    public readonly profilePicture: LocalModelStore<ProfilePicture>;
-
+    public readonly profilePicture: LocalStore<ProfilePictureView>;
     public readonly profileSettings: LocalModelStore<ProfileSettings>;
 
     public constructor(services: ServicesForModel) {
@@ -39,8 +37,9 @@ export class UserModel implements User {
 
         // TODO(WEBMD-624): Get profile picture from DB
         const colorIndex = idColorIndex({type: ReceiverType.CONTACT, identity: this.identity});
-        this.profilePicture = new ProfilePictureModelStore(services, {
+        this.profilePicture = derive(this.profileSettings, (profileSettings) => ({
             color: idColorIndexToString(colorIndex),
-        });
+            picture: profileSettings.view.profilePicture,
+        }));
     }
 }

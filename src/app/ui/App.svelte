@@ -2,22 +2,22 @@
   import {type SvelteComponent, onMount} from 'svelte';
 
   import {dragEvents} from '#3sc/utils/dragdrop';
-  import SuccessLinked from '~/app/ui/bootstrap/SuccessLinked.svelte';
-  import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
-  import NetworkAlert from '~/app/ui/notification/NetworkAlert.svelte';
+  import {type AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
+  import SuccessLinked from '~/app/ui/bootstrap/SuccessLinked.svelte';
+  import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
   import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
   import MainProfile from '~/app/ui/main/Profile.svelte';
   import MainWelcome from '~/app/ui/main/Welcome.svelte';
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
   import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';
-  import NavContactAdd from '~/app/ui/nav/ContactAddNav.svelte';
   import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
-  import NavContactList from '~/app/ui/nav/ReceiverNav.svelte';
+  import NavContactAdd from '~/app/ui/nav/ContactAddNav.svelte';
   import NavConversationList from '~/app/ui/nav/ConversationNav.svelte';
+  import NavContactList from '~/app/ui/nav/ReceiverNav.svelte';
+  import NetworkAlert from '~/app/ui/notification/NetworkAlert.svelte';
   import Snackbar from '~/app/ui/snackbar/Snackbar.svelte';
-  import {type AppServices} from '~/app/types';
   import {DisplayModeObserver, manageLayout} from '~/common/dom/ui/layout';
   import {display, layout} from '~/common/dom/ui/state';
   import {ConnectionState} from '~/common/network/protocol/state';

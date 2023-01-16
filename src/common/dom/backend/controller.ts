@@ -1,5 +1,11 @@
 import {type ServicesForBackendController} from '~/common/backend';
 import {type DeviceIds} from '~/common/device';
+import {
+    type BackendHandle,
+    type BackendInit,
+    type SafeBackupSource,
+    BackendCreationError,
+} from '~/common/dom/backend';
 import {type DebugBackend} from '~/common/dom/debug';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
 import {type SafeCredentials, isSafeBackupAvailable} from '~/common/dom/safe';
@@ -7,8 +13,7 @@ import {SAFE_BACKUP_AUTORESTORE} from '~/common/dom/safe-autorestore';
 import {type D2mLeaderState, ActivityState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
-import {type ProfilePicture, type Repositories} from '~/common/model';
-import {type RemoteModelStore} from '~/common/model/utils/model-store';
+import {type ProfilePictureView, type Repositories} from '~/common/model';
 import {type DisplayPacket} from '~/common/network/protocol/capture';
 import {type DirectoryBackend} from '~/common/network/protocol/directory';
 import {type ConnectionState} from '~/common/network/protocol/state';
@@ -25,17 +30,10 @@ import {
 import {type IQueryableStore, type RemoteStore, DeprecatedDerivedStore} from '~/common/utils/store';
 import {type IViewModelBackend} from '~/common/viewmodel';
 
-import {
-    type BackendHandle,
-    type BackendInit,
-    type SafeBackupSource,
-    BackendCreationError,
-} from './';
-
 export interface UserData {
     readonly identity: IdentityString;
     readonly displayName: RemoteStore<string>;
-    readonly profilePicture: RemoteModelStore<ProfilePicture>;
+    readonly profilePicture: RemoteStore<ProfilePictureView>;
 }
 
 /**

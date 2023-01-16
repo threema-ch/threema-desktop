@@ -293,7 +293,7 @@ function getConversationMessageBodyBaseMessage(
                 status,
                 sender: {
                     name: getAndSubscribe(user.displayName),
-                    profilePicture: getAndSubscribe(user.profilePicture).view,
+                    profilePicture: getAndSubscribe(user.profilePicture),
                 },
                 updatedAt:
                     messageModel.view.readAt ??

@@ -5,32 +5,31 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type ProfilePictureData} from '#3sc/components/threema/ProfilePicture';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
-  import {unresolved} from '#3sc/utils/promise';
   import {clickOrKeyboadAction} from '~/app/ui/helpers';
+  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import type * as model from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type IdentityString} from '~/common/network/types';
   import {type RemoteStore} from '~/common/utils/store';
   import {getGraphemeClusters} from '~/common/utils/string';
 
   export let identity: IdentityString;
 
-  export let profilePicture: RemoteModelStore<model.ProfilePicture>;
+  export let profilePicture: RemoteStore<model.ProfilePictureView>;
 
   export let displayName: RemoteStore<string>;
 
   const dispatch = createEventDispatcher();
 
+  // Profile picture data
+  function processProfilePicture(view: model.ProfilePictureView): ProfilePictureData {
+    return {
+      color: view.color,
+      img: transformProfilePicture(view.picture),
+      initials: getGraphemeClusters($displayName !== '' ? $displayName : identity, 2).join(''),
+    };
+  }
   let profilePicture$: ProfilePictureData;
-
-  $: profilePicture$ = {
-    color: $profilePicture.view.color,
-    img:
-      $profilePicture.view.picture !== undefined
-        ? new Blob([$profilePicture.view.picture], {type: 'image/jpeg'})
-        : unresolved(),
-    initials: getGraphemeClusters($displayName !== '' ? $displayName : identity, 2).join(''),
-  };
+  $: profilePicture$ = processProfilePicture($profilePicture);
 </script>
 
 <template>

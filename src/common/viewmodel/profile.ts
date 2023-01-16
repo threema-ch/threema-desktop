@@ -35,7 +35,7 @@ export function getProfileViewModelStore(services: ServicesForViewModel): Profil
         );
         const initials = getGraphemeClusters(displayName, 2).join('');
         return endpoint.exposeProperties({
-            profilePicture: getAndSubscribe(model.user.profilePicture).view,
+            profilePicture: getAndSubscribe(model.user.profilePicture),
             nickname: profileSettings.view.publicNickname,
             initials,
             identity: device.identity.string,

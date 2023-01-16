@@ -730,7 +730,7 @@ function main(
                         'connect-src *',
                         "font-src 'self' https://static.threema.ch",
                         "frame-src 'none'",
-                        "img-src 'self' data:",
+                        "img-src 'self' data: blob:",
                         "object-src 'none'",
                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // TODO(WEBMD-81): Remove unsafe-inline and unsafe-eval
                         // "style-src 'self' https://static.threema.ch",

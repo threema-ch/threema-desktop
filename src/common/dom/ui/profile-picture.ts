@@ -1,7 +1,12 @@
-import {type BlobBytes} from '~/common/network/protocol/blob';
+import {type ReadonlyUint8Array} from '~/common/types';
 import {eternalPromise} from '~/common/utils/promise';
 
-export function transformProfilePicture(picture: BlobBytes | undefined): Blob | Promise<Blob> {
+/**
+ * Transform profile picture bytes into a blob or a promise of a blob.
+ */
+export function transformProfilePicture(
+    picture: ReadonlyUint8Array | undefined,
+): Blob | Promise<Blob> {
     if (picture === undefined) {
         return eternalPromise();
     }

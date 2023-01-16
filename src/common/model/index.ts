@@ -47,7 +47,7 @@ import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type BlobBytes, type BlobId} from '~/common/network/protocol/blob';
+import {type BlobId} from '~/common/network/protocol/blob';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {type TaskManager} from '~/common/network/protocol/task/manager';
 import {
@@ -292,7 +292,7 @@ export type ControllerUpdateFromSync<
 // Profile picture
 export interface ProfilePictureView {
     readonly color: IdColor;
-    readonly picture?: BlobBytes;
+    readonly picture?: ReadonlyUint8Array;
 }
 export type ProfilePictureUpdate = Partial<Omit<ProfilePictureView, 'color'>>;
 export type ProfilePictureController = {
@@ -390,7 +390,7 @@ export type IGlobalPropertyModel<K extends GlobalPropertyKey> = LocalModel<
 export type User = {
     readonly identity: IdentityString;
     readonly displayName: LocalStore<string>;
-    readonly profilePicture: LocalModelStore<ProfilePicture>;
+    readonly profilePicture: LocalStore<ProfilePictureView>;
     readonly profileSettings: LocalModelStore<ProfileSettings>;
 } & ProxyMarked;
 

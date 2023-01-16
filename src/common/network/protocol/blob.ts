@@ -33,11 +33,6 @@ export function ensureBlobId(id: Uint8Array): BlobId {
 }
 
 /**
- * Data of a blob.
- */
-export type BlobBytes = WeakOpaque<ReadonlyUint8Array, {readonly BlobBytes: unique symbol}>;
-
-/**
  * The scope of a Blob API call.
  *
  * When uploading:
