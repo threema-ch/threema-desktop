@@ -199,8 +199,9 @@ export type SafeEncryptionKey = WeakOpaque<RawKey<32>, {readonly SafeEncryptionK
  * - crypto: A cryptography related problem occurred.
  * - encoding: Bytes could not be decompressed or decoded.
  * - validation: The backup JSON does not pass validation.
+ * - import: The backup could not be imported (most likely due to a data constraint error).
  */
-export type SafeErrorType = 'fetch' | 'not-found' | 'crypto' | 'encoding' | 'validation';
+export type SafeErrorType = 'fetch' | 'not-found' | 'crypto' | 'encoding' | 'validation' | 'import';
 
 const SAFE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     SafeError,

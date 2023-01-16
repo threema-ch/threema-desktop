@@ -1,6 +1,6 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {ensurePublicKey, type PublicKey} from '~/common/crypto';
-import {type SafeBackupData, type SafeContact} from '~/common/dom/safe';
+import {type SafeBackupData, type SafeContact, SafeError} from '~/common/dom/safe';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -42,14 +42,30 @@ export class SafeContactImporter {
      * Import all contacts in a {@link SafeBackupData} and save them to the database.
      *
      * @param backupData where the contacts will be imported from.
+     * @throws {@link SafeError} on unrecoverable import errors.
      */
     public async importFrom(backupData: SafeBackupData): Promise<void> {
         this._log.info(`Importing ${backupData.contacts.length} contacts from backup`);
-        if (backupData.contacts.length > 0) {
-            await this._importContacts(backupData.contacts);
+        try {
+            if (backupData.contacts.length > 0) {
+                await this._importContacts(backupData.contacts);
+            }
+        } catch (error) {
+            if (error instanceof SafeError) {
+                throw error;
+            }
+
+            throw new SafeError('import', 'Unknown unrecoverable safe contact import error', {
+                from: error,
+            });
         }
     }
 
+    /**
+     * Import safe contacts
+     *
+     * @throws {@link SafeError} on unrecoverable import errors.
+     */
     private async _importContacts(contacts: readonly SafeContact[]): Promise<void> {
         const identities = await this._directory.identities(
             contacts.map((contact) => contact.identity),
@@ -62,38 +78,34 @@ export class SafeContactImporter {
     }
 
     private _importContact(contact: SafeContact, identityData: IdentityData): void {
-        this._log.debug(`Importing contact ${contact.identity}`, {contact});
-        let imported: boolean;
+        this._log.debug(`Importing contact ${contact.identity}`);
         switch (identityData.state) {
             case ActivityState.INVALID:
-                imported = this._importInvalidContact(identityData, contact);
+                this._importInvalidContact(identityData, contact);
                 break;
 
             case ActivityState.ACTIVE:
             case ActivityState.INACTIVE:
-                imported = this._importValidContact(identityData, contact);
+                this._importValidContact(identityData, contact);
                 break;
 
             default:
                 unreachable(identityData);
         }
-        if (imported) {
-            this._log.info(`Contact ${contact.identity} successfully imported`);
-        } else {
-            this._log.warn(`Contact ${contact.identity} could not be imported`);
-        }
+        this._log.debug(`Contact ${contact.identity} successfully imported`);
     }
 
     /**
      * Import contact with {@link ActivityState.INVALID}, return whether contact could be imported.
+     *
+     * @throws {@link SafeError} if public key is unavailble.
      */
-    private _importInvalidContact(
-        identityData: InvalidIdentityData,
-        contact: SafeContact,
-    ): boolean {
+    private _importInvalidContact(identityData: InvalidIdentityData, contact: SafeContact): void {
         if (contact.publickey === undefined) {
-            this._log.warn('Skipping INVALID contact as public key is missing in backup data');
-            return false;
+            throw new SafeError(
+                'import',
+                `Public key of invalid contact ${contact.identity} is missing in safe contact`,
+            );
         }
         this._model.contacts.add.fromSync({
             ...this._propertiesFromSafeContact(contact),
@@ -102,20 +114,22 @@ export class SafeContactImporter {
             identityType: IdentityType.REGULAR, // Cannot be known anymore at this stage, so defaulting to IdentityType.REGULAR.
             featureMask: ensureFeatureMask(FeatureMaskFlag.NONE),
         });
-        return true;
     }
 
     /**
      * Import contact with {@link ActivityState.ACTIVE} or {@link ActivityState.INACTIVE}, return
      * whether contact could be imported.
+     *
+     * @throws {@link SafeError} on public key verification failed.
      */
-    private _importValidContact(identityData: ValidIdentityData, contact: SafeContact): boolean {
+    private _importValidContact(identityData: ValidIdentityData, contact: SafeContact): void {
         let verifiedPublicKey;
         try {
             verifiedPublicKey = this._publicKey(identityData, contact);
         } catch (error) {
-            this._log.error(`Skipping contact due to error: ${error}`);
-            return false;
+            throw new SafeError('import', `Skipping contact due to public key verification`, {
+                from: error,
+            });
         }
         this._model.contacts.add.fromSync({
             ...this._propertiesFromSafeContact(contact),
@@ -124,7 +138,6 @@ export class SafeContactImporter {
             identityType: identityData.type,
             featureMask: identityData.featureMask,
         });
-        return true;
     }
 
     private _propertiesFromSafeContact(
@@ -208,8 +221,8 @@ export class SafeContactImporter {
     private _assertPublicKeysMatch(fromBackup: string, fromDirectoryAsBytes: PublicKey): void {
         const fromDirectory = u8aToBase64(fromDirectoryAsBytes);
         if (fromBackup !== fromDirectory) {
-            // TODO(DESK-427): Decide how to handle this case and how it affects the UX.
-            throw new Error(
+            throw new SafeError(
+                'import',
                 `Public key mismatch! backup=${fromBackup}, directory=${fromDirectory}`,
             );
         }

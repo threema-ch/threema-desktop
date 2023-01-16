@@ -1,5 +1,5 @@
 import {type ServicesForBackend} from '~/common/backend';
-import {type SafeBackupData, type SafeGroup} from '~/common/dom/safe';
+import {type SafeBackupData, type SafeGroup, SafeError} from '~/common/dom/safe';
 import {
     ConversationCategory,
     ConversationVisibility,
@@ -27,11 +27,23 @@ export class SafeGroupImporter {
 
     /**
      * Import all groups in a {@link SafeBackupData} and save them to the database.
+     *
+     * @throws {@link SafeError} on unrecoverable import errors.
      */
     public importFrom(backupData: SafeBackupData): void {
         this._log.info(`Importing ${backupData.groups.length} groups from backup`);
-        if (backupData.groups.length > 0) {
-            this._importGroups(backupData.groups);
+        try {
+            if (backupData.groups.length > 0) {
+                this._importGroups(backupData.groups);
+            }
+        } catch (error) {
+            if (error instanceof SafeError) {
+                throw error;
+            }
+
+            throw new SafeError('import', 'Unknown unrecoverable safe group import error', {
+                from: error,
+            });
         }
     }
 
@@ -41,6 +53,11 @@ export class SafeGroupImporter {
         }
     }
 
+    /**
+     * Import a {@link SafeGroup} and save them to the database.
+     *
+     * @throws {@link SafeError} on unrecoverable import errors.
+     */
     private _importGroup(group: SafeGroup): void {
         const creatorIdentity = ensureIdentityString(group.creator);
         const groupId = ensureGroupId(hexLeToU64(group.id));
@@ -53,10 +70,10 @@ export class SafeGroupImporter {
         if (!group.deleted) {
             for (const member of group.members) {
                 if (!isIdentityString(member)) {
-                    this._log.warn(
+                    throw new SafeError(
+                        'import',
                         `Group ${debugString} could not be imported, member ${member} is not a valid identity string`,
                     );
-                    return;
                 }
                 if (member === this._device.identity.string) {
                     // Our own identity must not be part of the members list
@@ -64,10 +81,10 @@ export class SafeGroupImporter {
                 }
                 const contact = this._model.contacts.getByIdentity(member);
                 if (contact === undefined) {
-                    this._log.warn(
+                    throw new SafeError(
+                        'import',
                         `Group ${debugString} could not be imported, member ${member} not found in database`,
                     );
-                    return;
                 }
                 memberUids.push(contact.ctx);
             }
@@ -81,10 +98,10 @@ export class SafeGroupImporter {
         ) {
             const creator = this._model.contacts.getByIdentity(ensureIdentityString(group.creator));
             if (creator === undefined) {
-                this._log.warn(
+                throw new SafeError(
+                    'import',
                     `Group ${debugString} could not be imported, creator ${group.creator} not found in database`,
                 );
-                return;
             }
             memberUids.push(creator.ctx);
         }
@@ -117,6 +134,6 @@ export class SafeGroupImporter {
             },
             memberUids,
         );
-        this._log.info(`Group ${debugString} successfully imported`);
+        this._log.debug(`Group ${debugString} successfully imported`);
     }
 }
