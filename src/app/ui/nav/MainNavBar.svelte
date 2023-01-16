@@ -6,6 +6,7 @@
   import {type ProfilePictureData} from '#3sc/components/threema/ProfilePicture';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {unresolved} from '#3sc/utils/promise';
+  import {clickOrKeyboadAction} from '~/app/ui/helpers';
   import type * as model from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type IdentityString} from '~/common/network/types';
@@ -36,9 +37,9 @@
   <header>
     <div
       class="profile-picture"
-      on:click={() => {
-        dispatch('click-profile-picture');
-      }}
+      role="link"
+      tabindex="0"
+      use:clickOrKeyboadAction={() => dispatch('click-profile-picture')}
     >
       <ProfilePicture {...profilePicture$} alt="Your profile picture" shape={'circle'} />
     </div>
