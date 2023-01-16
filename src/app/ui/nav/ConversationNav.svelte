@@ -20,12 +20,13 @@
         identity={user.identity}
         profilePicture={user.profilePicture}
         displayName={user.displayName}
-        on:click-profile-picture={() =>
-          router.go(
-            router.get().nav,
-            ROUTE_DEFINITIONS.main.profile.withTypedParams(undefined),
-            undefined,
-          )}
+        on:click-profile-picture={() => {
+          const newMainRoute =
+            router.get().main.id === 'profile'
+              ? ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined)
+              : ROUTE_DEFINITIONS.main.profile.withTypedParams(undefined);
+          router.go(router.get().nav, newMainRoute, undefined);
+        }}
         on:click-contact={() =>
           router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withTypedParams(undefined))}
       />
