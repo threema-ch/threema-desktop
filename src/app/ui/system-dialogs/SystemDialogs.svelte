@@ -4,6 +4,7 @@
   import AppUpdate from '~/app/ui/system-dialogs/AppUpdate.svelte';
   import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
   import InvalidState from '~/app/ui/system-dialogs/InvalidState.svelte';
+  import SafeRestore from '~/app/ui/system-dialogs/SafeRestore.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import {type Config} from '~/common/config';
   import {display, layout} from '~/common/dom/ui/state';
@@ -26,6 +27,7 @@
     'connection-error': ConnectionError,
     'server-alert': ServerAlert,
     'invalid-state': InvalidState,
+    'safe-restore': SafeRestore,
     /* eslint-enable @typescript-eslint/naming-convention */
   };
 

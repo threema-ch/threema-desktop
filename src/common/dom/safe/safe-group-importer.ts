@@ -1,11 +1,12 @@
 import {type ServicesForBackend} from '~/common/backend';
-import {type SafeBackupData, type SafeGroup, SafeError} from '~/common/dom/safe';
+import {type SafeBackupData, type SafeGroup} from '~/common/dom/safe';
 import {
     ConversationCategory,
     ConversationVisibility,
     GroupUserState,
     ReceiverType,
 } from '~/common/enum';
+import {SafeError} from '~/common/error';
 import {groupDebugString} from '~/common/model/group';
 import {ensureGroupId, ensureIdentityString, isIdentityString} from '~/common/network/types';
 import {idColorIndex} from '~/common/utils/id-color';

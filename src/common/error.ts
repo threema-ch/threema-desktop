@@ -231,3 +231,40 @@ export class TypeTransformError extends BaseError {
 export class ParseError extends BaseError {
     public [TRANSFER_MARKER] = MIGRATION_ERROR_TRANSFER_HANDLER;
 }
+
+/**
+ * Error types that can happen in connection with Threema Safe.
+ *
+ * - fetch: A HTTP request failed.
+ * - not-found: Backup does not exist for the specified credentials.
+ * - crypto: A cryptography related problem occurred.
+ * - encoding: Bytes could not be decompressed or decoded.
+ * - validation: The backup JSON does not pass validation.
+ * - import: The backup could not be imported (most likely due to a data constraint error).
+ */
+export type SafeErrorType = 'fetch' | 'not-found' | 'crypto' | 'encoding' | 'validation' | 'import';
+
+const SAFE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
+    SafeError,
+    TransferTag.SAFE_ERROR,
+    [type: SafeErrorType]
+>({
+    tag: TransferTag.SAFE_ERROR,
+    serialize: (error) => [error.type],
+    deserialize: (message, cause, [type]) => new SafeError(type, message, {from: cause}),
+});
+
+/**
+ * Errors types that can happen in connection with the Threema Safe restore process.
+ */
+export class SafeError extends BaseError {
+    public [TRANSFER_MARKER] = SAFE_ERROR_TRANSFER_HANDLER;
+
+    public constructor(
+        public readonly type: SafeErrorType,
+        message: string,
+        options?: BaseErrorOptions,
+    ) {
+        super(message, options);
+    }
+}

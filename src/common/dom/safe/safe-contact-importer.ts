@@ -1,6 +1,6 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {ensurePublicKey, type PublicKey} from '~/common/crypto';
-import {type SafeBackupData, type SafeContact, SafeError} from '~/common/dom/safe';
+import {type SafeBackupData, type SafeContact} from '~/common/dom/safe';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -13,6 +13,7 @@ import {
     VerificationLevelUtils,
     WorkVerificationLevel,
 } from '~/common/enum';
+import {SafeError} from '~/common/error';
 import {type ContactInit} from '~/common/model';
 import {
     type IdentityData,

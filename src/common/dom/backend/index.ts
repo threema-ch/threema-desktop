@@ -20,12 +20,7 @@ import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directo
 import {applyMediatorStreamPipeline} from '~/common/dom/network/protocol/pipeline';
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
 import {type WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
-import {
-    downloadSafeBackup,
-    type SafeBackupData,
-    type SafeCredentials,
-    SafeError,
-} from '~/common/dom/safe';
+import {downloadSafeBackup, type SafeBackupData, type SafeCredentials} from '~/common/dom/safe';
 import {SafeContactImporter} from '~/common/dom/safe/safe-contact-importer';
 import {SafeGroupImporter} from '~/common/dom/safe/safe-group-importer';
 import {type BrowserInfo, getBrowserInfo} from '~/common/dom/utils/browser';
@@ -39,7 +34,7 @@ import {
     GroupUserState,
     TransferTag,
 } from '~/common/enum';
-import {BaseError, type BaseErrorOptions, extractErrorMessage} from '~/common/error';
+import {BaseError, type BaseErrorOptions, extractErrorMessage, SafeError} from '~/common/error';
 import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
     type KeyStorage,
@@ -99,6 +94,7 @@ import {
     PROXY_HANDLER,
     type ProxyMarked,
     registerErrorTransferHandler,
+    type Remote,
     TRANSFER_MARKER,
 } from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -546,7 +542,7 @@ export class Backend implements ProxyMarked {
                 logging.logger('com.notification'),
             ),
         );
-        const systemDialog = endpoint.wrap<SystemDialogService>(
+        const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
             systemDialogEndpoint,
             logging.logger('com.system-dialog'),
         );
@@ -591,7 +587,29 @@ export class Backend implements ProxyMarked {
         });
 
         if (backupData !== undefined) {
-            await bootstrapFromBackup(backend._services, identityData.identity, backupData);
+            try {
+                await bootstrapFromBackup(backend._services, identityData.identity, backupData);
+            } catch (error) {
+                assertError(error, SafeError);
+                log.error('Safe Backup could not be imported with a fatal error', error);
+
+                const dialog = endpoint.exposeProperties({
+                    type: 'safe-restore',
+                    context: endpoint.exposeProperties({
+                        error,
+                    }),
+                } as const);
+
+                const dialogResult = await systemDialog.open(dialog);
+                await dialogResult.closed;
+
+                throw new BackendCreationError(
+                    'restore-failed',
+                    `Safe data restore failed: ${error.message}`,
+                    {from: error},
+                );
+            }
+
             requestContactProfilePictures(backend._services);
             requestGroupSync(backend._services, log);
         }

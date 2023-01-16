@@ -11,8 +11,7 @@ import {
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import {TransferTag} from '~/common/enum';
-import {BaseError, type BaseErrorOptions} from '~/common/error';
+import {SafeError} from '~/common/error';
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {ensureIdentityString, ensureNickname, type IdentityString} from '~/common/network/types';
@@ -21,7 +20,6 @@ import {assert} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {nullEmptyStringOptional, nullOptional} from '~/common/utils/valita-helpers';
 
 const SAFE_SERVER_TEMPLATE = 'https://safe-{prefix}.threema.ch';
@@ -190,40 +188,6 @@ export type SafeBackupId = WeakOpaque<ReadonlyUint8Array, {readonly SafeBackupId
  * Safe Backup Encryption Key. Must be exactly 32 bytes long.
  */
 export type SafeEncryptionKey = WeakOpaque<RawKey<32>, {readonly SafeEncryptionKey: unique symbol}>;
-
-/**
- * Error types that can happen in connection with Threema Safe.
- *
- * - fetch: A HTTP request failed.
- * - not-found: Backup does not exist for the specified credentials.
- * - crypto: A cryptography related problem occurred.
- * - encoding: Bytes could not be decompressed or decoded.
- * - validation: The backup JSON does not pass validation.
- * - import: The backup could not be imported (most likely due to a data constraint error).
- */
-export type SafeErrorType = 'fetch' | 'not-found' | 'crypto' | 'encoding' | 'validation' | 'import';
-
-const SAFE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
-    SafeError,
-    TransferTag.SAFE_ERROR,
-    [type: SafeErrorType]
->({
-    tag: TransferTag.SAFE_ERROR,
-    serialize: (error) => [error.type],
-    deserialize: (message, cause, [type]) => new SafeError(type, message, {from: cause}),
-});
-
-export class SafeError extends BaseError {
-    public [TRANSFER_MARKER] = SAFE_ERROR_TRANSFER_HANDLER;
-
-    public constructor(
-        public readonly type: SafeErrorType,
-        message: string,
-        options?: BaseErrorOptions,
-    ) {
-        super(message, options);
-    }
-}
 
 /**
  * Derive the {@link SafeBackupId} and {@link SafeEncryptionKey} from the given credentials.
