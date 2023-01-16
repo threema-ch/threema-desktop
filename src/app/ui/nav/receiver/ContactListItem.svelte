@@ -75,7 +75,7 @@
     return {
       type: 'contact',
       profilePicture: {
-        profilePicture: $profilePicture,
+        profilePicture: $profilePicture.view,
         alt: `Profile picture of ${viewModel.displayName}`,
         initials: viewModel.initials,
         badge: viewModel.badge,

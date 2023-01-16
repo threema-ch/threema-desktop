@@ -68,7 +68,7 @@
     return {
       type: 'group',
       profilePicture: {
-        profilePicture: $profilePicture,
+        profilePicture: $profilePicture.view,
         alt: `Profile picture of ${viewModel.displayName}`,
         initials: viewModel.initials,
         unread: 0,

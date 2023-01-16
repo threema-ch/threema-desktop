@@ -9,7 +9,7 @@ import {
     type AnyReceiver,
     type ContactView,
     type GroupView,
-    type ProfilePicture,
+    type ProfilePictureView,
     type RemoteModelFor,
 } from '~/common/model';
 import {type IdentityString} from '~/common/network/types';
@@ -21,7 +21,7 @@ import {
 import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
 export interface ReceiverProfilePicture {
-    readonly profilePicture: RemoteModelFor<ProfilePicture>;
+    readonly profilePicture: ProfilePictureView;
     readonly alt: string;
     readonly initials: string;
     readonly unread: u53;

@@ -125,7 +125,7 @@
           <DeprecatedReceiver
             profilePicture={{
               alt: `Profile picture of ${receiver$.name}`,
-              profilePicture: $profilePicture,
+              profilePicture: $profilePicture.view,
               initials: $viewModel.receiver.initials,
               unread: conversation$.unread,
               badge: receiver$.badge,

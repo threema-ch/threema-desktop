@@ -113,7 +113,7 @@
                         {filter}
                         profilePicture={{
                           alt: `Profile picture of ${transformedContact.displayName}`,
-                          profilePicture: stores.profilePicture.get(),
+                          profilePicture: stores.profilePicture.get().view,
                           initials: transformedContact.initials,
                           unread: 0,
                           badge: transformedContact.badge,

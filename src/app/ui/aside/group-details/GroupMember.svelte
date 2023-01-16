@@ -53,7 +53,7 @@
       on:click
       profilePicture={{
         alt: `Profile picture of ${contact$.displayName}`,
-        profilePicture: $profilePicture,
+        profilePicture: $profilePicture.view,
         initials: contact$.initials,
         unread: 0,
         badge: contact$.badge,
