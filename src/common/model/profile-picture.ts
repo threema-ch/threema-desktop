@@ -12,7 +12,6 @@ import {
     type ProfilePicture,
     type ProfilePictureController,
     type ProfilePictureSource,
-    type ProfilePictureUpdate,
     type ProfilePictureView,
     type ServicesForModel,
 } from '~/common/model';
@@ -129,12 +128,6 @@ export class ProfilePictureModelController implements ProfilePictureController {
             default:
                 unreachable(_receiver);
         }
-    }
-
-    public update(change: ProfilePictureUpdate): void {
-        this.meta.update(() => {
-            throw new Error('TODO'); // TODO(WEBMD-231)
-        });
     }
 
     /**

@@ -299,10 +299,8 @@ export type ProfilePictureSource =
     | 'gateway-defined'
     | 'user-defined'
     | 'admin-defined';
-export type ProfilePictureUpdate = Partial<Omit<ProfilePictureView, 'color'>>;
 export type ProfilePictureController = {
     readonly meta: ModelLifetimeGuard<ProfilePictureView>;
-    readonly update: (change: ProfilePictureUpdate) => void;
     readonly setPicture: (
         bytes: ReadonlyUint8Array | undefined,
         source: ProfilePictureSource,
