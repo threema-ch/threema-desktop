@@ -200,6 +200,17 @@ export function ensurePublicKey(key: ReadonlyUint8Array): PublicKey {
  */
 export type Nonce = WeakOpaque<Uint8Array, {readonly Nonce: unique symbol}>;
 
+export function isNonce(array: ReadonlyUint8Array): array is Nonce {
+    return array.byteLength === NACL_CONSTANTS.NONCE_LENGTH;
+}
+
+export function ensureNonce(array: ReadonlyUint8Array): Nonce {
+    if (!isNonce(array)) {
+        throw new Error(`Array of length ${array.byteLength} is not a valid nonce`);
+    }
+    return array;
+}
+
 /**
  * The first 16 byte of an NaCl nonce as used in the chat server protocol.
  */

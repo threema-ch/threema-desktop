@@ -161,7 +161,10 @@ export type DbContact = {
         readonly expiresAt?: Date;
     };
     notificationSoundPolicyOverride?: NotificationSoundPolicy;
-    // TODO(WEBMD-233): Profile picture
+    profilePictureContactDefined?: ReadonlyUint8Array;
+    profilePictureGatewayDefined?: ReadonlyUint8Array;
+    profilePictureUserDefined?: ReadonlyUint8Array;
+    profilePictureBlobIdSent?: BlobId;
     readonly colorIndex: u8;
 } & DbReceiverCommon<ReceiverType.CONTACT, DbContactUid>;
 
@@ -205,7 +208,7 @@ export type DbGroup = {
         readonly expiresAt?: Date;
     };
     notificationSoundPolicyOverride?: NotificationSoundPolicy;
-    // TODO(WEBMD-528): Profile picture
+    profilePictureAdminDefined?: ReadonlyUint8Array;
     readonly colorIndex: u8;
 } & DbReceiverCommon<ReceiverType.GROUP, DbGroupUid>;
 

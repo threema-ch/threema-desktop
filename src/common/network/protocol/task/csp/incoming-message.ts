@@ -86,6 +86,7 @@ import {
     unixTimestamptoDateS,
 } from '~/common/utils/number';
 
+import {IncomingContactSetProfilePictureTask} from './incoming-contact-set-profile-picture';
 import {IncomingDeliveryReceiptTask} from './incoming-delivery-receipt';
 import {IncomingForwardSecurityEnvelopeTask} from './incoming-fs-envelope';
 import {IncomingGroupLeaveTask} from './incoming-group-leave';
@@ -202,6 +203,7 @@ const BLOCK_EXEMPTION_TYPES: ReadonlySet<u53> = CspE2eGroupControlTypeUtils.ALL;
  */
 type MessageProcessingInstructions =
     | ConversationMessageInstructions
+    | ContactControlMessageInstructions
     | GroupControlMessageInstructions
     | StatusUpdateInstructions
     | ForwardSecurityMessageInstructions
@@ -239,6 +241,13 @@ interface ConversationMessageInstructions extends BaseProcessingInstructions {
     readonly missingContactHandling: 'create' | 'ignore';
     readonly initFragment: AnyInboundMessageInitFragment;
     readonly reflectFragment: D2dIncomingMessageFragment;
+}
+
+interface ContactControlMessageInstructions extends BaseProcessingInstructions {
+    readonly messageCategory: 'contact-control';
+    readonly deliveryReceipt: false;
+    readonly missingContactHandling: 'discard';
+    readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
 interface GroupControlMessageInstructions extends BaseProcessingInstructions {
@@ -524,6 +533,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     }
                     break;
                 case 'status-update':
+                case 'contact-control':
                 case 'group-control':
                     break;
                 default:
@@ -587,6 +597,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 }
                 break;
             }
+            case 'contact-control':
             case 'group-control':
             case 'status-update':
             case 'forward-security':
@@ -932,7 +943,24 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
 
             // Contact control messages
-            case CspE2eContactControlType.CONTACT_SET_PROFILE_IMAGE:
+            case CspE2eContactControlType.CONTACT_SET_PROFILE_IMAGE: {
+                const validatedSetProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                    structbuf.csp.e2e.SetProfilePicture.decode(cspMessageBody as Uint8Array),
+                );
+                const instructions: ContactControlMessageInstructions = {
+                    messageCategory: 'contact-control',
+                    deliveryReceipt: false,
+                    missingContactHandling: 'discard',
+                    reflectFragment: undefined, // TODO(WEBMD-231)
+                    task: new IncomingContactSetProfilePictureTask(
+                        this._services,
+                        messageId,
+                        senderContactOrInit,
+                        validatedSetProfilePicture,
+                    ),
+                };
+                return instructions;
+            }
             case CspE2eContactControlType.CONTACT_DELETE_PROFILE_IMAGE:
                 // TODO(WEBMD-561): Implement
                 return 'discard';

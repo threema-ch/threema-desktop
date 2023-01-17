@@ -39,6 +39,7 @@ export type {TransactionComplete};
  */
 export type ServicesForTasks = Pick<
     ServicesForBackend,
+    | 'blob'
     | 'config'
     | 'crypto'
     | 'device'

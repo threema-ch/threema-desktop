@@ -629,9 +629,13 @@ export class GroupModelController implements GroupController {
         // TODO(WEBMD-528): Implement profile pictures for groups
         return this.meta.run(
             (handle) =>
-                new ProfilePictureModelStore(this._services, {
-                    color: idColorIndexToString(handle.view().colorIndex),
-                }),
+                new ProfilePictureModelStore(
+                    this._services,
+                    {type: ReceiverType.GROUP, uid: this.uid},
+                    {
+                        color: idColorIndexToString(handle.view().colorIndex),
+                    },
+                ),
         );
     }
 

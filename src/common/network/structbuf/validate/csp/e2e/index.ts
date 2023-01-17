@@ -12,6 +12,7 @@ import * as GroupMemberContainer from './group-member-container';
 import * as GroupName from './group-name';
 import * as GroupSetup from './group-setup';
 import * as Location from './location';
+import * as SetProfilePicture from './set-profile-picture';
 import * as Text from './text';
 export {
     DeliveryReceipt,
@@ -20,6 +21,7 @@ export {
     Location,
     GroupName,
     GroupSetup,
+    SetProfilePicture,
     Text,
 };
 

@@ -311,16 +311,20 @@ export class ContactModelController implements ContactController {
             type: ReceiverType.CONTACT,
             uid: this.uid,
         };
-        this._log = this._services.logging.logger(`contact-model-controller-for-${this.uid}`);
+        this._log = this._services.logging.logger(`model.contact.${this.uid}`);
     }
 
     /** @inheritdoc */
     public profilePicture(): LocalModelStore<ProfilePicture> {
         return this.meta.run(
             (handle) =>
-                new ProfilePictureModelStore(this._services, {
-                    color: idColorIndexToString(handle.view().colorIndex),
-                }),
+                new ProfilePictureModelStore(
+                    this._services,
+                    {type: ReceiverType.CONTACT, uid: this.uid},
+                    {
+                        color: idColorIndexToString(handle.view().colorIndex),
+                    },
+                ),
         );
     }
 

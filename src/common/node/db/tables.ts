@@ -182,7 +182,7 @@ export const tContact = new (class TContact extends Table<DBConnection, 'TContac
     /**
      * Profile picture set by the contact.
      */
-    public profilePictureContactDefined = this.optionalColumn<Uint8Array>(
+    public profilePictureContactDefined = this.optionalColumn<ReadonlyUint8Array>(
         'profilePictureContactDefined',
         'custom',
         CUSTOM_TYPES.UINT8ARRAY,
@@ -192,7 +192,7 @@ export const tContact = new (class TContact extends Table<DBConnection, 'TContac
      * Profile picture set by the creator in the Threema Gateway control
      * panel. Only applicable to Threema Gateway IDs (starting with a `*`).
      */
-    public profilePictureGatewayDefined = this.optionalColumn<Uint8Array>(
+    public profilePictureGatewayDefined = this.optionalColumn<ReadonlyUint8Array>(
         'profilePictureGatewayDefined',
         'custom',
         CUSTOM_TYPES.UINT8ARRAY,
@@ -201,7 +201,7 @@ export const tContact = new (class TContact extends Table<DBConnection, 'TContac
     /**
      * Profile picture set by the user.
      */
-    public profilePictureUserDefined = this.optionalColumn<Uint8Array>(
+    public profilePictureUserDefined = this.optionalColumn<ReadonlyUint8Array>(
         'profilePictureUserDefined',
         'custom',
         CUSTOM_TYPES.UINT8ARRAY,
@@ -298,7 +298,7 @@ export const tGroup = new (class TGroup extends Table<DBConnection, 'TGroup'> {
     /**
      * Profile picture set by the group admin.
      */
-    public profilePictureAdminDefined = this.optionalColumn<Uint8Array>(
+    public profilePictureAdminDefined = this.optionalColumn<ReadonlyUint8Array>(
         'profilePictureAdminDefined',
         'custom',
         CUSTOM_TYPES.UINT8ARRAY,

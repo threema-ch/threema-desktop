@@ -332,6 +332,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     notificationTriggerPolicyOverrideExpiresAt:
                         tContact.notificationTriggerPolicyOverrideExpiresAt,
                     notificationSoundPolicyOverride: tContact.notificationSoundPolicyOverride,
+                    profilePictureContactDefined: tContact.profilePictureContactDefined,
+                    profilePictureGatewayDefined: tContact.profilePictureGatewayDefined,
+                    profilePictureUserDefined: tContact.profilePictureUserDefined,
+                    profilePictureBlobIdSent: tContact.profilePictureBlobIdSent,
                     colorIndex: tContact.colorIndex,
                 })
                 .where(tContact.uid.equals(uid))
@@ -543,6 +547,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     notificationTriggerPolicyOverrideExpiresAt:
                         tGroup.notificationTriggerPolicyOverrideExpiresAt,
                     notificationSoundPolicyOverride: tGroup.notificationSoundPolicyOverride,
+                    profilePictureAdminDefined: tGroup.profilePictureAdminDefined,
                     colorIndex: tGroup.colorIndex,
                 })
                 .where(tGroup.uid.equals(queryUid))

@@ -294,10 +294,16 @@ export interface ProfilePictureView {
     readonly color: IdColor;
     readonly picture?: ReadonlyUint8Array;
 }
+export type ProfilePictureSource =
+    | 'contact-defined'
+    | 'gateway-defined'
+    | 'user-defined'
+    | 'admin-defined';
 export type ProfilePictureUpdate = Partial<Omit<ProfilePictureView, 'color'>>;
 export type ProfilePictureController = {
     readonly meta: ModelLifetimeGuard<ProfilePictureView>;
     readonly update: (change: ProfilePictureUpdate) => void;
+    readonly setPicture: (bytes: ReadonlyUint8Array, source: ProfilePictureSource) => void;
 } & ProxyMarked;
 export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureController>;
 
