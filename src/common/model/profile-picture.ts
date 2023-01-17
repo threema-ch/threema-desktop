@@ -24,6 +24,38 @@ import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {hasProperty} from '~/common/utils/object';
 
 /**
+ * Return the appropriate profile picture for this contact.
+ *
+ * Precedence:
+ *
+ * 1. Contact-defined profile picture
+ * 2. If Gateway-ID: Gateway-defined profile picture
+ * 3. If Non-Gateway-ID: User-defined profile picture
+ *
+ * See section "Contact Profile Picture Precedence" in the protocol description.
+ */
+export function chooseContactProfilePicture(
+    contact: Pick<
+        DbContact,
+        | 'identity'
+        | 'profilePictureContactDefined'
+        | 'profilePictureGatewayDefined'
+        | 'profilePictureUserDefined'
+    >,
+): ReadonlyUint8Array | undefined {
+    if (contact.profilePictureContactDefined !== undefined) {
+        return contact.profilePictureContactDefined;
+    }
+    if (contact.identity.startsWith('*') && contact.profilePictureGatewayDefined !== undefined) {
+        return contact.profilePictureGatewayDefined;
+    }
+    if (!contact.identity.startsWith('*') && contact.profilePictureUserDefined !== undefined) {
+        return contact.profilePictureUserDefined;
+    }
+    return undefined;
+}
+
+/**
  * Update contact profile picture in the database.
  */
 function updateContactProfilePicture(
@@ -164,33 +196,8 @@ export class ProfilePictureModelController implements ProfilePictureController {
         const {db} = this._services;
         switch (this._receiver.type) {
             case ReceiverType.CONTACT: {
-                // Precedence:
-                //
-                // 1. Contact-defined profile picture
-                // 2. If Gateway-ID: Gateway-defined profile picture
-                // 3. If Non-Gateway-ID: User-defined profile picture
-                //
-                // See section "Contact Profile Picture Precedence" in the protocol description.
                 const contact = db.getContactByUid(this._receiver.uid);
-                if (contact === undefined) {
-                    return undefined;
-                }
-                if (contact.profilePictureContactDefined !== undefined) {
-                    return contact.profilePictureContactDefined;
-                }
-                if (
-                    contact.identity.startsWith('*') &&
-                    contact.profilePictureGatewayDefined !== undefined
-                ) {
-                    return contact.profilePictureGatewayDefined;
-                }
-                if (
-                    !contact.identity.startsWith('*') &&
-                    contact.profilePictureUserDefined !== undefined
-                ) {
-                    return contact.profilePictureUserDefined;
-                }
-                return undefined;
+                return contact === undefined ? undefined : chooseContactProfilePicture(contact);
             }
             case ReceiverType.GROUP:
                 return db.getGroupByUid(this._receiver.uid)?.profilePictureAdminDefined;
