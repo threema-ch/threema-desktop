@@ -86,6 +86,7 @@ import {
     unixTimestamptoDateS,
 } from '~/common/utils/number';
 
+import {IncomingContactDeleteProfilePictureTask} from './incoming-contact-delete-profile-picture';
 import {IncomingContactSetProfilePictureTask} from './incoming-contact-set-profile-picture';
 import {IncomingDeliveryReceiptTask} from './incoming-delivery-receipt';
 import {IncomingForwardSecurityEnvelopeTask} from './incoming-fs-envelope';
@@ -961,9 +962,20 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
-            case CspE2eContactControlType.CONTACT_DELETE_PROFILE_IMAGE:
-                // TODO(WEBMD-561): Implement
-                return 'discard';
+            case CspE2eContactControlType.CONTACT_DELETE_PROFILE_IMAGE: {
+                const instructions: ContactControlMessageInstructions = {
+                    messageCategory: 'contact-control',
+                    deliveryReceipt: false,
+                    missingContactHandling: 'discard',
+                    reflectFragment: undefined, // TODO(WEBMD-231)
+                    task: new IncomingContactDeleteProfilePictureTask(
+                        this._services,
+                        messageId,
+                        senderContactOrInit,
+                    ),
+                };
+                return instructions;
+            }
             case CspE2eContactControlType.CONTACT_REQUEST_PROFILE_IMAGE:
                 // TODO(WEBMD-590): Implement
                 return 'discard';

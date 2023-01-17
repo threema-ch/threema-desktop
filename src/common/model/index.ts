@@ -303,7 +303,10 @@ export type ProfilePictureUpdate = Partial<Omit<ProfilePictureView, 'color'>>;
 export type ProfilePictureController = {
     readonly meta: ModelLifetimeGuard<ProfilePictureView>;
     readonly update: (change: ProfilePictureUpdate) => void;
-    readonly setPicture: (bytes: ReadonlyUint8Array, source: ProfilePictureSource) => void;
+    readonly setPicture: (
+        bytes: ReadonlyUint8Array | undefined,
+        source: ProfilePictureSource,
+    ) => void;
 } & ProxyMarked;
 export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureController>;
 
