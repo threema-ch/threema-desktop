@@ -10,7 +10,12 @@ import {
 } from '~/common/enum';
 import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
-import {GroupIdentity, Identities, Unit} from '~/common/network/protobuf/validate/common';
+import {
+    DeltaImage,
+    GroupIdentity,
+    Identities,
+    Unit,
+} from '~/common/network/protobuf/validate/common';
 import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
 import {instanceOf, nullOptional} from '~/common/utils/valita-helpers';
 
@@ -56,7 +61,7 @@ const BASE_SCHEMA = validator(sync.Group, {
     userState: v.number().map(GroupUserStateUtils.fromNumber),
     notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRRIDE_SCHEMA,
     notificationSoundPolicyOverride: NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA,
-    profilePicture: v.unknown(), // TODO(WEBMD-633)
+    profilePicture: DeltaImage.SCHEMA,
     memberIdentities: Identities.SCHEMA,
     conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),
     conversationVisibility: v.number().map(ConversationVisibilityUtils.fromNumber),

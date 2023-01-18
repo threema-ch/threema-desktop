@@ -1,4 +1,5 @@
 import * as v from '@badrap/valita';
+import Long from 'long';
 
 import {ensureNonce} from '~/common/crypto';
 import {common} from '~/common/network/protobuf/js';
@@ -8,6 +9,7 @@ import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {
     dateToUnixTimestampMs,
+    intoU64,
     intoUnsignedLong,
     unixTimestampToDateMs,
 } from '~/common/utils/number';
@@ -24,9 +26,9 @@ const BASE_SCHEMA = {
     key: instanceOf(Uint8Array)
         .map((bytes) => (bytes.byteLength === 0 ? undefined : wrapRawBlobKey(bytes)))
         .optional(),
-    uploadedAt: v
-        .number()
-        .map((number) => (number === 0 ? undefined : unixTimestampToDateMs(number)))
+    uploadedAt: instanceOf(Long)
+        .map(intoU64)
+        .map((val) => (val === 0n ? undefined : unixTimestampToDateMs(val)))
         .optional(),
 };
 

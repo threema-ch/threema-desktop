@@ -18,7 +18,7 @@ import {
 } from '~/common/enum';
 import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
-import {Unit} from '~/common/network/protobuf/validate/common';
+import {DeltaImage, Unit} from '~/common/network/protobuf/validate/common';
 import {ensureFeatureMask, ensureIdentityString} from '~/common/network/types';
 import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
 import {instanceOf, nullOptional} from '~/common/utils/valita-helpers';
@@ -100,8 +100,8 @@ const BASE_SCHEMA = validator(sync.Contact, {
     typingIndicatorPolicyOverride: TYPING_INDICATOR_POILICY_OVERRIDE_SCHEMA,
     notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRRIDE_SCHEMA,
     notificationSoundPolicyOverride: NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA,
-    contactDefinedProfilePicture: v.unknown(), // TODO(WEBMD-633)
-    userDefinedProfilePicture: v.unknown(), // TODO(WEBMD-633)
+    contactDefinedProfilePicture: DeltaImage.SCHEMA,
+    userDefinedProfilePicture: DeltaImage.SCHEMA,
     conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),
     conversationVisibility: v.number().map(ConversationVisibilityUtils.fromNumber),
 });

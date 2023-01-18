@@ -322,7 +322,6 @@ export interface CspE2eTypeToMessageType {
 /**
  * A list of all types in {@link CspE2eType} that are reflected.
  *
- * Example: A contact "set profile picture" message is *not* reflected, so it is not a valid
- * subtype.
+ * Right now, this is identical to {@link CspE2eType} because we reflect all message types.
  */
-export type ReflectedE2eType = Exclude<CspE2eType, CspE2eContactControlType>;
+export type ReflectedE2eType = CspE2eType;

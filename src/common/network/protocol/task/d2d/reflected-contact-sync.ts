@@ -1,8 +1,12 @@
 import {ReceiverType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type Contact} from '~/common/model';
+import {type Contact, type ProfilePicture, type ProfilePictureSource} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
+import {common} from '~/common/network/protobuf/js';
+import {type DeltaImage} from '~/common/network/protobuf/validate/common';
+import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
+import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {
     type PassiveTask,
     type PassiveTaskCodecHandle,
@@ -14,6 +18,11 @@ import {isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {purgeUndefinedProperties} from '~/common/utils/object';
+
+type ProfilePictures = Pick<
+    protobuf.validate.sync.Contact.CreateType,
+    'contactDefinedProfilePicture' | 'userDefinedProfilePicture'
+>;
 
 export class ReflectedContactSyncTask implements PassiveTask<void> {
     public readonly type: PassiveTaskSymbol = PASSIVE_TASK;
@@ -76,7 +85,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                     return;
                 }
                 try {
-                    this._createContactFromD2dSync(validatedMessage.create.contact);
+                    await this._createContactFromD2dSync(validatedMessage.create.contact);
                 } catch (error) {
                     this._log.error(`Update to create contact: ${error}`);
                     return;
@@ -90,7 +99,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                     return;
                 }
                 try {
-                    this._updateContactFromD2dSync(contact, validatedMessage.update.contact);
+                    await this._updateContactFromD2dSync(contact, validatedMessage.update.contact);
                 } catch (error) {
                     this._log.error(`Update to update contact: ${error}`);
                     return;
@@ -117,8 +126,68 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         }
     }
 
-    private _createContactFromD2dSync(create: protobuf.validate.sync.Contact.CreateType): void {
-        this._services.model.contacts.add.fromSync({
+    private async _processProfilePicture(
+        profilePicture: LocalModelStore<ProfilePicture>,
+        deltaImage: DeltaImage.Type,
+        source: ProfilePictureSource,
+    ): Promise<void> {
+        // Handle updates
+        if (deltaImage.updated !== undefined) {
+            const image = deltaImage.updated;
+            if (image.type !== common.Image.Type.JPEG) {
+                this._log.error(`Received unknown profile picture type: ${image.type}`);
+                return;
+            }
+            const decryptedBlobBytes = await downloadAndDecryptBlob(
+                this._services,
+                this._log,
+                image.blob.id,
+                image.blob.key,
+                BLOB_FILE_NONCE,
+                'local',
+                'local',
+            );
+            profilePicture.get().controller.setPicture.fromSync(decryptedBlobBytes, source);
+        }
+
+        // Handle removal
+        if (deltaImage.removed !== undefined) {
+            profilePicture.get().controller.removePicture.fromSync(source);
+        }
+    }
+
+    private async _processProfilePictures(
+        createOrUpdate: ProfilePictures,
+        profilePicture: LocalModelStore<ProfilePicture>,
+    ): Promise<void> {
+        // Handle profile picture(s)
+        const promises = [];
+        if (createOrUpdate.contactDefinedProfilePicture !== undefined) {
+            promises.push(
+                this._processProfilePicture(
+                    profilePicture,
+                    createOrUpdate.contactDefinedProfilePicture,
+                    'contact-defined',
+                ),
+            );
+        }
+        if (createOrUpdate.userDefinedProfilePicture !== undefined) {
+            promises.push(
+                this._processProfilePicture(
+                    profilePicture,
+                    createOrUpdate.userDefinedProfilePicture,
+                    'user-defined',
+                ),
+            );
+        }
+        await Promise.all(promises);
+    }
+
+    private async _createContactFromD2dSync(
+        create: protobuf.validate.sync.Contact.CreateType,
+    ): Promise<void> {
+        // Create contact
+        const contact = this._services.model.contacts.add.fromSync({
             identity: create.identity,
             publicKey: create.publicKey,
             createdAt: create.createdAt,
@@ -145,13 +214,13 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             visibility: create.conversationVisibility,
         });
 
-        // TODO(WEBMD-231): Supply contact- and user-defined profile pictures
+        await this._processProfilePictures(create, contact.get().controller.profilePicture());
     }
 
-    private _updateContactFromD2dSync(
+    private async _updateContactFromD2dSync(
         contact: LocalModelStore<Contact>,
         update: protobuf.validate.sync.Contact.UpdateType,
-    ): void {
+    ): Promise<void> {
         const controller = contact.get().controller;
         controller.update.fromSync(
             purgeUndefinedProperties({
@@ -180,6 +249,6 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             });
         }
 
-        // TODO(WEBMD-231): Update contact- and user-defined profile pictures
+        await this._processProfilePictures(update, controller.profilePicture());
     }
 }

@@ -2,7 +2,7 @@ import * as v from '@badrap/valita';
 
 import {common} from '~/common/network/protobuf/js';
 import {type ProtobufInstanceOf, creator, validator} from '~/common/network/protobuf/utils';
-import {Blob} from '~/common/network/protobuf/validate/common';
+import * as Blob from '~/common/network/protobuf/validate/common/blob';
 
 /** Validates {@link common.Image} */
 export const SCHEMA = validator(

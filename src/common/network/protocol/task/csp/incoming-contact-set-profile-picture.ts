@@ -1,9 +1,8 @@
-import {type EncryptedData, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
-import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {type Contact, type ContactInit} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {
     type ActiveTaskCodecHandle,
@@ -35,8 +34,6 @@ export class IncomingContactSetProfilePictureTask
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
-        const {blob, crypto} = this._services;
-
         // This task will be called with "missingContactHandling: 'ignore'", so we can be sure that
         // the task will only be called if the sender contact already existed.
         assert(
@@ -48,37 +45,39 @@ export class IncomingContactSetProfilePictureTask
 
         this._log.debug(`Processing profile picture from ${senderIdentity}`);
 
-        // Download blob
-        // Note: Do not mark blob as done!
-        let result;
+        // Download and decrypt public blob
+        let decryptedBlobBytes;
         try {
-            result = await blob.download('public', this._message.pictureBlobId);
+            decryptedBlobBytes = await downloadAndDecryptBlob(
+                this._services,
+                this._log,
+                this._message.pictureBlobId,
+                this._message.key,
+                BLOB_FILE_NONCE,
+                'public',
+                'local',
+            );
         } catch (error) {
             this._log.warn(
-                `Could not download profile picture for contact ${senderIdentity}: ${extractErrorMessage(
+                `Could not download and decrypt profile picture for contact ${senderIdentity}: ${extractErrorMessage(
                     ensureError(error),
                     'short',
                 )}`,
             );
             return;
         }
-        const blobBytes = result.data;
-
-        // Decrypt blob bytes
-        const box = crypto.getSecretBox(this._message.key, NONCE_UNGUARDED_TOKEN);
-        const decrypted = box
-            .decryptorWithNonce(CREATE_BUFFER_TOKEN, BLOB_FILE_NONCE, blobBytes as EncryptedData)
-            .decrypt();
 
         // Store profile picture as contact-defined profile picture
         const profilePicture = senderContact.get().controller.profilePicture();
-        await profilePicture
-            .get()
-            .controller.setPicture.fromRemote(
-                handle,
-                {bytes: decrypted, blobId: this._message.pictureBlobId, blobKey: this._message.key},
-                'contact-defined',
-            );
+        await profilePicture.get().controller.setPicture.fromRemote(
+            handle,
+            {
+                bytes: decryptedBlobBytes,
+                blobId: this._message.pictureBlobId,
+                blobKey: this._message.key,
+            },
+            'contact-defined',
+        );
 
         this._log.info(`Updated profile picture for contact ${senderIdentity}`);
     }

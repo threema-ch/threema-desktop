@@ -1,6 +1,12 @@
+import {type EncryptedData, type Nonce, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TransferTag} from '~/common/enum';
-import {type BaseErrorOptions, BaseError} from '~/common/error';
+import {type BaseErrorOptions, BaseError, extractErrorMessage} from '~/common/error';
+import {type Logger} from '~/common/logging';
+import {type ServicesForTasks} from '~/common/network/protocol/task';
+import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
+import {ensureError} from '~/common/utils/assert';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
 /**
@@ -151,4 +157,43 @@ export class BlobBackendError extends BaseError {
     ) {
         super(message, options);
     }
+}
+
+/**
+ * Download the blob, decrypt its bytes and mark it as downloaded.
+ *
+ * @throws {BlobBackendError} if downloading the blob fails.
+ * @throws {CryptoError} if decryption fails.
+ */
+export async function downloadAndDecryptBlob(
+    services: Pick<ServicesForTasks, 'blob' | 'crypto'>,
+    log: Logger,
+    id: BlobId,
+    key: RawBlobKey,
+    nonce: Nonce,
+    downloadScope: BlobScope,
+    doneScope: BlobScope,
+): Promise<ReadonlyUint8Array> {
+    const {blob, crypto} = services;
+
+    // Download
+    const result = await blob.download(downloadScope, id);
+
+    // Decrypt blob bytes
+    const box = crypto.getSecretBox(key, NONCE_UNGUARDED_TOKEN);
+    const decrypted = box
+        .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, result.data as EncryptedData)
+        .decrypt();
+
+    // Mark as downloaded in the background
+    result
+        .done(doneScope)
+        .catch((error) =>
+            log.warn(
+                `Failed to mark blob as done: ${extractErrorMessage(ensureError(error), 'short')}`,
+            ),
+        );
+
+    // Return decrypted bytes
+    return decrypted;
 }

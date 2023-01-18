@@ -1,6 +1,7 @@
 import type * as v from '@badrap/valita';
 
 import {
+    CspE2eContactControlType,
     CspE2eConversationType,
     CspE2eForwardSecurityType,
     CspE2eGroupControlType,
@@ -173,6 +174,15 @@ export abstract class ReflectedMessageTaskBase<
                         container,
                     };
                 }
+
+                // Contact control messages
+                case CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE:
+                case CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE:
+                    // This is already covered by contact sync messages, nothing to do here
+                    return undefined;
+                case CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE:
+                    // TODO(WEBMD-590): Handle this
+                    return undefined;
 
                 // Group control messages
                 case CspE2eGroupControlType.GROUP_SETUP: {

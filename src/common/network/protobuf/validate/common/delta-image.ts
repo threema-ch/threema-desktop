@@ -3,7 +3,8 @@ import * as v from '@badrap/valita';
 import {UNIT_MESSAGE} from '~/common/network/protobuf';
 import {common} from '~/common/network/protobuf/js';
 import {type ProtobufInstanceOf, creator, validator} from '~/common/network/protobuf/utils';
-import {Image, Unit} from '~/common/network/protobuf/validate/common';
+import * as Image from '~/common/network/protobuf/validate/common/image';
+import * as Unit from '~/common/network/protobuf/validate/common/unit';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 
 /** Base schema for an {@link common.DeltaImage} oneof instance */
