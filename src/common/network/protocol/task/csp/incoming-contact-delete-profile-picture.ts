@@ -28,7 +28,6 @@ export class IncomingContactDeleteProfilePictureTask
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         // This task will be called with "missingContactHandling: 'ignore'", so we can be sure that
         // the task will only be called if the sender contact already existed.
@@ -43,7 +42,7 @@ export class IncomingContactDeleteProfilePictureTask
 
         // Delete contact-defined profile picture
         const profilePicture = senderContact.get().controller.profilePicture();
-        profilePicture.get().controller.setPicture(undefined, 'contact-defined');
+        await profilePicture.get().controller.removePicture.fromRemote(handle, 'contact-defined');
 
         this._log.info(`Deleted profile picture for contact ${senderIdentity}`);
     }

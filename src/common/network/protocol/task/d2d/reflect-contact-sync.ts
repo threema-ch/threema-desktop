@@ -1,7 +1,11 @@
-import {type TransactionScope} from '~/common/enum';
+import {type PlainData, NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
+import {type TransactionScope, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {type ContactInit, type ContactUpdate} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
+import {type BlobId} from '~/common/network/protocol/blob';
+import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {
     type ActiveTaskCodecHandle,
     type ComposableTask,
@@ -9,6 +13,7 @@ import {
     type TransactionRunning,
 } from '~/common/network/protocol/task';
 import {type IdentityString} from '~/common/network/types';
+import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
@@ -50,6 +55,22 @@ const DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE = protobuf.utils.creator(
     },
 );
 
+export type ProfilePictureUpdate =
+    | {
+          readonly source: TriggerSource.LOCAL;
+          readonly profilePictureUserDefined: ReadonlyUint8Array | undefined;
+      }
+    | {
+          readonly source: TriggerSource.REMOTE;
+          readonly profilePictureContactDefined:
+              | {
+                    readonly bytes: ReadonlyUint8Array;
+                    readonly blobId: BlobId;
+                    readonly blobKey: RawBlobKey;
+                }
+              | undefined;
+      };
+
 function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.ContactSync {
     return protobuf.utils.creator(protobuf.d2d.ContactSync, {
         create: protobuf.utils.creator(protobuf.d2d.ContactSync.Create, {
@@ -71,11 +92,13 @@ function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.ContactSync {
                 typingIndicatorPolicyOverride: DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE,
                 notificationTriggerPolicyOverride: DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE,
                 notificationSoundPolicyOverride: DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE,
-                // TODO(WEBMD-193): Set contact- and user-defined profile pictures
-                contactDefinedProfilePicture: undefined,
-                userDefinedProfilePicture: undefined,
                 conversationCategory: init.category,
                 conversationVisibility: init.visibility,
+
+                // Note: Profile pictures are currently synced through a separate update, since
+                // they're not part of the {@link ContactInit}.
+                contactDefinedProfilePicture: undefined,
+                userDefinedProfilePicture: undefined,
             }),
         }),
         update: undefined,
@@ -83,7 +106,7 @@ function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.ContactSync {
     });
 }
 
-function getD2dContactSyncUpdate(
+function getD2dContactSyncUpdateData(
     identity: IdentityString,
     contact: ContactUpdate,
 ): protobuf.d2d.ContactSync {
@@ -162,9 +185,126 @@ function getD2dContactSyncUpdate(
                 typingIndicatorPolicyOverride,
                 notificationTriggerPolicyOverride,
                 notificationSoundPolicyOverride,
-                // TODO(WEBMD-193): Set contact- and user-defined profile pictures
+                conversationCategory: undefined,
+                conversationVisibility: undefined,
+
+                // Note: Profile pictures are currently synced through a separate update, since
+                // they're not part of the {@link ContactUpdate}.
                 contactDefinedProfilePicture: undefined,
                 userDefinedProfilePicture: undefined,
+            }),
+        }),
+        delete: undefined,
+    });
+}
+
+async function getD2dContactSyncUpdateProfilePicture(
+    identity: IdentityString,
+    profilePicture: ProfilePictureUpdate,
+    services: Pick<ServicesForTasks, 'blob' | 'crypto'>,
+): Promise<protobuf.d2d.ContactSync> {
+    const {blob, crypto} = services;
+
+    // Prepare profile pictures
+    let userDefinedProfilePicture;
+    let contactDefinedProfilePicture;
+    switch (profilePicture.source) {
+        case TriggerSource.LOCAL:
+            if (profilePicture.profilePictureUserDefined === undefined) {
+                // Sync user-defined profile picture removal
+                userDefinedProfilePicture = protobuf.utils.creator(protobuf.common.DeltaImage, {
+                    removed: protobuf.UNIT_MESSAGE,
+                    updated: undefined,
+                });
+            } else {
+                // Encrypt profile picture bytes
+                const randomKey = wrapRawBlobKey(
+                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                );
+                const box = crypto.getSecretBox(randomKey, NONCE_UNGUARDED_TOKEN);
+                const encryptedBytes = box
+                    .encryptor(
+                        CREATE_BUFFER_TOKEN,
+                        profilePicture.profilePictureUserDefined as PlainData,
+                    )
+                    .encryptWithNonce(BLOB_FILE_NONCE);
+
+                // Upload encrypted data
+                const blobId = await blob.upload('local', encryptedBytes);
+
+                // Sync user-defined profile picture update
+                userDefinedProfilePicture = protobuf.utils.creator(protobuf.common.DeltaImage, {
+                    removed: undefined,
+                    updated: protobuf.utils.creator(protobuf.common.Image, {
+                        type: protobuf.common.Image.Type.JPEG,
+                        blob: protobuf.utils.creator(protobuf.common.Blob, {
+                            id: blobId as ReadonlyUint8Array as Uint8Array,
+                            nonce: undefined, // Obvious from context, may be omitted
+                            key: randomKey.unwrap() as Uint8Array,
+                            uploadedAt: undefined, // Only relevant for own profile picture
+                        }),
+                    }),
+                });
+
+                // Note: Normally we'd purge the secret key (`randomKey`) after using it, but since
+                //       we're returning a reference to the raw key bytes as part of the protobuf
+                //       message, we cannot do that without also overwriting the bytes that will be
+                //       reflected.
+            }
+            break;
+        case TriggerSource.REMOTE:
+            if (profilePicture.profilePictureContactDefined === undefined) {
+                // Sync contact-defined profile picture removal
+                contactDefinedProfilePicture = protobuf.utils.creator(protobuf.common.DeltaImage, {
+                    removed: protobuf.UNIT_MESSAGE,
+                    updated: undefined,
+                });
+            } else {
+                // Sync contact-defined profile picture update
+                contactDefinedProfilePicture = protobuf.utils.creator(protobuf.common.DeltaImage, {
+                    removed: undefined,
+                    updated: protobuf.utils.creator(protobuf.common.Image, {
+                        type: protobuf.common.Image.Type.JPEG,
+                        blob: protobuf.utils.creator(protobuf.common.Blob, {
+                            id: profilePicture.profilePictureContactDefined
+                                .blobId as ReadonlyUint8Array as Uint8Array,
+                            nonce: undefined, // Obvious from context, may be omitted
+                            key: profilePicture.profilePictureContactDefined.blobKey.unwrap() as Uint8Array,
+                            uploadedAt: undefined, // Unknown, only relevant for own profile picture
+                        }),
+                    }),
+                });
+            }
+            break;
+        default:
+            unreachable(profilePicture);
+    }
+
+    return protobuf.utils.creator(protobuf.d2d.ContactSync, {
+        create: undefined,
+        update: protobuf.utils.creator(protobuf.d2d.ContactSync.Update, {
+            contact: protobuf.utils.creator(protobuf.sync.Contact, {
+                identity,
+                contactDefinedProfilePicture,
+                userDefinedProfilePicture,
+
+                // Other properties remain unchanged
+                publicKey: undefined,
+                createdAt: undefined,
+                firstName: undefined,
+                lastName: undefined,
+                nickname: undefined,
+                verificationLevel: undefined,
+                workVerificationLevel: undefined,
+                identityType: undefined,
+                acquaintanceLevel: undefined,
+                activityState: undefined,
+                featureMask: undefined,
+                syncState: undefined,
+                readReceiptPolicyOverride: undefined,
+                typingIndicatorPolicyOverride: undefined,
+                notificationTriggerPolicyOverride: undefined,
+                notificationSoundPolicyOverride: undefined,
                 conversationCategory: undefined,
                 conversationVisibility: undefined,
             }),
@@ -183,10 +323,29 @@ function getD2dContactSyncDelete(identity: IdentityString): protobuf.d2d.Contact
     });
 }
 
+export interface ContactSyncCreate {
+    readonly type: 'create';
+    readonly contact: ContactInit;
+}
+export interface ContactSyncUpdateData {
+    readonly type: 'update-contact-data';
+    readonly identity: IdentityString;
+    readonly contact: ContactUpdate;
+}
+export interface ContactSyncUpdateProfilePicture {
+    readonly type: 'update-profile-picture';
+    readonly identity: IdentityString;
+    readonly profilePicture: ProfilePictureUpdate;
+}
+export interface ContactSyncDelete {
+    readonly type: 'delete';
+    readonly identity: IdentityString;
+}
 export type ContactSyncVariant =
-    | {readonly type: 'create'; readonly contact: ContactInit}
-    | {readonly type: 'update'; readonly identity: IdentityString; readonly contact: ContactUpdate}
-    | {readonly type: 'delete'; readonly identity: IdentityString};
+    | ContactSyncCreate
+    | ContactSyncUpdateData
+    | ContactSyncUpdateProfilePicture
+    | ContactSyncDelete;
 
 /**
  * Reflect contact create/update/delete to other devices in the device group.
@@ -199,12 +358,12 @@ export class ReflectContactSyncTask
     private readonly _log: Logger;
 
     public constructor(
-        services: ServicesForTasks,
+        private readonly _services: ServicesForTasks,
         transaction: TransactionRunning<TransactionScope.CONTACT_SYNC>, // Ensures transaction is running
         private readonly _variant: ContactSyncVariant,
     ) {
         const identity = _variant.type === 'create' ? _variant.contact.identity : _variant.identity;
-        this._log = services.logging.logger(
+        this._log = _services.logging.logger(
             `network.protocol.task.reflect-contact-sync.${identity}`,
         );
     }
@@ -218,8 +377,15 @@ export class ReflectContactSyncTask
             case 'create':
                 contactSync = getD2dContactSyncCreate(variant.contact);
                 break;
-            case 'update':
-                contactSync = getD2dContactSyncUpdate(variant.identity, variant.contact);
+            case 'update-contact-data':
+                contactSync = getD2dContactSyncUpdateData(variant.identity, variant.contact);
+                break;
+            case 'update-profile-picture':
+                contactSync = await getD2dContactSyncUpdateProfilePicture(
+                    variant.identity,
+                    variant.profilePicture,
+                    this._services,
+                );
                 break;
             case 'delete':
                 contactSync = getD2dContactSyncDelete(variant.identity);

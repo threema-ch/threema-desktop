@@ -301,10 +301,28 @@ export type ProfilePictureSource =
     | 'admin-defined';
 export type ProfilePictureController = {
     readonly meta: ModelLifetimeGuard<ProfilePictureView>;
-    readonly setPicture: (
-        bytes: ReadonlyUint8Array | undefined,
-        source: ProfilePictureSource,
-    ) => void;
+
+    /**
+     * Update the profile picture from a certain picture `source`.
+     */
+    readonly setPicture: ControllerCustomUpdateFromSource<
+        [profilePicture: ReadonlyUint8Array, source: ProfilePictureSource], // Local
+        [profilePicture: ReadonlyUint8Array, source: ProfilePictureSource], // Sync
+        [
+            // Remote
+            profilePicture: {
+                readonly bytes: ReadonlyUint8Array;
+                readonly blobId: BlobId;
+                readonly blobKey: RawBlobKey;
+            },
+            source: ProfilePictureSource,
+        ]
+    >;
+
+    /**
+     * Remove the profile picture from a certain picture `source`.
+     */
+    readonly removePicture: ControllerUpdateFromSource<[source: ProfilePictureSource]>;
 } & ProxyMarked;
 export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureController>;
 
@@ -549,7 +567,7 @@ export type GroupUpdateFromLocal = Pick<
 export type GroupUpdateFromToSync = Pick<
     GroupUpdate,
     'notificationTriggerPolicyOverride' | 'notificationSoundPolicyOverride'
->;
+> & {profilePictureAdminDefined?: ReadonlyUint8Array};
 
 export type GroupController = ReceiverController & {
     readonly meta: ModelLifetimeGuard<GroupView>;

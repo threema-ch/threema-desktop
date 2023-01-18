@@ -1,9 +1,10 @@
-import {type EncryptedData, ensureNonce, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {type EncryptedData, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {type Contact, type ContactInit} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {
     type ActiveTaskCodecHandle,
     type ComposableTask,
@@ -12,15 +13,6 @@ import {
 import {type SetProfilePicture} from '~/common/network/structbuf/validate/csp/e2e';
 import {type MessageId} from '~/common/network/types';
 import {assert, ensureError} from '~/common/utils/assert';
-
-const NONCE = ensureNonce(
-    // prettier-ignore
-    new Uint8Array([
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 1,
-    ]),
-);
 
 /**
  * Receive and process incoming contact set profile picture messages.
@@ -75,12 +67,18 @@ export class IncomingContactSetProfilePictureTask
         // Decrypt blob bytes
         const box = crypto.getSecretBox(this._message.key, NONCE_UNGUARDED_TOKEN);
         const decrypted = box
-            .decryptorWithNonce(CREATE_BUFFER_TOKEN, NONCE, blobBytes as EncryptedData)
+            .decryptorWithNonce(CREATE_BUFFER_TOKEN, BLOB_FILE_NONCE, blobBytes as EncryptedData)
             .decrypt();
 
         // Store profile picture as contact-defined profile picture
         const profilePicture = senderContact.get().controller.profilePicture();
-        profilePicture.get().controller.setPicture(decrypted, 'contact-defined');
+        await profilePicture
+            .get()
+            .controller.setPicture.fromRemote(
+                handle,
+                {bytes: decrypted, blobId: this._message.pictureBlobId, blobKey: this._message.key},
+                'contact-defined',
+            );
 
         this._log.info(`Updated profile picture for contact ${senderIdentity}`);
     }

@@ -244,18 +244,18 @@ export class ContactModelController implements ContactController {
 
     public readonly update: ContactController['update'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
-
         fromLocal: async (change: ContactUpdate) => {
-            this._log.debug('ContactModelController: Add from local');
+            this._log.debug('ContactModelController: Update from local');
             return await this._updateAsync({source: TriggerSource.LOCAL}, change);
         },
-
         fromRemote: async (handle, change: ContactUpdate) => {
             this._log.debug('ContactModelController: Update from remote');
             return await this._updateAsync({source: TriggerSource.REMOTE, handle}, change);
         },
-
-        fromSync: (change: ContactUpdate) => this._update(change),
+        fromSync: (change: ContactUpdate) => {
+            this._log.debug('ContactModelController: Update from sync');
+            this._update(change);
+        },
     };
 
     public readonly remove: ContactController['remove'] = {
@@ -377,7 +377,7 @@ export class ContactModelController implements ContactController {
 
             // Reflect contact to other devices inside a transaction
             const syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {
-                type: 'update',
+                type: 'update-contact-data',
                 identity: this._identity,
                 contact: change,
             });

@@ -248,6 +248,7 @@ interface ContactControlMessageInstructions extends BaseProcessingInstructions {
     readonly messageCategory: 'contact-control';
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'discard';
+    readonly reflectFragment: D2dIncomingMessageFragment;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -952,7 +953,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     messageCategory: 'contact-control',
                     deliveryReceipt: false,
                     missingContactHandling: 'discard',
-                    reflectFragment: undefined, // TODO(WEBMD-231)
+                    reflectFragment: getD2dIncomingMessage(
+                        this._id,
+                        senderIdentity,
+                        reflectFragmentFor(maybeCspE2eType),
+                    ),
                     task: new IncomingContactSetProfilePictureTask(
                         this._services,
                         messageId,
@@ -967,7 +972,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     messageCategory: 'contact-control',
                     deliveryReceipt: false,
                     missingContactHandling: 'discard',
-                    reflectFragment: undefined, // TODO(WEBMD-231)
+                    reflectFragment: getD2dIncomingMessage(
+                        this._id,
+                        senderIdentity,
+                        reflectFragmentFor(maybeCspE2eType),
+                    ),
                     task: new IncomingContactDeleteProfilePictureTask(
                         this._services,
                         messageId,

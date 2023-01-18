@@ -145,7 +145,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             visibility: create.conversationVisibility,
         });
 
-        // TODO(WEBMD-193): Supply contact- and user-defined profile pictures
+        // TODO(WEBMD-231): Supply contact- and user-defined profile pictures
     }
 
     private _updateContactFromD2dSync(
@@ -180,6 +180,6 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             });
         }
 
-        // TODO(WEBMD-193): Update contact- and user-defined profile pictures
+        // TODO(WEBMD-231): Update contact- and user-defined profile pictures
     }
 }

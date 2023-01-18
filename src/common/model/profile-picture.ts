@@ -6,7 +6,7 @@ import {
     type DbReceiverLookup,
     type DbUpdate,
 } from '~/common/db';
-import {ReceiverType} from '~/common/enum';
+import {ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
     type ProfilePicture,
@@ -17,10 +17,17 @@ import {
 } from '~/common/model';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type ReadonlyUint8Array} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {type BlobId} from '~/common/network/protocol/blob';
+import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import {type ProfilePictureUpdate} from '~/common/network/protocol/task/d2d/reflect-contact-sync';
+import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
+import {type RawBlobKey} from '~/common/network/types/keys';
+import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
+import {SequenceNumberU53} from '~/common/utils/sequence-number';
 
 /**
  * Return the appropriate profile picture for this contact.
@@ -103,7 +110,142 @@ export class ProfilePictureModelController implements ProfilePictureController {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<ProfilePictureView>();
 
+    /** @inheritdoc */
+    public readonly setPicture: ProfilePictureController['setPicture'] = {
+        [TRANSFER_MARKER]: PROXY_HANDLER,
+
+        fromLocal: async (profilePicture: ReadonlyUint8Array, source: ProfilePictureSource) => {
+            this._log.debug(`ProfilePictureModelController: Set ${source} picture from local`);
+            switch (this._receiver.type) {
+                case ReceiverType.CONTACT:
+                    assert(
+                        source === 'user-defined',
+                        `${source} profile picture cannot be set with fromLocal`,
+                    );
+                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
+                        triggerSource: TriggerSource.LOCAL,
+                        pictureSource: source,
+                        profilePicture,
+                    });
+                case ReceiverType.GROUP:
+                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                case ReceiverType.DISTRIBUTION_LIST:
+                    throw new Error(
+                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                    );
+                default:
+                    return unreachable(this._receiver);
+            }
+        },
+
+        fromRemote: async (
+            handle,
+            profilePicture: {
+                readonly bytes: ReadonlyUint8Array;
+                readonly blobId: BlobId;
+                readonly blobKey: RawBlobKey;
+            },
+            source: ProfilePictureSource,
+        ) => {
+            this._log.debug(`ProfilePictureModelController: Set ${source} picture from remote`);
+            switch (this._receiver.type) {
+                case ReceiverType.CONTACT:
+                    assert(
+                        source === 'contact-defined',
+                        `${source} profile picture cannot be set with fromRemote`,
+                    );
+                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
+                        triggerSource: TriggerSource.REMOTE,
+                        pictureSource: source,
+                        handle,
+                        profilePicture,
+                    });
+                case ReceiverType.GROUP:
+                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                case ReceiverType.DISTRIBUTION_LIST:
+                    throw new Error(
+                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                    );
+                default:
+                    return unreachable(this._receiver);
+            }
+        },
+
+        fromSync: (profilePicture: ReadonlyUint8Array, source: ProfilePictureSource) => {
+            // Note: Profile pictures from gateway aren't reflected, because these are being
+            // independently fetched from the web API by every client. Thus, "fromSync" is the
+            // proper call for such updates.
+            this._log.debug(`ProfilePictureModelController: Set ${source} picture from sync`);
+            this._persistProfilePicture(profilePicture, source);
+        },
+    };
+
+    /** @inheritdoc */
+    public readonly removePicture: ProfilePictureController['removePicture'] = {
+        [TRANSFER_MARKER]: PROXY_HANDLER,
+
+        fromLocal: async (source: ProfilePictureSource) => {
+            this._log.debug(`ProfilePictureModelController: Remove ${source} picture from local`);
+            switch (this._receiver.type) {
+                case ReceiverType.CONTACT:
+                    assert(
+                        source === 'user-defined',
+                        `${source} profile picture cannot be removed with fromLocal`,
+                    );
+                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
+                        triggerSource: TriggerSource.LOCAL,
+                        pictureSource: source,
+                        profilePicture: undefined,
+                    });
+                case ReceiverType.GROUP:
+                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                case ReceiverType.DISTRIBUTION_LIST:
+                    throw new Error(
+                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                    );
+                default:
+                    return unreachable(this._receiver);
+            }
+        },
+
+        fromRemote: async (handle, source: ProfilePictureSource) => {
+            this._log.debug(`ProfilePictureModelController: Remove ${source} picture from remote`);
+            switch (this._receiver.type) {
+                case ReceiverType.CONTACT:
+                    assert(
+                        source === 'contact-defined',
+                        `${source} profile picture cannot be removed with fromRemote`,
+                    );
+                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
+                        triggerSource: TriggerSource.REMOTE,
+                        pictureSource: source,
+                        handle,
+                        profilePicture: undefined,
+                    });
+                case ReceiverType.GROUP:
+                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                case ReceiverType.DISTRIBUTION_LIST:
+                    throw new Error(
+                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                    );
+                default:
+                    return unreachable(this._receiver);
+            }
+        },
+
+        fromSync: (source: ProfilePictureSource) => {
+            this._log.debug(`ProfilePictureModelController: Remove ${source} picture from sync`);
+            this._persistProfilePicture(undefined, source);
+        },
+    };
+
+    private readonly _lock = new AsyncLock();
     private readonly _log: Logger;
+
+    /**
+     * A version counter that should be incremented for every profile picture update.
+     */
+    private readonly _version = new SequenceNumberU53<u53>(0);
 
     public constructor(
         private readonly _services: ServicesForModel,
@@ -131,9 +273,12 @@ export class ProfilePictureModelController implements ProfilePictureController {
     }
 
     /**
-     * Update the profile picture from a certain `source`.
+     * Persist the profile picture change.
      */
-    public setPicture(bytes: ReadonlyUint8Array | undefined, source: ProfilePictureSource): void {
+    private _persistProfilePicture(
+        bytes: ReadonlyUint8Array | undefined,
+        source: ProfilePictureSource,
+    ): void {
         this.meta.update((view) => {
             // Update database
             switch (this._receiver.type) {
@@ -176,9 +321,116 @@ export class ProfilePictureModelController implements ProfilePictureController {
                     unreachable(this._receiver);
             }
 
+            // Increment version
+            this._version.next();
+
             // Update view
             this._log.debug(`Updated ${source} profile picture`);
             return {...view, picture: this._loadProfilePicture()};
+        });
+    }
+
+    /**
+     * Reflect contact profile picture, then persist the change.
+     */
+    private async _reflectAndPersistContactProfilePicture(
+        contactUid: DbContactUid,
+        update:
+            | {
+                  readonly triggerSource: TriggerSource.LOCAL;
+                  readonly pictureSource: 'user-defined';
+                  readonly profilePicture: ReadonlyUint8Array | undefined;
+              }
+            | {
+                  readonly triggerSource: TriggerSource.REMOTE;
+                  readonly pictureSource: 'contact-defined';
+                  readonly handle: ActiveTaskCodecHandle<'volatile'>;
+                  readonly profilePicture:
+                      | {
+                            readonly bytes: ReadonlyUint8Array;
+                            readonly blobId: BlobId;
+                            readonly blobKey: RawBlobKey;
+                        }
+                      | undefined;
+              },
+    ): Promise<void> {
+        const {db, taskManager} = this._services;
+
+        await this._lock.with(async () => {
+            // Precondition: The profile picture was not updated in the meantime
+            const currentVersion = this._version.current;
+            const precondition = (): boolean =>
+                this.meta.active && this._version.current === currentVersion;
+
+            // Look up contact
+            // TODO(WEBMD-231): Should we pass in receiver information, instead of fetching it from DB?
+            const contact = unwrap(
+                db.getContactByUid(contactUid),
+                `Contact with UID ${this._receiver.uid} not found in database`,
+            );
+
+            // Reflect contact update to other devices inside a transaction
+            let profilePicture: ProfilePictureUpdate;
+            switch (update.triggerSource) {
+                case TriggerSource.LOCAL:
+                    profilePicture = {
+                        source: TriggerSource.LOCAL,
+                        profilePictureUserDefined: update.profilePicture,
+                    };
+                    break;
+                case TriggerSource.REMOTE:
+                    profilePicture = {
+                        source: TriggerSource.REMOTE,
+                        profilePictureContactDefined:
+                            update.profilePicture === undefined
+                                ? undefined
+                                : {
+                                      bytes: update.profilePicture.bytes,
+                                      blobId: update.profilePicture.blobId,
+                                      blobKey: update.profilePicture.blobKey,
+                                  },
+                    };
+                    break;
+                default:
+                    unreachable(update);
+            }
+            const syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {
+                type: 'update-profile-picture',
+                identity: contact.identity,
+                profilePicture,
+            });
+
+            let result;
+            switch (update.triggerSource) {
+                case TriggerSource.LOCAL:
+                    result = await taskManager.schedule(syncTask);
+                    break;
+                case TriggerSource.REMOTE:
+                    result = await syncTask.run(update.handle);
+                    break;
+                default:
+                    unreachable(update);
+            }
+
+            // Commit update if the transaction succeeded
+            switch (result) {
+                case 'success':
+                    // Update locally
+                    this._persistProfilePicture(
+                        update.triggerSource === TriggerSource.LOCAL
+                            ? update.profilePicture
+                            : update.profilePicture?.bytes,
+                        update.pictureSource,
+                    );
+                    break;
+                case 'aborted':
+                    // Synchronization conflict
+                    throw new Error(
+                        'Failed to update profile picture due to synchronization conflict',
+                    );
+                default:
+                    unreachable(result);
+            }
         });
     }
 

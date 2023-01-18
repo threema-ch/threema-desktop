@@ -26,6 +26,7 @@ import {
     CspPayloadType,
     D2mPayloadType,
 } from '~/common/network/protocol';
+import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
 import {type CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     type ActiveTaskCodecHandle,
@@ -33,7 +34,6 @@ import {
     type InternalActiveTaskCodecHandle,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/task/constants';
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import * as structbuf from '~/common/network/structbuf';
 import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
