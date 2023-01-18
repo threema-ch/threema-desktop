@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-namespace */
 import * as v from '@badrap/valita';
 import Long from 'long';
 
