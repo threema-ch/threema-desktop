@@ -611,12 +611,12 @@ export namespace CspE2eStatusUpdateTypeUtils {
     }
 }
 export namespace CspE2eContactControlType {
-    export const CONTACT_SET_PROFILE_IMAGE = 24;
-    export type CONTACT_SET_PROFILE_IMAGE = typeof CONTACT_SET_PROFILE_IMAGE;
-    export const CONTACT_DELETE_PROFILE_IMAGE = 25;
-    export type CONTACT_DELETE_PROFILE_IMAGE = typeof CONTACT_DELETE_PROFILE_IMAGE;
-    export const CONTACT_REQUEST_PROFILE_IMAGE = 26;
-    export type CONTACT_REQUEST_PROFILE_IMAGE = typeof CONTACT_REQUEST_PROFILE_IMAGE;
+    export const CONTACT_SET_PROFILE_PICTURE = 24;
+    export type CONTACT_SET_PROFILE_PICTURE = typeof CONTACT_SET_PROFILE_PICTURE;
+    export const CONTACT_DELETE_PROFILE_PICTURE = 25;
+    export type CONTACT_DELETE_PROFILE_PICTURE = typeof CONTACT_DELETE_PROFILE_PICTURE;
+    export const CONTACT_REQUEST_PROFILE_PICTURE = 26;
+    export type CONTACT_REQUEST_PROFILE_PICTURE = typeof CONTACT_REQUEST_PROFILE_PICTURE;
 }
 /**
  * E2EE contact control type.
@@ -627,9 +627,10 @@ export type CspE2eContactControlType =
     typeof CspE2eContactControlType[keyof typeof CspE2eContactControlType];
 export namespace CspE2eContactControlTypeUtils {
     export const NAME_OF = {
-        [CspE2eContactControlType.CONTACT_SET_PROFILE_IMAGE]: 'CONTACT_SET_PROFILE_IMAGE',
-        [CspE2eContactControlType.CONTACT_DELETE_PROFILE_IMAGE]: 'CONTACT_DELETE_PROFILE_IMAGE',
-        [CspE2eContactControlType.CONTACT_REQUEST_PROFILE_IMAGE]: 'CONTACT_REQUEST_PROFILE_IMAGE',
+        [CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE]: 'CONTACT_SET_PROFILE_PICTURE',
+        [CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE]: 'CONTACT_DELETE_PROFILE_PICTURE',
+        [CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE]:
+            'CONTACT_REQUEST_PROFILE_PICTURE',
     } as const;
     export function nameOf<T extends u53>(value: T): string | undefined {
         return (NAME_OF as Record<u53, string | undefined>)[value];
@@ -642,10 +643,10 @@ export namespace CspE2eGroupControlType {
     export type GROUP_NAME = typeof GROUP_NAME;
     export const GROUP_LEAVE = 76;
     export type GROUP_LEAVE = typeof GROUP_LEAVE;
-    export const GROUP_SET_PROFILE_IMAGE = 80;
-    export type GROUP_SET_PROFILE_IMAGE = typeof GROUP_SET_PROFILE_IMAGE;
-    export const GROUP_DELETE_PROFILE_IMAGE = 84;
-    export type GROUP_DELETE_PROFILE_IMAGE = typeof GROUP_DELETE_PROFILE_IMAGE;
+    export const GROUP_SET_PROFILE_PICTURE = 80;
+    export type GROUP_SET_PROFILE_PICTURE = typeof GROUP_SET_PROFILE_PICTURE;
+    export const GROUP_DELETE_PROFILE_PICTURE = 84;
+    export type GROUP_DELETE_PROFILE_PICTURE = typeof GROUP_DELETE_PROFILE_PICTURE;
     export const GROUP_REQUEST_SYNC = 81;
     export type GROUP_REQUEST_SYNC = typeof GROUP_REQUEST_SYNC;
     export const GROUP_CALL_START = 79;
@@ -663,8 +664,8 @@ export namespace CspE2eGroupControlTypeUtils {
         CspE2eGroupControlType.GROUP_SETUP,
         CspE2eGroupControlType.GROUP_NAME,
         CspE2eGroupControlType.GROUP_LEAVE,
-        CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE,
-        CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE,
+        CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
+        CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
         CspE2eGroupControlType.GROUP_REQUEST_SYNC,
         CspE2eGroupControlType.GROUP_CALL_START,
     ] as const);
@@ -690,8 +691,8 @@ export namespace CspE2eGroupControlTypeUtils {
         [CspE2eGroupControlType.GROUP_SETUP]: 'GROUP_SETUP',
         [CspE2eGroupControlType.GROUP_NAME]: 'GROUP_NAME',
         [CspE2eGroupControlType.GROUP_LEAVE]: 'GROUP_LEAVE',
-        [CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE]: 'GROUP_SET_PROFILE_IMAGE',
-        [CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE]: 'GROUP_DELETE_PROFILE_IMAGE',
+        [CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE]: 'GROUP_SET_PROFILE_PICTURE',
+        [CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE]: 'GROUP_DELETE_PROFILE_PICTURE',
         [CspE2eGroupControlType.GROUP_REQUEST_SYNC]: 'GROUP_REQUEST_SYNC',
         [CspE2eGroupControlType.GROUP_CALL_START]: 'GROUP_CALL_START',
     } as const;

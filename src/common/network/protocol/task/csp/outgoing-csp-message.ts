@@ -74,9 +74,9 @@ export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eTy
 const NO_REFLECT = [
     CspE2eConversationType.CALL_ICE_CANDIDATE,
     CspE2eStatusUpdateType.TYPING_INDICATOR,
-    CspE2eContactControlType.CONTACT_SET_PROFILE_IMAGE,
-    CspE2eContactControlType.CONTACT_DELETE_PROFILE_IMAGE,
-    CspE2eContactControlType.CONTACT_REQUEST_PROFILE_IMAGE,
+    CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
+    CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE,
+    CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE,
     CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
 ];
 

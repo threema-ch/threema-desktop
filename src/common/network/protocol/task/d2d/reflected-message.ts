@@ -219,8 +219,8 @@ export abstract class ReflectedMessageTaskBase<
                         container,
                     };
                 }
-                case CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE:
-                case CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE:
+                case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE:
+                case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE:
                     // TODO(WEBMD-561): Implement
                     return undefined;
                 case CspE2eGroupControlType.GROUP_REQUEST_SYNC: {

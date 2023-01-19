@@ -824,8 +824,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             d2dMessageType:
                 | CspE2eGroupConversationType
                 | CspE2eGroupStatusUpdateType
-                | CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE
-                | CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE,
+                | CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE
+                | CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
             creatorIdentity: IdentityString,
         ): UnhandledMessageInstructions {
             const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
@@ -945,7 +945,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
 
             // Contact control messages
-            case CspE2eContactControlType.CONTACT_SET_PROFILE_IMAGE: {
+            case CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE: {
                 const validatedSetProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
                     structbuf.csp.e2e.SetProfilePicture.decode(cspMessageBody as Uint8Array),
                 );
@@ -967,7 +967,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
-            case CspE2eContactControlType.CONTACT_DELETE_PROFILE_IMAGE: {
+            case CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE: {
                 const instructions: ContactControlMessageInstructions = {
                     messageCategory: 'contact-control',
                     deliveryReceipt: false,
@@ -985,7 +985,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
-            case CspE2eContactControlType.CONTACT_REQUEST_PROFILE_IMAGE:
+            case CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE:
                 // TODO(WEBMD-590): Implement
                 return 'discard';
 
@@ -1179,9 +1179,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(WEBMD-594)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupControlType.GROUP_SET_PROFILE_IMAGE: // TODO(WEBMD-561)
+            case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: // TODO(WEBMD-561)
                 return unhandledGroupCreatorMessage(maybeCspE2eType, senderIdentity);
-            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_IMAGE: // TODO(WEBMD-561)
+            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: // TODO(WEBMD-561)
                 return unhandledGroupCreatorMessage(maybeCspE2eType, senderIdentity);
 
             default:
