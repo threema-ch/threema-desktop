@@ -29,12 +29,10 @@ export class SafeGroupImporter {
      * Import all groups in a {@link SafeBackupData} and save them to the database.
      */
     public importFrom(backupData: SafeBackupData): void {
-        if (backupData.groups.length < 1) {
-            this._log.debug('No groups to import from backup');
-            return;
-        }
         this._log.info(`Importing ${backupData.groups.length} groups from backup`);
-        this._importGroups(backupData.groups);
+        if (backupData.groups.length > 0) {
+            this._importGroups(backupData.groups);
+        }
     }
 
     private _importGroups(groups: readonly SafeGroup[]): void {

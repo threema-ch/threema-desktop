@@ -44,12 +44,10 @@ export class SafeContactImporter {
      * @param backupData where the contacts will be imported from.
      */
     public async importFrom(backupData: SafeBackupData): Promise<void> {
-        if (backupData.contacts.length < 1) {
-            this._log.debug('No contacts to import from backup');
-            return;
-        }
         this._log.info(`Importing ${backupData.contacts.length} contacts from backup`);
-        await this._importContacts(backupData.contacts);
+        if (backupData.contacts.length > 0) {
+            await this._importContacts(backupData.contacts);
+        }
     }
 
     private async _importContacts(contacts: readonly SafeContact[]): Promise<void> {
