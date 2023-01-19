@@ -18,7 +18,7 @@ import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/he
 import {type IdentityString, ensureIdentityString} from '~/common/network/types';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
-import {u8aToBase64} from '~/common/utils/base64';
+import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
@@ -61,7 +61,7 @@ const SAFE_USER_SCHEMA = v
         privatekey: v.string(),
         temporaryDeviceGroupKeyTodoRemove: v.string().optional(),
         nickname: v.string().optional(),
-        profilePic: v.string().optional(),
+        profilePic: v.string().map<ReadonlyUint8Array>(base64ToU8a).optional(),
         profilePicRelease: v
             .array(v.union(v.string(), v.null()))
             .optional()

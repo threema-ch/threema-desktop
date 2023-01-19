@@ -918,8 +918,6 @@ async function bootstrapFromBackup(
     identity: IdentityString,
     backupData: SafeBackupData,
 ): Promise<void> {
-    const log = services.logging.logger('backend.bootstrap');
-
     // Profile settings: Nickname and profile picture
     const profile: Mutable<ProfileSettingsView> = {
         publicNickname: ensurePublicNickname(identity as string),
@@ -928,13 +926,7 @@ async function bootstrapFromBackup(
     if (isPublicNickname(backupData.user.nickname)) {
         profile.publicNickname = backupData.user.nickname;
     }
-    if (backupData.user.profilePic !== undefined) {
-        try {
-            profile.profilePicture = base64ToU8a(backupData.user.profilePic);
-        } catch (error) {
-            log.warn(`Restoring user profile picture failed: ${error}`);
-        }
-    }
+    profile.profilePicture = backupData.user.profilePic;
     if (backupData.user.profilePicRelease !== undefined) {
         profile.profilePictureShareWith = backupData.user.profilePicRelease;
     }
