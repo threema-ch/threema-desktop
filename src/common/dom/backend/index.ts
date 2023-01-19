@@ -587,9 +587,12 @@ export class Backend implements ProxyMarked {
         });
 
         if (backupData !== undefined) {
-            backend._importUserDataFromBackup(backupData, identityData.identity);
-            await backend._importContactsFromBackup(backupData);
-            backend._importGroupsFromBackup(backupData);
+            await bootstrapFromBackup(
+                backend,
+                backend._services,
+                identityData.identity,
+                backupData,
+            );
         }
 
         // Expose the backend on a new channel
@@ -639,45 +642,6 @@ export class Backend implements ProxyMarked {
         const ownDeviceId = this._services.device.d2m.deviceId;
         // Note: This call will fail if no connection is available, but that is acceptable for now.
         await this._services.taskManager.schedule(new DropDeviceTask(ownDeviceId));
-    }
-
-    private async _importContactsFromBackup(backupData: SafeBackupData): Promise<void> {
-        const importer = new SafeContactImporter(this._services);
-        await importer.importFrom(backupData);
-    }
-
-    private _importGroupsFromBackup(backupData: SafeBackupData): void {
-        const importer = new SafeGroupImporter(this._services);
-        importer.importFrom(backupData);
-    }
-
-    private _importUserDataFromBackup(backupData: SafeBackupData, identity: IdentityString): void {
-        const profile: Mutable<ProfileSettingsView> = {
-            publicNickname: ensurePublicNickname(identity as string),
-            profilePictureShareWith: {group: 'everyone'},
-        };
-
-        // Nickname
-        if (isPublicNickname(backupData.user.nickname)) {
-            profile.publicNickname = backupData.user.nickname;
-        }
-
-        // Profile picture
-        if (backupData.user.profilePic !== undefined) {
-            try {
-                profile.profilePicture = base64ToU8a(backupData.user.profilePic);
-            } catch (error) {
-                this._log.warn(`Restoring user profile picture failed: ${error}`);
-            }
-        }
-
-        // Profile picture sharing settings
-        if (backupData.user.profilePicRelease !== undefined) {
-            profile.profilePictureShareWith = backupData.user.profilePicRelease;
-        }
-
-        // Update profile settings in database
-        this.model.user.profileSettings.get().controller.update(profile);
     }
 }
 
@@ -943,6 +907,46 @@ class ConnectionManager {
         this._connection = undefined;
         return state;
     }
+}
+
+/**
+ * Bootstrap the user's profile from backup data.
+ */
+async function bootstrapFromBackup(
+    backend: Backend,
+    services: ServicesForBackend,
+    identity: IdentityString,
+    backupData: SafeBackupData,
+): Promise<void> {
+    const log = services.logging.logger('backend.bootstrap');
+
+    // Profile settings: Nickname and profile picture
+    const profile: Mutable<ProfileSettingsView> = {
+        publicNickname: ensurePublicNickname(identity as string),
+        profilePictureShareWith: {group: 'everyone'},
+    };
+    if (isPublicNickname(backupData.user.nickname)) {
+        profile.publicNickname = backupData.user.nickname;
+    }
+    if (backupData.user.profilePic !== undefined) {
+        try {
+            profile.profilePicture = base64ToU8a(backupData.user.profilePic);
+        } catch (error) {
+            log.warn(`Restoring user profile picture failed: ${error}`);
+        }
+    }
+    if (backupData.user.profilePicRelease !== undefined) {
+        profile.profilePictureShareWith = backupData.user.profilePicRelease;
+    }
+    backend.model.user.profileSettings.get().controller.update(profile);
+
+    // Contacts
+    const contactImporter = new SafeContactImporter(services);
+    await contactImporter.importFrom(backupData);
+
+    // Groups
+    const groupImporter = new SafeGroupImporter(services);
+    groupImporter.importFrom(backupData);
 }
 
 interface NavigatorUAData {
