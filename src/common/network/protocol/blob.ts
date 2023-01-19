@@ -94,7 +94,7 @@ export interface BlobDownloadResult {
     /**
      * The blob's data.
      */
-    readonly data: ReadonlyUint8Array;
+    readonly data: EncryptedData;
 
     /**
      * Mark a blob as 'done' (i.e. eligible for removal once all devices have downloaded the blob).
@@ -116,7 +116,7 @@ export interface BlobBackend {
      *
      * @throws {BlobBackendError} if uploading the blob fails.
      */
-    upload: (scope: BlobScope, data: ReadonlyUint8Array) => Promise<BlobId>;
+    upload: (scope: BlobScope, data: EncryptedData) => Promise<BlobId>;
 
     /**
      * Download a blob.
@@ -181,9 +181,7 @@ export async function downloadAndDecryptBlob(
 
     // Decrypt blob bytes
     const box = crypto.getSecretBox(key, NONCE_UNGUARDED_TOKEN);
-    const decrypted = box
-        .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, result.data as EncryptedData)
-        .decrypt();
+    const decrypted = box.decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, result.data).decrypt();
 
     // Mark as downloaded in the background
     result

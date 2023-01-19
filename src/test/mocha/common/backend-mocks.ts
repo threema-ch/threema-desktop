@@ -9,6 +9,7 @@ import {type ServicesForBackend} from '~/common/backend';
 import {PakoCompressor} from '~/common/compressor/pako';
 import {type Config} from '~/common/config';
 import {
+    type EncryptedData,
     type Nonce,
     type NonceGuard,
     ensurePublicKey,
@@ -120,7 +121,7 @@ import {
     type SystemDialogHandle,
     type SystemDialogService,
 } from '~/common/system-dialog';
-import {type ReadonlyUint8Array, type u8, type u53} from '~/common/types';
+import {type u8, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {type Delayed} from '~/common/utils/delayed';
@@ -476,14 +477,14 @@ const TEST_SYSTEM_DIALOG_SERVICE: Remote<SystemDialogService> = {
 
 export class TestBlobBackend implements BlobBackend {
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async upload(scope: BlobScope, data: ReadonlyUint8Array): Promise<BlobId> {
+    public async upload(scope: BlobScope, data: EncryptedData): Promise<BlobId> {
         return ensureBlobId(randomBytes(16));
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async download(scope: BlobScope, id: BlobId): Promise<BlobDownloadResult> {
         return {
-            data: randomBytes(42),
+            data: randomBytes(42) as Uint8Array as EncryptedData,
             // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-empty-function
             done: async (doneScope: BlobScope) => {},
         };

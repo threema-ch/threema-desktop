@@ -1,4 +1,5 @@
 import {type ServicesForBackend} from '~/common/backend';
+import {type EncryptedData} from '~/common/crypto';
 import {
     type BlobBackend,
     type BlobDownloadResult,
@@ -7,7 +8,6 @@ import {
     BlobBackendError,
     isBlobId,
 } from '~/common/network/protocol/blob';
-import {type ReadonlyUint8Array} from '~/common/types';
 import {bytesToHex, byteToHex} from '~/common/utils/byte';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -42,7 +42,7 @@ export class FetchBlobBackend implements BlobBackend {
     }
 
     /** @inheritdoc */
-    public async upload(scope: BlobScope, data: ReadonlyUint8Array): Promise<BlobId> {
+    public async upload(scope: BlobScope, data: EncryptedData): Promise<BlobId> {
         const blob = new Blob([data]);
         const formData = new FormData();
         formData.append('blob', blob);
@@ -109,7 +109,7 @@ export class FetchBlobBackend implements BlobBackend {
             });
         }
         return {
-            data: new Uint8Array(arrayBuffer),
+            data: new Uint8Array(arrayBuffer) as EncryptedData,
             done: async (doneScope: BlobScope) => await this._done(id, doneScope),
         };
     }

@@ -203,6 +203,8 @@ export class InboundFileMessageModelController
             }
             const downloadResult = await blob.download('public', blobId);
 
+            // TODO(WEBMD-307): Decrypt file
+
             // Blob downloaded, store in file storage
             const blobBytes = downloadResult.data;
             const storedFile = await file.store(blobBytes);
