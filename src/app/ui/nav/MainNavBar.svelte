@@ -5,7 +5,6 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type ProfilePictureData} from '#3sc/components/threema/ProfilePicture';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
-  import {clickOrKeyboadAction} from '~/app/ui/helpers';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import type * as model from '~/common/model';
   import {type IdentityString} from '~/common/network/types';
@@ -34,14 +33,13 @@
 
 <template>
   <header>
-    <div
+    <button
+      type="button"
       class="profile-picture"
-      role="link"
-      tabindex="0"
-      use:clickOrKeyboadAction={() => dispatch('click-profile-picture')}
+      on:click={() => dispatch('click-profile-picture')}
     >
-      <ProfilePicture {...profilePicture$} alt="Your profile picture" shape={'circle'} />
-    </div>
+      <ProfilePicture {...profilePicture$} alt="Your profile picture" shape="circle" />
+    </button>
     <!-- <IconButton flavor="naked" class="wip">
       <ThreemaIcon
         on:click={() => {
@@ -86,9 +84,8 @@
     user-select: none;
 
     .profile-picture {
-      cursor: pointer;
-      height: $-profile-picture-size;
-      width: $-profile-picture-size;
+      @include def-var(--c-profile-picture-size, $-profile-picture-size);
+      @include circle-button;
       justify-self: start;
     }
   }
