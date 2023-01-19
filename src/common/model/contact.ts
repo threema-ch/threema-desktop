@@ -330,7 +330,7 @@ export class ContactModelController implements ContactController {
         // Instantiate profile picture model store
         this._profilePicture = new ProfilePictureModelStore(
             this._services,
-            {type: ReceiverType.CONTACT, uid: this.uid},
+            {type: ReceiverType.CONTACT, uid: this.uid, identity: _identity},
             profilePicture,
         );
     }

@@ -632,7 +632,12 @@ export class GroupModelController implements GroupController {
             (handle) =>
                 new ProfilePictureModelStore(
                     this._services,
-                    {type: ReceiverType.GROUP, uid: this.uid},
+                    {
+                        type: ReceiverType.GROUP,
+                        uid: this.uid,
+                        creatorIdentity: this._creator,
+                        groupId: this._groupId,
+                    },
                     {
                         color: idColorIndexToString(handle.view().colorIndex),
                     },

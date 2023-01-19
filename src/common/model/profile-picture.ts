@@ -21,9 +21,10 @@ import {type BlobId} from '~/common/network/protocol/blob';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {type ProfilePictureUpdate} from '~/common/network/protocol/task/d2d/reflect-contact-sync';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
+import {type ConversationId, type IdentityString} from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
-import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
@@ -122,11 +123,14 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         source === 'user-defined',
                         `${source} profile picture cannot be set with fromLocal`,
                     );
-                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
-                        triggerSource: TriggerSource.LOCAL,
-                        pictureSource: source,
-                        profilePicture,
-                    });
+                    return await this._reflectAndPersistContactProfilePicture(
+                        this._receiver.identity,
+                        {
+                            triggerSource: TriggerSource.LOCAL,
+                            pictureSource: source,
+                            profilePicture,
+                        },
+                    );
                 case ReceiverType.GROUP:
                     throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
                 case ReceiverType.DISTRIBUTION_LIST:
@@ -154,12 +158,15 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         source === 'contact-defined',
                         `${source} profile picture cannot be set with fromRemote`,
                     );
-                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
-                        triggerSource: TriggerSource.REMOTE,
-                        pictureSource: source,
-                        handle,
-                        profilePicture,
-                    });
+                    return await this._reflectAndPersistContactProfilePicture(
+                        this._receiver.identity,
+                        {
+                            triggerSource: TriggerSource.REMOTE,
+                            pictureSource: source,
+                            handle,
+                            profilePicture,
+                        },
+                    );
                 case ReceiverType.GROUP:
                     throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
                 case ReceiverType.DISTRIBUTION_LIST:
@@ -192,11 +199,14 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         source === 'user-defined',
                         `${source} profile picture cannot be removed with fromLocal`,
                     );
-                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
-                        triggerSource: TriggerSource.LOCAL,
-                        pictureSource: source,
-                        profilePicture: undefined,
-                    });
+                    return await this._reflectAndPersistContactProfilePicture(
+                        this._receiver.identity,
+                        {
+                            triggerSource: TriggerSource.LOCAL,
+                            pictureSource: source,
+                            profilePicture: undefined,
+                        },
+                    );
                 case ReceiverType.GROUP:
                     throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
                 case ReceiverType.DISTRIBUTION_LIST:
@@ -216,12 +226,15 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         source === 'contact-defined',
                         `${source} profile picture cannot be removed with fromRemote`,
                     );
-                    return await this._reflectAndPersistContactProfilePicture(this._receiver.uid, {
-                        triggerSource: TriggerSource.REMOTE,
-                        pictureSource: source,
-                        handle,
-                        profilePicture: undefined,
-                    });
+                    return await this._reflectAndPersistContactProfilePicture(
+                        this._receiver.identity,
+                        {
+                            triggerSource: TriggerSource.REMOTE,
+                            pictureSource: source,
+                            handle,
+                            profilePicture: undefined,
+                        },
+                    );
                 case ReceiverType.GROUP:
                     throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
                 case ReceiverType.DISTRIBUTION_LIST:
@@ -247,9 +260,12 @@ export class ProfilePictureModelController implements ProfilePictureController {
      */
     private readonly _version = new SequenceNumberU53<u53>(0);
 
+    /**
+     * Instantiate the ProfilePictureModelController.
+     */
     public constructor(
         private readonly _services: ServicesForModel,
-        private readonly _receiver: DbReceiverLookup,
+        private readonly _receiver: DbReceiverLookup & ConversationId,
     ) {
         switch (_receiver.type) {
             case ReceiverType.CONTACT:
@@ -334,7 +350,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
      * Reflect contact profile picture, then persist the change.
      */
     private async _reflectAndPersistContactProfilePicture(
-        contactUid: DbContactUid,
+        identity: IdentityString,
         update:
             | {
                   readonly triggerSource: TriggerSource.LOCAL;
@@ -354,20 +370,13 @@ export class ProfilePictureModelController implements ProfilePictureController {
                       | undefined;
               },
     ): Promise<void> {
-        const {db, taskManager} = this._services;
+        const {taskManager} = this._services;
 
         await this._lock.with(async () => {
             // Precondition: The profile picture was not updated in the meantime
             const currentVersion = this._version.current;
             const precondition = (): boolean =>
                 this.meta.active && this._version.current === currentVersion;
-
-            // Look up contact
-            // TODO(WEBMD-231): Should we pass in receiver information, instead of fetching it from DB?
-            const contact = unwrap(
-                db.getContactByUid(contactUid),
-                `Contact with UID ${this._receiver.uid} not found in database`,
-            );
 
             // Reflect contact update to other devices inside a transaction
             let profilePicture: ProfilePictureUpdate;
@@ -396,7 +405,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
             }
             const syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {
                 type: 'update-profile-picture',
-                identity: contact.identity,
+                identity,
                 profilePicture,
             });
 
@@ -457,7 +466,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
 export class ProfilePictureModelStore extends LocalModelStore<ProfilePicture> {
     public constructor(
         services: ServicesForModel,
-        receiver: DbReceiverLookup,
+        receiver: DbReceiverLookup & ConversationId,
         profilePicture: ProfilePictureView,
     ) {
         const {logging} = services;
