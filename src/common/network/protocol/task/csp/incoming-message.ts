@@ -86,14 +86,12 @@ import {
     unixTimestamptoDateS,
 } from '~/common/utils/number';
 
-import {IncomingContactDeleteProfilePictureTask} from './incoming-contact-delete-profile-picture';
-import {IncomingContactSetProfilePictureTask} from './incoming-contact-set-profile-picture';
+import {IncomingContactProfilePictureTask} from './incoming-contact-profile-picture';
 import {IncomingDeliveryReceiptTask} from './incoming-delivery-receipt';
 import {IncomingForwardSecurityEnvelopeTask} from './incoming-fs-envelope';
-import {IncomingGroupDeleteProfilePictureTask} from './incoming-group-delete-profile-picture';
 import {IncomingGroupLeaveTask} from './incoming-group-leave';
 import {IncomingGroupNameTask} from './incoming-group-name';
-import {IncomingGroupSetProfilePictureTask} from './incoming-group-set-profile-picture';
+import {IncomingGroupProfilePictureTask} from './incoming-group-profile-picture';
 import {IncomingGroupSetupTask} from './incoming-group-setup';
 import {IncomingGroupSyncRequestTask} from './incoming-group-sync-request';
 import {OutgoingCspMessageTask} from './outgoing-csp-message';
@@ -941,7 +939,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderIdentity,
                         reflectFragmentFor(maybeCspE2eType),
                     ),
-                    task: new IncomingContactSetProfilePictureTask(
+                    task: new IncomingContactProfilePictureTask(
                         this._services,
                         messageId,
                         senderContactOrInit,
@@ -960,10 +958,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderIdentity,
                         reflectFragmentFor(maybeCspE2eType),
                     ),
-                    task: new IncomingContactDeleteProfilePictureTask(
+                    task: new IncomingContactProfilePictureTask(
                         this._services,
                         messageId,
                         senderContactOrInit,
+                        undefined,
                     ),
                 };
                 return instructions;
@@ -1048,7 +1047,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     // interacted directly with us, add the contact with acquaintance level DIRECT.
                     missingContactHandling: 'create',
                     deliveryReceipt: false,
-                    task: new IncomingGroupSetProfilePictureTask(
+                    task: new IncomingGroupProfilePictureTask(
                         this._services,
                         messageId,
                         senderContactOrInit,
@@ -1070,11 +1069,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     // interacted directly with us, add the contact with acquaintance level DIRECT.
                     missingContactHandling: 'create',
                     deliveryReceipt: false,
-                    task: new IncomingGroupDeleteProfilePictureTask(
+                    task: new IncomingGroupProfilePictureTask(
                         this._services,
                         messageId,
                         senderContactOrInit,
                         validatedContainer,
+                        undefined,
                     ),
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
