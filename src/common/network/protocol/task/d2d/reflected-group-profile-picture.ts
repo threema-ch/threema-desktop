@@ -69,7 +69,7 @@ export class ReflectedGroupProfilePictureTask
                 this._profilePicture.pictureBlobId,
                 this._profilePicture.key,
                 BLOB_FILE_NONCE,
-                'local',
+                'public',
                 'local',
             );
 

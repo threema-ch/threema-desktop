@@ -106,7 +106,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
         const {view, type: messageType} = this._messageModel;
-        this._log.debug(
+        this._log.info(
             `Run for ${ReceiverTypeUtils.nameOf(
                 this._receiverModel.type,
             )?.toLowerCase()} ${messageType} message`,

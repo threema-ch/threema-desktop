@@ -44,7 +44,7 @@ export class IncomingForwardSecurityEnvelopeTask
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
-        this._log.debug(
+        this._log.info(
             `Processing incoming forward security envelope of type ${this._fsEnvelope.content} from ${this._senderIdentity}`,
         );
 

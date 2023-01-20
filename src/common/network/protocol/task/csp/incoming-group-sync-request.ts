@@ -47,7 +47,7 @@ export class IncomingGroupSyncRequestTask
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         const {device, model} = this._services;
 
-        this._log.debug(
+        this._log.info(
             `Processing group sync request from ${this._senderIdentity} for group ${this._groupDebugString}`,
         );
 

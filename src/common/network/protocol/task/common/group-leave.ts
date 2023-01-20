@@ -47,7 +47,7 @@ export abstract class GroupLeaveTaskBase<
     public async run(handle: TTaskCodecHandleType): Promise<void> {
         const {model} = this._services;
 
-        this._log.debug(
+        this._log.info(
             `Processing group leave from ${this._senderIdentity} for group ${this._groupDebugString}`,
         );
 

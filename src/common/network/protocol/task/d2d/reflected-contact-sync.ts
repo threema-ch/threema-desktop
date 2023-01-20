@@ -58,7 +58,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             );
             return;
         }
-        this._log.info(`Received reflected contact sync message (${validatedMessage.action})`);
+        this._log.info(`Processing contact sync message (${validatedMessage.action})`);
 
         // Get existing contact (if available)
         let identity;

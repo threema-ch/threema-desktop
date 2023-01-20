@@ -49,7 +49,7 @@ export class IncomingGroupProfilePictureTask
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
         const action = this._profilePicture === undefined ? 'delete' : 'set';
-        this._log.debug(
+        this._log.info(
             `Processing group ${action} profile picture from ${this._senderIdentity} for group ${this._groupDebugString}`,
         );
 

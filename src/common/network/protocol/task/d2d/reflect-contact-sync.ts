@@ -393,7 +393,7 @@ export class ReflectContactSyncTask
             default:
                 unreachable(variant);
         }
-        this._log.debug(`Syncing '${variant.type}' to other devices`);
+        this._log.info(`Syncing '${variant.type}' to other devices`);
         await handle.reflect([{contactSync}]);
     }
 }

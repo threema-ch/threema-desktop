@@ -43,7 +43,7 @@ export class IncomingContactProfilePictureTask
         const senderContact = this._senderContactOrInit;
         const senderIdentity = senderContact.get().view.identity;
         const action = this._profilePicture === undefined ? 'delete' : 'set';
-        this._log.debug(`Processing ${action} profile picture from ${senderIdentity}`);
+        this._log.info(`Processing ${action} profile picture from ${senderIdentity}`);
 
         const source = 'contact-defined';
         const profilePicture = senderContact.get().controller.profilePicture();

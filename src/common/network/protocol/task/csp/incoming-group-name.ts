@@ -45,7 +45,7 @@ export class IncomingGroupNameTask
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
-        this._log.debug(
+        this._log.info(
             `Processing group name from ${this._senderIdentity} for group ${this._groupDebugString}`,
         );
 
