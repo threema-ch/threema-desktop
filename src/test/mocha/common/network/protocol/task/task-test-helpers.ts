@@ -212,7 +212,7 @@ export function reflectAndSendGroupNameToUser(
             );
             expect(messageContainer.type).to.equal(CspE2eGroupControlType.GROUP_NAME);
 
-            // Validate member list
+            // Validate name
             const container = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupCreatorContainer.decode(
                     byteWithoutPkcs7(messageContainer.paddedData),
@@ -225,6 +225,98 @@ export function reflectAndSendGroupNameToUser(
         }),
 
         // Expect server ack for group name
+        NetworkExpectationFactory.readIncomingMessageAck(
+            recipient.identity.string,
+            messageIdDelayed,
+        ),
+    ];
+}
+
+/**
+ * Expect a group-name message to be reflected and sent towards a single user.
+ */
+export function reflectAndSendGroupProfilePictureToUser(
+    services: ServicesForBackend,
+    recipient: TestUser,
+    profilePictureSent: boolean,
+): NetworkExpectation[] {
+    const {device} = services;
+    const messageIdDelayed = Delayed.simple<MessageId>(
+        'Message ID not yet ready',
+        'Message ID already set',
+    );
+    const cspMessageType = profilePictureSent
+        ? CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE
+        : CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE;
+    const d2dMessageType = profilePictureSent
+        ? CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE
+        : CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE;
+    return [
+        // Outgoing group profile picture should be reflected
+        NetworkExpectationFactory.reflectSingle((payload) => {
+            expect(payload.content).to.equal('outgoingMessage');
+            const outgoingMessage = unwrap(
+                payload.outgoingMessage,
+                'Outgoing message is undefined',
+            );
+            expect(outgoingMessage.type).to.equal(d2dMessageType);
+
+            // Conversation ID must be contact, not group
+            expect(outgoingMessage.conversation?.contact).to.equal(recipient.identity.string);
+
+            // Validate profile picture message
+            const container = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                structbuf.csp.e2e.GroupCreatorContainer.decode(outgoingMessage.body),
+            );
+            if (profilePictureSent) {
+                const groupSetProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                    structbuf.csp.e2e.SetProfilePicture.decode(container.innerData),
+                );
+                expect(groupSetProfilePicture.pictureBlobId).not.to.be.empty;
+                expect(groupSetProfilePicture.key.length).to.equal(32);
+            } else {
+                expect(container.innerData).to.be.empty;
+            }
+        }),
+
+        // Group profile picture message must be sent
+        NetworkExpectationFactory.write((m) => {
+            // Message must be an outgoing CSP message
+            assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
+            assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
+
+            // Message must be sent from me to user1
+            const message = decodeLegacyMessageEncodable(m.payload.payload);
+            expect(message.senderIdentity).to.eql(device.identity.bytes);
+            expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
+            messageIdDelayed.set(ensureMessageId(message.messageId));
+
+            // Message should contain a group name
+            const messageContainer = decryptContainer(
+                message,
+                device.csp.ck.public,
+                recipient.keypair,
+            );
+            expect(messageContainer.type).to.equal(cspMessageType);
+
+            // Validate contents
+            const container = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                structbuf.csp.e2e.GroupCreatorContainer.decode(
+                    byteWithoutPkcs7(messageContainer.paddedData),
+                ),
+            );
+            if (profilePictureSent) {
+                const groupSetProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                    structbuf.csp.e2e.SetProfilePicture.decode(container.innerData),
+                );
+                expect(groupSetProfilePicture.pictureBlobId).not.to.be.empty;
+                expect(groupSetProfilePicture.key.length).to.equal(32);
+            } else {
+                expect(container.innerData).to.be.empty;
+            }
+        }),
+
+        // Expect server ack for group profile picture message
         NetworkExpectationFactory.readIncomingMessageAck(
             recipient.identity.string,
             messageIdDelayed,

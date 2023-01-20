@@ -510,8 +510,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         // Reflect the message and wait for D2M acknowledgement
-        // TODO(WEBMD-561): Remove the following lint suppression
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (instructions.reflectFragment !== undefined) {
             this._log.info(`Reflecting incoming ${messageTypeDebug} message`);
             let incomingMessageReflectedAt;

@@ -13,6 +13,8 @@ import {
 import {type Logger} from '~/common/logging';
 import {type Contact, type ContactInit, type Group} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {encryptAndUploadBlob} from '~/common/network/protocol/blob';
+import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     type ActiveTaskCodecHandle,
@@ -23,6 +25,7 @@ import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoin
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {type GroupId, type IdentityString} from '~/common/network/types';
+import {type ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {idColorIndex} from '~/common/utils/id-color';
@@ -274,6 +277,61 @@ export async function sendGroupName<TPersistence extends ActiveTaskPersistence>(
         messageId: randomMessageId(services.crypto),
         createdAt: new Date(),
         allowUserProfileDistribution: true,
+    }).run(handle);
+}
+
+/**
+ * Send a CSP group set profile picture message to the specified receiver (a contact or group).
+ */
+export async function sendGroupSetProfilePicture<TPersistence extends ActiveTaskPersistence>(
+    groupId: GroupId,
+    receiver: Contact | Group,
+    profilePicture: ReadonlyUint8Array,
+    handle: ActiveTaskCodecHandle<TPersistence>,
+    services: ServicesForTasks,
+): Promise<void> {
+    const blobInfo = await encryptAndUploadBlob(
+        services,
+        profilePicture,
+        BLOB_FILE_NONCE,
+        'public',
+    );
+    await new OutgoingCspMessageTask(services, receiver, {
+        type: CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
+        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+            groupId,
+            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.SetProfilePicture, {
+                pictureBlobId: blobInfo.id as ReadonlyUint8Array as Uint8Array,
+                pictureSize: profilePicture.byteLength,
+                key: blobInfo.key.unwrap() as Uint8Array,
+            }),
+        }),
+        cspMessageFlags: CspMessageFlags.none(),
+        messageId: randomMessageId(services.crypto),
+        createdAt: new Date(),
+        allowUserProfileDistribution: false,
+    }).run(handle);
+}
+
+/**
+ * Send a CSP group delete profile picture message to the specified receiver (a contact or group).
+ */
+export async function sendGroupDeleteProfilePicture<TPersistence extends ActiveTaskPersistence>(
+    groupId: GroupId,
+    receiver: Contact | Group,
+    handle: ActiveTaskCodecHandle<TPersistence>,
+    services: ServicesForTasks,
+): Promise<void> {
+    await new OutgoingCspMessageTask(services, receiver, {
+        type: CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
+        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+            groupId,
+            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeleteProfilePicture, {}),
+        }),
+        cspMessageFlags: CspMessageFlags.none(),
+        messageId: randomMessageId(services.crypto),
+        createdAt: new Date(),
+        allowUserProfileDistribution: false,
     }).run(handle);
 }
 

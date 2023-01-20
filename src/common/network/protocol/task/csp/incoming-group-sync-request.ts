@@ -10,7 +10,9 @@ import {
 } from '~/common/network/protocol/task';
 import {
     sendEmptyGroupSetup,
+    sendGroupDeleteProfilePicture,
     sendGroupName,
+    sendGroupSetProfilePicture,
     sendGroupSetup,
 } from '~/common/network/protocol/task/common/group-helpers';
 import {type GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
@@ -98,21 +100,30 @@ export class IncomingGroupSyncRequestTask
         // 3. Send a group-setup message with the current group members, followed by a group-name
         //    message to the sender.
         await sendGroupSetup(groupId, senderContact.get(), view.members, handle, this._services);
-        const groupNameSent = sendGroupName(
-            groupId,
-            senderContact.get(),
-            view.name,
-            handle,
-            this._services,
-        );
+        await sendGroupName(groupId, senderContact.get(), view.name, handle, this._services);
 
-        // TODO(WEBMD-561): Send set-profile-picture or delete-profile-picture
         // 4. If the group has a profile picture, send a set-profile-picture group control message
         //    to the sender.
         // 5. If the group has no profile picture, send a delete-profile-picture group control message to the sender.
-        const groupProfilePictureSent = Promise.resolve(null);
+        const profilePictureView = group.get().controller.profilePicture().get().view;
+        if (profilePictureView.picture !== undefined) {
+            await sendGroupSetProfilePicture(
+                groupId,
+                senderContact.get(),
+                profilePictureView.picture,
+                handle,
+                this._services,
+            );
+        } else {
+            await sendGroupDeleteProfilePicture(
+                groupId,
+                senderContact.get(),
+                handle,
+                this._services,
+            );
+        }
 
-        // Wait for all group-related messages to be sent
-        await Promise.all([groupNameSent, groupProfilePictureSent]);
+        // Note: In theory we could send the group name and profile picture concurrently, but that
+        //       makes testing harder. Thus, we send them sequentially.
     }
 }

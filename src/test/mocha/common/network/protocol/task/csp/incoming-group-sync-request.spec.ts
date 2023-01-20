@@ -21,6 +21,7 @@ import {
 } from '~/test/mocha/common/backend-mocks';
 import {
     reflectAndSendGroupNameToUser,
+    reflectAndSendGroupProfilePictureToUser,
     reflectAndSendGroupSetupToUser,
     reflectContactSync,
 } from '~/test/mocha/common/network/protocol/task/task-test-helpers';
@@ -142,36 +143,57 @@ export function run(): void {
             });
         });
 
-        it(`if user is a member of the group, group-setup and group-name should be sent`, async function () {
-            const {crypto, model} = services;
+        [true, false].forEach((profilePicture) => {
+            it(`if user is a member of the group ${
+                profilePicture ? 'with' : 'without'
+            } profile picture, group setup/name/${
+                profilePicture ? 'set-' : 'delete-'
+            }profile-picture should be sent`, async function () {
+                const {crypto, model} = services;
 
-            // Add sender as contact
-            const sender = user1;
-            const member = user2;
-            const senderContact = addTestUserAsContact(model, sender);
-            const memberContact = addTestUserAsContact(model, member);
+                // Add sender as contact
+                const sender = user1;
+                const member = user2;
+                const senderContact = addTestUserAsContact(model, sender);
+                const memberContact = addTestUserAsContact(model, member);
 
-            // Create group without user as member
-            const groupId = randomGroupId(crypto);
-            const groupName = 'Masters of disaster';
-            addTestGroup(model, {
-                groupId,
-                name: groupName,
-                creatorIdentity: me,
-                members: [senderContact.ctx, memberContact.ctx],
+                // Create group without user as member
+                const groupId = randomGroupId(crypto);
+                const groupName = 'Masters of disaster';
+                const group = addTestGroup(model, {
+                    groupId,
+                    name: groupName,
+                    creatorIdentity: me,
+                    members: [senderContact.ctx, memberContact.ctx],
+                });
+
+                // Potentially add a profile picture to the group
+                if (profilePicture) {
+                    group
+                        .get()
+                        .controller.profilePicture()
+                        .get()
+                        .controller.setPicture.fromSync(
+                            services.crypto.randomBytes(new Uint8Array(23)),
+                            'admin-defined',
+                        );
+                }
+
+                // Run task
+                await runTask(services, groupId, me, senderContact, [
+                    // The current group setup must be reflected and sent
+                    ...reflectAndSendGroupSetupToUser(services, sender, [
+                        sender.identity.string,
+                        member.identity.string,
+                    ]),
+
+                    // The group name must be reflected and sent
+                    ...reflectAndSendGroupNameToUser(services, sender, groupName),
+
+                    // The group profile picture must be reflected and sent
+                    ...reflectAndSendGroupProfilePictureToUser(services, sender, profilePicture),
+                ]);
             });
-
-            // Run task
-            await runTask(services, groupId, me, senderContact, [
-                // The current group setup must be reflected and sent
-                ...reflectAndSendGroupSetupToUser(services, sender, [
-                    sender.identity.string,
-                    member.identity.string,
-                ]),
-
-                // The group name must be reflected and sent
-                ...reflectAndSendGroupNameToUser(services, sender, groupName),
-            ]);
         });
     });
 }
