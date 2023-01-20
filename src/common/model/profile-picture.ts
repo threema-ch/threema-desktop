@@ -126,7 +126,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                 case ReceiverType.CONTACT:
                     assert(
                         source === 'user-defined',
-                        `${source} profile picture cannot be set with fromLocal`,
+                        `${source} contact profile picture cannot be set with fromLocal`,
                     );
                     return await this._reflectAndPersistContactProfilePicture(
                         this._receiver.identity,
@@ -137,7 +137,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         },
                     );
                 case ReceiverType.GROUP:
-                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                    throw new Error('Group profile pictures cannot be set with fromLocal');
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
                         'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
@@ -163,32 +163,56 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         source === 'contact-defined',
                         `${source} profile picture cannot be set with fromRemote`,
                     );
-                    return await this._reflectAndPersistContactProfilePicture(
-                        this._receiver.identity,
-                        {
-                            triggerSource: TriggerSource.REMOTE,
-                            pictureSource: source,
-                            handle,
-                            profilePicture,
-                        },
-                    );
+                    await this._reflectAndPersistContactProfilePicture(this._receiver.identity, {
+                        triggerSource: TriggerSource.REMOTE,
+                        pictureSource: source,
+                        handle,
+                        profilePicture,
+                    });
+                    break;
                 case ReceiverType.GROUP:
-                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                    assert(
+                        source === 'admin-defined',
+                        `${source} profile picture cannot be set for groups`,
+                    );
+                    // Note: No group sync required here, because we reflect the incoming
+                    // group-set-profile-picture message instead.
+                    this._persistProfilePicture(profilePicture.bytes, source);
+                    break;
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
                         'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
                     );
                 default:
-                    return unreachable(this._receiver);
+                    unreachable(this._receiver);
             }
+            return undefined;
         },
 
         fromSync: (profilePicture: ReadonlyUint8Array, source: ProfilePictureSource) => {
-            // Note: Profile pictures from gateway aren't reflected, because these are being
-            // independently fetched from the web API by every client. Thus, "fromSync" is the
-            // proper call for such updates.
             this._log.debug(`ProfilePictureModelController: Set ${source} picture from sync`);
-            this._persistProfilePicture(profilePicture, source);
+            switch (this._receiver.type) {
+                case ReceiverType.CONTACT:
+                    // Note: Profile pictures from gateway aren't reflected, because these are being
+                    // independently fetched from the web API by every client. Thus, "fromSync" is the
+                    // proper call for such updates.
+                    this._persistProfilePicture(profilePicture, source);
+                    break;
+                case ReceiverType.GROUP:
+                    assert(
+                        source === 'admin-defined',
+                        `${source} profile picture cannot be set for groups`,
+                    );
+                    this._persistProfilePicture(profilePicture, source);
+                    break;
+                case ReceiverType.DISTRIBUTION_LIST:
+                    throw new Error(
+                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                    );
+                default:
+                    unreachable(this._receiver);
+            }
+            return undefined;
         },
     };
 
@@ -213,7 +237,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         },
                     );
                 case ReceiverType.GROUP:
-                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                    throw new Error('Group profile pictures cannot be removed with fromLocal');
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
                         'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
@@ -231,17 +255,22 @@ export class ProfilePictureModelController implements ProfilePictureController {
                         source === 'contact-defined',
                         `${source} profile picture cannot be removed with fromRemote`,
                     );
-                    return await this._reflectAndPersistContactProfilePicture(
-                        this._receiver.identity,
-                        {
-                            triggerSource: TriggerSource.REMOTE,
-                            pictureSource: source,
-                            handle,
-                            profilePicture: undefined,
-                        },
-                    );
+                    await this._reflectAndPersistContactProfilePicture(this._receiver.identity, {
+                        triggerSource: TriggerSource.REMOTE,
+                        pictureSource: source,
+                        handle,
+                        profilePicture: undefined,
+                    });
+                    break;
                 case ReceiverType.GROUP:
-                    throw new Error('TODO(WEBMD-528): Group profile pictures not yet implemented');
+                    assert(
+                        source === 'admin-defined',
+                        `${source} profile picture cannot be removed for groups`,
+                    );
+                    // Note: No group sync required here, because we reflect the incoming
+                    // group-delete-profile-picture message instead.
+                    this._persistProfilePicture(undefined, source);
+                    break;
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
                         'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
@@ -249,6 +278,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                 default:
                     return unreachable(this._receiver);
             }
+            return undefined;
         },
 
         fromSync: (source: ProfilePictureSource) => {
