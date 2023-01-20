@@ -50,6 +50,7 @@ import {
     type Group,
     type GroupRepository,
     type IGlobalPropertyRepository,
+    type IProfilePictureRepository,
     type ProfilePictureView,
     type ProfileSettings,
     type Repositories,
@@ -61,6 +62,7 @@ import {ContactModelRepository} from '~/common/model/contact';
 import {ConversationModelRepository} from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
+import {ProfilePictureModelRepository} from '~/common/model/profile-picture';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -394,6 +396,7 @@ export class TestModelRepositories implements Repositories {
     public contacts: ContactRepository;
     public groups: GroupRepository;
     public conversations: ConversationRepository;
+    public profilePictures: IProfilePictureRepository;
     public settings: Settings;
     public globalProperties: IGlobalPropertyRepository;
 
@@ -407,6 +410,7 @@ export class TestModelRepositories implements Repositories {
         this.contacts = new ContactModelRepository(servicesForModel);
         this.groups = new GroupModelRepository(servicesForModel);
         this.conversations = new ConversationModelRepository(servicesForModel);
+        this.profilePictures = new ProfilePictureModelRepository(servicesForModel);
         this.settings = new TestSettings();
         this.globalProperties = new GlobalPropertyRepository(servicesForModel);
     }

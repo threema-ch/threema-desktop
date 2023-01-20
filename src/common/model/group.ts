@@ -28,7 +28,6 @@ import {
 import * as contact from '~/common/model/contact';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
-import {ProfilePictureModelStore} from '~/common/model/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -39,7 +38,6 @@ import {type NotificationTag, getNotificationTagForGroup} from '~/common/notific
 import {type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
-import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {u64ToHexLe} from '~/common/utils/number';
 import {
@@ -627,21 +625,8 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public profilePicture(): LocalModelStore<ProfilePicture> {
-        // TODO(WEBMD-528): Implement profile pictures for groups
-        return this.meta.run(
-            (handle) =>
-                new ProfilePictureModelStore(
-                    this._services,
-                    {
-                        type: ReceiverType.GROUP,
-                        uid: this.uid,
-                        creatorIdentity: this._creator,
-                        groupId: this._groupId,
-                    },
-                    {
-                        color: idColorIndexToString(handle.view().colorIndex),
-                    },
-                ),
+        return this.meta.run((handle) =>
+            this._services.model.profilePictures.getForGroup(this.uid, handle.view()),
         );
     }
 

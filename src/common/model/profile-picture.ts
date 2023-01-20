@@ -9,12 +9,16 @@ import {
 import {ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
+    type ContactView,
+    type GroupView,
+    type IProfilePictureRepository,
     type ProfilePicture,
     type ProfilePictureController,
     type ProfilePictureSource,
     type ProfilePictureView,
     type ServicesForModel,
 } from '~/common/model';
+import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type BlobId} from '~/common/network/protocol/blob';
@@ -26,6 +30,7 @@ import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
@@ -483,5 +488,67 @@ export class ProfilePictureModelStore extends LocalModelStore<ProfilePicture> {
                 },
             },
         );
+    }
+}
+
+/** @inheritdoc */
+export class ProfilePictureModelRepository implements IProfilePictureRepository {
+    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+
+    public constructor(
+        private readonly _services: ServicesForModel,
+        private readonly _contactCache = new LocalModelStoreCache<
+            DbContactUid,
+            LocalModelStore<ProfilePicture>
+        >(),
+        private readonly _groupCache = new LocalModelStoreCache<
+            DbGroupUid,
+            LocalModelStore<ProfilePicture>
+        >(),
+    ) {}
+
+    /** @inheritdoc */
+    public getForContact(
+        uid: DbContactUid,
+        view: Pick<ContactView, 'identity' | 'colorIndex'>,
+    ): LocalModelStore<ProfilePicture> {
+        return this._contactCache.getOrAdd(uid, () => {
+            const profilePicture = {
+                color: idColorIndexToString(view.colorIndex),
+                picture: chooseContactProfilePicture(view),
+            };
+            return new ProfilePictureModelStore(
+                this._services,
+                {
+                    type: ReceiverType.CONTACT,
+                    uid,
+                    identity: view.identity,
+                },
+                profilePicture,
+            );
+        });
+    }
+
+    /** @inheritdoc */
+    public getForGroup(
+        uid: DbGroupUid,
+        view: Pick<GroupView, 'creatorIdentity' | 'groupId' | 'colorIndex'>,
+    ): LocalModelStore<ProfilePicture> {
+        return this._groupCache.getOrAdd(uid, () => {
+            const profilePicture = {
+                color: idColorIndexToString(view.colorIndex),
+                picture: undefined, // TODO(WEBMD-528): Group profile pictures
+            };
+            return new ProfilePictureModelStore(
+                this._services,
+                {
+                    type: ReceiverType.GROUP,
+                    uid,
+                    creatorIdentity: view.creatorIdentity,
+                    groupId: view.groupId,
+                },
+                profilePicture,
+            );
+        });
     }
 }

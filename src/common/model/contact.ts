@@ -18,7 +18,6 @@ import {type u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
-import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {
     type Exact,
@@ -39,12 +38,10 @@ import {
     type ContactView,
     type Conversation,
     type ProfilePicture,
-    type ProfilePictureView,
     type ServicesForModel,
 } from '.';
 import {type ConversationModelStore} from './conversation';
 import * as conversation from './conversation';
-import {chooseContactProfilePicture, ProfilePictureModelStore} from './profile-picture';
 
 let cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
 
@@ -114,14 +111,9 @@ function create(services: ServicesForModel, init: Exact<ContactInit>): LocalMode
     };
     const uid = db.createContact(contact);
 
-    const profilePicture = {
-        color: idColorIndexToString(contact.colorIndex),
-        picture: chooseContactProfilePicture(contact),
-    };
-
     const contactStore = cache.add(
         uid,
-        () => new ContactModelStore(services, addDerivedData(contact), profilePicture, uid),
+        () => new ContactModelStore(services, addDerivedData(contact), uid),
     );
 
     // Fetching the conversation implicitly updates the conversation set store and cache.
@@ -160,14 +152,8 @@ export function getByUid(
             return undefined;
         }
 
-        // Contact profile picture
-        const profilePicture = {
-            color: idColorIndexToString(contact.colorIndex),
-            picture: chooseContactProfilePicture(contact),
-        };
-
         // Create a store
-        return new ContactModelStore(services, addDerivedData(contact), profilePicture, uid);
+        return new ContactModelStore(services, addDerivedData(contact), uid);
     });
 }
 
@@ -301,7 +287,6 @@ export class ContactModelController implements ContactController {
     private readonly _lookup: DbContactReceiverLookup;
     private readonly _lock = new AsyncLock();
     private readonly _log: Logger;
-    private readonly _profilePicture: LocalModelStore<ProfilePicture>;
 
     /**
      * A version counter that should be incremented for every contact update.
@@ -318,7 +303,6 @@ export class ContactModelController implements ContactController {
         private readonly _services: ServicesForModel,
         public readonly uid: DbContactUid,
         private readonly _identity: IdentityString,
-        profilePicture: ProfilePictureView,
     ) {
         this.notificationTag = getNotificationTagForContact(_identity);
         this._lookup = {
@@ -326,18 +310,13 @@ export class ContactModelController implements ContactController {
             uid: this.uid,
         };
         this._log = this._services.logging.logger(`model.contact.${this.uid}`);
-
-        // Instantiate profile picture model store
-        this._profilePicture = new ProfilePictureModelStore(
-            this._services,
-            {type: ReceiverType.CONTACT, uid: this.uid, identity: _identity},
-            profilePicture,
-        );
     }
 
     /** @inheritdoc */
     public profilePicture(): LocalModelStore<ProfilePicture> {
-        return this._profilePicture;
+        return this.meta.run((handle) =>
+            this._services.model.profilePictures.getForContact(this.uid, handle.view()),
+        );
     }
 
     /** @inheritdoc */
@@ -457,17 +436,12 @@ export class ContactModelStore extends LocalModelStore<Contact> {
      * IMPORTANT: The caller must ensure that `contact` and `uid` arguments both refer to the same
      *            contact, otherwise the behavior is undefined.
      */
-    public constructor(
-        services: ServicesForModel,
-        contact: ContactView,
-        profilePicture: ProfilePictureView,
-        uid: DbContactUid,
-    ) {
+    public constructor(services: ServicesForModel, contact: ContactView, uid: DbContactUid) {
         const {logging} = services;
         const tag = `contact.${contact.identity}`;
         super(
             contact,
-            new ContactModelController(services, uid, contact.identity, profilePicture),
+            new ContactModelController(services, uid, contact.identity),
             uid,
             ReceiverType.CONTACT,
             {

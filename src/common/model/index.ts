@@ -874,6 +874,25 @@ export type ConversationRepository = {
     getAll: () => LocalSetStore<LocalModelStore<Conversation>>;
 } & ProxyMarked;
 
+// Profile pictures
+
+export type IProfilePictureRepository = {
+    /**
+     * Return the profile picture model store for the specified contact.
+     */
+    readonly getForContact: (
+        uid: DbContactUid,
+        view: Pick<ContactView, 'identity' | 'colorIndex'>,
+    ) => LocalModelStore<ProfilePicture>;
+    /**
+     * Return the profile picture model store for the specified group.
+     */
+    readonly getForGroup: (
+        uid: DbGroupUid,
+        view: Pick<GroupView, 'creatorIdentity' | 'groupId' | 'colorIndex'>,
+    ) => LocalModelStore<ProfilePicture>;
+} & ProxyMarked;
+
 // Message
 export interface CommonBaseMessageView {
     /**
@@ -1257,6 +1276,7 @@ export type Repositories = {
     readonly contacts: ContactRepository;
     readonly groups: GroupRepository;
     readonly conversations: ConversationRepository;
+    readonly profilePictures: IProfilePictureRepository;
     readonly settings: Settings;
     readonly globalProperties: IGlobalPropertyRepository;
 } & ProxyMarked;
