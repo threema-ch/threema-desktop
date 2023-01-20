@@ -73,7 +73,7 @@ export function transformContact(
         type: 'contact',
         name: contact.view.displayName,
         profilePicture: {
-            img: undefined,
+            img: profilePicture.view.picture,
             color: profilePicture.view.color,
             initials: contact.view.initials,
         },
@@ -96,7 +96,7 @@ function transformGroup(
         type: 'group',
         name: group.view.displayName,
         profilePicture: {
-            img: undefined,
+            img: profilePicture.view.picture,
             color: profilePicture.view.color,
             initials: group.view.displayName.slice(0, 2),
         },

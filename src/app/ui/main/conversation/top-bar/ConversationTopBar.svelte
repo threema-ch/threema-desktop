@@ -10,10 +10,10 @@
   import TopBarMode from '~/app/ui/main/conversation/top-bar/TopBarMode.svelte';
   import TopBarSearch from '~/app/ui/main/conversation/top-bar/TopBarSearch.svelte';
   import {type DbReceiverLookup} from '~/common/db';
+  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
   import {ReceiverType} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
-  import {eternalPromise} from '~/common/utils/promise';
 
   /**
    * Current display mode.
@@ -97,7 +97,7 @@
         {/if}
         <div class="profile-picture" on:click={openAside}>
           <ProfilePicture
-            img={eternalPromise()}
+            img={transformProfilePicture(receiver.profilePicture.img)}
             alt="Profile picture of {receiver.name}"
             initials={receiver.profilePicture.initials}
             color={receiver.profilePicture.color}
