@@ -28,6 +28,7 @@ import {
 import * as contact from '~/common/model/contact';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
+import {type GroupProfilePictureFields} from '~/common/model/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -206,18 +207,25 @@ function create(
     };
     const uid = db.createGroup(group);
 
-    // Add Members
+    // Add members
     addGroupMembers(services, uid, memberUids);
-
-    const identities = getGroupMemberIdentities(services, uid);
-
+    const memberIdentities = getGroupMemberIdentities(services, uid);
     const view = {
         ...group,
-        displayName: getDisplayName({...group}, identities, services),
-        members: getGroupMemberIdentities(services, uid),
+        displayName: getDisplayName({...group}, memberIdentities, services),
+        members: memberIdentities,
     };
 
-    const groupStore = cache.add(uid, () => new GroupModelStore(services, view, uid));
+    // Extract profile picture fields
+    const profilePictureData: GroupProfilePictureFields = {
+        colorIndex: group.colorIndex,
+        profilePictureAdminDefined: group.profilePictureAdminDefined,
+    };
+
+    const groupStore = cache.add(
+        uid,
+        () => new GroupModelStore(services, view, uid, profilePictureData),
+    );
 
     // Fetching the conversation implicitly updates the conversation set store and cache.
     groupStore.get().controller.conversation();
@@ -271,18 +279,22 @@ export function getByUid(
             return undefined;
         }
 
-        const identities = getGroupMemberIdentities(services, uid);
-
         // Look up members
-
+        const memberIdentities = getGroupMemberIdentities(services, uid);
         const view = {
             ...group,
-            displayName: getDisplayName(group, identities, services),
-            members: getGroupMemberIdentities(services, uid),
+            displayName: getDisplayName(group, memberIdentities, services),
+            members: memberIdentities,
+        };
+
+        // Extract profile picture fields
+        const profilePictureData: GroupProfilePictureFields = {
+            colorIndex: group.colorIndex,
+            profilePictureAdminDefined: group.profilePictureAdminDefined,
         };
 
         // Create a store
-        return new GroupModelStore(services, view, uid);
+        return new GroupModelStore(services, view, uid, profilePictureData);
     });
 }
 
@@ -599,6 +611,7 @@ export class GroupModelController implements GroupController {
         public readonly uid: DbGroupUid,
         private readonly _creator: IdentityString,
         private readonly _groupId: GroupId,
+        private readonly _profilePictureData: GroupProfilePictureFields,
     ) {
         this._lookup = {
             type: ReceiverType.GROUP,
@@ -625,8 +638,13 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public profilePicture(): LocalModelStore<ProfilePicture> {
-        return this.meta.run((handle) =>
-            this._services.model.profilePictures.getForGroup(this.uid, handle.view()),
+        return this.meta.run(() =>
+            this._services.model.profilePictures.getForGroup(
+                this.uid,
+                this._creator,
+                this._groupId,
+                this._profilePictureData,
+            ),
         );
     }
 
@@ -756,12 +774,23 @@ export class GroupModelStore extends LocalModelStore<Group> {
      * IMPORTANT: The caller must ensure that `group` and `uid` arguments both refer to the same
      *            group, otherwise the behavior is undefined.
      */
-    public constructor(services: ServicesForModel, group: GroupView, uid: DbGroupUid) {
+    public constructor(
+        services: ServicesForModel,
+        group: GroupView,
+        uid: DbGroupUid,
+        profilePictureData: GroupProfilePictureFields,
+    ) {
         const {logging} = services;
         const tag = getGroupTag(group.creatorIdentity, group.groupId);
         super(
             group,
-            new GroupModelController(services, uid, group.creatorIdentity, group.groupId),
+            new GroupModelController(
+                services,
+                uid,
+                group.creatorIdentity,
+                group.groupId,
+                profilePictureData,
+            ),
             uid,
             ReceiverType.GROUP,
             {

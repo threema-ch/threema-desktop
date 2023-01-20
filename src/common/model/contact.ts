@@ -7,6 +7,9 @@ import {
 } from '~/common/db';
 import {Existence, ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
+import {type ConversationModelStore} from '~/common/model/conversation';
+import * as conversation from '~/common/model/conversation';
+import {type ContactProfilePictureFields} from '~/common/model/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -40,8 +43,6 @@ import {
     type ProfilePicture,
     type ServicesForModel,
 } from '.';
-import {type ConversationModelStore} from './conversation';
-import * as conversation from './conversation';
 
 let cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
 
@@ -111,9 +112,17 @@ function create(services: ServicesForModel, init: Exact<ContactInit>): LocalMode
     };
     const uid = db.createContact(contact);
 
+    // Extract profile picture fields
+    const profilePictureData: ContactProfilePictureFields = {
+        colorIndex: contact.colorIndex,
+        profilePictureContactDefined: contact.profilePictureContactDefined,
+        profilePictureGatewayDefined: contact.profilePictureGatewayDefined,
+        profilePictureUserDefined: contact.profilePictureUserDefined,
+    };
+
     const contactStore = cache.add(
         uid,
-        () => new ContactModelStore(services, addDerivedData(contact), uid),
+        () => new ContactModelStore(services, addDerivedData(contact), uid, profilePictureData),
     );
 
     // Fetching the conversation implicitly updates the conversation set store and cache.
@@ -152,8 +161,16 @@ export function getByUid(
             return undefined;
         }
 
+        // Extract profile picture fields
+        const profilePictureData: ContactProfilePictureFields = {
+            colorIndex: contact.colorIndex,
+            profilePictureContactDefined: contact.profilePictureContactDefined,
+            profilePictureGatewayDefined: contact.profilePictureGatewayDefined,
+            profilePictureUserDefined: contact.profilePictureUserDefined,
+        };
+
         // Create a store
-        return new ContactModelStore(services, addDerivedData(contact), uid);
+        return new ContactModelStore(services, addDerivedData(contact), uid, profilePictureData);
     });
 }
 
@@ -303,6 +320,7 @@ export class ContactModelController implements ContactController {
         private readonly _services: ServicesForModel,
         public readonly uid: DbContactUid,
         private readonly _identity: IdentityString,
+        private readonly _profilePictureData: ContactProfilePictureFields,
     ) {
         this.notificationTag = getNotificationTagForContact(_identity);
         this._lookup = {
@@ -314,8 +332,12 @@ export class ContactModelController implements ContactController {
 
     /** @inheritdoc */
     public profilePicture(): LocalModelStore<ProfilePicture> {
-        return this.meta.run((handle) =>
-            this._services.model.profilePictures.getForContact(this.uid, handle.view()),
+        return this.meta.run(() =>
+            this._services.model.profilePictures.getForContact(
+                this.uid,
+                this._identity,
+                this._profilePictureData,
+            ),
         );
     }
 
@@ -436,12 +458,17 @@ export class ContactModelStore extends LocalModelStore<Contact> {
      * IMPORTANT: The caller must ensure that `contact` and `uid` arguments both refer to the same
      *            contact, otherwise the behavior is undefined.
      */
-    public constructor(services: ServicesForModel, contact: ContactView, uid: DbContactUid) {
+    public constructor(
+        services: ServicesForModel,
+        contact: ContactView,
+        uid: DbContactUid,
+        profilePictureData: ContactProfilePictureFields,
+    ) {
         const {logging} = services;
         const tag = `contact.${contact.identity}`;
         super(
             contact,
-            new ContactModelController(services, uid, contact.identity),
+            new ContactModelController(services, uid, contact.identity, profilePictureData),
             uid,
             ReceiverType.CONTACT,
             {

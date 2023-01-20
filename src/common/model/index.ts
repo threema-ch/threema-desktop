@@ -44,6 +44,10 @@ import {
     type WorkVerificationLevel,
 } from '~/common/enum';
 import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
+import {
+    type ContactProfilePictureFields,
+    type GroupProfilePictureFields,
+} from '~/common/model/profile-picture';
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
@@ -882,14 +886,17 @@ export type IProfilePictureRepository = {
      */
     readonly getForContact: (
         uid: DbContactUid,
-        view: Pick<ContactView, 'identity' | 'colorIndex'>,
+        identity: IdentityString,
+        profilePictureData: ContactProfilePictureFields,
     ) => LocalModelStore<ProfilePicture>;
     /**
      * Return the profile picture model store for the specified group.
      */
     readonly getForGroup: (
         uid: DbGroupUid,
-        view: Pick<GroupView, 'creatorIdentity' | 'groupId' | 'colorIndex'>,
+        creatorIdentity: IdentityString,
+        groupId: GroupId,
+        profilePictureData: GroupProfilePictureFields,
     ) => LocalModelStore<ProfilePicture>;
 } & ProxyMarked;
 

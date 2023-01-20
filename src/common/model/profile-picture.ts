@@ -9,8 +9,6 @@ import {
 import {ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
-    type ContactView,
-    type GroupView,
     type IProfilePictureRepository,
     type ProfilePicture,
     type ProfilePictureController,
@@ -25,7 +23,7 @@ import {type BlobId} from '~/common/network/protocol/blob';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {type ProfilePictureUpdate} from '~/common/network/protocol/task/d2d/reflect-contact-sync';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import {type ConversationId, type IdentityString} from '~/common/network/types';
+import {type ConversationId, type GroupId, type IdentityString} from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -34,6 +32,16 @@ import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
+
+export type ContactProfilePictureFields = Pick<
+    DbContact,
+    | 'colorIndex'
+    | 'profilePictureContactDefined'
+    | 'profilePictureGatewayDefined'
+    | 'profilePictureUserDefined'
+>;
+
+export type GroupProfilePictureFields = Pick<DbGroup, 'colorIndex' | 'profilePictureAdminDefined'>;
 
 /**
  * Return the appropriate profile picture for this contact.
@@ -47,21 +55,16 @@ import {SequenceNumberU53} from '~/common/utils/sequence-number';
  * See section "Contact Profile Picture Precedence" in the protocol description.
  */
 export function chooseContactProfilePicture(
-    contact: Pick<
-        DbContact,
-        | 'identity'
-        | 'profilePictureContactDefined'
-        | 'profilePictureGatewayDefined'
-        | 'profilePictureUserDefined'
-    >,
+    identity: IdentityString,
+    contact: ContactProfilePictureFields,
 ): ReadonlyUint8Array | undefined {
     if (contact.profilePictureContactDefined !== undefined) {
         return contact.profilePictureContactDefined;
     }
-    if (contact.identity.startsWith('*') && contact.profilePictureGatewayDefined !== undefined) {
+    if (identity.startsWith('*') && contact.profilePictureGatewayDefined !== undefined) {
         return contact.profilePictureGatewayDefined;
     }
-    if (!contact.identity.startsWith('*') && contact.profilePictureUserDefined !== undefined) {
+    if (!identity.startsWith('*') && contact.profilePictureUserDefined !== undefined) {
         return contact.profilePictureUserDefined;
     }
     return undefined;
@@ -486,7 +489,9 @@ export class ProfilePictureModelController implements ProfilePictureController {
         switch (this._receiver.type) {
             case ReceiverType.CONTACT: {
                 const contact = db.getContactByUid(this._receiver.uid);
-                return contact === undefined ? undefined : chooseContactProfilePicture(contact);
+                return contact === undefined
+                    ? undefined
+                    : chooseContactProfilePicture(contact.identity, contact);
             }
             case ReceiverType.GROUP:
                 return db.getGroupByUid(this._receiver.uid)?.profilePictureAdminDefined;
@@ -540,19 +545,20 @@ export class ProfilePictureModelRepository implements IProfilePictureRepository 
     /** @inheritdoc */
     public getForContact(
         uid: DbContactUid,
-        view: Pick<ContactView, 'identity' | 'colorIndex'>,
+        identity: IdentityString,
+        profilePictureData: ContactProfilePictureFields,
     ): LocalModelStore<ProfilePicture> {
         return this._contactCache.getOrAdd(uid, () => {
             const profilePicture = {
-                color: idColorIndexToString(view.colorIndex),
-                picture: chooseContactProfilePicture(view),
+                color: idColorIndexToString(profilePictureData.colorIndex),
+                picture: chooseContactProfilePicture(identity, profilePictureData),
             };
             return new ProfilePictureModelStore(
                 this._services,
                 {
                     type: ReceiverType.CONTACT,
                     uid,
-                    identity: view.identity,
+                    identity,
                 },
                 profilePicture,
             );
@@ -562,20 +568,22 @@ export class ProfilePictureModelRepository implements IProfilePictureRepository 
     /** @inheritdoc */
     public getForGroup(
         uid: DbGroupUid,
-        view: Pick<GroupView, 'creatorIdentity' | 'groupId' | 'colorIndex'>,
+        creatorIdentity: IdentityString,
+        groupId: GroupId,
+        profilePictureData: GroupProfilePictureFields,
     ): LocalModelStore<ProfilePicture> {
         return this._groupCache.getOrAdd(uid, () => {
             const profilePicture = {
-                color: idColorIndexToString(view.colorIndex),
-                picture: undefined, // TODO(WEBMD-528): Group profile pictures
+                color: idColorIndexToString(profilePictureData.colorIndex),
+                picture: profilePictureData.profilePictureAdminDefined,
             };
             return new ProfilePictureModelStore(
                 this._services,
                 {
                     type: ReceiverType.GROUP,
                     uid,
-                    creatorIdentity: view.creatorIdentity,
-                    groupId: view.groupId,
+                    creatorIdentity,
+                    groupId,
                 },
                 profilePicture,
             );
