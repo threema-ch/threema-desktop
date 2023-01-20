@@ -1,10 +1,16 @@
-import {type EncryptedData, type Nonce, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {
+    type EncryptedData,
+    type Nonce,
+    type PlainData,
+    NACL_CONSTANTS,
+    NONCE_UNGUARDED_TOKEN,
+} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TransferTag} from '~/common/enum';
 import {type BaseErrorOptions, BaseError, extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {type ServicesForTasks} from '~/common/network/protocol/task';
-import {type RawBlobKey} from '~/common/network/types/keys';
+import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
@@ -194,4 +200,36 @@ export async function downloadAndDecryptBlob(
 
     // Return decrypted bytes
     return decrypted;
+}
+
+/**
+ * Encrypt the blob with a random key and upload the encrypted bytes.
+ *
+ * @throws {BlobBackendError} if uploading the blob fails.
+ * @throws {CryptoError} if encryption fails.
+ */
+export async function encryptAndUploadBlob(
+    services: Pick<ServicesForTasks, 'blob' | 'crypto'>,
+    bytes: ReadonlyUint8Array,
+    nonce: Nonce,
+    uploadScope: BlobScope,
+): Promise<{id: BlobId; key: RawBlobKey; nonce: Nonce}> {
+    const {blob, crypto} = services;
+
+    // Encrypt blob bytes
+    const randomKey = wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)));
+    const box = crypto.getSecretBox(randomKey, NONCE_UNGUARDED_TOKEN);
+    const encryptedBytes = box
+        .encryptor(CREATE_BUFFER_TOKEN, bytes as PlainData)
+        .encryptWithNonce(nonce);
+
+    // Upload encrypted data
+    const blobId = await blob.upload(uploadScope, encryptedBytes);
+
+    // Return blob info
+    return {
+        id: blobId,
+        key: randomKey,
+        nonce,
+    };
 }

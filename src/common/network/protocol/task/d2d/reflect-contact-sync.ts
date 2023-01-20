@@ -1,10 +1,8 @@
-import {type PlainData, NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
-import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {type TransactionScope, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {type ContactInit, type ContactUpdate} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
-import {type BlobId} from '~/common/network/protocol/blob';
+import {type BlobId, encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {
     type ActiveTaskCodecHandle,
@@ -13,7 +11,7 @@ import {
     type TransactionRunning,
 } from '~/common/network/protocol/task';
 import {type IdentityString} from '~/common/network/types';
-import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
+import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
@@ -203,8 +201,6 @@ async function getD2dContactSyncUpdateProfilePicture(
     profilePicture: ProfilePictureUpdate,
     services: Pick<ServicesForTasks, 'blob' | 'crypto'>,
 ): Promise<protobuf.d2d.ContactSync> {
-    const {blob, crypto} = services;
-
     // Prepare profile pictures
     let userDefinedProfilePicture;
     let contactDefinedProfilePicture;
@@ -217,20 +213,13 @@ async function getD2dContactSyncUpdateProfilePicture(
                     updated: undefined,
                 });
             } else {
-                // Encrypt profile picture bytes
-                const randomKey = wrapRawBlobKey(
-                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                // Encrypt and upload blob
+                const blobInfo = await encryptAndUploadBlob(
+                    services,
+                    profilePicture.profilePictureUserDefined,
+                    BLOB_FILE_NONCE,
+                    'local',
                 );
-                const box = crypto.getSecretBox(randomKey, NONCE_UNGUARDED_TOKEN);
-                const encryptedBytes = box
-                    .encryptor(
-                        CREATE_BUFFER_TOKEN,
-                        profilePicture.profilePictureUserDefined as PlainData,
-                    )
-                    .encryptWithNonce(BLOB_FILE_NONCE);
-
-                // Upload encrypted data
-                const blobId = await blob.upload('local', encryptedBytes);
 
                 // Sync user-defined profile picture update
                 userDefinedProfilePicture = protobuf.utils.creator(protobuf.common.DeltaImage, {
@@ -238,18 +227,13 @@ async function getD2dContactSyncUpdateProfilePicture(
                     updated: protobuf.utils.creator(protobuf.common.Image, {
                         type: protobuf.common.Image.Type.JPEG,
                         blob: protobuf.utils.creator(protobuf.common.Blob, {
-                            id: blobId as ReadonlyUint8Array as Uint8Array,
+                            id: blobInfo.id as ReadonlyUint8Array as Uint8Array,
                             nonce: undefined, // Obvious from context, may be omitted
-                            key: randomKey.unwrap() as Uint8Array,
+                            key: blobInfo.key.unwrap() as Uint8Array,
                             uploadedAt: undefined, // Only relevant for own profile picture
                         }),
                     }),
                 });
-
-                // Note: Normally we'd purge the secret key (`randomKey`) after using it, but since
-                //       we're returning a reference to the raw key bytes as part of the protobuf
-                //       message, we cannot do that without also overwriting the bytes that will be
-                //       reflected.
             }
             break;
         case TriggerSource.REMOTE:
