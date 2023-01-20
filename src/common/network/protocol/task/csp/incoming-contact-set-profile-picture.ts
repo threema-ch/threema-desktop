@@ -25,7 +25,7 @@ export class IncomingContactSetProfilePictureTask
         private readonly _services: ServicesForTasks,
         messageId: MessageId,
         private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
-        private readonly _message: SetProfilePicture.Type,
+        private readonly _profilePicture: SetProfilePicture.Type,
     ) {
         const messageIdHex = messageId.toString(16);
         this._log = _services.logging.logger(
@@ -51,8 +51,8 @@ export class IncomingContactSetProfilePictureTask
             decryptedBlobBytes = await downloadAndDecryptBlob(
                 this._services,
                 this._log,
-                this._message.pictureBlobId,
-                this._message.key,
+                this._profilePicture.pictureBlobId,
+                this._profilePicture.key,
                 BLOB_FILE_NONCE,
                 'public',
                 'local',
@@ -73,8 +73,8 @@ export class IncomingContactSetProfilePictureTask
             handle,
             {
                 bytes: decryptedBlobBytes,
-                blobId: this._message.pictureBlobId,
-                blobKey: this._message.key,
+                blobId: this._profilePicture.pictureBlobId,
+                blobKey: this._profilePicture.key,
             },
             'contact-defined',
         );

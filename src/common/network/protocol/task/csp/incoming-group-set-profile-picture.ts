@@ -1,0 +1,110 @@
+import {extractErrorMessage} from '~/common/error';
+import {type Logger} from '~/common/logging';
+import {type Contact, type ContactInit} from '~/common/model';
+import {groupDebugString} from '~/common/model/group';
+import {LocalModelStore} from '~/common/model/utils/model-store';
+import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
+import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
+import {
+    type ActiveTaskCodecHandle,
+    type ComposableTask,
+    type ServicesForTasks,
+} from '~/common/network/protocol/task';
+import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
+import {
+    type GroupCreatorContainer,
+    type SetProfilePicture,
+} from '~/common/network/structbuf/validate/csp/e2e';
+import {type IdentityString, type MessageId} from '~/common/network/types';
+import {ensureError} from '~/common/utils/assert';
+
+/**
+ * Receive and process incoming group set profile picture messages.
+ */
+export class IncomingGroupSetProfilePictureTask
+    implements ComposableTask<ActiveTaskCodecHandle<'volatile'>, void>
+{
+    private readonly _log: Logger;
+    private readonly _senderIdentity: IdentityString;
+    private readonly _groupDebugString: string;
+
+    public constructor(
+        private readonly _services: ServicesForTasks,
+        messageId: MessageId,
+        private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        private readonly _container: GroupCreatorContainer.Type,
+        private readonly _profilePicture: SetProfilePicture.Type,
+    ) {
+        const messageIdHex = messageId.toString(16);
+        this._log = _services.logging.logger(
+            `network.protocol.task.in-group-set-profile-picture.${messageIdHex}`,
+        );
+        if (_senderContactOrInit instanceof LocalModelStore) {
+            this._senderIdentity = _senderContactOrInit.get().view.identity;
+        } else {
+            this._senderIdentity = _senderContactOrInit.identity;
+        }
+        this._groupDebugString = groupDebugString(this._senderIdentity, _container.groupId);
+    }
+
+    public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
+        this._log.debug(
+            `Processing group profile picture from ${this._senderIdentity} for group ${this._groupDebugString}`,
+        );
+
+        // Extract relevant fields
+        const creatorIdentity = this._senderIdentity;
+        const groupId = this._container.groupId;
+
+        // Run common group receive steps
+        const receiveStepsResult = await commonGroupReceiveSteps(
+            groupId,
+            creatorIdentity,
+            this._senderContactOrInit,
+            handle,
+            this._services,
+            this._log,
+        );
+        if (receiveStepsResult === undefined) {
+            this._log.debug(
+                'Aborting processing of group message after common group receive steps.',
+            );
+            return;
+        }
+        const group = receiveStepsResult.group;
+
+        // Download and decrypt public blob
+        let decryptedBlobBytes;
+        try {
+            decryptedBlobBytes = await downloadAndDecryptBlob(
+                this._services,
+                this._log,
+                this._profilePicture.pictureBlobId,
+                this._profilePicture.key,
+                BLOB_FILE_NONCE,
+                'public',
+                'local',
+            );
+        } catch (error) {
+            this._log.warn(
+                `Could not download and decrypt profile picture for group ${
+                    this._groupDebugString
+                }: ${extractErrorMessage(ensureError(error), 'short')}`,
+            );
+            return;
+        }
+
+        // Update group profile picture
+        const profilePicture = group.get().controller.profilePicture();
+        await profilePicture.get().controller.setPicture.fromRemote(
+            handle,
+            {
+                bytes: decryptedBlobBytes,
+                blobId: this._profilePicture.pictureBlobId,
+                blobKey: this._profilePicture.key,
+            },
+            'admin-defined',
+        );
+        this._log.info(`Group ${this._groupDebugString} profile picture updated`);
+    }
+}

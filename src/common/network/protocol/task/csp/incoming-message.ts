@@ -90,8 +90,10 @@ import {IncomingContactDeleteProfilePictureTask} from './incoming-contact-delete
 import {IncomingContactSetProfilePictureTask} from './incoming-contact-set-profile-picture';
 import {IncomingDeliveryReceiptTask} from './incoming-delivery-receipt';
 import {IncomingForwardSecurityEnvelopeTask} from './incoming-fs-envelope';
+import {IncomingGroupDeleteProfilePictureTask} from './incoming-group-delete-profile-picture';
 import {IncomingGroupLeaveTask} from './incoming-group-leave';
 import {IncomingGroupNameTask} from './incoming-group-name';
+import {IncomingGroupSetProfilePictureTask} from './incoming-group-set-profile-picture';
 import {IncomingGroupSetupTask} from './incoming-group-setup';
 import {IncomingGroupSyncRequestTask} from './incoming-group-sync-request';
 import {OutgoingCspMessageTask} from './outgoing-csp-message';
@@ -820,25 +822,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             };
         }
 
-        function unhandledGroupCreatorMessage(
-            d2dMessageType:
-                | CspE2eGroupConversationType
-                | CspE2eGroupStatusUpdateType
-                | CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE
-                | CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
-            creatorIdentity: IdentityString,
-        ): UnhandledMessageInstructions {
-            const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
-                structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
-            );
-            const conversationId: GroupConversationId = {
-                type: ReceiverType.GROUP,
-                groupId: validatedContainer.groupId,
-                creatorIdentity,
-            };
-            return unhandled(d2dMessageType, false, true, conversationId);
-        }
-
         function unhandledGroupMemberMessage(
             d2dMessageType:
                 | CspE2eGroupConversationType
@@ -1051,6 +1034,52 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
+            case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: {
+                // A group-set-profile-picture message is wrapped in a group-creator-container
+                const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                    structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
+                );
+                const validatedProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                    structbuf.csp.e2e.SetProfilePicture.decode(validatedContainer.innerData),
+                );
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    // Group set profile picture messages are sent by creator. Since the creator has
+                    // interacted directly with us, add the contact with acquaintance level DIRECT.
+                    missingContactHandling: 'create',
+                    deliveryReceipt: false,
+                    task: new IncomingGroupSetProfilePictureTask(
+                        this._services,
+                        messageId,
+                        senderContactOrInit,
+                        validatedContainer,
+                        validatedProfilePicture,
+                    ),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
+            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: {
+                // A group-delete-profile-picture message is wrapped in a group-creator-container
+                const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                    structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
+                );
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    // Group delete profile picture messages are sent by creator. Since the creator has
+                    // interacted directly with us, add the contact with acquaintance level DIRECT.
+                    missingContactHandling: 'create',
+                    deliveryReceipt: false,
+                    task: new IncomingGroupDeleteProfilePictureTask(
+                        this._services,
+                        messageId,
+                        senderContactOrInit,
+                        validatedContainer,
+                    ),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
             case CspE2eGroupControlType.GROUP_LEAVE: {
                 // A group-leave message is wrapped in a group-member-container
                 const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
@@ -1179,10 +1208,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(WEBMD-594)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: // TODO(WEBMD-561)
-                return unhandledGroupCreatorMessage(maybeCspE2eType, senderIdentity);
-            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: // TODO(WEBMD-561)
-                return unhandledGroupCreatorMessage(maybeCspE2eType, senderIdentity);
 
             default:
                 return exhausted(maybeCspE2eType, 'forward');
