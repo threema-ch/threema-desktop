@@ -70,6 +70,16 @@ export type ValidatedCspE2eTypes =
           GroupCreatorContainer.Type
       >
     | ValidatedCspE2eMessageType<
+          CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
+          SetProfilePicture.Type,
+          GroupCreatorContainer.Type
+      >
+    | ValidatedCspE2eMessageType<
+          CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
+          void,
+          GroupCreatorContainer.Type
+      >
+    | ValidatedCspE2eMessageType<
           CspE2eGroupControlType.GROUP_LEAVE,
           void,
           GroupMemberContainer.Type

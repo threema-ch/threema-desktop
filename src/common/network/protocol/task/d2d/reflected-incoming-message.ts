@@ -36,6 +36,7 @@ import {
 import {unreachable} from '~/common/utils/assert';
 
 import {ReflectedGroupNameTask} from './reflected-group-name';
+import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
 import {ReflectedIncomingGroupLeaveTask} from './reflected-incoming-group-leave';
 import {ReflectedIncomingGroupSetupTask} from './reflected-incoming-group-setup';
 import {ReflectedMessageTaskBase} from './reflected-message';
@@ -305,6 +306,32 @@ export class ReflectedIncomingMessageTask
                         senderIdentity,
                         validatedBody.container,
                         validatedBody.message,
+                    ),
+                };
+                return instructions;
+            }
+            case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: {
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    task: new ReflectedGroupProfilePictureTask(
+                        this._services,
+                        messageId,
+                        senderIdentity,
+                        validatedBody.container,
+                        validatedBody.message,
+                    ),
+                };
+                return instructions;
+            }
+            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: {
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    task: new ReflectedGroupProfilePictureTask(
+                        this._services,
+                        messageId,
+                        senderIdentity,
+                        validatedBody.container,
+                        undefined,
                     ),
                 };
                 return instructions;

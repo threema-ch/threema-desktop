@@ -209,6 +209,28 @@ export abstract class ReflectedMessageTaskBase<
                         container,
                     };
                 }
+                case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: {
+                    const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupCreatorContainer.decode(body),
+                    );
+                    return {
+                        type: CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
+                        message: structbuf.validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                            structbuf.csp.e2e.SetProfilePicture.decode(container.innerData),
+                        ),
+                        container,
+                    };
+                }
+                case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: {
+                    const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupCreatorContainer.decode(body),
+                    );
+                    return {
+                        type: CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
+                        message: undefined,
+                        container,
+                    };
+                }
                 case CspE2eGroupControlType.GROUP_LEAVE: {
                     const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupMemberContainer.decode(body),
@@ -219,10 +241,6 @@ export abstract class ReflectedMessageTaskBase<
                         container,
                     };
                 }
-                case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE:
-                case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE:
-                    // TODO(WEBMD-561): Implement
-                    return undefined;
                 case CspE2eGroupControlType.GROUP_REQUEST_SYNC: {
                     const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupCreatorContainer.decode(body),

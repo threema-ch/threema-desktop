@@ -37,6 +37,7 @@ import {
 import {assert, unreachable} from '~/common/utils/assert';
 
 import {ReflectedGroupNameTask} from './reflected-group-name';
+import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
 import {ReflectedMessageTaskBase} from './reflected-message';
 import {ReflectedOutgoingGroupLeaveTask} from './reflected-outgoing-group-leave';
 import {ReflectedOutgoingGroupSetupTask} from './reflected-outgoing-group-setup';
@@ -341,6 +342,32 @@ export class ReflectedOutgoingMessageTask
                         this._services.device.identity.string,
                         validatedBody.container,
                         validatedBody.message,
+                    ),
+                };
+                return instructions;
+            }
+            case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: {
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    task: new ReflectedGroupProfilePictureTask(
+                        this._services,
+                        messageId,
+                        this._services.device.identity.string,
+                        validatedBody.container,
+                        validatedBody.message,
+                    ),
+                };
+                return instructions;
+            }
+            case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: {
+                const instructions: GroupControlMessageInstructions = {
+                    messageCategory: 'group-control',
+                    task: new ReflectedGroupProfilePictureTask(
+                        this._services,
+                        messageId,
+                        this._services.device.identity.string,
+                        validatedBody.container,
+                        undefined,
                     ),
                 };
                 return instructions;
