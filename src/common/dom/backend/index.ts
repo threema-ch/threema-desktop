@@ -561,6 +561,7 @@ export class Backend implements ProxyMarked {
             notification,
             taskManager,
             systemDialog,
+            timer,
         });
         const viewModel = new ViewModelBackend(
             {model, config, endpoint, logging, device},

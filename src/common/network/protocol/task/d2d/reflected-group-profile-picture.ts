@@ -62,6 +62,9 @@ export class ReflectedGroupProfilePictureTask
         const profilePicture = group.get().controller.profilePicture();
 
         if (this._profilePicture !== undefined) {
+            // TODO(MED-46): Dirty, dirty workaround for concurrent blob download bug
+            await this._services.timer.sleep(2000);
+
             // Download profile picture bytes
             const decryptedBlobBytes = await downloadAndDecryptBlob(
                 this._services,

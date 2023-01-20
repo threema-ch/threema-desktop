@@ -48,6 +48,7 @@ export type ServicesForTasks = Pick<
     | 'model'
     | 'notification'
     | 'systemDialog'
+    | 'timer'
 >;
 
 /**
