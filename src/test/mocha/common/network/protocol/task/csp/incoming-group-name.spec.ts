@@ -1,17 +1,14 @@
 import {expect} from 'chai';
 
-import {TransactionScope} from '~/common/enum';
 import {IncomingGroupNameTask} from '~/common/network/protocol/task/csp/incoming-group-name';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {ensureIdentityString} from '~/common/network/types';
-import {assert} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';
 import {
     addTestGroup,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
-    NetworkExpectationFactory,
     TestHandle,
     type TestServices,
 } from '~/test/mocha/common/backend-mocks';
@@ -78,29 +75,7 @@ export function run(): void {
                 container,
                 name,
             );
-            await task.run(
-                new TestHandle(services, [
-                    // Start group sync transaction
-                    NetworkExpectationFactory.startTransaction(0, TransactionScope.GROUP_SYNC),
-                    // Reflect group sync
-                    NetworkExpectationFactory.reflectSingle((payload) => {
-                        expect(payload.content).to.equal('groupSync');
-                        const msg = payload.groupSync;
-                        assert(
-                            msg !== null && msg !== undefined,
-                            'payload.groupSync is null or undefined',
-                        );
-                        assert(
-                            msg.update !== null && msg.update !== undefined,
-                            `Group sync does not contain an update`,
-                        );
-                        // Only name should be synced, not members or state
-                        expect(msg.update.group?.name).to.equal(name.name);
-                        expect(msg.update.group?.memberIdentities).to.be.undefined;
-                        expect(msg.update.group?.userState).to.be.undefined;
-                    }),
-                ]),
-            );
+            await task.run(new TestHandle(services, []));
 
             // Ensure that group name was updated
             expect(model.groups.getByUid(group.ctx)?.get()?.view.name).to.equal('BBB');

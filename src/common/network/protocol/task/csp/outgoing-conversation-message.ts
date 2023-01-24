@@ -1,6 +1,3 @@
-/**
- * Outgoing message task.
- */
 import {type DbReceiverLookup} from '~/common/db';
 import {
     CspE2eConversationType,
@@ -57,7 +54,8 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
     private readonly _log: Logger;
 
     /**
-     * Create a new instance of this task. Note that the {@param _messageModel} and {@param _receiverModel} must match.
+     * Create a new instance of this task. Note that the {@param _messageModel} and
+     * {@param _receiverModel} must match.
      */
     public constructor(
         private readonly _services: ServicesForTasks,
