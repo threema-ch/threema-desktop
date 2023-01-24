@@ -175,4 +175,5 @@ async function runTask(
         message += `: ${description}`;
     }
     expect(expectations, message).to.be.empty;
+    handle.finish();
 }

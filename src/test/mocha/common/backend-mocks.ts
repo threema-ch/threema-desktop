@@ -697,6 +697,10 @@ export class NetworkExpectationFactory {
     }
 }
 
+export interface TestHandleOptions {
+    promotedToLeader: boolean;
+}
+
 /**
  * A mocked task handle.
  *
@@ -707,12 +711,17 @@ export class NetworkExpectationFactory {
 export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
     public controller: TaskController;
 
+    private readonly _options: TestHandleOptions;
+    private readonly _expectationErrors: string[] = [];
+
     public constructor(
         services: ServicesForTasks,
         private readonly _expectations: NetworkExpectation[],
-        promotedToLeader = true,
+        options?: TestHandleOptions,
     ) {
         const {device} = services;
+
+        this._options = {promotedToLeader: true, ...(options ?? {})};
 
         // Assume we're authenticated
         const authenticatedPromise = new ResolvablePromise<void>();
@@ -720,7 +729,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
 
         // Assume we were promoted to leader
         const promotedToLeaderPromise = new ResolvablePromise<void>();
-        if (promotedToLeader) {
+        if (this._options.promotedToLeader) {
             promotedToLeaderPromise.resolve(undefined);
         }
 
@@ -746,11 +755,14 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
     // eslint-disable-next-line @typescript-eslint/require-await
     public async write(message: OutboundNonTransactionalL4Message): Promise<void> {
         const expectation = this._expectations.shift();
-        assert(expectation !== undefined, 'Write operation without expectation');
-        assert(
-            expectation.mode === 'write',
-            `Expected write operation, but encountered ${expectation.mode} operation`,
-        );
+        if (expectation === undefined) {
+            this._failExpectation('Write operation without expectation');
+        }
+        if (expectation.mode !== 'write') {
+            this._failExpectation(
+                `Expected write operation, but encountered ${expectation.mode} operation`,
+            );
+        }
         expectation.inspector?.(message);
     }
 
@@ -760,11 +772,14 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         preprocess: (message: InboundL4Message) => TaskCodecReadInstruction<T>,
     ): Promise<T extends undefined ? undefined : T> {
         const expectation = this._expectations.shift();
-        assert(expectation !== undefined, 'Read operation without expectation');
-        assert(
-            expectation.mode === 'read',
-            `Expected read operation, but encountered ${expectation.mode} operation`,
-        );
+        if (expectation === undefined) {
+            this._failExpectation('Read operation without expectation');
+        }
+        if (expectation.mode !== 'read') {
+            this._failExpectation(
+                `Expected read operation, but encountered ${expectation.mode} operation`,
+            );
+        }
         const expectedMessage = expectation.generator();
         const inner = preprocess(expectedMessage);
 
@@ -773,28 +788,29 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         let data: T | undefined = undefined;
         if (inner instanceof Array) {
             [instruction, data] = inner;
-            assert(
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                instruction === MessageFilterInstruction.ACCEPT,
-                "Expect instruction with data to be of type 'ACCEPT'",
-            );
-            expect(
-                expectation.expectedInstruction,
-                `Expected ${MessageFilterInstructionUtils.nameOf(
-                    expectation.expectedInstruction,
-                )} instruction, but got ACCEPT`,
-            ).to.equal(MessageFilterInstruction.ACCEPT);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (instruction !== MessageFilterInstruction.ACCEPT) {
+                this._failExpectation(`Expected instruction with data to be of type 'ACCEPT'`);
+            }
+            if (expectation.expectedInstruction !== MessageFilterInstruction.ACCEPT) {
+                this._failExpectation(
+                    `Expected ${MessageFilterInstructionUtils.nameOf(
+                        expectation.expectedInstruction,
+                    )} instruction, but got ACCEPT`,
+                );
+            }
             return data as T extends undefined ? undefined : T;
         }
 
         // Other cases: Instructions without data
         instruction = inner as MessageFilterInstruction;
-        expect(
-            instruction,
-            `Expected ${MessageFilterInstructionUtils.nameOf(
-                expectation.expectedInstruction,
-            )} instruction, but got ${MessageFilterInstructionUtils.nameOf(instruction)}`,
-        ).to.equal(expectation.expectedInstruction);
+        if (instruction !== expectation.expectedInstruction) {
+            this._failExpectation(
+                `Expected ${MessageFilterInstructionUtils.nameOf(
+                    expectation.expectedInstruction,
+                )} instruction, but got ${MessageFilterInstructionUtils.nameOf(instruction)}`,
+            );
+        }
 
         // (ノ°Д°）ノ︵ ┻━┻
         return undefined as T extends undefined ? undefined : T;
@@ -806,11 +822,14 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         payloads: T,
     ): Promise<{readonly [P in keyof T]: Date}> {
         const expectation = this._expectations.shift();
-        assert(expectation !== undefined, 'Reflect operation without expectation');
-        assert(
-            expectation.mode === 'reflect',
-            `Expected reflect operation, but encountered ${expectation.mode} operation`,
-        );
+        if (expectation === undefined) {
+            this._failExpectation('Reflect operation without expectation');
+        }
+        if (expectation.mode !== 'reflect') {
+            this._failExpectation(
+                `Expected reflect operation, but encountered ${expectation.mode} operation`,
+            );
+        }
         expectation.inspector?.(payloads.map((payload) => new protobuf.d2d.Envelope(payload)));
         const reflectionTimestamps = payloads.map((payload) => new Date());
         return reflectionTimestamps as unknown as {readonly [P in keyof T]: Date};
@@ -833,17 +852,21 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         // complete" is returned. Otherwise, "transaction aborted" is returned.
 
         const expectation = this._expectations.shift();
-        assert(expectation !== undefined, 'Transaction operation without expectation');
-        assert(
-            expectation.mode === 'start-transaction',
-            `Expected start-transaction operation, but encountered ${expectation.mode} operation`,
-        );
-        assert(
-            scope === expectation.scope,
-            `Scope mismatch: Expected ${TransactionScopeUtils.nameOf(
-                expectation.scope,
-            )} but found ${TransactionScopeUtils.nameOf(scope)}`,
-        );
+        if (expectation === undefined) {
+            this._failExpectation('Transaction operation without expectation');
+        }
+        if (expectation.mode !== 'start-transaction') {
+            this._failExpectation(
+                `Expected start-transaction operation, but encountered ${expectation.mode} operation`,
+            );
+        }
+        if (scope !== expectation.scope) {
+            this._failExpectation(
+                `Scope mismatch: Expected ${TransactionScopeUtils.nameOf(
+                    expectation.scope,
+                )} but found ${TransactionScopeUtils.nameOf(scope)}`,
+            );
+        }
 
         // Check precondition
         if (!precondition()) {
@@ -870,6 +893,30 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
             throw new ConnectionClosed('abort', 'Connection aborted by task manager signal');
         }
         return await executor();
+    }
+
+    /**
+     * Do some checks to ensure that the expectations were properly fulfilled:
+     *
+     * - Ensure that all expectations have been consumed
+     * - Ensure that no expectation have failed during processing
+     *
+     * This method should *always* be called after using a `TestHandle`!
+     */
+    public finish(): void {
+        assert(
+            this._expectations.length === 0,
+            `${this._expectations.length} expectations have not been consumed`,
+        );
+        if (this._expectationErrors.length !== 0) {
+            const errorList = this._expectationErrors.join('\n');
+            throw new Error(`The following expectation errors have been registered:\n${errorList}`);
+        }
+    }
+
+    private _failExpectation(message: string): never {
+        this._expectationErrors.push(message);
+        throw new Error(`Expectation failed: ${message}`);
     }
 }
 

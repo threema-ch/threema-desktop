@@ -99,13 +99,11 @@ export function run(): void {
                 'Message should not yet have a reaction',
             );
 
-            // Test handle
-            const handle = new TestHandle(services, []);
-
             async function runTask(
                 status: CspE2eDeliveryReceiptStatus,
                 timestamp: Date,
             ): Promise<void> {
+                const handle = new TestHandle(services, []);
                 await new ReflectedDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
@@ -117,6 +115,7 @@ export function run(): void {
                     timestamp,
                     expectedMessageDirection,
                 ).run(handle);
+                handle.finish();
             }
 
             // Mark as delivered
@@ -160,6 +159,7 @@ export function run(): void {
                 status: CspE2eDeliveryReceiptStatus,
                 timestamp: Date,
             ): Promise<void> {
+                const handle = new TestHandle(services, []);
                 await new ReflectedDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
@@ -171,6 +171,7 @@ export function run(): void {
                     timestamp,
                     expectedMessageDirection,
                 ).run(handle);
+                handle.finish();
             }
 
             // Ensure that message does not yet have a reaction
@@ -182,9 +183,6 @@ export function run(): void {
                 msg.get().view.lastReaction === undefined,
                 'Message should not yet have a reaction',
             );
-
-            // Test handle
-            const handle = new TestHandle(services, []);
 
             // A delivery receipt of type RECEIVED must be ignored for incoming messages
             await runTask(CspE2eDeliveryReceiptStatus.RECEIVED, new Date());
@@ -238,8 +236,8 @@ export function run(): void {
             );
 
             // Run task with expected direction OUTBOUND
-            const handle = new TestHandle(services, []);
             for (const status of CspE2eDeliveryReceiptStatusUtils.ALL) {
+                const handle = new TestHandle(services, []);
                 await new ReflectedDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
@@ -251,6 +249,7 @@ export function run(): void {
                     new Date(),
                     MessageDirection.OUTBOUND,
                 ).run(handle);
+                handle.finish();
             }
 
             // Ensure that message was not modified
@@ -283,8 +282,8 @@ export function run(): void {
             );
 
             // Run task with expected direction INBOUND
-            const handle = new TestHandle(services, []);
             for (const status of CspE2eDeliveryReceiptStatusUtils.ALL) {
+                const handle = new TestHandle(services, []);
                 await new ReflectedDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
@@ -296,6 +295,7 @@ export function run(): void {
                     new Date(),
                     MessageDirection.INBOUND,
                 ).run(handle);
+                handle.finish();
             }
 
             // Ensure that message was not modified

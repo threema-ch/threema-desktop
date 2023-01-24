@@ -85,7 +85,6 @@ export function run(): void {
         describe('ReflectedIncomingMessageTask', function () {
             it('process reflected incoming text message from contact', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 // Process incoming reflected message from user1
                 const messageId = randomMessageId(crypto);
@@ -107,7 +106,9 @@ export function run(): void {
                     reflectedMessage,
                     reflectedAt,
                 );
+                const handle = new TestHandle(services, []);
                 await task.run(handle);
+                handle.finish();
 
                 // Ensure that message exists in conversation
                 const messages = userConversation.get().controller.getAllMessages().get();
@@ -122,7 +123,6 @@ export function run(): void {
 
             it('process reflected incoming text message from group', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 // Process incoming reflected message from group
                 const messageId = randomMessageId(crypto);
@@ -151,7 +151,9 @@ export function run(): void {
                     reflectedMessage,
                     reflectedAt,
                 );
+                const handle = new TestHandle(services, []);
                 await task.run(handle);
+                handle.finish();
 
                 // Ensure that message exists in group conversation, not in contact conversation
                 const userMessages = userConversation.get().controller.getAllMessages().get();
@@ -214,13 +216,12 @@ export function run(): void {
 
             it('process reflected outgoing text message to contact', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 // Process outgoing reflected message to user
                 const messageId = randomMessageId(crypto);
                 const createdAt = new Date();
                 const text = 'Hello Pfäffikon';
-                await new ReflectedOutgoingMessageTask(
+                const task = new ReflectedOutgoingMessageTask(
                     services,
                     makeMessage(messageId, createdAt, CspE2eConversationType.TEXT, text, {
                         id: 'contact',
@@ -229,7 +230,10 @@ export function run(): void {
                         distributionList: undefined,
                     }),
                     new Date(),
-                ).run(handle);
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
 
                 // Ensure that message exists in conversation
                 const messages = userConversation.get().controller.getAllMessages().get();
@@ -244,13 +248,12 @@ export function run(): void {
 
             it('process reflected outgoing text message to group', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 // Process outgoing reflected message to group
                 const messageId = randomMessageId(crypto);
                 const createdAt = new Date();
                 const text = 'Bonjour Pfäffikon';
-                await new ReflectedOutgoingMessageTask(
+                const task = new ReflectedOutgoingMessageTask(
                     services,
                     makeMessage(
                         messageId,
@@ -269,7 +272,10 @@ export function run(): void {
                         {creatorIdentity: user1.identity.string, groupId},
                     ),
                     new Date(),
-                ).run(handle);
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
 
                 // Ensure that message exists in group conversation, not in contact conversation
                 const userMessages = userConversation.get().controller.getAllMessages().get();
@@ -286,10 +292,9 @@ export function run(): void {
 
             it('reject text message bytes directed at group', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 const messageId = randomMessageId(crypto);
-                await new ReflectedOutgoingMessageTask(
+                const task = new ReflectedOutgoingMessageTask(
                     services,
                     makeMessage(
                         messageId,
@@ -307,7 +312,10 @@ export function run(): void {
                         },
                     ),
                     new Date(),
-                ).run(handle);
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
 
                 // Ensure that message wasn't processed
                 const userMessages = userConversation.get().controller.getAllMessages().get();
@@ -318,10 +326,9 @@ export function run(): void {
 
             it('reject group text message bytes directed at contact', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 const messageId = randomMessageId(crypto);
-                await new ReflectedOutgoingMessageTask(
+                const task = new ReflectedOutgoingMessageTask(
                     services,
                     makeMessage(
                         messageId,
@@ -336,7 +343,10 @@ export function run(): void {
                         },
                     ),
                     new Date(),
-                ).run(handle);
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
 
                 // Ensure that message wasn't processed
                 const userMessages = userConversation.get().controller.getAllMessages().get();
@@ -347,10 +357,9 @@ export function run(): void {
 
             it('reject text message directed at group', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 const messageId = randomMessageId(crypto);
-                await new ReflectedOutgoingMessageTask(
+                const task = new ReflectedOutgoingMessageTask(
                     services,
                     makeMessage(
                         messageId,
@@ -372,7 +381,10 @@ export function run(): void {
                         undefined,
                     ),
                     new Date(),
-                ).run(handle);
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
 
                 // Ensure that message wasn't processed
                 const userMessages = userConversation.get().controller.getAllMessages().get();
@@ -383,10 +395,9 @@ export function run(): void {
 
             it('reject group text message directed at contact', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 const messageId = randomMessageId(crypto);
-                await new ReflectedOutgoingMessageTask(
+                const task = new ReflectedOutgoingMessageTask(
                     services,
                     makeMessage(
                         messageId,
@@ -405,7 +416,10 @@ export function run(): void {
                         {creatorIdentity: user1.identity.string, groupId},
                     ),
                     new Date(),
-                ).run(handle);
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
 
                 // Ensure that message wasn't processed
                 const userMessages = userConversation.get().controller.getAllMessages().get();
@@ -416,7 +430,6 @@ export function run(): void {
 
             it('reject group message conversation mismatch', async function () {
                 const {crypto} = services;
-                const handle = new TestHandle(services, []);
 
                 // Create second group
                 const groupId2 = randomGroupId(services.crypto);
@@ -429,7 +442,7 @@ export function run(): void {
                 const groupConversation2 = group2.get().controller.conversation();
 
                 const messageId = randomMessageId(crypto);
-                await new ReflectedOutgoingMessageTask(
+                const task = new ReflectedOutgoingMessageTask(
                     services,
                     makeMessage(
                         messageId,
@@ -450,7 +463,10 @@ export function run(): void {
                         {creatorIdentity: user1.identity.string, groupId: groupId2},
                     ),
                     new Date(),
-                ).run(handle);
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
 
                 // Ensure that message wasn't processed
                 const userMessages = userConversation.get().controller.getAllMessages().get();

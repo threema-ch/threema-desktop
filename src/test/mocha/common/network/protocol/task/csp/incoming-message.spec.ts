@@ -133,7 +133,7 @@ export function run(): void {
             ];
             const handle = new TestHandle(services, expectations);
             await task.run(handle);
-            expect(expectations, 'Not all expectations consumed').to.be.empty;
+            handle.finish();
 
             // Ensure that no text message was created
             const contactForOwnIdentity = model.contacts.getByIdentity(me);

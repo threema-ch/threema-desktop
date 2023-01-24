@@ -42,7 +42,7 @@ export function run(): void {
                 const handle = new TestHandle(services, expectations);
                 await services.model.contacts.add.fromRemote(handle, makeContactInit(anotherUser));
                 expect(services.model.contacts.getAll().get().size).to.eql(1);
-                expect(expectations).to.be.empty;
+                handle.finish();
             });
 
             // TODO(WEBMD-696): .fromLocal cannot yet be tested because 'taskManager.schedule' is
@@ -66,6 +66,7 @@ export function run(): void {
                     expectedErrorMessage,
                 );
                 expect(services.model.contacts.getAll().get().size).to.eql(0);
+                handle.finish();
             });
 
             it('from local', async function () {

@@ -105,6 +105,7 @@ export function run(): void {
             handle = new TestHandle(services, []) as unknown as ActiveTaskCodecHandle<'persistent'>;
         });
         this.afterEach(function () {
+            (handle as unknown as TestHandle).finish();
             if (this.currentTest?.state === 'failed') {
                 console.log('--- Failed test logs start ---');
                 services.logging.printLogs();

@@ -120,6 +120,7 @@ export function run(): void {
             // Run task. No network side effects expected.
             const handle = new TestHandle(services, []);
             await task.run(handle);
+            handle.finish();
 
             // Ensure that first two messages (but not the third) were marked as received or read
             for (let i = 0; i < 3; i++) {
@@ -200,6 +201,7 @@ export function run(): void {
                     },
                     timestamp,
                 ).run(handle);
+                handle.finish();
             }
 
             // Give thumbs up
@@ -252,8 +254,8 @@ export function run(): void {
             );
 
             // Process all types of delivery receipt
-            const handle = new TestHandle(services, []);
             for (const status of CspE2eDeliveryReceiptStatusUtils.ALL) {
+                const handle = new TestHandle(services, []);
                 await new IncomingDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
@@ -264,6 +266,7 @@ export function run(): void {
                     },
                     new Date(),
                 ).run(handle);
+                handle.finish();
             }
 
             // Ensure that message was not modified
@@ -276,7 +279,6 @@ export function run(): void {
 
         it('ignore repeated "received" or "read" delivery receipts', async function () {
             const {crypto} = services;
-            const handle = new TestHandle(services, []);
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
@@ -302,6 +304,7 @@ export function run(): void {
                 status: CspE2eDeliveryReceiptStatus,
                 timestamp: Date,
             ): Promise<void> {
+                const handle = new TestHandle(services, []);
                 await new IncomingDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
@@ -312,6 +315,7 @@ export function run(): void {
                     },
                     timestamp,
                 ).run(handle);
+                handle.finish();
             }
 
             // Mark as delivered twice: Only the first timestamp should be used

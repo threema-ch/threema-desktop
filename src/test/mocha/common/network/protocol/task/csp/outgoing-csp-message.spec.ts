@@ -156,8 +156,7 @@ export function run(): void {
                 ];
                 const handle = new TestHandle(services, expectations);
                 await task.run(handle);
-
-                expect(expectations, 'Not all expectations consumed').to.be.empty;
+                handle.finish();
             }
         });
 
@@ -298,8 +297,7 @@ export function run(): void {
                 ];
                 const handle = new TestHandle(services, expectations);
                 await task.run(handle);
-
-                expect(expectations, 'Not all expectations consumed').to.be.empty;
+                handle.finish();
             });
 
             it('should also send a message to the creator, if it is not us', async function () {
@@ -353,8 +351,7 @@ export function run(): void {
                 ];
                 const handle = new TestHandle(services, expectations);
                 await task.run(handle);
-
-                expect(expectations, 'Not all expectations consumed').to.be.empty;
+                handle.finish();
             });
         });
     });

@@ -75,7 +75,9 @@ export function run(): void {
                 container,
                 name,
             );
-            await task.run(new TestHandle(services, []));
+            const handle = new TestHandle(services, []);
+            await task.run(handle);
+            handle.finish();
 
             // Ensure that group name was updated
             expect(model.groups.getByUid(group.ctx)?.get()?.view.name).to.equal('BBB');
