@@ -262,8 +262,8 @@
     cursor: text;
     max-height: rem(100px);
     overflow-y: scroll;
-    padding: rem(10px) rem(8px) 0 rem(8px);
-    margin-bottom: rem(8px);
+    padding: var(--cc-compose-area-padding);
+    margin: var(--cc-compose-area-margin);
     display: grid;
     align-items: end;
     word-wrap: anywhere;

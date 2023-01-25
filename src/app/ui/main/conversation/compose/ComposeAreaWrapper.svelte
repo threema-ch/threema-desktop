@@ -3,6 +3,7 @@
   import {type Readable} from 'svelte/store';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
+  import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
@@ -15,7 +16,6 @@
   // Component event dispatcher
   const dispatch = createEventDispatcher<{
     recordAudio: undefined;
-    attachData: undefined;
     sendMessage: string;
   }>();
 
@@ -31,10 +31,6 @@
   // function recordAudio(): void {
   //   dispatch('recordAudio');
   // }
-
-  function attachData(): void {
-    dispatch('attachData');
-  }
 
   /**
    * Show emoji picker if it's invisible.
@@ -101,9 +97,11 @@
   </div>
 
   <div class="wrapper">
-    <IconButton flavor="naked" on:click={attachData} class="wip">
-      <MdIcon theme="Outlined">attach_file</MdIcon>
-    </IconButton>
+    <FileTrigger on:fileDrop multiple>
+      <IconButton flavor="naked">
+        <MdIcon theme="Outlined">attach_file</MdIcon>
+      </IconButton>
+    </FileTrigger>
     <ComposeArea
       {initialText}
       bind:this={composeArea}

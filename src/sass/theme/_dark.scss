@@ -3,6 +3,7 @@
 @use 'threema-svelte-components/src/sass/css-var' as *;
 @use 'threema-svelte-components/src/sass/utils' as *;
 @use 'threema-svelte-components/src/sass/theme';
+@use 'threema-svelte-components/src/sass/conversion' as *;
 
 $dark: (
   app: (
@@ -99,10 +100,25 @@ $dark: (
     menu-item-icon-text-background-color--active: rgba(#000000, 38%),
     // Compose area
     compose-area-placeholder-text: theme.$dark-text-e2,
+    compose-area-padding: rem(10px) rem(8px) 0 rem(8px),
+    compose-area-margin: 0 0 rem(8px) 0,
     // Emoji picker
     emoji-picker-background-color: #2e2e2e,
     // Modal dialog
     modal-dialog-background-color: rgba(#000000, 74%),
+    // MediaMessage Modal
+    media-message-background-color: theme.$grey-900,
+    media-message-active-file-note-background-color:
+      color.mix(#000000, theme.$light-background, 54%),
+    media-message-active-file-note-text-color: theme.$light-text-e2,
+    media-message-file-type-text-color: theme.$dark-text-e1,
+    media-message-file-type-background-image: url('/res/theme/dark/icon/file.svg'),
+    media-message-active-file-options-background-color:
+      color.mix(#000000, theme.$dark-background, 54%),
+    media-message-active-file-options-text-color: #ffffff,
+    media-message-active-file-caption-text-color: theme.$dark-text-e2,
+    media-message-miniatures-background-color: rgba(#ffffff, 12%),
+    media-message-miniatures-text-color: theme.$dark-text-e1,
   ),
   debug-components: (
     // Top bar

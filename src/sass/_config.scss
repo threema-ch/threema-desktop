@@ -139,12 +139,26 @@ $config: config-merge(components.$config, (
 
       // Compose area
       --cc-compose-area-placeholder-text-color,
+      --cc-compose-area-padding,
+      --cc-compose-area-margin,
 
       // Emoji picker
       --cc-emoji-picker-background-color,
 
       // Modal dialog
       --cc-modal-dialog-background-color,
+
+      // Media Message Modal
+      --cc-media-message-background-color,
+      --cc-media-message-active-file-note-background-color,
+      --cc-media-message-active-file-note-text-color,
+      --cc-media-message-file-type-text-color,
+      --cc-media-message-file-type-background-image,
+      --cc-media-message-active-file-options-background-color,
+      --cc-media-message-active-file-options-text-color,
+      --cc-media-message-active-file-caption-text-color,
+      --cc-media-message-miniatures-background-color,
+      --cc-media-message-miniatures-text-color,
     ),
 
     debug-components: (

@@ -277,10 +277,8 @@
             on:recordAudio={() => {
               // TODO(DESK-196)
             }}
-            on:attachData={() => {
-              // TODO(DESK-303)
-            }}
             on:sendMessage={sendTextMessage}
+            on:fileDrop
           />
         {/if}
       </div>

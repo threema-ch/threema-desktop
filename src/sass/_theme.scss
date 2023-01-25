@@ -200,12 +200,26 @@ $themes: (
 
     // Compose area
     --cc-compose-area-placeholder-text-color: -g($cc, compose-area-placeholder-text),
+    --cc-compose-area-padding: -g($cc, compose-area-padding),
+    --cc-compose-area-margin: -g($cc, compose-area-margin),
 
     // Emoji picker
     --cc-emoji-picker-background-color: -g($cc, emoji-picker-background-color),
 
     // Modal dialog
     --cc-modal-dialog-background-color: -g($cc, modal-dialog-background-color),
+
+    // MediaMessage Modal
+    --cc-media-message-background-color: -g($cc, media-message-background-color),
+    --cc-media-message-active-file-note-background-color: -g($cc, media-message-active-file-note-background-color),
+    --cc-media-message-active-file-note-text-color: -g($cc, media-message-active-file-note-text-color),
+    --cc-media-message-file-type-text-color: -g($cc, media-message-file-type-text-color),
+    --cc-media-message-file-type-background-image: -g($cc, media-message-file-type-background-image),
+    --cc-media-message-active-file-options-background-color: -g($cc, media-message-active-file-options-background-color),
+    --cc-media-message-active-file-options-text-color: -g($cc, media-message-active-file-options-text-color),
+    --cc-media-message-active-file-caption-text-color: -g($cc, media-message-active-file-caption-text-color),
+    --cc-media-message-miniatures-background-color: -g($cc, media-message-miniatures-background-color),
+    --cc-media-message-miniatures-text-color: -g($cc, media-message-miniatures-text-color),
   );
 }
 

@@ -1,11 +1,15 @@
 <script lang="ts">
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
-  import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
-  import Welcome from '~/app/ui/main/Welcome.svelte';
-  import {toast} from '~/app/ui/snackbar';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
+  import Welcome from '~/app/ui/main/Welcome.svelte';
+  import {type MediaFile} from '~/app/ui/modal/media-message';
+  import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
+  import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
+  import {ReceiverType} from '~/common/enum';
+  import {type AnyReceiverStore} from '~/common/model';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationViewModel} from '~/common/viewmodel/conversation';
 
@@ -13,6 +17,16 @@
 
   // Unpack services and backend
   const {router, backend} = services;
+
+  let mediaMessageDialogVisible = false;
+  let mediaFiles: MediaFile[] = [];
+
+  function openMediaMessageDialog(files: File[]): void {
+    mediaFiles = files.map((file) => ({
+      file,
+    }));
+    mediaMessageDialogVisible = true;
+  }
 
   // Get conversation lookup info
   let receiverLookup: DbReceiverLookup;
@@ -25,6 +39,7 @@
   }
 
   let conversationViewModel: Remote<ConversationViewModel> | undefined;
+  let receiver: Remote<AnyReceiverStore> | undefined;
 
   // Look up conversation
   $: if (receiverLookup !== undefined) {
@@ -37,17 +52,15 @@
       }
 
       conversationViewModel = conversationViewModelParam;
+      receiver = conversationViewModelParam.receiver;
     });
   }
 
   let zoneHover = false;
-  // TODO(DESK-195): Handle Drag'n'Drop
-  // eslint-disable-next-line prefer-const
   let bodyHover = false;
   $: zoneHover = zoneHover;
 </script>
 
-<!-- TODO(DESK-195): Handle Drag'n'Drop
 <svelte:body
   on:threema-drag-start={() => {
     bodyHover = true;
@@ -56,18 +69,19 @@
     bodyHover = false;
   }}
 />
--->
 
 <template>
-  {#if conversationViewModel !== undefined}
-    <DropZone bind:zoneHover>
+  {#if conversationViewModel !== undefined && receiver !== undefined && $receiver !== undefined}
+    <DropZone bind:zoneHover on:fileDrop={(event) => openMediaMessageDialog(event.detail)}>
       <div class="drag-wrapper" class:bodyHover>
         <Conversation
           {conversationViewModel}
           {receiverLookup}
           {forwardedMessageLookup}
           {services}
+          on:fileDrop={(event) => openMediaMessageDialog(event.detail)}
         />
+
         {#if zoneHover || bodyHover}
           <div class="drop-wrapper" class:zoneHover class:bodyHover>
             <div class="border">Drop files here to send</div>
@@ -75,6 +89,18 @@
         {/if}
       </div>
     </DropZone>
+
+    {#if mediaMessageDialogVisible}
+      <MediaMessage
+        title={`Send File to ${
+          $receiver.type === ReceiverType.DISTRIBUTION_LIST
+            ? $receiver.view.stub
+            : $receiver.view.displayName
+        }`}
+        {mediaFiles}
+        bind:visible={mediaMessageDialogVisible}
+      />
+    {/if}
   {:else}
     <Welcome />
   {/if}
@@ -82,8 +108,10 @@
 
 <style lang="scss">
   @use 'component' as *;
+
   .drag-wrapper {
     height: 100%;
+    overflow: auto;
 
     &.bodyHover {
       position: relative;
