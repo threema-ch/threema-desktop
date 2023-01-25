@@ -203,7 +203,7 @@ export class OutgoingCspMessageTask<
             this._log.info(`Reflecting outgoing ${messageTypeDebug} message`);
             await this._reflectMessage(handle, messageBytes);
         } else {
-            this._log.info(`Skip reflecting outgoing ${messageTypeDebug} message`);
+            this._log.debug(`Skip reflecting outgoing ${messageTypeDebug} message`);
         }
 
         // Get message receiver contacts

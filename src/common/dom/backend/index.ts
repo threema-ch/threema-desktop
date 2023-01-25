@@ -66,6 +66,7 @@ import {
     CspAuthState,
     D2mAuthState,
 } from '~/common/network/protocol/state';
+import {OutgoingContactRequestProfilePictureTask} from '~/common/network/protocol/task/csp/outgoing-contact-request-profile-picture';
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/manager';
 import {
@@ -588,12 +589,8 @@ export class Backend implements ProxyMarked {
         });
 
         if (backupData !== undefined) {
-            await bootstrapFromBackup(
-                backend,
-                backend._services,
-                identityData.identity,
-                backupData,
-            );
+            await bootstrapFromBackup(backend._services, identityData.identity, backupData);
+            requestContactProfilePictures(backend._services);
         }
 
         // Expose the backend on a new channel
@@ -914,7 +911,6 @@ class ConnectionManager {
  * Bootstrap the user's profile from backup data.
  */
 async function bootstrapFromBackup(
-    backend: Backend,
     services: ServicesForBackend,
     identity: IdentityString,
     backupData: SafeBackupData,
@@ -931,7 +927,7 @@ async function bootstrapFromBackup(
     if (backupData.user.profilePicRelease !== undefined) {
         profile.profilePictureShareWith = backupData.user.profilePicRelease;
     }
-    backend.model.user.profileSettings.get().controller.update(profile);
+    services.model.user.profileSettings.get().controller.update(profile);
 
     // Contacts
     const contactImporter = new SafeContactImporter(services);
@@ -940,6 +936,24 @@ async function bootstrapFromBackup(
     // Groups
     const groupImporter = new SafeGroupImporter(services);
     groupImporter.importFrom(backupData);
+}
+
+function requestContactProfilePictures(services: ServicesForBackend): void {
+    const {model, taskManager} = services;
+
+    // Gather all non-gateway contacts
+    const contacts = [];
+    for (const contact of model.contacts.getAll().get()) {
+        const identity = contact.get().view.identity;
+        if (identity === 'ECHOECHO' || identity.startsWith('*')) {
+            continue;
+        }
+        contacts.push(contact);
+    }
+
+    // Launch task
+    const task = new OutgoingContactRequestProfilePictureTask(services, contacts);
+    void taskManager.schedule(task);
 }
 
 interface NavigatorUAData {
