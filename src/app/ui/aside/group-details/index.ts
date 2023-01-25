@@ -127,7 +127,7 @@ export async function getProfilePictureAndMemberStores(
     contacts: RemoteSetStore<RemoteModelStore<Contact>>,
 ): Promise<GroupPreviewStores> {
     return {
-        profilePicture: await group.get().controller.profilePicture(),
+        profilePicture: await group.get().controller.profilePicture,
         members: getMembersForGroup(group, contacts),
     };
 }

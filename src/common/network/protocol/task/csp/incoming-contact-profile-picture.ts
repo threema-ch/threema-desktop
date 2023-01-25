@@ -46,7 +46,9 @@ export class IncomingContactProfilePictureTask
         this._log.info(`Processing ${action} profile picture from ${senderIdentity}`);
 
         const source = 'contact-defined';
-        const profilePicture = senderContact.get().controller.profilePicture();
+        const profilePictureController = senderContact
+            .get()
+            .controller.profilePicture.get().controller;
 
         if (this._profilePicture !== undefined) {
             // Download and decrypt public blob
@@ -72,7 +74,7 @@ export class IncomingContactProfilePictureTask
             }
 
             // Store profile picture as contact-defined profile picture
-            await profilePicture.get().controller.setPicture.fromRemote(
+            await profilePictureController.setPicture.fromRemote(
                 handle,
                 {
                     bytes: decryptedBlobBytes,
@@ -84,7 +86,7 @@ export class IncomingContactProfilePictureTask
             this._log.info(`Updated profile picture for contact ${senderIdentity}`);
         } else {
             // Delete contact-defined profile picture
-            await profilePicture.get().controller.removePicture.fromRemote(handle, source);
+            await profilePictureController.removePicture.fromRemote(handle, source);
             this._log.info(`Deleted profile picture for contact ${senderIdentity}`);
         }
     }

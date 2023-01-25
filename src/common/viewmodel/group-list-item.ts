@@ -84,7 +84,7 @@ function getViewModelStore(
 
         return endpoint.exposeProperties({
             uid: group.ctx,
-            profilePicture: group.controller.profilePicture(),
+            profilePicture: group.controller.profilePicture,
             name: group.view.name,
             displayName: getDisplayName(
                 {

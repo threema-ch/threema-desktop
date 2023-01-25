@@ -78,7 +78,7 @@ function getInnerConversationViewModelStore(
 ): LocalStore<InnerConversationViewModel> {
     return derive(conversationStore, (conversationModel, getAndSubscribe) => {
         const receiver = getAndSubscribe(conversationModel.controller.receiver());
-        const profilePicture = getAndSubscribe(receiver.controller.profilePicture());
+        const profilePicture = getAndSubscribe(receiver.controller.profilePicture);
         return endpoint.exposeProperties({
             receiver: transformReceiver(receiver, profilePicture, model),
         });

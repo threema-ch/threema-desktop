@@ -171,8 +171,7 @@ export function run(): void {
                 if (profilePicture) {
                     group
                         .get()
-                        .controller.profilePicture()
-                        .get()
+                        .controller.profilePicture.get()
                         .controller.setPicture.fromSync(
                             services.crypto.randomBytes(new Uint8Array(23)),
                             'admin-defined',

@@ -214,7 +214,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             visibility: create.conversationVisibility,
         });
 
-        await this._processProfilePictures(create, contact.get().controller.profilePicture());
+        await this._processProfilePictures(create, contact.get().controller.profilePicture);
     }
 
     private async _updateContactFromD2dSync(
@@ -249,6 +249,6 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             });
         }
 
-        await this._processProfilePictures(update, controller.profilePicture());
+        await this._processProfilePictures(update, controller.profilePicture);
     }
 }

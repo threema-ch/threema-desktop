@@ -479,6 +479,9 @@ export class GroupModelController implements GroupController {
     public readonly members: GroupMemberModelController;
 
     /** @inheritdoc */
+    public readonly profilePicture: LocalModelStore<ProfilePicture>;
+
+    /** @inheritdoc */
     public readonly update: GroupController['update'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
         fromLocal: async (change: GroupUpdateFromLocal) => {
@@ -611,7 +614,7 @@ export class GroupModelController implements GroupController {
         public readonly uid: DbGroupUid,
         private readonly _creator: IdentityString,
         private readonly _groupId: GroupId,
-        private readonly _profilePictureData: GroupProfilePictureFields,
+        initialProfilePictureData: GroupProfilePictureFields,
     ) {
         this._lookup = {
             type: ReceiverType.GROUP,
@@ -629,23 +632,17 @@ export class GroupModelController implements GroupController {
             },
             this.meta,
         );
+        this.profilePicture = this._services.model.profilePictures.getForGroup(
+            this.uid,
+            this._creator,
+            this._groupId,
+            initialProfilePictureData,
+        );
     }
 
     /** @inheritdoc */
     public conversation(): LocalModelStore<Conversation> {
         return this._conversation();
-    }
-
-    /** @inheritdoc */
-    public profilePicture(): LocalModelStore<ProfilePicture> {
-        return this.meta.run(() =>
-            this._services.model.profilePictures.getForGroup(
-                this.uid,
-                this._creator,
-                this._groupId,
-                this._profilePictureData,
-            ),
-        );
     }
 
     /**
@@ -778,7 +775,7 @@ export class GroupModelStore extends LocalModelStore<Group> {
         services: ServicesForModel,
         group: GroupView,
         uid: DbGroupUid,
-        profilePictureData: GroupProfilePictureFields,
+        initialGrofilePictureData: GroupProfilePictureFields,
     ) {
         const {logging} = services;
         const tag = getGroupTag(group.creatorIdentity, group.groupId);
@@ -789,7 +786,7 @@ export class GroupModelStore extends LocalModelStore<Group> {
                 uid,
                 group.creatorIdentity,
                 group.groupId,
-                profilePictureData,
+                initialGrofilePictureData,
             ),
             uid,
             ReceiverType.GROUP,

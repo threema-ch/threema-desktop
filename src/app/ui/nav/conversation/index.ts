@@ -127,7 +127,7 @@ export async function getStores(
 ): Promise<ConversationPreviewStores> {
     const {controller} = conversation;
     const [receiver] = await Promise.all([controller.receiver()]);
-    const profilePicture = await receiver.get().controller.profilePicture();
+    const profilePicture = await receiver.get().controller.profilePicture;
     return {
         receiver,
         profilePicture,

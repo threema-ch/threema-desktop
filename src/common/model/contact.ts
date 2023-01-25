@@ -245,6 +245,8 @@ export class ContactModelController implements ContactController {
     public readonly notificationTag: NotificationTag;
     public readonly meta = new ModelLifetimeGuard<ContactView>();
 
+    public readonly profilePicture: LocalModelStore<ProfilePicture>;
+
     public readonly update: ContactController['update'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
         fromLocal: async (change: ContactUpdate) => {
@@ -320,7 +322,7 @@ export class ContactModelController implements ContactController {
         private readonly _services: ServicesForModel,
         public readonly uid: DbContactUid,
         private readonly _identity: IdentityString,
-        private readonly _profilePictureData: ContactProfilePictureFields,
+        initialProfilePictureData: ContactProfilePictureFields,
     ) {
         this.notificationTag = getNotificationTagForContact(_identity);
         this._lookup = {
@@ -328,16 +330,10 @@ export class ContactModelController implements ContactController {
             uid: this.uid,
         };
         this._log = this._services.logging.logger(`model.contact.${this.uid}`);
-    }
-
-    /** @inheritdoc */
-    public profilePicture(): LocalModelStore<ProfilePicture> {
-        return this.meta.run(() =>
-            this._services.model.profilePictures.getForContact(
-                this.uid,
-                this._identity,
-                this._profilePictureData,
-            ),
+        this.profilePicture = this._services.model.profilePictures.getForContact(
+            this.uid,
+            this._identity,
+            initialProfilePictureData,
         );
     }
 
@@ -462,13 +458,13 @@ export class ContactModelStore extends LocalModelStore<Contact> {
         services: ServicesForModel,
         contact: ContactView,
         uid: DbContactUid,
-        profilePictureData: ContactProfilePictureFields,
+        initialProfilePictureData: ContactProfilePictureFields,
     ) {
         const {logging} = services;
         const tag = `contact.${contact.identity}`;
         super(
             contact,
-            new ContactModelController(services, uid, contact.identity, profilePictureData),
+            new ContactModelController(services, uid, contact.identity, initialProfilePictureData),
             uid,
             ReceiverType.CONTACT,
             {

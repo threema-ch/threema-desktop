@@ -268,7 +268,7 @@ function getConversationMessageBodyBaseMessage(
     switch (messageModel.ctx) {
         case MessageDirection.INBOUND: {
             const sender = getAndSubscribe(messageModel.controller.sender());
-            const profilePicture = getAndSubscribe(sender.controller.profilePicture());
+            const profilePicture = getAndSubscribe(sender.controller.profilePicture);
             const contact = transformContact(sender, profilePicture, settings);
             assert(contact.type === 'contact');
 

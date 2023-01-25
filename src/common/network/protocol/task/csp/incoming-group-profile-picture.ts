@@ -75,7 +75,7 @@ export class IncomingGroupProfilePictureTask
         const group = receiveStepsResult.group;
 
         const source = 'admin-defined';
-        const profilePicture = group.get().controller.profilePicture();
+        const profilePictureController = group.get().controller.profilePicture.get().controller;
 
         if (this._profilePicture !== undefined) {
             // Download and decrypt public blob
@@ -100,7 +100,7 @@ export class IncomingGroupProfilePictureTask
             }
 
             // Update group profile picture
-            await profilePicture.get().controller.setPicture.fromRemote(
+            await profilePictureController.setPicture.fromRemote(
                 handle,
                 {
                     bytes: decryptedBlobBytes,
@@ -111,7 +111,7 @@ export class IncomingGroupProfilePictureTask
             );
             this._log.info(`Group ${this._groupDebugString} profile picture updated`);
         } else {
-            await profilePicture.get().controller.removePicture.fromRemote(handle, source);
+            await profilePictureController.removePicture.fromRemote(handle, source);
             this._log.info(`Group ${this._groupDebugString} profile picture removed`);
         }
     }

@@ -127,7 +127,7 @@ function getViewModelStore(
             fullName: getFullName(contact.view),
             displayName: getDisplayName(contact.view),
             initials: contact.view.initials,
-            profilePicture: contact.controller.profilePicture(),
+            profilePicture: contact.controller.profilePicture,
             badge: transformContactBadge(contact.view),
             // TODO(WEBMD-381): Determine whether contact is a new contact
             isNew: Math.random() < 0.5,

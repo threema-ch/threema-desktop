@@ -59,7 +59,7 @@ export class ReflectedGroupProfilePictureTask
         }
 
         const source = 'admin-defined';
-        const profilePicture = group.get().controller.profilePicture();
+        const profilePictureController = group.get().controller.profilePicture.get().controller;
 
         if (this._profilePicture !== undefined) {
             // TODO(MED-46): Dirty, dirty workaround for concurrent blob download bug
@@ -77,11 +77,11 @@ export class ReflectedGroupProfilePictureTask
             );
 
             // Set group profile picture
-            profilePicture.get().controller.setPicture.fromSync(decryptedBlobBytes, source);
+            profilePictureController.setPicture.fromSync(decryptedBlobBytes, source);
             this._log.info(`Group ${this._groupDebugString} profile picture updated`);
         } else {
             // Remove group profile picture
-            profilePicture.get().controller.removePicture.fromSync(source);
+            profilePictureController.removePicture.fromSync(source);
             this._log.info(`Group ${this._groupDebugString} profile picture removed`);
         }
     }

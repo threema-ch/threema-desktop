@@ -30,11 +30,16 @@ export class ModelRepositories implements Repositories {
 
     public constructor(services: Omit<ServicesForModel, 'model'>) {
         const services_ = {...services, model: this};
+        // Note: Because we pass a `this`-reference to the repository constructors before this
+        //       constructor has finished (and thus before `this` is completely constructed), it is
+        //       important that the order of instantiation below is correct. For example, the
+        //       `ContactModelRepository` constructor requires the `profilePictures` property to be
+        //       initialized.
+        this.profilePictures = new ProfilePictureModelRepository(services_);
         this.user = new UserModel(services_);
         this.contacts = new ContactModelRepository(services_);
         this.groups = new GroupModelRepository(services_);
         this.conversations = new ConversationModelRepository(services_);
-        this.profilePictures = new ProfilePictureModelRepository(services_);
         this.globalProperties = new GlobalPropertyRepository(services_);
     }
 }

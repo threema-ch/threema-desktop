@@ -126,7 +126,7 @@ export function filterContacts(
 
 export async function getStores(contact: RemoteModelFor<Contact>): Promise<ContactPreviewStores> {
     const {controller} = contact;
-    const [profilePicture] = await Promise.all([controller.profilePicture()]);
+    const [profilePicture] = await Promise.all([controller.profilePicture]);
     return {
         profilePicture,
     };

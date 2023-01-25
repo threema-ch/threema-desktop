@@ -105,7 +105,7 @@ export class IncomingGroupSyncRequestTask
         // 4. If the group has a profile picture, send a set-profile-picture group control message
         //    to the sender.
         // 5. If the group has no profile picture, send a delete-profile-picture group control message to the sender.
-        const profilePictureView = group.get().controller.profilePicture().get().view;
+        const profilePictureView = group.get().controller.profilePicture.get().view;
         if (profilePictureView.picture !== undefined) {
             await sendGroupSetProfilePicture(
                 groupId,

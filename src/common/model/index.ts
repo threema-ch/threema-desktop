@@ -431,9 +431,9 @@ interface ReceiverController {
     readonly notificationTag: NotificationTag;
 
     /**
-     * Retrieve the profile picture of the receiver.
+     * The receiver's associated profile picture store.
      */
-    readonly profilePicture: () => LocalModelStore<ProfilePicture>;
+    readonly profilePicture: LocalModelStore<ProfilePicture>;
 
     /**
      * Get the receiver's associated conversation.
