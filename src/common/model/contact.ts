@@ -9,7 +9,6 @@ import {Existence, ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
-import {type ContactProfilePictureFields} from '~/common/model/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -36,6 +35,7 @@ import {
     type Contact,
     type ContactController,
     type ContactInit,
+    type ContactProfilePictureFields,
     type ContactRepository,
     type ContactUpdate,
     type ContactView,

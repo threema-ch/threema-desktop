@@ -17,6 +17,7 @@ import {
     type GroupControllerHandle,
     type GroupInit,
     type GroupMemberController,
+    type GroupProfilePictureFields,
     type GroupRepository,
     type GroupUpdate,
     type GroupUpdateFromLocal,
@@ -28,7 +29,6 @@ import {
 import * as contact from '~/common/model/contact';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
-import {type GroupProfilePictureFields} from '~/common/model/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';

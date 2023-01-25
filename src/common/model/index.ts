@@ -44,10 +44,6 @@ import {
     type WorkVerificationLevel,
 } from '~/common/enum';
 import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
-import {
-    type ContactProfilePictureFields,
-    type GroupProfilePictureFields,
-} from '~/common/model/profile-picture';
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
@@ -880,6 +876,15 @@ export type ConversationRepository = {
 } & ProxyMarked;
 
 // Profile pictures
+
+export type ContactProfilePictureFields = Pick<
+    DbContact,
+    | 'colorIndex'
+    | 'profilePictureContactDefined'
+    | 'profilePictureGatewayDefined'
+    | 'profilePictureUserDefined'
+>;
+export type GroupProfilePictureFields = Pick<DbGroup, 'colorIndex' | 'profilePictureAdminDefined'>;
 
 export type IProfilePictureRepository = {
     /**

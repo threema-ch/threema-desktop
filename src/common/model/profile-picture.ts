@@ -9,6 +9,8 @@ import {
 import {ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
+    type ContactProfilePictureFields,
+    type GroupProfilePictureFields,
     type IProfilePictureRepository,
     type ProfilePicture,
     type ProfilePictureController,
@@ -32,16 +34,6 @@ import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
-
-export type ContactProfilePictureFields = Pick<
-    DbContact,
-    | 'colorIndex'
-    | 'profilePictureContactDefined'
-    | 'profilePictureGatewayDefined'
-    | 'profilePictureUserDefined'
->;
-
-export type GroupProfilePictureFields = Pick<DbGroup, 'colorIndex' | 'profilePictureAdminDefined'>;
 
 /**
  * Return the appropriate profile picture for this contact.
