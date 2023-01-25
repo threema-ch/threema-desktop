@@ -1,8 +1,8 @@
 import debug from 'debug';
 import MagicString from 'magic-string';
+import {type TransformResult} from 'rollup';
+import * as rollup from 'rollup';
 import {type Plugin, type ResolvedConfig} from 'vite';
-import {type TransformResult} from 'vite/node_modules/rollup/dist/rollup.js';
-import * as rollup from 'vite/node_modules/rollup/dist/rollup.js';
 
 import {assert, unwrap} from '../../src/common/utils/assert';
 

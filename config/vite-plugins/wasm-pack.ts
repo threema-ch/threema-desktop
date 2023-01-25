@@ -1,7 +1,7 @@
 import debug from 'debug';
 import path from 'path';
+import {type TransformResult} from 'rollup';
 import {type Plugin, type UserConfig} from 'vite';
-import {type TransformResult} from 'vite/node_modules/rollup/dist/rollup.js';
 
 export function wasmPackPlugin(packages: string[]): Plugin {
     const log = debug('vite-plugin-wasm-pack');

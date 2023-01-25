@@ -15,8 +15,8 @@ import {
     type Program,
 } from 'estree';
 import MagicString from 'magic-string';
+import {type TransformResult} from 'rollup';
 import {type Plugin} from 'vite';
-import {type TransformResult} from 'vite/node_modules/rollup/dist/rollup.js';
 
 import {type u53} from '~/common/types';
 
