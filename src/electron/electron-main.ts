@@ -678,8 +678,14 @@ function main(
             if (!details.isMainFrame) {
                 return deny(`Permission request from non-main thread`);
             }
+
             // Allow notifications
             if (permission === 'notifications') {
+                return allow();
+            }
+
+            // Allow writing to clipboard
+            if (permission === 'clipboard-sanitized-write') {
                 return allow();
             }
 
