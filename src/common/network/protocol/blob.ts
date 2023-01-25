@@ -190,6 +190,7 @@ export async function downloadAndDecryptBlob(
     const decrypted = box.decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, result.data).decrypt();
 
     // Mark as downloaded in the background
+    // TODO(WEBMD-921): Do this *after* processing!
     result
         .done(doneScope)
         .catch((error) =>
