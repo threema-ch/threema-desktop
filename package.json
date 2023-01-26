@@ -42,7 +42,7 @@
     "lint:eslint:fix": "eslint . --ext .js,.cjs,.mjs,.svelte,.ts --fix",
     "lint:prettier": "prettier -c \"**/*.{css,html,js,json,md,scss,svelte,ts,yml}\"",
     "lint:prettier:fix": "prettier --write \"**/*.{css,html,js,json,md,scss,svelte,ts,yml}\"",
-    "lint:svelte": "svelte-check --ignore \"libs\" --compiler-warnings \"a11y-click-events-have-key-events:ignore\"",
+    "lint:svelte": "svelte-check --fail-on-warnings --ignore \"libs\" --compiler-warnings \"a11y-click-events-have-key-events:ignore\"",
     "package": "npm run package --prefix ./packaging",
     "protobuf:generate": "tools/generate-protobuf.sh",
     "safe-enums:generate": "npm run safe-enums:generate:module && npm run safe-enums:generate:prettify",
