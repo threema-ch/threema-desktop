@@ -3,15 +3,17 @@ import {expect} from 'chai';
 import {type ServicesForBackend} from '~/common/backend';
 import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, SharedBoxFactory} from '~/common/crypto/box';
-import {CspE2eGroupControlType} from '~/common/enum';
+import {CspE2eGroupControlType, CspE2eGroupConversationType} from '~/common/enum';
 import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
+import {type LegacyMessageLike} from '~/common/network/structbuf/csp/payload';
 import {type IdentityString, ensureIdentityString} from '~/common/network/types';
-import {type ByteLengthEncoder} from '~/common/types';
+import {type ByteLengthEncoder, type u8} from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampS} from '~/common/utils/number';
@@ -19,10 +21,13 @@ import {
     type NetworkExpectation,
     type TestServices,
     type TestUser,
+    addTestUserAsContact,
+    makeKeypair,
     makeTestServices,
     NetworkExpectationFactory,
     TestHandle,
 } from '~/test/mocha/common/backend-mocks';
+import {makeGroup} from '~/test/mocha/common/db-backend-tests';
 
 /**
  * Create a message from {@link sender} to {@link receiver} and with the {@link innerPayload} used
@@ -32,6 +37,7 @@ function createMessage(
     services: ServicesForBackend,
     sender: TestUser,
     receiver: IdentityString,
+    type: u8,
     innerPayload: ByteLengthEncoder,
     flags: CspMessageFlags,
 ): structbuf.csp.payload.LegacyMessageLike {
@@ -41,7 +47,7 @@ function createMessage(
         .encryptor(
             CREATE_BUFFER_TOKEN,
             structbuf.bridge.encoder(structbuf.csp.e2e.Container, {
-                type: CspE2eGroupControlType.GROUP_LEAVE,
+                type,
                 paddedData: pkcs7PaddedEncoder(
                     crypto,
                     MESSAGE_DATA_PADDING_LENGTH_MIN,
@@ -70,6 +76,16 @@ function createMessage(
 export function run(): void {
     describe('IncomingMessageTask', function () {
         const me = ensureIdentityString('MEMEMEME');
+        const user1 = {
+            identity: new Identity(ensureIdentityString('USER0001')),
+            nickname: 'user1',
+            keypair: makeKeypair(),
+        };
+        const user2 = {
+            identity: new Identity(ensureIdentityString('USER0002')),
+            nickname: 'user2',
+            keypair: makeKeypair(),
+        };
 
         // Set up services and log printing
         let services: TestServices;
@@ -102,6 +118,7 @@ export function run(): void {
                     nickname: 'me myself',
                 },
                 me,
+                CspE2eGroupControlType.GROUP_LEAVE,
                 structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
                     text: UTF8.encode('hello from myself'),
                 }),
@@ -122,6 +139,91 @@ export function run(): void {
             const contactForOwnIdentity = model.contacts.getByIdentity(me);
             expect(contactForOwnIdentity, 'Contact for own identity should not exist').to.be
                 .undefined;
+        });
+
+        it('only accepts group text messages from members', async function () {
+            const {model} = services;
+
+            // Add users
+            const contact1 = addTestUserAsContact(model, user1);
+            addTestUserAsContact(model, user2);
+
+            // Group created by user1
+            const groupUid = makeGroup(model.db, {creatorIdentity: user1.identity.string});
+            const group = unwrap(model.groups.getByUid(groupUid));
+            const groupConversation = group.get().controller.conversation();
+            group.get().controller.members.set.fromSync([contact1.ctx]);
+
+            function makeGroupMessage(sender: TestUser, messageText: string): LegacyMessageLike {
+                return createMessage(
+                    services,
+                    {
+                        identity: sender.identity,
+                        keypair: sender.keypair,
+                        nickname: 'some user',
+                    },
+                    me,
+                    CspE2eGroupConversationType.GROUP_TEXT,
+                    structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                        creatorIdentity: UTF8.encode(group.get().view.creatorIdentity),
+                        groupId: group.get().view.groupId,
+                        innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                            text: UTF8.encode(messageText),
+                        }),
+                    }),
+                    CspMessageFlags.none(),
+                );
+            }
+
+            // Conversation is empty
+            {
+                const messages = groupConversation.get().controller.getAllMessages().get();
+                expect(messages.size).to.equal(0);
+            }
+
+            // Process group message from user1 (member)
+            {
+                const message = makeGroupMessage(user1, 'hello from user1');
+                const task = new IncomingMessageTask(services, message);
+                const expectations: NetworkExpectation[] = [
+                    // We expect the message to be reflected
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.incomingMessage).not.to.be.undefined;
+                        const incomingMessage = unwrap(payload.incomingMessage);
+                        expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                    }),
+                    // Message is acked after processing
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+            }
+
+            // Text message should have been created
+            {
+                const messages = groupConversation.get().controller.getAllMessages().get();
+                expect(messages.size).to.equal(1);
+            }
+
+            // Process group message from user2 (non-member)
+            {
+                const message = makeGroupMessage(user2, 'hello from user2');
+                const task = new IncomingMessageTask(services, message);
+                const expectations: NetworkExpectation[] = [
+                    // Message is acked and dropped, since it's invalid
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+            }
+
+            // Ensure that no additional text message was created
+            {
+                const messages = groupConversation.get().controller.getAllMessages().get();
+                expect(messages.size).to.equal(1);
+            }
         });
     });
 }

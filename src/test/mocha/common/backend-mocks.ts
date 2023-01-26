@@ -20,7 +20,7 @@ import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
 import {type CryptoPrng, randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
-import {type DbContactUid, type DbReceiverLookup} from '~/common/db';
+import {type DatabaseBackend, type DbContactUid, type DbReceiverLookup} from '~/common/db';
 import {InMemoryDatabaseBackend} from '~/common/db/in-memory';
 import {type Device} from '~/common/device';
 import {
@@ -399,13 +399,14 @@ export class TestModelRepositories implements Repositories {
     public profilePictures: IProfilePictureRepository;
     public settings: Settings;
     public globalProperties: IGlobalPropertyRepository;
+    public db: DatabaseBackend;
 
     public constructor(
         userIdentity: IdentityString,
         services: Omit<ServicesForBackend, 'model' | 'viewModel'>,
     ) {
-        const db = new InMemoryDatabaseBackend(services.logging.logger('db'));
-        const servicesForModel = {...services, db, model: this};
+        this.db = new InMemoryDatabaseBackend(services.logging.logger('db'));
+        const servicesForModel = {...services, db: this.db, model: this};
         this.user = new UserRepository(userIdentity, servicesForModel);
         this.contacts = new ContactModelRepository(servicesForModel);
         this.groups = new GroupModelRepository(servicesForModel);
@@ -502,6 +503,7 @@ export interface TestServices extends ServicesForBackend {
     // Use concrete types for some test services
     readonly directory: TestDirectoryBackend;
     readonly logging: TestLoggerFactory;
+    readonly model: TestModelRepositories;
 }
 
 export function makeTestServices(identity: IdentityString): TestServices {
