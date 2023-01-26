@@ -70,7 +70,7 @@ creation of the release artifacts:
     $ git switch stable
     $ git pull
     $ git tag -a v${VERSION} -m "Version ${VERSION}"
-    $ git push --tags
+    $ git push origin v${VERSION}
 
 The release artifacts will be built automatically.
 
