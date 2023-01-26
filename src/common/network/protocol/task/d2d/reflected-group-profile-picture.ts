@@ -52,7 +52,7 @@ export class ReflectedGroupProfilePictureTask
         // Look up group
         const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
         if (group === undefined) {
-            this._log.debug(
+            this._log.error(
                 `Abort processing of group ${action} profile picture message for unknown group`,
             );
             return;
