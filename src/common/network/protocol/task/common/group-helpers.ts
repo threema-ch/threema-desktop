@@ -47,7 +47,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     log: Logger,
 ): Promise<{group: LocalModelStore<Group>; senderContact: LocalModelStore<Contact>} | undefined> {
     const {device, model} = services;
-    const weAreCreator = creatorIdentity === device.identity.string;
+    const userIsCreator = creatorIdentity === device.identity.string;
 
     // 1. Look up the group
     const group = model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
@@ -56,7 +56,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
     if (group === undefined) {
         // 2.1 If the user is the creator of the group (as alleged by the received message), discard
         //     the received message and abort these steps.
-        if (weAreCreator) {
+        if (userIsCreator) {
             log.debug(
                 'Discarding group message in unknown group where we are supposedly the creator',
             );
@@ -103,7 +103,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
         case GroupUserState.KICKED: {
             // 3.1 If the user is the creator of the group, send a group-setup with an empty members
             //     list back to the sender, discard the received message and abort these steps.
-            if (weAreCreator) {
+            if (userIsCreator) {
                 await sendEmptyGroupSetup(groupId, senderContact.get(), handle, services);
                 return undefined;
             }
@@ -119,15 +119,17 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
             unreachable(view.userState);
     }
 
-    // 4. If the sender is not a member of the group and the user is the creator of the group, send
-    //    a group-setup with an empty members list back to the sender, discard the received message
-    //    and abort these steps.
-    if (weAreCreator) {
-        const senderIsMember = group.get().controller.members.has(senderContact.ctx);
-        if (!senderIsMember) {
+    // 4. If the sender is not a member of the group:
+    const senderIsMember = group.get().controller.members.has(senderContact.ctx);
+    if (!senderIsMember) {
+        // 4.1 If the user is the creator of the group, send a [`group-setup`](ref:e2e.group-setup)
+        //     with an empty members list back to the sender.
+        if (userIsCreator) {
             await sendEmptyGroupSetup(groupId, senderContact.get(), handle, services);
-            return undefined;
         }
+
+        // 4.2. Discard the received message and abort these steps.
+        return undefined;
     }
 
     // End of common group receive steps
