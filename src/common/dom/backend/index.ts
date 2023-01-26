@@ -36,6 +36,7 @@ import {
     D2mAuthStateUtils,
     D2mLeaderState,
     D2mLeaderStateUtils,
+    GroupUserState,
     TransferTag,
 } from '~/common/enum';
 import {type BaseErrorOptions, BaseError, extractErrorMessage} from '~/common/error';
@@ -67,6 +68,7 @@ import {
     D2mAuthState,
 } from '~/common/network/protocol/state';
 import {OutgoingContactRequestProfilePictureTask} from '~/common/network/protocol/task/csp/outgoing-contact-request-profile-picture';
+import {OutgoingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/outgoing-group-sync-request';
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/manager';
 import {
@@ -591,6 +593,7 @@ export class Backend implements ProxyMarked {
         if (backupData !== undefined) {
             await bootstrapFromBackup(backend._services, identityData.identity, backupData);
             requestContactProfilePictures(backend._services);
+            requestGroupSync(backend._services);
         }
 
         // Expose the backend on a new channel
@@ -953,6 +956,28 @@ function requestContactProfilePictures(services: ServicesForBackend): void {
 
     // Launch task
     const task = new OutgoingContactRequestProfilePictureTask(services, contacts);
+    void taskManager.schedule(task);
+}
+
+function requestGroupSync(services: ServicesForBackend): void {
+    const {model, taskManager} = services;
+
+    // Gather all groups where we're an active member and not the creator
+    const groups = [];
+    const ownIdentity = model.user.identity;
+    for (const group of model.groups.getAll().get()) {
+        const view = group.get().view;
+        if (view.creatorIdentity === ownIdentity) {
+            continue;
+        }
+        if (view.userState !== GroupUserState.MEMBER) {
+            continue;
+        }
+        groups.push(group);
+    }
+
+    // Launch task
+    const task = new OutgoingGroupSyncRequestTask(services, groups);
     void taskManager.schedule(task);
 }
 
