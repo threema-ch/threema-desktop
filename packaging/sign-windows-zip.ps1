@@ -42,6 +42,6 @@ Compress-Archive `
 # Re-generate checksum file
 Get-ChildItem $SignedZipFilePath |
     Select-Object -Property Name,Length,@{name="SHA256";expression={(Get-FileHash -Algorithm SHA256 $_.FullName).hash}} |
-    Out-File -FilePath "$SignedZipFilePath.sha256"
+    Out-File -Width 300 -FilePath "$SignedZipFilePath.sha256"
 
 Write-Host "`Done."
