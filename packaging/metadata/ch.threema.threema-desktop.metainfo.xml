@@ -21,6 +21,30 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0.0-preview4" date="2023-01-26">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>Import own profile picture from mobile device (requires re-linking*)</li>
+                    <li>Show contact profile pictures</li>
+                    <li>Note: Profile pictures will appear after re-linking*, once you have received a message from that contact. Without re-linking, it may take up to 7 days for profile pictures to appear.</li>
+                    <li>Show group profile pictures</li>
+                    <li>Note: Profile pictures will appear after re-linking* or once the group is modified or re-synced by the group administrator.</li>
+                    <li>Allow setting theme (light/dark/system) in user profile screen</li>
+                    <li>Support for "system" theme on Windows</li>
+                </ul>
+                <p>* To re-link, disable the Multi-Device Preview in the iOS app and enable it again. The chat history of your desktop app will be cleared.</p>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Proper formatting of quoted messages</li>
+                </ul>
+                <p>Bugfixes:</p>
+                <ul>
+                    <li>Disable non-functional drag&amp;drop support for now</li>
+                </ul>
+                <p>...and a few other changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0.0-preview2" date="2022-12-21">
             <description>
                 <p>New features:</p>
