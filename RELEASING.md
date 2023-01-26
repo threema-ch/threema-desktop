@@ -27,7 +27,6 @@ Update release notes (page "4 Threema Desktop 2.0 (Preview)") on Confluence.
 
 Update changelogs:
 
-    $ vim CHANGELOG.md  # Internal release notes
     $ vim packaging/metadata/ch.threema.threema-desktop.metainfo.xml  # Public release notes
 
 Commit and push the version bump commit:
