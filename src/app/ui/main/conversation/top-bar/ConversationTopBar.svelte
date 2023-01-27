@@ -15,6 +15,8 @@
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
   import {ReceiverType} from '~/common/enum';
+  import {type Conversation} from '~/common/model';
+  import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {unreachable} from '~/common/utils/assert';
 
   /**
@@ -31,6 +33,11 @@
    * Receiver lookup data.
    */
   export let receiverLookup: DbReceiverLookup;
+
+  /**
+   * The conversation model store.
+   */
+  export let conversation: RemoteModelStore<Conversation>;
 
   /**
    * Placeholder of the search field.
@@ -115,10 +122,12 @@
     isContextMenuVisible = true;
   }
 
-  function askToDeleteAllConversationMessages(): void {
+  function confirmEmptyConversationAction(): void {
     isConversationEmptyDialogVisible = true;
   }
-  function deleteAllConversationMessages(): void {}
+  function deleteAllConversationMessages(): void {
+    void $conversation.controller.removeAllMessages.fromLocal();
+  }
 </script>
 
 <template>
@@ -189,7 +198,8 @@
     bind:this={contextMenu}
     {...contextMenuPosition}
     {closeContextMenu}
-    on:deleteAllConversationMessages={askToDeleteAllConversationMessages}
+    {conversation}
+    on:emptyConversationActionClicked={confirmEmptyConversationAction}
   />
 
   <ConversationEmptyConfirmationDialog

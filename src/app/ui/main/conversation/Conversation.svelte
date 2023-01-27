@@ -2,14 +2,14 @@
   import {onDestroy} from 'svelte';
   import {type Writable} from 'svelte/store';
 
-  import {type ComposeData, type ComposeMode} from '~/app/ui/main/conversation/compose';
-  import ComposeAreaWrapper from '~/app/ui/main/conversation/compose/ComposeAreaWrapper.svelte';
-  import {conversationDrafts} from '~/app/ui/main/conversation';
-  import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
-  import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
-  import {isInactiveGroup} from '~/app/ui/generic/receiver';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
+  import {isInactiveGroup} from '~/app/ui/generic/receiver';
+  import {conversationDrafts} from '~/app/ui/main/conversation';
+  import {type ComposeData, type ComposeMode} from '~/app/ui/main/conversation/compose';
+  import ComposeAreaWrapper from '~/app/ui/main/conversation/compose/ComposeAreaWrapper.svelte';
+  import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
+  import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {display, layout} from '~/common/dom/ui/state';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
@@ -240,6 +240,7 @@
       <ConversationTopBar
         receiver={$innerConversationViewModel.receiver}
         isInactiveGroup={isInactiveGroup($receiver)}
+        {conversation}
         {receiverLookup}
         {services}
       >

@@ -6,10 +6,13 @@
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
   import ContextMenuWrapper from '~/app/ui/generic/context-menu/ContextMenuWrapper.svelte';
   import {type u32} from '~/common/types';
+  import {RemoteModelStore} from '~/common/model/utils/model-store';
+  import {Conversation} from '~/common/model';
 
   export let x: u32;
   export let y: u32;
   export let closeContextMenu: () => void;
+  export let conversation: RemoteModelStore<Conversation>;
 
   let wrapper: ContextMenuWrapper;
 
@@ -35,6 +38,11 @@
       dispatchEvent(eventName);
     };
   }
+
+  let isConversationEmptyActionEnabled = false;
+  $: void $conversation.controller.getAllMessages().then((messages) => {
+    isConversationEmptyActionEnabled = messages.get().size > 0;
+  });
 </script>
 
 <template>
@@ -47,7 +55,10 @@
       {y}
     >
       <MenuContainer mode="small">
-        <MenuItem on:click={closeMenuAndDispatchEvent('deleteAllConversationMessages')}>
+        <MenuItem
+          disabled={!isConversationEmptyActionEnabled}
+          on:click={closeMenuAndDispatchEvent('emptyConversationActionClicked')}
+        >
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">delete_sweep</MdIcon>
           </span>

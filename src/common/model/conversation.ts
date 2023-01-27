@@ -8,6 +8,7 @@ import {
     ReceiverType,
     TriggerSource,
 } from '~/common/enum';
+import {deleteFilesInBackground} from '~/common/file-storage';
 import {type Logger, getGroupTag} from '~/common/logging';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -232,6 +233,35 @@ export class ConversationModelController implements ConversationController {
 
             messageToRemove.get().controller.remove();
             this._updateLastMessagePreview();
+
+            return await Promise.resolve();
+        },
+    };
+
+    /** @inheritdoc */
+    public readonly removeAllMessages: ConversationController['removeAllMessages'] = {
+        [TRANSFER_MARKER]: PROXY_HANDLER,
+        fromLocal: async () => {
+            this.meta.update(() => {
+                const {db, file} = this._services;
+
+                // Delete from database
+                const {deletedFileIds} = db.removeAllMessages(this.uid, false);
+
+                // Deactivate and purge all currently cached messages of this conversation
+                message.deactivateAndPurgeCache(this.uid);
+
+                // Purge the conversation from the conversation cache
+                cache.store[this._receiverLookup.type].remove(this._receiverLookup.uid);
+
+                // Delete from file system
+                deleteFilesInBackground(file, this._log, deletedFileIds);
+
+                // Reload conversation to cache
+                getByReceiver(this._services, this._receiverLookup, Existence.ENSURED);
+
+                return {};
+            });
 
             return await Promise.resolve();
         },
