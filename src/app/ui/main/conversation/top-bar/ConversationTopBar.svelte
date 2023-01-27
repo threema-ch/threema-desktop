@@ -7,8 +7,10 @@
   import {type AppServices} from '~/app/types';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import {type ConversationTopBarMode} from '~/app/ui/main/conversation/top-bar';
+  import ContextMenu from '~/app/ui/main/conversation/top-bar/ConversationTopBarContextMenu.svelte';
   import TopBarMode from '~/app/ui/main/conversation/top-bar/TopBarMode.svelte';
   import TopBarSearch from '~/app/ui/main/conversation/top-bar/TopBarSearch.svelte';
+  import ConversationEmptyConfirmationDialog from '~/app/ui/modal/ConversationEmptyConfirmation.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
@@ -82,6 +84,41 @@
   function closeConversation(): void {
     router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
   }
+
+  // Context menu
+  let contextMenu: ContextMenu;
+  let contextMenuPosition = {x: 0, y: 0};
+  let isContextMenuVisible = false;
+  let isConversationEmptyDialogVisible = false;
+
+  function closeContextMenu(): void {
+    contextMenu.close();
+    isContextMenuVisible = false;
+  }
+
+  function toggleContextMenuOnMouseEvent(event: MouseEvent): void {
+    if (isContextMenuVisible) {
+      closeContextMenu();
+      return;
+    }
+
+    if (event.type === 'contextmenu') {
+      // Prevent browser context menu - do show only our own
+      event.preventDefault();
+    } else if (event.type === 'click') {
+      // Prevent click trigger on body, which would close the contextmenu instantly
+      event.stopPropagation();
+    }
+
+    contextMenuPosition = {x: event.clientX, y: event.clientY};
+    contextMenu.open();
+    isContextMenuVisible = true;
+  }
+
+  function askToDeleteAllConversationMessages(): void {
+    isConversationEmptyDialogVisible = true;
+  }
+  function deleteAllConversationMessages(): void {}
 </script>
 
 <template>
@@ -131,7 +168,7 @@
             <MdIcon theme="Outlined">notifications_active</MdIcon>
           </IconButton> -->
           {#if receiver.type !== 'distribution-list'}
-            <IconButton flavor="naked" class="wip">
+            <IconButton flavor="naked" on:click={toggleContextMenuOnMouseEvent}>
               <MdIcon theme="Outlined">more_vert</MdIcon>
             </IconButton>
           {/if}
@@ -147,6 +184,20 @@
       </TopBarMode>
     {/if}
   </div>
+
+  <ContextMenu
+    bind:this={contextMenu}
+    {...contextMenuPosition}
+    {closeContextMenu}
+    on:deleteAllConversationMessages={askToDeleteAllConversationMessages}
+  />
+
+  <ConversationEmptyConfirmationDialog
+    bind:visible={isConversationEmptyDialogVisible}
+    receiverName={receiver.name}
+    receiverType={receiver.type}
+    on:confirm={deleteAllConversationMessages}
+  />
 </template>
 
 <style lang="scss">

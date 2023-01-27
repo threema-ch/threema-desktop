@@ -34,3 +34,7 @@ export function getGraphemeClusters(text: string, count = 1): string[] {
     }
     return clusters;
 }
+
+export function truncate(str: string, n: u53): string {
+    return str.length > n ? `${str.slice(0, n - 1)}…` : str;
+}
