@@ -3,6 +3,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import {type u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {truncate} from '~/common/utils/string';
   import {type ReceiverType} from '~/common/viewmodel/types';
@@ -10,6 +11,7 @@
   export let visible: boolean;
   export let receiverName: string;
   export let receiverType: ReceiverType;
+  export let conversationMessageCount: u53;
 
   let confirmText: string;
   $: switch (receiverType) {
@@ -40,8 +42,12 @@
     >
       <Title slot="header" title="Empty Chat" />
       <div class="body" slot="body">
-        This will only delete the messages for this chat on this device. Your linked devices won't
-        be affected.
+        {#if conversationMessageCount === 1}
+          This will delete the only message of this chat just on this device.
+        {:else}
+          This will delete the {conversationMessageCount} messages of this chat just on this device.
+        {/if}
+        Your linked devices won't be affected.
         <br />
         <br />
         Emptying a chat might be useful to make the UI more responsive in case you have lots of messages

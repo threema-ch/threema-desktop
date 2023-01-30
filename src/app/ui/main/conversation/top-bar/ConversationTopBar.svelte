@@ -97,6 +97,13 @@
   let contextMenuPosition = {x: 0, y: 0};
   let isContextMenuVisible = false;
   let isConversationEmptyDialogVisible = false;
+  let isConversationEmptyActionEnabled = false;
+  let conversationMessageCount = 0;
+
+  $: void $conversation.controller.getAllMessages().then((messages) => {
+    conversationMessageCount = messages.get().size;
+    isConversationEmptyActionEnabled = conversationMessageCount > 0;
+  });
 
   function closeContextMenu(): void {
     contextMenu.close();
@@ -198,7 +205,7 @@
     bind:this={contextMenu}
     {...contextMenuPosition}
     {closeContextMenu}
-    {conversation}
+    {isConversationEmptyActionEnabled}
     on:emptyConversationActionClicked={confirmEmptyConversationAction}
   />
 
@@ -206,6 +213,7 @@
     bind:visible={isConversationEmptyDialogVisible}
     receiverName={receiver.name}
     receiverType={receiver.type}
+    {conversationMessageCount}
     on:confirm={deleteAllConversationMessages}
   />
 </template>
