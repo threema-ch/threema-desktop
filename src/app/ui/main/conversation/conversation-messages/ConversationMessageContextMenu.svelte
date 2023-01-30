@@ -63,7 +63,7 @@
           </MenuItem>
           <MenuItemDivider />
         {/if}
-        <MenuItem disabled={true} on:click={() => dispatchEvent('quote')}>
+        <MenuItem on:click={() => dispatchEvent('quote')}>
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">format_quote</MdIcon>
           </span>

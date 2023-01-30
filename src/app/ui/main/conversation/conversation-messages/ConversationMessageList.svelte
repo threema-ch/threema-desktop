@@ -157,8 +157,9 @@
       {receiver}
       {receiverLookup}
       selectable={false}
-      {conversation}
       {services}
+      on:quoteMessage
+      on:deleteMessage
     />
   {:else}
     <SystemMessage>

@@ -13,6 +13,11 @@
    */
   export let initialText: string | undefined;
 
+  /**
+   * Whether to display the attachment button.
+   */
+  export let displayAttachmentButton = true;
+
   // Component event dispatcher
   const dispatch = createEventDispatcher<{
     recordAudio: undefined;
@@ -97,29 +102,35 @@
   </div>
 
   <div class="wrapper">
-    <FileTrigger on:fileDrop multiple>
-      <IconButton flavor="naked">
-        <MdIcon theme="Outlined">attach_file</MdIcon>
-      </IconButton>
-    </FileTrigger>
+    <div class="icons-left">
+      {#if displayAttachmentButton}
+        <FileTrigger on:fileDrop multiple>
+          <IconButton flavor="naked">
+            <MdIcon theme="Outlined">attach_file</MdIcon>
+          </IconButton>
+        </FileTrigger>
+      {/if}
+    </div>
     <ComposeArea
       {initialText}
       bind:this={composeArea}
       bind:isEmpty={composeAreaIsEmpty}
       on:submit={sendTextMessage}
     />
-    <IconButton flavor="naked" on:click={showEmojiPicker}>
-      <MdIcon theme="Outlined">insert_emoticon</MdIcon>
-    </IconButton>
-    {#if $composeAreaIsEmpty}
-      <!-- <IconButton flavor="naked" on:click={recordAudio} class="wip">
+    <div class="icons-right">
+      <IconButton flavor="naked" on:click={showEmojiPicker}>
+        <MdIcon theme="Outlined">insert_emoticon</MdIcon>
+      </IconButton>
+      {#if $composeAreaIsEmpty}
+        <!-- <IconButton flavor="naked" on:click={recordAudio} class="wip">
         <MdIcon theme="Outlined">mic_none</MdIcon>
       </IconButton> -->
-    {:else}
-      <IconButton flavor="filled" on:click={sendTextMessage}>
-        <MdIcon theme="Filled">arrow_upward</MdIcon>
-      </IconButton>
-    {/if}
+      {:else}
+        <IconButton flavor="filled" on:click={sendTextMessage}>
+          <MdIcon theme="Filled">arrow_upward</MdIcon>
+        </IconButton>
+      {/if}
+    </div>
   </div>
 </template>
 
@@ -128,8 +139,13 @@
 
   .wrapper {
     display: grid;
-    grid-template: 100% / auto 1fr auto auto;
+    grid-template: 100% / auto 1fr auto;
     align-items: end;
     padding: rem(12px) rem(8px);
+  }
+
+  .icons-left,
+  .icons-right {
+    display: flex;
   }
 </style>

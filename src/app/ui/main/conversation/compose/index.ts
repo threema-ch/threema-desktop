@@ -1,9 +1,6 @@
-/**
- * Compose area modes.
- *
- * TODO(DESK-173, DESK-303): Handle modes 'quote' (DESK-173) and 'attachment' (DESK-303).
- */
-export type ComposeMode = 'text';
+import {type Remote} from '~/common/utils/endpoint';
+import {type RemoteStore} from '~/common/utils/store';
+import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
 
 /**
  * Compose area data.
@@ -12,12 +9,47 @@ export type ComposeMode = 'text';
  * when the user enters some text, then records an audio message, the text will not be shown. But it
  * will re-appear once the audio message is sent.
  */
-export interface ComposeData {
-    // Text entered into the compose area. This may be a text message, or a caption.
-    text: string | undefined;
+export type ComposeData = TextComposeData | QuoteComposeData;
 
-    // Attachment (from copy & paste, drag & drop, ...)
-    attachment: Blob | undefined;
+interface TextComposeData extends BaseComposeData {
+    /** @inheritdoc */
+    readonly mode: 'text';
+
+    /** @inheritdoc */
+    readonly quotedMessageViewModel: undefined;
+}
+
+interface QuoteComposeData extends BaseComposeData {
+    /** @inheritdoc */
+    readonly mode: 'quote';
+
+    /** @inheritdoc */
+    readonly attachment: undefined;
+
+    /** @inheritdoc */
+    readonly quotedMessageViewModel: RemoteStore<Remote<ConversationMessageViewModel>>;
+}
+
+interface BaseComposeData {
+    /**
+     * Compose area modes.
+     */
+    readonly mode: 'text' | 'quote';
+
+    /**
+     * Text entered into the compose area. This may be a text message, or a caption.
+     */
+    readonly text: string | undefined;
+
+    /**
+     * Attachment (from copy & paste, drag & drop, ...)
+     */
+    readonly attachment: Blob | undefined;
+
+    /**
+     * Quoted Message ID
+     */
+    readonly quotedMessageViewModel: RemoteStore<Remote<ConversationMessageViewModel>> | undefined;
 }
 
 /**

@@ -61,6 +61,8 @@ export interface Quote extends PropertiesMarked {
 export type ConversationMessageViewModelStore = LocalStore<ConversationMessageViewModel>;
 
 export interface ConversationMessageViewModel extends PropertiesMarked {
+    readonly messageId: MessageId;
+
     readonly body: Message<AnyMessageBody>;
 
     /**
@@ -98,6 +100,7 @@ function getViewModel(
         );
 
         const conversationMessage = {
+            messageId: message.view.id,
             body: getConversationMessageBody(message, model, getAndSubscribe),
             mentions: getMentions(message, model),
             quote,

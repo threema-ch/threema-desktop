@@ -1,29 +1,38 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy} from 'svelte';
   import {type Writable} from 'svelte/store';
+  import IconButton from 'threema-svelte-components/src/components/blocks/Button/IconButton.svelte';
+  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
 
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
   import {isInactiveGroup} from '~/app/ui/generic/receiver';
-  import {conversationDrafts, type SendMessageEventDetail} from '~/app/ui/main/conversation';
-  import {type ComposeData, type ComposeMode} from '~/app/ui/main/conversation/compose';
+  import {
+    conversationDrafts,
+    conversationListEvent,
+    type SendMessageEventDetail,
+  } from '~/app/ui/main/conversation';
+  import {type ComposeData} from '~/app/ui/main/conversation/compose';
   import ComposeAreaWrapper from '~/app/ui/main/conversation/compose/ComposeAreaWrapper.svelte';
   import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
+  import MessageQuote from '~/app/ui/main/conversation/conversation-messages/MessageQuote.svelte';
   import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
+  import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
   import {display, layout} from '~/common/dom/ui/state';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationCategory} from '~/common/enum';
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
+  import {type MessageId} from '~/common/network/types';
+  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
-  import {WritableStore} from '~/common/utils/store';
+  import {type RemoteStore, WritableStore} from '~/common/utils/store';
   import {
     type ConversationViewModel,
     type InnerConversationViewModelStore,
   } from '~/common/viewmodel/conversation';
-
-  import {conversationListEvent} from '.';
+  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
 
   /**
    * App services.
@@ -96,6 +105,10 @@
    */
   function sendTextMessage(ev: CustomEvent<string>): void {
     const text = ev.detail;
+    const quotedMessageId =
+      $composeData.mode === 'quote'
+        ? $composeData.quotedMessageViewModel.get().messageId
+        : undefined;
 
     // Do not send empty messages
     if (text.trim() === '') {
@@ -104,6 +117,7 @@
     dispatch('sendMessage', {
       type: 'text',
       text,
+      quotedMessageId,
     });
 
     if ($router.nav?.id !== 'conversationList') {
@@ -114,8 +128,9 @@
     // Dispatch an event to scroll the conversation list all the way to the top
     conversationListEvent.post({action: 'scroll-to-top'});
 
-    // Clear draft
+    // Clear draft and compose data
     conversationDraftStore.set(undefined);
+    composeData.set(getDefaultComposeData(undefined));
 
     // Scroll to the bottom of the conversation when sending a new message.
     anchorActive = true;
@@ -127,11 +142,53 @@
   //
   // TODO(DESK-306): If a draft is available for the current receiver, initialize it here (set the
   // text appropriately).
-  const composeMode: ComposeMode = 'text';
-  const composeData: Writable<ComposeData> = new WritableStore({
-    text: $conversationDraftStore,
-    attachment: undefined,
-  });
+  const composeData: Writable<ComposeData> = new WritableStore(
+    getDefaultComposeData($conversationDraftStore),
+  );
+
+  function getDefaultComposeData(text: string | undefined): ComposeData {
+    return {
+      mode: 'text',
+      text,
+      attachment: undefined,
+      quotedMessageViewModel: undefined,
+    };
+  }
+
+  type ComposeDataUpdate =
+    | {
+        readonly mode: 'quote';
+        readonly quotedMessageViewModel: RemoteStore<Remote<ConversationMessageViewModel>>;
+      }
+    | {
+        readonly mode: 'text';
+        readonly text?: string | undefined;
+      };
+  function updateComposeData(update: ComposeDataUpdate): void {
+    composeData.update((currentData) => {
+      let newData;
+      switch (update.mode) {
+        case 'quote':
+          newData = {
+            ...currentData,
+            ...update,
+            attachment: undefined,
+          } as const;
+          break;
+        case 'text':
+          newData = {
+            ...currentData,
+            mode: 'text',
+            quotedMessageViewModel: undefined,
+            text: update.text ?? currentData.text,
+          } as const;
+          break;
+        default:
+          unreachable(update);
+      }
+      return newData;
+    });
+  }
 
   // Determine whether scroll snapping anchor is active.
   let anchorActive = true;
@@ -171,7 +228,7 @@
 
     // Save current message draft
     const currentDraft = textComposeArea.getText();
-    conversationDraftStore.set(currentDraft === '' ? undefined : currentDraft);
+    conversationDraftStore.set(currentDraft.trim() === '' ? undefined : currentDraft);
     textComposeArea.clearText();
   }
 
@@ -203,6 +260,7 @@
         // Get saved draft message
         conversationDraftStore = conversationDrafts.getOrCreateStore(currentReceiverLookup);
         const draftMessage = conversationDraftStore.get();
+        updateComposeData(getDefaultComposeData(draftMessage));
         // Javascript at it's best
         setTimeout(() => {
           if (isTextComposeArea(textComposeArea)) {
@@ -219,6 +277,39 @@
       }
     }
   });
+
+  /**
+   * Set a message as the current quote
+   */
+  function quoteMessage(
+    event: CustomEvent<RemoteStore<Remote<ConversationMessageViewModel>>>,
+  ): void {
+    updateComposeData({
+      mode: 'quote',
+      quotedMessageViewModel: event.detail,
+    });
+  }
+
+  /**
+   * Delete a message and remove it from being quoted (in case it is)
+   */
+  function deleteMessage(event: CustomEvent<MessageId>): void {
+    const messageId = event.detail;
+
+    if (
+      $composeData.mode === 'quote' &&
+      $composeData.quotedMessageViewModel.get().messageId === messageId
+    ) {
+      updateComposeData({
+        mode: 'text',
+      });
+    }
+
+    conversation
+      .get()
+      .controller.removeMessage.fromLocal(messageId)
+      .catch(() => toast.addSimpleFailure('Could not delete message'));
+  }
 
   onDestroy(() => {
     saveMessageDraftAndClear(lastReceiverLookup);
@@ -258,6 +349,8 @@
             receiver={$innerConversationViewModel.receiver}
             {conversation}
             {services}
+            on:quoteMessage={quoteMessage}
+            on:deleteMessage={deleteMessage}
           />
         {/await}
         <div class="anchor" class:active={anchorActive} use:scrollSnap />
@@ -265,16 +358,32 @@
       <div class="bottom-bar">
         {#if isInactiveGroup($receiver)}
           <div class="deleted-group-message">You are no longer part of this group.</div>
-        {:else if composeMode === 'text'}
+        {:else if $composeData.mode === 'text' || $composeData.mode === 'quote'}
+          {#if $composeData.mode === 'quote'}
+            <div class="quote">
+              {#key $composeData.quotedMessageViewModel}
+                <MessageQuote quote={$composeData.quotedMessageViewModel} />
+              {/key}
+              <IconButton
+                flavor="naked"
+                on:click={() => updateComposeData({mode: 'text', text: undefined})}
+              >
+                <MdIcon theme="Filled">close</MdIcon>
+              </IconButton>
+            </div>
+          {/if}
           <ComposeAreaWrapper
             bind:this={textComposeArea}
             initialText={$composeData.text}
+            displayAttachmentButton={$composeData.mode !== 'quote'}
             on:recordAudio={() => {
               // TODO(DESK-196)
             }}
             on:sendTextMessage={sendTextMessage}
             on:fileDrop
           />
+        {:else}
+          {unreachable($composeData)}
         {/if}
       </div>
     {/if}
@@ -328,6 +437,14 @@
           }
         }
       }
+    }
+
+    .quote {
+      background-color: $grey-100;
+      padding: rem(8px) rem(8px) rem(8px) rem(16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
     }
 
     > * {

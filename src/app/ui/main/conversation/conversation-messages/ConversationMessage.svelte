@@ -3,6 +3,8 @@
   Message row as shown in a conversation list.
 -->
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte';
+
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
@@ -20,12 +22,8 @@
   import {type DbReceiverLookup} from '~/common/db';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {MessageDirection, MessageReaction, ReceiverType} from '~/common/enum';
-  import {
-    type AnyMessageModelStore,
-    type Conversation,
-    type RemoteModelStoreFor,
-  } from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
+  import {type AnyMessageModelStore, type RemoteModelStoreFor} from '~/common/model';
+  import {type MessageId} from '~/common/network/types';
   import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
@@ -40,10 +38,6 @@
    * Current receiver lookup
    */
   export let receiverLookup: DbReceiverLookup;
-  /**
-   * The parent conversation, to which this message belongs.
-   */
-  export let conversation: RemoteModelStore<Conversation>;
   /**
    * Determine whether the message is currently selectable via displayed checkbox.
    */
@@ -102,7 +96,7 @@
     isContextMenuVisible = true;
   }
 
-  function handleContextMenuEvent(type: ConversationMessageContextMenuEvent) {
+  function handleContextMenuEvent(type: ConversationMessageContextMenuEvent): void {
     closeContextMenu();
     switch (type) {
       case 'thumbup':
@@ -130,7 +124,7 @@
         isMessageDetailModalVisible = true;
         break;
       case 'quote':
-        // TODO
+        dispatchEvent('quoteMessage', viewModelStore);
         break;
       case 'share':
         toast.addSimpleFailure('Sharing messages is currently not supported');
@@ -154,11 +148,7 @@
   }
 
   function deleteMessage(): void {
-    // Todo(DESK-483): handle error
-    conversation
-      .get()
-      .controller.removeMessage.fromLocal($messageStore.view.id)
-      .catch(() => toast.addSimpleFailure('Could not delete message'));
+    dispatchEvent('deleteMessage', $messageStore.view.id);
     isDeleteMessageConfirmationModalVisible = false;
   }
 
@@ -204,6 +194,11 @@
       );
     }
   }
+
+  const dispatchEvent = createEventDispatcher<{
+    readonly quoteMessage: RemoteStore<Remote<ConversationMessageViewModel>>;
+    readonly deleteMessage: MessageId;
+  }>();
 </script>
 
 <template>
@@ -268,6 +263,7 @@
           on:thumbup={() => handleContextMenuEvent('thumbup')}
           on:thumbdown={() => handleContextMenuEvent('thumbdown')}
           on:forward={() => handleContextMenuEvent('forward')}
+          on:quote={() => handleContextMenuEvent('quote')}
         />
         <MessageForward
           {services}
