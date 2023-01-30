@@ -78,6 +78,17 @@ export class LocalSetStore<TValue extends TransferMarked>
         this._dispatch(this._value);
         this._delta.raise([DeltaUpdateType.DELETED, value]);
     }
+
+    public clear(): void {
+        const valuesToDelete = [...this._value.values()];
+        this._value.clear();
+        this._dispatch(this._value);
+        for (const deletedValue of valuesToDelete) {
+            // Note: Consider adding a DeltaUpdateType.CLEARED to avoid this loop and improve the
+            // effect on the UI.
+            this._delta.raise([DeltaUpdateType.DELETED, deletedValue]);
+        }
+    }
 }
 
 /**

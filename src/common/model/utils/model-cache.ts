@@ -81,6 +81,11 @@ export class LocalModelStoreCache<
         this._removeFromSet(store);
     }
 
+    public clear(): void {
+        this._stores.clear();
+        this.setRef.deref()?.clear();
+    }
+
     private _addToSet(store: TModelStore): void {
         this.setRef.deref()?.add(store);
     }

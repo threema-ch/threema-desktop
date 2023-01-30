@@ -346,6 +346,37 @@ function remove(
     deleteFilesInBackground(file, log, deletedFileIds);
 }
 
+/**
+ * Delete all messages for the given conversation from the database, the cache and the file system.
+ */
+export function removeAll(
+    services: ServicesForModel,
+    log: Logger,
+    conversationUid: UidOf<DbConversation>,
+): void {
+    const {db, file} = services;
+
+    const messageCount = db.getMessageUids(conversationUid).length;
+
+    if (messageCount < 1) {
+        return;
+    }
+
+    // Delete from database
+    const {removed, deletedFileIds} = db.removeAllMessages(conversationUid, false);
+    if (removed < 1) {
+        throw new Error(
+            `Could not delete messages for conversation with UID ${conversationUid} from database`,
+        );
+    }
+
+    // Delete from cache
+    caches.get(conversationUid).clear();
+
+    // Delete from file system
+    deleteFilesInBackground(file, log, deletedFileIds);
+}
+
 export function all(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
