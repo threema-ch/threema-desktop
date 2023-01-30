@@ -7,6 +7,7 @@
   import MenuItemDivider from '#3sc/components/generic/Menu/MenuItemDivider.svelte';
   import {type ContextMenuDirectionX} from '~/app/ui/generic/context-menu';
   import ContextMenuWrapper from '~/app/ui/generic/context-menu/ContextMenuWrapper.svelte';
+  import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import {type u32} from '~/common/types';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
@@ -35,7 +36,8 @@
     wrapper.open();
   }
 
-  const dispatchEvent = createEventDispatcher();
+  const dispatchEvent =
+    createEventDispatcher<{[TEvent in ConversationMessageContextMenuEvent]: undefined}>();
 </script>
 
 <template>

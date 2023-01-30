@@ -10,6 +10,7 @@
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import {type ConversationData} from '~/app/ui/main/conversation';
+  import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import MessageComponent from '~/app/ui/main/conversation/conversation-messages/Message.svelte';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
@@ -25,7 +26,7 @@
     type RemoteModelStoreFor,
   } from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {assert, assertUnreachable} from '~/common/utils/assert';
+  import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessage} from '~/common/viewmodel/conversation-messages';
@@ -101,6 +102,44 @@
     isContextMenuVisible = true;
   }
 
+  function handleContextMenuEvent(type: ConversationMessageContextMenuEvent) {
+    closeContextMenu();
+    switch (type) {
+      case 'thumbup':
+      case 'thumbdown':
+        if ($messageStore.ctx !== MessageDirection.INBOUND) {
+          break;
+        }
+        $messageStore.controller.reaction
+          .fromLocal(
+            type === 'thumbdown' ? MessageReaction.DECLINE : MessageReaction.ACKNOWLEDGE,
+            new Date(),
+          )
+          .catch(() => toast.addSimpleFailure('Could not react to message'));
+        break;
+      case 'copy':
+        copyMessageContent();
+        break;
+      case 'delete':
+        isDeleteMessageConfirmationModalVisible = true;
+        break;
+      case 'forward':
+        isForwardMessageModalVisible = true;
+        break;
+      case 'showMessageDetails':
+        isMessageDetailModalVisible = true;
+        break;
+      case 'quote':
+        // TODO
+        break;
+      case 'share':
+        toast.addSimpleFailure('Sharing messages is currently not supported');
+        break;
+      default:
+        unreachable(type);
+    }
+  }
+
   function copyMessageContent(): void {
     switch (messageBody.type) {
       case 'text':
@@ -112,22 +151,6 @@
       default:
         assertUnreachable(`unhandled message type ${messageBody.type}`);
     }
-    closeContextMenu();
-  }
-
-  function showDeleteMessageConfirmationModal(): void {
-    closeContextMenu();
-    isDeleteMessageConfirmationModalVisible = true;
-  }
-
-  function showForwardMessageModal(): void {
-    closeContextMenu();
-    isForwardMessageModalVisible = true;
-  }
-
-  function showMessageDetails(): void {
-    closeContextMenu();
-    isMessageDetailModalVisible = true;
   }
 
   function deleteMessage(): void {
@@ -137,20 +160,6 @@
       .controller.removeMessage.fromLocal($messageStore.view.id)
       .catch(() => toast.addSimpleFailure('Could not delete message'));
     isDeleteMessageConfirmationModalVisible = false;
-  }
-
-  function reactToMessage(reaction: MessageReaction): void {
-    if ($messageStore.ctx === MessageDirection.INBOUND) {
-      // Todo(DESK-483): handle error
-      $messageStore.controller.reaction
-        .fromLocal(reaction, new Date())
-        .catch(() => toast.addSimpleFailure('Could not react to message'));
-    }
-    closeContextMenu();
-  }
-
-  function clickoutsideContextMenu(): void {
-    closeContextMenu();
   }
 
   function toggleSelect(): void {
@@ -252,13 +261,13 @@
           message={messageBody}
           isGroupConversation={receiver.type === 'group'}
           {...contextMenuPosition}
-          on:copy={copyMessageContent}
-          on:delete={showDeleteMessageConfirmationModal}
-          on:clickoutside={clickoutsideContextMenu}
-          on:showMessageDetails={showMessageDetails}
-          on:thumbup={() => reactToMessage(MessageReaction.ACKNOWLEDGE)}
-          on:thumbdown={() => reactToMessage(MessageReaction.DECLINE)}
-          on:forward={showForwardMessageModal}
+          on:copy={() => handleContextMenuEvent('copy')}
+          on:delete={() => handleContextMenuEvent('delete')}
+          on:clickoutside={() => closeContextMenu()}
+          on:showMessageDetails={() => handleContextMenuEvent('showMessageDetails')}
+          on:thumbup={() => handleContextMenuEvent('thumbup')}
+          on:thumbdown={() => handleContextMenuEvent('thumbdown')}
+          on:forward={() => handleContextMenuEvent('forward')}
         />
         <MessageForward
           {services}
