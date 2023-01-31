@@ -356,19 +356,8 @@ export function removeAll(
 ): void {
     const {db, file} = services;
 
-    const messageCount = db.getMessageUids(conversationUid).length;
-
-    if (messageCount < 1) {
-        return;
-    }
-
     // Delete from database
-    const {removed, deletedFileIds} = db.removeAllMessages(conversationUid, false);
-    if (removed < 1) {
-        throw new Error(
-            `Could not delete messages for conversation with UID ${conversationUid} from database`,
-        );
-    }
+    const {deletedFileIds} = db.removeAllMessages(conversationUid, false);
 
     // Delete from cache
     caches.get(conversationUid).clear();
