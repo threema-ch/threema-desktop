@@ -243,6 +243,7 @@ export class ConversationModelController implements ConversationController {
         fromLocal: async () => {
             this.meta.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
+                this._updateLastMessagePreview();
                 return {};
             });
 
