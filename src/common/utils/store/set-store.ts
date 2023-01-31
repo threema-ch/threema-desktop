@@ -24,7 +24,9 @@ import {
     ReadableStore,
 } from '~/common/utils/store';
 
-export type DeltaUpdate<TValue> = [type: DeltaUpdateType, value: TValue];
+export type DeltaUpdate<TValue> =
+    | [type: Exclude<DeltaUpdateType, DeltaUpdateType.CLEARED>, value: TValue]
+    | [type: DeltaUpdateType.CLEARED];
 
 export interface SetStoreDeltaListener<TValue> {
     readonly delta: EventListener<DeltaUpdate<TValue>>;
@@ -80,14 +82,9 @@ export class LocalSetStore<TValue extends TransferMarked>
     }
 
     public clear(): void {
-        const valuesToDelete = [...this._value.values()];
         this._value.clear();
         this._dispatch(this._value);
-        for (const deletedValue of valuesToDelete) {
-            // Note: Consider adding a DeltaUpdateType.CLEARED to avoid this loop and improve the
-            // effect on the UI.
-            this._delta.raise([DeltaUpdateType.DELETED, deletedValue]);
-        }
+        this._delta.raise([DeltaUpdateType.CLEARED]);
     }
 }
 
@@ -160,6 +157,13 @@ export class LocalDerivedSetStore<TValue extends TransferMarked, TDerived extend
                     this._delta.raise([DeltaUpdateType.DELETED, derived]);
                     break;
                 }
+                case DeltaUpdateType.CLEARED: {
+                    map.clear();
+                    this._value.clear();
+                    this._dispatch(this._value);
+                    this._delta.raise([DeltaUpdateType.CLEARED]);
+                    break;
+                }
                 default:
                     unreachable(type);
             }
@@ -188,7 +192,8 @@ type SerializedSetStoreWireValue =
     /* eslint-disable @typescript-eslint/no-explicit-any */
     | readonly [id: ObjectId<any>, type: undefined, serialized: HandlerWireValue]
     | readonly [id: ObjectId<any>, type: DeltaUpdateType.ADDED, serialized: HandlerWireValue]
-    | readonly [id: ObjectId<any>, type: DeltaUpdateType.DELETED, serialized: undefined];
+    | readonly [id: ObjectId<any>, type: DeltaUpdateType.DELETED, serialized: undefined]
+    | readonly [id: undefined, type: DeltaUpdateType.CLEARED, serialized: undefined];
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export class RemoteSetStore<TValue extends object>
@@ -233,6 +238,7 @@ export class RemoteSetStore<TValue extends object>
             const delta = data as SerializedSetStoreWireValue;
             const [id, type, serialized] = delta;
             let value;
+            let deltaUpdate: DeltaUpdate<TValue>;
             switch (type) {
                 case DeltaUpdateType.ADDED:
                     value = service
@@ -245,6 +251,7 @@ export class RemoteSetStore<TValue extends object>
                         'Expected value to not already exist when adding as part of a delta update',
                     );
                     self_._value.add(value);
+                    deltaUpdate = [type, value];
                     break;
                 case DeltaUpdateType.DELETED:
                     value = service.cache().remote.get<TValue>(id);
@@ -256,13 +263,21 @@ export class RemoteSetStore<TValue extends object>
                         self_._value.delete(value),
                         'Expected value to have been removed when removing as part of a delta delta',
                     );
+                    deltaUpdate = [type, value];
                     break;
-                default:
+                case DeltaUpdateType.CLEARED:
+                    self_._value.clear();
+                    deltaUpdate = [type];
+                    break;
+                case undefined:
                     assertUnreachable('Expected delta updates but got initial values');
+                // eslint-disable-next-line no-fallthrough
+                default:
+                    unreachable(type);
             }
             self_._value = new Set(self_._value);
             self_._dispatch(self_._value);
-            self_._delta.raise([type, value]);
+            self_._delta.raise(deltaUpdate);
         }
         set.endpoint.addEventListener('message', listener);
         set.endpoint.start?.();
@@ -336,17 +351,24 @@ export class RemoteSetStore<TValue extends object>
 
         // Subsequently, push (delta) updates.
         const unsubscriber = store.delta.subscribe(([type, value]) => {
-            const id = service.cache().local.getOrAssignId(value);
             let delta: SerializedSetStoreWireValue;
             let serialized, transfers;
             switch (type) {
-                case DeltaUpdateType.ADDED:
+                case DeltaUpdateType.ADDED: {
+                    const id = service.cache().local.getOrAssignId(value);
                     [serialized, transfers] = service.serialize(value);
                     delta = [id, type, serialized];
                     break;
-                case DeltaUpdateType.DELETED:
+                }
+                case DeltaUpdateType.DELETED: {
+                    const id = service.cache().local.getOrAssignId(value);
                     delta = [id, type, undefined];
                     break;
+                }
+                case DeltaUpdateType.CLEARED: {
+                    delta = [undefined, type, undefined];
+                    break;
+                }
                 default:
                     unreachable(type);
             }

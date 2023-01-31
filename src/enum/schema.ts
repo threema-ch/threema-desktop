@@ -636,6 +636,7 @@ export enum Existence {
 export enum DeltaUpdateType {
     ADDED = 0,
     DELETED = 1,
+    CLEARED = 2,
 }
 
 /**

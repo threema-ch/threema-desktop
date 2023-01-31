@@ -1836,6 +1836,8 @@ export namespace DeltaUpdateType {
     export type ADDED = typeof ADDED;
     export const DELETED = 1;
     export type DELETED = typeof DELETED;
+    export const CLEARED = 2;
+    export type CLEARED = typeof CLEARED;
 }
 /**
  * Delta update type.
