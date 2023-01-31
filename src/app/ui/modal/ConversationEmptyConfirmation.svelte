@@ -14,17 +14,21 @@
   export let conversationMessageCount: u53;
 
   let confirmText: string;
+  let conversationDisplayName: string;
   $: switch (receiverType) {
     case 'contact':
-      confirmText = `Empty "${truncate(receiverName, 30)}" Chat`;
+      confirmText = `Empty Chat`;
+      conversationDisplayName = `chat with ${truncate(receiverName, 80)}`;
       break;
 
     case 'group':
-      confirmText = `Empty "${truncate(receiverName, 20)}" Group Chat`;
+      confirmText = `Empty Group Chat`;
+      conversationDisplayName = `"${truncate(receiverName, 80)}" group chat`;
       break;
 
     case 'distribution-list':
-      confirmText = `Empty "${truncate(receiverName, 15)}" Distribution List`;
+      confirmText = `Empty Distribution List`;
+      conversationDisplayName = `"${truncate(receiverName, 80)}" distribution list`;
       break;
 
     default:
@@ -42,16 +46,13 @@
     >
       <Title slot="header" title="Empty Chat" />
       <div class="body" slot="body">
+        This will delete the
         {#if conversationMessageCount === 1}
-          This will delete the only message of this chat just on this device.
+          only message
         {:else}
-          This will delete the {conversationMessageCount} messages of this chat just on this device.
+          {conversationMessageCount} messages
         {/if}
-        Your linked devices won't be affected.
-        <br />
-        <br />
-        Emptying a chat might be useful to make the UI more responsive in case you have lots of messages
-        in a chat, or just to clear old messages.
+        of this {conversationDisplayName} just on this device. Your linked devices won't be affected.
       </div>
       <CancelAndConfirm slot="footer" let:modal {modal} {confirmText} />
     </ModalDialog>
