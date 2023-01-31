@@ -99,6 +99,8 @@
   let isConversationEmptyDialogVisible = false;
   let isConversationEmptyActionEnabled = false;
   let conversationMessageCount = 0;
+  let topBar: HTMLElement;
+  let menuButton: HTMLElement;
 
   $: void $conversation.controller.getAllMessages().then((messages) => {
     conversationMessageCount = messages.get().size;
@@ -124,7 +126,11 @@
       event.stopPropagation();
     }
 
-    contextMenuPosition = {x: event.clientX, y: event.clientY};
+    contextMenuPosition = {
+      x: menuButton.offsetLeft + menuButton.offsetWidth,
+      y: topBar.offsetHeight,
+    };
+
     contextMenu.open();
     isContextMenuVisible = true;
   }
@@ -138,7 +144,7 @@
 </script>
 
 <template>
-  <div data-mode={mode}>
+  <div data-mode={mode} bind:this={topBar}>
     {#if mode === 'conversation-detail'}
       <div class="detail" data-type={receiver.type} data-display={$display}>
         {#if $display === 'small'}
@@ -184,9 +190,11 @@
             <MdIcon theme="Outlined">notifications_active</MdIcon>
           </IconButton> -->
           {#if receiver.type !== 'distribution-list'}
-            <IconButton flavor="naked" on:click={toggleContextMenuOnMouseEvent}>
-              <MdIcon theme="Outlined">more_vert</MdIcon>
-            </IconButton>
+            <div bind:this={menuButton}>
+              <IconButton flavor="naked" on:click={toggleContextMenuOnMouseEvent}>
+                <MdIcon theme="Outlined">more_vert</MdIcon>
+              </IconButton>
+            </div>
           {/if}
         </div>
       </div>
