@@ -77,13 +77,20 @@ const caches = new LazyMap<
 
 export function deactivateAndPurgeCache(conversationUid: UidOf<DbConversation>): void {
     // Purge all cached messages from the cache for that conversation
-    const map = caches.pop(conversationUid)?.setRef.deref()?.get();
-    if (map === undefined) {
+    const set = caches.pop(conversationUid)?.setRef.deref()?.get();
+    if (set === undefined) {
         return;
     }
 
     // Deactivate all cached messages of that conversation
-    for (const message of map.values()) {
+    deactivateMessages([...set]);
+}
+
+/**
+ *  Deactivate all cached messages of that conversation
+ */
+function deactivateMessages(messages: AnyMessageModelStore[]): void {
+    for (const message of messages) {
         message.get().controller.meta.deactivate();
     }
 }
@@ -359,8 +366,13 @@ export function removeAll(
     // Delete from database
     const {deletedFileIds} = db.removeAllMessages(conversationUid, false);
 
+    const messageSet = caches.get(conversationUid).setRef.deref();
+    const messagesToDeactivate = messageSet === undefined ? [] : [...messageSet.get()];
+
     // Delete from cache
     caches.get(conversationUid).clear();
+
+    deactivateMessages(messagesToDeactivate);
 
     // Delete from file system
     deleteFilesInBackground(file, log, deletedFileIds);
