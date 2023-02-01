@@ -52,7 +52,7 @@
         {:else}
           {conversationMessageCount} messages
         {/if}
-        of this {conversationDisplayName} just on this device. Your linked devices won't be affected.
+        of this {conversationDisplayName} on this device. Your linked devices won't be affected.
       </div>
       <CancelAndConfirm slot="footer" let:modal {modal} {confirmText} />
     </ModalDialog>

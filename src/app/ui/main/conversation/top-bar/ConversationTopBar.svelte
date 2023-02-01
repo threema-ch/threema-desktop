@@ -7,7 +7,7 @@
   import {type AppServices} from '~/app/types';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import {type ConversationTopBarMode} from '~/app/ui/main/conversation/top-bar';
-  import ContextMenu from '~/app/ui/main/conversation/top-bar/ConversationTopBarContextMenu.svelte';
+  import ConversationTopBarContextMenu from '~/app/ui/main/conversation/top-bar/ConversationTopBarContextMenu.svelte';
   import TopBarMode from '~/app/ui/main/conversation/top-bar/TopBarMode.svelte';
   import TopBarSearch from '~/app/ui/main/conversation/top-bar/TopBarSearch.svelte';
   import ConversationEmptyConfirmationDialog from '~/app/ui/modal/ConversationEmptyConfirmation.svelte';
@@ -53,7 +53,10 @@
    * App services.
    */
   export let services: AppServices;
-  const {router} = services;
+  const {router, logging} = services;
+
+  // Logger
+  const log = logging.logger('component.conversation-top-bar');
 
   // Determine if this is an inactive group
   export let isInactiveGroup: boolean;
@@ -93,7 +96,7 @@
   }
 
   // Context menu
-  let contextMenu: ContextMenu;
+  let contextMenu: ConversationTopBarContextMenu;
   let contextMenuPosition = {x: 0, y: 0};
   let isContextMenuVisible = false;
   let isConversationEmptyDialogVisible = false;
@@ -102,10 +105,17 @@
   let topBar: HTMLElement;
   let menuButton: HTMLElement;
 
-  $: void $conversation.controller.getAllMessages().then((messages) => {
-    conversationMessageCount = messages.get().size;
-    isConversationEmptyActionEnabled = conversationMessageCount > 0;
-  });
+  $: $conversation.controller
+    .getAllMessages()
+    .then((messages) => {
+      conversationMessageCount = messages.get().size;
+      isConversationEmptyActionEnabled = conversationMessageCount > 0;
+    })
+    .catch((error) => {
+      log.error(`Failed to fetch conversation messages: ${error}`);
+      conversationMessageCount = 0;
+      isConversationEmptyActionEnabled = false;
+    });
 
   function closeContextMenu(): void {
     contextMenu.close();
@@ -118,13 +128,8 @@
       return;
     }
 
-    if (event.type === 'contextmenu') {
-      // Prevent browser context menu - do show only our own
-      event.preventDefault();
-    } else if (event.type === 'click') {
-      // Prevent click trigger on body, which would close the contextmenu instantly
-      event.stopPropagation();
-    }
+    // Prevent click trigger on body, which would close the context menu instantly
+    event.stopPropagation();
 
     contextMenuPosition = {
       x: menuButton.offsetLeft + menuButton.offsetWidth,
@@ -139,7 +144,9 @@
     isConversationEmptyDialogVisible = true;
   }
   function deleteAllConversationMessages(): void {
-    void $conversation.controller.removeAllMessages.fromLocal();
+    $conversation.controller.removeAllMessages
+      .fromLocal()
+      .catch((error) => log.error(`Could not remove messages from conversation: ${error}`));
   }
 </script>
 
@@ -209,7 +216,7 @@
     {/if}
   </div>
 
-  <ContextMenu
+  <ConversationTopBarContextMenu
     bind:this={contextMenu}
     {...contextMenuPosition}
     {closeContextMenu}

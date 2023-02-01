@@ -28,9 +28,9 @@
     wrapper.open();
   }
 
-  const dispatchEvent = createEventDispatcher();
+  const dispatchEvent = createEventDispatcher<{emptyConversationActionClicked: undefined}>();
 
-  function closeMenuAndDispatchEvent(eventName: string): () => void {
+  function closeMenuAndDispatchEvent(eventName: 'emptyConversationActionClicked'): () => void {
     return () => {
       closeContextMenu();
       dispatchEvent(eventName);

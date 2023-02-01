@@ -223,31 +223,29 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public readonly removeMessage: ConversationController['removeMessage'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (uid: MessageId) => {
             const messageToRemove = this.getMessage(uid);
 
             if (messageToRemove === undefined) {
-                return await Promise.resolve();
+                return;
             }
 
             messageToRemove.get().controller.remove();
             this._updateLastMessagePreview();
-
-            return await Promise.resolve();
         },
     };
 
     /** @inheritdoc */
     public readonly removeAllMessages: ConversationController['removeAllMessages'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async () => {
             this.meta.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
                 this._updateLastMessagePreview();
                 return {};
             });
-
-            return await Promise.resolve();
         },
     };
 

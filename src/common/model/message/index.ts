@@ -87,7 +87,7 @@ export function deactivateAndPurgeCache(conversationUid: UidOf<DbConversation>):
 }
 
 /**
- *  Deactivate all cached messages of that conversation
+ * Deactivate the model controller for all specified messages.
  */
 function deactivateMessages(messages: AnyMessageModelStore[]): void {
     for (const message of messages) {
