@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {getGraphemeClusters, localeSort} from '~/common/utils/string';
+import {getGraphemeClusters, localeSort, truncate} from '~/common/utils/string';
 
 export function run(): void {
     describe('utils::string', function () {
@@ -39,6 +39,20 @@ export function run(): void {
                 expect(getGraphemeClusters('', 1)).to.eql([]);
                 expect(getGraphemeClusters('', 2)).to.eql([]);
                 expect(getGraphemeClusters('hi', 3)).to.eql(['h', 'i']);
+            });
+        });
+
+        describe('truncate', function () {
+            it('does not truncate strings shorter than or equal to the specified length', function () {
+                expect(truncate('hi🤷‍♀️', 4)).to.equal('hi🤷‍♀️');
+                expect(truncate('hi🤷‍♀️', 3)).to.equal('hi🤷‍♀️');
+            });
+
+            it('truncates correctly at grapheme cluster boundaries, not bytes', function () {
+                expect(truncate('hi 🤷‍♀️ there', 6)).to.equal('hi 🤷‍♀️ …');
+                expect(truncate('hi 🤷‍♀️ there', 5)).to.equal('hi 🤷‍♀️…');
+                expect(truncate('hi 🤷‍♀️ there', 4)).to.equal('hi …');
+                expect(truncate('hi 🤷‍♀️ there', 3)).to.equal('hi…');
             });
         });
     });

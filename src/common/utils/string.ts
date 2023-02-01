@@ -35,6 +35,18 @@ export function getGraphemeClusters(text: string, count = 1): string[] {
     return clusters;
 }
 
-export function truncate(str: string, n: u53): string {
-    return str.length > n ? `${str.slice(0, n - 1)}…` : str;
+/**
+ * Truncate the `text` to max `length` grapheme clusters.
+ *
+ * If the text was truncated, an ellipsis (…) will be appended. The `length` parameter includes the
+ * ellipsis.
+ */
+export function truncate(text: string, length: u53): string {
+    const clusters = getGraphemeClusters(text, length + 1);
+    if (clusters.length > length) {
+        clusters.pop();
+        clusters.pop();
+        return `${clusters.join('')}…`;
+    }
+    return text;
 }
