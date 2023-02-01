@@ -120,10 +120,10 @@ $themes: (
 
   // prettier-ignore
   @return (
-    // Proifle picture upload
+    // Profile picture upload
     --cc-profile-picture-upload-background-color: -g($cc, profile-picture-upload-background-color),
 
-    // Proifle picture overlay
+    // Profile picture overlay
     --cc-profile-picture-overlay-unread-background-color:
     color-conforms(-g($cc, profile-picture-overlay-unread-background), $alpha: false),
     --cc-profile-picture-overlay-unread-text-color:
@@ -198,10 +198,13 @@ $themes: (
     --cc-menu-item-icon-text-background-color--hover: -g($cc, menu-item-icon-text-background-color--hover),
     --cc-menu-item-icon-text-background-color--active: -g($cc, menu-item-icon-text-background-color--active),
 
-    // Compose Area
+    // Compose area
     --cc-compose-area-placeholder-text-color: -g($cc, compose-area-placeholder-text),
 
-    // Modal Dialog
+    // Emoji picker
+    --cc-emoji-picker-background-color: -g($cc, emoji-picker-background-color),
+
+    // Modal dialog
     --cc-modal-dialog-background-color: -g($cc, modal-dialog-background-color),
   );
 }

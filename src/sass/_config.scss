@@ -140,7 +140,10 @@ $config: config-merge(components.$config, (
       // Compose area
       --cc-compose-area-placeholder-text-color,
 
-      // Modal Dialog
+      // Emoji picker
+      --cc-emoji-picker-background-color,
+
+      // Modal dialog
       --cc-modal-dialog-background-color,
     ),
 

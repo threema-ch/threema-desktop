@@ -97,9 +97,11 @@ $dark: (
     // Icon text
     menu-item-icon-text-background-color--hover: rgba(#000000, 12%),
     menu-item-icon-text-background-color--active: rgba(#000000, 38%),
-    // Compose Area
+    // Compose area
     compose-area-placeholder-text: theme.$dark-text-e2,
-    // Modal Dialog
+    // Emoji picker
+    emoji-picker-background-color: #2e2e2e,
+    // Modal dialog
     modal-dialog-background-color: rgba(#000000, 74%),
   ),
   debug-components: (

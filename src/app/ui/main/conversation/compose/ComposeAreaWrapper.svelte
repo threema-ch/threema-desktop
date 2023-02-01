@@ -4,6 +4,7 @@
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
 
   /**
@@ -22,6 +23,10 @@
   let composeArea: ComposeArea;
   let composeAreaIsEmpty: Readable<boolean>;
 
+  // Emoji picker
+  let emojiPicker: EmojiPicker;
+  let emojiPickerPosition = {x: 0, y: 0};
+
   // TODO(WEBMD-196): Record audio messages
   // function recordAudio(): void {
   //   dispatch('recordAudio');
@@ -29,6 +34,26 @@
 
   function attachData(): void {
     dispatch('attachData');
+  }
+
+  /**
+   * Show emoji picker if it's invisible.
+   */
+  function showEmojiPicker(event: MouseEvent): void {
+    const isVisible: boolean = emojiPicker.isVisible();
+    if (isVisible) {
+      return;
+    }
+
+    // Show emoji picker at top left of button
+    const emojiButton = event.currentTarget as HTMLElement;
+    const rect = emojiButton.getBoundingClientRect();
+    emojiPickerPosition = {x: rect.left, y: rect.top};
+    emojiPicker.show();
+
+    // Prevent click event from bubbling up to the body element, where the emoji picker would
+    // immediately be closed again.
+    event.stopPropagation();
   }
 
   function sendMessage(): void {
@@ -66,7 +91,15 @@
 </script>
 
 <template>
-  <div>
+  <div class="emoji-picker">
+    <EmojiPicker
+      bind:this={emojiPicker}
+      {...emojiPickerPosition}
+      on:insertEmoji={(event) => composeArea.insertText(event.detail)}
+    />
+  </div>
+
+  <div class="wrapper">
     <IconButton flavor="naked" on:click={attachData} class="wip">
       <MdIcon theme="Outlined">attach_file</MdIcon>
     </IconButton>
@@ -76,7 +109,7 @@
       bind:isEmpty={composeAreaIsEmpty}
       on:submit={sendMessage}
     />
-    <IconButton flavor="naked" class="wip">
+    <IconButton flavor="naked" on:click={showEmojiPicker}>
       <MdIcon theme="Outlined">insert_emoticon</MdIcon>
     </IconButton>
     {#if $composeAreaIsEmpty}
@@ -94,7 +127,7 @@
 <style lang="scss">
   @use 'component' as *;
 
-  div {
+  .wrapper {
     display: grid;
     grid-template: 100% / auto 1fr auto auto;
     align-items: end;
