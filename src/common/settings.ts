@@ -24,11 +24,11 @@ function simplifyProfilePictureShareWith(
         case 'nobody':
             return {group: 'nobody'};
         case 'allowList': {
+            const allowListIdentities: string[] =
+                profilePictureShareWith.policy.allowList.identities;
             return {
                 group: 'allowList',
-                allowList: IDENTITY_STRING_LIST_SCHEMA.parse(
-                    profilePictureShareWith.policy.allowList,
-                ),
+                allowList: IDENTITY_STRING_LIST_SCHEMA.parse(allowListIdentities),
             };
         }
         default:
