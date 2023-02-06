@@ -59,6 +59,7 @@
   function sendMessage(): void {
     dispatch('sendMessage', composeArea.getText());
     composeArea.clearText();
+    emojiPicker.hide();
   }
 
   /**
