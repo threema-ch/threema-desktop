@@ -10,7 +10,7 @@ import {
     type ServicesForFileStorage,
     type StoredFileHandle,
     FileStorageError,
-    generateRandomFileEncryptionKey,
+    randomFileEncryptionKey,
     randomFileId,
 } from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
@@ -127,7 +127,7 @@ export class FileSystemFileStorage implements FileStorage {
         }
 
         // Generate random file encryption key
-        const key = generateRandomFileEncryptionKey(this._services.crypto);
+        const key = randomFileEncryptionKey(this._services.crypto);
 
         // Open file for appending
         let file: fsPromises.FileHandle | undefined;

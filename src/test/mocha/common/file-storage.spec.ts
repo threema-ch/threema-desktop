@@ -14,8 +14,8 @@ import {
     ensureFileId,
     FILE_ID_LENGTH_HEX_CHARS,
     FileStorageError,
-    generateRandomFileEncryptionKey,
     InMemoryFileStorage,
+    randomFileEncryptionKey,
     randomFileId,
     wrapFileEncryptionKey,
 } from '~/common/file-storage';
@@ -43,7 +43,7 @@ export function run(): void {
         });
 
         // Generate two encryption keys
-        const encryptionKey1 = generateRandomFileEncryptionKey(crypto);
+        const encryptionKey1 = randomFileEncryptionKey(crypto);
 
         /**
          * Helper function for asserting information about an exception.

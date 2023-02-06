@@ -46,7 +46,7 @@ export function wrapFileEncryptionKey(key: Uint8Array): FileEncryptionKey {
 /**
  * Generate a random {@link FileEncryptionKey}.
  */
-export function generateRandomFileEncryptionKey(
+export function randomFileEncryptionKey(
     crypto: Pick<CryptoBackend, 'randomBytes'>,
 ): FileEncryptionKey {
     const keyBytes = crypto.randomBytes(new Uint8Array(FILE_ENCRYPTION_KEY_LENGTH));
@@ -277,7 +277,7 @@ export class InMemoryFileStorage implements FileStorage {
         this._files.set(fileId, data);
 
         // Generate random file encryption key
-        const key = generateRandomFileEncryptionKey(this._crypto);
+        const key = randomFileEncryptionKey(this._crypto);
 
         return {
             fileId,
