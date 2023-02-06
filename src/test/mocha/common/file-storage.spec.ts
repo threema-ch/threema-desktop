@@ -282,17 +282,29 @@ export function run(): void {
                 });
 
                 it('bytes are properly decrypted', async function () {
-                    const fileId = randomFileId(crypto);
-
-                    // Test vector, manually created
-                    const plaintextBytes = Uint8Array.of(1, 2, 3, 4, 5, 6, 7, 8);
+                    const fileId = ensureFileId('1afba8fdfc07d06d4354449bc22432fc9cee563dcf09f89d');
                     const encryptionKey = wrapFileEncryptionKey(
                         hexToBytes(
                             '9a71d0427b12028e07bf9c4fb6dd923ed9401ecf0aec0ca9e49ede49d8eed59f',
                         ),
                     );
+
+                    // Test vector, manually created.
+                    //
+                    // Python code to create test vector:
+                    //
+                    // import binascii
+                    // from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+                    // key = binascii.unhexlify('9a71d0427b12028e07bf9c4fb6dd923ed9401ecf0aec0ca9e49ede49d8eed59f')
+                    // aesgcm = AESGCM(key)
+                    // file_id = binascii.unhexlify('cf09f89d')
+                    // nonce = b'\xCF\x09\xF8\x9D\x00\x00\x00\x01\x00\x00\x00\x01'
+                    // plaintext = b'\x01\x02\x03\x04\x05\x06\x07\x08'
+                    // ciphertext = aesgcm.encrypt(nonce, plaintext, b'')
+                    // print(binascii.hexlify(ciphertext).decode('ascii'))
+                    const plaintextBytes = Uint8Array.of(1, 2, 3, 4, 5, 6, 7, 8);
                     const encryptedBytes = hexToBytes(
-                        'fa4d6601416055199163c9c6ce30c8681aee6c6485f9646d',
+                        '8e0444929a43d9d31ebd666d4d3ff83c81c3f3c64fffa761',
                     );
 
                     // Write directory and encrypted bytes

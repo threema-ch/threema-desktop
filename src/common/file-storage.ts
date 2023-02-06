@@ -44,7 +44,7 @@ export function wrapFileEncryptionKey(key: Uint8Array): FileEncryptionKey {
 }
 
 /**
- * Generate a random {@link FileEncryptionKey}.
+ * Generate a random {@link FileEncryptionKey} using 32 cryptographically secure random bytes
  */
 export function randomFileEncryptionKey(
     crypto: Pick<CryptoBackend, 'randomBytes'>,
@@ -101,7 +101,7 @@ export function ensureFileId(id: string): FileId {
 }
 
 /**
- * Create and return a new random {@link FileId}.
+ * Create and return a new random {@link FileId} using 24 cryptographically secure random bytes.
  *
  * @param crypto A {@link CryptoBackend} implementation.
  */
@@ -245,6 +245,8 @@ export class FileStorageError extends BaseError {
 
 /**
  * A simple in-memory file storage backed by a {@link Map}.
+ *
+ * Since this is in-memory only and not used in the Electron app, no encryption takes place.
  */
 export class InMemoryFileStorage implements FileStorage {
     // The in-memory storage is not persistent, thus we can hardcode the storage format version to 0
@@ -276,7 +278,8 @@ export class InMemoryFileStorage implements FileStorage {
         const fileId = randomFileId(this._crypto);
         this._files.set(fileId, data);
 
-        // Generate random file encryption key
+        // We don't encrypt in the in-memory storage, but need to generate a random file encryption
+        // key to satisfy the return type.
         const key = randomFileEncryptionKey(this._crypto);
 
         return {

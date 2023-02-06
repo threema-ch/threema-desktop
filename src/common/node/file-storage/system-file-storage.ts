@@ -14,7 +14,7 @@ import {
     randomFileId,
 } from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
-import {CounterIv} from '~/common/node/file-storage/file-crypto';
+import {FileChunkNonce} from '~/common/node/file-storage/file-crypto';
 import {directoryModeInternalObjectIfPosix, fileModeInternalIfPosix} from '~/common/node/fs';
 import {isNodeError} from '~/common/node/utils';
 import {type ReadonlyUint8Array, type u53, MiB} from '~/common/types';
@@ -35,9 +35,22 @@ export const CHUNK_SIZE_BYTES = 1 * MiB;
 export const CHUNK_AUTH_TAG_BYTES = 16; // 16 bytes (128 bits) AES-GCM auth tag
 
 /**
- * A file storage backed by the file system.
+ * An encrypted file storage backed by the file system. File contents are encrypted with
+ * AES-GCM-256.
  *
- * Files are encrypted with AES-GCM (256 bit keys).
+ * The construction used for encrypting files on the file system is an instance of an online
+ * authenticated encryption scheme called STREAM (as described in HRRV15¹). AES-GCM is used as the
+ * underlying AEAD scheme with 256-bit keys, 128-bit authentication tags, and 96-bit nonces, which
+ * consist of 32 bits random values and 32 bits of counter followed by an 8-bit encoding of either 0
+ * or 1. Furthermore, the file is encrypted in segments of size 1 MiB, to reduce the memory
+ * consumption when encrypting or decrypting large files.
+ *
+ * This scheme provides security in sense of nOAE (cf. Section 7 of HRRV15¹). Nonces should never be
+ * reused under the same key. For more details on the nonce construction, see the documentation
+ * comment for {@link FileChunkNonce}.
+ *
+ * ¹ HRRV15: "Online authenticated-encryption and its nonce-reuse misuse-resistance" by Hoang,
+ *   Reyhanitabar, Rogaway and Vizár, https://eprint.iacr.org/2015/189
  */
 export class FileSystemFileStorage implements FileStorage {
     public readonly currentStorageFormatVersion = FILE_STORAGE_FORMAT.V1;
@@ -80,6 +93,7 @@ export class FileSystemFileStorage implements FileStorage {
         try {
             file = await fsPromises.open(filepath, 'r');
             decrypted = await this._readAndDecrypt(
+                handle.fileId,
                 file,
                 handle.encryptionKey,
                 handle.unencryptedByteCount,
@@ -99,7 +113,7 @@ export class FileSystemFileStorage implements FileStorage {
             // Other errors: Wrap and re-throw
             throw new FileStorageError(
                 'read-error',
-                `Could not load file with ID ${handle.fileId}`,
+                `Could not load file with ID ${handle.fileId}: ${error}`,
                 {
                     from: error,
                 },
@@ -150,7 +164,7 @@ export class FileSystemFileStorage implements FileStorage {
         }
 
         // Encrypt data and write it to the specified file
-        await this._encryptAndWrite(data, key, file);
+        await this._encryptAndWrite(fileId, data, key, file);
 
         // Flush and close file descriptor
         await file.close();
@@ -213,11 +227,12 @@ export class FileSystemFileStorage implements FileStorage {
      * Encrypt the `data` with the `key` and append it to the specified file handle.
      */
     private async _encryptAndWrite(
+        id: FileId,
         data: ReadonlyUint8Array,
         key: FileEncryptionKey,
         file: fsPromises.FileHandle,
     ): Promise<void> {
-        // Load encryption key and IV for AES-GCM
+        // Load encryption key and IV/nonce for AES-GCM
         const aesKey = await webcrypto.subtle.importKey(
             'raw',
             key.unwrap(),
@@ -225,16 +240,17 @@ export class FileSystemFileStorage implements FileStorage {
             false,
             ['encrypt'],
         );
-        const iv = new CounterIv();
+        const nonce = new FileChunkNonce(id);
 
         // Encrypt and write file in chunks
-        for (let i = 0; i < data.byteLength; i += CHUNK_SIZE_BYTES) {
-            const chunk = data.subarray(i, i + CHUNK_SIZE_BYTES);
+        for (let offset = 0; offset < data.byteLength; offset += CHUNK_SIZE_BYTES) {
+            const chunk = data.subarray(offset, offset + CHUNK_SIZE_BYTES);
+            const isLastChunk = offset + CHUNK_SIZE_BYTES >= data.byteLength;
             const encryptedChunk = await webcrypto.subtle.encrypt(
                 {
                     name: 'AES-GCM',
                     additionalData: undefined,
-                    iv: iv.next(),
+                    iv: nonce.next(isLastChunk),
                     tagLength: CHUNK_AUTH_TAG_BYTES * 8,
                 },
                 aesKey,
@@ -250,6 +266,7 @@ export class FileSystemFileStorage implements FileStorage {
      * TODO(WEBMD-909): Return a ReadableStream?
      */
     private async _readAndDecrypt(
+        id: FileId,
         file: fsPromises.FileHandle,
         key: FileEncryptionKey,
         unencryptedByteCount: u53,
@@ -258,7 +275,7 @@ export class FileSystemFileStorage implements FileStorage {
         const chunkSizeWithOverhead = CHUNK_SIZE_BYTES + CHUNK_AUTH_TAG_BYTES;
         const chunkCount = Math.ceil(unencryptedByteCount / CHUNK_SIZE_BYTES);
 
-        // Load decryption key and IV for AES-GCM
+        // Load decryption key and IV/nonce for AES-GCM
         const aesKey = await webcrypto.subtle.importKey(
             'raw',
             key.unwrap(),
@@ -266,7 +283,7 @@ export class FileSystemFileStorage implements FileStorage {
             false,
             ['decrypt'],
         );
-        const iv = new CounterIv();
+        const nonce = new FileChunkNonce(id);
 
         // Buffer for decrypted bytes
         const decrypted = new Uint8Array(unencryptedByteCount);
@@ -275,6 +292,8 @@ export class FileSystemFileStorage implements FileStorage {
         let remainingBytes = unencryptedByteCount + chunkCount * CHUNK_AUTH_TAG_BYTES;
         const chunkBuf = new Uint8Array(chunkSizeWithOverhead);
         for (let i = 0; i < chunkCount; i++) {
+            const isLastChunk = i === chunkCount - 1;
+
             // Read chunk
             const chunkBytes = Math.min(chunkSizeWithOverhead, remainingBytes);
             const {bytesRead} = await file.read({buffer: chunkBuf, length: chunkSizeWithOverhead});
@@ -283,13 +302,17 @@ export class FileSystemFileStorage implements FileStorage {
                 `Expected to read ${chunkBytes}, but read ${bytesRead}`,
             );
             remainingBytes -= bytesRead;
+            assert(
+                !isLastChunk || remainingBytes === 0,
+                `Expected remainingBytes after last chunk to be 0, but was ${remainingBytes}`,
+            );
 
             // Decrypt
             const decryptedChunk = await webcrypto.subtle.decrypt(
                 {
                     name: 'AES-GCM',
                     additionalData: undefined,
-                    iv: iv.next(),
+                    iv: nonce.next(isLastChunk),
                     tagLength: CHUNK_AUTH_TAG_BYTES * 8,
                 },
                 aesKey,
