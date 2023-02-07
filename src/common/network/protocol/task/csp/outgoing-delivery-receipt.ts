@@ -14,13 +14,11 @@ import {
     type ActiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {
-    OutgoingCspMessageTask,
-    type ValidCspMessageTypeForReceiver,
-} from '~/common/network/protocol/task/csp/outgoing-csp-message';
+import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {type MessageId} from '~/common/network/types';
+import {groupArray} from '~/common/utils/array';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -46,20 +44,18 @@ export class OutgoingDeliveryReceiptTask implements ActiveTask<void, 'persistent
     public readonly transaction = undefined;
     private readonly _log: Logger;
 
-    private readonly _messageTask: OutgoingCspMessageTask<
-        structbuf.csp.e2e.DeliveryReceiptEncodable,
-        Contact,
-        ValidCspMessageTypeForReceiver<Contact>
-    >;
-
     /**
-     * Send and reflect a delivery receipt.
+     * Send and reflect a delivery receipt for one or more messages.
+     *
+     * Message IDs are processed in groups of up to 512 IDs, so an arbitrary number of message IDs
+     * may be passed to this task.
      *
      * @param _services Task Services
      * @param _contact Contact to which to send the delivery receipt to.
      * @param _status Message status to be applied on one or more messages.
-     * @param createdAt The timestamp that will be used as `createdAt` in the outgoing delivery receipt.
-     * @param messageIds Refers to one or more messages whose status should be updated.
+     * @param _createdAt The timestamp that will be used as `createdAt` in the outgoing delivery
+     *   receipt.
+     * @param _messageIds Refers to one or more messages whose status should be updated.
      */
     public constructor(
         private readonly _services: ServicesForTasks,
@@ -68,40 +64,44 @@ export class OutgoingDeliveryReceiptTask implements ActiveTask<void, 'persistent
             CspE2eDeliveryReceiptStatus,
             CspE2eDeliveryReceiptStatus.RECEIVED
         >,
-        createdAt: Date,
+        private readonly _createdAt: Date,
         private readonly _messageIds: MessageId[],
     ) {
         this._log = _services.logging.logger(`network.protocol.task.out-delivery-receipt`);
-
-        const properties = {
-            type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
-            encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
-                messageIds: _messageIds,
-                status: this._status,
-            }),
-            cspMessageFlags: CspMessageFlags.none(),
-            messageId: randomMessageId(this._services.crypto),
-            createdAt,
-            allowUserProfileDistribution: isReaction(this._status),
-        } as const;
-
-        // Delegate reflecting and sending to the OutgoingCspMessageTask
-        this._messageTask = new OutgoingCspMessageTask(
-            this._services,
-            this._contact.get(),
-            properties,
-        );
     }
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
-        this._log.info(
-            `Sending a delivery receipt of type ${CspE2eDeliveryReceiptStatusUtils.nameOf(
-                this._status,
-            )} for message(s) ${this._messageIds
-                .map((messageId) => u64ToHexLe(messageId))
-                .join(',')}`,
-        );
+        const contactModel = this._contact.get();
 
-        await this._messageTask.run(handle);
+        // Common message properties
+        const type = CspE2eStatusUpdateType.DELIVERY_RECEIPT;
+        const cspMessageFlags = CspMessageFlags.none();
+        const createdAt = this._createdAt;
+        const allowUserProfileDistribution = isReaction(this._status);
+
+        // Send delivery receipts in groups of up to 512 message IDs
+        for (const group of groupArray(this._messageIds, 512)) {
+            this._log.info(
+                `Sending a delivery receipt of type ${CspE2eDeliveryReceiptStatusUtils.nameOf(
+                    this._status,
+                )} for ${group.length} message(s): ${group
+                    .map((messageId) => u64ToHexLe(messageId))
+                    .join(',')}`,
+            );
+
+            // Delegate reflecting and sending to the OutgoingCspMessageTask
+            const messageTask = new OutgoingCspMessageTask(this._services, contactModel, {
+                type,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
+                    messageIds: group,
+                    status: this._status,
+                }),
+                messageId: randomMessageId(this._services.crypto),
+                cspMessageFlags,
+                createdAt,
+                allowUserProfileDistribution,
+            });
+            await messageTask.run(handle);
+        }
     }
 }
