@@ -1,6 +1,11 @@
 import {ReceiverType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type Contact, type ProfilePicture, type ProfilePictureSource} from '~/common/model';
+import {
+    type Contact,
+    type ContactView,
+    type ProfilePicture,
+    type ProfilePictureSource,
+} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {common} from '~/common/network/protobuf/js';
@@ -14,7 +19,8 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {isIdentityString} from '~/common/network/types';
+import {isIdentityString, validPublicNicknameOrUndefined} from '~/common/network/types';
+import {type Mutable} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {purgeUndefinedProperties} from '~/common/utils/object';
@@ -193,7 +199,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             createdAt: create.createdAt,
             firstName: create.firstName ?? '',
             lastName: create.lastName ?? '',
-            nickname: create.nickname ?? '',
+            nickname: validPublicNicknameOrUndefined(create.nickname),
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: create.identity}),
             verificationLevel: create.verificationLevel,
             workVerificationLevel: create.workVerificationLevel,
@@ -222,23 +228,30 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         update: protobuf.validate.sync.Contact.UpdateType,
     ): Promise<void> {
         const controller = contact.get().controller;
-        controller.update.fromSync(
-            purgeUndefinedProperties({
-                createdAt: update.createdAt,
-                firstName: update.firstName,
-                lastName: update.lastName,
-                nickname: update.nickname,
-                verificationLevel: update.verificationLevel,
-                workVerificationLevel: update.workVerificationLevel,
-                identityType: update.identityType,
-                acquaintanceLevel: update.acquaintanceLevel,
-                activityState: update.activityState,
-                featureMask: update.featureMask,
-                syncState: update.syncState,
-                notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride?.policy,
-                notificationSoundPolicyOverride: update.notificationSoundPolicyOverride?.policy,
-            }),
-        );
+
+        const purgedPropertiesToUpdate = purgeUndefinedProperties({
+            createdAt: update.createdAt,
+            firstName: update.firstName,
+            lastName: update.lastName,
+            verificationLevel: update.verificationLevel,
+            workVerificationLevel: update.workVerificationLevel,
+            identityType: update.identityType,
+            acquaintanceLevel: update.acquaintanceLevel,
+            activityState: update.activityState,
+            featureMask: update.featureMask,
+            syncState: update.syncState,
+            notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride?.policy,
+            notificationSoundPolicyOverride: update.notificationSoundPolicyOverride?.policy,
+        }) as Mutable<Partial<ContactView>>;
+
+        if (update.nickname !== undefined) {
+            // The nickname may not be validated inside the `purgeUndefinedProperties` call above
+            // because it would convert the default value (i.e. empty string) to undefined and then
+            // the key would be removed.
+            purgedPropertiesToUpdate.nickname = validPublicNicknameOrUndefined(update.nickname);
+        }
+
+        controller.update.fromSync(purgedPropertiesToUpdate);
         if (
             update.conversationCategory !== undefined ||
             update.conversationVisibility !== undefined

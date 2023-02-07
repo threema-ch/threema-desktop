@@ -26,6 +26,7 @@ import {
     type GroupId,
     type IdentityString,
     type MessageId,
+    type PublicNickname,
 } from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type Settings} from '~/common/settings';
@@ -146,7 +147,7 @@ export type DbContact = {
     readonly createdAt: Date;
     firstName: string;
     lastName: string;
-    nickname: string;
+    nickname?: PublicNickname;
     verificationLevel: VerificationLevel;
     workVerificationLevel: WorkVerificationLevel;
     identityType: IdentityType;

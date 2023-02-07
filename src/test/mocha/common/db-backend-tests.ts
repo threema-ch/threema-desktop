@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {NACL_CONSTANTS, type PublicKey} from '~/common/crypto';
+import {type PublicKey, NACL_CONSTANTS} from '~/common/crypto';
 import {randomString} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
@@ -18,6 +18,7 @@ import {
     type DbReceiverLookup,
 } from '~/common/db';
 import {
+    type NotificationSoundPolicy,
     AcquaintanceLevel,
     ActivityState,
     ContactNotificationTriggerPolicy,
@@ -30,7 +31,6 @@ import {
     MessageQueryDirection,
     MessageReaction,
     MessageType,
-    type NotificationSoundPolicy,
     ReceiverType,
     SyncState,
     VerificationLevel,
@@ -43,15 +43,16 @@ import {
     InMemoryFileStorage,
     wrapFileEncryptionKey,
 } from '~/common/file-storage';
-import {BLOB_ID_LENGTH, type BlobId} from '~/common/network/protocol/blob';
+import {type BlobId, BLOB_ID_LENGTH} from '~/common/network/protocol/blob';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {
-    ensureIdentityString,
-    ensurePublicNickname,
     type FeatureMask,
     type GroupId,
     type IdentityString,
     type MessageId,
+    type PublicNickname,
+    ensureIdentityString,
+    ensurePublicNickname,
 } from '~/common/network/types';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
@@ -85,7 +86,7 @@ export function makeContact(
         createdAt?: Date;
         firstName?: string;
         lastName?: string;
-        nickname?: string;
+        nickname?: PublicNickname;
         verificationLevel?: VerificationLevel;
         workVerificationLevel?: WorkVerificationLevel;
         identityType?: IdentityType;
@@ -110,7 +111,7 @@ export function makeContact(
         createdAt: init.createdAt ?? new Date(),
         firstName: init.firstName ?? 'Tom',
         lastName: init.lastName ?? 'Haverford',
-        nickname: init.nickname ?? 'Tommy',
+        nickname: init.nickname ?? ('Tommy' as PublicNickname),
         colorIndex: 0,
         verificationLevel: init.verificationLevel ?? VerificationLevel.UNVERIFIED,
         workVerificationLevel: init.workVerificationLevel ?? WorkVerificationLevel.NONE,

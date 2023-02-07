@@ -10,7 +10,7 @@ import {
 import {type Contact, type ContactView, type ProfilePicture} from '~/common/model';
 import {getDisplayName} from '~/common/model/contact';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString} from '~/common/network/types';
+import {type IdentityString, type PublicNickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
@@ -92,7 +92,7 @@ export interface ContactListItemViewModel extends PropertiesMarked {
     readonly uid: DbContactUid;
     readonly identity: IdentityString;
     readonly publicKey: PublicKey;
-    readonly nickname: string;
+    readonly nickname: PublicNickname | undefined;
     readonly firstName: string;
     readonly lastName: string;
     readonly fullName: string;

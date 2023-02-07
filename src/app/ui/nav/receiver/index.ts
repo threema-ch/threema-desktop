@@ -24,6 +24,7 @@ import {
 } from '~/common/model';
 import {getFullName} from '~/common/model/contact';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
+import {type PublicNickname, validPublicNicknameOrUndefined} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
@@ -39,7 +40,7 @@ export type TransformedContact = ContactData & {
     readonly isNew: boolean;
     readonly identity: string;
     readonly publicKey: PublicKey;
-    readonly nickname: string;
+    readonly nickname: PublicNickname | undefined;
     readonly firstName: string;
     readonly lastName: string;
     readonly fullName: string;
@@ -221,7 +222,7 @@ export async function transformContact(
         publicKey: contact.view.publicKey,
         isNew,
         badge,
-        nickname: contact.view.nickname.trim(),
+        nickname: validPublicNicknameOrUndefined(contact.view.nickname?.trim()),
         firstName: contact.view.firstName,
         lastName: contact.view.lastName,
         fullName: getFullName(contact.view),
@@ -238,5 +239,5 @@ export async function transformContact(
 export function showFullNameAndNickname(
     contact: Pick<ContactListItemViewModel, 'fullName' | 'nickname'>,
 ): boolean {
-    return contact.fullName.length > 0 && contact.nickname.length > 0;
+    return contact.fullName.length > 0 && contact.nickname !== undefined;
 }

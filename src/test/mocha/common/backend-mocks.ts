@@ -10,10 +10,10 @@ import {PakoCompressor} from '~/common/compressor/pako';
 import {type Config} from '~/common/config';
 import {
     type EncryptedData,
-    ensurePublicKey,
-    NACL_CONSTANTS,
     type Nonce,
     type NonceGuard,
+    ensurePublicKey,
+    NACL_CONSTANTS,
     wrapRawKey,
 } from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
@@ -24,6 +24,7 @@ import {type DatabaseBackend, type DbContactUid, type DbReceiverLookup} from '~/
 import {InMemoryDatabaseBackend} from '~/common/db/in-memory';
 import {type Device} from '~/common/device';
 import {
+    type TransactionScope,
     AcquaintanceLevel,
     ActivityState,
     ConversationCategory,
@@ -34,7 +35,6 @@ import {
     MessageFilterInstruction,
     MessageFilterInstructionUtils,
     SyncState,
-    type TransactionScope,
     TransactionScopeUtils,
     VerificationLevel,
     WorkVerificationLevel,
@@ -67,11 +67,11 @@ import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
-    CspPayloadType,
-    D2mPayloadType,
     type InboundL4Message,
     type OutboundL4D2mTransactionMessage,
     type OutboundL4Message,
+    CspPayloadType,
+    D2mPayloadType,
 } from '~/common/network/protocol';
 import {
     type BlobBackend,
@@ -82,9 +82,9 @@ import {
 } from '~/common/network/protocol/blob';
 import {
     type DirectoryBackend,
-    DirectoryError,
     type IdentityData,
     type IdentityPrivateData,
+    DirectoryError,
 } from '~/common/network/protocol/directory';
 import {
     type ActiveTaskCodecHandle,
@@ -100,16 +100,17 @@ import * as structbuf from '~/common/network/structbuf';
 import {
     type CspNonceGuard,
     type D2xNonceGuard,
+    type FeatureMask,
+    type GroupId,
+    type IdentityString,
+    type MessageId,
+    type PublicNickname,
     ensureCspDeviceId,
     ensureD2mDeviceId,
     ensureFeatureMask,
     ensureIdentityString,
     ensurePublicNickname,
     ensureServerGroup,
-    type FeatureMask,
-    type GroupId,
-    type IdentityString,
-    type MessageId,
 } from '~/common/network/types';
 import {type ClientKey, wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {
@@ -129,11 +130,11 @@ import {UTF8} from '~/common/utils/codec';
 import {type Delayed} from '~/common/utils/delayed';
 import {
     type EndpointService,
-    LocalObjectMapper,
     type PROXY_HANDLER,
     type Remote,
-    RemoteObjectMapper,
     type RemoteProxy,
+    LocalObjectMapper,
+    RemoteObjectMapper,
     TRANSFER_MARKER,
 } from '~/common/utils/endpoint';
 import {Identity} from '~/common/utils/identity';
@@ -157,10 +158,10 @@ import {
 } from '~/common/viewmodel/conversation-preview';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {
-    getGroupListItemSetStore,
     type GroupListItemSetStore,
+    getGroupListItemSetStore,
 } from '~/common/viewmodel/group-list-item';
-import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
+import {type ProfileViewModelStore, getProfileViewModelStore} from '~/common/viewmodel/profile';
 
 import {assertCspPayloadType, assertD2mPayloadType} from './assertions';
 
@@ -935,7 +936,7 @@ export function makeKeypair(): SharedBoxFactory {
 export interface TestUser {
     identity: Identity;
     keypair: SharedBoxFactory;
-    nickname: string;
+    nickname: PublicNickname | undefined;
     // Default: Now
     createdAt?: Date;
     // Default: ""
@@ -965,7 +966,7 @@ export interface TestUser {
  */
 export function makeTestUser(
     identityString: string,
-    nickname = `${identityString}'s nickname`,
+    nickname = `${identityString}'s nickname` as PublicNickname,
 ): TestUser {
     const identity = new Identity(ensureIdentityString(identityString));
     const keypair = makeKeypair();

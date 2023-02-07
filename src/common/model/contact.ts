@@ -14,16 +14,16 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import {type IdentityString} from '~/common/network/types';
-import {getNotificationTagForContact, type NotificationTag} from '~/common/notification';
+import {type IdentityString, validPublicNicknameOrUndefined} from '~/common/network/types';
+import {type NotificationTag, getNotificationTagForContact} from '~/common/notification';
 import {type u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
-    createExactPropertyValidator,
     type Exact,
+    createExactPropertyValidator,
     OPTIONAL,
     REQUIRED,
 } from '~/common/utils/property-validator';
@@ -52,7 +52,7 @@ const ensureExactContactInit = createExactPropertyValidator<ContactInit>('Contac
     createdAt: REQUIRED,
     firstName: REQUIRED,
     lastName: REQUIRED,
-    nickname: REQUIRED,
+    nickname: OPTIONAL,
     colorIndex: REQUIRED,
     verificationLevel: REQUIRED,
     workVerificationLevel: REQUIRED,
@@ -108,6 +108,7 @@ function create(services: ServicesForModel, init: Exact<ContactInit>): LocalMode
     // Create the contact
     const contact: DbCreate<DbContact> & DbCreateConversationMixin = {
         ...init,
+        nickname: init.nickname,
         type: ReceiverType.CONTACT,
     };
     const uid = db.createContact(contact);
@@ -122,7 +123,7 @@ function create(services: ServicesForModel, init: Exact<ContactInit>): LocalMode
 
     const contactStore = cache.add(
         uid,
-        () => new ContactModelStore(services, addDerivedData(contact), uid, profilePictureData),
+        () => new ContactModelStore(services, addDerivedData(init), uid, profilePictureData),
     );
 
     // Fetching the conversation implicitly updates the conversation set store and cache.
@@ -170,7 +171,15 @@ export function getByUid(
         };
 
         // Create a store
-        return new ContactModelStore(services, addDerivedData(contact), uid, profilePictureData);
+        return new ContactModelStore(
+            services,
+            addDerivedData({
+                ...contact,
+                nickname: validPublicNicknameOrUndefined(contact.nickname),
+            }),
+            uid,
+            profilePictureData,
+        );
     });
 }
 
@@ -623,7 +632,7 @@ export function getInitials(
     } else if (contact.lastName !== '') {
         return getGraphemeClusters(contact.lastName, 2).join('');
     } else if (contact.nickname !== '') {
-        return getGraphemeClusters(contact.nickname, 2).join('');
+        return getGraphemeClusters(contact.nickname ?? '', 2).join('');
     }
     return contact.identity.substring(0, 2);
 }

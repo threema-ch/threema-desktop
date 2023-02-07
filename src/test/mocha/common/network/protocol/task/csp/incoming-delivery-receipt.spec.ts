@@ -16,7 +16,11 @@ import {
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {IncomingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/incoming-delivery-receipt';
 import {randomMessageId} from '~/common/network/protocol/utils';
-import {type ContactConversationId, ensureIdentityString} from '~/common/network/types';
+import {
+    type ContactConversationId,
+    type PublicNickname,
+    ensureIdentityString,
+} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';
 import {
@@ -35,7 +39,7 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1',
+            nickname: 'user1' as PublicNickname,
             keypair: makeKeypair(),
             conversationId: {
                 type: ReceiverType.CONTACT,

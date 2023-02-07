@@ -29,7 +29,7 @@ import {
     type GroupMemberContainerEncodable,
     type TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
-import {ensureIdentityString, type MessageId} from '~/common/network/types';
+import {ensureIdentityString, type MessageId, type PublicNickname} from '~/common/network/types';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -72,7 +72,7 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1',
+            nickname: 'user1' as PublicNickname,
             keypair: makeKeypair(),
         };
 

@@ -119,7 +119,7 @@ export async function generateFakeContactConversation(
         createdAt: new Date(),
         firstName: randomChoice(crypto, FIRST_NAMES),
         lastName: randomChoice(crypto, LAST_NAMES),
-        nickname: '',
+        nickname: undefined,
         colorIndex: randomU8(crypto),
         verificationLevel: randomChoice(crypto, Array.from(VerificationLevelUtils.ALL)),
         workVerificationLevel: randomChoice(crypto, Array.from(WorkVerificationLevelUtils.ALL)),

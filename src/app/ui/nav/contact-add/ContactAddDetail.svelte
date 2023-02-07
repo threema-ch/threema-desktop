@@ -85,7 +85,7 @@
       publicKey: identityData.publicKey,
       firstName,
       lastName,
-      nickname: '',
+      nickname: undefined,
       colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: identityData.identity}),
       createdAt: new Date(),
       verificationLevel: VerificationLevel.UNVERIFIED,

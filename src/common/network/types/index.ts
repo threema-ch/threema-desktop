@@ -61,6 +61,18 @@ export function ensurePublicNickname(publicNickname: string): PublicNickname {
 }
 
 /**
+ * Return a valid {@link PublicNickname} or undefined.
+ */
+export function validPublicNicknameOrUndefined(
+    publicNickname: unknown,
+): PublicNickname | undefined {
+    if (isPublicNickname(publicNickname)) {
+        return publicNickname;
+    }
+    return undefined;
+}
+
+/**
  * The client's Threema ID as ASCII bytes.
  */
 export type IdentityBytes = WeakOpaque<Uint8Array, {readonly IdentityBytes: unique symbol}>;

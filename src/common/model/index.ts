@@ -451,7 +451,7 @@ export interface ContactView {
     readonly createdAt: Date;
     readonly firstName: string;
     readonly lastName: string;
-    readonly nickname: string;
+    readonly nickname: PublicNickname | undefined;
     readonly displayName: string;
     readonly initials: string;
     readonly colorIndex: u8;

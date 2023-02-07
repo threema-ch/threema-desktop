@@ -19,11 +19,12 @@ import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {type TextEncodable} from '~/common/network/structbuf/csp/e2e';
 import {
-    ensureIdentityString,
-    ensureMessageId,
     type GroupId,
     type IdentityString,
     type MessageId,
+    type PublicNickname,
+    ensureIdentityString,
+    ensureMessageId,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {byteWithoutZeroPadding} from '~/common/utils/byte';
@@ -33,13 +34,13 @@ import {Identity} from '~/common/utils/identity';
 import {intoU64, intoUnsignedLong, unixTimestampToDateMs} from '~/common/utils/number';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 import {
+    type NetworkExpectation,
+    type TestServices,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
-    type NetworkExpectation,
     NetworkExpectationFactory,
     TestHandle,
-    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 import {
     decodeLegacyMessageEncodable,
@@ -54,12 +55,12 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1',
+            nickname: 'user1' as PublicNickname,
             keypair: makeKeypair(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
-            nickname: 'user2',
+            nickname: 'user2' as PublicNickname,
             keypair: makeKeypair(),
         };
 

@@ -7,17 +7,22 @@ import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {IncomingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/incoming-group-sync-request';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {type GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
-import {ensureIdentityString, type GroupId, type IdentityString} from '~/common/network/types';
+import {
+    type GroupId,
+    type IdentityString,
+    type PublicNickname,
+    ensureIdentityString,
+} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {
+    type NetworkExpectation,
+    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeContactInit,
     makeKeypair,
     makeTestServices,
-    type NetworkExpectation,
     TestHandle,
-    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 import {
     reflectAndSendGroupNameToUser,
@@ -34,12 +39,12 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1',
+            nickname: 'user1' as PublicNickname,
             keypair: makeKeypair(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
-            nickname: 'user2',
+            nickname: 'user2' as PublicNickname,
             keypair: makeKeypair(),
         };
 

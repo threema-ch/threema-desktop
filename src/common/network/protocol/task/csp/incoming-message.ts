@@ -5,6 +5,7 @@ import {type EncryptedData, type Nonce} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {type DbContact} from '~/common/db';
 import {
+    type D2dCspMessageType,
     AcquaintanceLevel,
     ActivityState,
     ConversationCategory,
@@ -18,7 +19,6 @@ import {
     CspE2eGroupConversationType,
     CspE2eGroupStatusUpdateType,
     CspE2eStatusUpdateType,
-    type D2dCspMessageType,
     MessageDirection,
     MessageType,
     ReceiverType,
@@ -47,13 +47,13 @@ import {
 } from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
-    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
     type ComposableTask,
-    placeholderTextForUnhandledMessage,
     type ServicesForTasks,
+    ACTIVE_TASK,
+    placeholderTextForUnhandledMessage,
 } from '~/common/network/protocol/task';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
@@ -67,11 +67,12 @@ import * as structbuf from '~/common/network/structbuf';
 import * as validate from '~/common/network/structbuf/validate';
 import {
     type ContactConversationId,
-    ensureIdentityString,
-    ensureMessageId,
     type GroupConversationId,
     type IdentityString,
     type MessageId,
+    ensureIdentityString,
+    ensureMessageId,
+    validPublicNicknameOrUndefined,
 } from '~/common/network/types';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, ensureError, exhausted, unreachable} from '~/common/utils/assert';
@@ -718,7 +719,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             publicKey: fetched.publicKey,
             firstName: '',
             lastName: '',
-            nickname,
+            nickname: validPublicNicknameOrUndefined(nickname),
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: sender}),
             createdAt: new Date(),
             verificationLevel: VerificationLevel.UNVERIFIED,

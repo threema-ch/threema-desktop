@@ -3,19 +3,23 @@ import {syncScrypt} from 'scrypt-js';
 
 import {type ServicesForBackend} from '~/common/backend';
 import {
+    type PlainData,
+    type RawKey,
     ensureEncryptedDataWithNonceAhead,
     NACL_CONSTANTS,
     NONCE_UNGUARDED_TOKEN,
-    type PlainData,
-    type RawKey,
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TransferTag} from '~/common/enum';
-import {BaseError, type BaseErrorOptions} from '~/common/error';
+import {type BaseErrorOptions, BaseError} from '~/common/error';
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {ensureIdentityString, type IdentityString} from '~/common/network/types';
+import {
+    type IdentityString,
+    ensureIdentityString,
+    validPublicNicknameOrUndefined,
+} from '~/common/network/types';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
@@ -103,7 +107,7 @@ const SAFE_CONTACT_SCHEMA = v
         hidden: v.boolean().optional().default(false),
         firstname: v.string().optional().default(''),
         lastname: v.string().optional().default(''),
-        nickname: v.string().optional().default(''),
+        nickname: v.string().map(validPublicNicknameOrUndefined).optional(),
         private: v.boolean().optional().default(false),
         readReceipts: v.number().optional(),
         typingIndicators: v.number().optional(),

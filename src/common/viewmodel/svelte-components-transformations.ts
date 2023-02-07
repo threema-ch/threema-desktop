@@ -25,6 +25,7 @@ import {
     type Repositories,
     type Settings,
 } from '~/common/model';
+import {type PublicNickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {
     type AnyReceiverData,
@@ -182,7 +183,7 @@ export interface TransformedContact extends ContactData {
     readonly isNew: boolean;
     readonly identity: string;
     readonly publicKey: PublicKey;
-    readonly nickname: string;
+    readonly nickname: PublicNickname | undefined;
     readonly firstName: string;
     readonly lastName: string;
     readonly fullName: string;

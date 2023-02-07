@@ -178,7 +178,7 @@ export async function addGroupContacts(
             publicKey: fetched.publicKey,
             firstName: '',
             lastName: '',
-            nickname: '',
+            nickname: undefined,
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity}),
             createdAt: new Date(),
             verificationLevel: VerificationLevel.UNVERIFIED,

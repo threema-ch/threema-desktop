@@ -45,6 +45,7 @@ import {
     ensureMessageId,
     isFeatureMask,
     isIdentityString,
+    isPublicNickname,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {isU8, type u8, type u53} from '~/common/types';
@@ -92,6 +93,7 @@ export const CUSTOM_TYPES = {
     FEATURE_MASK: 'FeatureMask',
     IDENTITY: 'IdentityString',
     PUBLIC_KEY: 'PublicKey',
+    PUBLIC_NICKNAME: 'PublicNickname',
 
     // Mapped types (value constraints, mapping and optional tagging)
     BLOB_KEY: 'RawBlobKey',
@@ -282,6 +284,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return isIdentityString(value) ? value : fail();
             case CUSTOM_TYPES.PUBLIC_KEY:
                 return isPublicKey(value) ? value : fail();
+            case CUSTOM_TYPES.PUBLIC_NICKNAME:
+                return isPublicNickname(value) ? value : undefined;
 
             // Mapped types (value constraints, mapping and optional tagging)
             case CUSTOM_TYPES.BLOB_KEY:
@@ -332,6 +336,10 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public transformValueToDB(value: unknown, type: string): unknown {
+        if (type === CUSTOM_TYPES.PUBLIC_NICKNAME && value === undefined) {
+            return '';
+        }
+
         if (value === null || value === undefined) {
             return super.transformValueToDB(value, type);
         }
@@ -387,6 +395,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.FILE_ID:
             case CUSTOM_TYPES.FEATURE_MASK:
             case CUSTOM_TYPES.IDENTITY:
+            case CUSTOM_TYPES.PUBLIC_NICKNAME:
             case CUSTOM_TYPES.PUBLIC_KEY:
                 // No transformation
                 return value;
