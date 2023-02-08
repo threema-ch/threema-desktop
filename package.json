@@ -73,7 +73,7 @@
     "protobufjs": "6.11.3",
     "scrypt-js": "3.0.1",
     "svelte": "3.53.1",
-    "synchronous-promise": "2.0.16",
+    "synchronous-promise": "~2.0.17",
     "ts-events": "3.4.1",
     "ts-sql-query": "1.48.0",
     "tweetnacl": "1.0.3",
