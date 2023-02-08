@@ -110,10 +110,10 @@ test:mocha:
   <<: *before_script
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
-    # Run tests
-    - npm run "test:mocha"
+    # Run tests (with increased timeout of 10s, to avoid test failures when load on CI runner is high)
+    - npm run "test:mocha" -- --timeout 10000
     # Generate JUnit test report
-    - npm run "test:mocha" -- --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/mocha.xml
+    - npm run "test:mocha" -- --timeout 10000 --reporter mocha-junit-reporter --reporter-options mochaFile=./junit/mocha.xml
   artifacts:
     when: always
     reports:
