@@ -26,7 +26,7 @@ const COLOR_GROUPS = [
     'red',
 ] as const;
 
-export type IdColor = typeof COLOR_GROUPS[u53];
+export type IdColor = (typeof COLOR_GROUPS)[u53];
 
 /**
  * Return the index (in the range 0-255) of the color to be used for this receiver.

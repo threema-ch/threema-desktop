@@ -61,7 +61,7 @@ export namespace TransferTag {
 /**
  * Available transfer handler tags.
  */
-export type TransferTag = typeof TransferTag[keyof typeof TransferTag];
+export type TransferTag = (typeof TransferTag)[keyof typeof TransferTag];
 export namespace CloseCode {
     export const NORMAL = 1000;
     /** Normal closure, e.g. when the user is explicitly disconnecting. */
@@ -133,7 +133,7 @@ export namespace CloseCode {
  *
  * @generate name convert
  */
-export type CloseCode = typeof CloseCode[keyof typeof CloseCode];
+export type CloseCode = (typeof CloseCode)[keyof typeof CloseCode];
 export namespace CloseCodeUtils {
     export const ALL: ReadonlySet<CloseCode> = new Set([
         CloseCode.NORMAL,
@@ -211,7 +211,7 @@ export namespace ConnectionState {
  *
  * @generate name store
  */
-export type ConnectionState = typeof ConnectionState[keyof typeof ConnectionState];
+export type ConnectionState = (typeof ConnectionState)[keyof typeof ConnectionState];
 export namespace ConnectionStateUtils {
     export const NAME_OF = {
         [ConnectionState.CONNECTING]: 'CONNECTING',
@@ -263,7 +263,7 @@ export namespace CspAuthState {
  *
  * @generate name
  */
-export type CspAuthState = typeof CspAuthState[keyof typeof CspAuthState];
+export type CspAuthState = (typeof CspAuthState)[keyof typeof CspAuthState];
 export namespace CspAuthStateUtils {
     export const NAME_OF = {
         [CspAuthState.CLIENT_HELLO]: 'CLIENT_HELLO',
@@ -286,7 +286,7 @@ export namespace D2mAuthState {
  *
  * @generate name
  */
-export type D2mAuthState = typeof D2mAuthState[keyof typeof D2mAuthState];
+export type D2mAuthState = (typeof D2mAuthState)[keyof typeof D2mAuthState];
 export namespace D2mAuthStateUtils {
     export const NAME_OF = {
         [D2mAuthState.SERVER_HELLO]: 'SERVER_HELLO',
@@ -307,7 +307,7 @@ export namespace D2mLeaderState {
  *
  * @generate name store
  */
-export type D2mLeaderState = typeof D2mLeaderState[keyof typeof D2mLeaderState];
+export type D2mLeaderState = (typeof D2mLeaderState)[keyof typeof D2mLeaderState];
 export namespace D2mLeaderStateUtils {
     export const NAME_OF = {
         [D2mLeaderState.NONLEADER]: 'NONLEADER',
@@ -390,7 +390,7 @@ export namespace D2mPayloadType {
  *
  * @generate name
  */
-export type D2mPayloadType = typeof D2mPayloadType[keyof typeof D2mPayloadType];
+export type D2mPayloadType = (typeof D2mPayloadType)[keyof typeof D2mPayloadType];
 export namespace D2mPayloadTypeUtils {
     export const NAME_OF = {
         [D2mPayloadType.PROXY]: 'PROXY',
@@ -428,7 +428,7 @@ export namespace CspExtensionType {
 /**
  * Chat server protocol 'clever extension' type.
  */
-export type CspExtensionType = typeof CspExtensionType[keyof typeof CspExtensionType];
+export type CspExtensionType = (typeof CspExtensionType)[keyof typeof CspExtensionType];
 export namespace CspPayloadType {
     export const ECHO_REQUEST = 0;
     export type ECHO_REQUEST = typeof ECHO_REQUEST;
@@ -460,7 +460,7 @@ export namespace CspPayloadType {
  *
  * @generate name
  */
-export type CspPayloadType = typeof CspPayloadType[keyof typeof CspPayloadType];
+export type CspPayloadType = (typeof CspPayloadType)[keyof typeof CspPayloadType];
 export namespace CspPayloadTypeUtils {
     export const NAME_OF = {
         [CspPayloadType.ECHO_REQUEST]: 'ECHO_REQUEST',
@@ -499,7 +499,7 @@ export namespace CspMessageFlag {
 /**
  * Chat server protocol message flag.
  */
-export type CspMessageFlag = typeof CspMessageFlag[keyof typeof CspMessageFlag];
+export type CspMessageFlag = (typeof CspMessageFlag)[keyof typeof CspMessageFlag];
 export namespace CspE2eConversationType {
     export const TEXT = 1;
     export type TEXT = typeof TEXT;
@@ -534,7 +534,7 @@ export namespace CspE2eConversationType {
  * @generate name convert
  */
 export type CspE2eConversationType =
-    typeof CspE2eConversationType[keyof typeof CspE2eConversationType];
+    (typeof CspE2eConversationType)[keyof typeof CspE2eConversationType];
 export namespace CspE2eConversationTypeUtils {
     export const ALL: ReadonlySet<CspE2eConversationType> = new Set([
         CspE2eConversationType.TEXT,
@@ -600,7 +600,7 @@ export namespace CspE2eStatusUpdateType {
  * @generate name
  */
 export type CspE2eStatusUpdateType =
-    typeof CspE2eStatusUpdateType[keyof typeof CspE2eStatusUpdateType];
+    (typeof CspE2eStatusUpdateType)[keyof typeof CspE2eStatusUpdateType];
 export namespace CspE2eStatusUpdateTypeUtils {
     export const NAME_OF = {
         [CspE2eStatusUpdateType.DELIVERY_RECEIPT]: 'DELIVERY_RECEIPT',
@@ -624,7 +624,7 @@ export namespace CspE2eContactControlType {
  * @generate name
  */
 export type CspE2eContactControlType =
-    typeof CspE2eContactControlType[keyof typeof CspE2eContactControlType];
+    (typeof CspE2eContactControlType)[keyof typeof CspE2eContactControlType];
 export namespace CspE2eContactControlTypeUtils {
     export const NAME_OF = {
         [CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE]: 'CONTACT_SET_PROFILE_PICTURE',
@@ -658,7 +658,7 @@ export namespace CspE2eGroupControlType {
  * @generate name convert
  */
 export type CspE2eGroupControlType =
-    typeof CspE2eGroupControlType[keyof typeof CspE2eGroupControlType];
+    (typeof CspE2eGroupControlType)[keyof typeof CspE2eGroupControlType];
 export namespace CspE2eGroupControlTypeUtils {
     export const ALL: ReadonlySet<CspE2eGroupControlType> = new Set([
         CspE2eGroupControlType.GROUP_SETUP,
@@ -724,7 +724,7 @@ export namespace CspE2eGroupConversationType {
  * @generate name convert
  */
 export type CspE2eGroupConversationType =
-    typeof CspE2eGroupConversationType[keyof typeof CspE2eGroupConversationType];
+    (typeof CspE2eGroupConversationType)[keyof typeof CspE2eGroupConversationType];
 export namespace CspE2eGroupConversationTypeUtils {
     export const ALL: ReadonlySet<CspE2eGroupConversationType> = new Set([
         CspE2eGroupConversationType.GROUP_TEXT,
@@ -778,7 +778,7 @@ export namespace CspE2eGroupStatusUpdateType {
  * @generate name
  */
 export type CspE2eGroupStatusUpdateType =
-    typeof CspE2eGroupStatusUpdateType[keyof typeof CspE2eGroupStatusUpdateType];
+    (typeof CspE2eGroupStatusUpdateType)[keyof typeof CspE2eGroupStatusUpdateType];
 export namespace CspE2eGroupStatusUpdateTypeUtils {
     export const NAME_OF = {
         [CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT]: 'GROUP_DELIVERY_RECEIPT',
@@ -797,7 +797,7 @@ export namespace CspE2eForwardSecurityType {
  * @generate name
  */
 export type CspE2eForwardSecurityType =
-    typeof CspE2eForwardSecurityType[keyof typeof CspE2eForwardSecurityType];
+    (typeof CspE2eForwardSecurityType)[keyof typeof CspE2eForwardSecurityType];
 export namespace CspE2eForwardSecurityTypeUtils {
     export const NAME_OF = {
         [CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE]: 'FORWARD_SECURITY_ENVELOPE',
@@ -822,7 +822,7 @@ export namespace CspE2eDeliveryReceiptStatus {
  * @generate convert name
  */
 export type CspE2eDeliveryReceiptStatus =
-    typeof CspE2eDeliveryReceiptStatus[keyof typeof CspE2eDeliveryReceiptStatus];
+    (typeof CspE2eDeliveryReceiptStatus)[keyof typeof CspE2eDeliveryReceiptStatus];
 export namespace CspE2eDeliveryReceiptStatusUtils {
     export const ALL: ReadonlySet<CspE2eDeliveryReceiptStatus> = new Set([
         CspE2eDeliveryReceiptStatus.RECEIVED,
@@ -871,7 +871,7 @@ export namespace ReceiverType {
  *
  * @generate convert name
  */
-export type ReceiverType = typeof ReceiverType[keyof typeof ReceiverType];
+export type ReceiverType = (typeof ReceiverType)[keyof typeof ReceiverType];
 export namespace ReceiverTypeUtils {
     export const ALL: ReadonlySet<ReceiverType> = new Set([
         ReceiverType.CONTACT,
@@ -911,7 +911,7 @@ export namespace MessageDirection {
 /**
  * Message direction.
  */
-export type MessageDirection = typeof MessageDirection[keyof typeof MessageDirection];
+export type MessageDirection = (typeof MessageDirection)[keyof typeof MessageDirection];
 export namespace MessageFilterInstruction {
     export const ACCEPT = 0;
     export type ACCEPT = typeof ACCEPT;
@@ -926,7 +926,7 @@ export namespace MessageFilterInstruction {
  * @generate name
  */
 export type MessageFilterInstruction =
-    typeof MessageFilterInstruction[keyof typeof MessageFilterInstruction];
+    (typeof MessageFilterInstruction)[keyof typeof MessageFilterInstruction];
 export namespace MessageFilterInstructionUtils {
     export const NAME_OF = {
         [MessageFilterInstruction.ACCEPT]: 'ACCEPT',
@@ -954,7 +954,7 @@ export namespace MessageType {
  *
  * @generate convert
  */
-export type MessageType = typeof MessageType[keyof typeof MessageType];
+export type MessageType = (typeof MessageType)[keyof typeof MessageType];
 export namespace MessageTypeUtils {
     export const ALL: ReadonlySet<MessageType> = new Set([
         MessageType.TEXT,
@@ -1003,7 +1003,7 @@ export namespace TriggerSource {
 /**
  * Source that triggered some kind of update.
  */
-export type TriggerSource = typeof TriggerSource[keyof typeof TriggerSource];
+export type TriggerSource = (typeof TriggerSource)[keyof typeof TriggerSource];
 export namespace MessageReaction {
     export const ACKNOWLEDGE = 0;
     export type ACKNOWLEDGE = typeof ACKNOWLEDGE;
@@ -1018,7 +1018,7 @@ export namespace MessageReaction {
  *
  * @generate convert name
  */
-export type MessageReaction = typeof MessageReaction[keyof typeof MessageReaction];
+export type MessageReaction = (typeof MessageReaction)[keyof typeof MessageReaction];
 export namespace MessageReactionUtils {
     export const ALL: ReadonlySet<MessageReaction> = new Set([
         MessageReaction.ACKNOWLEDGE,
@@ -1057,7 +1057,7 @@ export namespace MessageQueryDirection {
  * Message fetch direction (either older or newer messages).
  */
 export type MessageQueryDirection =
-    typeof MessageQueryDirection[keyof typeof MessageQueryDirection];
+    (typeof MessageQueryDirection)[keyof typeof MessageQueryDirection];
 export namespace FeatureMaskFlag {
     export const NONE = 0;
     /** No additional features available */
@@ -1084,7 +1084,7 @@ export namespace FeatureMaskFlag {
 /**
  * Features available for a contact (32 bit mask).
  */
-export type FeatureMaskFlag = typeof FeatureMaskFlag[keyof typeof FeatureMaskFlag];
+export type FeatureMaskFlag = (typeof FeatureMaskFlag)[keyof typeof FeatureMaskFlag];
 export namespace GlobalPropertyKey {
     export const LAST_MEDIATOR_CONNECTION = 'lastMediatorConnection';
     /** Connection Metadata of the last successfull mediator connection */
@@ -1095,7 +1095,7 @@ export namespace GlobalPropertyKey {
  *
  * @generate convert name
  */
-export type GlobalPropertyKey = typeof GlobalPropertyKey[keyof typeof GlobalPropertyKey];
+export type GlobalPropertyKey = (typeof GlobalPropertyKey)[keyof typeof GlobalPropertyKey];
 export namespace GlobalPropertyKeyUtils {
     export const ALL: ReadonlySet<GlobalPropertyKey> = new Set([
         GlobalPropertyKey.LAST_MEDIATOR_CONNECTION,
@@ -1204,7 +1204,7 @@ export namespace D2dCspMessageType {
  * TODO(WEBMD-48): These enums are pulled from protobuf-generated files. We should generate them directly!
  */
 /** @generate convert */
-export type D2dCspMessageType = typeof D2dCspMessageType[keyof typeof D2dCspMessageType];
+export type D2dCspMessageType = (typeof D2dCspMessageType)[keyof typeof D2dCspMessageType];
 export namespace D2dCspMessageTypeUtils {
     export const ALL: ReadonlySet<D2dCspMessageType> = new Set([
         D2dCspMessageType.INVALID,
@@ -1274,7 +1274,7 @@ export namespace AcquaintanceLevel {
     export type GROUP = typeof GROUP;
 }
 /** @generate convert */
-export type AcquaintanceLevel = typeof AcquaintanceLevel[keyof typeof AcquaintanceLevel];
+export type AcquaintanceLevel = (typeof AcquaintanceLevel)[keyof typeof AcquaintanceLevel];
 export namespace AcquaintanceLevelUtils {
     export const ALL: ReadonlySet<AcquaintanceLevel> = new Set([
         AcquaintanceLevel.DIRECT,
@@ -1305,7 +1305,7 @@ export namespace ActivityState {
     export type INVALID = typeof INVALID;
 }
 /** @generate convert */
-export type ActivityState = typeof ActivityState[keyof typeof ActivityState];
+export type ActivityState = (typeof ActivityState)[keyof typeof ActivityState];
 export namespace ActivityStateUtils {
     export const ALL: ReadonlySet<ActivityState> = new Set([
         ActivityState.ACTIVE,
@@ -1334,7 +1334,7 @@ export namespace ContactNotificationTriggerPolicy {
 }
 /** @generate convert */
 export type ContactNotificationTriggerPolicy =
-    typeof ContactNotificationTriggerPolicy[keyof typeof ContactNotificationTriggerPolicy];
+    (typeof ContactNotificationTriggerPolicy)[keyof typeof ContactNotificationTriggerPolicy];
 export namespace ContactNotificationTriggerPolicyUtils {
     export const ALL: ReadonlySet<ContactNotificationTriggerPolicy> = new Set([
         ContactNotificationTriggerPolicy.NEVER,
@@ -1365,7 +1365,7 @@ export namespace ConversationCategory {
     export type PROTECTED = typeof PROTECTED;
 }
 /** @generate convert */
-export type ConversationCategory = typeof ConversationCategory[keyof typeof ConversationCategory];
+export type ConversationCategory = (typeof ConversationCategory)[keyof typeof ConversationCategory];
 export namespace ConversationCategoryUtils {
     export const ALL: ReadonlySet<ConversationCategory> = new Set([
         ConversationCategory.DEFAULT,
@@ -1397,7 +1397,7 @@ export namespace ConversationVisibility {
 }
 /** @generate convert */
 export type ConversationVisibility =
-    typeof ConversationVisibility[keyof typeof ConversationVisibility];
+    (typeof ConversationVisibility)[keyof typeof ConversationVisibility];
 export namespace ConversationVisibilityUtils {
     export const ALL: ReadonlySet<ConversationVisibility> = new Set([
         ConversationVisibility.SHOW,
@@ -1431,7 +1431,7 @@ export namespace GroupNotificationTriggerPolicy {
 }
 /** @generate convert */
 export type GroupNotificationTriggerPolicy =
-    typeof GroupNotificationTriggerPolicy[keyof typeof GroupNotificationTriggerPolicy];
+    (typeof GroupNotificationTriggerPolicy)[keyof typeof GroupNotificationTriggerPolicy];
 export namespace GroupNotificationTriggerPolicyUtils {
     export const ALL: ReadonlySet<GroupNotificationTriggerPolicy> = new Set([
         GroupNotificationTriggerPolicy.MENTIONED,
@@ -1463,7 +1463,7 @@ export namespace IdentityType {
     export type WORK = typeof WORK;
 }
 /** @generate convert */
-export type IdentityType = typeof IdentityType[keyof typeof IdentityType];
+export type IdentityType = (typeof IdentityType)[keyof typeof IdentityType];
 export namespace IdentityTypeUtils {
     export const ALL: ReadonlySet<IdentityType> = new Set([
         IdentityType.REGULAR,
@@ -1491,7 +1491,7 @@ export namespace NotificationSoundPolicy {
 }
 /** @generate convert */
 export type NotificationSoundPolicy =
-    typeof NotificationSoundPolicy[keyof typeof NotificationSoundPolicy];
+    (typeof NotificationSoundPolicy)[keyof typeof NotificationSoundPolicy];
 export namespace NotificationSoundPolicyUtils {
     export const ALL: ReadonlySet<NotificationSoundPolicy> = new Set([
         NotificationSoundPolicy.MUTED,
@@ -1522,7 +1522,7 @@ export namespace ReadReceiptPolicy {
     export type DONT_SEND_READ_RECEIPT = typeof DONT_SEND_READ_RECEIPT;
 }
 /** @generate convert */
-export type ReadReceiptPolicy = typeof ReadReceiptPolicy[keyof typeof ReadReceiptPolicy];
+export type ReadReceiptPolicy = (typeof ReadReceiptPolicy)[keyof typeof ReadReceiptPolicy];
 export namespace ReadReceiptPolicyUtils {
     export const ALL: ReadonlySet<ReadReceiptPolicy> = new Set([
         ReadReceiptPolicy.SEND_READ_RECEIPT,
@@ -1553,7 +1553,7 @@ export namespace SyncState {
     export type CUSTOM = typeof CUSTOM;
 }
 /** @generate convert */
-export type SyncState = typeof SyncState[keyof typeof SyncState];
+export type SyncState = (typeof SyncState)[keyof typeof SyncState];
 export namespace SyncStateUtils {
     export const ALL: ReadonlySet<SyncState> = new Set([
         SyncState.INITIAL,
@@ -1591,7 +1591,7 @@ export namespace TransactionScope {
     export type NEW_DEVICE_SYNC = typeof NEW_DEVICE_SYNC;
 }
 /** @generate convert name */
-export type TransactionScope = typeof TransactionScope[keyof typeof TransactionScope];
+export type TransactionScope = (typeof TransactionScope)[keyof typeof TransactionScope];
 export namespace TransactionScopeUtils {
     export const ALL: ReadonlySet<TransactionScope> = new Set([
         TransactionScope.USER_PROFILE_SYNC,
@@ -1636,7 +1636,7 @@ export namespace TypingIndicatorPolicy {
 }
 /** @generate convert */
 export type TypingIndicatorPolicy =
-    typeof TypingIndicatorPolicy[keyof typeof TypingIndicatorPolicy];
+    (typeof TypingIndicatorPolicy)[keyof typeof TypingIndicatorPolicy];
 export namespace TypingIndicatorPolicyUtils {
     export const ALL: ReadonlySet<TypingIndicatorPolicy> = new Set([
         TypingIndicatorPolicy.SEND_TYPING_INDICATOR,
@@ -1670,7 +1670,7 @@ export namespace VerificationLevel {
     export type FULLY_VERIFIED = typeof FULLY_VERIFIED;
 }
 /** @generate convert */
-export type VerificationLevel = typeof VerificationLevel[keyof typeof VerificationLevel];
+export type VerificationLevel = (typeof VerificationLevel)[keyof typeof VerificationLevel];
 export namespace VerificationLevelUtils {
     export const ALL: ReadonlySet<VerificationLevel> = new Set([
         VerificationLevel.UNVERIFIED,
@@ -1701,7 +1701,7 @@ export namespace WorkVerificationLevel {
 }
 /** @generate convert */
 export type WorkVerificationLevel =
-    typeof WorkVerificationLevel[keyof typeof WorkVerificationLevel];
+    (typeof WorkVerificationLevel)[keyof typeof WorkVerificationLevel];
 export namespace WorkVerificationLevelUtils {
     export const ALL: ReadonlySet<WorkVerificationLevel> = new Set([
         WorkVerificationLevel.NONE,
@@ -1733,7 +1733,7 @@ export namespace DeviceSlotState {
     export type EXISTING = typeof EXISTING;
 }
 /** @generate convert */
-export type DeviceSlotState = typeof DeviceSlotState[keyof typeof DeviceSlotState];
+export type DeviceSlotState = (typeof DeviceSlotState)[keyof typeof DeviceSlotState];
 export namespace DeviceSlotStateUtils {
     export const ALL: ReadonlySet<DeviceSlotState> = new Set([
         DeviceSlotState.NEW,
@@ -1767,7 +1767,7 @@ export namespace GroupUserState {
     export type LEFT = typeof LEFT;
 }
 /** @generate convert name */
-export type GroupUserState = typeof GroupUserState[keyof typeof GroupUserState];
+export type GroupUserState = (typeof GroupUserState)[keyof typeof GroupUserState];
 export namespace GroupUserStateUtils {
     export const ALL: ReadonlySet<GroupUserState> = new Set([
         GroupUserState.MEMBER,
@@ -1816,7 +1816,7 @@ export namespace ElectronIpcCommand {
  * ELECTRON
  * ========
  */
-export type ElectronIpcCommand = typeof ElectronIpcCommand[keyof typeof ElectronIpcCommand];
+export type ElectronIpcCommand = (typeof ElectronIpcCommand)[keyof typeof ElectronIpcCommand];
 export namespace Existence {
     export const ENSURED = 0;
     export type ENSURED = typeof ENSURED;
@@ -1830,7 +1830,7 @@ export namespace Existence {
 /**
  * Whether it has been ensured that an entity exists or not.
  */
-export type Existence = typeof Existence[keyof typeof Existence];
+export type Existence = (typeof Existence)[keyof typeof Existence];
 export namespace DeltaUpdateType {
     export const ADDED = 0;
     export type ADDED = typeof ADDED;
@@ -1842,7 +1842,7 @@ export namespace DeltaUpdateType {
 /**
  * Delta update type.
  */
-export type DeltaUpdateType = typeof DeltaUpdateType[keyof typeof DeltaUpdateType];
+export type DeltaUpdateType = (typeof DeltaUpdateType)[keyof typeof DeltaUpdateType];
 export namespace MouseEventButtons {
     export const NONE = 0;
     /** No button. */
@@ -1867,7 +1867,7 @@ export namespace MouseEventButtons {
  * Button value flags for `MouseEvent.buttons`, see:
  * https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
  */
-export type MouseEventButtons = typeof MouseEventButtons[keyof typeof MouseEventButtons];
+export type MouseEventButtons = (typeof MouseEventButtons)[keyof typeof MouseEventButtons];
 export namespace Browser {
     export const CHROME = 0;
     export type CHROME = typeof CHROME;
@@ -1888,7 +1888,7 @@ export namespace Browser {
     export const UNKNOWN = 8;
     export type UNKNOWN = typeof UNKNOWN;
 }
-export type Browser = typeof Browser[keyof typeof Browser];
+export type Browser = (typeof Browser)[keyof typeof Browser];
 
 // WARNING: This file has been generated by safe-enums. Do not modify it!
 // vim: set readonly :

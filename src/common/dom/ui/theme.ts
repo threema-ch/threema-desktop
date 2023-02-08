@@ -5,7 +5,7 @@ import {type u53} from '~/common/types';
  * the OS.
  */
 export const THEMES = ['light', 'dark', 'system'] as const;
-export type Theme = typeof THEMES[u53];
+export type Theme = (typeof THEMES)[u53];
 
 /**
  * Validate a theme and fall back to the browsers preferred color scheme, if

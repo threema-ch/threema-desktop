@@ -66,7 +66,7 @@ export interface RawCaptureHandlerPair {
  * String representation of each existing protocol layer.
  */
 export const LAYERS = ['Frame', 'Multiplex', 'TLE/Auth', 'Keep-Alive', 'E2E'] as const;
-type Layers = typeof LAYERS[u53];
+type Layers = (typeof LAYERS)[u53];
 
 /**
  * Prepare layer data for capture output.

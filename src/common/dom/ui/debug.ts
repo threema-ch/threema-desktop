@@ -4,7 +4,7 @@ import {type u53} from '~/common/types';
  * Available debug panel states.
  */
 export const DEBUG_PANEL_STATES = ['show', 'hide'];
-export type DebugPanelState = typeof DEBUG_PANEL_STATES[u53];
+export type DebugPanelState = (typeof DEBUG_PANEL_STATES)[u53];
 
 /**
  * Default debug panel height.

@@ -105,7 +105,7 @@ export const CUSTOM_TYPES = {
     U8: 'u8',
     U53: 'u53',
 } as const;
-type CustomType = typeof CUSTOM_TYPES[keyof typeof CUSTOM_TYPES];
+type CustomType = (typeof CUSTOM_TYPES)[keyof typeof CUSTOM_TYPES];
 
 /**
  * SQLite database connection with support for all our custom types.

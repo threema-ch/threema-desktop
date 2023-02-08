@@ -7,7 +7,7 @@ export const BUILD_ENTRIES = [
     'karma-tests',
     'mocha-tests',
 ] as const;
-export type BuildEntry = typeof BUILD_ENTRIES[u53];
+export type BuildEntry = (typeof BUILD_ENTRIES)[u53];
 
 /**
  * Build modes:
@@ -16,7 +16,7 @@ export type BuildEntry = typeof BUILD_ENTRIES[u53];
  */
 export const BUILD_MODES = ['development', 'production'] as const;
 /** See {@link BUILD_MODES}. */
-export type BuildMode = typeof BUILD_MODES[u53];
+export type BuildMode = (typeof BUILD_MODES)[u53];
 
 /**
  * Build targets:
@@ -25,7 +25,7 @@ export type BuildMode = typeof BUILD_MODES[u53];
  */
 export const BUILD_TARGETS = ['electron', 'web'] as const;
 /** See {@link BUILD_TARGETS}. */
-export type BuildTarget = typeof BUILD_TARGETS[u53];
+export type BuildTarget = (typeof BUILD_TARGETS)[u53];
 
 /**
  * Build variants:
@@ -34,7 +34,7 @@ export type BuildTarget = typeof BUILD_TARGETS[u53];
  */
 export const BUILD_VARIANTS = ['consumer', 'work'] as const;
 /** See {@link BUILD_VARIANTS}. */
-export type BuildVariant = typeof BUILD_VARIANTS[u53];
+export type BuildVariant = (typeof BUILD_VARIANTS)[u53];
 
 /**
  * Build environments:
@@ -43,7 +43,7 @@ export type BuildVariant = typeof BUILD_VARIANTS[u53];
  */
 export const BUILD_ENVIRONMENTS = ['sandbox', 'live'] as const;
 /** See {@link BUILD_ENVIRONMENTS}. */
-export type BuildEnvironment = typeof BUILD_ENVIRONMENTS[u53];
+export type BuildEnvironment = (typeof BUILD_ENVIRONMENTS)[u53];
 
 export interface BuildConfig {
     readonly CHAT_SERVER_KEY: readonly u8[];

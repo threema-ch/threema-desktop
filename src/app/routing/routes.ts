@@ -393,19 +393,21 @@ export const ROUTE_DEFINITIONS = {
  */
 export interface RouteInstances {
     nav: {
-        [K in keyof typeof ROUTE_DEFINITIONS.nav]: RouteInstance<typeof ROUTE_DEFINITIONS.nav[K]>;
+        [K in keyof typeof ROUTE_DEFINITIONS.nav]: RouteInstance<(typeof ROUTE_DEFINITIONS.nav)[K]>;
     };
     main: {
-        [K in keyof typeof ROUTE_DEFINITIONS.main]: RouteInstance<typeof ROUTE_DEFINITIONS.main[K]>;
+        [K in keyof typeof ROUTE_DEFINITIONS.main]: RouteInstance<
+            (typeof ROUTE_DEFINITIONS.main)[K]
+        >;
     };
     aside: {
         [K in keyof typeof ROUTE_DEFINITIONS.aside]: RouteInstance<
-            typeof ROUTE_DEFINITIONS.aside[K]
+            (typeof ROUTE_DEFINITIONS.aside)[K]
         >;
     };
     modal: {
         [K in keyof typeof ROUTE_DEFINITIONS.modal]: RouteInstance<
-            typeof ROUTE_DEFINITIONS.modal[K]
+            (typeof ROUTE_DEFINITIONS.modal)[K]
         >;
     };
 }
