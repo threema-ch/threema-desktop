@@ -21,6 +21,24 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0.0-preview5" date="2023-02-09">
+            <description>
+                <p>New features:</p>
+                <ul>
+                    <li>Emoji picker</li>
+                    <li>Allow deleting all messages in a conversation through the menu in the top right</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Internal preparations for file message support</li>
+                </ul>
+                <p>Bugfixes:</p>
+                <ul>
+                    <li>Fix a crash that occurred when linking an iOS device where the profile picture releasing configuration was set to "Selected Contacts".</li>
+                </ul>
+                <p>...and a few other changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0.0-preview4" date="2023-01-26">
             <description>
                 <p>New features:</p>
