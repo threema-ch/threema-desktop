@@ -75,7 +75,7 @@
     "svelte": "3.53.1",
     "synchronous-promise": "2.0.16",
     "ts-events": "3.4.1",
-    "ts-sql-query": "1.47.0",
+    "ts-sql-query": "1.48.0",
     "tweetnacl": "1.0.3",
     "web-streams-polyfill": "~3.2.1"
   },
