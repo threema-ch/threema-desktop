@@ -16,7 +16,7 @@ import {ensureError, unreachable} from '~/common/utils/assert';
 import {byteToHex} from '~/common/utils/byte';
 import {type TransformerCodec, type TransformerCodecController} from '~/common/utils/codec';
 
-import {type InboundL1Message, type OutboundL2Message, type RawL1Data, D2mPayloadType} from '.';
+import {D2mPayloadType, type InboundL1Message, type OutboundL2Message, type RawL1Data} from '.';
 import {type RawCaptureHandler} from './capture';
 
 export class Layer1Decoder implements TransformerCodec<ArrayBuffer, InboundL1Message> {

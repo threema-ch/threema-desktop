@@ -41,7 +41,7 @@ import {
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u8, type u53} from '~/common/types';
 
-import {type DBConnection, CUSTOM_TYPES} from './connection';
+import {CUSTOM_TYPES, type DBConnection} from './connection';
 
 /**
  * A contact.

@@ -1,8 +1,8 @@
 import {
+    NACL_CONSTANTS,
     type PublicKey,
     type RawKey,
     type ReadonlyRawKey,
-    NACL_CONSTANTS,
     wrapRawKey,
 } from '~/common/crypto';
 import {type SecureSharedBoxFactory, type SharedBoxFactory} from '~/common/crypto/box';

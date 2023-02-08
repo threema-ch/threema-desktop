@@ -14,25 +14,25 @@ import {ReflectedIncomingGroupLeaveTask} from '~/common/network/protocol/task/d2
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {
+    ensureMessageId,
     type GroupId,
     type IdentityString,
     type MessageId,
-    ensureMessageId,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {Delayed} from '~/common/utils/delayed';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 import {
-    type NetworkExpectation,
-    type TestServices,
-    type TestUser,
     addTestGroup,
     addTestUserAsContact,
     makeContactInit,
     makeTestServices,
+    type NetworkExpectation,
     NetworkExpectationFactory,
     TestHandle,
+    type TestServices,
+    type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 import {
     assertGroupHasMembers,

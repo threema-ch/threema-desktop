@@ -1,7 +1,7 @@
 import {type MediatorPipe, type MediatorTransport} from '~/common/dom/network';
 import {type BidirectionalStream, TransformStream} from '~/common/dom/streams';
 import {ProtocolError} from '~/common/error';
-import {type CloseInfo, CloseCode} from '~/common/network';
+import {CloseCode, type CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
 import {type ServerGroup} from '~/common/network/types';
 import {type ReadonlyUint8Array} from '~/common/types';
@@ -9,7 +9,7 @@ import {bytesToHex} from '~/common/utils/byte';
 import {type TransformerCodec, type TransformerCodecController} from '~/common/utils/codec';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
-import {type WebSocketEventWrapperStreamOptions, createWebSocketStream} from './websocket';
+import {createWebSocketStream, type WebSocketEventWrapperStreamOptions} from './websocket';
 
 interface MediatorWebSocketTransportContext {
     url: string;

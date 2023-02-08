@@ -8,12 +8,12 @@ import {
     OutgoingMessageUpdate,
 } from '~/common/network/protobuf/validate/d2d';
 import {
+    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
     type ComposableTask,
     type ServicesForTasks,
-    ACTIVE_TASK,
 } from '~/common/network/protocol/task/';
 import {type ConversationId, type MessageId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';

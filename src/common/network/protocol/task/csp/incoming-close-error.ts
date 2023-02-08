@@ -3,11 +3,11 @@
  */
 import {type Logger} from '~/common/logging';
 import {
+    PASSIVE_TASK,
     type PassiveTask,
     type PassiveTaskCodecHandle,
     type PassiveTaskSymbol,
     type ServicesForTasks,
-    PASSIVE_TASK,
 } from '~/common/network/protocol/task';
 import type * as structbuf from '~/common/network/structbuf';
 import {UTF8} from '~/common/utils/codec';

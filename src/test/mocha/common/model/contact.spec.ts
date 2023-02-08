@@ -4,12 +4,12 @@ import {reflectContactSync} from '~/test/mocha/common/network/protocol/task/task
 import {expectRejectedWith} from '~/test/mocha/common/utils';
 
 import {
-    type TestServices,
     makeContactInit,
     makeTestServices,
     makeTestUser,
     registerTestUser,
     TestHandle,
+    type TestServices,
 } from '../backend-mocks';
 
 export function run(): void {

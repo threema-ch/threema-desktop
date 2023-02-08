@@ -2,10 +2,10 @@ import {type ServicesForBackend} from '~/common/backend';
 import {type EncryptedData} from '~/common/crypto';
 import {
     type BlobBackend,
+    BlobBackendError,
     type BlobDownloadResult,
     type BlobId,
     type BlobScope,
-    BlobBackendError,
     isBlobId,
 } from '~/common/network/protocol/blob';
 import {bytesToHex, byteToHex} from '~/common/utils/byte';

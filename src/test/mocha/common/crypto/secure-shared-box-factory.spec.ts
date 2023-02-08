@@ -1,11 +1,11 @@
 import {expect} from 'chai';
 
 import {
-    type Nonce,
-    type PlainData,
     ensurePublicKey,
     NACL_CONSTANTS,
+    type Nonce,
     NONCE_UNGUARDED_TOKEN,
+    type PlainData,
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, SecureSharedBoxFactory} from '~/common/crypto/box';

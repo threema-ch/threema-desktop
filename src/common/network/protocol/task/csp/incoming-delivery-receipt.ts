@@ -1,4 +1,4 @@
-import {type MessageReaction, MessageDirection} from '~/common/enum';
+import {MessageDirection, type MessageReaction} from '~/common/enum';
 import {type AnyMessageModel, type AnyOutboundMessageModel} from '~/common/model';
 import {type ActiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';

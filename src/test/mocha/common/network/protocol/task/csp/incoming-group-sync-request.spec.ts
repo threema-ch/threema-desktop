@@ -7,17 +7,17 @@ import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {IncomingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/incoming-group-sync-request';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {type GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
-import {type GroupId, type IdentityString, ensureIdentityString} from '~/common/network/types';
+import {ensureIdentityString, type GroupId, type IdentityString} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {
-    type NetworkExpectation,
-    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeContactInit,
     makeKeypair,
     makeTestServices,
+    type NetworkExpectation,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 import {
     reflectAndSendGroupNameToUser,

@@ -4,7 +4,7 @@ import {
     generateFakeContactConversation,
     generateFakeGroupConversation,
 } from '~/common/dom/debug/fake';
-import {type ProxyMarked, PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
 /**
  * Exposed functionality used by the debug panels.

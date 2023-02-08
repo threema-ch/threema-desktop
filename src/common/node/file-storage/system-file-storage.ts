@@ -7,17 +7,17 @@ import {
     type FileEncryptionKey,
     type FileId,
     type FileStorage,
-    type ServicesForFileStorage,
-    type StoredFileHandle,
     FileStorageError,
     randomFileEncryptionKey,
     randomFileId,
+    type ServicesForFileStorage,
+    type StoredFileHandle,
 } from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {FileChunkNonce} from '~/common/node/file-storage/file-crypto';
 import {directoryModeInternalObjectIfPosix, fileModeInternalIfPosix} from '~/common/node/fs';
 import {isNodeError} from '~/common/node/utils';
-import {type ReadonlyUint8Array, type u53, MiB} from '~/common/types';
+import {MiB, type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, debugAssert} from '~/common/utils/assert';
 
 /**

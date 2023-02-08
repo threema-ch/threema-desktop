@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises';
 
-import {type Logger, type LogRecordFn, CONSOLE_LOGGER} from '~/common/logging';
+import {CONSOLE_LOGGER, type Logger, type LogRecordFn} from '~/common/logging';
 
 /**
  * Writes log messages to a file on a best-effort basis.

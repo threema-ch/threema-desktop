@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import Long from 'long';
 
-import {type u64, ensureU64} from '~/common/types';
+import {ensureU64, type u64} from '~/common/types';
 import {
     bigintSortAsc,
     bigintSortDesc,

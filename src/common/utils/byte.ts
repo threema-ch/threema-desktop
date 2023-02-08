@@ -1,10 +1,10 @@
 import {
     type ByteEncoder,
+    ensureU8,
     type ReadonlyUint8Array,
     type u8,
     type u53,
     type WeakOpaque,
-    ensureU8,
 } from '~/common/types';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 

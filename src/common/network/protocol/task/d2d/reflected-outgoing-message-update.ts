@@ -3,11 +3,11 @@ import {type Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {toCommonConversationId} from '~/common/network/protobuf/validate/d2d/conversation-id';
 import {
+    PASSIVE_TASK,
     type PassiveTask,
     type PassiveTaskCodecHandle,
     type PassiveTaskSymbol,
     type ServicesForTasks,
-    PASSIVE_TASK,
 } from '~/common/network/protocol/task/';
 import {getConversationById} from '~/common/network/protocol/task/message-processing-helpers';
 import {unreachable} from '~/common/utils/assert';

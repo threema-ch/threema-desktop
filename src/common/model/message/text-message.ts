@@ -16,10 +16,10 @@ import {
     type OutboundTextMessage,
     type OutboundTextMessageController,
     type OutboundTextMessageModel,
+    PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type TextMessageViewFragment,
     type UidOf,
-    PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
 } from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';

@@ -3,12 +3,12 @@
  */
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
-    type CspE2eGroupControlType,
-    type CspE2eGroupConversationType,
     CspE2eContactControlType,
     CspE2eConversationType,
     CspE2eConversationTypeUtils,
     CspE2eForwardSecurityType,
+    type CspE2eGroupControlType,
+    type CspE2eGroupConversationType,
     CspE2eGroupConversationTypeUtils,
     CspE2eStatusUpdateType,
     MessageFilterInstruction,
@@ -21,10 +21,10 @@ import * as protobuf from '~/common/network/protobuf';
 import {type ProtobufInstanceOf} from '~/common/network/protobuf/utils';
 import {
     type CspE2eType,
-    type LayerEncoder,
     cspE2eTypeNameOf,
     CspPayloadType,
     D2mPayloadType,
+    type LayerEncoder,
 } from '~/common/network/protocol';
 import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
 import {type CspMessageFlags} from '~/common/network/protocol/flags';
@@ -37,7 +37,7 @@ import {
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import * as structbuf from '~/common/network/structbuf';
 import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
-import {type MessageId, conversationIdForReceiver} from '~/common/network/types';
+import {conversationIdForReceiver, type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';

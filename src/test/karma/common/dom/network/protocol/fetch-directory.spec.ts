@@ -7,7 +7,7 @@ import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
-import {type DirectoryErrorType, DirectoryError} from '~/common/network/protocol/directory';
+import {DirectoryError, type DirectoryErrorType} from '~/common/network/protocol/directory';
 import {ensureIdentityString} from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
 import {type u53} from '~/common/types';

@@ -5,7 +5,7 @@ import * as process from 'process';
 
 import {MigrationError} from '~/common/error';
 import {type Logger} from '~/common/logging';
-import {type u53, ensureU53, ensureU64, u64ToU53} from '~/common/types';
+import {ensureU53, ensureU64, type u53, u64ToU53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 
 // Dynamically import all migration files.

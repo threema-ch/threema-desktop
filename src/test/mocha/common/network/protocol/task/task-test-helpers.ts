@@ -4,12 +4,12 @@ import {type ServicesForBackend} from '~/common/backend';
 import {
     type EncryptedData,
     type Nonce,
-    type PublicKey,
     NONCE_UNGUARDED_TOKEN,
+    type PublicKey,
 } from '~/common/crypto';
-import {type SharedBoxFactory, CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
+import {CREATE_BUFFER_TOKEN, type SharedBoxFactory} from '~/common/crypto/box';
 import {CspE2eGroupControlType, TransactionScope} from '~/common/enum';
-import {type LayerEncoder, CspPayloadType, D2mPayloadType} from '~/common/network/protocol';
+import {CspPayloadType, D2mPayloadType, type LayerEncoder} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
 import {type Container} from '~/common/network/structbuf/csp/e2e';
 import {
@@ -18,10 +18,10 @@ import {
 } from '~/common/network/structbuf/csp/payload';
 import * as validate from '~/common/network/structbuf/validate';
 import {
+    ensureMessageId,
     type GroupId,
     type IdentityString,
     type MessageId,
-    ensureMessageId,
 } from '~/common/network/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {byteWithoutPkcs7} from '~/common/utils/byte';
@@ -29,8 +29,8 @@ import {Delayed} from '~/common/utils/delayed';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 import {
     type NetworkExpectation,
-    type TestUser,
     NetworkExpectationFactory,
+    type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 
 /**

@@ -4,17 +4,17 @@ import * as path from 'node:path';
 
 import * as chai from 'chai';
 
-import {type PlainData, type RawKey, NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN, type PlainData, type RawKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {DATABASE_KEY_LENGTH, wrapRawDatabaseKey} from '~/common/db';
 import {
-    type Argon2idParameters,
-    type KeyStorageContents,
-    type KeyStorageErrorType,
     ARGON2_MIN_PARAMS,
+    type Argon2idParameters,
     Argon2Version,
+    type KeyStorageContents,
     KeyStorageError,
+    type KeyStorageErrorType,
 } from '~/common/key-storage';
 import {NOOP_LOGGER} from '~/common/logging';
 import {

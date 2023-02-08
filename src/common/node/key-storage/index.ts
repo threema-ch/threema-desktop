@@ -57,29 +57,29 @@ import {performance} from 'node:perf_hooks';
 import * as argon2 from 'argon2';
 
 import {
-    type PlainData,
-    type RawKey,
     NACL_CONSTANTS,
     NONCE_UNGUARDED_TOKEN,
+    type PlainData,
+    type RawKey,
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
-    type Argon2idParameters,
-    type EncryptedKeyStorageFileContents,
-    type KeyStorage,
-    type KeyStorageContents,
-    type ServicesForKeyStorage,
     ARGON2_MIN_PARAMS,
+    type Argon2idParameters,
     Argon2Version,
     ENCRYPTED_KEY_STORAGE_FILE_CONTENTS_SCHEMA,
+    type EncryptedKeyStorageFileContents,
     KDF_TARGET_RUNTIME_MS,
     KEY_STORAGE_CONTENTS_SCHEMA,
+    type KeyStorage,
+    type KeyStorageContents,
     KeyStorageError,
+    type ServicesForKeyStorage,
 } from '~/common/key-storage';
 import {type Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
-import {type u53, KiB, MiB} from '~/common/types';
+import {KiB, MiB, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {intoUnsignedLong} from '~/common/utils/number';
 

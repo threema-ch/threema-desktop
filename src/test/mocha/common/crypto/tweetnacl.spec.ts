@@ -1,13 +1,13 @@
 import * as chai from 'chai';
 
 import {
+    NACL_CONSTANTS,
     type Nonce,
+    NONCE_UNGUARDED_TOKEN,
     type PublicKey,
     type RawEncryptedData,
     type RawPlainData,
     type ReadonlyRawKey,
-    NACL_CONSTANTS,
-    NONCE_UNGUARDED_TOKEN,
     wrapRawKey,
 } from '~/common/crypto';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';

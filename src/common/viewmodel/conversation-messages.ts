@@ -17,7 +17,7 @@ import {assert, unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
 import {type LocalStore} from '~/common/utils/store';
-import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
+import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 import {transformContact} from '~/common/viewmodel/svelte-components-transformations';
@@ -28,7 +28,7 @@ import {
     type MessageReaction as SCMessageReaction,
     type OutgoingMessage,
 } from '~/common/viewmodel/types';
-import {type Mention, getMentions} from '~/common/viewmodel/utils/mentions';
+import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
 
 export type ConversationMessageSetStore = LocalDerivedSetStore<
     SetOfAnyLocalMessageModelStore,

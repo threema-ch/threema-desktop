@@ -27,7 +27,7 @@ import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
-import {type IQueryableStore, DeprecatedDerivedStore, WritableStore} from '~/common/utils/store';
+import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {
     type GroupUserState as GroupUserState3SC,
     type MessageReaction as SCMessageReaction,

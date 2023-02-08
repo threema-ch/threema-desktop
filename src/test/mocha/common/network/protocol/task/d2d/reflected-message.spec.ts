@@ -15,22 +15,22 @@ import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {
     type ContactConversationId,
+    ensureIdentityString,
     type GroupId,
     type IdentityString,
     type MessageId,
-    ensureIdentityString,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {
-    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 import {secondsAgo} from '~/test/mocha/common/utils';
 

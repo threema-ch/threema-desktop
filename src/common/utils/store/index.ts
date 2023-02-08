@@ -1,6 +1,6 @@
 import {TransferTag} from '~/common/enum';
 import {type Logger, type LogPrefix} from '~/common/logging';
-import {type u53, ensureU53} from '~/common/types';
+import {ensureU53, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,
@@ -11,10 +11,10 @@ import {
     type MessageEvent,
     type ObjectId,
     type RegisteredTransferHandler,
-    type TransferMarked,
-    type WireValue,
     registerTransferHandler,
     TRANSFER_MARKER,
+    type TransferMarked,
+    type WireValue,
 } from '~/common/utils/endpoint';
 import {type AbortRaiser} from '~/common/utils/signal';
 

@@ -4,7 +4,9 @@ import {
     type CryptoBoxBackend,
     type EncryptedData,
     type EncryptedDataWithNonceAhead,
+    NACL_CONSTANTS,
     type Nonce,
+    NONCE_UNGUARDED_TOKEN,
     type NonceGuard,
     type NonceUnguarded,
     type PlainData,
@@ -13,8 +15,6 @@ import {
     type RawKey,
     type RawPlainData,
     type ReadonlyRawKey,
-    NACL_CONSTANTS,
-    NONCE_UNGUARDED_TOKEN,
     wrapRawKey,
 } from '~/common/crypto';
 import {type Blake2bKeyLength, type Blake2bParameters, deriveKey} from '~/common/crypto/blake2b';

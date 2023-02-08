@@ -7,7 +7,7 @@ import {
     type DbReceiverLookup,
 } from '~/common/db';
 import {Existence, GroupUserState, ReceiverType, TriggerSource} from '~/common/enum';
-import {type Logger, getGroupTag} from '~/common/logging';
+import {getGroupTag, type Logger} from '~/common/logging';
 import {
     type Contact,
     type Conversation,
@@ -35,15 +35,15 @@ import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
 import {type GroupId, type IdentityString} from '~/common/network/types';
-import {type NotificationTag, getNotificationTagForGroup} from '~/common/notification';
+import {getNotificationTagForGroup, type NotificationTag} from '~/common/notification';
 import {type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {u64ToHexLe} from '~/common/utils/number';
 import {
-    type Exact,
     createExactPropertyValidator,
+    type Exact,
     OPTIONAL,
     REQUIRED,
 } from '~/common/utils/property-validator';

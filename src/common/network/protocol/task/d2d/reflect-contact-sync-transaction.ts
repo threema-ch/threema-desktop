@@ -1,11 +1,11 @@
 import {TransactionScope} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
+    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
     type ServicesForTasks,
-    ACTIVE_TASK,
 } from '~/common/network/protocol/task';
 import {transactionCompleted} from '~/common/network/protocol/task/manager';
 

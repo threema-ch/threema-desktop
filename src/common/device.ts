@@ -1,6 +1,6 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {type NonceGuard} from '~/common/crypto';
-import {type DeviceGroupBoxes, deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
+import {deriveDeviceGroupKeys, type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {type DatabaseBackend} from '~/common/db';
 import {
     type CspDeviceId,

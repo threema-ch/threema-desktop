@@ -8,6 +8,7 @@ import {type SqliteSqlBuilder} from 'ts-sql-query/sqlBuilders/SqliteSqlBuilder';
 
 import {isPublicKey, isReadonlyRawKey} from '~/common/crypto';
 import {
+    DATABASE_KEY_LENGTH,
     type DbContactUid,
     type DbConversationUid,
     type DbDistributionListUid,
@@ -16,7 +17,6 @@ import {
     type DbGroupMemberUid,
     type DbGroupUid,
     type DbMessageUid,
-    DATABASE_KEY_LENGTH,
 } from '~/common/db';
 import {
     AcquaintanceLevelUtils,
@@ -47,7 +47,7 @@ import {
     isIdentityString,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
-import {type u8, type u53, isU8} from '~/common/types';
+import {isU8, type u8, type u53} from '~/common/types';
 import {exhausted, unreachable} from '~/common/utils/assert';
 import {byteView} from '~/common/utils/byte';
 

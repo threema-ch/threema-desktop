@@ -21,13 +21,13 @@ import {type TimerCanceller} from '~/common/utils/timer';
 
 import {CloseCode} from '..';
 import {
+    CspPayloadType,
+    D2mPayloadType,
     type InboundL3CspMessage,
     type InboundL3Message,
     type InboundL4Message,
     type OutboundL3Message,
     type OutboundL4Message,
-    CspPayloadType,
-    D2mPayloadType,
 } from '.';
 import {type RawCaptureHandler} from './capture';
 import {type ConnectionHandle} from './controller';

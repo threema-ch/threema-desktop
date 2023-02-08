@@ -1,9 +1,9 @@
 import {
     type CryptoBackend,
     type CryptoBox,
+    NACL_CONSTANTS,
     type RawKey,
     type ReadonlyRawKey,
-    NACL_CONSTANTS,
 } from '~/common/crypto';
 import {deriveKey} from '~/common/crypto/blake2b';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';

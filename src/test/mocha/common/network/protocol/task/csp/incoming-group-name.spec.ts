@@ -7,13 +7,13 @@ import {ensureIdentityString} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';
 import {
-    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
     NetworkExpectationFactory,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 
 /**

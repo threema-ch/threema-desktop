@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import Long from 'long';
 
-import {type MessageId, ensureIdentityString, ensureMessageId} from '~/common/network/types';
+import {ensureIdentityString, ensureMessageId, type MessageId} from '~/common/network/types';
 import {dateToUnixTimestampMs, intoU64, intoUnsignedLong} from '~/common/utils/number';
 import {instanceOf} from '~/common/utils/valita-helpers';
 

@@ -1,12 +1,12 @@
 import {
+    adapter,
     type QueuingStrategy,
+    ReadableStream,
     type ReadableStreamDefaultController,
     type UnderlyingSink,
     type UnderlyingSource,
-    type WritableStreamDefaultController,
-    adapter,
-    ReadableStream,
     WritableStream,
+    type WritableStreamDefaultController,
 } from '~/common/dom/streams';
 import {CloseCode} from '~/common/network';
 import {type u16, type u32, type u53} from '~/common/types';

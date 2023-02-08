@@ -8,7 +8,7 @@ import {type BootstrapParams} from '~/app/ui/bootstrap/process-step';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {CONFIG} from '~/common/config';
-import {type InitialBootstrapData, BackendController} from '~/common/dom/backend/controller';
+import {BackendController, type InitialBootstrapData} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {type SafeCredentials} from '~/common/dom/safe';
 import {LocalStorageController} from '~/common/dom/ui/local-storage';
@@ -28,7 +28,7 @@ import {type ISubscribableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
 import {APP_CONFIG} from './config';
-import {type RouterState, Router} from './routing/router';
+import {Router, type RouterState} from './routing/router';
 import {type AppServices} from './types';
 
 // Extend global APIs

@@ -5,11 +5,11 @@ import {type Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {D2mPayloadType} from '~/common/network/protocol';
 import {
+    PASSIVE_TASK,
     type PassiveTask,
     type PassiveTaskCodecHandle,
     type PassiveTaskSymbol,
     type ServicesForTasks,
-    PASSIVE_TASK,
 } from '~/common/network/protocol/task';
 import {getTaskForIncomingD2dMessage} from '~/common/network/protocol/task/d2d';
 import * as structbuf from '~/common/network/structbuf';

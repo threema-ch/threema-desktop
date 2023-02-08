@@ -5,17 +5,17 @@ import {GroupUserState} from '~/common/enum';
 import {ReflectedOutgoingGroupLeaveTask} from '~/common/network/protocol/task/d2d/reflected-outgoing-group-leave';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
-import {type GroupId, type IdentityString, ensureIdentityString} from '~/common/network/types';
+import {ensureIdentityString, type GroupId, type IdentityString} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';
 import {
-    type NetworkExpectation,
-    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
+    type NetworkExpectation,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 
 /**

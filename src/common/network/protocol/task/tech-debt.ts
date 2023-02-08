@@ -1,6 +1,6 @@
 import {type Logger} from '~/common/logging';
 
-import {type PassiveTask, type PassiveTaskSymbol, type ServicesForTasks, PASSIVE_TASK} from '.';
+import {PASSIVE_TASK, type PassiveTask, type PassiveTaskSymbol, type ServicesForTasks} from '.';
 
 /**
  * This is the tech debt task. It reminds you that you **still** haven't implemented <insert task

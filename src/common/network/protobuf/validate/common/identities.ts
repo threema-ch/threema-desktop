@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 
 import {common} from '~/common/network/protobuf/js';
-import {type ProtobufInstanceOf, creator, validator} from '~/common/network/protobuf/utils';
+import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {ensureIdentityString} from '~/common/network/types';
 
 /** Validates {@link common.Identities} */

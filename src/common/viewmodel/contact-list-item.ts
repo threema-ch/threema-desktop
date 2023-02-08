@@ -1,8 +1,8 @@
 import {type PublicKey} from '~/common/crypto';
 import {type DbContactUid} from '~/common/db';
 import {
-    type ActivityState,
     AcquaintanceLevel,
+    type ActivityState,
     IdentityType,
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
@@ -15,7 +15,7 @@ import {unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type LocalSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
+import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 
 /**

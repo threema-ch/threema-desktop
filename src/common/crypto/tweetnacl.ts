@@ -4,6 +4,7 @@ import {
     type Cookie,
     type CryptoBackend,
     type CryptoBoxBackend,
+    NACL_CONSTANTS,
     type Nonce,
     type NonceGuard,
     type NonceUnguarded,
@@ -12,7 +13,6 @@ import {
     type RawKey,
     type RawPlainData,
     type ReadonlyRawKey,
-    NACL_CONSTANTS,
     wrapRawKey,
 } from '~/common/crypto';
 import {CryptoBox} from '~/common/crypto/box';

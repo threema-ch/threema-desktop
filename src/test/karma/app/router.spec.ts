@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import {assertRoute} from '~/app/routing';
-import {type RouterEnvironment, type RouterState, Router} from '~/app/routing/router';
+import {Router, type RouterEnvironment, type RouterState} from '~/app/routing/router';
 import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
 import {type DbContactUid} from '~/common/db';
 import {ReceiverType} from '~/common/enum';

@@ -5,11 +5,11 @@ import {
     type DbMessageFor,
 } from '~/common/db';
 import {
-    type MessageType,
     CspE2eDeliveryReceiptStatus,
     Existence,
     MessageDirection,
     MessageReaction,
+    type MessageType,
     TriggerSource,
 } from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';

@@ -8,7 +8,7 @@ import {type u53} from '~/common/types';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type LocalSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
+import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 

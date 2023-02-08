@@ -37,9 +37,9 @@ import {
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
-    type MessageReaction,
     GroupUserState,
     MessageQueryDirection,
+    type MessageReaction,
     MessageType,
     ReceiverType,
 } from '~/common/enum';

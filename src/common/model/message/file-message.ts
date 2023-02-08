@@ -21,9 +21,9 @@ import {
     type OutboundConversationPreviewMessageView,
     type OutboundFileMessage,
     type OutboundFileMessageController,
+    PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type UidOf,
-    PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
 } from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type BlobScope} from '~/common/network/protocol/blob';

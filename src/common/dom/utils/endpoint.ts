@@ -4,12 +4,12 @@ import {
     type DebugObjectCacheCounter,
     type Endpoint,
     type EndpointPairFor,
-    type ObjectCache,
-    type ObjectId,
-    type TransferMarked,
     EndpointService,
     LocalObjectMapper,
+    type ObjectCache,
+    type ObjectId,
     RemoteObjectMapper,
+    type TransferMarked,
 } from '~/common/utils/endpoint';
 
 /**

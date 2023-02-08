@@ -20,11 +20,11 @@ import {type ContactConversationId, ensureIdentityString} from '~/common/network
 import {assert} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';
 import {
-    type TestServices,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 
 /**

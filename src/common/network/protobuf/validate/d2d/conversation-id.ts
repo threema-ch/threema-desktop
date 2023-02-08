@@ -3,7 +3,7 @@ import Long from 'long';
 
 import {ReceiverType} from '~/common/enum';
 import {d2d} from '~/common/network/protobuf/js';
-import {type ProtobufInstanceOf, creator, validator} from '~/common/network/protobuf/utils';
+import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {GroupIdentity} from '~/common/network/protobuf/validate/common';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {

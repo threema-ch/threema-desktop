@@ -29,17 +29,17 @@ import {
     type GroupMemberContainerEncodable,
     type TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
-import {type MessageId, ensureIdentityString} from '~/common/network/types';
+import {ensureIdentityString, type MessageId} from '~/common/network/types';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {
-    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 
 class TestOutgoingCspMessageBaseMock<

@@ -1,9 +1,9 @@
 import {
+    NACL_CONSTANTS,
     type Nonce,
     type RawEncryptedData,
     type RawPlainData,
     type ReadonlyRawKey,
-    NACL_CONSTANTS,
     wrapRawKey,
 } from '~/common/crypto';
 import {type u53} from '~/common/types';

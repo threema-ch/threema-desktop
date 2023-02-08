@@ -9,7 +9,7 @@ import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString} from '~/common/network/types';
 import {assertUnreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
-import {type IQueryableStore, DeprecatedDerivedStore} from '~/common/utils/store';
+import {DeprecatedDerivedStore, type IQueryableStore} from '~/common/utils/store';
 import {type RemoteSetStore} from '~/common/utils/store/set-store';
 import {type GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
 import {type GroupData, type GroupUserState as GroupUserState3SC} from '~/common/viewmodel/types';

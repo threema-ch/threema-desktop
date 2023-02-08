@@ -5,12 +5,12 @@ import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {ensureIdentityString} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {
-    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 
 /**

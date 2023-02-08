@@ -8,12 +8,12 @@ import {expect} from 'chai';
 
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
-    type FileStorage,
-    type FileStorageErrorType,
     byteToFileId,
     ensureFileId,
     FILE_ID_LENGTH_HEX_CHARS,
+    type FileStorage,
     FileStorageError,
+    type FileStorageErrorType,
     InMemoryFileStorage,
     randomFileEncryptionKey,
     randomFileId,

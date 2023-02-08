@@ -2,14 +2,14 @@ import {type ServicesForBackend} from '~/common/backend';
 import {type NonceGuard} from '~/common/crypto';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {
+    CspE2eConversationType,
+    CspE2eGroupConversationType,
     type D2dCspMessageType,
     type MessageFilterInstruction,
     type TransactionScope,
-    CspE2eConversationType,
-    CspE2eGroupConversationType,
     TransferTag,
 } from '~/common/enum';
-import {type BaseErrorOptions, BaseError} from '~/common/error';
+import {BaseError, type BaseErrorOptions} from '~/common/error';
 import type * as protobuf from '~/common/network/protobuf';
 import {
     type InboundL4Message,

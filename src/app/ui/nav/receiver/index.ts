@@ -26,7 +26,7 @@ import {getFullName} from '~/common/model/contact';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
-import {type IQueryableStore, DeprecatedDerivedStore, WritableStore} from '~/common/utils/store';
+import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {localeSort} from '~/common/utils/string';
 import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
 import {type ContactData, type ReceiverBadgeType} from '~/common/viewmodel/types';

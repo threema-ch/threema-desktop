@@ -7,10 +7,10 @@ import {deriveDirectoryChallengeResponseKey} from '~/common/crypto/csp-auth-keys
 import {ActivityState} from '~/common/enum';
 import {
     type DirectoryBackend,
-    type IdentityData,
-    type IdentityPrivateData,
     DirectoryError,
     IDENTITY_PRIVATE_DATA_SCHEMA,
+    type IdentityData,
+    type IdentityPrivateData,
     VALID_IDENTITY_DATA_SCHEMA,
 } from '~/common/network/protocol/directory';
 import {type IdentityString} from '~/common/network/types';

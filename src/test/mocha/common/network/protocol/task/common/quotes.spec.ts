@@ -5,7 +5,7 @@ import {
     serializeQuoteText,
 } from '~/common/network/protocol/task/common/quotes';
 import {randomMessageId} from '~/common/network/protocol/utils';
-import {type MessageId, ensureMessageId} from '~/common/network/types';
+import {ensureMessageId, type MessageId} from '~/common/network/types';
 import {hexLeToU64} from '~/common/utils/number';
 import {StringLogger} from '~/test/mocha/common/backend-mocks';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';

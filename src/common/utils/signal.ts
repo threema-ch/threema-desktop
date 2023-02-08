@@ -1,6 +1,6 @@
 import {type Logger} from '~/common/logging';
 
-import {type EventUnsubscriber, EventController} from './event';
+import {EventController, type EventUnsubscriber} from './event';
 
 /**
  * This must be compatible with DOM's {@link AbortController}.

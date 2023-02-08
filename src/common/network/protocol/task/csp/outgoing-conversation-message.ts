@@ -3,10 +3,10 @@
  */
 import {type DbReceiverLookup} from '~/common/db';
 import {
-    type MessageType,
     CspE2eConversationType,
     CspE2eGroupConversationType,
     MessageDirection,
+    type MessageType,
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
@@ -15,17 +15,17 @@ import {type AnyMessage, type AnyReceiver, type OutboundMessageFor} from '~/comm
 import {type CspE2eType, type LayerEncoder} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
+    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
     type ServicesForTasks,
-    ACTIVE_TASK,
 } from '~/common/network/protocol/task';
 import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';
 import {
     type IOutgoingCspMessageTaskConstructor,
-    type ValidCspMessageTypeForReceiver,
     OutgoingCspMessageTask,
+    type ValidCspMessageTypeForReceiver,
 } from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import * as structbuf from '~/common/network/structbuf';
 import {

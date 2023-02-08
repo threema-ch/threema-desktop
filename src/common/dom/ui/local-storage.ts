@@ -8,7 +8,7 @@ import {
     ensureDebugPanelHeight,
     ensureDebugPanelState,
 } from '~/common/dom/ui/debug';
-import {type Theme, applyTheme, ensureTheme} from '~/common/dom/ui/theme';
+import {applyTheme, ensureTheme, type Theme} from '~/common/dom/ui/theme';
 import {type ISubscribableStore, type IWritableStore, WritableStore} from '~/common/utils/store';
 
 const KEYS = {

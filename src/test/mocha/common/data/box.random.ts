@@ -1,9 +1,9 @@
 import {
+    NACL_CONSTANTS,
     type PublicKey,
     type RawEncryptedData,
     type RawPlainData,
     type ReadonlyRawKey,
-    NACL_CONSTANTS,
     wrapRawKey,
 } from '~/common/crypto';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';

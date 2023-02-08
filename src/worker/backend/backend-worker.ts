@@ -3,10 +3,10 @@ import * as $protobuf from 'protobufjs/minimal';
 
 import {type Config} from '~/common/config';
 import {
+    Backend,
     type BackendInit,
     type FactoriesForBackend,
     type SafeBackupSource,
-    Backend,
 } from '~/common/dom/backend';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';

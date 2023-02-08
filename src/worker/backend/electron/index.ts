@@ -3,14 +3,14 @@ import * as path from 'node:path';
 
 import {CONFIG} from '~/common/config';
 import {
+    NO_DATABASE_KEY_TOKEN,
     type NoDatabaseKeyToken,
     type RawDatabaseKey,
     type ServicesForDatabaseFactory,
-    NO_DATABASE_KEY_TOKEN,
 } from '~/common/db';
 import {type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {type ServicesForKeyStorageFactory} from '~/common/key-storage';
-import {type Logger, CONSOLE_LOGGER, TagLogger, TeeLogger} from '~/common/logging';
+import {CONSOLE_LOGGER, type Logger, TagLogger, TeeLogger} from '~/common/logging';
 import {ZlibCompressor} from '~/common/node/compressor';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {FileSystemFileStorage} from '~/common/node/file-storage/system-file-storage';

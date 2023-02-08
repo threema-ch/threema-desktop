@@ -12,9 +12,9 @@ import {type ErrorDetails, type SystemInfo} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
 import {extractErrorTraceback} from '~/common/error';
 import {
+    CONSOLE_LOGGER,
     type Logger,
     type LoggerFactory,
-    CONSOLE_LOGGER,
     TagLogger,
     TeeLogger,
 } from '~/common/logging';

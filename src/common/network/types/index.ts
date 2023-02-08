@@ -1,7 +1,7 @@
 import {type Cookie, type CryptoBox, type NonceGuard, type NonceUnguarded} from '~/common/crypto';
 import {ReceiverType} from '~/common/enum';
 import {type AnyReceiver} from '~/common/model';
-import {type u32, type u53, type u64, type WeakOpaque, isU64} from '~/common/types';
+import {isU64, type u32, type u53, type u64, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {type SequenceNumberU32, type SequenceNumberU64} from '~/common/utils/sequence-number';
 

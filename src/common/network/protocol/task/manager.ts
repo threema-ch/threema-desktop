@@ -2,40 +2,40 @@ import {type ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {randomU8} from '~/common/crypto/random';
 import {
-    type TransactionScope,
     ConnectionState,
     D2mPayloadType,
     D2mPayloadTypeUtils,
     MessageFilterInstruction,
+    type TransactionScope,
     TransactionScopeUtils,
 } from '~/common/enum';
 import {ConnectionClosed, ProtocolError} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {
+    CspPayloadType,
     type D2mMessage,
     type InboundL4CspMessage,
     type InboundL4D2mMessage,
     type InboundL4Message,
     type OutboundL4D2mTransactionMessage,
     type OutboundL4Message,
-    CspPayloadType,
 } from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
 import {
+    isMessageId,
     type ReflectSequenceNumber,
     type ReflectSequenceNumberValue,
-    isMessageId,
 } from '~/common/network/types';
 import {type u32, type u53, type WeakOpaque} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 import {u64ToHexLe} from '~/common/utils/number';
 import {
+    Queue,
     type QueueConsumer,
     type QueueProducer,
     type QueueValue,
-    Queue,
     UnboundedQueue,
 } from '~/common/utils/queue';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -43,6 +43,7 @@ import {SequenceNumberU32, SequenceNumberU53} from '~/common/utils/sequence-numb
 import {type AbortListener} from '~/common/utils/signal';
 
 import {
+    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type DecoderQueueItem,
@@ -52,12 +53,11 @@ import {
     type PassiveTaskCodecHandle,
     type RunnableTask,
     type ServicesForTasks,
+    TASK_SYMBOL,
     type TaskCodecReadInstruction,
     type TaskController,
-    type TaskQueueItem,
-    ACTIVE_TASK,
-    TASK_SYMBOL,
     TaskError,
+    type TaskQueueItem,
 } from '.';
 import {getTaskForIncomingCspMessage as getTaskForIncomingL5CspMessage} from './csp';
 import {getTaskForIncomingL5D2mMessage} from './d2m';

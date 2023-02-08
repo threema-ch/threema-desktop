@@ -3,11 +3,11 @@ import {type Group} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
+    PASSIVE_TASK,
     type PassiveTask,
     type PassiveTaskCodecHandle,
     type PassiveTaskSymbol,
     type ServicesForTasks,
-    PASSIVE_TASK,
 } from '~/common/network/protocol/task';
 import {unreachable} from '~/common/utils/assert';
 import {purgeUndefinedProperties} from '~/common/utils/object';

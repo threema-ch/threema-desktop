@@ -3,7 +3,7 @@ import {gzip, ungzip} from 'pako';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 
-import {type CompressionMethod, type Compressor, CompressionError} from '.';
+import {CompressionError, type CompressionMethod, type Compressor} from '.';
 
 /**
  * A pure-js compressor implementation backed by [pako].

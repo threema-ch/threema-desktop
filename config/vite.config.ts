@@ -7,19 +7,19 @@ import {type ConfigEnv as ViteConfigEnv, type Plugin, type UserConfig} from 'vit
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // Imports cannot be absolute in this file.
-import {type u53, KiB, MiB} from '../src/common/types';
+import {KiB, MiB, type u53} from '../src/common/types';
 import {assertUnreachable, unreachable} from '../src/common/utils/assert';
 import {
-    type BuildEntry,
-    type BuildEnvironment,
-    type BuildMode,
-    type BuildTarget,
-    type BuildVariant,
     BUILD_ENTRIES,
     BUILD_ENVIRONMENTS,
     BUILD_MODES,
     BUILD_TARGETS,
     BUILD_VARIANTS,
+    type BuildEntry,
+    type BuildEnvironment,
+    type BuildMode,
+    type BuildTarget,
+    type BuildVariant,
 } from './build';
 import cjsExternals from './vite-plugins/cjs-externals';
 import {tsWorkerPlugin} from './vite-plugins/ts-worker';

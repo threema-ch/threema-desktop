@@ -11,17 +11,17 @@ import {
     type MessageEvent,
     type ObjectId,
     type RegisteredTransferHandler,
-    type TransferMarked,
     registerTransferHandler,
     TRANSFER_MARKER,
+    type TransferMarked,
 } from '~/common/utils/endpoint';
-import {type EventListener, type EventUnsubscriber, EventController} from '~/common/utils/event';
+import {EventController, type EventListener, type EventUnsubscriber} from '~/common/utils/event';
 import {type AbortRaiser} from '~/common/utils/signal';
 import {
     type IQueryableStore,
     type LocalStore,
-    type StoreOptions,
     ReadableStore,
+    type StoreOptions,
 } from '~/common/utils/store';
 
 export type DeltaUpdate<TValue> =

@@ -1,5 +1,5 @@
 import {type ServicesForBackend} from '~/common/backend';
-import {type PublicKey, ensurePublicKey} from '~/common/crypto';
+import {ensurePublicKey, type PublicKey} from '~/common/crypto';
 import {type SafeBackupData, type SafeContact} from '~/common/dom/safe';
 import {
     AcquaintanceLevel,

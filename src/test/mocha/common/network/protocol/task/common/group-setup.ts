@@ -20,15 +20,15 @@ import {type GroupId, type IdentityString} from '~/common/network/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {
-    type NetworkExpectation,
-    type TestServices,
-    type TestUser,
     addTestGroup,
     addTestUserAsContact,
     makeTestServices,
+    type NetworkExpectation,
     NetworkExpectationFactory,
     registerTestUser,
     TestHandle,
+    type TestServices,
+    type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 import {secondsAgo} from '~/test/mocha/common/utils';
 

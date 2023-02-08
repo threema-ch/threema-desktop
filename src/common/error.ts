@@ -7,7 +7,7 @@ import {
     TRANSFER_MARKER,
 } from '~/common/utils/endpoint';
 
-import {type CloseInfo, CloseCode} from './network';
+import {CloseCode, type CloseInfo} from './network';
 import {type u53} from './types';
 
 /**

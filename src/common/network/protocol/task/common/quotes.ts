@@ -1,5 +1,5 @@
 import {type Logger} from '~/common/logging';
-import {type MessageId, ensureMessageId} from '~/common/network/types';
+import {ensureMessageId, type MessageId} from '~/common/network/types';
 import {ensureError} from '~/common/utils/assert';
 import {hexLeToU64, u64ToHexLe} from '~/common/utils/number';
 

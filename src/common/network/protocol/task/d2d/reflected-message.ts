@@ -12,10 +12,10 @@ import {
 import {type Logger} from '~/common/logging';
 import type * as protobuf from '~/common/network/protobuf';
 import {type IncomingMessage, type OutgoingMessage} from '~/common/network/protobuf/validate/d2d';
-import {type CspE2eType, type ReflectedE2eType, cspE2eTypeNameOf} from '~/common/network/protocol';
+import {type CspE2eType, cspE2eTypeNameOf, type ReflectedE2eType} from '~/common/network/protocol';
 import {
-    type ServicesForTasks,
     placeholderTextForUnhandledMessage,
+    type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import * as structbuf from '~/common/network/structbuf';
 import {isMessageId} from '~/common/network/types';

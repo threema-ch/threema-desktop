@@ -2,7 +2,7 @@ import * as v from '@badrap/valita';
 import Long from 'long';
 
 import {common} from '~/common/network/protobuf/js';
-import {type ProtobufInstanceOf, creator, validator} from '~/common/network/protobuf/utils';
+import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {ensureGroupId, ensureIdentityString} from '~/common/network/types';
 import {intoU64, intoUnsignedLong} from '~/common/utils/number';
 import {instanceOf} from '~/common/utils/valita-helpers';

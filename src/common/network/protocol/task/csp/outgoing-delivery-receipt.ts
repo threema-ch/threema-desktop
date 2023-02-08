@@ -8,15 +8,15 @@ import {type Contact} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
+    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
     type ServicesForTasks,
-    ACTIVE_TASK,
 } from '~/common/network/protocol/task';
 import {
-    type ValidCspMessageTypeForReceiver,
     OutgoingCspMessageTask,
+    type ValidCspMessageTypeForReceiver,
 } from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';

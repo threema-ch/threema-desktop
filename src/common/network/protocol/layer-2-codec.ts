@@ -16,13 +16,13 @@ import {type TransformerCodec, type TransformerCodecController} from '~/common/u
 import {type IQueryableStore} from '~/common/utils/store';
 
 import {
+    D2mPayloadType,
     type InboundL1CspMessage,
     type InboundL1D2mMessage,
     type InboundL1Message,
     type InboundL2CspMessage,
     type InboundL2D2mMessage,
     type InboundL2Message,
-    D2mPayloadType,
 } from '.';
 import {type RawCaptureHandler} from './capture';
 import {CspAuthState, CspAuthStateUtils} from './state';

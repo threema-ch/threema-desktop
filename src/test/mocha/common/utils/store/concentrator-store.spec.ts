@@ -4,18 +4,18 @@ import {type u32} from '~/common/types';
 import {assert as typeAssert} from '~/common/utils/assert';
 import {
     type IQueryableStore,
-    type StoreSubscriber,
-    type StoreUnsubscriber,
     LAZY_STORE_DISABLED_STATE,
     LAZY_STORE_ENABLED_STATE,
     ReadableStore,
+    type StoreSubscriber,
+    type StoreUnsubscriber,
     WritableStore,
 } from '~/common/utils/store';
 import {
+    ConcentratorStore,
     type QueryableStores,
     type States,
     type StoreValues,
-    ConcentratorStore,
 } from '~/common/utils/store/concentrator-store';
 
 class ExposedStateConcentratorStore<

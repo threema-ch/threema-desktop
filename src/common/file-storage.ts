@@ -5,7 +5,7 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {type CryptoBackend, type ReadonlyRawKey, wrapRawKey} from '~/common/crypto';
 import {TransferTag} from '~/common/enum';
-import {type BaseErrorOptions, BaseError, extractErrorMessage} from '~/common/error';
+import {BaseError, type BaseErrorOptions, extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {type ReadonlyUint8Array, type u53, type WeakOpaque} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';

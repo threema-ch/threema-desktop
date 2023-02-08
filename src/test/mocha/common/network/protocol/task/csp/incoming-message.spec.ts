@@ -11,21 +11,21 @@ import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
 import {type LegacyMessageLike} from '~/common/network/structbuf/csp/payload';
-import {type IdentityString, ensureIdentityString} from '~/common/network/types';
+import {ensureIdentityString, type IdentityString} from '~/common/network/types';
 import {type ByteLengthEncoder, type u8} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampS} from '~/common/utils/number';
 import {
-    type NetworkExpectation,
-    type TestServices,
-    type TestUser,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
+    type NetworkExpectation,
     NetworkExpectationFactory,
     TestHandle,
+    type TestServices,
+    type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 import {makeGroup} from '~/test/mocha/common/db-backend-tests';
 

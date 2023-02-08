@@ -1,16 +1,16 @@
 import {type ServicesForBackendController} from '~/common/backend';
 import {type DeviceIds} from '~/common/device';
 import {
+    BackendCreationError,
     type BackendHandle,
     type BackendInit,
     type SafeBackupSource,
-    BackendCreationError,
 } from '~/common/dom/backend';
 import {type DebugBackend} from '~/common/dom/debug';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
-import {type SafeCredentials, isSafeBackupAvailable} from '~/common/dom/safe';
+import {isSafeBackupAvailable, type SafeCredentials} from '~/common/dom/safe';
 import {SAFE_BACKUP_AUTORESTORE} from '~/common/dom/safe-autorestore';
-import {type D2mLeaderState, ActivityState} from '~/common/enum';
+import {ActivityState, type D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {type ProfilePictureView, type Repositories} from '~/common/model';
@@ -23,11 +23,11 @@ import {type SystemDialogService} from '~/common/system-dialog';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
 import {
     type EndpointFor,
+    RELEASE_PROXY,
     type Remote,
     type RemoteProxy,
-    RELEASE_PROXY,
 } from '~/common/utils/endpoint';
-import {type IQueryableStore, type RemoteStore, DeprecatedDerivedStore} from '~/common/utils/store';
+import {DeprecatedDerivedStore, type IQueryableStore, type RemoteStore} from '~/common/utils/store';
 import {type IViewModelBackend} from '~/common/viewmodel';
 
 export interface UserData {

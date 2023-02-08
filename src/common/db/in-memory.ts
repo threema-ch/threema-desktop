@@ -1,7 +1,7 @@
 import {
     type GlobalPropertyKey,
-    type MessageQueryDirection,
     GroupUserState,
+    type MessageQueryDirection,
     ReceiverType,
 } from '~/common/enum';
 import {type FileId} from '~/common/file-storage';

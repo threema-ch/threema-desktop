@@ -2,12 +2,12 @@ import * as v from '@badrap/valita';
 
 import {ensurePublicKey} from '~/common/crypto';
 import {ActivityState, IdentityType, IdentityTypeUtils, TransferTag} from '~/common/enum';
-import {type BaseErrorOptions, BaseError} from '~/common/error';
+import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {
-    type IdentityString,
     ensureFeatureMask,
     ensureIdentityString,
     ensureServerGroup,
+    type IdentityString,
 } from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
 import {base64ToU8a} from '~/common/utils/base64';

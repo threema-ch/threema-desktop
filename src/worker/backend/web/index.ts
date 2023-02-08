@@ -2,8 +2,8 @@ import {PakoCompressor} from '~/common/compressor/pako';
 import {CONFIG} from '~/common/config';
 import {type ServicesForDatabaseFactory} from '~/common/db';
 import {InMemoryDatabaseBackend} from '~/common/db/in-memory';
-import {type ServicesForFileStorageFactory, InMemoryFileStorage} from '~/common/file-storage';
-import {type Logger, CONSOLE_LOGGER, TagLogger} from '~/common/logging';
+import {InMemoryFileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
+import {CONSOLE_LOGGER, type Logger, TagLogger} from '~/common/logging';
 import {main} from '~/worker/backend/backend-worker';
 
 export default function run(): void {

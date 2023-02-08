@@ -6,7 +6,7 @@
  * chosen at random.)
  */
 
-import {type SafeBackupData, SAFE_SCHEMA} from '~/common/dom/safe';
+import {SAFE_SCHEMA, type SafeBackupData} from '~/common/dom/safe';
 import {CONSOLE_LOGGER} from '~/common/logging';
 import {type IdentityString, isIdentityString} from '~/common/network/types';
 

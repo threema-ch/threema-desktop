@@ -2,16 +2,16 @@ import {expect} from 'chai';
 
 import {
     type EncryptedData,
-    type Nonce,
-    type NonceGuard,
-    type PlainData,
     ensurePublicKey,
     NACL_CONSTANTS,
+    type Nonce,
     NONCE_UNGUARDED_TOKEN,
+    type NonceGuard,
+    type PlainData,
     wrapRawKey,
 } from '~/common/crypto';
-import {type CryptoBox, CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import {type DeviceGroupBoxes, deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
+import {CREATE_BUFFER_TOKEN, type CryptoBox} from '~/common/crypto/box';
+import {deriveDeviceGroupKeys, type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {type D2xNonceGuard} from '~/common/network/types';
 import {wrapRawDeviceGroupKey} from '~/common/network/types/keys';

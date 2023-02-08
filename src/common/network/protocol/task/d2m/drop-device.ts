@@ -2,10 +2,10 @@ import {MessageFilterInstruction} from '~/common/enum';
 import * as protobuf from '~/common/network/protobuf';
 import {D2mPayloadType} from '~/common/network/protocol';
 import {
+    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
-    ACTIVE_TASK,
 } from '~/common/network/protocol/task';
 import {type D2mDeviceId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';

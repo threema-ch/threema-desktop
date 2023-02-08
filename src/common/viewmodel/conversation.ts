@@ -2,8 +2,8 @@ import {type AnyReceiverStore, type Conversation} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {
     type PropertiesMarked,
-    type ProxyMarked,
     PROXY_HANDLER,
+    type ProxyMarked,
     TRANSFER_MARKER,
 } from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';

@@ -6,7 +6,6 @@ import {type BackendHandle} from '~/common/dom/backend';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {TEST_IMAGE, TEST_THUMBNAIL} from '~/common/dom/debug/testdata';
 import {
-    type MessageReaction,
     AcquaintanceLevel,
     ActivityState,
     ConversationCategory,
@@ -15,6 +14,7 @@ import {
     GroupUserState,
     IdentityTypeUtils,
     MessageDirection,
+    type MessageReaction,
     MessageReactionUtils,
     SyncState,
     VerificationLevelUtils,
@@ -24,10 +24,10 @@ import {type Contact} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {
-    type GroupId,
     ensureFeatureMask,
     ensureIdentityString,
     ensureMessageId,
+    type GroupId,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {type u53} from '~/common/types';

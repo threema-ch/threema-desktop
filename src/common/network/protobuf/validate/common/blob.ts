@@ -3,7 +3,7 @@ import Long from 'long';
 
 import {ensureNonce} from '~/common/crypto';
 import {common} from '~/common/network/protobuf/js';
-import {type ProtobufInstanceOf, creator, validator} from '~/common/network/protobuf/utils';
+import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {ensureBlobId} from '~/common/network/protocol/blob';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';

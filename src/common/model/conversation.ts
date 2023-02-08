@@ -1,14 +1,14 @@
 import {type DatabaseBackend, type DbConversationUid, type DbReceiverLookup} from '~/common/db';
 import {
-    type MessageType,
     AcquaintanceLevel,
     CspE2eDeliveryReceiptStatus,
     Existence,
     MessageDirection,
+    type MessageType,
     ReceiverType,
     TriggerSource,
 } from '~/common/enum';
-import {type Logger, getGroupTag} from '~/common/logging';
+import {getGroupTag, type Logger} from '~/common/logging';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -21,11 +21,11 @@ import {type i53, type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {
-    type Exact,
     createExactPropertyValidator,
+    type Exact,
     OPTIONAL,
 } from '~/common/utils/property-validator';
-import {type LocalStore, DeprecatedDerivedStore} from '~/common/utils/store';
+import {DeprecatedDerivedStore, type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 

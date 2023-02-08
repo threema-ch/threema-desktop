@@ -3,11 +3,11 @@ import {type Group} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {
+    ACTIVE_TASK,
     type ActiveTask,
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
     type ServicesForTasks,
-    ACTIVE_TASK,
 } from '~/common/network/protocol/task';
 import {sendGroupSyncRequest} from '~/common/network/protocol/task/common/group-helpers';
 import {unwrap} from '~/common/utils/assert';

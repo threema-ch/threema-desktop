@@ -1,6 +1,6 @@
 import {WritableStore} from '~/common/utils/store';
 
-import {type DisplayMode, type LayoutMode, DEFAULT_LAYOUT_MODE} from './layout';
+import {DEFAULT_LAYOUT_MODE, type DisplayMode, type LayoutMode} from './layout';
 
 /**
  * The current display mode.

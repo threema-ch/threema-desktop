@@ -1,10 +1,10 @@
 import {
-    type MessageType,
     CspE2eConversationType,
     CspE2eGroupControlType,
     CspE2eGroupConversationType,
     CspE2eStatusUpdateType,
     MessageDirection,
+    type MessageType,
     ReceiverType,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
@@ -13,19 +13,19 @@ import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type ComposableTask,
+    PASSIVE_TASK,
     type PassiveTask,
     type PassiveTaskCodecHandle,
     type PassiveTaskSymbol,
     type ServicesForTasks,
-    PASSIVE_TASK,
 } from '~/common/network/protocol/task';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {
     type AnyInboundMessageInitFragment,
-    type InboundTextMessageInitFragment,
     getConversationById,
+    type InboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import type * as structbuf from '~/common/network/structbuf';
 import {

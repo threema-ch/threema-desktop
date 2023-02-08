@@ -1,5 +1,5 @@
 import {CONFIG} from '~/common/config';
-import {type Logger, CONSOLE_LOGGER, TagLogger} from '~/common/logging';
+import {CONSOLE_LOGGER, type Logger, TagLogger} from '~/common/logging';
 
 import {type FactoriesForServiceWorker} from '.';
 import {type ResourceCache} from './cache';

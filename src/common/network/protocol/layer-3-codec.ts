@@ -9,11 +9,11 @@ import {type ServicesForBackend} from '~/common/backend';
 import {
     type EncryptedData,
     type EncryptedDataWithNonceAhead,
+    ensurePublicKey,
+    NONCE_UNGUARDED_TOKEN,
     type NonceGuard,
     type PlainData,
     type PublicKey,
-    ensurePublicKey,
-    NONCE_UNGUARDED_TOKEN,
 } from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
 import {deriveVouchKey} from '~/common/crypto/csp-auth-keys';
@@ -61,7 +61,9 @@ import {type MonotonicEnumStore} from '~/common/utils/store';
 import {
     type CspMessage,
     type CspPayload,
+    CspPayloadType,
     type D2mMessage,
+    D2mPayloadType,
     type InboundL2CspMessage,
     type InboundL2D2mMessage,
     type InboundL2Message,
@@ -72,8 +74,6 @@ import {
     type OutboundL3CspMessage,
     type OutboundL3D2mMessage,
     type OutboundL3Message,
-    CspPayloadType,
-    D2mPayloadType,
 } from '.';
 import {type RawCaptureHandler} from './capture';
 import {type ConnectionHandle} from './controller';

@@ -8,11 +8,11 @@ import {type DeltaImage} from '~/common/network/protobuf/validate/common';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {
+    PASSIVE_TASK,
     type PassiveTask,
     type PassiveTaskCodecHandle,
     type PassiveTaskSymbol,
     type ServicesForTasks,
-    PASSIVE_TASK,
 } from '~/common/network/protocol/task';
 import {isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';

@@ -1,6 +1,6 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {type DbContactUid, type DbReceiverLookup} from '~/common/db';
-import {type ProxyMarked, PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {type ViewModelCache} from '~/common/viewmodel/cache';
 import {
@@ -23,10 +23,10 @@ import {
 } from '~/common/viewmodel/conversation-preview';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {
-    type GroupListItemSetStore,
     getGroupListItemSetStore,
+    type GroupListItemSetStore,
 } from '~/common/viewmodel/group-list-item';
-import {type ProfileViewModelStore, getProfileViewModelStore} from '~/common/viewmodel/profile';
+import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
 /**
  * Services required by the viewmodel backend
