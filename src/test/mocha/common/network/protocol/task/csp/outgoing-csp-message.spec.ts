@@ -22,7 +22,7 @@ import {
     type GroupId,
     type IdentityString,
     type MessageId,
-    type PublicNickname,
+    type Nickname,
     ensureIdentityString,
     ensureMessageId,
 } from '~/common/network/types';
@@ -55,12 +55,12 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as PublicNickname,
+            nickname: 'user1' as Nickname,
             keypair: makeKeypair(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
-            nickname: 'user2' as PublicNickname,
+            nickname: 'user2' as Nickname,
             keypair: makeKeypair(),
         };
 
@@ -95,8 +95,8 @@ export function run(): void {
 
             const user1store = addTestUserAsContact(model, user1);
 
-            const ownPublicNickname = services.model.user.profileSettings.get().view.publicNickname;
-            expect(ownPublicNickname).not.to.be.empty;
+            const ownNickname = services.model.user.profileSettings.get().view.nickname;
+            expect(ownNickname).not.to.be.empty;
 
             function makeProperties(
                 messageId: MessageId,
@@ -140,7 +140,7 @@ export function run(): void {
                             byteWithoutZeroPadding(message.senderNickname),
                         );
                         if (sendNickname) {
-                            expect(senderNickname).to.equal(ownPublicNickname);
+                            expect(senderNickname).to.equal(ownNickname);
                         } else {
                             expect(senderNickname).to.equal('');
                         }

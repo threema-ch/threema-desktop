@@ -18,7 +18,7 @@ import {
     type GroupId,
     type IdentityString,
     type MessageId,
-    type PublicNickname,
+    type Nickname,
     ensureIdentityString,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
@@ -43,7 +43,7 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as PublicNickname,
+            nickname: 'user1' as Nickname,
             keypair: makeKeypair(),
             conversationId: {
                 type: ReceiverType.CONTACT,

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {IncomingGroupNameTask} from '~/common/network/protocol/task/csp/incoming-group-name';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
-import {ensureIdentityString, type PublicNickname} from '~/common/network/types';
+import {ensureIdentityString, type Nickname} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {
     addTestGroup,
@@ -21,7 +21,7 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as PublicNickname,
+            nickname: 'user1' as Nickname,
             keypair: makeKeypair(),
         };
 

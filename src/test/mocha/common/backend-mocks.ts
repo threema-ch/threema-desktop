@@ -104,12 +104,12 @@ import {
     type GroupId,
     type IdentityString,
     type MessageId,
-    type PublicNickname,
+    type Nickname,
     ensureCspDeviceId,
     ensureD2mDeviceId,
     ensureFeatureMask,
     ensureIdentityString,
-    ensurePublicNickname,
+    ensureNickname,
     ensureServerGroup,
 } from '~/common/network/types';
 import {type ClientKey, wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
@@ -361,14 +361,14 @@ class UserRepository implements User {
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
         this.profileSettings = new ProfileSettingsModelStore(services, {
-            publicNickname: ensurePublicNickname('Mocha Tests'),
+            nickname: ensureNickname('Mocha Tests'),
             profilePictureShareWith: {group: 'everyone'},
         });
         this.displayName = derive(this.profileSettings, (profileSettings) => {
-            if (profileSettings.view.publicNickname.trim() === '') {
+            if (profileSettings.view.nickname.trim() === '') {
                 return this.identity;
             }
-            return profileSettings.view.publicNickname;
+            return profileSettings.view.nickname;
         });
         this.profilePicture = derive(
             this.profileSettings,
@@ -936,7 +936,7 @@ export function makeKeypair(): SharedBoxFactory {
 export interface TestUser {
     identity: Identity;
     keypair: SharedBoxFactory;
-    nickname: PublicNickname | undefined;
+    nickname: Nickname | undefined;
     // Default: Now
     createdAt?: Date;
     // Default: ""
@@ -966,7 +966,7 @@ export interface TestUser {
  */
 export function makeTestUser(
     identityString: string,
-    nickname = `${identityString}'s nickname` as PublicNickname,
+    nickname = `${identityString}'s nickname` as Nickname,
 ): TestUser {
     const identity = new Identity(ensureIdentityString(identityString));
     const keypair = makeKeypair();

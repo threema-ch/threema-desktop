@@ -50,9 +50,9 @@ import {
     type GroupId,
     type IdentityString,
     type MessageId,
-    type PublicNickname,
+    type Nickname,
     ensureIdentityString,
-    ensurePublicNickname,
+    ensureNickname,
 } from '~/common/network/types';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
@@ -86,7 +86,7 @@ export function makeContact(
         createdAt?: Date;
         firstName?: string;
         lastName?: string;
-        nickname?: PublicNickname;
+        nickname?: Nickname;
         verificationLevel?: VerificationLevel;
         workVerificationLevel?: WorkVerificationLevel;
         identityType?: IdentityType;
@@ -111,7 +111,7 @@ export function makeContact(
         createdAt: init.createdAt ?? new Date(),
         firstName: init.firstName ?? 'Tom',
         lastName: init.lastName ?? 'Haverford',
-        nickname: init.nickname ?? ('Tommy' as PublicNickname),
+        nickname: init.nickname ?? ('Tommy' as Nickname),
         colorIndex: 0,
         verificationLevel: init.verificationLevel ?? VerificationLevel.UNVERIFIED,
         workVerificationLevel: init.workVerificationLevel ?? WorkVerificationLevel.NONE,
@@ -1507,13 +1507,13 @@ export function backendTests(
     });
 
     describe('Settings', function () {
-        const settingsWithFooPublicNickname = {
-            publicNickname: ensurePublicNickname('foo'),
+        const settingsWithFooNickname = {
+            nickname: ensureNickname('foo'),
             profilePicture: undefined,
             profilePictureShareWith: {group: 'nobody'} as const,
         };
-        const settingsWithBarPublicNickname = {
-            publicNickname: ensurePublicNickname('bar'),
+        const settingsWithBarNickname = {
+            nickname: ensureNickname('bar'),
             profilePicture: new Uint8Array([1, 2, 3, 4]),
             profilePictureShareWith: {group: 'everyone'} as const,
         };
@@ -1524,15 +1524,15 @@ export function backendTests(
 
         it('allows setting and getting a value for a key', function () {
             expect(db.getSettings('profile')).to.be.undefined;
-            db.setSettings('profile', settingsWithFooPublicNickname);
-            expect(db.getSettings('profile')).to.be.eql(settingsWithFooPublicNickname);
+            db.setSettings('profile', settingsWithFooNickname);
+            expect(db.getSettings('profile')).to.be.eql(settingsWithFooNickname);
         });
 
         it('allows a settings value to be updated', function () {
-            db.setSettings('profile', settingsWithFooPublicNickname);
-            expect(db.getSettings('profile')).to.be.eql(settingsWithFooPublicNickname);
-            db.setSettings('profile', settingsWithBarPublicNickname);
-            expect(db.getSettings('profile')).to.be.eql(settingsWithBarPublicNickname);
+            db.setSettings('profile', settingsWithFooNickname);
+            expect(db.getSettings('profile')).to.be.eql(settingsWithFooNickname);
+            db.setSettings('profile', settingsWithBarNickname);
+            expect(db.getSettings('profile')).to.be.eql(settingsWithBarNickname);
         });
     });
 }

@@ -15,7 +15,7 @@ message Identities {
 // Settings on the user profile.
 message ProfileSettings {
     // Nickname
-    string public_nickname = 1;
+    string nickname = 1;
 
     // Profile picture
     optional bytes profile_picture = 2;

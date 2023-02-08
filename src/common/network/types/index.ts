@@ -39,35 +39,33 @@ export function ensureIdentityString(identity: unknown): IdentityString {
 }
 
 /**
- * The public nickname of a user as a string.
+ * The nickname of a user, guaranteed to be non-empty.
  */
-export type PublicNickname = WeakOpaque<string, {readonly PublicNickname: unique symbol}>;
+export type Nickname = WeakOpaque<string, {readonly Nickname: unique symbol}>;
 
 /**
- * Type guard for {@link PublicNickname}.
+ * Type guard for {@link Nickname}.
  */
-export function isPublicNickname(publicNickname: unknown): publicNickname is PublicNickname {
-    return typeof publicNickname === 'string' && publicNickname.length > 0;
+export function isNickname(nickname: unknown): nickname is Nickname {
+    return typeof nickname === 'string' && nickname.length > 0;
 }
 
 /**
- * Ensure input is a valid {@link PublicNickname}.
+ * Ensure input is a valid {@link Nickname}.
  */
-export function ensurePublicNickname(publicNickname: string): PublicNickname {
-    if (!isPublicNickname(publicNickname)) {
-        throw new Error(`Not a valid public nickname: '${publicNickname}'`);
+export function ensureNickname(nickname: string): Nickname {
+    if (!isNickname(nickname)) {
+        throw new Error(`Not a valid nickname: '${nickname}'`);
     }
-    return publicNickname;
+    return nickname;
 }
 
 /**
- * Return a valid {@link PublicNickname} or undefined.
+ * Return a valid {@link Nickname} or undefined.
  */
-export function validPublicNicknameOrUndefined(
-    publicNickname: unknown,
-): PublicNickname | undefined {
-    if (isPublicNickname(publicNickname)) {
-        return publicNickname;
+export function validNicknameOrUndefined(nickname: unknown): Nickname | undefined {
+    if (isNickname(nickname)) {
+        return nickname;
     }
     return undefined;
 }

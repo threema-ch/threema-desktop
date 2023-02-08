@@ -14,7 +14,7 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import {type IdentityString, validPublicNicknameOrUndefined} from '~/common/network/types';
+import {type IdentityString, validNicknameOrUndefined} from '~/common/network/types';
 import {type NotificationTag, getNotificationTagForContact} from '~/common/notification';
 import {type u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
@@ -175,7 +175,7 @@ export function getByUid(
             services,
             addDerivedData({
                 ...contact,
-                nickname: validPublicNicknameOrUndefined(contact.nickname),
+                nickname: validNicknameOrUndefined(contact.nickname),
             }),
             uid,
             profilePictureData,

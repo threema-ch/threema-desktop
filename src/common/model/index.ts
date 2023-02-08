@@ -56,7 +56,7 @@ import {
     type GroupId,
     type IdentityString,
     type MessageId,
-    type PublicNickname,
+    type Nickname,
 } from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type NotificationTag} from '~/common/notification';
@@ -331,7 +331,7 @@ export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureContro
 
 // Note: Type must be compatible with common.settings.ProfileSettings
 export interface ProfileSettingsView {
-    readonly publicNickname: PublicNickname;
+    readonly nickname: Nickname;
     readonly profilePicture?: ReadonlyUint8Array;
     readonly profilePictureShareWith: ProfilePictureShareWith;
 }
@@ -451,7 +451,7 @@ export interface ContactView {
     readonly createdAt: Date;
     readonly firstName: string;
     readonly lastName: string;
-    readonly nickname: PublicNickname | undefined;
+    readonly nickname: Nickname | undefined;
     readonly displayName: string;
     readonly initials: string;
     readonly colorIndex: u8;

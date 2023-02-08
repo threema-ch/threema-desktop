@@ -4,15 +4,15 @@ import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
-    DATABASE_KEY_LENGTH,
     type DatabaseBackend,
-    NO_DATABASE_KEY_TOKEN,
     type NoDatabaseKeyToken,
     type RawDatabaseKey,
     type ServicesForDatabaseFactory,
+    DATABASE_KEY_LENGTH,
+    NO_DATABASE_KEY_TOKEN,
     wrapRawDatabaseKey,
 } from '~/common/db';
-import {DeviceBackend, type DeviceIds} from '~/common/device';
+import {type DeviceIds, DeviceBackend} from '~/common/device';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {FetchBlobBackend} from '~/common/dom/network/protocol/fetch-blob';
@@ -21,9 +21,9 @@ import {applyMediatorStreamPipeline} from '~/common/dom/network/protocol/pipelin
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
 import {type WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
 import {
-    downloadSafeBackup,
     type SafeBackupData,
     type SafeCredentials,
+    downloadSafeBackup,
     SafeError,
 } from '~/common/dom/safe';
 import {SafeContactImporter} from '~/common/dom/safe/safe-contact-importer';
@@ -39,13 +39,13 @@ import {
     GroupUserState,
     TransferTag,
 } from '~/common/enum';
-import {BaseError, type BaseErrorOptions, extractErrorMessage} from '~/common/error';
+import {type BaseErrorOptions, BaseError, extractErrorMessage} from '~/common/error';
 import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
     type KeyStorage,
     type KeyStorageContents,
-    KeyStorageError,
     type ServicesForKeyStorageFactory,
+    KeyStorageError,
 } from '~/common/key-storage';
 import {type Logger, type LoggerFactory} from '~/common/logging';
 import {type ProfileSettingsView, type Repositories} from '~/common/model';
@@ -55,9 +55,9 @@ import * as protobuf from '~/common/network/protobuf';
 import {
     type DisplayPacket,
     type PacketMeta,
-    RAW_CAPTURE_CONVERTER,
     type RawCaptureHandlers,
     type RawPacket,
+    RAW_CAPTURE_CONVERTER,
 } from '~/common/network/protocol/capture';
 import {type ConnectionHandle, ProtocolController} from '~/common/network/protocol/controller';
 import {type DirectoryBackend} from '~/common/network/protocol/directory';
@@ -74,11 +74,11 @@ import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/
 import {
     type CspDeviceId,
     type D2mDeviceId,
-    ensureIdentityString,
-    ensurePublicNickname,
     type IdentityString,
-    isPublicNickname,
     type ServerGroup,
+    ensureIdentityString,
+    ensureNickname,
+    isNickname,
 } from '~/common/network/types';
 import {
     type ClientKey,
@@ -96,8 +96,8 @@ import {byteToHex} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
 import {
     type EndpointFor,
-    PROXY_HANDLER,
     type ProxyMarked,
+    PROXY_HANDLER,
     registerErrorTransferHandler,
     TRANSFER_MARKER,
 } from '~/common/utils/endpoint';
@@ -105,9 +105,9 @@ import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser} from '~/common/utils/signal';
 import {
     type LocalStore,
-    MonotonicEnumStore,
     type StoreDeactivator,
     type StrictMonotonicEnumStore,
+    MonotonicEnumStore,
     WritableStore,
 } from '~/common/utils/store';
 import {GlobalTimer} from '~/common/utils/timer';
@@ -920,11 +920,11 @@ async function bootstrapFromBackup(
 ): Promise<void> {
     // Profile settings: Nickname and profile picture
     const profile: Mutable<ProfileSettingsView> = {
-        publicNickname: ensurePublicNickname(identity as string),
+        nickname: ensureNickname(identity as string),
         profilePictureShareWith: {group: 'everyone'},
     };
-    if (isPublicNickname(backupData.user.nickname)) {
-        profile.publicNickname = backupData.user.nickname;
+    if (isNickname(backupData.user.nickname)) {
+        profile.nickname = backupData.user.nickname;
     }
     profile.profilePicture = backupData.user.profilePic;
     if (backupData.user.profilePicRelease !== undefined) {

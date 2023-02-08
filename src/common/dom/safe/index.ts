@@ -18,7 +18,7 @@ import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/he
 import {
     type IdentityString,
     ensureIdentityString,
-    validPublicNicknameOrUndefined,
+    validNicknameOrUndefined,
 } from '~/common/network/types';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
@@ -107,7 +107,7 @@ const SAFE_CONTACT_SCHEMA = v
         hidden: v.boolean().optional().default(false),
         firstname: v.string().optional().default(''),
         lastname: v.string().optional().default(''),
-        nickname: v.string().map(validPublicNicknameOrUndefined).optional(),
+        nickname: v.string().map(validNicknameOrUndefined).optional(),
         private: v.boolean().optional().default(false),
         readReceipts: v.number().optional(),
         typingIndicators: v.number().optional(),

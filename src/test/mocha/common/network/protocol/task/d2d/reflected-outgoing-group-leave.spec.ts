@@ -8,7 +8,7 @@ import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp
 import {
     type GroupId,
     type IdentityString,
-    type PublicNickname,
+    type Nickname,
     ensureIdentityString,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
@@ -31,12 +31,12 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as PublicNickname,
+            nickname: 'user1' as Nickname,
             keypair: makeKeypair(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
-            nickname: 'user2' as PublicNickname,
+            nickname: 'user2' as Nickname,
             keypair: makeKeypair(),
         };
 

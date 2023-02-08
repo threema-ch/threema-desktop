@@ -7,7 +7,7 @@ import {
 } from '~/common/model/';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {ensurePublicNickname, type IdentityString} from '~/common/network/types';
+import {type IdentityString, ensureNickname} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import {type LocalStore} from '~/common/utils/store';
@@ -24,15 +24,15 @@ export class UserModel implements User {
     public constructor(services: ServicesForModel) {
         this.identity = services.device.identity.string;
         this.profileSettings = new ProfileSettingsModelStore(services, {
-            publicNickname: ensurePublicNickname(this.identity),
+            nickname: ensureNickname(this.identity),
             profilePictureShareWith: {group: 'everyone'},
         });
 
         this.displayName = derive(this.profileSettings, (profileSettings) => {
-            if (profileSettings.view.publicNickname.trim() === '') {
+            if (profileSettings.view.nickname.trim() === '') {
                 return this.identity;
             }
-            return profileSettings.view.publicNickname;
+            return profileSettings.view.nickname;
         });
 
         // TODO(WEBMD-624): Get profile picture from DB

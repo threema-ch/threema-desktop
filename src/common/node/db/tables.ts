@@ -37,7 +37,7 @@ import {
     type GroupId,
     type IdentityString,
     type MessageId,
-    type PublicNickname,
+    type Nickname,
 } from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type DBConnection, CUSTOM_TYPES} from '~/common/node/db/connection';
@@ -84,13 +84,9 @@ export default new (class TContact extends Table<DBConnection, 'TContact'> {
     public lastName = this.column('lastName', 'string');
 
     /**
-     * Public nickname of the contact (excluding the `~`).
+     * Nickname of the contact (excluding the `~`).
      */
-    public nickname = this.optionalColumn<PublicNickname>(
-        'nickname',
-        'custom',
-        CUSTOM_TYPES.PUBLIC_NICKNAME,
-    );
+    public nickname = this.optionalColumn<Nickname>('nickname', 'custom', CUSTOM_TYPES.NICKNAME);
 
     /**
      * Verification level of the contact.

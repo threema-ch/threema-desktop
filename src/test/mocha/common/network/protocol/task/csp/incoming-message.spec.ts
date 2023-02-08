@@ -11,11 +11,7 @@ import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
 import {type LegacyMessageLike} from '~/common/network/structbuf/csp/payload';
-import {
-    ensureIdentityString,
-    type IdentityString,
-    type PublicNickname,
-} from '~/common/network/types';
+import {ensureIdentityString, type IdentityString, type Nickname} from '~/common/network/types';
 import {type ByteLengthEncoder, type u8} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
@@ -82,12 +78,12 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as PublicNickname,
+            nickname: 'user1' as Nickname,
             keypair: makeKeypair(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
-            nickname: 'user2' as PublicNickname,
+            nickname: 'user2' as Nickname,
             keypair: makeKeypair(),
         };
 
@@ -119,7 +115,7 @@ export function run(): void {
                             NACL_CONSTANTS.KEY_LENGTH,
                         ).asReadonly(),
                     ),
-                    nickname: 'me myself' as PublicNickname,
+                    nickname: 'me myself' as Nickname,
                 },
                 me,
                 CspE2eGroupControlType.GROUP_LEAVE,
@@ -164,7 +160,7 @@ export function run(): void {
                     {
                         identity: sender.identity,
                         keypair: sender.keypair,
-                        nickname: 'some user' as PublicNickname,
+                        nickname: 'some user' as Nickname,
                     },
                     me,
                     CspE2eGroupConversationType.GROUP_TEXT,

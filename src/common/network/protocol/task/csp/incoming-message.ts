@@ -72,7 +72,7 @@ import {
     type MessageId,
     ensureIdentityString,
     ensureMessageId,
-    validPublicNicknameOrUndefined,
+    validNicknameOrUndefined,
 } from '~/common/network/types';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, ensureError, exhausted, unreachable} from '~/common/utils/assert';
@@ -719,7 +719,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             publicKey: fetched.publicKey,
             firstName: '',
             lastName: '',
-            nickname: validPublicNicknameOrUndefined(nickname),
+            nickname: validNicknameOrUndefined(nickname),
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: sender}),
             createdAt: new Date(),
             verificationLevel: VerificationLevel.UNVERIFIED,

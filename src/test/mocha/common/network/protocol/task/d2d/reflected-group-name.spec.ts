@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {ReflectedGroupNameTask} from '~/common/network/protocol/task/d2d/reflected-group-name';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
-import {type PublicNickname, ensureIdentityString} from '~/common/network/types';
+import {type Nickname, ensureIdentityString} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {
     addTestGroup,
@@ -21,7 +21,7 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as PublicNickname,
+            nickname: 'user1' as Nickname,
             keypair: makeKeypair(),
         };
 

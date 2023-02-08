@@ -1,4 +1,4 @@
-import {type PublicNickname, ensureIdentityString} from '~/common/network/types';
+import {type Nickname, ensureIdentityString} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {makeKeypair} from '~/test/mocha/common/backend-mocks';
 import {groupSetupTests} from '~/test/mocha/common/network/protocol/task/common/group-setup';
@@ -11,17 +11,17 @@ export function run(): void {
         const me = ensureIdentityString('MEMEMEME');
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as PublicNickname,
+            nickname: 'user1' as Nickname,
             keypair: makeKeypair(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
-            nickname: 'user2' as PublicNickname,
+            nickname: 'user2' as Nickname,
             keypair: makeKeypair(),
         };
         const user3 = {
             identity: new Identity(ensureIdentityString('USER0003')),
-            nickname: 'user3' as PublicNickname,
+            nickname: 'user3' as Nickname,
             keypair: makeKeypair(),
         };
 

@@ -281,10 +281,7 @@ export class OutgoingCspMessageTask<
         // Determine own nickname (zero-padded)
         const senderNickname = new Uint8Array(32);
         if (this._messageProperties.allowUserProfileDistribution) {
-            UTF8.encodeFullyInto(
-                model.user.profileSettings.get().view.publicNickname,
-                senderNickname,
-            );
+            UTF8.encodeFullyInto(model.user.profileSettings.get().view.nickname, senderNickname);
         }
 
         // TODO(WEBMD-573): Bundle sending of group messages

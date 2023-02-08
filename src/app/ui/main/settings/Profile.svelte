@@ -20,7 +20,7 @@
       />
     </div>
     <div class="nickname">
-      <div class="label">Public Nickname</div>
+      <div class="label">Nickname</div>
       <div class="value">{displayName}</div>
     </div>
     <div class="qr-code" />

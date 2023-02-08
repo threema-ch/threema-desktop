@@ -2,7 +2,7 @@ import * as v from '@badrap/valita';
 
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {ensurePublicNickname} from '~/common/network/types';
+import {ensureNickname} from '~/common/network/types';
 import * as proto from '~/common/node/settings/settings';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
@@ -43,8 +43,8 @@ function simplifyProfilePictureShareWith(
  */
 const PROFILE_SETTINGS_SCHEMA = v
     .object({
-        // The user's public nickname
-        publicNickname: v.string().map(ensurePublicNickname),
+        // The user's nickname
+        nickname: v.string().map(ensureNickname),
 
         // The user's profile picture
         profilePicture: instanceOf<ReadonlyUint8Array>(Uint8Array).optional(),
@@ -99,7 +99,7 @@ export const SETTINGS_CODEC: CategoryCodecs = {
 
             // Encode protobuf
             return proto.ProfileSettings.encode({
-                publicNickname: settings.publicNickname,
+                nickname: settings.nickname,
                 profilePicture: settings.profilePicture as Uint8Array | undefined,
                 profilePictureShareWith,
             }).finish();
