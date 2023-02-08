@@ -1,4 +1,4 @@
-import {type Nickname, ensureIdentityString} from '~/common/network/types';
+import {ensureIdentityString, type Nickname} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {makeKeypair} from '~/test/mocha/common/backend-mocks';
 import {groupLeaveTests} from '~/test/mocha/common/network/protocol/task/common/group-leave';

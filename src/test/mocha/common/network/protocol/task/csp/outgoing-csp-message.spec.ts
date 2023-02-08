@@ -19,12 +19,12 @@ import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {type TextEncodable} from '~/common/network/structbuf/csp/e2e';
 import {
+    ensureIdentityString,
+    ensureMessageId,
     type GroupId,
     type IdentityString,
     type MessageId,
     type Nickname,
-    ensureIdentityString,
-    ensureMessageId,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {byteWithoutZeroPadding} from '~/common/utils/byte';
@@ -34,13 +34,13 @@ import {Identity} from '~/common/utils/identity';
 import {intoU64, intoUnsignedLong, unixTimestampToDateMs} from '~/common/utils/number';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 import {
-    type NetworkExpectation,
-    type TestServices,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
+    type NetworkExpectation,
     NetworkExpectationFactory,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 import {
     decodeLegacyMessageEncodable,

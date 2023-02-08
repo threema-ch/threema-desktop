@@ -6,21 +6,21 @@ import {ReflectedOutgoingGroupLeaveTask} from '~/common/network/protocol/task/d2
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {
+    ensureIdentityString,
     type GroupId,
     type IdentityString,
     type Nickname,
-    ensureIdentityString,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';
 import {
-    type NetworkExpectation,
-    type TestServices,
     addTestGroup,
     addTestUserAsContact,
     makeKeypair,
     makeTestServices,
+    type NetworkExpectation,
     TestHandle,
+    type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 
 /**

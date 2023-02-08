@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type PublicKey, NACL_CONSTANTS} from '~/common/crypto';
+import {NACL_CONSTANTS, type PublicKey} from '~/common/crypto';
 import {randomString} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
@@ -18,7 +18,6 @@ import {
     type DbReceiverLookup,
 } from '~/common/db';
 import {
-    type NotificationSoundPolicy,
     AcquaintanceLevel,
     ActivityState,
     ContactNotificationTriggerPolicy,
@@ -31,6 +30,7 @@ import {
     MessageQueryDirection,
     MessageReaction,
     MessageType,
+    type NotificationSoundPolicy,
     ReceiverType,
     SyncState,
     VerificationLevel,
@@ -43,16 +43,16 @@ import {
     InMemoryFileStorage,
     wrapFileEncryptionKey,
 } from '~/common/file-storage';
-import {type BlobId, BLOB_ID_LENGTH} from '~/common/network/protocol/blob';
+import {BLOB_ID_LENGTH, type BlobId} from '~/common/network/protocol/blob';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {
+    ensureIdentityString,
+    ensureNickname,
     type FeatureMask,
     type GroupId,
     type IdentityString,
     type MessageId,
     type Nickname,
-    ensureIdentityString,
-    ensureNickname,
 } from '~/common/network/types';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53, type u64} from '~/common/types';

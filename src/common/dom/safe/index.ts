@@ -3,21 +3,21 @@ import {syncScrypt} from 'scrypt-js';
 
 import {type ServicesForBackend} from '~/common/backend';
 import {
-    type PlainData,
-    type RawKey,
     ensureEncryptedDataWithNonceAhead,
     NACL_CONSTANTS,
     NONCE_UNGUARDED_TOKEN,
+    type PlainData,
+    type RawKey,
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TransferTag} from '~/common/enum';
-import {type BaseErrorOptions, BaseError} from '~/common/error';
+import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {
-    type IdentityString,
     ensureIdentityString,
+    type IdentityString,
     validNicknameOrUndefined,
 } from '~/common/network/types';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';

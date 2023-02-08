@@ -14,16 +14,16 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import {type IdentityString, validNicknameOrUndefined} from '~/common/network/types';
-import {type NotificationTag, getNotificationTagForContact} from '~/common/notification';
+import {type IdentityString} from '~/common/network/types';
+import {getNotificationTagForContact, type NotificationTag} from '~/common/notification';
 import {type u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
-    type Exact,
     createExactPropertyValidator,
+    type Exact,
     OPTIONAL,
     REQUIRED,
 } from '~/common/utils/property-validator';

@@ -7,7 +7,7 @@ import {
 } from '~/common/model/';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString, ensureNickname} from '~/common/network/types';
+import {ensureNickname, type IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import {type LocalStore} from '~/common/utils/store';

@@ -18,8 +18,8 @@ import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/r
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {
     type ContactConversationId,
-    type Nickname,
     ensureIdentityString,
+    type Nickname,
 } from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';

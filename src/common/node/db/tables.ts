@@ -40,7 +40,7 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
-import {type DBConnection, CUSTOM_TYPES} from '~/common/node/db/connection';
+import {CUSTOM_TYPES, type DBConnection} from '~/common/node/db/connection';
 import {type ReadonlyUint8Array, type u8, type u53} from '~/common/types';
 
 /**

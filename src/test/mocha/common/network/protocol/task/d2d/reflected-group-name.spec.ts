@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {ReflectedGroupNameTask} from '~/common/network/protocol/task/d2d/reflected-group-name';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
-import {type Nickname, ensureIdentityString} from '~/common/network/types';
+import {ensureIdentityString, type Nickname} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
 import {
     addTestGroup,
