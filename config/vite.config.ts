@@ -312,7 +312,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                     ? // Highest bar is currently: FinalizationRegistry
                       // https://caniuse.com/mdn-javascript_builtins_finalizationregistry
                       ['chrome84', 'firefox79']
-                    : ['chrome96', 'node16'],
+                    : ['chrome96', 'node18'],
             outDir: `../build/${env.target}/${env.entry}`,
             emptyOutDir: true,
             assetsDir: '',

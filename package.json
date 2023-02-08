@@ -56,8 +56,8 @@
     "web:dev": "VITE_MAKE=web,app,consumer,sandbox vite -m development -c config/vite.config.ts"
   },
   "engines": {
-    "node": ">=16.17",
-    "npm": ">=8.3"
+    "node": ">=18.12.1",
+    "npm": ">=8.19.2"
   },
   "dependencies": {
     "@badrap/valita": "0.1.9",
