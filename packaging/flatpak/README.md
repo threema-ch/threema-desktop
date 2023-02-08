@@ -12,7 +12,7 @@ Make sure that the runtimes are installed:
 Then, run flatpak-node-generator to convert `package-lock.json` to a
 `generated-sources.json `file.
 
-    python3 flatpak-node-generator.py npm --xdg-layout --electron-node-headers ../../package-lock.json
+    python3 -m flatpak_node_generator npm --electron-node-headers ../../package-lock.json
 
 Generate the flatpak yaml file(s):
 
@@ -36,6 +36,5 @@ To run:
 
 ## Flatpak Node Generator
 
-To update:
-
-    wget https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/node/flatpak-node-generator.py
+To update, get the current sources from
+https://github.com/flatpak/flatpak-builder-tools/tree/master/node

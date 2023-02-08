@@ -3,3 +3,4 @@ build/
 repo/
 generated-sources.json
 ch.threema.*.yml
+__pycache__/

@@ -744,9 +744,9 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     execFileSync(
         'python3',
         [
-            'flatpak-node-generator.py',
+            '-m',
+            'flatpak_node_generator',
             'npm',
-            '--xdg-layout',
             '--electron-node-headers',
             '../../package-lock.json',
         ],
