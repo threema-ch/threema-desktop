@@ -7,6 +7,7 @@ import {
 import {type CspE2eType} from '~/common/network/protocol';
 
 import * as DeliveryReceipt from './delivery-receipt';
+import * as File from './file';
 import * as GroupCreatorContainer from './group-creator-container';
 import * as GroupMemberContainer from './group-member-container';
 import * as GroupName from './group-name';
@@ -16,6 +17,7 @@ import * as SetProfilePicture from './set-profile-picture';
 import * as Text from './text';
 export {
     DeliveryReceipt,
+    File,
     GroupCreatorContainer,
     GroupMemberContainer,
     Location,
