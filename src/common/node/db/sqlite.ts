@@ -56,7 +56,8 @@ import {DBConnection} from './connection';
 import {MigrationHelper} from './migrations';
 import {BetterSqlCipherQueryRunner} from './query-runner';
 import {sync} from './sync';
-import tContact, {
+import {
+    tContact,
     tConversation,
     tFileData,
     tGlobalProperty,

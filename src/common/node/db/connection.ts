@@ -336,10 +336,6 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public transformValueToDB(value: unknown, type: string): unknown {
-        if (type === CUSTOM_TYPES.NICKNAME && value === undefined) {
-            return '';
-        }
-
         if (value === null || value === undefined) {
             return super.transformValueToDB(value, type);
         }

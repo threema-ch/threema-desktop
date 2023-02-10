@@ -175,7 +175,7 @@ export function getByUid(
             services,
             addDerivedData({
                 ...contact,
-                nickname: validNicknameOrUndefined(contact.nickname),
+                nickname: contact.nickname,
             }),
             uid,
             profilePictureData,
