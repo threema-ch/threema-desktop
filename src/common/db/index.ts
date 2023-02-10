@@ -397,7 +397,7 @@ export type DbFileMessage = {
     fileData?: DbFileData;
     thumbnailFileData?: DbFileData;
     readonly mediaType: string;
-    readonly thumbnailMediaType: string;
+    readonly thumbnailMediaType?: string;
     readonly fileName?: string;
     readonly fileSize: u53;
     readonly caption?: string;

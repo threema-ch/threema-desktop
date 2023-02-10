@@ -667,7 +667,7 @@ export const tMessageFileData = new (class TMessageFileData extends Table<
     /**
      * Thumbnail media type (formerly known as MIME type).
      */
-    public thumbnailMediaType = this.column('thumbnailMediaType', 'string');
+    public thumbnailMediaType = this.optionalColumn('thumbnailMediaType', 'string');
     /**
      * The original file name.
      */

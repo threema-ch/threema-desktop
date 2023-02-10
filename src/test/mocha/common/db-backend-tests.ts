@@ -257,7 +257,7 @@ export function createFileMessage(
         fileData: init.fileData,
         thumbnailFileData: init.thumbnailFileData,
         mediaType: init.mediaType ?? 'application/jpeg',
-        thumbnailMediaType: init.thumbnailMediaType ?? 'application/jpeg',
+        thumbnailMediaType: init.thumbnailMediaType,
         fileName: init.fileName,
         fileSize: init.fileSize ?? 43008,
         caption: init.caption,
