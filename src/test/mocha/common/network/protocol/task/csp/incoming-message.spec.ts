@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
+import {NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN, type PlainData, wrapRawKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, SharedBoxFactory} from '~/common/crypto/box';
 import {
     CspE2eConversationType,
@@ -12,7 +12,11 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import {d2d} from '~/common/network/protobuf';
-import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
+import {
+    BLOB_FILE_NONCE,
+    BLOB_THUMBNAIL_NONCE,
+    MESSAGE_DATA_PADDING_LENGTH_MIN,
+} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -20,8 +24,10 @@ import * as structbuf from '~/common/network/structbuf';
 import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
 import {type LegacyMessageLike} from '~/common/network/structbuf/csp/payload';
 import {ensureIdentityString, type IdentityString, type Nickname} from '~/common/network/types';
+import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ByteLengthEncoder, type u8} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
+import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampS} from '~/common/utils/number';
@@ -215,6 +221,126 @@ export function run(): void {
                     `Expected message type to be text, but was ${message.type}`,
                 );
                 expect(message.get().view.text).to.equal(messageText);
+            });
+        });
+
+        describe('file messages', function () {
+            it('stores a raw file message from a known contact', async function () {
+                const {blob, crypto, model} = services;
+
+                // Add contacts
+                const user1Contact = addTestUserAsContact(model, user1);
+
+                // Get user conversation
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+                assert(conversation !== undefined, 'Conversation with user 1 not found');
+                expect(conversation.get().controller.getAllMessages().get().size).to.equal(0);
+
+                // Register test blobs
+                const encryptionKey = wrapRawBlobKey(
+                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                );
+                const encryptionSecretBox = crypto.getSecretBox(
+                    encryptionKey,
+                    NONCE_UNGUARDED_TOKEN,
+                );
+                const plainFileBlobBytes = new Uint8Array([1, 2, 9, 8, 5, 5]) as PlainData;
+                const plainThumbnailBlobBytes = new Uint8Array([9, 8, 9]) as PlainData;
+                const encryptedFileBlobBytes = encryptionSecretBox
+                    .encryptor(CREATE_BUFFER_TOKEN, plainFileBlobBytes)
+                    .encryptWithNonce(BLOB_FILE_NONCE);
+                await blob.upload('public', encryptedFileBlobBytes);
+                const encryptedThumbnailBlobBytes = encryptionSecretBox
+                    .encryptor(CREATE_BUFFER_TOKEN, plainThumbnailBlobBytes)
+                    .encryptWithNonce(BLOB_THUMBNAIL_NONCE);
+                const fileBlobId = await blob.upload('public', encryptedFileBlobBytes);
+                const thumbnailBlobId = await blob.upload('public', encryptedThumbnailBlobBytes);
+
+                // Create incoming file message
+                const encryptionKeyHex = bytesToHex(encryptionKey.unwrap());
+                const fileMediaType = 'application/pdf';
+                const thumbnailMediaType = 'image/png';
+                const fileName = 'document.pdf';
+                const fileSizeBytes = 12342345;
+                const fileMessage = createMessage(
+                    services,
+                    {
+                        identity: user1.identity,
+                        keypair: user1.keypair,
+                        nickname: 'some user' as Nickname,
+                    },
+                    me,
+                    CspE2eConversationType.FILE,
+                    structbuf.bridge.encoder(structbuf.csp.e2e.File, {
+                        file: UTF8.encode(
+                            JSON.stringify({
+                                // Blob IDs
+                                b: bytesToHex(fileBlobId),
+                                t: bytesToHex(thumbnailBlobId),
+                                // Encryption key
+                                k: encryptionKeyHex,
+                                // Media
+                                m: fileMediaType,
+                                p: thumbnailMediaType,
+                                // Name
+                                n: fileName,
+                                // Size
+                                s: fileSizeBytes,
+                                // Correlation ID
+                                c: '6c9e78d01f5235a7da752df188e48924',
+                                // Metadata
+                                x: {},
+                                // Rendering type
+                                i: 0,
+                                j: 0,
+                            }),
+                        ),
+                    }),
+                    CspMessageFlags.fromPartial({sendPushNotification: true}),
+                );
+
+                // Run task
+                const task = new IncomingMessageTask(services, fileMessage);
+                const handle = new TestHandle(services, [
+                    // Reflect and ack incoming file message
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.incomingMessage).not.to.be.undefined;
+                        const incomingMessage = unwrap(payload.incomingMessage);
+                        expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                        expect(incomingMessage.type).to.equal(d2d.MessageType.FILE);
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                    // Reflect and send delivery receipt
+                    ...reflectAndSendDeliveryReceipt(
+                        services,
+                        user1,
+                        CspE2eDeliveryReceiptStatus.RECEIVED,
+                    ),
+                ]);
+                await task.run(handle);
+                handle.finish();
+
+                // File message should be part of the 1:1 conversation
+                const messages = [...conversation.get().controller.getAllMessages().get()];
+                expect(messages.length).to.equal(1);
+                const message = messages[0];
+                assert(
+                    message.type === MessageType.FILE,
+                    `Expected message type to be file, but was ${message.type}`,
+                );
+                const view = message.get().view;
+                expect(view.blobId).to.deep.equal(fileBlobId);
+                expect(view.thumbnailBlobId).to.deep.equal(thumbnailBlobId);
+                // TODO(DESK-307): Encryption key?
+                expect(view.mediaType).to.equal(fileMediaType);
+                expect(view.thumbnailMediaType).to.equal(thumbnailMediaType);
+                expect(view.fileName).to.equal(fileName);
+                expect(view.fileSize).to.equal(fileSizeBytes);
+                // TODO(DESK-247): Test rendering type
             });
         });
 

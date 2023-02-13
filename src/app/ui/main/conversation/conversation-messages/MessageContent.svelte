@@ -29,6 +29,22 @@
       <div class="text">
         <Text text={message.body.text} {mentions} />
       </div>
+    {:else if message.type === 'file'}
+      <div class="file">
+        <!-- TODO(DESK-932): Properly render message -->
+        <p>
+          <em>
+            {#if message.body.filename !== undefined}
+              File: {message.body.filename} ({message.body.mediaType})
+            {:else}
+              File (({message.body.mediaType}))
+            {/if}
+          </em>
+        </p>
+        {#if message.body.caption !== undefined}
+          <p>{message.body.caption}</p>
+        {/if}
+      </div>
     {:else}
       <div class="unsupported-message">Unsupported message type `{message.type}`</div>
     {/if}

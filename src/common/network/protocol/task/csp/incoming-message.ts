@@ -60,6 +60,7 @@ import {getTextForLocation} from '~/common/network/protocol/task/common/location
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {
     type AnyInboundMessageInitFragment,
+    type InboundFileMessageInitFragment,
     type InboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -138,10 +139,33 @@ function getTextMessageInitFragment(
     };
 }
 
+function getFileMessageInitFragment(
+    payload: structbuf.csp.payload.LegacyMessageLike,
+    cspFileMessageBody: ReadonlyUint8Array,
+    log: Logger,
+): InboundFileMessageInitFragment {
+    // Decode file message
+    const fileData = structbuf.validate.csp.e2e.File.SCHEMA.parse(
+        structbuf.csp.e2e.File.decode(cspFileMessageBody as Uint8Array),
+    ).file;
+    return {
+        ...getCommonMessageInitFragment(payload, cspFileMessageBody),
+        type: 'file',
+        blobId: fileData.file.blobId,
+        thumbnailBlobId: fileData.thumbnail?.blobId,
+        encryptionKey: fileData.encryptionKey,
+        mediaType: fileData.file.mediaType,
+        thumbnailMediaType: fileData.thumbnail?.mediaType,
+        fileName: fileData.fileName,
+        fileSize: fileData.fileSize,
+        caption: fileData.caption,
+        correlationId: fileData.correlationId,
+    };
+}
+
 function getLocationMessageInitFragment(
     payload: structbuf.csp.payload.LegacyMessageLike,
     cspLocationMessageBody: ReadonlyUint8Array,
-    log: Logger,
 ): InboundTextMessageInitFragment {
     // Decode location message as text message for now.
     // TODO(DESK-248): Full implementation
@@ -160,6 +184,19 @@ function getDirectedTextMessageInit(
     sender: UidOf<DbContact>,
     fragment: InboundTextMessageInitFragment,
 ): DirectedMessageFor<MessageDirection.INBOUND, MessageType.TEXT, 'init'> {
+    return {
+        ...fragment,
+        direction: MessageDirection.INBOUND,
+        sender,
+        id,
+    };
+}
+
+function getDirectedFileMessageInit(
+    id: MessageId,
+    sender: UidOf<DbContact>,
+    fragment: InboundFileMessageInitFragment,
+): DirectedMessageFor<MessageDirection.INBOUND, MessageType.FILE, 'init'> {
     return {
         ...fragment,
         direction: MessageDirection.INBOUND,
@@ -885,17 +922,25 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
+            case CspE2eConversationType.FILE: {
+                const initFragment = getFileMessageInitFragment(message, cspMessageBody, this._log);
+                const instructions: ConversationMessageInstructions = {
+                    messageCategory: 'conversation-message',
+                    conversationId: senderConversationId,
+                    missingContactHandling: 'create',
+                    deliveryReceipt: true,
+                    initFragment,
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
             case CspE2eConversationType.LOCATION: {
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: senderConversationId,
                     missingContactHandling: 'create',
                     deliveryReceipt: true,
-                    initFragment: getLocationMessageInitFragment(
-                        message,
-                        cspMessageBody,
-                        this._log,
-                    ),
+                    initFragment: getLocationMessageInitFragment(message, cspMessageBody),
                     reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.LOCATION),
                 };
                 return instructions;
@@ -917,7 +962,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     initFragment: getLocationMessageInitFragment(
                         message,
                         validatedContainer.innerData,
-                        this._log,
                     ),
                     reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.GROUP_LOCATION),
                 };
@@ -1175,8 +1219,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(DESK-586)
                 return unhandled(maybeCspE2eType, true);
-            case CspE2eConversationType.FILE: // TODO(DESK-307)
-                return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.POLL_SETUP: // TODO(DESK-244)
                 return unhandled(maybeCspE2eType, true);
             case CspE2eConversationType.POLL_VOTE: // TODO(DESK-244)
@@ -1251,7 +1293,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             case MessageType.TEXT:
                 return getDirectedTextMessageInit(this._id, contact.get().ctx, initFragment);
             case MessageType.FILE:
-                throw new Error('TODO(DESK-307): Implement file message');
+                return getDirectedFileMessageInit(this._id, contact.get().ctx, initFragment);
             default:
                 return unreachable(initFragment);
         }
