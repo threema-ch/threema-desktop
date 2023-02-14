@@ -100,130 +100,137 @@ export function run(): void {
             }
         });
 
-        it('discard messages that appear to be sent by ourselves', async function () {
-            const {crypto, model} = services;
+        describe('validation', function () {
+            it('discard messages that appear to be sent by ourselves', async function () {
+                const {crypto, model} = services;
 
-            // Encode and encrypt message
-            const msg = createMessage(
-                services,
-                {
-                    identity: new Identity(me),
-                    keypair: new SharedBoxFactory(
-                        crypto,
-                        wrapRawKey(
-                            Uint8Array.from(services.rawClientKeyBytes),
-                            NACL_CONSTANTS.KEY_LENGTH,
-                        ).asReadonly(),
-                    ),
-                    nickname: 'me myself' as Nickname,
-                },
-                me,
-                CspE2eGroupControlType.GROUP_LEAVE,
-                structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                    text: UTF8.encode('hello from myself'),
-                }),
-                CspMessageFlags.none(),
-            );
-
-            // Run task
-            const task = new IncomingMessageTask(services, msg);
-            const expectations: NetworkExpectation[] = [
-                // We expect the message to be dropped because it's invalid
-                NetworkExpectationFactory.writeIncomingMessageAck(),
-            ];
-            const handle = new TestHandle(services, expectations);
-            await task.run(handle);
-            handle.finish();
-
-            // Ensure that no text message was created
-            const contactForOwnIdentity = model.contacts.getByIdentity(me);
-            expect(contactForOwnIdentity, 'Contact for own identity should not exist').to.be
-                .undefined;
-        });
-
-        it('only accepts group text messages from members', async function () {
-            const {model} = services;
-
-            // Add users
-            const contact1 = addTestUserAsContact(model, user1);
-            addTestUserAsContact(model, user2);
-
-            // Group created by user1
-            const groupUid = makeGroup(model.db, {creatorIdentity: user1.identity.string});
-            const group = unwrap(model.groups.getByUid(groupUid));
-            const groupConversation = group.get().controller.conversation();
-            group.get().controller.members.set.fromSync([contact1.ctx]);
-
-            function makeGroupMessage(sender: TestUser, messageText: string): LegacyMessageLike {
-                return createMessage(
+                // Encode and encrypt message
+                const msg = createMessage(
                     services,
                     {
-                        identity: sender.identity,
-                        keypair: sender.keypair,
-                        nickname: 'some user' as Nickname,
+                        identity: new Identity(me),
+                        keypair: new SharedBoxFactory(
+                            crypto,
+                            wrapRawKey(
+                                Uint8Array.from(services.rawClientKeyBytes),
+                                NACL_CONSTANTS.KEY_LENGTH,
+                            ).asReadonly(),
+                        ),
+                        nickname: 'me myself' as Nickname,
                     },
                     me,
-                    CspE2eGroupConversationType.GROUP_TEXT,
-                    structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                        creatorIdentity: UTF8.encode(group.get().view.creatorIdentity),
-                        groupId: group.get().view.groupId,
-                        innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                            text: UTF8.encode(messageText),
-                        }),
+                    CspE2eGroupControlType.GROUP_LEAVE,
+                    structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                        text: UTF8.encode('hello from myself'),
                     }),
                     CspMessageFlags.none(),
                 );
-            }
 
-            // Conversation is empty
-            {
-                const messages = groupConversation.get().controller.getAllMessages().get();
-                expect(messages.size).to.equal(0);
-            }
-
-            // Process group message from user1 (member)
-            {
-                const message = makeGroupMessage(user1, 'hello from user1');
-                const task = new IncomingMessageTask(services, message);
+                // Run task
+                const task = new IncomingMessageTask(services, msg);
                 const expectations: NetworkExpectation[] = [
-                    // We expect the message to be reflected
-                    NetworkExpectationFactory.reflectSingle((payload) => {
-                        expect(payload.incomingMessage).not.to.be.undefined;
-                        const incomingMessage = unwrap(payload.incomingMessage);
-                        expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
-                    }),
-                    // Message is acked after processing
+                    // We expect the message to be dropped because it's invalid
                     NetworkExpectationFactory.writeIncomingMessageAck(),
                 ];
                 const handle = new TestHandle(services, expectations);
                 await task.run(handle);
-                expect(expectations, 'Not all expectations consumed').to.be.empty;
-            }
+                handle.finish();
 
-            // Text message should have been created
-            {
-                const messages = groupConversation.get().controller.getAllMessages().get();
-                expect(messages.size).to.equal(1);
-            }
+                // Ensure that no text message was created
+                const contactForOwnIdentity = model.contacts.getByIdentity(me);
+                expect(contactForOwnIdentity, 'Contact for own identity should not exist').to.be
+                    .undefined;
+            });
+        });
 
-            // Process group message from user2 (non-member)
-            {
-                const message = makeGroupMessage(user2, 'hello from user2');
-                const task = new IncomingMessageTask(services, message);
-                const expectations: NetworkExpectation[] = [
-                    // Message is acked and dropped, since it's invalid
-                    NetworkExpectationFactory.writeIncomingMessageAck(),
-                ];
-                const handle = new TestHandle(services, expectations);
-                await task.run(handle);
-                expect(expectations, 'Not all expectations consumed').to.be.empty;
-            }
+        describe('group messages', () => {
+            it('only accepts group text messages from members', async function () {
+                const {model} = services;
 
-            // Ensure that no additional text message was created
-            {
-                const messages = groupConversation.get().controller.getAllMessages().get();
-                expect(messages.size).to.equal(1);
-            }
+                // Add users
+                const contact1 = addTestUserAsContact(model, user1);
+                addTestUserAsContact(model, user2);
+
+                // Group created by user1
+                const groupUid = makeGroup(model.db, {creatorIdentity: user1.identity.string});
+                const group = unwrap(model.groups.getByUid(groupUid));
+                const groupConversation = group.get().controller.conversation();
+                group.get().controller.members.set.fromSync([contact1.ctx]);
+
+                function makeGroupMessage(
+                    sender: TestUser,
+                    messageText: string,
+                ): LegacyMessageLike {
+                    return createMessage(
+                        services,
+                        {
+                            identity: sender.identity,
+                            keypair: sender.keypair,
+                            nickname: 'some user' as Nickname,
+                        },
+                        me,
+                        CspE2eGroupConversationType.GROUP_TEXT,
+                        structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                            creatorIdentity: UTF8.encode(group.get().view.creatorIdentity),
+                            groupId: group.get().view.groupId,
+                            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                text: UTF8.encode(messageText),
+                            }),
+                        }),
+                        CspMessageFlags.none(),
+                    );
+                }
+
+                // Conversation is empty
+                {
+                    const messages = groupConversation.get().controller.getAllMessages().get();
+                    expect(messages.size).to.equal(0);
+                }
+
+                // Process group message from user1 (member)
+                {
+                    const message = makeGroupMessage(user1, 'hello from user1');
+                    const task = new IncomingMessageTask(services, message);
+                    const expectations: NetworkExpectation[] = [
+                        // We expect the message to be reflected
+                        NetworkExpectationFactory.reflectSingle((payload) => {
+                            expect(payload.incomingMessage).not.to.be.undefined;
+                            const incomingMessage = unwrap(payload.incomingMessage);
+                            expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                        }),
+                        // Message is acked after processing
+                        NetworkExpectationFactory.writeIncomingMessageAck(),
+                    ];
+                    const handle = new TestHandle(services, expectations);
+                    await task.run(handle);
+                    expect(expectations, 'Not all expectations consumed').to.be.empty;
+                }
+
+                // Text message should have been created
+                {
+                    const messages = groupConversation.get().controller.getAllMessages().get();
+                    expect(messages.size).to.equal(1);
+                }
+
+                // Process group message from user2 (non-member)
+                {
+                    const message = makeGroupMessage(user2, 'hello from user2');
+                    const task = new IncomingMessageTask(services, message);
+                    const expectations: NetworkExpectation[] = [
+                        // Message is acked and dropped, since it's invalid
+                        NetworkExpectationFactory.writeIncomingMessageAck(),
+                    ];
+                    const handle = new TestHandle(services, expectations);
+                    await task.run(handle);
+                    expect(expectations, 'Not all expectations consumed').to.be.empty;
+                }
+
+                // Ensure that no additional text message was created
+                {
+                    const messages = groupConversation.get().controller.getAllMessages().get();
+                    expect(messages.size).to.equal(1);
+                }
+            });
         });
     });
 }
