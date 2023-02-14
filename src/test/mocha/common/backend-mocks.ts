@@ -776,7 +776,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         }
         if (expectation.mode !== 'write') {
             this._failExpectation(
-                `Expected write operation, but encountered ${expectation.mode} operation`,
+                `Expected ${expectation.mode} operation, but encountered write operation`,
             );
         }
         expectation.inspector?.(message);
@@ -793,7 +793,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         }
         if (expectation.mode !== 'read') {
             this._failExpectation(
-                `Expected read operation, but encountered ${expectation.mode} operation`,
+                `Expected ${expectation.mode} operation, but encountered read operation`,
             );
         }
         const expectedMessage = expectation.generator();
@@ -843,7 +843,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         }
         if (expectation.mode !== 'reflect') {
             this._failExpectation(
-                `Expected reflect operation, but encountered ${expectation.mode} operation`,
+                `Expected ${expectation.mode} operation, but encountered reflect operation`,
             );
         }
         expectation.inspector?.(payloads.map((payload) => new protobuf.d2d.Envelope(payload)));
@@ -873,7 +873,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         }
         if (expectation.mode !== 'start-transaction') {
             this._failExpectation(
-                `Expected start-transaction operation, but encountered ${expectation.mode} operation`,
+                `Expected ${expectation.mode} operation, but encountered start-transaction operation`,
             );
         }
         if (scope !== expectation.scope) {
