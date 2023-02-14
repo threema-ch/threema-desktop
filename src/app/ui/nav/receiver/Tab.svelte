@@ -32,7 +32,7 @@
     color: var(--ic-contact-navigation-context-button-color);
     height: rem(40px);
 
-    &:not([disabled]) {
+    &:not(:disabled) {
       cursor: pointer;
 
       &:hover {
@@ -57,7 +57,7 @@
       }
     }
 
-    &[disabled] {
+    &:disabled {
       opacity: var(--ic-contact-navigation-context-button-opacity--disabled);
     }
   }
