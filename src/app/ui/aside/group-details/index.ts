@@ -105,7 +105,7 @@ export function filterGroups(
     );
 }
 
-// TODO(WEBMD-577): This will be superseded by a new store with this ticket.
+// TODO(DESK-577): This will be superseded by a new store with this ticket.
 function getMembersForGroup(
     group: RemoteModelStore<Group>,
     contacts: RemoteSetStore<RemoteModelStore<Contact>>,

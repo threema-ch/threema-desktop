@@ -120,7 +120,7 @@ test:mocha:
       junit:
         - junit/mocha.xml
 
-# TODO(WEBMD-321): Fix! Right now this segfaults.
+# TODO(DESK-321): Fix! Right now this segfaults.
 # Additionally, the kill-on-error functionality was removed, so in
 # order to get the smoke test to run:
 #

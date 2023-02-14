@@ -6,7 +6,7 @@ import {PASSIVE_TASK, type PassiveTask, type PassiveTaskSymbol, type ServicesFor
  * This is the tech debt task. It reminds you that you **still** haven't implemented <insert task
  * name here>!
  *
- * TODO(WEBMD-579): Obviously, the task in itself is tech debt and should be removed!
+ * TODO(DESK-579): Obviously, the task in itself is tech debt and should be removed!
  */
 export class TechDebtTask implements PassiveTask<void> {
     public readonly type: PassiveTaskSymbol = PASSIVE_TASK;

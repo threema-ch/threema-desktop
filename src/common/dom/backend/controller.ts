@@ -183,7 +183,7 @@ export class BackendController {
                 log.debug('Loop to create backend with key storage');
                 try {
                     backendEndpoint = await creator(
-                        // TODO(WEBMD-731): Remove the transitional logic involving LEGACY_DEFAULT_PASSWORD
+                        // TODO(DESK-731): Remove the transitional logic involving LEGACY_DEFAULT_PASSWORD
                         assembleBackendInit(
                             passwordForExistingKeyStorage ?? LEGACY_DEFAULT_PASSWORD,
                         ),
@@ -204,7 +204,7 @@ export class BackendController {
                             break loopToCreateBackendWithKeyStorage;
                         case 'key-storage-error':
                             throw new Error(
-                                `TODO(WEBMD-383): handle key storage error (${errorMessage})`,
+                                `TODO(DESK-383): handle key storage error (${errorMessage})`,
                             );
                         case 'key-storage-error-missing-password':
                             // Backend cannot be created because key storage password is not provided.
@@ -254,7 +254,7 @@ export class BackendController {
                 };
 
                 // Set key storage password to "dev" (fine for development purposes)
-                // TODO(WEBMD-731): Once WEBMD-731 is fixed, revert the password below to "dev"
+                // TODO(DESK-731): Once DESK-731 is fixed, revert the password below to "dev"
                 newKeyStoragePassword = 'please-change-me-i-am-so-insecure';
 
                 // Avoid "new identity" screen when auto-restoring an identity
@@ -317,7 +317,7 @@ export class BackendController {
                         );
                     case 'key-storage-error':
                         throw new Error(
-                            `TODO(WEBMD-383): handle key storage error (${extractErrorMessage(
+                            `TODO(DESK-383): handle key storage error (${extractErrorMessage(
                                 error,
                                 'short',
                             )}`,
@@ -375,7 +375,7 @@ export class BackendController {
     public async capture(): Promise<void> {
         this._log.info('Starting to capture packets');
 
-        // TODO(WEBMD-63): This functionality should be untangled and moved into the `DebugBackend`
+        // TODO(DESK-63): This functionality should be untangled and moved into the `DebugBackend`
 
         // Nothing to do if already capturing
         if (this.capturing !== undefined) {
@@ -384,7 +384,7 @@ export class BackendController {
 
         // Push sequential packets into a bounded array.
         //
-        // TODO(WEBMD-688): We should not use a plain array for the store as the comparison on each
+        // TODO(DESK-688): We should not use a plain array for the store as the comparison on each
         // pushed packet will likely lead to significant CPU cost.
         const packets: DisplayPacket[] = [];
         const store = new DeprecatedDerivedStore([await this._remote.capture()], ([[, packet]]) => {

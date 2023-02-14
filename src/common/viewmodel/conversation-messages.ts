@@ -172,7 +172,7 @@ function getQuotedMessageViewModel(
  * Get an ordinal for message ordering in the frontend.
  */
 function getMessageOrdinal(message: AnyMessageModel): u53 {
-    // TODO(WEBMD-296): BE: Implement full-featured thread-based message sorting.
+    // TODO(DESK-296): BE: Implement full-featured thread-based message sorting.
     if (message.view.direction === MessageDirection.INBOUND) {
         return message.view.receivedAt.getTime();
     } else {

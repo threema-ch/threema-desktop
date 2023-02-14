@@ -1201,7 +1201,7 @@ export namespace D2dCspMessageType {
  * WARNING: Do not change the internal representation of these enums since those values are used
  *          directly by the protocol **and** are stored directly in the database!
  *
- * TODO(WEBMD-48): These enums are pulled from protobuf-generated files. We should generate them directly!
+ * TODO(DESK-48): These enums are pulled from protobuf-generated files. We should generate them directly!
  */
 /** @generate convert */
 export type D2dCspMessageType = (typeof D2dCspMessageType)[keyof typeof D2dCspMessageType];

@@ -171,7 +171,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 break;
             }
             case 'file':
-                throw new Error('TODO(WEBMD-316): Implement support for sending file messages');
+                throw new Error('TODO(DESK-316): Implement support for sending file messages');
             default:
                 return unreachable(this._messageModel);
         }

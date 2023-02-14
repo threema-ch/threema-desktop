@@ -208,7 +208,7 @@ export class SafeContactImporter {
     private _assertPublicKeysMatch(fromBackup: string, fromDirectoryAsBytes: PublicKey): void {
         const fromDirectory = u8aToBase64(fromDirectoryAsBytes);
         if (fromBackup !== fromDirectory) {
-            // TODO(WEBMD-427): Decide how to handle this case and how it affects the UX.
+            // TODO(DESK-427): Decide how to handle this case and how it affects the UX.
             throw new Error(
                 `Public key mismatch! backup=${fromBackup}, directory=${fromDirectory}`,
             );

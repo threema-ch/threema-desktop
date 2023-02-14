@@ -194,11 +194,11 @@
         </LinkElement>
       </div> -->
       <!-- <Divider /> -->
-      <!-- TODO(WEBMD-418): Add share of contact -->
+      <!-- TODO(DESK-418): Add share of contact -->
       <!-- <LinkElement wip label="Share Contact">
         <MdIcon slot="icon-left" theme="Outlined">share</MdIcon>
       </LinkElement> -->
-      <!-- TODO(WEBMD-419): Add block of contact -->
+      <!-- TODO(DESK-419): Add block of contact -->
       <!-- <LinkElement wip label="Block Contact">
         <MdIcon slot="icon-left" theme="Outlined">block</MdIcon>
       </LinkElement> -->

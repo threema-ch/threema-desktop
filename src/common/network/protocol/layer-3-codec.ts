@@ -546,7 +546,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
                     // Encode `client-info` extension
                     structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: 0x00, // TODO(WEBMD-777): Hardcoded, nono!
+                        type: 0x00, // TODO(DESK-777): Hardcoded, nono!
                         payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.ClientInfo, {
                             clientInfo: {
                                 encode: (cia): Uint8Array =>
@@ -557,7 +557,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
                     // Encode `csp-device-id` extension
                     structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: 0x01, // TODO(WEBMD-777): Hardcoded, nono!
+                        type: 0x01, // TODO(DESK-777): Hardcoded, nono!
                         payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.CspDeviceId, {
                             cspDeviceId: csp.deviceId,
                         }),
@@ -591,7 +591,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     ),
                     sck: csp.sck.unwrap(),
                     reserved1: VOUCH_RESERVED1_BYTES,
-                    // TODO(WEBMD-812): Remove cast
+                    // TODO(DESK-812): Remove cast
                     vouch: this._calculateCspVouchMac(tsk) as Uint8Array,
                     reserved2: VOUCH_RESERVED2_BYTES,
                 }).encode,
@@ -702,7 +702,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                             `Expected inbound 'ServerInfo' D2M message, got: ${message.payload.constructor.name}`,
                         );
                     }
-                    // TODO(WEBMD-98): IMPORTANT - this must be copied as the underlying buffer will be reused!
+                    // TODO(DESK-98): IMPORTANT - this must be copied as the underlying buffer will be reused!
                     d2m.serverInfo.resolve(
                         protobuf.validate.d2m.ServerInfo.SCHEMA.parse(message.payload),
                     );
@@ -855,7 +855,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
             .encryptor(
                 buffer,
                 protobuf.utils.encoder(protobuf.d2d.DeviceInfo, {
-                    // TODO(WEBMD-322): What padding constraints do we want to apply?
+                    // TODO(DESK-322): What padding constraints do we want to apply?
                     padding: bytePadPkcs7(buffer, randomPkcs7PaddingLength(crypto)),
                     platform:
                         import.meta.env.BUILD_TARGET === 'electron'
@@ -1010,7 +1010,7 @@ export class Layer3Encoder implements TransformerCodec<OutboundL3Message, Outbou
         return {
             type: D2mPayloadType.PROXY,
             payload: structbuf.bridge.encoder(structbuf.csp.handshake.ClientHello, {
-                // TODO(WEBMD-812): Remove cast
+                // TODO(DESK-812): Remove cast
                 tck: csp.tck.public as ReadonlyUint8Array as Uint8Array,
                 cck: csp.cck,
             }),

@@ -335,7 +335,7 @@ export class MigrationHelper {
      * @throws if table creation fails
      */
     private _setupMigrationCacheTable(db: Database): void {
-        // TODO(WEBMD-371): Once we upgrade to SQLite 3.38, we can use `unixepoch()` instead of the
+        // TODO(DESK-371): Once we upgrade to SQLite 3.38, we can use `unixepoch()` instead of the
         //                  strftime hack below.
         const createStatement = db.prepare(`
             CREATE TABLE IF NOT EXISTS ${MIGRATION_CACHE.TABLE_NAME} (

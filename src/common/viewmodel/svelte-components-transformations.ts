@@ -117,7 +117,7 @@ export function transformReceiver(
         case ReceiverType.CONTACT:
             return transformContact(receiver, profilePicture, model.settings);
         case ReceiverType.DISTRIBUTION_LIST:
-            throw new Error('TODO(WEBMD-236): Implement distribution list');
+            throw new Error('TODO(DESK-236): Implement distribution list');
         case ReceiverType.GROUP:
             return transformGroup(receiver, profilePicture, model.contacts);
         default:

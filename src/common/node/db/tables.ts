@@ -347,7 +347,7 @@ export const tDistributionList = new (class TDistributionList extends Table<
         CUSTOM_TYPES.DISTRIBUTION_LIST_UID,
     );
 
-    // TODO(WEBMD-334): Add distribution list ID
+    // TODO(DESK-334): Add distribution list ID
 
     /**
      * Distribution list ID, 8 bytes.

@@ -76,7 +76,7 @@ export abstract class GroupSetupTaskBase<
 
             // 3.2 If the sender is blocked, send a group-leave message to the sender and all
             //     provided members (including those who are blocked) and abort these steps.
-            //     TODO(WEBMD-560) (but only for CSP?)
+            //     TODO(DESK-560) (but only for CSP?)
         }
 
         // 4. If the group could be found
@@ -120,7 +120,7 @@ export abstract class GroupSetupTaskBase<
         }
 
         // Add creator explicitly as member
-        // TODO(WEBMD-558): Make group creator an implicit member and remove this line
+        // TODO(DESK-558): Make group creator an implicit member and remove this line
         const creatorContact = model.contacts.getByIdentity(creatorIdentity)?.get();
         // Creator contact must exist, because the message could not have been decrypted
         // without having a contact for the sender.

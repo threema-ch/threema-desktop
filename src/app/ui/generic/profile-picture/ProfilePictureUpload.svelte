@@ -7,7 +7,7 @@
     class="wip"
     on:click={() => {
       // eslint-disable-next-line no-alert
-      alert('Not yet implemented (WEBMD-390)');
+      alert('Not yet implemented (DESK-390)');
     }}
   >
     <span>

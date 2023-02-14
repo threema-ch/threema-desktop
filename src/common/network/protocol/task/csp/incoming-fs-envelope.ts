@@ -18,7 +18,7 @@ import {OutgoingCspMessageTask} from './outgoing-csp-message';
 /**
  * Process incoming forward security envelopes.
  *
- * For now, messages are always rejected (WEBMD-887).
+ * For now, messages are always rejected (DESK-887).
  */
 export class IncomingForwardSecurityEnvelopeTask
     implements ComposableTask<ActiveTaskCodecHandle<'volatile'>, void>

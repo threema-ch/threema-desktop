@@ -80,7 +80,7 @@ abstract class ReflectMessageUpdateTaskBase {
                     },
                 };
             case ReceiverType.DISTRIBUTION_LIST:
-                // TODO(WEBMD-237): Support distribution lists
+                // TODO(DESK-237): Support distribution lists
                 throw new Error('Receiver type not yet supported');
             default:
                 return unreachable(receiver);

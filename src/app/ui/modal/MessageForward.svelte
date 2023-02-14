@@ -73,7 +73,7 @@
     searchInput.focus();
   }
 
-  // TODO(WEBMD-830)
+  // TODO(DESK-830)
   // Rewrite current message forwarding flow with new viewmodel data fetch
 </script>
 

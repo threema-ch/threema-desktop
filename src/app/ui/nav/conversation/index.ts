@@ -209,7 +209,7 @@ export async function transformReceiver(
         case ReceiverType.CONTACT:
             return await transformContact(settings, receiver);
         case ReceiverType.DISTRIBUTION_LIST:
-            throw new Error('TODO(WEBMD-236): Distribution lists');
+            throw new Error('TODO(DESK-236): Distribution lists');
         case ReceiverType.GROUP:
             return transformGroup(receiver);
         default:

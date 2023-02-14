@@ -169,7 +169,7 @@ function main() {
     source.statements.unshift(createTypesImportNode());
 
     // Insert 'Long' import
-    // TODO(WEBMD-48): To be removed once we make use of BigInt
+    // TODO(DESK-48): To be removed once we make use of BigInt
     source.statements.unshift(
         ts.factory.createImportDeclaration(
             undefined,

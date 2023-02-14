@@ -206,7 +206,7 @@ export class ConversationModelController implements ConversationController {
 
             // Trigger a notification
             this.meta.run((handle) => {
-                // TODO(WEBMD-255): This must be delayed to prevent notifications for messages that have
+                // TODO(DESK-255): This must be delayed to prevent notifications for messages that have
                 // already been acknowledged or which are going to be acknowledged by another device within
                 // a small time period.
                 void this._services.notification.notifyNewMessage(store, {
@@ -304,8 +304,8 @@ export class ConversationModelController implements ConversationController {
                     groupId: model.view.groupId,
                 };
             case ReceiverType.DISTRIBUTION_LIST:
-                // TODO(WEBMD-236): Implement distribution list
-                throw new Error('TODO(WEBMD-236): Implement distribution list');
+                // TODO(DESK-236): Implement distribution list
+                throw new Error('TODO(DESK-236): Implement distribution list');
             default:
                 return unreachable(model);
         }
@@ -318,8 +318,8 @@ export class ConversationModelController implements ConversationController {
                 case ReceiverType.CONTACT:
                     return contact.getByUid(this._services, receiver.uid, Existence.ENSURED);
                 case ReceiverType.DISTRIBUTION_LIST:
-                    // TODO(WEBMD-236): Implement distribution list
-                    throw new Error('TODO(WEBMD-236): Implement distribution list');
+                    // TODO(DESK-236): Implement distribution list
+                    throw new Error('TODO(DESK-236): Implement distribution list');
                 case ReceiverType.GROUP:
                     return group.getByUid(this._services, receiver.uid, Existence.ENSURED);
                 default:
@@ -422,7 +422,7 @@ export class ConversationModelController implements ConversationController {
     private _scheduleReflectMarkMessagesAsRead(readMessageIds: MessageId[], readAt: Date): void {
         // If delivery receipts are enabled and the conversation is a contact conversation,
         // send and reflect a delivery receipt. Otherwise, reflect an IncomingMessageUpdate.
-        // TODO(WEBMD-612): Allow disabling delivery receipts
+        // TODO(DESK-612): Allow disabling delivery receipts
         const deliveryReceiptsDisabled = false;
 
         if (
@@ -518,7 +518,7 @@ export class ConversationModelController implements ConversationController {
         const store = message.create(this._services, this._handle, MESSAGE_FACTORY, init);
 
         // Update 'last message', if applicable
-        // TODO(WEBMD-296): This needs to depend on whether the message appears as the last message
+        // TODO(DESK-296): This needs to depend on whether the message appears as the last message
         //                  (i.e. the sort order)!
         this._updateLastMessagePreview();
 
@@ -567,8 +567,8 @@ function getDebugTagForReceiver(
         case ReceiverType.CONTACT:
             return db.getContactByUid(receiver.uid)?.identity;
         case ReceiverType.DISTRIBUTION_LIST:
-            // TODO(WEBMD-236): Implement distribution list
-            throw new Error('TODO(WEBMD-236): Implement distribution list');
+            // TODO(DESK-236): Implement distribution list
+            throw new Error('TODO(DESK-236): Implement distribution list');
         case ReceiverType.GROUP: {
             const groupReceiver = db.getGroupByUid(receiver.uid);
             if (groupReceiver !== undefined) {

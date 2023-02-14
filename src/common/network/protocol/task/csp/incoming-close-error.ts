@@ -44,6 +44,6 @@ export class IncomingCloseErrorPayloadTask implements PassiveTask<void> {
         } catch (error) {
             this._log.error(`Incoming server alert with invalid UTF-8`);
         }
-        // TODO(WEBMD-200): Handle this._message.canReconnect
+        // TODO(DESK-200): Handle this._message.canReconnect
     }
 }

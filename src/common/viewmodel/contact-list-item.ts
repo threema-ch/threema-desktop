@@ -19,17 +19,17 @@ import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set
 import {type ServicesForViewModel} from '~/common/viewmodel';
 
 /**
- * TODO(WEBMD-709): Type from svelte-components, get rid of this.
+ * TODO(DESK-709): Type from svelte-components, get rid of this.
  */
 export type VerificationLevelColors = 'default' | 'shared-work-subscription';
 
 /**
- * TODO(WEBMD-709): Type from svelte-components, get rid of this.
+ * TODO(DESK-709): Type from svelte-components, get rid of this.
  */
 export type VerificationLevel = 'unverified' | 'server-verified' | 'fully-verified';
 
 /**
- * TODO(WEBMD-709): Type from svelte-components, get rid of this.
+ * TODO(DESK-709): Type from svelte-components, get rid of this.
  */
 export type ContactBadge = 'contact-consumer' | 'contact-work';
 
@@ -40,7 +40,7 @@ export type ContactListItemSetStore = LocalDerivedSetStore<
 
 export interface ContactListItemSetEntry extends PropertiesMarked {
     readonly contactUid: DbContactUid;
-    // TODO(WEBMD-706): Pass in the ContactController, not the model store
+    // TODO(DESK-706): Pass in the ContactController, not the model store
     readonly contactModelStore: LocalModelStore<Contact>;
     readonly viewModelStore: ContactListItemViewModelStore;
 }
@@ -129,7 +129,7 @@ function getViewModelStore(
             initials: contact.view.initials,
             profilePicture: contact.controller.profilePicture,
             badge: transformContactBadge(contact.view),
-            // TODO(WEBMD-381): Determine whether contact is a new contact
+            // TODO(DESK-381): Determine whether contact is a new contact
             isNew: Math.random() < 0.5,
             ...transformContactVerificationLevel(contact.view),
             showInContactList: contact.view.acquaintanceLevel !== AcquaintanceLevel.GROUP,

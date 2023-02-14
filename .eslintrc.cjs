@@ -210,7 +210,7 @@ module.exports = {
 
     settings: {
         'svelte3/typescript': true,
-        // TODO(WEBMD-305): Wait for preprocessor feature
+        // TODO(DESK-305): Wait for preprocessor feature
         //       (https://github.com/sveltejs/eslint-plugin-svelte3/pull/62)
         'svelte3/ignore-styles': (attributes) => attributes.lang === 'scss',
         'jsdoc': {},
@@ -231,7 +231,7 @@ module.exports = {
         'require-atomic-updates': 'error',
 
         // Best practices
-        'a11y-click-events-have-key-events': 'off', // TODO(WEBMD-839): Reenable
+        'a11y-click-events-have-key-events': 'off', // TODO(DESK-839): Reenable
         'array-callback-return': 'error',
         'block-scoped-var': 'error',
         'consistent-return': 'error',
@@ -322,7 +322,7 @@ module.exports = {
         'no-array-constructor': 'error',
         'no-bitwise': 'error',
         'no-lonely-if': 'error',
-        // TODO(WEBMD-679): Forbid mixed operators (useful braces around math operations)
+        // TODO(DESK-679): Forbid mixed operators (useful braces around math operations)
         // 'no-mixed-operators': 'error',
         'no-nested-ternary': 'error',
         'no-new-object': 'error',
@@ -568,7 +568,7 @@ module.exports = {
         ],
         '@typescript-eslint/no-useless-constructor': 'error',
 
-        // TODO(WEBMD-680): Enable jsdoc rules
+        // TODO(DESK-680): Enable jsdoc rules
         // JSDoc rules
         'jsdoc/check-access': 'off',
         'jsdoc/check-alignment': 'off',
@@ -576,7 +576,7 @@ module.exports = {
         'jsdoc/check-indentation': 'off',
         'jsdoc/check-line-alignment': 'error',
         'jsdoc/check-param-names': [
-            // TODO(WEBMD-680): Reactivate once we can turn off strict ordering of parameters, so we
+            // TODO(DESK-680): Reactivate once we can turn off strict ordering of parameters, so we
             // can omit some parameters.
             'off',
             {
@@ -887,7 +887,7 @@ module.exports = {
         },
 
         // Cypress integration test source rules
-        // TODO(WEBMD-35)
+        // TODO(DESK-35)
         // {
         //     files: 'src/test/cypress/integration/**',
         //     parserOptions: {

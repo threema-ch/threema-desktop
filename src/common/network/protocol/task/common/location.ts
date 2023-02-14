@@ -65,7 +65,7 @@ export function parseLocation(location: string): Location {
 /**
  * Return a temporary text representation of a location.
  *
- * TODO(WEBMD-248): Remove
+ * TODO(DESK-248): Remove
  */
 export function getTextForLocation(location: Location): string {
     return `📍 _Location:_ ${

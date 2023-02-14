@@ -14,7 +14,7 @@ export function localeSort(a: string, b: string): u53 {
 export function getGraphemeClusters(text: string, count = 1): string[] {
     const clusters = [];
     if ('Segmenter' in Intl) {
-        // TODO(WEBMD-837): Remove the cast to any, once the type declaration is part of TS as well
+        // TODO(DESK-837): Remove the cast to any, once the type declaration is part of TS as well
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const segmenter = new Intl.Segmenter('en', {granularity: 'grapheme'});
         const segments = segmenter.segment(text);

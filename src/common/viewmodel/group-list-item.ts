@@ -19,7 +19,7 @@ export type GroupListItemSetStore = LocalDerivedSetStore<
 
 export interface GroupListItemSetEntry extends PropertiesMarked {
     readonly groupUid: DbGroupUid;
-    // TODO(WEBMD-706): Pass in the GroupController, not the model store
+    // TODO(DESK-706): Pass in the GroupController, not the model store
     readonly groupModelStore: LocalModelStore<Group>;
     readonly viewModelStore: GroupListItemViewModelStore;
 }

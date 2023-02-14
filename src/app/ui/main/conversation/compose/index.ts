@@ -1,7 +1,7 @@
 /**
  * Compose area modes.
  *
- * TODO(WEBMD-173, WEBMD-303): Handle modes 'quote' (WEBMD-173) and 'attachment' (WEBMD-303).
+ * TODO(DESK-173, DESK-303): Handle modes 'quote' (DESK-173) and 'attachment' (DESK-303).
  */
 export type ComposeMode = 'text';
 

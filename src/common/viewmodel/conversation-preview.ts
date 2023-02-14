@@ -95,7 +95,7 @@ function getViewModel(
                 break;
             }
             case ReceiverType.DISTRIBUTION_LIST:
-                throw new Error('TODO(WEBMD-236): not yet implemented..');
+                throw new Error('TODO(DESK-236): not yet implemented..');
             default:
                 return unreachable(receiver);
         }

@@ -79,7 +79,7 @@ export class ReflectedOutgoingGroupSetupTask
                 }
 
                 // Handle invalid state
-                // TODO(WEBMD-859): Better handling of group state errors
+                // TODO(DESK-859): Better handling of group state errors
                 const errorMessage =
                     'Received reflected outgoing group setup for a group where not all contacts are known';
                 this._log.error(errorMessage);

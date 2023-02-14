@@ -99,7 +99,7 @@
     }
   }
 
-  // Temporary draft mechanism. TODO(WEBMD-306) full implementation.
+  // Temporary draft mechanism. TODO(DESK-306) full implementation.
   let conversationDraft: string | undefined;
 
   $: {
@@ -138,7 +138,7 @@
                   ? 'Private'
                   : conversationDraft ?? $lastMessage?.text,
               isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
-              // Note: "$message?.draft" will be set once WEBMD-306 is implemented. So far, it does nothing.
+              // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
               isDraft:
                 conversationDraft !== undefined ||
                 ($lastMessage?.direction === MessageDirection.OUTBOUND && $lastMessage?.draft),

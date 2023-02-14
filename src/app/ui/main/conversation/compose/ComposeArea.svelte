@@ -180,7 +180,7 @@
 
     // Handle pasting of files
     if (fileItem !== undefined) {
-      // TODO(WEBMD-318). Note: For reading file data from clipboard event, look at Threema Web.
+      // TODO(DESK-318). Note: For reading file data from clipboard event, look at Threema Web.
     } else if (textItem !== undefined) {
       const text = ev.clipboardData.getData('text/plain');
       // Note: If there is no data for the specified format, text will contain an empty string.

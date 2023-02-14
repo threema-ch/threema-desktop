@@ -6,7 +6,7 @@
   export let activeTab: ContactTab;
 
   /**
-   *  TODO(WEBMD-830): Temporary variable to show with or without groups tab.
+   *  TODO(DESK-830): Temporary variable to show with or without groups tab.
    *                   This will not any more needed if forwarding flow is rewitten with viewmodels
    */
   export let tmpShowGroup = true;
@@ -29,7 +29,7 @@
         <MdIcon theme="Outlined">group</MdIcon>
       </Tab>
     {/if}
-    <!-- // TODO(WEBMD-236): Display distribution list again after the model has been introduced -->
+    <!-- // TODO(DESK-236): Display distribution list again after the model has been introduced -->
     <!-- <Tab tab="distribution-lists" bind:activeTab>
       <MdIcon theme="Outlined">campaign</MdIcon>
     </Tab> -->
@@ -40,7 +40,7 @@
   @use 'component' as *;
   div {
     display: grid;
-    // TODO(WEBMD-236): Display distribution list again after the model has been introduced
+    // TODO(DESK-236): Display distribution list again after the model has been introduced
     // grid-template: 'contacts groups distributionlists';
     grid-template: 'contacts';
     place-items: center;

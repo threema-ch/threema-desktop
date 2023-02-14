@@ -65,9 +65,9 @@ import {pseudoRandomBytes} from '~/test/mocha/common/utils';
  */
 export interface DatabaseBackendFeatures {
     readonly supportsForeignKeyConstraints: boolean;
-    // TODO(WEBMD-296): Add thread handling to in-memory db, then remove this
+    // TODO(DESK-296): Add thread handling to in-memory db, then remove this
     readonly doesNotImplementThreadIdTodoRemoveThis?: true;
-    // TODO(WEBMD-530): Replace with sql.js?
+    // TODO(DESK-530): Replace with sql.js?
     readonly doesNotImplementFileDataCleanup?: true;
 }
 
@@ -208,7 +208,7 @@ function getCommonMessage<T extends MessageType>(
         readAt: init.readAt,
         lastReaction: init.lastReaction,
         raw: init.raw,
-        threadId: init.threadId ?? 1n, // TODO(WEBMD-296)
+        threadId: init.threadId ?? 1n, // TODO(DESK-296)
     };
 }
 
@@ -636,7 +636,7 @@ export function backendTests(
             });
 
             // Latest message should be filtered per-conversation
-            // TODO(WEBMD-296): Test proper ordering
+            // TODO(DESK-296): Test proper ordering
             expect(db.getLastMessage(conversationUid1)?.id).to.equal(3n);
             expect(db.getLastMessage(conversationUid2)?.id).to.equal(2n);
         });

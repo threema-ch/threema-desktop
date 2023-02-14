@@ -462,8 +462,8 @@ export interface ContactView {
     readonly activityState: ActivityState;
     readonly featureMask: FeatureMask;
     readonly syncState: SyncState;
-    // TODO(WEBMD-687): Read receipt policy override
-    // TODO(WEBMD-687): Typing indicator policy override
+    // TODO(DESK-687): Read receipt policy override
+    // TODO(DESK-687): Typing indicator policy override
     readonly notificationTriggerPolicyOverride?: {
         readonly policy: ContactNotificationTriggerPolicy;
         readonly expiresAt?: Date;
@@ -496,7 +496,7 @@ export type ContactController = ReceiverController & {
 
     /**
      * Informs whether a contact can be deleted. Currently a user is only deletable if it does not
-     * belong to any active group. This might change with WEBMD-770.
+     * belong to any active group. This might change with DESK-770.
      */
     readonly isRemovable: () => boolean;
 } & ProxyMarked;
@@ -522,7 +522,7 @@ export type ContactRepository = {
 // Distribution list
 
 export interface DistributionListView {
-    readonly stub: 'TODO(WEBMD-236)';
+    readonly stub: 'TODO(DESK-236)';
 }
 type DistributionListController = ReceiverController & {
     readonly meta: ModelLifetimeGuard<DistributionListView>;
@@ -683,7 +683,7 @@ export type GroupRepository = {
      *
      * @param init The group data
      * @param members The members list (including the creator)
-     * TODO(WEBMD-558): Handle the member list with models.
+     * TODO(DESK-558): Handle the member list with models.
      */
     readonly add: ControllerUpdateFromSource<
         [init: GroupInit, members: DbContactUid[]],
@@ -760,7 +760,7 @@ export type AnyConversationPreviewMessageView =
     | OutboundConversationPreviewMessageView;
 
 export interface ConversationView {
-    // TODO(WEBMD-611): Remove type from ConversationView and get it from the new ConversationViewModel
+    // TODO(DESK-611): Remove type from ConversationView and get it from the new ConversationViewModel
     readonly type: ReceiverType;
     readonly lastUpdate?: Date;
     readonly unreadMessageCount: u53;

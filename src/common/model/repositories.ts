@@ -22,7 +22,7 @@ export class ModelRepositories implements Repositories {
     public readonly profilePictures: IProfilePictureRepository;
     public readonly settings: Settings = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
-        // TODO(WEBMD-783)
+        // TODO(DESK-783)
         blockUnknown: false,
         contactIsBlocked: (identity) => false,
     };

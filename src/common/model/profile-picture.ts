@@ -135,7 +135,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                     throw new Error('Group profile pictures cannot be set with fromLocal');
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
-                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                        'TODO(DESK-236): Distribution list profile pictures not yet implemented',
                     );
                 default:
                     return unreachable(this._receiver);
@@ -176,7 +176,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                     break;
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
-                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                        'TODO(DESK-236): Distribution list profile pictures not yet implemented',
                     );
                 default:
                     unreachable(this._receiver);
@@ -202,7 +202,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                     break;
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
-                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                        'TODO(DESK-236): Distribution list profile pictures not yet implemented',
                     );
                 default:
                     unreachable(this._receiver);
@@ -235,7 +235,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                     throw new Error('Group profile pictures cannot be removed with fromLocal');
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
-                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                        'TODO(DESK-236): Distribution list profile pictures not yet implemented',
                     );
                 default:
                     return unreachable(this._receiver);
@@ -268,7 +268,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
                     break;
                 case ReceiverType.DISTRIBUTION_LIST:
                     throw new Error(
-                        'TODO(WEBMD-236): Distribution list profile pictures not yet implemented',
+                        'TODO(DESK-236): Distribution list profile pictures not yet implemented',
                     );
                 default:
                     return unreachable(this._receiver);
@@ -488,7 +488,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
             case ReceiverType.GROUP:
                 return db.getGroupByUid(this._receiver.uid)?.profilePictureAdminDefined;
             case ReceiverType.DISTRIBUTION_LIST:
-                throw new Error('TODO(WEBMD-236): Implement distribution lists');
+                throw new Error('TODO(DESK-236): Implement distribution lists');
             default:
                 return unreachable(this._receiver);
         }

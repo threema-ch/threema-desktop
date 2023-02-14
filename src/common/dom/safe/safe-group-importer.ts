@@ -74,7 +74,7 @@ export class SafeGroupImporter {
         }
 
         // Explicitly add creator to members list
-        // TODO(WEBMD-558): Remove this
+        // TODO(DESK-558): Remove this
         if (
             group.creator !== this._device.identity.string &&
             !group.members.includes(group.creator)

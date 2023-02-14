@@ -200,7 +200,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
 
     /** @inheritdoc */
     public async read<T = undefined>(
-        // TODO(WEBMD-813): Do not allow transaction messages!
+        // TODO(DESK-813): Do not allow transaction messages!
         preprocess: (message: InboundL4Message) => TaskCodecReadInstruction<T>,
     ): Promise<T extends undefined ? undefined : T> {
         for (;;) {
@@ -289,7 +289,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                     payload: structbuf.bridge.encoder(structbuf.d2m.payload.Reflect, {
                         headerLength: REFLECT_HEADER_LENGTH,
                         reserved: 0,
-                        flags: 0, // TODO(WEBMD-778): Set appropriately
+                        flags: 0, // TODO(DESK-778): Set appropriately
                         reflectId: id as u32,
                         envelope: d2d.dgrk
                             .encryptor(
@@ -304,7 +304,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                     groupSync: undefined,
                                     distributionListSync: undefined,
                                     settingsSync: undefined,
-                                    // TODO(WEBMD-48): This is not only a terrible cast but it's
+                                    // TODO(DESK-48): This is not only a terrible cast but it's
                                     // also a lie!
                                     ...(payload as protobuf.utils.ProtobufInstanceOf<
                                         typeof protobuf.d2d.Envelope
@@ -385,7 +385,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                             }).encode,
                         )
                         .encryptWithRandomNonceAhead(),
-                    ttl: 0, // TODO(WEBMD-658): Set appropriate TTL
+                    ttl: 0, // TODO(DESK-658): Set appropriate TTL
                 }),
             });
 
@@ -744,7 +744,7 @@ export class ConnectedTaskManager {
     ): Promise<never> {
         this._log.debug('Running task manager');
 
-        // TODO(WEBMD-580): Test
+        // TODO(DESK-580): Test
         abort.subscribe(() => {
             const aborted = new ConnectionClosed(
                 'abort',
@@ -942,21 +942,21 @@ export class ConnectedTaskManager {
         return result;
     }
 
-    // TODO(WEBMD-779): Move into L5
+    // TODO(DESK-779): Move into L5
     private _bypassOrBacklog(message: InboundL4Message): void {
-        // TODO(WEBMD-779): This is a message coming from a task. We need to:
+        // TODO(DESK-779): This is a message coming from a task. We need to:
         // 1. Check if the message should be handled directly -> forward to _process, then schedule if needed
         // 2. Check if the message can be backlogged -> Copy the message and backlog!
         // 3. Can't bypass or backlog? Error!
         // (Check if a transaction is in progress?)
 
-        // TODO(WEBMD-779): IMPORTANT: All D2M messages must be handled directly as the
+        // TODO(DESK-779): IMPORTANT: All D2M messages must be handled directly as the
         // precondition check requires a consistent state across devices.
         this._log.warn(`Backlogging ${D2mPayloadTypeUtils.NAME_OF[message.type]}`);
         this._decoder.backlog.put(message);
     }
 
-    // TODO(WEBMD-779)
+    // TODO(DESK-779)
     // private _mayBypass(message: InboundL4Message): boolean {
     //     // TODO
     //     // if (message.type === D2mPayloadType.PROXY) {

@@ -133,7 +133,7 @@
             console.log(`Conversation with ${receiver.view.displayName}`, conversation);
             break;
           case 'distributionList':
-            // TODO(WEBMD-236)
+            // TODO(DESK-236)
             break;
           default:
             unreachable(receiver);

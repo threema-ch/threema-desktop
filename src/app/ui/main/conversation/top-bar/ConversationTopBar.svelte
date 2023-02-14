@@ -84,7 +84,7 @@
         break;
 
       case ReceiverType.DISTRIBUTION_LIST:
-        // TODO(WEBMD-771): Open distribution list detail route
+        // TODO(DESK-771): Open distribution list detail route
         break;
       default:
         unreachable(receiverLookup, new Error('Unhandled receiverLookup type'));

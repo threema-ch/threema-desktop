@@ -28,7 +28,7 @@ export interface AppServices {
     readonly systemDialog: SystemDialogService;
 }
 
-// TODO(WEBMD-339): Use SvelteAction when 3.47 is released
+// TODO(DESK-339): Use SvelteAction when 3.47 is released
 export interface SvelteAction {
     update?: () => void;
     destroy?: () => void;

@@ -172,7 +172,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         this._rawDb.defaultSafeIntegers();
 
         // Whether to enable SQL query logging
-        // TODO(WEBMD-434): This should be part of a config flag!
+        // TODO(DESK-434): This should be part of a config flag!
         const enableVerboseQueryLogging = false;
 
         // Determine query runner
@@ -380,7 +380,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             );
 
             // Next, remove all remaining messages from this user (e.g. in group conversations)
-            // TODO(WEBMD-770): Ensure that group messages don't get silently deleted when removing a contact
+            // TODO(DESK-770): Ensure that group messages don't get silently deleted when removing a contact
             sync(
                 this._db
                     .deleteFrom(tMessage)
@@ -391,7 +391,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             // Delete all inactive groups where the contact to be deleted is the creator. Note: This
             // will not update the corresponding stores, so that the UI might be inconsistent until
             // reload.
-            // TODO(WEBMD-770): Do not automatically delete this groups.
+            // TODO(DESK-770): Do not automatically delete this groups.
             const identityOfContactToRemove = sync(
                 this._db
                     .selectFrom(tContact)
@@ -620,7 +620,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .selectFrom(tGroupMember)
                 .innerJoin(tGroup)
                 .on(
-                    // TODO(WEBMD-770): Do not take into account only active groups
+                    // TODO(DESK-770): Do not take into account only active groups
                     tGroup.uid
                         .equals(tGroupMember.groupUid)
                         .and(tGroup.userState.equals(GroupUserState.MEMBER)),
@@ -1230,7 +1230,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         const common = sync(
             this._getCommonMessageSelector()
                 .where(tMessage.conversationUid.equals(conversationUid))
-                // TODO(WEBMD-296): Order correctly
+                // TODO(DESK-296): Order correctly
                 .orderBy('uid', 'desc')
                 .limit(1)
                 .executeSelectNoneOrOne(),
@@ -1590,7 +1590,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .selectFrom(tMessage)
                     .select(selectFields)
                     .where(tMessage.conversationUid.equals(conversationUid))
-                    // TODO(WEBMD-296): Order correctly
+                    // TODO(DESK-296): Order correctly
                     .orderBy('uid', 'desc')
                     .limitIfValue(limit)
                     .executeSelectMany(),
@@ -1638,7 +1638,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 )
                 .select(selectFields)
                 .where(dynamicWhere)
-                // TODO(WEBMD-296): Order correctly
+                // TODO(DESK-296): Order correctly
                 .orderBy('uid', orderByMode)
                 .limitIfValue(limit)
                 .executeSelectMany(),

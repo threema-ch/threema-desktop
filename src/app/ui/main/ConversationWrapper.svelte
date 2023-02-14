@@ -41,13 +41,13 @@
   }
 
   let zoneHover = false;
-  // TODO(WEBMD-195): Handle Drag'n'Drop
+  // TODO(DESK-195): Handle Drag'n'Drop
   // eslint-disable-next-line prefer-const
   let bodyHover = false;
   $: zoneHover = zoneHover;
 </script>
 
-<!-- TODO(WEBMD-195): Handle Drag'n'Drop
+<!-- TODO(DESK-195): Handle Drag'n'Drop
 <svelte:body
   on:threema-drag-start={() => {
     bodyHover = true;

@@ -2,7 +2,7 @@
  * This is a fork of vite-plugin-commonjs-externals with slight modifications.
  * See: https://github.com/xiaoxiangmoe/vite-plugin-commonjs-externals
  *
- * TODO(WEBMD-683): Invest the time to clean this up properly
+ * TODO(DESK-683): Invest the time to clean this up properly
  */
 
 import * as acorn from 'acorn';

@@ -104,7 +104,7 @@ export function getDisplayName(
     // Use members as fallback.
     //
     // Sorting: Creator first, then members, then our own identity last.
-    // TODO(WEBMD-550): Use displayName of contact
+    // TODO(DESK-550): Use displayName of contact
     const memberIdentitiesSet = new Set(groupMembers);
     memberIdentitiesSet.delete(group.creatorIdentity);
     memberIdentitiesSet.delete(services.device.identity.string);
@@ -180,7 +180,7 @@ function removeGroupMembers(
  * Retrieve the current group members from the database.
  * Note that this is not a store, so contact changes are not subscribed here.
  *
- * TODO(WEBMD-577): This will be superseded by a new store with this ticket.
+ * TODO(DESK-577): This will be superseded by a new store with this ticket.
  */
 function getGroupMemberIdentities(
     services: ServicesForModel,
@@ -314,7 +314,7 @@ function getByGroupIdAndCreator(
 }
 
 function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Group>> {
-    // TODO(WEBMD-543): Remove this mock and implement it correctly :)
+    // TODO(DESK-543): Remove this mock and implement it correctly :)
     return cache.setRef.derefOrCreate(() => {
         const {db, logging} = services;
         // Note: This may be inefficient. It would be more efficient to get all UIDs, then filter
@@ -526,12 +526,12 @@ export class GroupModelController implements GroupController {
         [TRANSFER_MARKER]: PROXY_HANDLER,
         fromLocal: async () => {
             this._log.debug('GroupModelController: Remove from local');
-            // TODO(WEBMD-551): Remove Group and sync to D2D
+            // TODO(DESK-551): Remove Group and sync to D2D
             await Promise.resolve();
         },
         fromSync: () => {
             this._log.debug('GroupModelController: Remove from sync');
-            // TODO(WEBMD-551): Remove Group
+            // TODO(DESK-551): Remove Group
         },
     };
 
@@ -541,7 +541,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle) => {
             this._log.debug('GroupModelController: Kicked from remote');
-            // TODO(WEBMD-551): Implement
+            // TODO(DESK-551): Implement
             this._update({userState: GroupUserState.KICKED});
         },
         fromSync: () => {
@@ -556,7 +556,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async () => {
             this._log.debug('GroupModelController: Leave from local');
-            // TODO(WEBMD-551): Implement
+            // TODO(DESK-551): Implement
             this._update({userState: GroupUserState.LEFT});
         },
         fromSync: () => {
@@ -580,7 +580,7 @@ export class GroupModelController implements GroupController {
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle) => {
             this._log.debug('GroupModelController: Join from remote');
-            // TODO(WEBMD-551): Implement
+            // TODO(DESK-551): Implement
             this._update({userState: GroupUserState.MEMBER});
         },
         fromSync: () => {
@@ -736,7 +736,7 @@ export class GroupModelController implements GroupController {
      * from their respective caches, and remove the conversation and all of its messages in the
      * database. The group may not be part of any groups at this point.
      */
-    // @ts-expect-error TODO(WEBMD-551)
+    // @ts-expect-error TODO(DESK-551)
     private _remove(): void {
         this.meta.deactivate(() => {
             // Deactivate and purge the conversation and all of its messages

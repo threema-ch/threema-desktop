@@ -263,7 +263,7 @@ export class FileSystemFileStorage implements FileStorage {
     /**
      * Read the `file` chunkwise, decrypt each chunk and return a promise with the decrypted bytes.
      *
-     * TODO(WEBMD-909): Return a ReadableStream?
+     * TODO(DESK-909): Return a ReadableStream?
      */
     private async _readAndDecrypt(
         id: FileId,

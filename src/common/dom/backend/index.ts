@@ -273,12 +273,12 @@ export class Backend implements ProxyMarked {
         /**
          * Temporary helper function to extract DGK from Safe Backup until the pairing process is implemented.
          *
-         * TODO(WEBMD-201): TODO(WEBMD-442): Do not extract DGK from Safe Backup
+         * TODO(DESK-201): TODO(DESK-442): Do not extract DGK from Safe Backup
          **/
         function extractDgkFromSafeBackupAsWorkaroundForNow(
             safeBackupData: SafeBackupData,
         ): RawDeviceGroupKey {
-            log.warn('TODO(WEBMD-201): TODO(WEBMD-442): Do not extract DGK from Safe Backup');
+            log.warn('TODO(DESK-201): TODO(DESK-442): Do not extract DGK from Safe Backup');
 
             if (safeBackupData.user.temporaryDeviceGroupKeyTodoRemove === undefined) {
                 throw new BackendCreationError(
@@ -352,7 +352,7 @@ export class Backend implements ProxyMarked {
             const rawCkForKeystore = wrapRawClientKey(rawCk.unwrap().slice());
             const ck = SecureSharedBoxFactory.consume(crypto, rawCk) as ClientKey;
 
-            // TODO(WEBMD-201): TODO(WEBMD-442): Do not extract DGK from Safe Backup
+            // TODO(DESK-201): TODO(DESK-442): Do not extract DGK from Safe Backup
             dgk = extractDgkFromSafeBackupAsWorkaroundForNow(backupData);
 
             // Look up server group on directory server
@@ -452,7 +452,7 @@ export class Backend implements ProxyMarked {
 
             // Read from key storage
             //
-            // TODO(WEBMD-383): We might need to move this whole section into a pre-step
+            // TODO(DESK-383): We might need to move this whole section into a pre-step
             //     before the backend is actually attempted to be created.
             let keyStorageContents: KeyStorageContents;
             try {
@@ -469,7 +469,7 @@ export class Backend implements ProxyMarked {
                             )})`,
                         );
                     case 'not-readable':
-                        // TODO(WEBMD-383): Assume a permission issue. This cannot be solved by
+                        // TODO(DESK-383): Assume a permission issue. This cannot be solved by
                         //     overwriting. Gracefully return to the UI and notify the user.
                         throw new BackendCreationError(
                             'key-storage-error',
@@ -478,7 +478,7 @@ export class Backend implements ProxyMarked {
                         );
                     case 'malformed':
                     case 'invalid':
-                        // TODO(WEBMD-383): Assume data corruption. Gracefully return to the UI,
+                        // TODO(DESK-383): Assume data corruption. Gracefully return to the UI,
                         //     allow the user to purge all data and start with the device join
                         //     process.
                         throw new BackendCreationError(
@@ -522,7 +522,7 @@ export class Backend implements ProxyMarked {
 
             // Create database
             //
-            // TODO(WEBMD-383): Some kind of signal whether the database file needs to exist needs
+            // TODO(DESK-383): Some kind of signal whether the database file needs to exist needs
             //     to be passed into the worker. If the database does not exist but should exist,
             //     gracefully return to the UI, etc.
             db = factories.db({config}, logging.logger('db'), keyStorageContents.databaseKey);
@@ -606,7 +606,7 @@ export class Backend implements ProxyMarked {
      * Trigger capturing network packets to be displayed in the debug network tab.
      */
     public capture(): LocalStore<DisplayPacket | undefined> {
-        // TODO(WEBMD-772): We need to create some kind of "push-only" store where data is
+        // TODO(DESK-772): We need to create some kind of "push-only" store where data is
         // transferred instead of structuredly cloned.
         this._log.info('Starting to capture packets');
         const store = new WritableStore<DisplayPacket | undefined>(undefined, {
@@ -617,12 +617,12 @@ export class Backend implements ProxyMarked {
                         key,
                         {
                             inbound: (packet: RawPacket, meta?: PacketMeta): void =>
-                                // TODO(WEBMD-772): Transfer!
+                                // TODO(DESK-772): Transfer!
                                 {
                                     store.set(inbound(packet, meta)[0]);
                                 },
                             outbound: (packet: RawPacket, meta?: PacketMeta): void => {
-                                // TODO(WEBMD-772): Transfer!
+                                // TODO(DESK-772): Transfer!
                                 store.set(outbound(packet, meta)[0]);
                             },
                         },
@@ -789,10 +789,10 @@ class ConnectionManager {
                     case CloseCode.DEVICE_LIMIT_REACHED:
                     case CloseCode.DEVICE_ID_REUSED:
                     case CloseCode.REFLECTION_QUEUE_LENGTH_LIMIT_REACHED:
-                        // TODO(WEBMD-487): Request user interaction to continue
+                        // TODO(DESK-487): Request user interaction to continue
                         this.disableAutoReconnect();
                         throw new Error(
-                            `TODO(WEBMD-487): Connection closed, request user interaction to continue (code=${closeInfo.code}, reason=${closeInfo.reason})`,
+                            `TODO(DESK-487): Connection closed, request user interaction to continue (code=${closeInfo.code}, reason=${closeInfo.reason})`,
                         );
                     case CloseCode.NORMAL:
                     case CloseCode.SERVER_SHUTDOWN:
@@ -818,7 +818,7 @@ class ConnectionManager {
                 }
             } else if (closeInfo.code >= 4100 && closeInfo.code < 4200) {
                 this.disableAutoReconnect();
-                // TODO(WEBMD-487): Request user interaction to continue?
+                // TODO(DESK-487): Request user interaction to continue?
                 throw new Error(
                     `Connection closed with unrecoverable unknown close code (code=${closeInfo.code}, reason=${closeInfo.reason})`,
                 );
@@ -1005,7 +1005,7 @@ function makeCspClientInfo(browserInfo: BrowserInfo): string {
     const browser = browserInfo.name;
     const browserVersion = browserInfo.version ?? '0.0.0';
 
-    // TODO(WEBMD-792): Get system info from NodeJS
+    // TODO(DESK-792): Get system info from NodeJS
     let osName = '';
     const osArchitecture = '';
     if ('userAgentData' in self.navigator) {
@@ -1086,11 +1086,11 @@ class Connection {
                 identity: device.identity.bytes,
                 info: cspClientInfo,
                 deviceId: device.csp.deviceId,
-                // TODO(WEBMD-775): Get from config
+                // TODO(DESK-775): Get from config
                 echoRequestIntervalS: 10,
-                // TODO(WEBMD-775): Get from config
+                // TODO(DESK-775): Get from config
                 serverIdleTimeoutS: 30,
-                // TODO(WEBMD-775): Get from config
+                // TODO(DESK-775): Get from config
                 clientIdleTimeoutS: 10,
             },
             // D2M
@@ -1104,7 +1104,7 @@ class Connection {
                         ? protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT
                         : protobuf.d2m.DeviceSlotExpirationPolicy.VOLATILE,
                 platformDetails: d2mPlatformDetails,
-                // TODO(WEBMD-773): Make this user-configurable
+                // TODO(DESK-773): Make this user-configurable
                 label: 'Desktop',
             },
             // D2D

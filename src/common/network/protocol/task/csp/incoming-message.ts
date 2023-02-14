@@ -144,7 +144,7 @@ function getLocationMessageInitFragment(
     log: Logger,
 ): InboundTextMessageInitFragment {
     // Decode location message as text message for now.
-    // TODO(WEBMD-248): Full implementation
+    // TODO(DESK-248): Full implementation
     const location = structbuf.validate.csp.e2e.Location.SCHEMA.parse(
         structbuf.csp.e2e.Location.decode(cspLocationMessageBody as Uint8Array),
     );
@@ -411,7 +411,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // Check if the message should be discarded due to the contact being
         // implicitly or explicitly blocked.
         //
-        // TODO(WEBMD-560): Full-featured contact blocking logic
+        // TODO(DESK-560): Full-featured contact blocking logic
         if (
             this._isBlocked(sender.string, senderContactOrInit) &&
             !BLOCK_EXEMPTION_TYPES.has(type)
@@ -672,11 +672,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         container: structbuf.csp.e2e.Container,
     ): Promise<'forwarded'> {
         this._log.error(
-            `TODO(WEBMD-194): Forwarding of message with unknown inbound CSP E2E type ${
+            `TODO(DESK-194): Forwarding of message with unknown inbound CSP E2E type ${
                 container.type
             } (${cspE2eTypeNameOf(container.type)})`,
         );
-        // TODO(WEBMD-194): Implement forwarding of unknown message types, ignoring for now
+        // TODO(DESK-194): Implement forwarding of unknown message types, ignoring for now
         return 'forwarded';
     }
 
@@ -858,7 +858,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return instructions;
             }
             case CspE2eGroupConversationType.GROUP_TEXT: {
-                // TODO(WEBMD-307): Rule-of-three: Refactor shared logic for handling of group- and
+                // TODO(DESK-307): Rule-of-three: Refactor shared logic for handling of group- and
                 // non-group conversation messages once we implement file messages.
 
                 // A group text message is wrapped in a group-member-container
@@ -967,7 +967,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return instructions;
             }
             case CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE:
-                // TODO(WEBMD-590): Implement
+                // TODO(DESK-590): Implement
                 return 'discard';
 
             // Group control messages
@@ -1141,12 +1141,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return instructions;
             }
             case CspE2eStatusUpdateType.TYPING_INDICATOR:
-                // TODO(WEBMD-589): Implement
+                // TODO(DESK-589): Implement
                 return 'discard';
 
             // Forward security messages (not currently supported)
             case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE: {
-                // TODO(WEBMD-887): Implement support for PFS
+                // TODO(DESK-887): Implement support for PFS
                 const fsEnvelope = protobuf.csp_e2e_fs.ForwardSecurityEnvelope.decode(
                     cspMessageBody as Uint8Array,
                     cspMessageBody.byteLength,
@@ -1169,43 +1169,43 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             // Forwarding of known but unhandled messages. These messages will be reflected and
             // discarded. The messages won't appear in Threema Desktop, but they will appear on
             // synchronized devices that support these message types.
-            case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(WEBMD-586)
+            case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(DESK-586)
                 return unhandled(maybeCspE2eType, true);
-            case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(WEBMD-586)
+            case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(DESK-586)
                 return unhandled(maybeCspE2eType, true);
-            case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(WEBMD-586)
+            case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(DESK-586)
                 return unhandled(maybeCspE2eType, true);
-            case CspE2eConversationType.FILE: // TODO(WEBMD-307)
+            case CspE2eConversationType.FILE: // TODO(DESK-307)
                 return unhandled(maybeCspE2eType, true);
-            case CspE2eConversationType.POLL_SETUP: // TODO(WEBMD-244)
+            case CspE2eConversationType.POLL_SETUP: // TODO(DESK-244)
                 return unhandled(maybeCspE2eType, true);
-            case CspE2eConversationType.POLL_VOTE: // TODO(WEBMD-244)
+            case CspE2eConversationType.POLL_VOTE: // TODO(DESK-244)
                 return unhandled(maybeCspE2eType, false);
-            case CspE2eConversationType.CALL_OFFER: // TODO(WEBMD-243)
+            case CspE2eConversationType.CALL_OFFER: // TODO(DESK-243)
                 return unhandled(maybeCspE2eType, false);
-            case CspE2eConversationType.CALL_ANSWER: // TODO(WEBMD-243)
+            case CspE2eConversationType.CALL_ANSWER: // TODO(DESK-243)
                 return unhandled(maybeCspE2eType, false);
-            case CspE2eConversationType.CALL_ICE_CANDIDATE: // TODO(WEBMD-243)
+            case CspE2eConversationType.CALL_ICE_CANDIDATE: // TODO(DESK-243)
                 return unhandled(maybeCspE2eType, false);
-            case CspE2eConversationType.CALL_HANGUP: // TODO(WEBMD-243)
+            case CspE2eConversationType.CALL_HANGUP: // TODO(DESK-243)
                 return unhandled(maybeCspE2eType, false);
-            case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
+            case CspE2eConversationType.CALL_RINGING: // TODO(DESK-243)
                 return unhandled(maybeCspE2eType, false);
-            case CspE2eGroupControlType.GROUP_CALL_START: // TODO(WEBMD-858)
+            case CspE2eGroupControlType.GROUP_CALL_START: // TODO(DESK-858)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
+            case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(DESK-586)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(WEBMD-586)
+            case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(DESK-586)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(WEBMD-586)
+            case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.GROUP_FILE: // TODO(WEBMD-307)
+            case CspE2eGroupConversationType.GROUP_FILE: // TODO(DESK-307)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(WEBMD-244)
+            case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(DESK-244)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(WEBMD-244)
+            case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(WEBMD-594)
+            case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(DESK-594)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
 
             default:
@@ -1251,7 +1251,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             case MessageType.TEXT:
                 return getDirectedTextMessageInit(this._id, contact.get().ctx, initFragment);
             case MessageType.FILE:
-                throw new Error('TODO(WEBMD-307): Implement file message');
+                throw new Error('TODO(DESK-307): Implement file message');
             default:
                 return unreachable(initFragment);
         }

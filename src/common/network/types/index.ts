@@ -380,7 +380,7 @@ export function conversationIdForReceiver(receiver: AnyReceiver): ConversationId
                 groupId: receiver.view.groupId,
             };
         case ReceiverType.DISTRIBUTION_LIST:
-            // TODO(WEBMD-236): Implement distribution list
+            // TODO(DESK-236): Implement distribution list
             throw new Error('Distribution lists not yet implemented');
         default:
             return unreachable(receiver);

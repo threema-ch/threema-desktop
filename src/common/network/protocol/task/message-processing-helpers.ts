@@ -65,7 +65,7 @@ export function getConversationById(
             return group.get().controller.conversation();
         }
         case ReceiverType.DISTRIBUTION_LIST:
-            throw new Error('TODO(WEBMD-237): Not yet implemented');
+            throw new Error('TODO(DESK-237): Not yet implemented');
         default:
             return unreachable(conversationId);
     }

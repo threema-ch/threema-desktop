@@ -436,7 +436,7 @@ export async function isSafeBackupAvailable(
         await requestSafeBackupUrl(hexBackupId, config, 'HEAD', credentials.customSafeServer);
         return true;
     } catch (error) {
-        // TODO(WEBMD-729): We currently return only false if we were unable to get a 200 from the
+        // TODO(DESK-729): We currently return only false if we were unable to get a 200 from the
         // safe backup server. We do not make any difference if the reason was that the credentials
         // were incorrect or e.g. that the server was unreachable.
         if (error instanceof SafeError) {

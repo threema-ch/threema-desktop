@@ -84,7 +84,7 @@ class WebSocketEventWrapperSource implements UnderlyingSource<ArrayBuffer | stri
             if (event.code === CloseCode.ABNORMAL_CLOSURE) {
                 controller.error(new Error('WebSocket connection closed without a close frame'));
             } else {
-                // TODO(WEBMD-767): Propagate close code and reason
+                // TODO(DESK-767): Propagate close code and reason
                 try {
                     controller.close();
                 } catch {
@@ -243,7 +243,7 @@ export function createWebSocketStream(
     let ws: WebSocketStream | undefined;
     let connection: Promise<WebSocketConnection> | undefined;
 
-    // TODO(WEBMD-767): Use the WebSocketStream API, if accessible
+    // TODO(DESK-767): Use the WebSocketStream API, if accessible
     //if (self.WebSocketStream) {
     //    ws = new WebSocketStream(url, options);
     //}
@@ -259,11 +259,11 @@ export function createWebSocketStream(
         connection = (async (): Promise<WebSocketConnection> => {
             const inner = await ws.connection;
             const toPolyfillReadable = adapter.createReadableStreamWrapper(
-                // TODO(WEBMD-814): Remove the cast
+                // TODO(DESK-814): Remove the cast
                 ReadableStream as adapter.ReadableStreamLikeConstructor,
             );
             const toPolyfillWritable = adapter.createWritableStreamWrapper(
-                // TODO(WEBMD-904): Unsafe cast, remove once
+                // TODO(DESK-904): Unsafe cast, remove once
                 // https://github.com/MattiasBuelens/web-streams-polyfill has TypeScript 4.8+
                 // support.
                 WritableStream as adapter.WritableStreamLikeConstructor,

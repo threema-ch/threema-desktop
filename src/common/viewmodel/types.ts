@@ -397,7 +397,7 @@ export type OutgoingMessage<B extends AnyMessageBody> = {
 
 export type Message<B extends AnyMessageBody> = IncomingMessage<B> | OutgoingMessage<B>;
 
-// TODO(WEBMD-339): Replace with "..Action from 'svelte/action'"  on newer Svelte release
+// TODO(DESK-339): Replace with "..Action from 'svelte/action'"  on newer Svelte release
 export interface SvelteAction {
     update?: () => void;
     destroy?: () => void;

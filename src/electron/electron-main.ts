@@ -579,7 +579,7 @@ function main(
         electron.ipcMain.handle(
             ElectronIpcCommand.LOG_TO_FILE,
             (event, level: 'trace' | 'debug' | 'info' | 'warn' | 'error', data: string) =>
-                // @ts-expect-error: TODO(WEBMD-684): Don't access private properties
+                // @ts-expect-error: TODO(DESK-684): Don't access private properties
                 fileLogger?._write(level, data),
         );
 
@@ -590,7 +590,7 @@ function main(
             title: import.meta.env.APP_NAME,
             icon: process.platform === 'linux' ? ABOUT_PANEL_OPTIONS.iconPath : undefined,
             webPreferences: {
-                // TODO(WEBMD-79): Harden this. Disable `nodeIntegrationInWorker` and enable `sandbox`. This means
+                // TODO(DESK-79): Harden this. Disable `nodeIntegrationInWorker` and enable `sandbox`. This means
                 //       we need to have a preload script that runs for all APIs requiring access to Node
                 //       (so far that is only the worker) and then expose the necessary APIs on `self`.
                 //       However, this is currently not supported in Electron, see
@@ -601,16 +601,16 @@ function main(
                 //
                 // Order from https://www.electronjs.org/docs/latest/api/browser-window/
                 nodeIntegration: false,
-                nodeIntegrationInWorker: true, // TODO(WEBMD-79): This must be hardened so only our workers can use it
+                nodeIntegrationInWorker: true, // TODO(DESK-79): This must be hardened so only our workers can use it
                 nodeIntegrationInSubFrames: false,
                 preload: path.join(__dirname, '..', 'electron-preload', 'electron-preload.cjs'),
-                // TODO(WEBMD-79): sandbox: true
+                // TODO(DESK-79): sandbox: true
                 webSecurity: true,
                 allowRunningInsecureContent: false,
                 webgl: false,
                 plugins: false,
                 experimentalFeatures: false,
-                disableBlinkFeatures: [].join(','), // TODO(WEBMD-79): Harden
+                disableBlinkFeatures: [].join(','), // TODO(DESK-79): Harden
                 contextIsolation: true,
                 webviewTag: false,
                 navigateOnDragDrop: false,
@@ -732,15 +732,15 @@ function main(
                         // Fetch directives
                         "default-src 'self'",
                         "child-src 'none'",
-                        // "connect-src 'self' https://*.threema.ch wss://*.threema.ch", // TODO(WEBMD-707): Restrict csp again
+                        // "connect-src 'self' https://*.threema.ch wss://*.threema.ch", // TODO(DESK-707): Restrict csp again
                         'connect-src *',
                         "font-src 'self' https://static.threema.ch",
                         "frame-src 'none'",
                         "img-src 'self' data: blob:",
                         "object-src 'none'",
-                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // TODO(WEBMD-81): Remove unsafe-inline and unsafe-eval
+                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // TODO(DESK-81): Remove unsafe-inline and unsafe-eval
                         // "style-src 'self' https://static.threema.ch",
-                        "style-src 'self' 'unsafe-inline' https://static.threema.ch", // TODO(WEBMD-81): Remove unsafe-inline and unsafe-eval
+                        "style-src 'self' 'unsafe-inline' https://static.threema.ch", // TODO(DESK-81): Remove unsafe-inline and unsafe-eval
                         "worker-src 'self'",
 
                         // Document directives

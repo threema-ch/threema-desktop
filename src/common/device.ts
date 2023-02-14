@@ -66,7 +66,7 @@ export class DeviceBackend implements Device {
         // Get D2X nonce guard
         const d2xNonceGuard = {
             use: (): void => {
-                // TODO(WEBMD-379): Add D2X nonce guard
+                // TODO(DESK-379): Add D2X nonce guard
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
             },
         } as NonceGuard as D2xNonceGuard;
@@ -82,7 +82,7 @@ export class DeviceBackend implements Device {
             deviceId: deviceIds.cspDeviceId,
             nonceGuard: {
                 use: (): void => {
-                    // TODO(WEBMD-379): Add CSP nonce guard
+                    // TODO(DESK-379): Add CSP nonce guard
                     // eslint-disable-next-line @typescript-eslint/no-empty-function
                 },
             } as NonceGuard as CspNonceGuard,

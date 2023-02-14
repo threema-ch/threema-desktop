@@ -139,7 +139,7 @@ export abstract class ReflectedMessageTaskBase<
                         container: undefined,
                     };
                 case CspE2eConversationType.LOCATION:
-                    // TODO(WEBMD-248): Full implementation
+                    // TODO(DESK-248): Full implementation
                     return {
                         type: CspE2eConversationType.LOCATION,
                         message: structbuf.validate.csp.e2e.Location.SCHEMA.parse(
@@ -162,7 +162,7 @@ export abstract class ReflectedMessageTaskBase<
                     };
                 }
                 case CspE2eGroupConversationType.GROUP_LOCATION: {
-                    // TODO(WEBMD-248): Full implementation
+                    // TODO(DESK-248): Full implementation
                     const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupMemberContainer.decode(body),
                     );
@@ -181,7 +181,7 @@ export abstract class ReflectedMessageTaskBase<
                     // This is already covered by contact sync messages, nothing to do here
                     return undefined;
                 case CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE:
-                    // TODO(WEBMD-590): Handle this
+                    // TODO(DESK-590): Handle this
                     return undefined;
 
                 // Group control messages
@@ -262,35 +262,35 @@ export abstract class ReflectedMessageTaskBase<
                         container: undefined,
                     };
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
-                    // TODO(WEBMD-589): Implement
+                    // TODO(DESK-589): Implement
                     return undefined;
 
                 // Forward security messages (not currently supported, should not get reflected)
                 case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE:
-                    // TODO(WEBMD-887): Implement support for PFS
+                    // TODO(DESK-887): Implement support for PFS
                     return undefined;
 
                 // Unhandled messages
-                case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(WEBMD-586)
-                case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(WEBMD-586)
-                case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(WEBMD-586)
-                case CspE2eConversationType.FILE: // TODO(WEBMD-307)
-                case CspE2eConversationType.POLL_SETUP: // TODO(WEBMD-244)
-                case CspE2eConversationType.POLL_VOTE: // TODO(WEBMD-244)
-                case CspE2eConversationType.CALL_OFFER: // TODO(WEBMD-243)
-                case CspE2eConversationType.CALL_ANSWER: // TODO(WEBMD-243)
-                case CspE2eConversationType.CALL_ICE_CANDIDATE: // TODO(WEBMD-243)
-                case CspE2eConversationType.CALL_HANGUP: // TODO(WEBMD-243)
-                case CspE2eConversationType.CALL_RINGING: // TODO(WEBMD-243)
+                case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(DESK-586)
+                case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(DESK-586)
+                case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(DESK-586)
+                case CspE2eConversationType.FILE: // TODO(DESK-307)
+                case CspE2eConversationType.POLL_SETUP: // TODO(DESK-244)
+                case CspE2eConversationType.POLL_VOTE: // TODO(DESK-244)
+                case CspE2eConversationType.CALL_OFFER: // TODO(DESK-243)
+                case CspE2eConversationType.CALL_ANSWER: // TODO(DESK-243)
+                case CspE2eConversationType.CALL_ICE_CANDIDATE: // TODO(DESK-243)
+                case CspE2eConversationType.CALL_HANGUP: // TODO(DESK-243)
+                case CspE2eConversationType.CALL_RINGING: // TODO(DESK-243)
                     return unhandled({maybeReflectedE2eType});
-                case CspE2eGroupControlType.GROUP_CALL_START: // TODO(WEBMD-858)
-                case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(WEBMD-586)
-                case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(WEBMD-586)
-                case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(WEBMD-586)
-                case CspE2eGroupConversationType.GROUP_FILE: // TODO(WEBMD-307)
-                case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(WEBMD-244)
-                case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(WEBMD-244)
-                case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(WEBMD-594)
+                case CspE2eGroupControlType.GROUP_CALL_START: // TODO(DESK-858)
+                case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(DESK-586)
+                case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(DESK-586)
+                case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)
+                case CspE2eGroupConversationType.GROUP_FILE: // TODO(DESK-307)
+                case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(DESK-244)
+                case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
+                case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(DESK-594)
                     return unhandled({maybeReflectedE2eType, body});
                 default:
                     this._log.warn(

@@ -27,7 +27,7 @@
   let emojiPicker: EmojiPicker;
   let emojiPickerPosition = {x: 0, y: 0};
 
-  // TODO(WEBMD-196): Record audio messages
+  // TODO(DESK-196): Record audio messages
   // function recordAudio(): void {
   //   dispatch('recordAudio');
   // }

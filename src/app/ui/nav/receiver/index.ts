@@ -207,7 +207,7 @@ export async function transformContact(
             unreachable(contact.view.activityState);
     }
 
-    // TODO(WEBMD-381): Determine whether contact is a new contact
+    // TODO(DESK-381): Determine whether contact is a new contact
     const isNew = Math.random() < 0.5;
 
     // Determine verification level

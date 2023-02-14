@@ -33,7 +33,7 @@ import {type AppServices} from './types';
 
 // Extend global APIs
 //
-// TODO(WEBMD-684): Consider using comlink/endpoint for IPC communication
+// TODO(DESK-684): Consider using comlink/endpoint for IPC communication
 declare global {
     interface Window {
         readonly app?: ElectronIpc;
@@ -246,9 +246,9 @@ export async function main(appState: AppState): Promise<App> {
             });
             log.info(`Service worker controller established, state: ${controller.state}`);
 
-            // TODO(WEBMD-685): Do handshake to ensure the service worker version is compatible with
+            // TODO(DESK-685): Do handshake to ensure the service worker version is compatible with
             // our app version
-            controller.postMessage('TODO(WEBMD-685)');
+            controller.postMessage('TODO(DESK-685)');
         } catch (error) {
             log.error('Could not register service worker', error);
         }

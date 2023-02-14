@@ -570,7 +570,7 @@ async function buildDmg(
     }
 
     // Re-lock keychain
-    // TODO(WEBMD-856): Improve re-locking logic
+    // TODO(DESK-856): Improve re-locking logic
     if (sign || notarize) {
         lockKeychain();
     }
@@ -595,12 +595,12 @@ async function buildDmg(
             {x: 218, y: 211, type: 'file', path: opts.appPath},
         ],
     } satisfies Omit<createDMG.CreateOptions, 'contents'> & {
-        // TODO(WEBMD-910): Fix the `opts` parameter upstream
+        // TODO(DESK-910): Fix the `opts` parameter upstream
         readonly contents: (opts: {readonly appPath: string}) => createDMG.Content[];
     };
     log.minor('Exporting DMG');
     const {default: createDmg} = await import('electron-installer-dmg');
-    // TODO(WEBMD-910): Remove the cast
+    // TODO(DESK-910): Remove the cast
     await createDmg(options as createDMG.CreateOptions);
     const dmgPath = path.join(outPath, `${dmgName}.dmg`);
 
@@ -661,7 +661,7 @@ function lockKeychain(): void {
  */
 function buildExe(dirs: Directories): void {
     log.major('Building Windows EXE');
-    log.error('TODO(WEBMD-740)');
+    log.error('TODO(DESK-740)');
     process.exit(2);
 }
 

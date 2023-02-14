@@ -224,7 +224,7 @@ export class TeeLogger implements Logger {
 }
 
 /**
- * TODO(WEBMD-684): Remove this. We already have an IPC abstraction.
+ * TODO(DESK-684): Remove this. We already have an IPC abstraction.
  */
 export class RemoteFileLogger implements Logger {
     public readonly prefix: undefined;
@@ -257,7 +257,7 @@ export class RemoteFileLogger implements Logger {
     }
 }
 
-// TODO(WEBMD-607): replace occurences with groupDebugString
+// TODO(DESK-607): replace occurences with groupDebugString
 export function getGroupTag(identity: IdentityString, groupId: GroupId): string {
     return `group.${identity}.${u64ToHexLe(groupId)}`;
 }

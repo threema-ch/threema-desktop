@@ -35,7 +35,7 @@ export class UserModel implements User {
             return profileSettings.view.nickname;
         });
 
-        // TODO(WEBMD-624): Get profile picture from DB
+        // TODO(DESK-624): Get profile picture from DB
         const colorIndex = idColorIndex({type: ReceiverType.CONTACT, identity: this.identity});
         this.profilePicture = derive(this.profileSettings, (profileSettings) => ({
             color: idColorIndexToString(colorIndex),

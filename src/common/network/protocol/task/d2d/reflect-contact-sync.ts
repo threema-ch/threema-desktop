@@ -108,9 +108,9 @@ function getD2dContactSyncUpdateData(
     identity: IdentityString,
     contact: ContactUpdate,
 ): protobuf.d2d.ContactSync {
-    // TODO(WEBMD-612): Prepare read receipt policy override
+    // TODO(DESK-612): Prepare read receipt policy override
     const readReceiptPolicyOverride = DEFAULT_READ_RECEIPT_POLICY_OVERRIDE;
-    // TODO(WEBMD-780): Prepare typing indicator policy override
+    // TODO(DESK-780): Prepare typing indicator policy override
     const typingIndicatorPolicyOverride = DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE;
 
     // Prepare notification trigger policy override

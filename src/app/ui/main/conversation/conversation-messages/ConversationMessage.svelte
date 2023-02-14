@@ -131,7 +131,7 @@
   }
 
   function deleteMessage(): void {
-    // Todo(WEBMD-483): handle error
+    // Todo(DESK-483): handle error
     conversation
       .get()
       .controller.removeMessage.fromLocal($messageStore.view.id)
@@ -141,7 +141,7 @@
 
   function reactToMessage(reaction: MessageReaction): void {
     if ($messageStore.ctx === MessageDirection.INBOUND) {
-      // Todo(WEBMD-483): handle error
+      // Todo(DESK-483): handle error
       $messageStore.controller.reaction
         .fromLocal(reaction, new Date())
         .catch(() => toast.addSimpleFailure('Could not react to message'));

@@ -41,7 +41,7 @@ type ConnectionErrorContext =
           readonly type: 'client-was-dropped';
           readonly userCanReconnect: false;
       };
-// TODO(WEBMD-487): Add other user interactions
+// TODO(DESK-487): Add other user interactions
 
 /**
  * Message from the server. Sent with CSP alert and close-error messages.

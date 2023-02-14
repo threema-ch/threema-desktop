@@ -64,7 +64,7 @@ export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eTy
      * Whether the profile (nickname and profile picture) may be shared with the recipient of this
      * outgoing message.
      *
-     * Note(WEBMD-234): There are additional things to take into account when implementing profile
+     * Note(DESK-234): There are additional things to take into account when implementing profile
      * picture distribution, e.g. whether the recipient is a gateway ID.
      */
     readonly allowUserProfileDistribution: boolean;
@@ -170,10 +170,10 @@ export class OutgoingCspMessageTask<
         const {encoder, messageId, type} = this._messageProperties;
 
         // Ensure that receiver is a contact or a group.
-        // TODO(WEBMD-237): Support distribution lists.
+        // TODO(DESK-237): Support distribution lists.
         if (this._receiver.type === ReceiverType.DISTRIBUTION_LIST) {
             throw new Error(
-                `TODO(WEBMD-237): Support for ${ReceiverTypeUtils.nameOf(
+                `TODO(DESK-237): Support for ${ReceiverTypeUtils.nameOf(
                     this._receiver.type,
                 )} receivers not yet implemented.`,
             );
@@ -223,7 +223,7 @@ export class OutgoingCspMessageTask<
             CspE2eGroupConversationTypeUtils.containsNumber(type);
         let reflectDate;
         if (this._reflect && isConversationMessage) {
-            // TODO(WEBMD-323): Do this asynchronously?
+            // TODO(DESK-323): Do this asynchronously?
             const conversationId = conversationIdForReceiver(this._receiver);
             const task = new ReflectOutgoingMessageUpdateTask(this._services, [
                 {
@@ -253,7 +253,7 @@ export class OutgoingCspMessageTask<
                 outgoingMessage: protobuf.utils.creator(protobuf.d2d.OutgoingMessage, {
                     conversation: this._getD2dConversationId(),
                     messageId: intoUnsignedLong(messageId),
-                    threadMessageId: undefined, // TODO(WEBMD-296): Set thread message ID
+                    threadMessageId: undefined, // TODO(DESK-296): Set thread message ID
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type,
                     body: messageBytes,
@@ -284,7 +284,7 @@ export class OutgoingCspMessageTask<
             UTF8.encodeFullyInto(model.user.profileSettings.get().view.nickname, senderNickname);
         }
 
-        // TODO(WEBMD-573): Bundle sending of group messages
+        // TODO(DESK-573): Bundle sending of group messages
         for (const receiver of receivers) {
             const receiverIdentity = UTF8.encode(receiver.view.identity);
 
@@ -371,7 +371,7 @@ export class OutgoingCspMessageTask<
                 // Get group creator if it is not us
                 const creatorIdentity = this._receiver.view.creatorIdentity;
                 if (creatorIdentity !== model.user.identity) {
-                    // TODO(WEBMD-544): Fetch the group creator from sqlite reference
+                    // TODO(DESK-544): Fetch the group creator from sqlite reference
                     const creator = model.contacts.getByIdentity(creatorIdentity);
                     assert(
                         creator !== undefined,
@@ -380,7 +380,7 @@ export class OutgoingCspMessageTask<
                     receivers.push(creator.get());
                 }
 
-                // TODO(WEBMD-577): Get contact model for group members directly from controller
+                // TODO(DESK-577): Get contact model for group members directly from controller
                 for (const memberIdentity of this._receiver.view.members) {
                     const contact = model.contacts.getByIdentity(memberIdentity)?.get();
                     if (contact !== undefined) {
@@ -392,8 +392,8 @@ export class OutgoingCspMessageTask<
             }
 
             case ReceiverType.DISTRIBUTION_LIST:
-                // TODO(WEBMD-237): Support distribution lists.
-                throw new Error('TODO(WEBMD-237): Support distribution lists');
+                // TODO(DESK-237): Support distribution lists.
+                throw new Error('TODO(DESK-237): Support distribution lists');
 
             default:
                 return unreachable(this._receiver);
@@ -422,7 +422,7 @@ export class OutgoingCspMessageTask<
                 });
             case ReceiverType.DISTRIBUTION_LIST:
                 throw new Error(
-                    `TODO(WEBMD-237): Support for distribution list receivers not yet implemented.`,
+                    `TODO(DESK-237): Support for distribution list receivers not yet implemented.`,
                 );
             default:
                 return unreachable(this._receiver);

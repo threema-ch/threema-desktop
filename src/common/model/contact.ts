@@ -517,9 +517,9 @@ export class ContactModelRepository implements ContactRepository {
     public constructor(private readonly _services: ServicesForModel) {
         this._log = _services.logging.logger('model.contact.contacts-model');
 
-        // TODO(WEBMD-697): This is a quick workaround to make test/mocha/common/model/contact.spec.ts work,
+        // TODO(DESK-697): This is a quick workaround to make test/mocha/common/model/contact.spec.ts work,
         // but should be probably a private class attribute (not a trivial change as of now), or maybe be
-        // moved down to DB level. This case was the origin of WEBMD-697.
+        // moved down to DB level. This case was the origin of DESK-697.
         this._log.info('Creating new cache...');
         cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
     }

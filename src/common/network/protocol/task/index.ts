@@ -232,7 +232,7 @@ export interface ActiveTask<TTaskResult, TPersistence extends ActiveTaskPersiste
     /**
      * Whether the task expects to be run inside a specific transaction.
      *
-     * TODO(WEBMD-613): This is probably mutually exclusive to `persist: true`, so model it
+     * TODO(DESK-613): This is probably mutually exclusive to `persist: true`, so model it
      * accordingly.
      */
     readonly transaction: TransactionRunning<TransactionScope> | undefined;

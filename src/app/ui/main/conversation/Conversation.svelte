@@ -130,7 +130,7 @@
 
   // Compose mode and data
   //
-  // TODO(WEBMD-306): If a draft is available for the current receiver, initialize it here (set the
+  // TODO(DESK-306): If a draft is available for the current receiver, initialize it here (set the
   // text appropriately).
   const composeMode: ComposeMode = 'text';
   const composeData: Writable<ComposeData> = new WritableStore({
@@ -187,7 +187,7 @@
     return x !== undefined && x !== null && x instanceof ComposeAreaWrapper;
   }
 
-  // TODO(WEBMD-306): Replace with the real message drafts
+  // TODO(DESK-306): Replace with the real message drafts
   const routerUnsubscribe = router.subscribe((route) => {
     const displayMode = display.get();
     const layoutMode = layout.get();
@@ -275,10 +275,10 @@
             bind:this={textComposeArea}
             initialText={$composeData.text}
             on:recordAudio={() => {
-              // TODO(WEBMD-196)
+              // TODO(DESK-196)
             }}
             on:attachData={() => {
-              // TODO(WEBMD-303)
+              // TODO(DESK-303)
             }}
             on:sendMessage={sendTextMessage}
           />

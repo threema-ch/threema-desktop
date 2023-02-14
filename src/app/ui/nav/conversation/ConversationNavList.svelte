@@ -137,7 +137,7 @@
     const conversationPreviewNode =
       nodesByReceiverLookup[`${receiverLookup.type}:${receiverLookup.uid}`];
     if (conversationPreviewNode !== undefined) {
-      // TODO(WEBMD-800): Once the ConversationPreview uses the viewModel and nothing is loaded
+      // TODO(DESK-800): Once the ConversationPreview uses the viewModel and nothing is loaded
       // asynchronously the setTimeout below can be removed. In fact, probably the whole
       // rememberNodeForReceiver mechanism can be avoided and scrollConversationPreviewIntoView can
       // be directly `use:`ed in the `div.conversation-preview`, similarly to how it is done

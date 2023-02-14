@@ -45,7 +45,7 @@ export function run(): void {
                 handle.finish();
             });
 
-            // TODO(WEBMD-696): .fromLocal cannot yet be tested because 'taskManager.schedule' is
+            // TODO(DESK-696): .fromLocal cannot yet be tested because 'taskManager.schedule' is
             // not yet mocked.
 
             it('from sync', function () {

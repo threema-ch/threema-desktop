@@ -305,7 +305,7 @@ export class Router extends WritableStore<RouterState> {
     public openConversationAndDetailsForReceiver(receiverLookup: DbReceiverLookup): void {
         assert(
             [ReceiverType.CONTACT, ReceiverType.GROUP].includes(receiverLookup.type),
-            'TODO(WEBMD-236)',
+            'TODO(DESK-236)',
         );
 
         const current = this.get();

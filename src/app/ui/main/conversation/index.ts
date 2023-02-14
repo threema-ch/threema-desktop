@@ -92,7 +92,7 @@ export const conversationListEvent = new SyncEvent<ConversationListEvent>();
 
 export type ConversationDraftStore = WritableStore<string | undefined>;
 
-// TODO(WEBMD-306): Replace with the real message drafts
+// TODO(DESK-306): Replace with the real message drafts
 class ConversationDrafts {
     private readonly _conversationDrafts: Map<string, ConversationDraftStore>;
 

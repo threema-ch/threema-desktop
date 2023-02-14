@@ -70,7 +70,7 @@
   let deleteGroupDialogVisible = false;
   let groupProfilePictureDialogVisible = false;
 
-  // @ts-expect-error TODO(WEBMD-653): Implement this
+  // @ts-expect-error TODO(DESK-653): Implement this
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function openGroupEditDialog(): void {
     if (group !== undefined) {
@@ -152,26 +152,26 @@
         isInactiveGroup={group$.isInactive}
       />
 
-      <!-- TODO(WEBMD-165): FE: Add members to groups -->
+      <!-- TODO(DESK-165): FE: Add members to groups -->
       <!-- <LinkElement wip label="Add Members">
         <span class="icon-primary add" slot="icon-left">
           <MdIcon theme="Outlined">add</MdIcon>
         </span>
       </LinkElement> -->
-      <!-- TODO(WEBMD-517): FE: Remove members from groups -->
+      <!-- TODO(DESK-517): FE: Remove members from groups -->
       <!-- <LinkElement wip label="Remove Members">
         <span class="icon-primary remove" slot="icon-left">
           <MdIcon theme="Outlined">delete</MdIcon>
         </span>
       </LinkElement> -->
-      <!-- TODO(WEBMD-512): FE: Sync groups manually -->
+      <!-- TODO(DESK-512): FE: Sync groups manually -->
       <!-- <LinkElement wip label="Sync Group">
         <span class="icon-primary sync" slot="icon-left">
           <MdIcon theme="Outlined">sync</MdIcon>
         </span>
       </LinkElement> -->
       <!-- <Divider /> -->
-      <!-- TODO(WEBMD-178): FE: Contact / Group / DistributionList Media Gallery  -->
+      <!-- TODO(DESK-178): FE: Contact / Group / DistributionList Media Gallery  -->
       <!-- <div class="gallery">
         <LinkElement wip label="Media Gallery">
           <div slot="icon-left" class="icon-photo">
@@ -181,15 +181,15 @@
         </LinkElement>
       </div> -->
       <!-- <Divider /> -->
-      <!-- TODO(WEBMD-515): FE: Allow cloning groups -->
+      <!-- TODO(DESK-515): FE: Allow cloning groups -->
       <!-- <LinkElement wip label="Clone Group">
         <MdIcon slot="icon-left" theme="Outlined">copy_all</MdIcon>
       </LinkElement> -->
-      <!-- TODO(WEBMD-548): FE: Leave Group -->
+      <!-- TODO(DESK-548): FE: Leave Group -->
       <!-- <LinkElement wip label="Leave Group">
         <MdIcon slot="icon-left" theme="Outlined">directions_run</MdIcon>
       </LinkElement> -->
-      <!-- TODO(WEBMD-549): FE: Delete Group -->
+      <!-- TODO(DESK-549): FE: Delete Group -->
       <!-- <LinkElement wip label="Delete Group">
         <MdIcon slot="icon-left" theme="Outlined">delete</MdIcon>
       </LinkElement> -->

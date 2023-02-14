@@ -69,7 +69,7 @@
         navigateToContactDetails(identityData);
       } else {
         identityFieldError = 'Threema ID is already part of your contact list';
-        // TODO(WEBMD-361): forward to contact edit of existing identity (?)
+        // TODO(DESK-361): forward to contact edit of existing identity (?)
       }
     } catch (error) {
       identityFieldError = 'Cannot check contact validity. Are you connected to the internet?';
@@ -108,7 +108,7 @@
       class="qr-scan"
       on:click={() => {
         // eslint-disable-next-line no-alert
-        alert('Not yet implemented (WEBMD-387)');
+        alert('Not yet implemented (DESK-387)');
       }}
     >
       <IconText>
@@ -127,7 +127,7 @@
         class="add-contact"
         on:click={() => {
           // eslint-disable-next-line no-alert
-          alert('Not yet implemented (WEBMD-388)');
+          alert('Not yet implemented (DESK-388)');
         }}
       >
         <IconText>

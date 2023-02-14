@@ -107,7 +107,7 @@ class InMemoryTable<V extends DbTable, I extends keyof V> {
         return Array.from(this._map.values()).map((value) => {
             const copy: Partial<V> = {};
             for (const key of keys) {
-                // TODO(WEBMD-686): We need to copy `value` recursively here
+                // TODO(DESK-686): We need to copy `value` recursively here
                 copy[key] = value[key];
             }
             return copy as Pick<V, K>;
@@ -139,7 +139,7 @@ class InMemoryTable<V extends DbTable, I extends keyof V> {
         const uid = CURRENT_UID++ as V['uid'];
 
         // Create entry
-        // TODO(WEBMD-686): We need to copy `value` recursively here
+        // TODO(DESK-686): We need to copy `value` recursively here
         const entry = {...value, uid} as unknown as V; // Uglotron 3000
         this._create(entry);
         return uid;
@@ -155,7 +155,7 @@ class InMemoryTable<V extends DbTable, I extends keyof V> {
             throw new Error(`Could not update, UID ${update.uid} not found in database`);
         }
 
-        // TODO(WEBMD-686): We need to copy `update` recursively here
+        // TODO(DESK-686): We need to copy `update` recursively here
         Object.assign(value, update);
 
         // Recreate entry
@@ -185,7 +185,7 @@ class InMemoryTable<V extends DbTable, I extends keyof V> {
         if (value === undefined) {
             return undefined;
         }
-        // TODO(WEBMD-686): We need to copy `value` recursively here
+        // TODO(DESK-686): We need to copy `value` recursively here
         return {...value};
     }
 
@@ -201,7 +201,7 @@ class InMemoryTable<V extends DbTable, I extends keyof V> {
         if (value === undefined) {
             return undefined;
         }
-        // TODO(WEBMD-686): We need to copy `value` recursively here
+        // TODO(DESK-686): We need to copy `value` recursively here
         return {...value};
     }
 
@@ -209,12 +209,12 @@ class InMemoryTable<V extends DbTable, I extends keyof V> {
      * Return a copy of the last value, if any.
      */
     public getLast(): DbGet<V> {
-        // TODO(WEBMD-686): Can we make this less expensive?
+        // TODO(DESK-686): Can we make this less expensive?
         const [value] = [...this._map.values()].reverse();
         if ((value as V | undefined) === undefined) {
             return undefined;
         }
-        // TODO(WEBMD-686): We need to copy `value` recursively here
+        // TODO(DESK-686): We need to copy `value` recursively here
         return {...value};
     }
 
@@ -395,7 +395,7 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
         this._conversations.remove(conversation.uid);
 
         // Next, remove all remaining messages from this user (e.g. in group conversations)
-        // TODO(WEBMD-770): Ensure that group messages don't get silently deleted when removing a contact
+        // TODO(DESK-770): Ensure that group messages don't get silently deleted when removing a contact
         for (const [groupConversationUid, messages] of [...this._messages.entries()]) {
             const messageUidsToBeDeleted = messages
                 .all(['uid', 'senderContactUid'])
@@ -506,7 +506,7 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
 
     /** @inheritdoc */
     public getAllActiveGroupUidsByMember(contactUid: DbContactUid): DbList<DbGroup, 'uid'> {
-        // TODO(WEBMD-770): Do not take into account only active groups
+        // TODO(DESK-770): Do not take into account only active groups
         const activeGroupUids = [...this._groupsByCreator.entries()]
             .flatMap(([_, groupMap]) => groupMap.all(['uid', 'userState']))
             .filter(({userState}) => userState === GroupUserState.MEMBER)
@@ -613,7 +613,7 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
 
     /** @inheritdoc */
     public getLastMessage(conversationUid: DbConversationUid): DbGet<DbAnyMessage> {
-        // TODO(WEBMD-296): Order correctly
+        // TODO(DESK-296): Order correctly
         return this._messages.get(conversationUid).getLast();
     }
 
@@ -634,7 +634,7 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
                 `${existing.type}, got ${message.type}`,
         );
         messages.set(message);
-        // TODO(WEBMD-530): Implement this, or remove the InMemoryDatabaseBackend when we switch to sql.js
+        // TODO(DESK-530): Implement this, or remove the InMemoryDatabaseBackend when we switch to sql.js
         return {deletedFileIds: []};
     }
 
@@ -654,7 +654,7 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
             );
         }
 
-        // TODO(WEBMD-530): Right now we don't return the actual list of deleted (=unreferenced) file IDs.
+        // TODO(DESK-530): Right now we don't return the actual list of deleted (=unreferenced) file IDs.
         // Either fix this, or remove the InMemoryDatabaseBackend when we switch to sql.js.
         const deletedFileIds: FileId[] = [];
 
@@ -679,7 +679,7 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
             this._conversations.set({uid: conversationUid, lastUpdate: undefined});
         }
 
-        // TODO(WEBMD-530): Right now we don't return the actual list of deleted (=unreferenced) file IDs.
+        // TODO(DESK-530): Right now we don't return the actual list of deleted (=unreferenced) file IDs.
         // Either fix this, or remove the InMemoryDatabaseBackend when we switch to sql.js.
         return {removed: messages?.count() ?? 0, deletedFileIds: []};
     }
@@ -709,10 +709,10 @@ export class InMemoryDatabaseBackend implements DatabaseBackend {
             readonly direction: MessageQueryDirection;
         },
     ): DbList<DbAnyMessage, 'uid'> {
-        // TODO(WEBMD-686): Implement this correctly only after the algorithm has been revised. It
+        // TODO(DESK-686): Implement this correctly only after the algorithm has been revised. It
         // (making a sliding window) probably won't work the way it is specced in the interface atm.
         //
-        // TODO(WEBMD-296): Order correctly
+        // TODO(DESK-296): Order correctly
         return this._messages.get(conversation).all(['uid']);
     }
 

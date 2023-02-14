@@ -244,7 +244,7 @@ export class ReflectedOutgoingMessageTask
                 assert(
                     conversationId.type === ReceiverType.CONTACT,
                     'Text message must be directed at contact conversation',
-                ); // TODO(WEBMD-597): Distribution list support
+                ); // TODO(DESK-597): Distribution list support
                 const initFragment = getTextMessageInitFragment(
                     validatedBody.message,
                     commonFragment,
@@ -262,7 +262,7 @@ export class ReflectedOutgoingMessageTask
                 assert(
                     conversationId.type === ReceiverType.CONTACT,
                     'Location message must be directed at contact conversation',
-                ); // TODO(WEBMD-597): Distribution list support
+                ); // TODO(DESK-597): Distribution list support
                 const initFragment = getLocationMessageInitFragment(
                     validatedBody.message,
                     commonFragment,

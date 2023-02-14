@@ -182,7 +182,7 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
         createdAt: init.createdAt,
         readAt: init.readAt,
         lastReaction: init.lastReaction,
-        threadId: 1337n, // TODO(WEBMD-296): Set this properly
+        threadId: 1337n, // TODO(DESK-296): Set this properly
     };
     switch (init.direction) {
         case MessageDirection.INBOUND: {
@@ -385,8 +385,8 @@ export function all(
 ): SetOfAnyLocalMessageModelStore {
     return caches.get(conversation.uid).setRef.derefOrCreate(() => {
         const {db, logging} = services;
-        const uids = [...db.getMessageUids(conversation.uid)]; // TODO(WEBMD-569): Incremental message loading
-        // TODO(WEBMD-296): Messages don't currently have a defined order. Sort by UID for now.
+        const uids = [...db.getMessageUids(conversation.uid)]; // TODO(DESK-569): Incremental message loading
+        // TODO(DESK-296): Messages don't currently have a defined order. Sort by UID for now.
         uids.sort(({uid: a}, {uid: b}) => bigintSortAsc(a, b));
         const messages = uids.map(({uid}) =>
             getByUid(services, conversation, factory, uid, Existence.ENSURED),
@@ -521,9 +521,9 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                 direction: MessageDirection.INBOUND,
                 type: this._type,
                 text: this._preview(),
-                draft: false, // TODO(WEBMD-306): Add support for this
+                draft: false, // TODO(DESK-306): Add support for this
                 updatedAt: view.createdAt,
-                // TODO(WEBMD-776): Add proper support for other statuses
+                // TODO(DESK-776): Add proper support for other statuses
                 status: 'delivered',
                 reaction: view.lastReaction?.type,
             };
@@ -652,9 +652,9 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                 direction: MessageDirection.OUTBOUND,
                 type: this._type,
                 text: this._preview(),
-                draft: false, // TODO(WEBMD-306): Add support for this
+                draft: false, // TODO(DESK-306): Add support for this
                 updatedAt,
-                // TODO(WEBMD-776): Add proper support for other statuses (error?)
+                // TODO(DESK-776): Add proper support for other statuses (error?)
                 status,
                 reaction: view.lastReaction?.type,
             };

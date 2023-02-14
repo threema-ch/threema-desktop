@@ -48,7 +48,7 @@
     right: 0;
     overflow: hidden;
     width: rem(328px);
-    pointer-events: none; // TODO(WEBMD-453): scrollable snackbar
+    pointer-events: none; // TODO(DESK-453): scrollable snackbar
 
     .toast-wrapper {
       margin-top: rem(8px);

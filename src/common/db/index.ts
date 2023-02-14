@@ -155,8 +155,8 @@ export type DbContact = {
     activityState: ActivityState;
     featureMask: FeatureMask;
     syncState: SyncState;
-    // TODO(WEBMD-687): Read receipt policy override
-    // TODO(WEBMD-687): Typing indicator policy override
+    // TODO(DESK-687): Read receipt policy override
+    // TODO(DESK-687): Typing indicator policy override
     notificationTriggerPolicyOverride?: {
         readonly policy: ContactNotificationTriggerPolicy;
         readonly expiresAt?: Date;
@@ -486,7 +486,7 @@ export interface DatabaseBackend {
     /**
      * Create a new group and an associated conversation.
      *
-     * TODO(WEBMD-544): createGroup assumes that the contact for the creatorIdentity already exists.
+     * TODO(DESK-544): createGroup assumes that the contact for the creatorIdentity already exists.
      */
     readonly createGroup: (
         group: DbCreate<DbGroup> & DbCreateConversationMixin,
@@ -544,7 +544,7 @@ export interface DatabaseBackend {
     /**
      * Remove a group membership. Return whether a membership was found and removed.
      *
-     * TODO(WEBMD-538): When contact with AcquaintanceLevel.GROUP is removed from the last group, delete it
+     * TODO(DESK-538): When contact with AcquaintanceLevel.GROUP is removed from the last group, delete it
      */
     readonly removeGroupMember: (groupUid: DbGroupUid, contactUid: DbContactUid) => boolean;
 
@@ -657,7 +657,7 @@ export interface DatabaseBackend {
      *
      * If the reference message UID is provided, fetch `limit-1` message UIDs newer/older than it.
      *
-     * TODO(WEBMD-296): Order correctly. Right now, the order of messages returned is undefined.
+     * TODO(DESK-296): Order correctly. Right now, the order of messages returned is undefined.
      * Find out whether there is a logical order (older-to-newer or newer-to-old) that can be used
      * as-is. Take threading ID into account for sorting.
      */

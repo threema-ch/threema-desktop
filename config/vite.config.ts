@@ -74,10 +74,10 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                     0x9f, 0xf4, 0x36, 0x0e, 0xa9, 0x2a, 0x8c, 0x17,
                     0x51, 0xc6, 0x61, 0xe4, 0xc0, 0xd8, 0xc9, 0x09,
                 ],
-                // TODO(WEBMD-821): Implement support for alternative server key
-                MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.threema.ch/{prefix8}', // TODO(WEBMD-763): Production server
+                // TODO(DESK-821): Implement support for alternative server key
+                MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.threema.ch/{prefix8}', // TODO(DESK-763): Production server
                 DIRECTORY_SERVER_URL: 'https://ds-apip.threema.ch',
-                BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}', // TODO(WEBMD-763): Production server
+                BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}', // TODO(DESK-763): Production server
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
             };
         case 'sandbox':
@@ -140,7 +140,7 @@ function makeConfig(
 
         // Version info
         GIT_REVISION: process.env.GIT_REVISION ?? '',
-        BUILD_HASH: 'TODOTODOTODO', // TODO(WEBMD-154): Add build hash
+        BUILD_HASH: 'TODOTODOTODO', // TODO(DESK-154): Add build hash
 
         // Paths
         LOG_PATH: {
@@ -324,7 +324,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                           formats: ['es'],
                       }
                     : undefined,
-            // TODO(WEBMD-781): Use: minify: env.mode === 'production',
+            // TODO(DESK-781): Use: minify: env.mode === 'production',
             minify: false,
             rollupOptions,
         },
@@ -340,7 +340,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                 ]),
             ),
 
-            // TODO(WEBMD-682): Inject output files from 'app' into 'service-worker via a plugin
+            // TODO(DESK-682): Inject output files from 'app' into 'service-worker via a plugin
             // eslint-disable-next-line @typescript-eslint/naming-convention
             'import.meta.outputFiles': JSON.stringify([]),
         },
@@ -349,7 +349,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             .flat(),
         server: {
             port: env.devServerPort,
-            force: true, // TODO(WEBMD-782)
+            force: true, // TODO(DESK-782)
             fs: {
                 strict: true,
                 allow: ['.', '../libs', '../node_modules'],
