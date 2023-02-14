@@ -8,7 +8,13 @@ import {
     type PublicKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, type SharedBoxFactory} from '~/common/crypto/box';
-import {CspE2eGroupControlType, TransactionScope} from '~/common/enum';
+import {
+    type CspE2eDeliveryReceiptStatus,
+    CspE2eGroupControlType,
+    CspE2eStatusUpdateType,
+    TransactionScope,
+} from '~/common/enum';
+import {d2d} from '~/common/network/protobuf';
 import {CspPayloadType, D2mPayloadType, type LayerEncoder} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
 import {type Container} from '~/common/network/structbuf/csp/e2e';
@@ -78,6 +84,65 @@ export function assertGroupHasMembers(
     const group = services.model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
     assert(group !== undefined, 'Group not found');
     expect(group.get().view.members).to.eql(expectedMembers);
+}
+
+/**
+ * Return a list of expectations for:
+ *
+ * - Reflect outgoing delivery receipt
+ * - Send outgoing delivery receipt
+ * - Receive server ack for outgoing delivery receipt
+ */
+export function reflectAndSendDeliveryReceipt(
+    services: ServicesForBackend,
+    recipient: TestUser,
+    status: CspE2eDeliveryReceiptStatus,
+): NetworkExpectation[] {
+    const {device} = services;
+    const messageIdDelayed = Delayed.simple<MessageId>(
+        'Message ID not yet ready',
+        'Message ID already set',
+    );
+    return [
+        // Reflect outgoing delivery receipt
+        NetworkExpectationFactory.reflectSingle((payload) => {
+            expect(payload.content).to.equal('outgoingMessage');
+            expect(payload.outgoingMessage?.type).to.equal(d2d.MessageType.DELIVERY_RECEIPT);
+        }),
+
+        // Send outgoing delivery receipt
+        NetworkExpectationFactory.write((m) => {
+            // Message must be an outgoing CSP message
+            assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
+            assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
+
+            // Message must be sent from me to the recipient
+            const message = decodeLegacyMessageEncodable(m.payload.payload);
+            expect(message.senderIdentity).to.eql(device.identity.bytes);
+            expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
+            messageIdDelayed.set(ensureMessageId(message.messageId));
+
+            // Validate message type
+            const messageContainer = decryptContainer(
+                message,
+                device.csp.ck.public,
+                recipient.keypair,
+            );
+            expect(messageContainer.type).to.equal(CspE2eStatusUpdateType.DELIVERY_RECEIPT);
+
+            // Validate message contents
+            const deliveryReceipt = structbuf.csp.e2e.DeliveryReceipt.decode(
+                byteWithoutPkcs7(messageContainer.paddedData),
+            );
+            expect(deliveryReceipt.status).to.equal(status);
+        }),
+
+        // Expect server ack for delivery receipt
+        NetworkExpectationFactory.readIncomingMessageAck(
+            recipient.identity.string,
+            messageIdDelayed,
+        ),
+    ];
 }
 
 /**

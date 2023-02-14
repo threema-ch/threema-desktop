@@ -3,7 +3,15 @@ import {expect} from 'chai';
 import {type ServicesForBackend} from '~/common/backend';
 import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, SharedBoxFactory} from '~/common/crypto/box';
-import {CspE2eGroupControlType, CspE2eGroupConversationType} from '~/common/enum';
+import {
+    CspE2eConversationType,
+    CspE2eDeliveryReceiptStatus,
+    CspE2eGroupControlType,
+    CspE2eGroupConversationType,
+    MessageType,
+    ReceiverType,
+} from '~/common/enum';
+import {d2d} from '~/common/network/protobuf';
 import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';
@@ -13,7 +21,7 @@ import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
 import {type LegacyMessageLike} from '~/common/network/structbuf/csp/payload';
 import {ensureIdentityString, type IdentityString, type Nickname} from '~/common/network/types';
 import {type ByteLengthEncoder, type u8} from '~/common/types';
-import {unwrap} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampS} from '~/common/utils/number';
@@ -28,6 +36,7 @@ import {
     type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 import {makeGroup} from '~/test/mocha/common/db-backend-tests';
+import {reflectAndSendDeliveryReceipt} from '~/test/mocha/common/network/protocol/task/task-test-helpers';
 
 /**
  * Create a message from {@link sender} to {@link receiver} and with the {@link innerPayload} used
@@ -143,11 +152,77 @@ export function run(): void {
             });
         });
 
+        describe('text messages', function () {
+            it('stores a text message from a known contact', async function () {
+                const {model} = services;
+
+                // Add contacts
+                const user1Contact = addTestUserAsContact(model, user1);
+
+                // Get user conversation
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+                assert(conversation !== undefined, 'Conversation with user 1 not found');
+                expect(conversation.get().controller.getAllMessages().get().size).to.equal(0);
+
+                // Create incoming text message
+                const messageText = 'this is the secret message';
+                const textMessage = createMessage(
+                    services,
+                    {
+                        identity: user1.identity,
+                        keypair: user1.keypair,
+                        nickname: 'some user' as Nickname,
+                    },
+                    me,
+                    CspE2eConversationType.TEXT,
+                    structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                        text: UTF8.encode(messageText),
+                    }),
+                    CspMessageFlags.fromPartial({sendPushNotification: true}),
+                );
+
+                // Run task
+                const task = new IncomingMessageTask(services, textMessage);
+                const handle = new TestHandle(services, [
+                    // Reflect and ack incoming text message
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.incomingMessage).not.to.be.undefined;
+                        const incomingMessage = unwrap(payload.incomingMessage);
+                        expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                        expect(incomingMessage.type).to.equal(d2d.MessageType.TEXT);
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                    // Reflect and send delivery receipt
+                    ...reflectAndSendDeliveryReceipt(
+                        services,
+                        user1,
+                        CspE2eDeliveryReceiptStatus.RECEIVED,
+                    ),
+                ]);
+                await task.run(handle);
+                handle.finish();
+
+                // Text message should be part of the 1:1 conversation
+                const messages = [...conversation.get().controller.getAllMessages().get()];
+                expect(messages.length).to.equal(1);
+                const message = messages[0];
+                assert(
+                    message.type === MessageType.TEXT,
+                    `Expected message type to be text, but was ${message.type}`,
+                );
+                expect(message.get().view.text).to.equal(messageText);
+            });
+        });
+
         describe('group messages', () => {
             it('only accepts group text messages from members', async function () {
                 const {model} = services;
 
-                // Add users
+                // Add contacts
                 const contact1 = addTestUserAsContact(model, user1);
                 addTestUserAsContact(model, user2);
 
