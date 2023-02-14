@@ -9,15 +9,15 @@
 
 <!-- More details here if necessary -->
 
-- Closes WEBMD-XXX <!-- If this MR does not close the given ticket, please use "Related to" instead of "Closes" -->
+- Closes DESK-XXX <!-- If this MR does not close the given ticket, please use "Related to" instead of "Closes" -->
 - Pair-programmed with @Name <!-- Potentially mark commits with `Co-authored-by:`. Delete if this was not the case. -->
 
 ## Merge Request Checklist
 
 - [ ] 👌 Implemented according to issue scope
-- [ ] ✅ All `TODO(WEBMD-XXX)` comments for *this issue* resolved and deleted
-- [ ] 🐞 Any tech-debt/bugs tracked as issues, and optionally as `TODO(WEBMD-YYY)` comments:
-  - WEBMD-YYY: Issue Title
+- [ ] ✅ All `TODO(DESK-XXX)` comments for *this issue* resolved and deleted
+- [ ] 🐞 Any tech-debt/bugs tracked as issues, and optionally as `TODO(DESK-YYY)` comments:
+  - DESK-YYY: Issue Title
 - [ ] 📝 Commit messages [are meaningful](https://cbea.ms/git-commit/), *WIP* and *fixup* commits have been amended
 - [ ] 📖 If new interfaces were added, all properties are marked as `readonly` if possible
 - [ ] <details><summary>🚭 Initial smoke test passed</summary>
