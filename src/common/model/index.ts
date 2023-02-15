@@ -1125,6 +1125,8 @@ export interface FileData {
     readonly storageFormatVersion: u53;
 }
 
+export type InboundFileMessageState = 'remote' | 'downloading' | 'local' | 'failed';
+export type OutboundFileMessageState = 'local' | 'uploading' | 'remote' | 'failed';
 export interface FileMessageViewFragment {
     readonly fileName?: string;
     readonly fileSize: u53;
@@ -1137,8 +1139,10 @@ export interface FileMessageViewFragment {
     readonly thumbnailFileData?: FileData;
 }
 type CommonFileMessageView = CommonBaseMessageView & FileMessageViewFragment;
-type InboundFileMessageView = InboundBaseMessageView & CommonFileMessageView;
-type OutboundFileMessageView = OutboundBaseMessageView & CommonFileMessageView;
+type InboundFileMessageView = InboundBaseMessageView &
+    CommonFileMessageView & {readonly state: InboundFileMessageState};
+type OutboundFileMessageView = OutboundBaseMessageView &
+    CommonFileMessageView & {readonly state: OutboundFileMessageState};
 type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
     Pick<
         CommonFileMessageView,

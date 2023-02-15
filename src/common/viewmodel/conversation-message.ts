@@ -4,6 +4,8 @@ import {
     type AnyMessageModel,
     type AnyMessageModelStore,
     type Conversation,
+    type InboundFileMessage,
+    type OutboundFileMessage,
     type Repositories,
     type Settings,
     type User,
@@ -21,9 +23,11 @@ import {type ServicesForViewModel} from '~/common/viewmodel';
 import {transformContact} from '~/common/viewmodel/svelte-components-transformations';
 import {
     type AnyMessageBody,
+    type InboundFileMessageState,
     type IncomingMessage,
     type Message,
     type MessageReaction as SCMessageReaction,
+    type OutboundFileMessageState,
     type OutgoingMessage,
 } from '~/common/viewmodel/types';
 import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
@@ -163,6 +167,32 @@ function getMessageOrdinal(message: AnyMessageModel): u53 {
     }
 }
 
+/**
+ * Convert a view `InboundFileMessageState` into a viewmodel `InboundFileMessageState`.
+ */
+function convertInboundFileMessageState(view: InboundFileMessage['view']): InboundFileMessageState {
+    switch (view.state) {
+        case 'downloading':
+            return {type: 'downloading', progress: 'TODO(DESK-933)'};
+        default:
+            return {type: view.state};
+    }
+}
+
+/**
+ * Convert a view `OutboundFileMessageState` into a viewmodel `OutboundFileMessageState`.
+ */
+function convertOutboundFileMessageState(
+    view: OutboundFileMessage['view'],
+): OutboundFileMessageState {
+    switch (view.state) {
+        case 'uploading':
+            return {type: 'uploading', progress: 'TODO(DESK-933)'};
+        default:
+            return {type: view.state};
+    }
+}
+
 function getConversationMessageBody(
     messageModel: AnyMessageModel,
     model: Repositories,
@@ -204,17 +234,19 @@ function getConversationMessageBody(
                 filename: messageModel.view.fileName,
                 caption: messageModel.view.caption,
             };
-            if (baseMessage.direction === 'incoming') {
+            if (messageModel.ctx === MessageDirection.INBOUND) {
                 messageData = {
                     ...(baseMessage as Omit<IncomingMessage<AnyMessageBody>, 'type' | 'body'>),
                     type,
                     body,
+                    state: convertInboundFileMessageState(messageModel.view),
                 };
             } else {
                 messageData = {
                     ...(baseMessage as Omit<OutgoingMessage<AnyMessageBody>, 'type' | 'body'>),
                     type,
                     body,
+                    state: convertOutboundFileMessageState(messageModel.view),
                 };
             }
             break;

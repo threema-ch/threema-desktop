@@ -39,6 +39,7 @@
             {:else}
               File (({message.body.mediaType}))
             {/if}
+            <br />State: {JSON.stringify(message.state)}
           </em>
         </p>
         {#if message.body.caption !== undefined}

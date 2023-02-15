@@ -1046,6 +1046,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         messageUid,
                         blobId: message.blobId,
                         thumbnailBlobId: message.thumbnailBlobId,
+                        blobDownloadState: undefined,
+                        thumbnailBlobDownloadState: undefined,
                         encryptionKey: message.encryptionKey,
                         fileDataUid,
                         thumbnailFileDataUid,
@@ -1175,6 +1177,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         .select({
                             blobId: tMessageFileData.blobId,
                             thumbnailBlobId: tMessageFileData.thumbnailBlobId,
+                            blobDownloadState: tMessageFileData.blobDownloadState,
+                            thumbnailBlobDownloadState: tMessageFileData.thumbnailBlobDownloadState,
                             encryptionKey: tMessageFileData.encryptionKey,
                             fileData: {
                                 fileId: tFileDataJoinable.fileId,

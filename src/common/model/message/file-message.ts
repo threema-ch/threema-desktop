@@ -4,7 +4,7 @@ import {
     type DbFileMessage,
     type DbMessageCommon,
 } from '~/common/db';
-import {MessageDirection, MessageType, ReceiverType} from '~/common/enum';
+import {BlobDownloadState, MessageDirection, MessageType, ReceiverType} from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {
@@ -18,9 +18,11 @@ import {
     type InboundConversationPreviewMessageView,
     type InboundFileMessage,
     type InboundFileMessageController,
+    type InboundFileMessageState,
     type OutboundConversationPreviewMessageView,
     type OutboundFileMessage,
     type OutboundFileMessageController,
+    type OutboundFileMessageState,
     PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type UidOf,
@@ -84,6 +86,33 @@ function updateFileMessage<TView extends FileMessageViewFragment>(
 }
 
 /**
+ * Get the download state (of the file blob) for the specified inbound file message.
+ */
+function getStateForInboundFileMessage(
+    message: Pick<DbFileMessage, 'blobId' | 'fileData' | 'blobDownloadState'>,
+): InboundFileMessageState {
+    // TODO(DESK-933): Once blobId is optional, if it's not set, return state 'failed' immediately.
+    if (message.fileData !== undefined) {
+        return 'local';
+    }
+    if (message.blobDownloadState === BlobDownloadState.FAILED) {
+        return 'failed';
+    }
+    return 'remote';
+}
+
+/**
+ * Get the upload state (of the file blob) for the specified outbound file message.
+ */
+function getStateForOutboundFileMessage(
+    message: Pick<DbFileMessage, 'fileData'>,
+): OutboundFileMessageState {
+    // TODO(DESK-933): Make blobId optional. If blobId is set, the state is 'remote'. If not, it's
+    // 'local'. If fileData is missing, return 'failed'.
+    return 'local';
+}
+
+/**
  * Return a local model store for the specified message.
  */
 export function getFileMessageModelStore<TModelStore extends AnyFileMessageModelStore>(
@@ -110,18 +139,20 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
                 sender !== NO_SENDER,
                 `Expected sender of inbound ${message.type} message ${message.uid} to exist`,
             );
+            const state = getStateForInboundFileMessage(message);
             return new InboundFileMessageModelStore(
                 services,
-                {...common, ...file},
+                {...common, ...file, state},
                 message.uid,
                 conversation,
                 sender,
             ) as TModelStore; // Trivially true as common.direction === TModelStore['ctx']
         }
         case MessageDirection.OUTBOUND: {
+            const state = getStateForOutboundFileMessage(message);
             return new OutboundFileMessageModelStore(
                 services,
-                {...common, ...file},
+                {...common, ...file, state},
                 message.uid,
                 conversation,
             ) as TModelStore; // Trivially true as common.direction === TModelStore['ctx']

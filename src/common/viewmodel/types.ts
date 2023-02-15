@@ -142,51 +142,32 @@ export type ReceiverData<T extends ReceiverType> = {
 export type ReceiverBadgeType = 'contact-consumer' | 'contact-work' | 'group' | 'distribution-list';
 
 /**
- * Incoming message state type of the associated primary data (e.g. an image blob).
+ * State of the associated primary data (e.g. an image blob) of an inbound message.
  *
  * - remote: Data has not yet been downloaded.
  * - downloading: Data is being downloaded.
  * - local: Data is downloaded.
+ * - failed: Download has permanently failed (e.g. when already deleted from blob server)
  */
-export type IncomingMessageDataStateType = 'remote' | 'downloading' | 'local';
+export type InboundFileMessageState =
+    | {readonly type: 'remote'}
+    | {readonly type: 'downloading'; readonly progress: unknown}
+    | {readonly type: 'local'}
+    | {readonly type: 'failed'};
 
 /**
- * Incoming message state of the associated primary data.
+ * State of the associated primary data (e.g. an image blob) of an outbound message.
  *
- * Note: When entering `local`, the associated primary data's `Promise` should
- *       resolve at the same time (but asynchronously).
+ * - local: Data has not yet been uploaded.
+ * - uploading: Data is being uploaded.
+ * - remote: Data is uploaded.
+ * - failed: Upload has failed and can be retried by user.
  */
-export type IncomingMessageDataState<TState extends IncomingMessageDataStateType> = {
-    readonly type: TState;
-} & (TState extends 'downloading' ? {readonly progress: u53} : unknown);
-
-export type AnyIncomingMessageDataState =
-    | IncomingMessageDataState<'remote'>
-    | IncomingMessageDataState<'downloading'>
-    | IncomingMessageDataState<'local'>;
-
-/**
- * Outgoing message state type of the associated primary data.
- *
- * Note: Since the data is available locally, the associated primary data's
- *       `Promise` resolves immediately (as soon as it is available)
- *       regardless of the state.
- */
-export type OutgoingMessageDataStateType = 'uploading' | 'remote';
-
-/**
- * Incoming message state of the associated primary data.
- *
- * Note: The associated primary data's `Promise` should be available almost
- *       immediately and is completely disconnected from this state.
- */
-export type OutgoingMessageDataState<TState extends OutgoingMessageDataStateType> = {
-    readonly type: TState;
-} & (TState extends 'uploading' ? {readonly progress: u53} : unknown);
-
-export type AnyOutgoingMessageDataState =
-    | OutgoingMessageDataState<'uploading'>
-    | OutgoingMessageDataState<'remote'>;
+export type OutboundFileMessageState =
+    | {readonly type: 'local'}
+    | {readonly type: 'uploading'; readonly progress: unknown}
+    | {readonly type: 'remote'}
+    | {readonly type: 'failed'};
 
 interface TextMessageBody {
     /**
@@ -374,7 +355,7 @@ export interface Reaction {
 
 export type IncomingMessage<B extends AnyMessageBody> = {
     readonly direction: 'incoming';
-    readonly state: AnyIncomingMessageDataState;
+    readonly state: InboundFileMessageState;
     readonly id: string;
     readonly sender: ReceiverData<'contact'>;
     readonly isRead: boolean;
@@ -384,7 +365,7 @@ export type IncomingMessage<B extends AnyMessageBody> = {
 
 export type OutgoingMessage<B extends AnyMessageBody> = {
     readonly direction: 'outgoing';
-    readonly state: AnyOutgoingMessageDataState;
+    readonly state: OutboundFileMessageState;
     readonly id: string;
     readonly status: MessageStatus;
     readonly sender: {

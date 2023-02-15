@@ -3,6 +3,7 @@ import {type PublicKey, type RawKey, wrapRawKey} from '~/common/crypto';
 import {
     type AcquaintanceLevel,
     type ActivityState,
+    type BlobDownloadState,
     type ContactNotificationTriggerPolicy,
     type ConversationCategory,
     type ConversationVisibility,
@@ -89,7 +90,10 @@ export interface DbTable {
 /**
  * Data required to create an entry.
  */
-export type DbCreate<T extends DbTable> = Omit<T, 'uid'>;
+export type DbCreate<T extends DbTable> = Omit<
+    T,
+    'uid' | 'blobDownloadState' | 'thumbnailBlobDownloadState'
+>;
 
 /**
  * Pointer returned after creating an entry (i.e. the UID).
@@ -393,6 +397,8 @@ export interface DbFileData {
 export type DbFileMessage = {
     readonly blobId: BlobId;
     readonly thumbnailBlobId?: BlobId;
+    readonly blobDownloadState?: BlobDownloadState;
+    readonly thumbnailBlobDownloadState?: BlobDownloadState;
     readonly encryptionKey: RawBlobKey;
     fileData?: DbFileData;
     thumbnailFileData?: DbFileData;
