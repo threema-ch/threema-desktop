@@ -21,6 +21,7 @@ import {
 import {
     AcquaintanceLevelUtils,
     ActivityStateUtils,
+    BlobDownloadStateUtils,
     ContactNotificationTriggerPolicyUtils,
     ConversationCategoryUtils,
     ConversationVisibilityUtils,
@@ -73,9 +74,11 @@ export const CUSTOM_TYPES = {
     // Enums (value constraints)
     ACQUAINTANCE_LEVEL: 'AcquaintanceLevel',
     ACTIVITY_STATE: 'ActivityState',
+    BLOB_DOWNLOAD_STATE: 'BlobDownloadState',
     CONTACT_NOTIFICATION_TRIGGER_POLICY: 'ContactNotificationTriggerPolicy',
     CONVERSATION_CATEGORY: 'ConversationCategory',
     CONVERSATION_VISIBILITY: 'ConversationVisibility',
+    GLOBAL_PROPERTY_KEY: 'GlobalPropertyKey',
     GROUP_NOTIFICATION_TRIGGER_POLICY: 'GroupNotificationTriggerPolicy',
     GROUP_USER_STATE: 'GroupUserState',
     IDENTITY_TYPE: 'IdentityType',
@@ -85,7 +88,6 @@ export const CUSTOM_TYPES = {
     SYNC_STATE: 'SyncState',
     VERIFICATION_LEVEL: 'VerificationLevel',
     WORK_VERIFICATION_LEVEL: 'WorkVerificationLevel',
-    GLOBAL_PROPERTY_KEY: 'GlobalPropertyKey',
 
     // New-types (value constraints and tagging)
     BLOB_ID: 'BlobId',
@@ -246,12 +248,16 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return u64ToU53(value, AcquaintanceLevelUtils.contains);
             case CUSTOM_TYPES.ACTIVITY_STATE:
                 return u64ToU53(value, ActivityStateUtils.contains);
+            case CUSTOM_TYPES.BLOB_DOWNLOAD_STATE:
+                return u64ToU53(value, BlobDownloadStateUtils.contains);
             case CUSTOM_TYPES.CONTACT_NOTIFICATION_TRIGGER_POLICY:
                 return u64ToU53(value, ContactNotificationTriggerPolicyUtils.contains);
             case CUSTOM_TYPES.CONVERSATION_CATEGORY:
                 return u64ToU53(value, ConversationCategoryUtils.contains);
             case CUSTOM_TYPES.CONVERSATION_VISIBILITY:
                 return u64ToU53(value, ConversationVisibilityUtils.contains);
+            case CUSTOM_TYPES.GLOBAL_PROPERTY_KEY:
+                return GlobalPropertyKeyUtils.fromString;
             case CUSTOM_TYPES.GROUP_NOTIFICATION_TRIGGER_POLICY:
                 return u64ToU53(value, GroupNotificationTriggerPolicyUtils.contains);
             case CUSTOM_TYPES.IDENTITY_TYPE:
@@ -270,8 +276,6 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return u64ToU53(value, VerificationLevelUtils.contains);
             case CUSTOM_TYPES.WORK_VERIFICATION_LEVEL:
                 return u64ToU53(value, WorkVerificationLevelUtils.contains);
-            case CUSTOM_TYPES.GLOBAL_PROPERTY_KEY:
-                return GlobalPropertyKeyUtils.fromString;
 
             // New-types (value constraints and tagging)
             case CUSTOM_TYPES.BLOB_ID:
@@ -370,9 +374,11 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             // Enums (value constraints)
             case CUSTOM_TYPES.ACQUAINTANCE_LEVEL:
             case CUSTOM_TYPES.ACTIVITY_STATE:
+            case CUSTOM_TYPES.BLOB_DOWNLOAD_STATE:
             case CUSTOM_TYPES.CONTACT_NOTIFICATION_TRIGGER_POLICY:
             case CUSTOM_TYPES.CONVERSATION_CATEGORY:
             case CUSTOM_TYPES.CONVERSATION_VISIBILITY:
+            case CUSTOM_TYPES.GLOBAL_PROPERTY_KEY:
             case CUSTOM_TYPES.GROUP_NOTIFICATION_TRIGGER_POLICY:
             case CUSTOM_TYPES.GROUP_USER_STATE:
             case CUSTOM_TYPES.IDENTITY_TYPE:
@@ -382,7 +388,6 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.SYNC_STATE:
             case CUSTOM_TYPES.VERIFICATION_LEVEL:
             case CUSTOM_TYPES.WORK_VERIFICATION_LEVEL:
-            case CUSTOM_TYPES.GLOBAL_PROPERTY_KEY:
                 // No transformation
                 return value;
 

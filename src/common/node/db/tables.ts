@@ -15,6 +15,7 @@ import {
 import {
     type AcquaintanceLevel,
     type ActivityState,
+    type BlobDownloadState,
     type ContactNotificationTriggerPolicy,
     type ConversationCategory,
     type ConversationVisibility,
@@ -635,6 +636,26 @@ export const tMessageFileData = new (class TMessageFileData extends Table<
         'thumbnailBlobId',
         'custom',
         CUSTOM_TYPES.BLOB_ID,
+    );
+    /**
+     * The download state for the file blob.
+     *
+     * Right now, this can only be 'failed' or undefined.
+     */
+    public blobDownloadState = this.optionalColumn<BlobDownloadState>(
+        'blobDownloadState',
+        'custom',
+        CUSTOM_TYPES.BLOB_DOWNLOAD_STATE,
+    );
+    /**
+     * The download state for the thumbnail blob.
+     *
+     * Right now, this can only be 'failed' or undefined.
+     */
+    public thumbnailBlobDownloadState = this.optionalColumn<BlobDownloadState>(
+        'thumbnailBlobDownloadState',
+        'custom',
+        CUSTOM_TYPES.BLOB_DOWNLOAD_STATE,
     );
     /**
      * Encryption key used to decrypt the file and thumbnail blobs.

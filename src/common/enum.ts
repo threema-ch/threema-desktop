@@ -1817,6 +1817,39 @@ export namespace ElectronIpcCommand {
  * ========
  */
 export type ElectronIpcCommand = (typeof ElectronIpcCommand)[keyof typeof ElectronIpcCommand];
+export namespace BlobDownloadState {
+    export const FAILED = 0;
+    /** The blob download failed and should not be retried. */
+    export type FAILED = typeof FAILED;
+}
+/**
+ * DATABASE
+ * ========
+ */
+/**
+ * The blob download state.
+ *
+ * @generate convert
+ */
+export type BlobDownloadState = (typeof BlobDownloadState)[keyof typeof BlobDownloadState];
+export namespace BlobDownloadStateUtils {
+    export const ALL: ReadonlySet<BlobDownloadState> = new Set([BlobDownloadState.FAILED] as const);
+    export function fromNumber(value: u53, fallback?: BlobDownloadState): BlobDownloadState {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as BlobDownloadState;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid BlobDownloadState`);
+    }
+    export function containsNumber(value: u53): value is BlobDownloadState {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is BlobDownloadState {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
 export namespace Existence {
     export const ENSURED = 0;
     export type ENSURED = typeof ENSURED;

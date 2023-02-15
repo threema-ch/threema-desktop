@@ -618,6 +618,21 @@ export enum ElectronIpcCommand {
 }
 
 /**
+ * DATABASE
+ * ========
+ */
+
+/**
+ * The blob download state.
+ *
+ * @generate convert
+ */
+export enum BlobDownloadState {
+    /** The blob download failed and should not be retried. */
+    FAILED = 0,
+}
+
+/**
  * UTILITY
  * =======
  */
