@@ -623,7 +623,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 // Add message to conversation
                 this._log.debug(`Saving ${messageTypeDebug} message`);
                 if (instructions.initFragment !== undefined) {
-                    await conversation
+                    const messageStore = await conversation
                         .get()
                         .controller.addMessage.fromRemote(
                             handle,
@@ -632,6 +632,18 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                                 senderContactOrInit,
                             ),
                         );
+
+                    // If this is a file message, trigger the downloading of the thumbnail
+                    if (messageStore.type === 'file') {
+                        messageStore
+                            .get()
+                            .controller.thumbnailBlob()
+                            .catch((error) =>
+                                this._log.error(
+                                    `Downloading the thumbnail of an incoming message failed: ${error}`,
+                                ),
+                            );
+                    }
                 }
                 break;
             }
