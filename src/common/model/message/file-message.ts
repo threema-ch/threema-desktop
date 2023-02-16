@@ -1,3 +1,5 @@
+import {NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
     type DbConversationUid,
     type DbCreate,
@@ -19,16 +21,19 @@ import {
     type InboundFileMessage,
     type InboundFileMessageController,
     type InboundFileMessageState,
+    type InboundFileMessageView,
     type OutboundConversationPreviewMessageView,
     type OutboundFileMessage,
     type OutboundFileMessageController,
     type OutboundFileMessageState,
+    type OutboundFileMessageView,
     PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type UidOf,
 } from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type BlobScope} from '~/common/network/protocol/blob';
+import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
@@ -69,7 +74,7 @@ export function createFileMessage<TDirection extends MessageDirection>(
 /**
  * Update a file message.
  */
-function updateFileMessage<TView extends FileMessageViewFragment>(
+function updateFileMessage<TView extends InboundFileMessageView | OutboundFileMessageView>(
     services: ServicesForModel,
     log: Logger,
     conversation: DbConversationUid,
@@ -130,6 +135,7 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
         thumbnailMediaType: message.thumbnailMediaType,
         blobId: message.blobId,
         thumbnailBlobId: message.thumbnailBlobId,
+        encryptionKey: message.encryptionKey,
         fileData: message.fileData,
         thumbnailFileData: message.thumbnailFileData,
     };
@@ -197,12 +203,12 @@ export class InboundFileMessageModelController
      * be updated. Once that is done, the promise will resolve with the blob data.
      */
     protected async _blob(type: 'main' | 'thumbnail'): Promise<ReadonlyUint8Array | undefined> {
-        const {blob, file} = this._services;
+        const {blob, crypto, file} = this._services;
 
         // Because the download logic is async and consists of multiple steps, we need a lock to
         // avoid races where the same blob is downloaded multiple times.
         return await this._lock.with(async () => {
-            // If blob is already downloaded (i.e. a fileId is set), return it.
+            // If blob is already downloaded (i.e. a fileId is set), return it
             const existingFileData: FileData | undefined = this.meta.run((handle) => {
                 switch (type) {
                     case 'main':
@@ -217,13 +223,14 @@ export class InboundFileMessageModelController
                 return await file.load(existingFileData);
             }
 
-            // Otherwise, download it from the blob mirror.
-            const blobId = this.meta.run((handle) => {
+            // Otherwise, download it from the blob mirror
+            this._log.debug(`Downloading ${type} blob`);
+            const [blobId, nonce] = this.meta.run((handle) => {
                 switch (type) {
                     case 'main':
-                        return handle.view().blobId;
+                        return [handle.view().blobId, BLOB_FILE_NONCE];
                     case 'thumbnail':
-                        return handle.view().thumbnailBlobId;
+                        return [handle.view().thumbnailBlobId, BLOB_THUMBNAIL_NONCE];
                     default:
                         return unreachable(type);
                 }
@@ -232,22 +239,32 @@ export class InboundFileMessageModelController
                 assert(type !== 'main', 'Expected a blob id to be available for the main file');
                 return undefined;
             }
+            if (type === 'main') {
+                this.meta.update((view) => ({state: 'downloading'}));
+            }
             const downloadResult = await blob.download('public', blobId);
+            // TODO(DESK-307): Catch unrecoverable errors like a 404, and mark the download as failed
 
-            // TODO(DESK-307): Decrypt file
+            // Decrypt bytes
+            const secretBox = crypto.getSecretBox(
+                this.meta.run((handle) => handle.view().encryptionKey),
+                NONCE_UNGUARDED_TOKEN,
+            );
+            const decryptedBytes = secretBox
+                .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, downloadResult.data)
+                .decrypt();
 
             // Blob downloaded, store in file storage
-            const blobBytes = downloadResult.data;
-            const storedFile = await file.store(blobBytes);
+            const storedFile = await file.store(decryptedBytes);
             const storedFileData = {
                 fileId: storedFile.fileId,
                 encryptionKey: storedFile.encryptionKey,
-                unencryptedByteCount: blobBytes.byteLength,
+                unencryptedByteCount: decryptedBytes.byteLength,
                 storageFormatVersion: storedFile.storageFormatVersion,
             };
 
             // Update database
-            let change: Partial<FileMessageViewFragment>;
+            let change: Partial<InboundFileMessageView>;
             switch (type) {
                 case 'main':
                     change = {fileData: storedFileData};
@@ -266,7 +283,14 @@ export class InboundFileMessageModelController
                     this._uid,
                     change,
                 );
-                return change;
+                switch (type) {
+                    case 'main':
+                        return {change, state: 'local'};
+                    case 'thumbnail':
+                        return {change};
+                    default:
+                        return unreachable(type);
+                }
             });
 
             // Mark as downloaded
@@ -291,9 +315,10 @@ export class InboundFileMessageModelController
             downloadResult.done(blobDoneScope).catch((e) => {
                 this._log.error(`Failed to mark blob with id ${bytesToHex(blobId)} as done`, e);
             });
+            this._log.debug(`Downloaded ${type} blob`);
 
             // Return data
-            return blobBytes;
+            return decryptedBytes;
         });
     }
 

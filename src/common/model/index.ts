@@ -1135,13 +1135,14 @@ export interface FileMessageViewFragment {
     readonly thumbnailMediaType?: string;
     readonly blobId: BlobId;
     readonly thumbnailBlobId?: BlobId;
+    readonly encryptionKey: RawBlobKey;
     readonly fileData?: FileData;
     readonly thumbnailFileData?: FileData;
 }
 type CommonFileMessageView = CommonBaseMessageView & FileMessageViewFragment;
-type InboundFileMessageView = InboundBaseMessageView &
+export type InboundFileMessageView = InboundBaseMessageView &
     CommonFileMessageView & {readonly state: InboundFileMessageState};
-type OutboundFileMessageView = OutboundBaseMessageView &
+export type OutboundFileMessageView = OutboundBaseMessageView &
     CommonFileMessageView & {readonly state: OutboundFileMessageState};
 type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
     Pick<
@@ -1172,6 +1173,8 @@ type CommonFileMessageController<TView extends CommonFileMessageView> =
          *
          * If the blob has not yet been downloaded, the download will be started and the database
          * will be updated. Once that is done, the promise will resolve with the blob data.
+         *
+         * If the download fails (for any reason), then the promise is rejected with an error.
          */
         readonly blob: () => Promise<ReadonlyUint8Array>;
 
@@ -1180,6 +1183,8 @@ type CommonFileMessageController<TView extends CommonFileMessageView> =
          *
          * If the blob has not yet been downloaded, the download will be started and the database
          * will be updated. Once that is done, the promise will resolve with the blob data.
+         *
+         * If the download fails (for any reason), then the promise is rejected with an error.
          */
         readonly thumbnailBlob: () => Promise<ReadonlyUint8Array | undefined>;
     };

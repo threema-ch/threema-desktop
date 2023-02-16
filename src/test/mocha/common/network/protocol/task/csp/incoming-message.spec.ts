@@ -335,7 +335,7 @@ export function run(): void {
                 const view = message.get().view;
                 expect(view.blobId).to.deep.equal(fileBlobId);
                 expect(view.thumbnailBlobId).to.deep.equal(thumbnailBlobId);
-                // TODO(DESK-307): Encryption key?
+                expect(view.encryptionKey).to.deep.equal(encryptionKey);
                 expect(view.mediaType).to.equal(fileMediaType);
                 expect(view.thumbnailMediaType).to.equal(thumbnailMediaType);
                 expect(view.fileName).to.equal(fileName);

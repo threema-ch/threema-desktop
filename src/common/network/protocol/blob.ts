@@ -136,7 +136,7 @@ export interface BlobBackend {
  * Type of the {@link BlobBackendError}.
  *
  * - fetch: An error occurred when fetching data from the server.
- * - invalid: Retrieved data is invalid.
+ * - invalid: Blob ID returned on upload is invalid.
  */
 export type BlobBackendErrorType = 'fetch' | 'invalid';
 
