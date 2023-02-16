@@ -342,6 +342,8 @@ export enum ReceiverType {
 
 /**
  * Message direction.
+ *
+ * @generate name
  */
 export enum MessageDirection {
     INBOUND = 0,

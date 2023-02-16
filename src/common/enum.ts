@@ -910,8 +910,19 @@ export namespace MessageDirection {
 }
 /**
  * Message direction.
+ *
+ * @generate name
  */
 export type MessageDirection = (typeof MessageDirection)[keyof typeof MessageDirection];
+export namespace MessageDirectionUtils {
+    export const NAME_OF = {
+        [MessageDirection.INBOUND]: 'INBOUND',
+        [MessageDirection.OUTBOUND]: 'OUTBOUND',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
 export namespace MessageFilterInstruction {
     export const ACCEPT = 0;
     export type ACCEPT = typeof ACCEPT;

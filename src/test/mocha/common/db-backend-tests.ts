@@ -20,6 +20,7 @@ import {
 import {
     AcquaintanceLevel,
     ActivityState,
+    type BlobDownloadState,
     ContactNotificationTriggerPolicy,
     ConversationCategory,
     ConversationVisibility,
@@ -212,40 +213,40 @@ function getCommonMessage<T extends MessageType>(
     };
 }
 
+export type TestTextMessageInit = Omit<CommonMessageInit<MessageType.TEXT>, 'type'> & {
+    text?: string;
+};
+
 /**
  * Create a text message with optional default data.
  */
-export function createTextMessage(
-    db: DatabaseBackend,
-    init: Omit<CommonMessageInit<MessageType.TEXT>, 'type'> & {
-        text?: string;
-    },
-): DbMessageUid {
+export function createTextMessage(db: DatabaseBackend, init: TestTextMessageInit): DbMessageUid {
     return db.createTextMessage({
         ...getCommonMessage({...init, type: MessageType.TEXT}),
         text: init.text ?? 'Hey!',
     });
 }
 
+export type TestFileMessageInit = Omit<CommonMessageInit<MessageType.FILE>, 'type'> & {
+    blobId?: Uint8Array | ReadonlyUint8Array | BlobId;
+    thumbnailBlobId?: Uint8Array;
+    encryptionKey?: RawBlobKey;
+    blobDownloadState?: BlobDownloadState;
+    thumbnailBlobDownloadState?: BlobDownloadState;
+    fileData?: DbFileData;
+    thumbnailFileData?: DbFileData;
+    mediaType?: string;
+    thumbnailMediaType?: string;
+    fileName?: string;
+    fileSize?: u53;
+    caption?: string;
+    correlationId?: string;
+};
+
 /**
  * Create a file message with optional default data.
  */
-export function createFileMessage(
-    db: DatabaseBackend,
-    init: Omit<CommonMessageInit<MessageType.FILE>, 'type'> & {
-        blobId?: Uint8Array;
-        thumbnailBlobId?: Uint8Array;
-        encryptionKey?: RawBlobKey;
-        fileData?: DbFileData;
-        thumbnailFileData?: DbFileData;
-        mediaType?: string;
-        thumbnailMediaType?: string;
-        fileName?: string;
-        fileSize?: u53;
-        caption?: string;
-        correlationId?: string;
-    },
-): DbMessageUid {
+export function createFileMessage(db: DatabaseBackend, init: TestFileMessageInit): DbMessageUid {
     return db.createFileMessage({
         ...getCommonMessage({...init, type: MessageType.FILE}),
         blobId: (init.blobId ??
@@ -254,6 +255,8 @@ export function createFileMessage(
         encryptionKey:
             init.encryptionKey ??
             wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))),
+        blobDownloadState: init.blobDownloadState,
+        thumbnailBlobDownloadState: init.thumbnailBlobDownloadState,
         fileData: init.fileData,
         thumbnailFileData: init.thumbnailFileData,
         mediaType: init.mediaType ?? 'application/jpeg',

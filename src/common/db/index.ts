@@ -90,10 +90,7 @@ export interface DbTable {
 /**
  * Data required to create an entry.
  */
-export type DbCreate<T extends DbTable> = Omit<
-    T,
-    'uid' | 'blobDownloadState' | 'thumbnailBlobDownloadState'
->;
+export type DbCreate<T extends DbTable> = Omit<T, 'uid'>;
 
 /**
  * Pointer returned after creating an entry (i.e. the UID).
