@@ -1,11 +1,12 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
+  import {createEventDispatcher, onMount} from 'svelte';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {type SendMessageEventDetail} from '~/app/ui/main/conversation';
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveFile from '~/app/ui/modal/media-message/ActiveFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
@@ -27,12 +28,24 @@
   let activeMediaFile: MediaFile | undefined = mediaFiles[0];
 
   /**
-   * Save and clear the current visible caption text string into the mediaFile.caption property
+   * Component event dispatcher
    */
-  function saveAndClearCurrentCaption(): void {
+  const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
+
+  /**
+   * Save the current visible caption text string into the mediaFile.caption property
+   */
+  function saveCurrentCaption(): void {
     if (activeMediaFile !== undefined) {
       activeMediaFile.caption = caption.getText();
     }
+  }
+
+  /**
+   * Save and clear the current visible caption text string into the mediaFile.caption property
+   */
+  function saveAndClearCurrentCaption(): void {
+    saveCurrentCaption();
     caption.clearText();
   }
 
@@ -73,8 +86,14 @@
   }
 
   function sendMessage(): void {
-    // eslint-disable-next-line no-console
-    // TODO
+    saveCurrentCaption();
+
+    dispatch('sendMessage', {
+      type: 'files',
+      files: mediaFiles,
+    });
+    // TODO(DESK-933): Activate visible=false for MediaMessage dialog after sending message.
+    //visible = false;
   }
 
   function attachMoreFiles(files: File[]): void {

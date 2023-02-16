@@ -16,7 +16,7 @@
   // Component event dispatcher
   const dispatch = createEventDispatcher<{
     recordAudio: undefined;
-    sendMessage: string;
+    sendTextMessage: string;
   }>();
 
   // Reference to the compose area component
@@ -52,8 +52,8 @@
     event.stopPropagation();
   }
 
-  function sendMessage(): void {
-    dispatch('sendMessage', composeArea.getText());
+  function sendTextMessage(): void {
+    dispatch('sendTextMessage', composeArea.getText());
     composeArea.clearText();
     emojiPicker.hide();
   }
@@ -106,7 +106,7 @@
       {initialText}
       bind:this={composeArea}
       bind:isEmpty={composeAreaIsEmpty}
-      on:submit={sendMessage}
+      on:submit={sendTextMessage}
     />
     <IconButton flavor="naked" on:click={showEmojiPicker}>
       <MdIcon theme="Outlined">insert_emoticon</MdIcon>
@@ -116,7 +116,7 @@
         <MdIcon theme="Outlined">mic_none</MdIcon>
       </IconButton> -->
     {:else}
-      <IconButton flavor="filled" on:click={sendMessage}>
+      <IconButton flavor="filled" on:click={sendTextMessage}>
         <MdIcon theme="Filled">arrow_upward</MdIcon>
       </IconButton>
     {/if}

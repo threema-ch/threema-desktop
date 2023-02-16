@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
+  import {createEventDispatcher, onDestroy} from 'svelte';
   import {type Writable} from 'svelte/store';
 
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
   import {isInactiveGroup} from '~/app/ui/generic/receiver';
-  import {conversationDrafts} from '~/app/ui/main/conversation';
+  import {conversationDrafts, type SendMessageEventDetail} from '~/app/ui/main/conversation';
   import {type ComposeData, type ComposeMode} from '~/app/ui/main/conversation/compose';
   import ComposeAreaWrapper from '~/app/ui/main/conversation/compose/ComposeAreaWrapper.svelte';
   import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
@@ -13,10 +13,9 @@
   import {type DbReceiverLookup} from '~/common/db';
   import {display, layout} from '~/common/dom/ui/state';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
-  import {ConversationCategory, MessageDirection} from '~/common/enum';
+  import {ConversationCategory} from '~/common/enum';
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {randomMessageId} from '~/common/network/protocol/utils';
   import {type Remote} from '~/common/utils/endpoint';
   import {WritableStore} from '~/common/utils/store';
   import {
@@ -30,7 +29,7 @@
    * App services.
    */
   export let services: AppServices;
-  const {backend, crypto, logging, router} = services;
+  const {backend, router} = services;
 
   export let receiverLookup: DbReceiverLookup;
 
@@ -60,8 +59,10 @@
 
   let textComposeArea: ComposeAreaWrapper;
 
-  // Logger
-  const log = logging.logger('component.conversation');
+  /**
+   * Component event dispatcher
+   */
+  const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
 
   /**
    * Insert forwarded message: If route defines a forwarded message, insert it into the compose area
@@ -100,14 +101,8 @@
     if (text.trim() === '') {
       return;
     }
-
-    const id = randomMessageId(crypto);
-    log.debug(`Send text message with id ${id}`);
-    void conversation.get().controller.addMessage.fromLocal({
-      direction: MessageDirection.OUTBOUND,
+    dispatch('sendMessage', {
       type: 'text',
-      id,
-      createdAt: new Date(),
       text,
     });
 
@@ -277,7 +272,7 @@
             on:recordAudio={() => {
               // TODO(DESK-196)
             }}
-            on:sendMessage={sendTextMessage}
+            on:sendTextMessage={sendTextMessage}
             on:fileDrop
           />
         {/if}

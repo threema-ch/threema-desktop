@@ -1,6 +1,7 @@
 import {SyncEvent} from 'ts-events';
 
 import {type ReceiverNotificationPolicy} from '~/app/ui/generic/receiver';
+import {type MediaFile} from '~/app/ui/modal/media-message';
 import {type DbConversationUid, type DbReceiverLookup} from '~/common/db';
 import {type ConversationCategory, type ConversationVisibility, ReceiverType} from '~/common/enum';
 import {
@@ -11,6 +12,7 @@ import {
     type RemoteModelStoreFor,
 } from '~/common/model';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
+import {type MessageId} from '~/common/network/types';
 import {assertUnreachable} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
 import {type AnyReceiverData, type ReceiverType as ReceiverType3SC} from '~/common/viewmodel/types';
@@ -116,3 +118,14 @@ class ConversationDrafts {
 }
 
 export const conversationDrafts = new ConversationDrafts();
+
+export type SendMessageEventDetail =
+    | {
+          readonly type: 'text';
+          readonly text: string;
+          readonly quotedMessageId?: MessageId | undefined;
+      }
+    | {
+          readonly type: 'files';
+          files: MediaFile[];
+      };
