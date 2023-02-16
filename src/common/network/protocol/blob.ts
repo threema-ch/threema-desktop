@@ -135,10 +135,11 @@ export interface BlobBackend {
 /**
  * Type of the {@link BlobBackendError}.
  *
- * - fetch: An error occurred when fetching data from the server.
- * - invalid: Blob ID returned on upload is invalid.
+ * - fetch: An error occurred when downloading data from or uploading data to the server.
+ * - not-found: The blob mirror returned 404 for this blob.
+ * - invalid-blob-id: Blob ID returned on upload is invalid.
  */
-export type BlobBackendErrorType = 'fetch' | 'invalid';
+export type BlobBackendErrorType = 'fetch' | 'not-found' | 'invalid-blob-id';
 
 const BLOB_BACKEND_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     BlobBackendError,

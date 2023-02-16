@@ -71,7 +71,7 @@ export class FetchBlobBackend implements BlobBackend {
         const blobId = (await response.text()).trim();
         if (!isBlobId(blobId)) {
             throw new BlobBackendError(
-                'invalid',
+                'invalid-blob-id',
                 `Could not upload blob, invalid blob id returned: ${blobId}`,
             );
         }
@@ -92,6 +92,12 @@ export class FetchBlobBackend implements BlobBackend {
             });
         } catch (error) {
             throw new BlobBackendError('fetch', 'Fetch download request errored', {from: error});
+        }
+        if (response.status === 404) {
+            throw new BlobBackendError(
+                'not-found',
+                `Could not download blob ${bytesToHex(id)}, status: ${response.status}`,
+            );
         }
         if (response.status !== 200) {
             throw new BlobBackendError(
@@ -133,7 +139,7 @@ export class FetchBlobBackend implements BlobBackend {
         if (response.status !== 204) {
             throw new BlobBackendError(
                 'fetch',
-                `Could not done blob ${bytesToHex(id)}, status: ${response.status}`,
+                `Could not mark blob ${bytesToHex(id)} as done, status: ${response.status}`,
             );
         }
     }

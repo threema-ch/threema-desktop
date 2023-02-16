@@ -27,6 +27,7 @@ import {
 import {
     type AcquaintanceLevel,
     type ActivityState,
+    type BlobDownloadState,
     type ContactNotificationTriggerPolicy,
     type ConversationCategory,
     type ConversationVisibility,
@@ -1135,6 +1136,8 @@ export interface FileMessageViewFragment {
     readonly thumbnailMediaType?: string;
     readonly blobId: BlobId;
     readonly thumbnailBlobId?: BlobId;
+    readonly blobDownloadState?: BlobDownloadState;
+    readonly thumbnailBlobDownloadState?: BlobDownloadState;
     readonly encryptionKey: RawBlobKey;
     readonly fileData?: FileData;
     readonly thumbnailFileData?: FileData;

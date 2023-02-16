@@ -32,10 +32,10 @@ import {
     type UidOf,
 } from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type BlobScope} from '~/common/network/protocol/blob';
+import {BlobBackendError, type BlobScope} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
 import {type ReadonlyUint8Array} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {AsyncLock} from '~/common/utils/lock';
 
@@ -223,6 +223,28 @@ export class InboundFileMessageModelController
                 return await file.load(existingFileData);
             }
 
+            // If blob is marked as failed, don't attempt to download
+            const downloadState = this.meta.run((handle) => {
+                switch (type) {
+                    case 'main':
+                        return handle.view().blobDownloadState;
+                    case 'thumbnail':
+                        return handle.view().thumbnailBlobDownloadState;
+                    default:
+                        return unreachable(type);
+                }
+            });
+            if (downloadState === BlobDownloadState.FAILED) {
+                switch (type) {
+                    case 'main':
+                        throw new Error('Blob download is marked as failed');
+                    case 'thumbnail':
+                        return undefined;
+                    default:
+                        return unreachable(type);
+                }
+            }
+
             // Otherwise, download it from the blob mirror
             this._log.debug(`Downloading ${type} blob`);
             const [blobId, nonce] = this.meta.run((handle) => {
@@ -242,8 +264,36 @@ export class InboundFileMessageModelController
             if (type === 'main') {
                 this.meta.update((view) => ({state: 'downloading'}));
             }
-            const downloadResult = await blob.download('public', blobId);
-            // TODO(DESK-307): Catch unrecoverable errors like a 404, and mark the download as failed
+            let downloadResult;
+            try {
+                downloadResult = await blob.download('public', blobId);
+            } catch (error) {
+                if (error instanceof BlobBackendError && error.type === 'not-found') {
+                    // Irrecoverable error, blob not found.
+                    let change: Partial<InboundFileMessageView>;
+                    switch (type) {
+                        case 'main':
+                            change = {blobDownloadState: BlobDownloadState.FAILED};
+                            break;
+                        case 'thumbnail':
+                            change = {thumbnailBlobDownloadState: BlobDownloadState.FAILED};
+                            break;
+                        default:
+                            unreachable(type);
+                    }
+                    this.meta.update(() => {
+                        updateFileMessage(
+                            this._services,
+                            this._log,
+                            this._conversation.uid,
+                            this._uid,
+                            change,
+                        );
+                        return change;
+                    });
+                }
+                throw ensureError(error);
+            }
 
             // Decrypt bytes
             const secretBox = crypto.getSecretBox(
