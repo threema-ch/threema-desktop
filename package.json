@@ -33,7 +33,7 @@
     "electron:rebuild": "electron-rebuild",
     "test:karma": "VITE_MAKE=web,karma-tests,consumer,sandbox vite build -m development -c config/vite.config.ts && karma start config/karma.cjs --single-run",
     "test:mocha": "VITE_MAKE=electron,mocha-tests,consumer,sandbox vite build -m development -c config/vite.config.ts && mocha build/electron/mocha-tests/run-specs.cjs",
-    "lint": "npm run lint:eslint && npm run lint:tsc:parallel && npm run lint:svelte && npm run lint:prettier",
+    "lint": "for t in tsc:parallel svelte eslint prettier; do npm run lint:${t} || FAILED+=(${t}); done; if [ -n \"${FAILED}\" ]; then echo; echo 'Failed:' ${FAILED[@]}; echo; false; else echo; echo 'All linters passed.'; echo; fi",
     "lint:fix": "npm run lint:eslint:fix && npm run lint:prettier:fix",
     "lint:tsc": "find src -name tsconfig.json -exec npx tsc --noEmit -p {} \\;",
     "lint:tsc:parallel": "find src -name tsconfig.json | xargs -I{} -P $(getconf _NPROCESSORS_ONLN) npx tsc --noEmit -p {}",
