@@ -889,13 +889,28 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         const maybeCspE2eType = type as CspE2eType;
         switch (maybeCspE2eType) {
             // Conversation messages
-            case CspE2eConversationType.TEXT: {
-                const initFragment = getTextMessageInitFragment(
-                    message,
-                    cspMessageBody,
-                    this._log,
-                    this._id,
-                );
+            case CspE2eConversationType.TEXT:
+            case CspE2eConversationType.FILE: {
+                let initFragment;
+                switch (maybeCspE2eType) {
+                    case CspE2eConversationType.TEXT:
+                        initFragment = getTextMessageInitFragment(
+                            message,
+                            cspMessageBody,
+                            this._log,
+                            this._id,
+                        );
+                        break;
+                    case CspE2eConversationType.FILE:
+                        initFragment = getFileMessageInitFragment(
+                            message,
+                            cspMessageBody,
+                            this._log,
+                        );
+                        break;
+                    default:
+                        unreachable(maybeCspE2eType);
+                }
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: senderConversationId,
@@ -906,20 +921,32 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
-            case CspE2eGroupConversationType.GROUP_TEXT: {
-                // TODO(DESK-307): Rule-of-three: Refactor shared logic for handling of group- and
-                // non-group conversation messages once we implement file messages.
-
+            case CspE2eGroupConversationType.GROUP_TEXT:
+            case CspE2eGroupConversationType.GROUP_FILE: {
                 // A group text message is wrapped in a group-member-container
                 const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                     structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
                 );
-                const initFragment = getTextMessageInitFragment(
-                    message,
-                    validatedContainer.innerData,
-                    this._log,
-                    this._id,
-                );
+                let initFragment;
+                switch (maybeCspE2eType) {
+                    case CspE2eGroupConversationType.GROUP_TEXT:
+                        initFragment = getTextMessageInitFragment(
+                            message,
+                            validatedContainer.innerData,
+                            this._log,
+                            this._id,
+                        );
+                        break;
+                    case CspE2eGroupConversationType.GROUP_FILE:
+                        initFragment = getFileMessageInitFragment(
+                            message,
+                            validatedContainer.innerData,
+                            this._log,
+                        );
+                        break;
+                    default:
+                        unreachable(maybeCspE2eType);
+                }
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: {
@@ -929,18 +956,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     },
                     missingContactHandling: 'ignore',
                     deliveryReceipt: false,
-                    initFragment,
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
-                };
-                return instructions;
-            }
-            case CspE2eConversationType.FILE: {
-                const initFragment = getFileMessageInitFragment(message, cspMessageBody, this._log);
-                const instructions: ConversationMessageInstructions = {
-                    messageCategory: 'conversation-message',
-                    conversationId: senderConversationId,
-                    missingContactHandling: 'create',
-                    deliveryReceipt: true,
                     initFragment,
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
@@ -1252,8 +1267,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(DESK-586)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)
-                return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupConversationType.GROUP_FILE: // TODO(DESK-307)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(DESK-244)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
