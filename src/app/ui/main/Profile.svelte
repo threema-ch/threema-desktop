@@ -16,8 +16,12 @@
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   export let services: AppServices;
-  const {backend, logging, router, storage} = services;
-  const {viewModel} = backend;
+  const {
+    backend: {viewModel},
+    logging,
+    router,
+    storage,
+  } = services;
   const {debugPanelState, theme} = storage;
 
   const log = logging.logger('component.profile');

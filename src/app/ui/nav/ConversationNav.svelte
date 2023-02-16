@@ -5,38 +5,54 @@
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavList from '~/app/ui/nav/conversation/ConversationNavList.svelte';
   import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
+  import {type Remote} from '~/common/utils/endpoint';
+  import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   export let services: AppServices;
-  const {backend, router} = services;
+  const {
+    backend: {viewModel, model},
+    logging,
+    router,
+  } = services;
 
-  // Unpack stores
-  const {user, viewModel} = backend;
+  const log = logging.logger('component.profile');
+
+  let profile: Remote<ProfileViewModelStore>;
+  viewModel
+    .profile()
+    .then((loadedProfile) => {
+      profile = loadedProfile;
+    })
+    .catch((error) => {
+      log.error(`Loading profile view model failed`, error);
+    });
 </script>
 
 <template>
   <div id="nav-wrapper">
     <div class="bar">
-      <MainNavBar
-        identity={user.identity}
-        profilePicture={user.profilePicture}
-        displayName={user.displayName}
-        on:click-profile-picture={() => {
-          const newMainRoute =
-            router.get().main.id === 'profile'
-              ? ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined)
-              : ROUTE_DEFINITIONS.main.profile.withTypedParams(undefined);
-          router.go(router.get().nav, newMainRoute, undefined);
-        }}
-        on:click-contact={() =>
-          router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withTypedParams(undefined))}
-      />
+      {#if profile !== undefined}
+        <MainNavBar
+          profilePicture={$profile.profilePicture}
+          initials={$profile.initials}
+          on:click-profile-picture={() => {
+            const newMainRoute =
+              router.get().main.id === 'profile'
+                ? ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined)
+                : ROUTE_DEFINITIONS.main.profile.withTypedParams(undefined);
+            router.go(router.get().nav, newMainRoute, undefined);
+          }}
+          on:click-contact={() =>
+            router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withTypedParams(undefined))}
+        />
+      {/if}
     </div>
     <div class="search">
       <SearchInput placeholder={'Find Chat'} bind:value={$conversationPreviewListFilter} />
     </div>
     <div class="conversation-preview-list">
       {#await viewModel.conversationPreviews() then conversationPreviews}
-        <ConversationNavList settings={backend.model.settings} {conversationPreviews} {router} />
+        <ConversationNavList settings={model.settings} {conversationPreviews} {router} />
       {/await}
     </div>
   </div>

@@ -28,12 +28,9 @@ export class UserModel implements User {
             profilePictureShareWith: {group: 'everyone'},
         });
 
-        this.displayName = derive(this.profileSettings, (profileSettings) => {
-            if (profileSettings.view.nickname.trim() === '') {
-                return this.identity;
-            }
-            return profileSettings.view.nickname;
-        });
+        this.displayName = derive(this.profileSettings, ({view: {nickname}}) =>
+            nickname === undefined ? this.identity : nickname,
+        );
 
         // TODO(DESK-624): Get profile picture from DB
         const colorIndex = idColorIndex({type: ReceiverType.CONTACT, identity: this.identity});

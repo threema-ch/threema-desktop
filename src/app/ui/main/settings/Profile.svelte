@@ -13,7 +13,7 @@
     <div class="profile-picture">
       <ProfilePicture
         img={transformProfilePicture(profilePicture.picture)}
-        alt={'Profile picture of {displayName}'}
+        alt="Your profile picture"
         {initials}
         color={profilePicture.color}
         shape={'circle'}

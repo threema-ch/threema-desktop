@@ -3,32 +3,14 @@
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type ProfilePictureData} from '#3sc/components/threema/ProfilePicture';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
-  import type * as model from '~/common/model';
-  import {type IdentityString} from '~/common/network/types';
-  import {type RemoteStore} from '~/common/utils/store';
-  import {getGraphemeClusters} from '~/common/utils/string';
+  import {type ProfilePictureView} from '~/common/model';
 
-  export let identity: IdentityString;
-
-  export let profilePicture: RemoteStore<model.ProfilePictureView>;
-
-  export let displayName: RemoteStore<string>;
+  export let profilePicture: ProfilePictureView;
+  export let initials: string;
 
   const dispatch = createEventDispatcher();
-
-  // Profile picture data
-  function processProfilePicture(view: model.ProfilePictureView): ProfilePictureData {
-    return {
-      color: view.color,
-      img: transformProfilePicture(view.picture),
-      initials: getGraphemeClusters($displayName !== '' ? $displayName : identity, 2).join(''),
-    };
-  }
-  let profilePicture$: ProfilePictureData;
-  $: profilePicture$ = processProfilePicture($profilePicture);
 </script>
 
 <template>
@@ -38,7 +20,13 @@
       class="profile-picture"
       on:click={() => dispatch('click-profile-picture')}
     >
-      <ProfilePicture {...profilePicture$} alt="Your profile picture" shape="circle" />
+      <ProfilePicture
+        img={transformProfilePicture(profilePicture.picture)}
+        alt="Your profile picture"
+        {initials}
+        color={profilePicture.color}
+        shape={'circle'}
+      />
     </button>
     <!-- <IconButton flavor="naked" class="wip">
       <ThreemaIcon

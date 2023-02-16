@@ -15,18 +15,14 @@ import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {
-    ensureIdentityString,
-    type IdentityString,
-    validNicknameOrUndefined,
-} from '~/common/network/types';
+import {ensureIdentityString, ensureNickname, type IdentityString} from '~/common/network/types';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
-import {nullOptional} from '~/common/utils/valita-helpers';
+import {nullEmptyStringOptional, nullOptional} from '~/common/utils/valita-helpers';
 
 const SAFE_SERVER_TEMPLATE = 'https://safe-{prefix}.threema.ch';
 
@@ -107,7 +103,7 @@ const SAFE_CONTACT_SCHEMA = v
         hidden: v.boolean().optional().default(false),
         firstname: v.string().optional().default(''),
         lastname: v.string().optional().default(''),
-        nickname: v.string().map(validNicknameOrUndefined).optional(),
+        nickname: nullEmptyStringOptional(v.string().map(ensureNickname)),
         private: v.boolean().optional().default(false),
         readReceipts: v.number().optional(),
         typingIndicators: v.number().optional(),

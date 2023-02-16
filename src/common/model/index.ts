@@ -331,7 +331,7 @@ export type ProfilePicture = LocalModel<ProfilePictureView, ProfilePictureContro
 
 // Note: Type must be compatible with common.settings.ProfileSettings
 export interface ProfileSettingsView {
-    readonly nickname: Nickname;
+    readonly nickname?: Nickname | undefined;
     readonly profilePicture?: ReadonlyUint8Array;
     readonly profilePictureShareWith: ProfilePictureShareWith;
 }

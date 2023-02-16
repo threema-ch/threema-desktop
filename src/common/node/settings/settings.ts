@@ -12,7 +12,7 @@ export interface Identities {
 /** Settings on the user profile. */
 export interface ProfileSettings {
     /** Nickname */
-    nickname: string;
+    nickname?: string | undefined;
     /** Profile picture */
     profilePicture?: Uint8Array | undefined;
     profilePictureShareWith?: ProfileSettings_ProfilePictureShareWith | undefined;
@@ -85,12 +85,12 @@ export const Identities = {
 };
 
 function createBaseProfileSettings(): ProfileSettings {
-    return {nickname: '', profilePicture: undefined, profilePictureShareWith: undefined};
+    return {nickname: undefined, profilePicture: undefined, profilePictureShareWith: undefined};
 }
 
 export const ProfileSettings = {
     encode(message: ProfileSettings, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-        if (message.nickname !== '') {
+        if (message.nickname !== undefined) {
             writer.uint32(10).string(message.nickname);
         }
         if (message.profilePicture !== undefined) {

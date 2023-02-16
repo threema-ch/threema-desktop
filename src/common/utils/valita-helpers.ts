@@ -58,3 +58,43 @@ export function nullOptional<T>(schema: v.Type<T>): v.Optional<T | undefined> {
         .map((value) => (value === null ? undefined : value))
         .optional();
 }
+
+/**
+ * Parse an optional parameter which also treats null and empty string as non-existent.
+ */
+export function nullEmptyStringOptional<T>(schema: v.Type<T>): v.Optional<T | undefined> {
+    return v
+        .union(v.null(), v.literal(''), schema)
+        .map((value) => (value === null || value === '' ? undefined : value))
+        .optional();
+}
+
+export const VALITA_NULL = Symbol('valita-null');
+type ValitaNull = typeof VALITA_NULL;
+export const VALITA_UNDEFINED = Symbol('valita-undefined');
+type ValitaUndefined = typeof VALITA_UNDEFINED;
+export const VALITA_EMPTY_STRING = Symbol('valita-empty-string');
+type ValitaEmptyString = typeof VALITA_EMPTY_STRING;
+
+/**
+ * Parse a parameter that can be null, undefined, or empty string giving it a concrete type.
+ */
+export function mappedOptional<T>(
+    schema: v.Type<T>,
+): v.Type<ValitaNull | ValitaUndefined | ValitaEmptyString | T> {
+    return v
+        .union(v.null(), v.undefined(), v.literal(''), schema)
+        .optional()
+        .map((value) => {
+            switch (value) {
+                case null:
+                    return VALITA_NULL;
+                case undefined:
+                    return VALITA_UNDEFINED;
+                case '':
+                    return VALITA_EMPTY_STRING;
+                default:
+                    return value;
+            }
+        });
+}

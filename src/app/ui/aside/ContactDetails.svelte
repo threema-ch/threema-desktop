@@ -175,7 +175,7 @@
           <MdIcon slot="icon" theme="Outlined">info</MdIcon>
         </ListElement>
       </div>
-      <ListElement label="Nickname">{$contactViewModel.nickname}</ListElement>
+      <ListElement label="Nickname">{$contactViewModel.nickname ?? '-'}</ListElement>
       <Divider />
       <!-- <div class="gallery">
         <LinkElement wip label="Media Gallery">

@@ -611,7 +611,7 @@ export function getDisplayName(
         return contact.firstName;
     } else if (contact.lastName !== '') {
         return contact.lastName;
-    } else if (contact.nickname !== '') {
+    } else if (contact.nickname !== undefined) {
         return `~${contact.nickname}`;
     }
     return contact.identity;
@@ -631,8 +631,8 @@ export function getInitials(
         return getGraphemeClusters(contact.firstName, 2).join('');
     } else if (contact.lastName !== '') {
         return getGraphemeClusters(contact.lastName, 2).join('');
-    } else if (contact.nickname !== '') {
-        return getGraphemeClusters(contact.nickname ?? '', 2).join('');
+    } else if (contact.nickname !== undefined) {
+        return getGraphemeClusters(contact.nickname, 2).join('');
     }
     return contact.identity.substring(0, 2);
 }

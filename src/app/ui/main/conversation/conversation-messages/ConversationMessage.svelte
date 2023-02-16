@@ -10,8 +10,8 @@
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import {type ConversationData} from '~/app/ui/main/conversation';
-  import MessageComponent from '~/app/ui/main/conversation/conversation-messages//Message.svelte';
   import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
+  import MessageComponent from '~/app/ui/main/conversation/conversation-messages/Message.svelte';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
   import MessageDetail from '~/app/ui/modal/MessageDetail.svelte';
   import MessageForward from '~/app/ui/modal/MessageForward.svelte';

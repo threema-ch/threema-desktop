@@ -9,16 +9,9 @@ import {type ServicesForViewModel} from '~/common/viewmodel';
 
 export type ProfileViewModelStore = LocalStore<ProfileViewModel>;
 
-function getMyDisplayName(nickname: Nickname, identity: IdentityString): string {
-    if (nickname !== '') {
-        return nickname;
-    }
-    return identity;
-}
-
 export interface ProfileViewModel extends PropertiesMarked {
     readonly profilePicture: ProfilePictureView;
-    readonly nickname: Nickname;
+    readonly nickname: Nickname | undefined;
     readonly initials: string;
     readonly identity: IdentityString;
     readonly displayName: string;
@@ -28,13 +21,12 @@ export interface ProfileViewModel extends PropertiesMarked {
 export function getProfileViewModelStore(services: ServicesForViewModel): ProfileViewModelStore {
     const {endpoint, device, model} = services;
 
-    return derive(model.user.profileSettings, (profileSettings, getAndSubscribe) => {
-        const displayName = getMyDisplayName(profileSettings.view.nickname, device.identity.string);
-        const initials = getGraphemeClusters(displayName, 2).join('');
+    return derive(model.user.profileSettings, ({view: {nickname}}, getAndSubscribe) => {
+        const displayName = nickname === undefined ? device.identity.string : nickname;
         return endpoint.exposeProperties({
             profilePicture: getAndSubscribe(model.user.profilePicture),
-            nickname: profileSettings.view.nickname,
-            initials,
+            nickname,
+            initials: getGraphemeClusters(displayName, 2).join(''),
             identity: device.identity.string,
             displayName,
             publicKey: device.csp.ck.public,

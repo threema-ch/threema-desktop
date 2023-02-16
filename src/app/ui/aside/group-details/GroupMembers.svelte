@@ -84,6 +84,8 @@
       undefined,
     );
   }
+
+  const userProfilePicture = backend.user.profilePicture;
 </script>
 
 <template>
@@ -97,7 +99,7 @@
           clickable={false}
           profilePicture={{
             alt: `My profile picture`,
-            profilePicture: backend.user.profilePicture.get(),
+            profilePicture: $userProfilePicture,
             initials: 'ME',
             unread: 0,
           }}
@@ -122,7 +124,7 @@
           clickable={false}
           profilePicture={{
             alt: `My profile picture`,
-            profilePicture: backend.user.profilePicture.get(),
+            profilePicture: $userProfilePicture,
             initials: 'ME',
             unread: 0,
           }}

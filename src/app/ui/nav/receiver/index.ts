@@ -24,7 +24,7 @@ import {
 } from '~/common/model';
 import {getFullName} from '~/common/model/contact';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type Nickname, validNicknameOrUndefined} from '~/common/network/types';
+import {isNickname, type Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
@@ -222,7 +222,7 @@ export async function transformContact(
         publicKey: contact.view.publicKey,
         isNew,
         badge,
-        nickname: validNicknameOrUndefined(contact.view.nickname?.trim()),
+        nickname: isNickname(contact.view.nickname) ? contact.view.nickname : undefined,
         firstName: contact.view.firstName,
         lastName: contact.view.lastName,
         fullName: getFullName(contact.view),

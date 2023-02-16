@@ -44,7 +44,7 @@ function simplifyProfilePictureShareWith(
 const PROFILE_SETTINGS_SCHEMA = v
     .object({
         // The user's nickname
-        nickname: v.string().map(ensureNickname),
+        nickname: v.string().map(ensureNickname).optional(),
 
         // The user's profile picture
         profilePicture: instanceOf<ReadonlyUint8Array>(Uint8Array).optional(),

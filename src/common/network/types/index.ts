@@ -61,16 +61,6 @@ export function ensureNickname(nickname: string): Nickname {
 }
 
 /**
- * Return a valid {@link Nickname} or undefined.
- */
-export function validNicknameOrUndefined(nickname: unknown): Nickname | undefined {
-    if (isNickname(nickname)) {
-        return nickname;
-    }
-    return undefined;
-}
-
-/**
  * The client's Threema ID as ASCII bytes.
  */
 export type IdentityBytes = WeakOpaque<Uint8Array, {readonly IdentityBytes: unique symbol}>;

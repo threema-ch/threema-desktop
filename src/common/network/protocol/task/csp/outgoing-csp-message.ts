@@ -263,7 +263,7 @@ export class OutgoingCspMessageTask<
     }
 
     /**
-     * Encrypt, serizalize and send message to CSP for all receipients.
+     * Encrypt, serialize and send message to CSP for all recipients.
      *
      * @returns Promise that resolves whether all messages have been queued on the chat server.
      */
@@ -281,7 +281,10 @@ export class OutgoingCspMessageTask<
         // Determine own nickname (zero-padded)
         const senderNickname = new Uint8Array(32);
         if (this._messageProperties.allowUserProfileDistribution) {
-            UTF8.encodeFullyInto(model.user.profileSettings.get().view.nickname, senderNickname);
+            UTF8.encodeFullyInto(
+                model.user.profileSettings.get().view.nickname ?? '',
+                senderNickname,
+            );
         }
 
         // TODO(DESK-573): Bundle sending of group messages

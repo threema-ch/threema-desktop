@@ -71,8 +71,8 @@ import {
     ensureMessageId,
     type GroupConversationId,
     type IdentityString,
+    isNickname,
     type MessageId,
-    validNicknameOrUndefined,
 } from '~/common/network/types';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, ensureError, exhausted, unreachable} from '~/common/utils/assert';
@@ -719,7 +719,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             publicKey: fetched.publicKey,
             firstName: '',
             lastName: '',
-            nickname: validNicknameOrUndefined(nickname),
+            nickname: isNickname(nickname) ? nickname : undefined,
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: sender}),
             createdAt: new Date(),
             verificationLevel: VerificationLevel.UNVERIFIED,

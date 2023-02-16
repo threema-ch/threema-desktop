@@ -19,7 +19,7 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {isIdentityString, validNicknameOrUndefined} from '~/common/network/types';
+import {isIdentityString, isNickname} from '~/common/network/types';
 import {type Mutable} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
@@ -199,7 +199,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             createdAt: create.createdAt,
             firstName: create.firstName ?? '',
             lastName: create.lastName ?? '',
-            nickname: validNicknameOrUndefined(create.nickname),
+            nickname: isNickname(create.nickname) ? create.nickname : undefined,
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: create.identity}),
             verificationLevel: create.verificationLevel,
             workVerificationLevel: create.workVerificationLevel,
@@ -248,7 +248,9 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             // The nickname may not be validated inside the `purgeUndefinedProperties` call above
             // because it would convert the default value (i.e. empty string) to undefined and then
             // the key would be removed.
-            purgedPropertiesToUpdate.nickname = validNicknameOrUndefined(update.nickname);
+            purgedPropertiesToUpdate.nickname = isNickname(update.nickname)
+                ? update.nickname
+                : undefined;
         }
 
         controller.update.fromSync(purgedPropertiesToUpdate);

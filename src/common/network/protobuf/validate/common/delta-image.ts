@@ -16,6 +16,7 @@ const BASE_SCHEMA = {
 const SCHEMA_REMOVED = v
     .object({
         ...BASE_SCHEMA,
+        image: v.literal('removed'),
         removed: Unit.SCHEMA,
     })
     .rest(v.unknown());
@@ -23,6 +24,7 @@ const SCHEMA_REMOVED = v
 const SCHEMA_UPDATED = v
     .object({
         ...BASE_SCHEMA,
+        image: v.literal('updated'),
         updated: Image.SCHEMA,
     })
     .rest(v.unknown());
