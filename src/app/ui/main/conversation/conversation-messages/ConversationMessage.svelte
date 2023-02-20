@@ -29,7 +29,7 @@
   import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
-  import {type ConversationMessage} from '~/common/viewmodel/conversation-messages';
+  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
   /**
@@ -59,9 +59,9 @@
   const {router} = services;
 
   /**
-   * The ConversationMessage ViewModel
+   * The ConversationMessageViewModel
    */
-  export let viewModelStore: RemoteStore<Remote<ConversationMessage>>;
+  export let viewModelStore: RemoteStore<Remote<ConversationMessageViewModel>>;
 
   /**
    * The ModelStore for the Message

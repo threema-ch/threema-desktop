@@ -8,10 +8,8 @@ import {type Remote} from '~/common/utils/endpoint';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
 import {type IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {
-    type ConversationMessageSetStore,
-    type ConversationMessageViewModel,
-} from '~/common/viewmodel/conversation-messages';
+import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
+import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 import {type Mention} from '~/common/viewmodel/utils/mentions';
 
 /**
@@ -43,7 +41,7 @@ export function escapeHtmlUnsafeChars(text: string | undefined): string {
 /**
  * A list of messages sorted from oldest to newest.
  */
-export type SortedMessageList = Remote<ConversationMessageViewModel>[];
+export type SortedMessageList = Remote<ConversationMessage>[];
 /**
  * A store containing a {@link SortedMessageList}.
  */

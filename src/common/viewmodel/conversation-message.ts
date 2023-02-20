@@ -5,12 +5,11 @@ import {
     type AnyMessageModelStore,
     type Conversation,
     type Repositories,
-    type SetOfAnyLocalMessageModelStore,
     type Settings,
     type User,
 } from '~/common/model';
+import {type ConversationModelStore} from '~/common/model/conversation';
 import {statusFromView} from '~/common/model/message';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -18,7 +17,6 @@ import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
 import {type LocalStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
-import {LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import {type ServicesForViewModel} from '~/common/viewmodel';
 import {transformContact} from '~/common/viewmodel/svelte-components-transformations';
 import {
@@ -30,49 +28,29 @@ import {
 } from '~/common/viewmodel/types';
 import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
 
-export type ConversationMessageSetStore = LocalDerivedSetStore<
-    SetOfAnyLocalMessageModelStore,
-    ConversationMessageViewModel
->;
-
-/**
- * Get a SetStore that contains a ConversationPreview for a receiver.
- */
-export function getConversationMessageSetStore(
-    services: ServicesForViewModel,
-    conversation: LocalModelStore<Conversation>,
-): ConversationMessageSetStore {
-    const conversationModel = conversation.get();
-    const messageSetStore = conversationModel.controller.getAllMessages();
-    const log = services.logging.logger('viewmodel.conversation-messages');
-
-    return new LocalDerivedSetStore(messageSetStore, (store) =>
-        getConversationMessageViewModel(services, log, store, conversationModel),
-    );
-}
-
-export interface ConversationMessageViewModel extends PropertiesMarked {
+export interface ConversationMessage extends PropertiesMarked {
     readonly id: MessageId;
     readonly direction: MessageDirection;
     readonly messageStore: AnyMessageModelStore;
-    readonly viewModel: LocalStore<ConversationMessage>;
+    readonly viewModel: ConversationMessageViewModelStore;
 }
 
-function getConversationMessageViewModel(
+export function getConversationMessage(
     services: ServicesForViewModel,
-    log: Logger,
     messageStore: AnyMessageModelStore,
-    conversationModel: Conversation,
-): ConversationMessageViewModel {
-    const {endpoint} = services;
-    // Some properties of a message may not be changed, so it is safe to extract them at this time.
+    conversationModelStore: ConversationModelStore,
+): ConversationMessage {
+    const {endpoint, logging} = services;
+    const log = logging.logger('viewmodel.conversation-messages');
+
+    // Some properties of a message are immutable, so it is safe to extract them at this time.
     const messageModel = messageStore.get();
 
     return endpoint.exposeProperties({
         id: messageModel.view.id,
         direction: messageModel.view.direction,
         messageStore,
-        viewModel: getViewModel(services, log, messageStore, conversationModel),
+        viewModel: getViewModel(services, log, messageStore, conversationModelStore.get()),
     });
 }
 
@@ -80,7 +58,9 @@ export interface Quote extends PropertiesMarked {
     readonly messageId: MessageId;
 }
 
-export interface ConversationMessage extends PropertiesMarked {
+export type ConversationMessageViewModelStore = LocalStore<ConversationMessageViewModel>;
+
+export interface ConversationMessageViewModel extends PropertiesMarked {
     readonly body: Message<AnyMessageBody>;
 
     /**
@@ -92,7 +72,7 @@ export interface ConversationMessage extends PropertiesMarked {
      * Store of the quoted message, if any.
      * If the quoted message could not be found in the database, 'not-found' is returned.
      */
-    readonly quote: LocalStore<ConversationMessage> | 'not-found' | undefined;
+    readonly quote: ConversationMessageViewModelStore | 'not-found' | undefined;
 
     /**
      * Ordinal for message ordering in the conversation list.
@@ -106,7 +86,7 @@ function getViewModel(
     messageStore: AnyMessageModelStore,
     conversationModel: Conversation,
     resolveQuotedMessage = true,
-): LocalStore<ConversationMessage> {
+): ConversationMessageViewModelStore {
     const {endpoint, model} = services;
     return derive(messageStore, (message, getAndSubscribe) => {
         const quote = getQuotedMessageViewModel(
@@ -139,7 +119,7 @@ function getQuotedMessageViewModel(
     messageModel: AnyMessageModel,
     conversationModel: Conversation,
     resolveQuotedMessage: boolean,
-): LocalStore<ConversationMessage> | 'not-found' | undefined {
+): ConversationMessageViewModelStore | 'not-found' | undefined {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages
         return undefined;
@@ -184,14 +164,14 @@ function getConversationMessageBody(
     messageModel: AnyMessageModel,
     model: Repositories,
     getAndSubscribe: GetAndSubscribeFunction,
-): ConversationMessage['body'] {
+): ConversationMessageViewModel['body'] {
     const baseMessage = getConversationMessageBodyBaseMessage(
         messageModel,
         model.settings,
         model.user,
         getAndSubscribe,
     );
-    let messageData: ConversationMessage['body'];
+    let messageData: ConversationMessageViewModel['body'];
 
     switch (messageModel.type) {
         case 'text': {

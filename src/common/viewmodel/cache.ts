@@ -1,10 +1,11 @@
-import {type Conversation} from '~/common/model';
+import {type AnyMessageModelStore, type Conversation} from '~/common/model';
 import {LazyWeakRef} from '~/common/model/utils/model-cache';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {WeakValueMap} from '~/common/utils/map';
 import {type ContactListItemSetStore} from '~/common/viewmodel/contact-list-item';
 import {type ConversationViewModel} from '~/common/viewmodel/conversation';
-import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-messages';
+import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
+import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 import {type ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
 import {type DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import {type GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
@@ -21,8 +22,14 @@ export class ViewModelCache {
         LocalModelStore<Conversation>,
         ConversationViewModel
     > = new WeakValueMap();
-    public readonly conversationMessages: WeakValueMap<
+
+    public readonly conversationMessageSet: WeakValueMap<
         LocalModelStore<Conversation>,
         ConversationMessageSetStore
+    > = new WeakValueMap();
+
+    public readonly conversationMessage: WeakValueMap<
+        LocalModelStore<Conversation>,
+        WeakValueMap<AnyMessageModelStore, ConversationMessage>
     > = new WeakValueMap();
 }

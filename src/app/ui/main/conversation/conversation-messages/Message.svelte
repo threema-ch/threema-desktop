@@ -6,7 +6,7 @@
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
   import {type Remote} from '~/common/utils/endpoint';
-  import {type ConversationMessage} from '~/common/viewmodel/conversation-messages';
+  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
   import {
     type AnyMessageBody,
     type AnyReceiverData,
@@ -31,7 +31,7 @@
   /**
    * Quote
    */
-  export let quote: Remote<ConversationMessage['quote']>;
+  export let quote: Remote<ConversationMessageViewModel['quote']>;
 
   /**
    * Mentions parsed from the message

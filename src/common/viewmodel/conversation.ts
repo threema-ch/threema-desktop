@@ -1,5 +1,6 @@
 import {type AnyReceiverStore, type Conversation} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
+import {type MessageId} from '~/common/network/types';
 import {
     type PropertiesMarked,
     PROXY_HANDLER,
@@ -8,12 +9,9 @@ import {
 } from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type ServicesForViewModel} from '~/common/viewmodel';
-import {type ViewModelCache} from '~/common/viewmodel/cache';
-import {
-    type ConversationMessageSetStore,
-    getConversationMessageSetStore,
-} from '~/common/viewmodel/conversation-messages';
+import {type IViewModelBackend, type ServicesForViewModel} from '~/common/viewmodel';
+import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
+import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 import {
     type TransformedReceiverData,
     transformReceiver,
@@ -21,21 +19,23 @@ import {
 
 interface IConversationViewModelController extends ProxyMarked {
     getConversationMessagesSetStore: () => ConversationMessageSetStore;
+    getConversationMessage: (messageId: MessageId) => ConversationMessage | undefined;
 }
 
 export class ConversationViewModelController implements IConversationViewModelController {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
 
     public constructor(
-        private readonly _services: ServicesForViewModel,
         private readonly _conversation: LocalModelStore<Conversation>,
-        private readonly _viewModelCache: ViewModelCache,
+        private readonly _viewModelBackend: IViewModelBackend,
     ) {}
 
     public getConversationMessagesSetStore(): ConversationMessageSetStore {
-        return this._viewModelCache.conversationMessages.getOrCreate(this._conversation, () =>
-            getConversationMessageSetStore(this._services, this._conversation),
-        );
+        return this._viewModelBackend.conversationMessageSet(this._conversation);
+    }
+
+    public getConversationMessage(messageId: MessageId): ConversationMessage | undefined {
+        return this._viewModelBackend.conversationMessage(this._conversation, messageId, undefined);
     }
 }
 
@@ -58,17 +58,13 @@ export type InnerConversationViewModelStore = LocalStore<InnerConversationViewMo
 export function getConversationViewModel(
     services: ServicesForViewModel,
     conversation: LocalModelStore<Conversation>,
-    viewModelCache: ViewModelCache,
+    viewModelBackend: IViewModelBackend,
 ): ConversationViewModel {
     const {endpoint} = services;
 
     const receiver = conversation.get().controller.receiver();
     const viewModel = getInnerConversationViewModelStore(services, conversation);
-    const viewModelController = new ConversationViewModelController(
-        services,
-        conversation,
-        viewModelCache,
-    );
+    const viewModelController = new ConversationViewModelController(conversation, viewModelBackend);
     return endpoint.exposeProperties({conversation, receiver, viewModelController, viewModel});
 }
 

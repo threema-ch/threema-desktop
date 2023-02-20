@@ -4,12 +4,12 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type AppServices} from '~/app/types';
   import {
-    type SortedMessageList,
-    type SortedMessageListStore,
     getUnreadMessageInfo,
     hasDirectionChanged,
     isLastMessageOutbound,
     isLastOutboundMessageOlderThan,
+    type SortedMessageList,
+    type SortedMessageListStore,
     sortMessages,
     unsetUnreadMessageInfo,
   } from '~/app/ui/generic/form';
@@ -24,7 +24,7 @@
   import {type Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {debounce} from '~/common/utils/timer';
-  import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-messages';
+  import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 
   /**
    * App services.

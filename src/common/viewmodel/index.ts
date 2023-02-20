@@ -1,6 +1,10 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {type DbContactUid, type DbReceiverLookup} from '~/common/db';
+import {type AnyMessageModelStore} from '~/common/model';
+import {type ConversationModelStore} from '~/common/model/conversation';
+import {type MessageId} from '~/common/network/types';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {WeakValueMap} from '~/common/utils/map';
 import {type LocalStore} from '~/common/utils/store';
 import {type ViewModelCache} from '~/common/viewmodel/cache';
 import {
@@ -14,9 +18,13 @@ import {
     getConversationViewModel,
 } from '~/common/viewmodel/conversation';
 import {
+    type ConversationMessage,
+    getConversationMessage,
+} from '~/common/viewmodel/conversation-message';
+import {
     type ConversationMessageSetStore,
     getConversationMessageSetStore,
-} from '~/common/viewmodel/conversation-messages';
+} from '~/common/viewmodel/conversation-message-set';
 import {
     type ConversationPreviewSetStore,
     getConversationPreviewSetStore,
@@ -39,9 +47,15 @@ export interface IViewModelBackend extends ProxyMarked {
     readonly conversationPreviews: () => ConversationPreviewSetStore;
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModel | undefined;
 
-    readonly conversationMessages: (
-        receiver: DbReceiverLookup,
-    ) => ConversationMessageSetStore | undefined;
+    readonly conversationMessageSet: (
+        conversation: ConversationModelStore,
+    ) => ConversationMessageSetStore;
+    readonly conversationMessage: <THint extends AnyMessageModelStore | undefined>(
+        conversation: ConversationModelStore,
+        messageId: MessageId,
+        messageStoreHint: THint,
+    ) => THint extends undefined ? ConversationMessage | undefined : ConversationMessage;
+
     readonly debugPanel: () => DebugPanelViewModel;
     readonly contactListItems: () => ContactListItemSetStore;
     readonly contactListItem: (
@@ -71,18 +85,39 @@ export class ViewModelBackend implements IViewModelBackend {
             return undefined;
         }
         return this._cache.conversations.getOrCreate(conversation, () =>
-            getConversationViewModel(this._services, conversation, this._cache),
+            getConversationViewModel(this._services, conversation, this),
         );
     }
 
-    public conversationMessages(
-        receiver: DbReceiverLookup,
-    ): ConversationMessageSetStore | undefined {
-        const conversation = this._services.model.conversations.getForReceiver(receiver);
-        if (conversation === undefined) {
-            return undefined;
+    public conversationMessageSet(
+        conversation: ConversationModelStore,
+    ): ConversationMessageSetStore {
+        return this._cache.conversationMessageSet.getOrCreate(conversation, () =>
+            getConversationMessageSetStore(this, conversation),
+        );
+    }
+
+    public conversationMessage<THint extends AnyMessageModelStore | undefined>(
+        conversation: ConversationModelStore,
+        messageId: MessageId,
+        messageStoreHint: THint,
+    ): THint extends undefined ? ConversationMessage | undefined : ConversationMessage {
+        const messageStore =
+            messageStoreHint ?? conversation.get().controller.getMessage(messageId);
+        if (messageStore === undefined) {
+            return undefined as THint extends undefined
+                ? ConversationMessage | undefined
+                : ConversationMessage;
         }
-        return getConversationMessageSetStore(this._services, conversation);
+
+        return this._cache.conversationMessage
+            .getOrCreate(
+                conversation,
+                () => new WeakValueMap<AnyMessageModelStore, ConversationMessage>(),
+            )
+            .getOrCreate(messageStore, () =>
+                getConversationMessage(this._services, messageStore, conversation),
+            );
     }
 
     public contactListItems(): ContactListItemSetStore {

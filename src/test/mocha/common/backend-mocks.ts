@@ -43,6 +43,7 @@ import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, TagLogger} from '~/common/logging';
 import {
+    type AnyMessageModelStore,
     type Contact,
     type ContactInit,
     type ContactRepository,
@@ -59,7 +60,10 @@ import {
     type User,
 } from '~/common/model';
 import {ContactModelRepository} from '~/common/model/contact';
-import {ConversationModelRepository} from '~/common/model/conversation';
+import {
+    ConversationModelRepository,
+    type ConversationModelStore,
+} from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
 import {ProfilePictureModelRepository} from '~/common/model/profile-picture';
@@ -151,7 +155,11 @@ import {
     getContactListItemStore,
 } from '~/common/viewmodel/contact-list-item';
 import {type ConversationViewModel} from '~/common/viewmodel/conversation';
-import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-messages';
+import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
+import {
+    type ConversationMessageSetStore,
+    getConversationMessageSetStore,
+} from '~/common/viewmodel/conversation-message-set';
 import {
     type ConversationPreviewSetStore,
     getConversationPreviewSetStore,
@@ -428,10 +436,20 @@ export class TestViewModel implements IViewModelBackend {
         return undefined;
     }
 
-    public conversationMessages(
-        receiver: DbReceiverLookup,
-    ): ConversationMessageSetStore | undefined {
-        return undefined;
+    public conversationMessageSet(
+        conversation: ConversationModelStore,
+    ): ConversationMessageSetStore {
+        return getConversationMessageSetStore(this, conversation);
+    }
+
+    public conversationMessage<THint extends AnyMessageModelStore | undefined>(
+        conversation: ConversationModelStore,
+        messageId: MessageId,
+        messageStoreHint: THint,
+    ): THint extends undefined ? ConversationMessage | undefined : ConversationMessage {
+        return undefined as THint extends undefined
+            ? ConversationMessage | undefined
+            : ConversationMessage;
     }
 
     public contactListItems(): ContactListItemSetStore {

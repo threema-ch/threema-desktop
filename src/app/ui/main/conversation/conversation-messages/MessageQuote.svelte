@@ -3,12 +3,12 @@
   import MessageContent from '~/app/ui/main/conversation/conversation-messages/MessageContent.svelte';
   import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';
-  import {type ConversationMessage} from '~/common/viewmodel/conversation-messages';
+  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
 
   /**
    * The message to be parsed and displayed with the requested features.
    */
-  export let quote: Remote<LocalStore<ConversationMessage>>;
+  export let quote: Remote<LocalStore<ConversationMessageViewModel>>;
 </script>
 
 <template>
