@@ -245,8 +245,7 @@ export class InboundFileMessageModelController
                 }
             }
 
-            // Otherwise, download it from the blob mirror
-            this._log.debug(`Downloading ${type} blob`);
+            // If there is no blob ID, there's nothing to be downloaded
             const [blobId, nonce] = this.meta.run((handle) => {
                 switch (type) {
                     case 'main':
@@ -258,9 +257,11 @@ export class InboundFileMessageModelController
                 }
             });
             if (blobId === undefined) {
-                assert(type !== 'main', 'Expected a blob id to be available for the main file');
                 return undefined;
             }
+
+            // Otherwise, download it from the blob mirror
+            this._log.debug(`Downloading ${type} blob`);
             if (type === 'main') {
                 this.meta.update((view) => ({state: 'downloading'}));
             }

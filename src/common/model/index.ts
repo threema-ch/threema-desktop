@@ -1134,7 +1134,7 @@ export interface FileMessageViewFragment {
     readonly caption?: string;
     readonly mediaType: string;
     readonly thumbnailMediaType?: string;
-    readonly blobId: BlobId;
+    readonly blobId?: BlobId;
     readonly thumbnailBlobId?: BlobId;
     readonly blobDownloadState?: BlobDownloadState;
     readonly thumbnailBlobDownloadState?: BlobDownloadState;

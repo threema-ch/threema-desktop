@@ -392,7 +392,7 @@ export interface DbFileData {
  * A database file message.
  */
 export type DbFileMessage = {
-    readonly blobId: BlobId;
+    readonly blobId?: BlobId;
     readonly thumbnailBlobId?: BlobId;
     readonly blobDownloadState?: BlobDownloadState;
     readonly thumbnailBlobDownloadState?: BlobDownloadState;

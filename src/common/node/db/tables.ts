@@ -628,7 +628,7 @@ export const tMessageFileData = new (class TMessageFileData extends Table<
     /**
      * Original file Blob ID (used for downloading).
      */
-    public blobId = this.column<BlobId>('blobId', 'custom', CUSTOM_TYPES.BLOB_ID);
+    public blobId = this.optionalColumn<BlobId>('blobId', 'custom', CUSTOM_TYPES.BLOB_ID);
     /**
      * Original thumbnail Blob ID (used for downloading).
      */
