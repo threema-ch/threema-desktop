@@ -569,10 +569,11 @@ package:exe:
     # Ensure the proper node version is available
     - echo "Installing and using node version "(cat .nvmrc)
     - nvm version
-    # Note: Re-enable lines below once a release of nvm-windows >1.1.9 is released,
-    # which includes https://github.com/coreybutler/nvm-windows/pull/709
-    #- nvm install (cat .nvmrc)
-    #- nvm use (cat .nvmrc)
+    # Note: With nvm-windows <=1.1.9 there's a bug if the .nvmrc file does not contain
+    # an exact version: https://github.com/coreybutler/nvm-windows/pull/709
+    # Version 1.1.10 fixes it. Remove this note once that version is available on Chocolatey.
+    - nvm install (cat .nvmrc)
+    - nvm use (cat .nvmrc)
     # Show versions
     - node --version
     - npm --version
