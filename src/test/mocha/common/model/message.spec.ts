@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {BlobDownloadState, MessageDirection, MessageDirectionUtils} from '~/common/enum';
 import {randomFileEncryptionKey, randomFileId} from '~/common/file-storage';
-import {type Contact, type Conversation, type InboundFileMessageState} from '~/common/model';
+import {type Contact, type Conversation, type FileMessageDataState} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -47,18 +47,32 @@ export function run(): void {
         describe('file message', function () {
             const testCases: {
                 init: Pick<TestFileMessageInit, 'blobId' | 'fileData' | 'blobDownloadState'>;
-                expectedState: InboundFileMessageState;
+                expectedState: FileMessageDataState;
             }[] = [
-                // Test case 1: Remote because it doesn't contain file data
+                // Test case 1: Unsynced because it doesn't contain file data
                 {
                     init: {
                         blobId: ensureBlobId(crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                         blobDownloadState: undefined,
                         fileData: undefined,
                     },
-                    expectedState: 'remote',
+                    expectedState: 'unsynced',
                 },
-                // Test case 2: Local because it does contain file data
+                // Test case 2: Unsynced because it doesn't contain blob ID
+                {
+                    init: {
+                        blobId: undefined,
+                        blobDownloadState: undefined,
+                        fileData: {
+                            fileId: randomFileId(crypto),
+                            encryptionKey: randomFileEncryptionKey(crypto),
+                            unencryptedByteCount: 123,
+                            storageFormatVersion: FILE_STORAGE_FORMAT.V1,
+                        },
+                    },
+                    expectedState: 'unsynced',
+                },
+                // Test case 3: Synced because it contains both blob ID and file data
                 {
                     init: {
                         blobId: ensureBlobId(crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
@@ -70,13 +84,22 @@ export function run(): void {
                             storageFormatVersion: FILE_STORAGE_FORMAT.V1,
                         },
                     },
-                    expectedState: 'local',
+                    expectedState: 'synced',
                 },
-                // Test case 3: Failed if marked as failed
+                // Test case 4: Failed if marked as failed
                 {
                     init: {
                         blobId: ensureBlobId(crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                         blobDownloadState: BlobDownloadState.FAILED,
+                        fileData: undefined,
+                    },
+                    expectedState: 'failed',
+                },
+                // Test case 5: Failed if neither blob ID nor file data are set
+                {
+                    init: {
+                        blobId: undefined,
+                        blobDownloadState: undefined,
                         fileData: undefined,
                     },
                     expectedState: 'failed',

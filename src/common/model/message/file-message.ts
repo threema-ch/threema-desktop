@@ -16,16 +16,15 @@ import {
     type ConversationControllerHandle,
     type DirectedMessageFor,
     type FileData,
+    type FileMessageDataState,
     type FileMessageViewFragment,
     type InboundConversationPreviewMessageView,
     type InboundFileMessage,
     type InboundFileMessageController,
-    type InboundFileMessageState,
     type InboundFileMessageView,
     type OutboundConversationPreviewMessageView,
     type OutboundFileMessage,
     type OutboundFileMessageController,
-    type OutboundFileMessageState,
     type OutboundFileMessageView,
     PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
@@ -91,30 +90,27 @@ function updateFileMessage<TView extends InboundFileMessageView | OutboundFileMe
 }
 
 /**
- * Get the download state (of the file blob) for the specified inbound file message.
+ * Get the download state (of the file blob) for the specified inbound or outbound file message.
  */
-function getStateForInboundFileMessage(
+function getStateForFileMessage(
     message: Pick<DbFileMessage, 'blobId' | 'fileData' | 'blobDownloadState'>,
-): InboundFileMessageState {
-    // TODO(DESK-933): Once blobId is optional, if it's not set, return state 'failed' immediately.
-    if (message.fileData !== undefined) {
-        return 'local';
+): FileMessageDataState {
+    // If both file data and blob ID are set, message is fully synced
+    if (message.fileData !== undefined && message.blobId !== undefined) {
+        return 'synced';
+    }
+
+    // If neither file data nor blob ID are set, or if the download state is marked as failed,
+    // message download is failed and cannot be reattempted
+    if (message.fileData === undefined && message.blobId === undefined) {
+        return 'failed';
     }
     if (message.blobDownloadState === BlobDownloadState.FAILED) {
         return 'failed';
     }
-    return 'remote';
-}
 
-/**
- * Get the upload state (of the file blob) for the specified outbound file message.
- */
-function getStateForOutboundFileMessage(
-    message: Pick<DbFileMessage, 'fileData'>,
-): OutboundFileMessageState {
-    // TODO(DESK-933): Make blobId optional. If blobId is set, the state is 'remote'. If not, it's
-    // 'local'. If fileData is missing, return 'failed'.
-    return 'local';
+    // Otherwise the message is unsynced
+    return 'unsynced';
 }
 
 /**
@@ -138,6 +134,7 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
         encryptionKey: message.encryptionKey,
         fileData: message.fileData,
         thumbnailFileData: message.thumbnailFileData,
+        state: getStateForFileMessage(message),
     };
     switch (common.direction) {
         case MessageDirection.INBOUND: {
@@ -145,20 +142,18 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
                 sender !== NO_SENDER,
                 `Expected sender of inbound ${message.type} message ${message.uid} to exist`,
             );
-            const state = getStateForInboundFileMessage(message);
             return new InboundFileMessageModelStore(
                 services,
-                {...common, ...file, state},
+                {...common, ...file},
                 message.uid,
                 conversation,
                 sender,
             ) as TModelStore; // Trivially true as common.direction === TModelStore['ctx']
         }
         case MessageDirection.OUTBOUND: {
-            const state = getStateForOutboundFileMessage(message);
             return new OutboundFileMessageModelStore(
                 services,
-                {...common, ...file, state},
+                {...common, ...file},
                 message.uid,
                 conversation,
             ) as TModelStore; // Trivially true as common.direction === TModelStore['ctx']
@@ -263,7 +258,7 @@ export class InboundFileMessageModelController
             // Otherwise, download it from the blob mirror
             this._log.debug(`Downloading ${type} blob`);
             if (type === 'main') {
-                this.meta.update((view) => ({state: 'downloading'}));
+                this.meta.update((view) => ({state: 'syncing'}));
             }
             let downloadResult;
             try {
@@ -290,7 +285,7 @@ export class InboundFileMessageModelController
                             this._uid,
                             change,
                         );
-                        return change;
+                        return {change, state: 'failed'};
                     });
                 }
                 throw ensureError(error);
@@ -336,7 +331,7 @@ export class InboundFileMessageModelController
                 );
                 switch (type) {
                     case 'main':
-                        return {change, state: 'local'};
+                        return {change, state: 'synced'};
                     case 'thumbnail':
                         return {change};
                     default:
@@ -388,6 +383,7 @@ export class OutboundFileMessageModelController
         const fileData = this.meta.run((handle) => handle.view().fileData);
         assert(fileData !== undefined, 'File data for outgoing message is undefined');
         return await this._services.file.load(fileData);
+        // TODO(DESK-307): For reflected messages, it's possible that the blob is not yet downloaded
     }
 
     /** @inheritdoc */
@@ -396,6 +392,7 @@ export class OutboundFileMessageModelController
         return thumbnailFileData === undefined
             ? undefined
             : await this._services.file.load(thumbnailFileData);
+        // TODO(DESK-307): For reflected messages, it's possible that the blob is not yet downloaded
     }
 
     /** @inheritdoc */

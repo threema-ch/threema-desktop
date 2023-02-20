@@ -4,8 +4,7 @@ import {
     type AnyMessageModel,
     type AnyMessageModelStore,
     type Conversation,
-    type InboundFileMessage,
-    type OutboundFileMessage,
+    type FileMessageViewFragment,
     type Repositories,
     type Settings,
     type User,
@@ -23,11 +22,10 @@ import {type ServicesForViewModel} from '~/common/viewmodel';
 import {transformContact} from '~/common/viewmodel/svelte-components-transformations';
 import {
     type AnyMessageBody,
-    type InboundFileMessageState,
+    type FileMessageDataState,
     type IncomingMessage,
     type Message,
     type MessageReaction as SCMessageReaction,
-    type OutboundFileMessageState,
     type OutgoingMessage,
 } from '~/common/viewmodel/types';
 import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
@@ -168,26 +166,12 @@ function getMessageOrdinal(message: AnyMessageModel): u53 {
 }
 
 /**
- * Convert a view `InboundFileMessageState` into a viewmodel `InboundFileMessageState`.
+ * Convert a view `FileMessageDataState` into a viewmodel `FileMessageDataState`.
  */
-function convertInboundFileMessageState(view: InboundFileMessage['view']): InboundFileMessageState {
+function convertFileMessageDataState(view: FileMessageViewFragment): FileMessageDataState {
     switch (view.state) {
-        case 'downloading':
-            return {type: 'downloading', progress: 'TODO(DESK-933)'};
-        default:
-            return {type: view.state};
-    }
-}
-
-/**
- * Convert a view `OutboundFileMessageState` into a viewmodel `OutboundFileMessageState`.
- */
-function convertOutboundFileMessageState(
-    view: OutboundFileMessage['view'],
-): OutboundFileMessageState {
-    switch (view.state) {
-        case 'uploading':
-            return {type: 'uploading', progress: 'TODO(DESK-933)'};
+        case 'syncing':
+            return {type: 'syncing', progress: 'TODO(DESK-933)'};
         default:
             return {type: view.state};
     }
@@ -239,14 +223,14 @@ function getConversationMessageBody(
                     ...(baseMessage as Omit<IncomingMessage<AnyMessageBody>, 'type' | 'body'>),
                     type,
                     body,
-                    state: convertInboundFileMessageState(messageModel.view),
+                    state: convertFileMessageDataState(messageModel.view),
                 };
             } else {
                 messageData = {
                     ...(baseMessage as Omit<OutgoingMessage<AnyMessageBody>, 'type' | 'body'>),
                     type,
                     body,
-                    state: convertOutboundFileMessageState(messageModel.view),
+                    state: convertFileMessageDataState(messageModel.view),
                 };
             }
             break;
@@ -263,7 +247,7 @@ function getConversationMessageBodyBaseMessage(
     settings: Settings,
     user: User,
     getAndSubscribe: GetAndSubscribeFunction,
-): Omit<Message<AnyMessageBody>, 'type' | 'body'> {
+): Omit<Message<AnyMessageBody>, 'type' | 'body' | 'state'> {
     let lastReaction:
         | {
               at: Date;
@@ -278,7 +262,7 @@ function getConversationMessageBodyBaseMessage(
     }
 
     // Determine base message contents depending on direction
-    let baseMessage: Omit<Message<AnyMessageBody>, 'type' | 'body'>;
+    let baseMessage: Omit<Message<AnyMessageBody>, 'type' | 'body' | 'state'>;
     const id = u64ToHexLe(messageModel.view.id);
     switch (messageModel.ctx) {
         case MessageDirection.INBOUND: {
@@ -287,9 +271,11 @@ function getConversationMessageBodyBaseMessage(
             const contact = transformContact(sender, profilePicture, settings);
             assert(contact.type === 'contact');
 
-            const incomingBaseMessage: Omit<IncomingMessage<AnyMessageBody>, 'type' | 'body'> = {
+            const incomingBaseMessage: Omit<
+                IncomingMessage<AnyMessageBody>,
+                'type' | 'body' | 'state'
+            > = {
                 direction: 'incoming',
-                state: {type: 'local'},
                 id,
                 sender: contact,
                 isRead: messageModel.view.readAt !== undefined,
@@ -301,9 +287,11 @@ function getConversationMessageBodyBaseMessage(
         }
         case MessageDirection.OUTBOUND: {
             const status = statusFromView(messageModel.view)[0];
-            const outgoingBaseMessage: Omit<OutgoingMessage<AnyMessageBody>, 'type' | 'body'> = {
+            const outgoingBaseMessage: Omit<
+                OutgoingMessage<AnyMessageBody>,
+                'type' | 'body' | 'state'
+            > = {
                 direction: 'outgoing',
-                state: {type: 'remote'},
                 id,
                 status,
                 sender: {

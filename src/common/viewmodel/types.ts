@@ -142,31 +142,20 @@ export type ReceiverData<T extends ReceiverType> = {
 export type ReceiverBadgeType = 'contact-consumer' | 'contact-work' | 'group' | 'distribution-list';
 
 /**
- * State of the associated primary data (e.g. an image blob) of an inbound message.
+ * State of the associated primary data (e.g. an image blob) of an inbound or outbound message.
  *
- * - remote: Data has not yet been downloaded.
- * - downloading: Data is being downloaded.
- * - local: Data is downloaded.
- * - failed: Download has permanently failed (e.g. when already deleted from blob server)
+ * - unsynced: The file is available only locally (for outgoing messages) or only on the blob server
+ *   (for incoming or reflected messages).
+ * - syncing: The file is being uploaded (for outgoing messages) or downloaded (for incoming or
+ *   reflected messages).
+ * - synced: The file was up- or downloaded successfully.
+ * - failed: The up- or download failed and should not be retried (e.g. when the blob download
+ *   returns a 404).
  */
-export type InboundFileMessageState =
-    | {readonly type: 'remote'}
-    | {readonly type: 'downloading'; readonly progress: unknown}
-    | {readonly type: 'local'}
-    | {readonly type: 'failed'};
-
-/**
- * State of the associated primary data (e.g. an image blob) of an outbound message.
- *
- * - local: Data has not yet been uploaded.
- * - uploading: Data is being uploaded.
- * - remote: Data is uploaded.
- * - failed: Upload has failed and can be retried by user.
- */
-export type OutboundFileMessageState =
-    | {readonly type: 'local'}
-    | {readonly type: 'uploading'; readonly progress: unknown}
-    | {readonly type: 'remote'}
+export type FileMessageDataState =
+    | {readonly type: 'unsynced'}
+    | {readonly type: 'syncing'; readonly progress: unknown}
+    | {readonly type: 'synced'}
     | {readonly type: 'failed'};
 
 interface TextMessageBody {
@@ -355,17 +344,18 @@ export interface Reaction {
 
 export type IncomingMessage<B extends AnyMessageBody> = {
     readonly direction: 'incoming';
-    readonly state: InboundFileMessageState;
     readonly id: string;
     readonly sender: ReceiverData<'contact'>;
     readonly isRead: boolean;
     readonly updatedAt: Date;
     readonly lastReaction?: Reaction;
+    // The state field is only relevant for file messages. For all other messages,
+    // it can be set to 'synced'.
+    readonly state: FileMessageDataState;
 } & B;
 
 export type OutgoingMessage<B extends AnyMessageBody> = {
     readonly direction: 'outgoing';
-    readonly state: OutboundFileMessageState;
     readonly id: string;
     readonly status: MessageStatus;
     readonly sender: {
@@ -374,6 +364,9 @@ export type OutgoingMessage<B extends AnyMessageBody> = {
     };
     readonly updatedAt: Date;
     readonly lastReaction?: Reaction;
+    // The state field is only relevant for file messages. For all other messages,
+    // it can be set to 'synced'.
+    readonly state: FileMessageDataState;
 } & B;
 
 export type Message<B extends AnyMessageBody> = IncomingMessage<B> | OutgoingMessage<B>;

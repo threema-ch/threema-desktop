@@ -59,6 +59,7 @@ import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
+import {hasProperty} from '~/common/utils/object';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
 
 /**
@@ -247,10 +248,16 @@ export type TestFileMessageInit = Omit<CommonMessageInit<MessageType.FILE>, 'typ
  * Create a file message with optional default data.
  */
 export function createFileMessage(db: DatabaseBackend, init: TestFileMessageInit): DbMessageUid {
+    let blobId: BlobId | undefined;
+    if (!hasProperty(init, 'blobId')) {
+        blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH)) as ReadonlyUint8Array as BlobId;
+    } else if (init.blobId !== undefined) {
+        blobId = init.blobId as BlobId;
+    }
+
     return db.createFileMessage({
         ...getCommonMessage({...init, type: MessageType.FILE}),
-        blobId: (init.blobId ??
-            crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))) as ReadonlyUint8Array as BlobId,
+        blobId,
         thumbnailBlobId: init.thumbnailBlobId as ReadonlyUint8Array as BlobId | undefined,
         encryptionKey:
             init.encryptionKey ??

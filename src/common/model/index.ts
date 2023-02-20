@@ -1126,8 +1126,18 @@ export interface FileData {
     readonly storageFormatVersion: u53;
 }
 
-export type InboundFileMessageState = 'remote' | 'downloading' | 'local' | 'failed';
-export type OutboundFileMessageState = 'local' | 'uploading' | 'remote' | 'failed';
+/**
+ * File message data state
+ *
+ * - unsynced: The file is available only locally (for outgoing messages) or only on the blob server
+ *   (for incoming or reflected messages).
+ * - syncing: The file is being uploaded (for outgoing messages) or downloaded (for incoming or
+ *   reflected messages).
+ * - synced: The file was up- or downloaded successfully.
+ * - failed: The up- or download failed and should not be retried (e.g. when the blob download
+ *   returns a 404).
+ */
+export type FileMessageDataState = 'unsynced' | 'syncing' | 'synced' | 'failed';
 export interface FileMessageViewFragment {
     readonly fileName?: string;
     readonly fileSize: u53;
@@ -1141,12 +1151,11 @@ export interface FileMessageViewFragment {
     readonly encryptionKey: RawBlobKey;
     readonly fileData?: FileData;
     readonly thumbnailFileData?: FileData;
+    readonly state: FileMessageDataState;
 }
 type CommonFileMessageView = CommonBaseMessageView & FileMessageViewFragment;
-export type InboundFileMessageView = InboundBaseMessageView &
-    CommonFileMessageView & {readonly state: InboundFileMessageState};
-export type OutboundFileMessageView = OutboundBaseMessageView &
-    CommonFileMessageView & {readonly state: OutboundFileMessageState};
+export type InboundFileMessageView = InboundBaseMessageView & CommonFileMessageView;
+export type OutboundFileMessageView = OutboundBaseMessageView & CommonFileMessageView;
 type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
     Pick<
         CommonFileMessageView,
