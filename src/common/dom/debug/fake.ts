@@ -164,8 +164,8 @@ export async function generateFakeContactConversation(
                 break;
             case MessageDirection.OUTBOUND:
                 if (Math.random() < 0.1) {
-                    const {fileId} = await file.store(TEST_IMAGE);
-                    const {fileId: thumbnailFileId} = await file.store(TEST_THUMBNAIL);
+                    const fileData = await file.store(TEST_IMAGE);
+                    const thumbnailFileData = await file.store(TEST_THUMBNAIL);
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
@@ -180,8 +180,8 @@ export async function generateFakeContactConversation(
                         blobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                         thumbnailBlobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                         encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
-                        fileId,
-                        thumbnailFileId,
+                        fileData,
+                        thumbnailFileData,
                         lastReaction: generateFakeReaction(
                             crypto,
                             new Date(+new Date() - minutesAgo-- * 1000 * 60),
@@ -279,8 +279,8 @@ export async function generateFakeGroupConversation(
                 break;
             case MessageDirection.OUTBOUND:
                 if (Math.random() < 0.1) {
-                    const {fileId} = await file.store(TEST_IMAGE);
-                    const {fileId: thumbnailFileId} = await file.store(TEST_THUMBNAIL);
+                    const fileData = await file.store(TEST_IMAGE);
+                    const thumbnailFileData = await file.store(TEST_THUMBNAIL);
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
@@ -295,8 +295,8 @@ export async function generateFakeGroupConversation(
                         blobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                         thumbnailBlobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                         encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
-                        fileId,
-                        thumbnailFileId,
+                        fileData,
+                        thumbnailFileData,
                         lastReaction: generateFakeReaction(
                             crypto,
                             new Date(+new Date() - minutesAgo-- * 1000 * 60),

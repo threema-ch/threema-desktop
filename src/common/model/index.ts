@@ -1173,11 +1173,7 @@ type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
         readonly correlationId?: string;
     };
 type InboundFileMessageInit = CommonFileMessageInit & InboundBaseMessageInit<MessageType.FILE>;
-type OutboundFileMessageInit = CommonFileMessageInit &
-    OutboundBaseMessageInit<MessageType.FILE> & {
-        readonly fileId: FileId;
-        readonly thumbnailFileId: FileId;
-    };
+type OutboundFileMessageInit = CommonFileMessageInit & OutboundBaseMessageInit<MessageType.FILE>;
 type CommonFileMessageController<TView extends CommonFileMessageView> =
     CommonBaseMessageController<TView> & {
         /**
