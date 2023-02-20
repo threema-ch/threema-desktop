@@ -25,6 +25,7 @@ import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/r
 import {
     type AnyOutboundMessageInitFragment,
     getConversationById,
+    type OutboundFileMessageInitFragment,
     type OutboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import type * as structbuf from '~/common/network/structbuf';
@@ -200,11 +201,27 @@ export class ReflectedOutgoingMessageTask
 
                 // Add message to conversation
                 this._log.debug(`Saving ${this._direction} ${messageTypeDebug} message`);
-                void conversation.get().controller.addMessage.fromSync({
+                const messageStore = conversation.get().controller.addMessage.fromSync({
                     ...instructions.initFragment,
                     direction: MessageDirection.OUTBOUND,
                     id: validatedMessage.messageId,
                 });
+
+                // If this is a file message, trigger the downloading of the thumbnail
+                if (messageStore.type === 'file') {
+                    // TODO(MED-46): Dirty, dirty workaround for concurrent blob download bug
+                    await this._services.timer.sleep(2000);
+
+                    messageStore
+                        .get()
+                        .controller.thumbnailBlob()
+                        .catch((error) =>
+                            this._log.error(
+                                `Downloading the thumbnail of a reflected outgoing message failed: ${error}`,
+                            ),
+                        );
+                }
+
                 break;
             }
 
@@ -240,33 +257,40 @@ export class ReflectedOutgoingMessageTask
         const commonFragment = this._getCommonMessageInitFragment(createdAt);
         switch (validatedBody.type) {
             // Contact conversation messages
-            case CspE2eConversationType.TEXT: {
-                assert(
-                    conversationId.type === ReceiverType.CONTACT,
-                    'Text message must be directed at contact conversation',
-                ); // TODO(DESK-597): Distribution list support
-                const initFragment = getTextMessageInitFragment(
-                    validatedBody.message,
-                    commonFragment,
-                    this._log,
-                    messageId,
-                );
-                const instructions: ConversationMessageInstructions = {
-                    messageCategory: 'conversation-message',
-                    conversationId,
-                    initFragment,
-                };
-                return instructions;
-            }
+            case CspE2eConversationType.TEXT:
+            case CspE2eConversationType.FILE:
             case CspE2eConversationType.LOCATION: {
                 assert(
                     conversationId.type === ReceiverType.CONTACT,
-                    'Location message must be directed at contact conversation',
+                    `Message of type ${ReceiverTypeUtils.nameOf(
+                        conversationId.type,
+                    )} must be directed at contact conversation`,
                 ); // TODO(DESK-597): Distribution list support
-                const initFragment = getLocationMessageInitFragment(
-                    validatedBody.message,
-                    commonFragment,
-                );
+                let initFragment;
+                switch (validatedBody.type) {
+                    case CspE2eConversationType.TEXT:
+                        initFragment = getTextMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                            this._log,
+                            messageId,
+                        );
+                        break;
+                    case CspE2eConversationType.FILE:
+                        initFragment = getFileMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                        );
+                        break;
+                    case CspE2eConversationType.LOCATION:
+                        initFragment = getLocationMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                        );
+                        break;
+                    default:
+                        unreachable(validatedBody);
+                }
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId,
@@ -276,29 +300,34 @@ export class ReflectedOutgoingMessageTask
             }
 
             // Group conversation messages
-            case CspE2eGroupConversationType.GROUP_TEXT: {
-                const initFragment = getTextMessageInitFragment(
-                    validatedBody.message,
-                    commonFragment,
-                    this._log,
-                    messageId,
-                );
-                const instructions: ConversationMessageInstructions = {
-                    messageCategory: 'conversation-message',
-                    conversationId: {
-                        type: ReceiverType.GROUP,
-                        creatorIdentity: validatedBody.container.creatorIdentity,
-                        groupId: validatedBody.container.groupId,
-                    },
-                    initFragment,
-                };
-                return instructions;
-            }
+            case CspE2eGroupConversationType.GROUP_TEXT:
+            case CspE2eGroupConversationType.GROUP_FILE:
             case CspE2eGroupConversationType.GROUP_LOCATION: {
-                const initFragment = getLocationMessageInitFragment(
-                    validatedBody.message,
-                    commonFragment,
-                );
+                let initFragment;
+                switch (validatedBody.type) {
+                    case CspE2eGroupConversationType.GROUP_TEXT:
+                        initFragment = getTextMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                            this._log,
+                            messageId,
+                        );
+                        break;
+                    case CspE2eGroupConversationType.GROUP_FILE:
+                        initFragment = getFileMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                        );
+                        break;
+                    case CspE2eGroupConversationType.GROUP_LOCATION:
+                        initFragment = getLocationMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                        );
+                        break;
+                    default:
+                        unreachable(validatedBody);
+                }
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: {
@@ -435,6 +464,26 @@ function getTextMessageInitFragment(
         type: 'text',
         text,
         quotedMessageId: possibleQuote?.quotedMessageId,
+    };
+}
+
+function getFileMessageInitFragment(
+    message: structbuf.validate.csp.e2e.File.Type,
+    commonFragment: CommonOutboundMessageInitFragment,
+): OutboundFileMessageInitFragment {
+    const fileData = message.file;
+    return {
+        ...commonFragment,
+        type: 'file',
+        blobId: fileData.file.blobId,
+        thumbnailBlobId: fileData.thumbnail?.blobId,
+        encryptionKey: fileData.encryptionKey,
+        mediaType: fileData.file.mediaType,
+        thumbnailMediaType: fileData.thumbnail?.mediaType,
+        fileName: fileData.fileName,
+        fileSize: fileData.fileSize,
+        caption: fileData.caption,
+        correlationId: fileData.correlationId,
     };
 }
 

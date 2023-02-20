@@ -25,6 +25,7 @@ import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/r
 import {
     type AnyInboundMessageInitFragment,
     getConversationById,
+    type InboundFileMessageInitFragment,
     type InboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import type * as structbuf from '~/common/network/structbuf';
@@ -176,12 +177,28 @@ export class ReflectedIncomingMessageTask
 
                 // Add message to conversation
                 this._log.debug(`Saving ${this._direction} ${messageTypeDebug} message`);
-                void conversation.get().controller.addMessage.fromSync({
+                const messageStore = conversation.get().controller.addMessage.fromSync({
                     ...instructions.initFragment,
                     direction: MessageDirection.INBOUND,
                     sender: senderContact.ctx,
                     id: validatedMessage.messageId,
                 });
+
+                // If this is a file message, trigger the downloading of the thumbnail
+                if (messageStore.type === 'file') {
+                    // TODO(MED-46): Dirty, dirty workaround for concurrent blob download bug
+                    await this._services.timer.sleep(2000);
+
+                    messageStore
+                        .get()
+                        .controller.thumbnailBlob()
+                        .catch((error) =>
+                            this._log.error(
+                                `Downloading the thumbnail of a reflected incoming message failed: ${error}`,
+                            ),
+                        );
+                }
+
                 break;
             }
 
@@ -219,13 +236,27 @@ export class ReflectedIncomingMessageTask
         const commonFragment = this._getCommonMessageInitFragment(createdAt, reflectedAt);
         switch (validatedBody.type) {
             // Contact conversation messages
-            case CspE2eConversationType.TEXT: {
-                const initFragment = getTextMessageInitFragment(
-                    validatedBody.message,
-                    commonFragment,
-                    this._log,
-                    messageId,
-                );
+            case CspE2eConversationType.TEXT:
+            case CspE2eConversationType.FILE: {
+                let initFragment;
+                switch (validatedBody.type) {
+                    case CspE2eConversationType.TEXT:
+                        initFragment = getTextMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                            this._log,
+                            messageId,
+                        );
+                        break;
+                    case CspE2eConversationType.FILE:
+                        initFragment = getFileMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                        );
+                        break;
+                    default:
+                        unreachable(validatedBody);
+                }
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: {type: ReceiverType.CONTACT, identity: senderIdentity},
@@ -247,13 +278,27 @@ export class ReflectedIncomingMessageTask
             }
 
             // Group conversation messages
-            case CspE2eGroupConversationType.GROUP_TEXT: {
-                const initFragment = getTextMessageInitFragment(
-                    validatedBody.message,
-                    commonFragment,
-                    this._log,
-                    messageId,
-                );
+            case CspE2eGroupConversationType.GROUP_TEXT:
+            case CspE2eGroupConversationType.GROUP_FILE: {
+                let initFragment;
+                switch (validatedBody.type) {
+                    case CspE2eGroupConversationType.GROUP_TEXT:
+                        initFragment = getTextMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                            this._log,
+                            messageId,
+                        );
+                        break;
+                    case CspE2eGroupConversationType.GROUP_FILE:
+                        initFragment = getFileMessageInitFragment(
+                            validatedBody.message,
+                            commonFragment,
+                        );
+                        break;
+                    default:
+                        unreachable(validatedBody);
+                }
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: {
@@ -405,6 +450,26 @@ function getTextMessageInitFragment(
         type: 'text',
         text,
         quotedMessageId: possibleQuote?.quotedMessageId,
+    };
+}
+
+function getFileMessageInitFragment(
+    message: structbuf.validate.csp.e2e.File.Type,
+    commonFragment: CommonInboundMessageInitFragment,
+): InboundFileMessageInitFragment {
+    const fileData = message.file;
+    return {
+        ...commonFragment,
+        type: 'file',
+        blobId: fileData.file.blobId,
+        thumbnailBlobId: fileData.thumbnail?.blobId,
+        encryptionKey: fileData.encryptionKey,
+        mediaType: fileData.file.mediaType,
+        thumbnailMediaType: fileData.thumbnail?.mediaType,
+        fileName: fileData.fileName,
+        fileSize: fileData.fileSize,
+        caption: fileData.caption,
+        correlationId: fileData.correlationId,
     };
 }
 

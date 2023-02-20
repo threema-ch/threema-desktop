@@ -46,12 +46,18 @@ interface ValidatedCspE2eMessageType<
 export type ValidatedCspE2eTypes =
     // Contact conversation messages
     | ValidatedCspE2eMessageType<CspE2eConversationType.TEXT, Text.Type>
+    | ValidatedCspE2eMessageType<CspE2eConversationType.FILE, File.Type>
     | ValidatedCspE2eMessageType<CspE2eConversationType.LOCATION, Location.Type>
 
     // Group conversation messages
     | ValidatedCspE2eMessageType<
           CspE2eGroupConversationType.GROUP_TEXT,
           Text.Type,
+          GroupMemberContainer.Type
+      >
+    | ValidatedCspE2eMessageType<
+          CspE2eGroupConversationType.GROUP_FILE,
+          File.Type,
           GroupMemberContainer.Type
       >
     | ValidatedCspE2eMessageType<

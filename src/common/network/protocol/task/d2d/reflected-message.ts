@@ -138,6 +138,14 @@ export abstract class ReflectedMessageTaskBase<
                         ),
                         container: undefined,
                     };
+                case CspE2eConversationType.FILE:
+                    return {
+                        type: CspE2eConversationType.FILE,
+                        message: structbuf.validate.csp.e2e.File.SCHEMA.parse(
+                            structbuf.csp.e2e.File.decode(body),
+                        ),
+                        container: undefined,
+                    };
                 case CspE2eConversationType.LOCATION:
                     // TODO(DESK-248): Full implementation
                     return {
@@ -157,6 +165,18 @@ export abstract class ReflectedMessageTaskBase<
                         type: CspE2eGroupConversationType.GROUP_TEXT,
                         message: structbuf.validate.csp.e2e.Text.SCHEMA.parse(
                             structbuf.csp.e2e.Text.decode(container.innerData),
+                        ),
+                        container,
+                    };
+                }
+                case CspE2eGroupConversationType.GROUP_FILE: {
+                    const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(body),
+                    );
+                    return {
+                        type: CspE2eGroupConversationType.GROUP_FILE,
+                        message: structbuf.validate.csp.e2e.File.SCHEMA.parse(
+                            structbuf.csp.e2e.File.decode(container.innerData),
                         ),
                         container,
                     };
@@ -274,7 +294,6 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eConversationType.DEPRECATED_IMAGE: // TODO(DESK-586)
                 case CspE2eConversationType.DEPRECATED_AUDIO: // TODO(DESK-586)
                 case CspE2eConversationType.DEPRECATED_VIDEO: // TODO(DESK-586)
-                case CspE2eConversationType.FILE: // TODO(DESK-307)
                 case CspE2eConversationType.POLL_SETUP: // TODO(DESK-244)
                 case CspE2eConversationType.POLL_VOTE: // TODO(DESK-244)
                 case CspE2eConversationType.CALL_OFFER: // TODO(DESK-243)
@@ -287,7 +306,6 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE: // TODO(DESK-586)
                 case CspE2eGroupConversationType.GROUP_AUDIO: // TODO(DESK-586)
                 case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)
-                case CspE2eGroupConversationType.GROUP_FILE: // TODO(DESK-307)
                 case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(DESK-244)
                 case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
                 case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(DESK-594)
