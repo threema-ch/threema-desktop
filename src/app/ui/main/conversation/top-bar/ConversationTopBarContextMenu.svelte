@@ -42,7 +42,7 @@
   <div>
     <ContextMenuWrapper
       bind:this={wrapper}
-      directionX={'auto'}
+      directionX="auto"
       on:clickoutside={closeContextMenu}
       {x}
       {y}

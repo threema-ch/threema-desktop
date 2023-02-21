@@ -25,7 +25,7 @@
         alt="Your profile picture"
         {initials}
         color={profilePicture.color}
-        shape={'circle'}
+        shape="circle"
       />
     </button>
     <!-- <IconButton flavor="naked" class="wip">

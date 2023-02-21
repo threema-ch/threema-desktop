@@ -149,7 +149,7 @@
             alt="Profile picture of {$contactViewModel.displayName}"
             initials={$contactViewModel.initials}
             color={$profilePicture.view.color}
-            shape={'circle'}
+            shape="circle"
           />
         </span>
       </div>
@@ -220,7 +220,7 @@
           alt="Profile picture of {$contactViewModel.fullName}"
           initials={$contactViewModel.initials}
           color={$profilePicture.view.color}
-          shape={'square'}
+          shape="square"
         />
       </ProfilePictureDialog>
     {/if}

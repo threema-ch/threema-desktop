@@ -25,7 +25,7 @@
         {alt}
         {initials}
         color={profilePicture.color}
-        shape={'circle'}
+        shape="circle"
       />
     </div>
     <div class="overlay">

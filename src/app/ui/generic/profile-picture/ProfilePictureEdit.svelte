@@ -25,7 +25,7 @@
         alt={`Profile picture of ${name}`}
         initials=""
         color={$profilePicture.view.color}
-        shape={'circle'}
+        shape="circle"
       />
     </div>
   </div>

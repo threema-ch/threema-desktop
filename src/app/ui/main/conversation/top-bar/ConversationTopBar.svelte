@@ -167,7 +167,7 @@
             alt="Profile picture of {receiver.name}"
             initials={receiver.profilePicture.initials}
             color={receiver.profilePicture.color}
-            shape={'circle'}
+            shape="circle"
           />
         </div>
         <div class="title" class:group-inactive={isInactiveGroup} on:click={openAside}>

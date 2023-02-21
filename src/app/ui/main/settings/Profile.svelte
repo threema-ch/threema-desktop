@@ -16,7 +16,7 @@
         alt="Your profile picture"
         {initials}
         color={profilePicture.color}
-        shape={'circle'}
+        shape="circle"
       />
     </div>
     <div class="nickname">

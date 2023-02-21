@@ -132,7 +132,7 @@
             alt="Profile picture of {group$.displayName}"
             initials={group$.displayName.slice(0, 2)}
             color={$profilePicture.view.color}
-            shape={'circle'}
+            shape="circle"
           />
         </span>
       </div>
@@ -206,7 +206,7 @@
           alt="Profile picture of {group$.displayName}"
           initials={group$.displayName.slice(0, 2)}
           color={$profilePicture.view.color}
-          shape={'square'}
+          shape="square"
         />
       </ProfilePictureDialog>
     {/if}
