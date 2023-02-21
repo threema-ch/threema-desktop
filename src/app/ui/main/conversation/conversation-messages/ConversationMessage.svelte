@@ -220,7 +220,7 @@
     <div class="container">
       {#if messageBody.direction === 'incoming' && receiver.type === 'group'}
         <div class="profile-picture-container">
-          <span class="profile-picture" on:click={async () => await navigateToContact()}>
+          <button class="profile-picture" on:click={async () => await navigateToContact()}>
             <ProfilePictureComponent
               {...messageBody.sender.profilePicture}
               img={transformProfilePicture(messageBody.sender.profilePicture.img)}
@@ -229,7 +229,7 @@
               shape="circle"
               fontSize="small"
             />
-          </span>
+          </button>
         </div>
       {/if}
 
@@ -243,13 +243,13 @@
         <div class="hover" class:visible={isContextMenuVisible} />
       </div>
       <div class="options">
-        <div
+        <button
           class="caret"
           class:visible={isContextMenuVisible}
           on:click={openContextMenuOnMouseEvent}
         >
           <MdIcon theme="Outlined">expand_more</MdIcon>
-        </div>
+        </button>
         <ContextMenu
           bind:this={contextMenu}
           directionX={messageBody.direction === 'incoming' ? 'auto' : 'left'}
@@ -335,6 +335,7 @@
         padding-left: rem(4px);
 
         .caret {
+          @include circle-button;
           display: none;
           user-select: none;
           justify-self: start;
@@ -373,7 +374,7 @@
           font-size: rem(4px);
 
           .profile-picture {
-            cursor: pointer;
+            @include circle-button;
             --c-profile-picture-size: #{rem(24px)};
           }
         }
