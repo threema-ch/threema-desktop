@@ -3,7 +3,6 @@
   import {type Readable} from 'svelte/store';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
@@ -104,11 +103,12 @@
   <div class="wrapper">
     <div class="icons-left">
       {#if displayAttachmentButton}
-        <FileTrigger on:fileDrop multiple>
-          <IconButton flavor="naked">
-            <MdIcon theme="Outlined">attach_file</MdIcon>
-          </IconButton>
-        </FileTrigger>
+        <!-- TODO(DESK-933): Re-enable file trigger -->
+        <!--<FileTrigger on:fileDrop multiple>-->
+        <IconButton flavor="naked" class="wip">
+          <MdIcon theme="Outlined">attach_file</MdIcon>
+        </IconButton>
+        <!--</FileTrigger>-->
       {/if}
     </div>
     <ComposeArea
