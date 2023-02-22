@@ -631,7 +631,7 @@ export enum ElectronIpcCommand {
  */
 export enum BlobDownloadState {
     /** The blob download failed and should not be retried. */
-    FAILED = 0,
+    PERMANENT_FAILURE = 0,
 }
 
 /**

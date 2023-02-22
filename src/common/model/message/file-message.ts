@@ -107,7 +107,7 @@ function getStateForFileMessage(
     if (message.fileData === undefined && message.blobId === undefined) {
         return 'failed';
     }
-    if (message.blobDownloadState === BlobDownloadState.FAILED) {
+    if (message.blobDownloadState === BlobDownloadState.PERMANENT_FAILURE) {
         return 'failed';
     }
 
@@ -211,10 +211,10 @@ async function downloadBlob(
         let change: Partial<FileMessageViewFragment>;
         switch (type) {
             case 'main':
-                change = {blobDownloadState: BlobDownloadState.FAILED};
+                change = {blobDownloadState: BlobDownloadState.PERMANENT_FAILURE};
                 break;
             case 'thumbnail':
-                change = {thumbnailBlobDownloadState: BlobDownloadState.FAILED};
+                change = {thumbnailBlobDownloadState: BlobDownloadState.PERMANENT_FAILURE};
                 break;
             default:
                 unreachable(type);
@@ -254,7 +254,7 @@ async function downloadBlob(
                     return unreachable(type);
             }
         });
-        if (downloadState === BlobDownloadState.FAILED) {
+        if (downloadState === BlobDownloadState.PERMANENT_FAILURE) {
             switch (type) {
                 case 'main':
                     throw new Error('Blob download is marked as failed');

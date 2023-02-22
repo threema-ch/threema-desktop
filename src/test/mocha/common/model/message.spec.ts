@@ -90,7 +90,7 @@ export function run(): void {
                 {
                     init: {
                         blobId: ensureBlobId(crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
-                        blobDownloadState: BlobDownloadState.FAILED,
+                        blobDownloadState: BlobDownloadState.PERMANENT_FAILURE,
                         fileData: undefined,
                     },
                     expectedState: 'failed',

@@ -1829,9 +1829,9 @@ export namespace ElectronIpcCommand {
  */
 export type ElectronIpcCommand = (typeof ElectronIpcCommand)[keyof typeof ElectronIpcCommand];
 export namespace BlobDownloadState {
-    export const FAILED = 0;
+    export const PERMANENT_FAILURE = 0;
     /** The blob download failed and should not be retried. */
-    export type FAILED = typeof FAILED;
+    export type PERMANENT_FAILURE = typeof PERMANENT_FAILURE;
 }
 /**
  * DATABASE
@@ -1844,7 +1844,9 @@ export namespace BlobDownloadState {
  */
 export type BlobDownloadState = (typeof BlobDownloadState)[keyof typeof BlobDownloadState];
 export namespace BlobDownloadStateUtils {
-    export const ALL: ReadonlySet<BlobDownloadState> = new Set([BlobDownloadState.FAILED] as const);
+    export const ALL: ReadonlySet<BlobDownloadState> = new Set([
+        BlobDownloadState.PERMANENT_FAILURE,
+    ] as const);
     export function fromNumber(value: u53, fallback?: BlobDownloadState): BlobDownloadState {
         if ((ALL as ReadonlySet<u53>).has(value)) {
             return value as BlobDownloadState;
