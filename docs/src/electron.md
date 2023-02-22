@@ -19,7 +19,8 @@ First, install `minidump-stackwalk`:
     $ cargo install minidump-stackwalk
 
 Download debug symbols for the used Electron version from
-<https://github.com/electron/electron/releases> (e.g. `electron-v22.0.0-linux-x64-debug.zip ` or
+<https://github.com/electron/electron/releases> (e.g.
+`electron-v22.0.0-linux-x64-symbols.zip ` or
 `electron-v22.0.0-darwin-arm64-symbols.zip`) and unzip the file.
 
 Then you can analyze the crash dump:
