@@ -32,18 +32,17 @@
     {:else if message.type === 'file'}
       <div class="file">
         <!-- TODO(DESK-932): Properly render message -->
-        <p>
-          <em>
-            {#if message.body.filename !== undefined}
-              File: {message.body.filename} ({message.body.mediaType})
-            {:else}
-              File (({message.body.mediaType}))
-            {/if}
-            <br />State: {JSON.stringify(message.state)}
-          </em>
-        </p>
+        {#if message.body.filename !== undefined}
+          Media / file message: {message.body.filename}
+        {:else}
+          Media / file message
+        {/if}
+        <br />
+        <em>
+          Please view this message on your mobile device. It is not yet supported on desktop.
+        </em>
         {#if message.body.caption !== undefined}
-          <p>{message.body.caption}</p>
+          <br /><br />Caption: <em>{message.body.caption}</em>
         {/if}
       </div>
     {:else}
