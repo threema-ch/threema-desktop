@@ -440,7 +440,7 @@
     }
 
     .quote {
-      background-color: $grey-100;
+      background-color: var(--cc-compose-area-quote-background-color);
       padding: rem(8px) rem(8px) rem(8px) rem(16px);
       display: flex;
       justify-content: space-between;
