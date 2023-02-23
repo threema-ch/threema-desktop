@@ -8,6 +8,7 @@
   import ConversationNavElement from '~/app/ui/nav/conversation/ConversationNavElement.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
+  import {ConversationVisibility} from '~/common/enum';
   import {type Settings} from '~/common/model';
   import {unreachable, unwrap} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
@@ -34,14 +35,14 @@
 
   let conversationPreviewList: HTMLDivElement;
 
-  // Determine wheter scroll snapping anchor is active.
+  // Determine whether scroll snapping anchor is active.
   let anchorActive = true;
 
   /**
    * Detect and switch if the scroll snapping anchor should be active based on element visibility.
    */
   function scrollSnap(node: HTMLElement): SvelteAction {
-    // Make sure that the scoll anchor is initially visible if active
+    // Make sure that the scroll anchor is initially visible if active
     if (anchorActive) {
       scrollToCenterOfView(node);
     }
@@ -64,10 +65,10 @@
     conversationPreviews,
     (conversationsSet, getAndSubscribe) => {
       const sortedConversations = [...conversationsSet]
-        .filter(
-          (conversationPreviewModel) =>
-            getAndSubscribe(conversationPreviewModel.viewModel).lastUpdate !== undefined,
-        )
+        .filter((conversationPreviewModel) => {
+          const {lastUpdate, visibility} = getAndSubscribe(conversationPreviewModel.viewModel);
+          return lastUpdate !== undefined && visibility !== ConversationVisibility.ARCHIVED;
+        })
         .filter((conversationPreviewModel) => {
           const filterText = getAndSubscribe(conversationPreviewListFilter);
 
