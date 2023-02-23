@@ -1,4 +1,5 @@
 <script lang="ts">
+  import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {type SendMessageEventDetail} from '~/app/ui/main/conversation';
@@ -98,11 +99,10 @@
   }
 
   let zoneHover = false;
-  const bodyHover = false;
+  let bodyHover = false;
   $: zoneHover = zoneHover;
 </script>
 
-<!-- TODO(DESK-933): Re-enable dropzone
 <svelte:body
   on:threema-drag-start={() => {
     bodyHover = true;
@@ -111,29 +111,27 @@
     bodyHover = false;
   }}
 />
--->
 
 <template>
   {#if conversationViewModel !== undefined && receiver !== undefined && $receiver !== undefined}
-    <!-- TODO(DESK-933): Re-enable dropzone -->
-    <!--<DropZone bind:zoneHover on:fileDrop={(event) => openMediaMessageDialog(event.detail)}>-->
-    <div class="drag-wrapper" class:bodyHover>
-      <Conversation
-        {conversationViewModel}
-        {receiverLookup}
-        {forwardedMessageLookup}
-        {services}
-        on:fileDrop={(event) => openMediaMessageDialog(event.detail)}
-        on:sendMessage={sendMessage}
-      />
+    <DropZone bind:zoneHover on:fileDrop={(event) => openMediaMessageDialog(event.detail)}>
+      <div class="drag-wrapper" class:bodyHover>
+        <Conversation
+          {conversationViewModel}
+          {receiverLookup}
+          {forwardedMessageLookup}
+          {services}
+          on:fileDrop={(event) => openMediaMessageDialog(event.detail)}
+          on:sendMessage={sendMessage}
+        />
 
-      {#if zoneHover || bodyHover}
-        <div class="drop-wrapper" class:zoneHover class:bodyHover>
-          <div class="border">Drop files here to send</div>
-        </div>
-      {/if}
-    </div>
-    <!--</DropZone>-->
+        {#if zoneHover || bodyHover}
+          <div class="drop-wrapper" class:zoneHover class:bodyHover>
+            <div class="border">Drop files here to send</div>
+          </div>
+        {/if}
+      </div>
+    </DropZone>
 
     {#if mediaMessageDialogVisible}
       <MediaMessage
