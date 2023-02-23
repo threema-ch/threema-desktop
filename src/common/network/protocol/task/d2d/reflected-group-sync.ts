@@ -111,13 +111,14 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
             );
         }
 
-        // Update conversation properties
-        const category = update.conversationCategory;
-        const visibility = update.conversationVisibility;
-        if (category !== undefined || visibility !== undefined) {
+        if (update.conversationCategory !== undefined) {
             controller.conversation().get().controller.update({
-                category,
-                visibility,
+                category: update.conversationCategory,
+            });
+        }
+        if (update.conversationVisibility !== undefined) {
+            controller.conversation().get().controller.update({
+                visibility: update.conversationVisibility,
             });
         }
     }

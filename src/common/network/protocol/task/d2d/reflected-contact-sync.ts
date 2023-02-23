@@ -254,12 +254,14 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         }
 
         controller.update.fromSync(purgedPropertiesToUpdate);
-        if (
-            update.conversationCategory !== undefined ||
-            update.conversationVisibility !== undefined
-        ) {
+
+        if (update.conversationCategory !== undefined) {
             controller.conversation().get().controller.update({
                 category: update.conversationCategory,
+            });
+        }
+        if (update.conversationVisibility !== undefined) {
+            controller.conversation().get().controller.update({
                 visibility: update.conversationVisibility,
             });
         }
