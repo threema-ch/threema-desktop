@@ -1401,10 +1401,10 @@ export namespace ConversationCategoryUtils {
 export namespace ConversationVisibility {
     export const SHOW = 0;
     export type SHOW = typeof SHOW;
-    export const PINNED = 1;
-    export type PINNED = typeof PINNED;
-    export const ARCHIVED = 2;
+    export const ARCHIVED = 1;
     export type ARCHIVED = typeof ARCHIVED;
+    export const PINNED = 2;
+    export type PINNED = typeof PINNED;
 }
 /** @generate convert */
 export type ConversationVisibility =
@@ -1412,8 +1412,8 @@ export type ConversationVisibility =
 export namespace ConversationVisibilityUtils {
     export const ALL: ReadonlySet<ConversationVisibility> = new Set([
         ConversationVisibility.SHOW,
-        ConversationVisibility.PINNED,
         ConversationVisibility.ARCHIVED,
+        ConversationVisibility.PINNED,
     ] as const);
     export function fromNumber(
         value: u53,

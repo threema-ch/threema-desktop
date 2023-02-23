@@ -537,8 +537,8 @@ export enum ConversationCategory {
 /** @generate convert */
 export enum ConversationVisibility {
     SHOW = 0,
-    PINNED = 1,
-    ARCHIVED = 2,
+    ARCHIVED = 1,
+    PINNED = 2,
 }
 /** @generate convert */
 export enum GroupNotificationTriggerPolicy {
