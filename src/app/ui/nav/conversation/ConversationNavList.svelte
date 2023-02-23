@@ -87,8 +87,20 @@
         })
         .sort((a, b) => {
           // Unwrap is okay as we filter out entries without lastUpdate
-          const aTime = unwrap(getAndSubscribe(a.viewModel).lastUpdate).getTime();
-          const bTime = unwrap(getAndSubscribe(b.viewModel).lastUpdate).getTime();
+          const aViewModel = getAndSubscribe(a.viewModel);
+          const bViewModel = getAndSubscribe(b.viewModel);
+
+          const aIsPinned = aViewModel.visibility === ConversationVisibility.PINNED;
+          const bIsPinned = bViewModel.visibility === ConversationVisibility.PINNED;
+          if (aIsPinned && !bIsPinned) {
+            return -1;
+          }
+          if (!aIsPinned && bIsPinned) {
+            return 1;
+          }
+
+          const aTime = unwrap(aViewModel.lastUpdate).getTime();
+          const bTime = unwrap(bViewModel.lastUpdate).getTime();
           if (aTime > bTime) {
             return -1;
           }
