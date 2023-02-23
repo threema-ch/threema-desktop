@@ -1193,8 +1193,12 @@ type CommonFileMessageController<TView extends CommonFileMessageView> =
          * will be updated. Once that is done, the promise will resolve with the blob data.
          *
          * If the download fails (for any reason), then the promise is rejected with an error.
+         *
+         * TODO(MED-46): Remove waitToAvoidConcurrencyBug parameter
          */
-        readonly thumbnailBlob: () => Promise<ReadonlyUint8Array | undefined>;
+        readonly thumbnailBlob: (
+            waitToAvoidConcurrencyBug?: boolean,
+        ) => Promise<ReadonlyUint8Array | undefined>;
     };
 export type InboundFileMessageController = InboundBaseMessageController<InboundFileMessageView> &
     CommonFileMessageController<InboundFileMessageView>;

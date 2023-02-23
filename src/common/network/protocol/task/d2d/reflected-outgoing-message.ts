@@ -209,12 +209,9 @@ export class ReflectedOutgoingMessageTask
 
                 // If this is a file message, trigger the downloading of the thumbnail
                 if (messageStore.type === 'file') {
-                    // TODO(MED-46): Dirty, dirty workaround for concurrent blob download bug
-                    await this._services.timer.sleep(2000);
-
                     messageStore
                         .get()
-                        .controller.thumbnailBlob()
+                        .controller.thumbnailBlob(true)
                         .catch((error) =>
                             this._log.error(
                                 `Downloading the thumbnail of a reflected outgoing message failed: ${error}`,

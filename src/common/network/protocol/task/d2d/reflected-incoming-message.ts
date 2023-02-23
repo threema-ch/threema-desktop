@@ -186,9 +186,6 @@ export class ReflectedIncomingMessageTask
 
                 // If this is a file message, trigger the downloading of the thumbnail
                 if (messageStore.type === 'file') {
-                    // TODO(MED-46): Dirty, dirty workaround for concurrent blob download bug
-                    await this._services.timer.sleep(2000);
-
                     messageStore
                         .get()
                         .controller.thumbnailBlob()

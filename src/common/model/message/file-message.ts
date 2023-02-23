@@ -180,6 +180,7 @@ async function downloadBlob(
     lock: AsyncLock,
     meta: ModelLifetimeGuard<InboundFileMessageView> | ModelLifetimeGuard<OutboundFileMessageView>,
     log: Logger,
+    waitToAvoidConcurrencyBug?: boolean,
 ): Promise<ReadonlyUint8Array>;
 async function downloadBlob(
     type: 'thumbnail',
@@ -189,6 +190,7 @@ async function downloadBlob(
     lock: AsyncLock,
     meta: ModelLifetimeGuard<InboundFileMessageView> | ModelLifetimeGuard<OutboundFileMessageView>,
     log: Logger,
+    waitToAvoidConcurrencyBug?: boolean,
 ): Promise<ReadonlyUint8Array | undefined>;
 /**
  * Download blob of the specified type.
@@ -204,8 +206,9 @@ async function downloadBlob(
     lock: AsyncLock,
     meta: ModelLifetimeGuard<InboundFileMessageView> | ModelLifetimeGuard<OutboundFileMessageView>,
     log: Logger,
+    waitToAvoidConcurrencyBug = false,
 ): Promise<ReadonlyUint8Array | undefined> {
-    const {blob, crypto, file} = services;
+    const {blob, crypto, file, timer} = services;
 
     function markDownloadAsFailed(): void {
         let change: Partial<FileMessageViewFragment>;
@@ -228,6 +231,11 @@ async function downloadBlob(
     // Because the download logic is async and consists of multiple steps, we need a lock to
     // avoid races where the same blob is downloaded multiple times.
     return await lock.with(async () => {
+        if (waitToAvoidConcurrencyBug) {
+            // TODO(MED-46): Dirty, dirty workaround for concurrent blob download bug
+            await timer.sleep(2000);
+        }
+
         // If blob is already downloaded (i.e. a fileId is set), return it
         const existingFileData: FileData | undefined = meta.run((handle) => {
             switch (type) {
@@ -393,7 +401,9 @@ export class InboundFileMessageModelController
     }
 
     /** @inheritdoc */
-    public async thumbnailBlob(): Promise<ReadonlyUint8Array | undefined> {
+    public async thumbnailBlob(
+        waitToAvoidConcurrencyBug = false,
+    ): Promise<ReadonlyUint8Array | undefined> {
         return await downloadBlob(
             'thumbnail',
             this._uid,
@@ -402,6 +412,7 @@ export class InboundFileMessageModelController
             this._lock,
             this.meta,
             this._log,
+            waitToAvoidConcurrencyBug,
         );
     }
 
@@ -434,7 +445,9 @@ export class OutboundFileMessageModelController
     }
 
     /** @inheritdoc */
-    public async thumbnailBlob(): Promise<ReadonlyUint8Array | undefined> {
+    public async thumbnailBlob(
+        waitToAvoidConcurrencyBug = false,
+    ): Promise<ReadonlyUint8Array | undefined> {
         return await downloadBlob(
             'thumbnail',
             this._uid,
@@ -443,6 +456,7 @@ export class OutboundFileMessageModelController
             this._lock,
             this.meta,
             this._log,
+            waitToAvoidConcurrencyBug,
         );
     }
 
