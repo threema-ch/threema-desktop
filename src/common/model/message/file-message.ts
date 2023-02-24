@@ -341,9 +341,9 @@ async function downloadBlob(
             updateFileMessage(services, log, conversation.uid, messageUid, change);
             switch (type) {
                 case 'main':
-                    return {change, state: 'synced'};
+                    return {...change, state: 'synced'};
                 case 'thumbnail':
-                    return {change};
+                    return change;
                 default:
                     return unreachable(type);
             }

@@ -3,10 +3,13 @@
   Display a single message with metadata (content of a message bubble)
 -->
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte';
+
   import IconButtonProgressBarOverlay from '#3sc/components/blocks/Button/IconButtonProgressBarOverlay.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
+  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
   import {
@@ -40,6 +43,8 @@
    */
   export let mentions: Remote<Mention>[];
 
+  const dispatch = createEventDispatcher<{saveFile: undefined; abortSync: undefined}>();
+
   // Check if we will display the contact informations.
   function showContactFor(
     recv: AnyReceiverData,
@@ -50,6 +55,29 @@
       msg.direction === 'incoming' &&
       msg.sender !== undefined
     );
+  }
+
+  /**
+   * Handle a click on the message overlay button.
+   */
+  function handleMessageOverlayClick(): void {
+    switch (message.state.type) {
+      case 'unsynced':
+        // Start down- or upload
+        // TODO(DESK-316): Handle upload resumption for local unsynced files
+        dispatch('saveFile');
+        // TODO(DESK-393): Click debouncing?
+        break;
+      case 'syncing':
+        dispatch('abortSync');
+        break;
+      case 'synced':
+      case 'failed':
+        // Nothing to do
+        break;
+      default:
+        unreachable(message.state);
+    }
   }
 </script>
 
@@ -62,16 +90,17 @@
   >
     {#if message.state.type !== 'synced'}
       <div class="overlay">
-        <button class="overlay-button">
+        <button class="overlay-button" on:click={handleMessageOverlayClick}>
           {#if message.state.type === 'unsynced'}
             <MdIcon theme="Filled">file_download</MdIcon>
           {:else if message.state.type === 'syncing'}
-            <MdIcon theme="Filled">close</MdIcon>
+            <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>-->
             <IconButtonProgressBarOverlay />
           {/if}
         </button>
       </div>
     {/if}
+    <!-- /* TODO(DESK-932): Failed messages */ -->
 
     {#if showContactFor(receiver, message)}
       <span class="contact">
@@ -88,7 +117,7 @@
       </div>
     {/if}
     <span class="content">
-      <MessageContent {message} {mentions} />
+      <MessageContent {message} {mentions} on:saveFile={() => dispatch('saveFile')} />
     </span>
     <span class="footer">
       <MessageFooter

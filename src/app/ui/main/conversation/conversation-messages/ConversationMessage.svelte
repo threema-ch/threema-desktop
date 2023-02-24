@@ -22,9 +22,11 @@
   import {type DbReceiverLookup} from '~/common/db';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {MessageDirection, MessageReaction, ReceiverType} from '~/common/enum';
+  import {extractErrorMessage} from '~/common/error';
   import {type AnyMessageModelStore, type RemoteModelStoreFor} from '~/common/model';
   import {type MessageId} from '~/common/network/types';
-  import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
+  import {type ReadonlyUint8Array} from '~/common/types';
+  import {assert, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
@@ -50,7 +52,12 @@
    * App services.
    */
   export let services: AppServices;
-  const {router} = services;
+  const {router, logging} = services;
+
+  /**
+   * Logger
+   */
+  const log = logging.logger('component.conversation-message');
 
   /**
    * The ConversationMessageViewModel
@@ -195,6 +202,40 @@
     }
   }
 
+  /**
+   * Save the specified bytes as a file on the file system.
+   */
+  function saveBytesAsFile(bytes: ReadonlyUint8Array, fileName: string, mediaType: string): void {
+    const blob = new Blob([bytes], {type: mediaType});
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    // TODO(DESK-949): Improved download UX
+  }
+
+  /**
+   * Retrieve the current message data and save it to the file system.
+   */
+  async function saveFile(): Promise<void> {
+    if (messageStore.type !== 'file') {
+      log.warn(`saveFile called for ${messageStore.type} message`);
+      return;
+    }
+
+    const store = messageStore.get();
+    let blobBytes;
+    try {
+      blobBytes = await store.controller.blob();
+    } catch (error) {
+      log.error(`Blob retrieval failed: ${extractErrorMessage(ensureError(error), 'short')}`);
+      toast.addSimpleFailure(`Could not retrieve file data: ${error}`);
+      return;
+    }
+
+    saveBytesAsFile(blobBytes, store.view.fileName ?? 'download', store.view.mediaType);
+  }
+
   const dispatchEvent = createEventDispatcher<{
     readonly quoteMessage: RemoteStore<Remote<ConversationMessageViewModel>>;
     readonly deleteMessage: MessageId;
@@ -239,6 +280,10 @@
           quote={$viewModelStore.quote}
           {receiver}
           mentions={$viewModelStore.mentions}
+          on:saveFile={saveFile}
+          on:abortSync={() => {
+            /* TODO(DESK-948): Implement cancellation */
+          }}
         />
         <div class="hover" class:visible={isContextMenuVisible} />
       </div>

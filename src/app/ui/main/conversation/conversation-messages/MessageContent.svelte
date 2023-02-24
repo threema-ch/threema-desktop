@@ -32,7 +32,7 @@
       </div>
     {:else if message.type === 'file'}
       <div class="file">
-        <FileMessageContent body={message.body} />
+        <FileMessageContent body={message.body} on:saveFile />
       </div>
     {:else}
       <div class="unsupported-message">Unsupported message type `{message.type}`</div>

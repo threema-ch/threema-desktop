@@ -3,6 +3,8 @@
   File message contents.
 -->
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte';
+
   import {byteSizeToHumanReadable} from '#3sc/utils/number';
   import Text from '~/app/ui/generic/form/Text.svelte';
   import {getFileExtension} from '~/app/ui/modal/media-message';
@@ -10,16 +12,21 @@
 
   export let body: MessageBodyFor<'file'>;
 
+  const dispatch = createEventDispatcher<{saveFile: undefined}>();
+
   const extension = body.filename !== undefined ? getFileExtension(body.filename) : 'FILE';
 </script>
 
 <template>
   <div class="info" data-name={body.filename !== undefined}>
-    <div class="icon">
+    <!-- Note: Since the filename is already a button, accessibilty / tabbability for file download
+    is already covered and we can ignore this warning. -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="icon" on:click={() => dispatch('saveFile')}>
       <div class="ext">{extension}</div>
     </div>
     {#if body.filename !== undefined}
-      <div class="name">{body.filename}</div>
+      <button class="name" on:click={() => dispatch('saveFile')}>{body.filename}</button>
     {/if}
     <div class="size">{byteSizeToHumanReadable(body.size)}</div>
   </div>
@@ -67,6 +74,7 @@
       place-items: center;
       color: var(--mc-message-file-icon-font-color);
       user-select: none;
+      cursor: pointer;
 
       .ext {
         font-size: var(--mc-message-file-icon-font-size);
@@ -74,7 +82,14 @@
     }
 
     .name {
+      @include square-button;
       grid-area: name;
+      padding: rem(2px) rem(4px);
+      margin: rem(-2px) rem(-4px);
+      border-radius: rem(2px);
+      --c-icon-button-naked-outer-background-color--hover: none;
+      --c-icon-button-naked-outer-background-color--focus: none;
+      --c-icon-button-naked-outer-background-color--active: none;
     }
 
     .size {
