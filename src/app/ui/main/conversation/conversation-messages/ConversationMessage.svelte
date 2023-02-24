@@ -303,6 +303,7 @@
       .message {
         grid-area: message;
         display: grid;
+        overflow: hidden;
         position: relative;
         justify-self: start;
         border-radius: var(--mc-message-border-radius);

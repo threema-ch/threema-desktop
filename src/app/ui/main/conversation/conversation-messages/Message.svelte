@@ -3,6 +3,8 @@
   Display a single message with metadata (content of a message bubble)
 -->
 <script lang="ts">
+  import IconButtonProgressBarOverlay from '#3sc/components/blocks/Button/IconButtonProgressBarOverlay.svelte';
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
   import {type Remote} from '~/common/utils/endpoint';
@@ -58,6 +60,19 @@
     data-receiver-type={receiver.type}
     data-contact={showContactFor(receiver, message)}
   >
+    {#if message.state.type !== 'synced'}
+      <div class="overlay">
+        <button class="overlay-button">
+          {#if message.state.type === 'unsynced'}
+            <MdIcon theme="Filled">file_download</MdIcon>
+          {:else if message.state.type === 'syncing'}
+            <MdIcon theme="Filled">close</MdIcon>
+            <IconButtonProgressBarOverlay />
+          {/if}
+        </button>
+      </div>
+    {/if}
+
     {#if showContactFor(receiver, message)}
       <span class="contact">
         <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
@@ -127,6 +142,39 @@
 
     .footer {
       grid-area: footer;
+    }
+  }
+
+  .overlay {
+    position: absolute;
+    background-color: var(--mc-message-overlay-background-color);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .overlay-button {
+      @include circle-button;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--mc-message-overlay-button-color);
+      background-color: var(--mc-message-overlay-button-background-color);
+      opacity: 54%;
+      width: rem(44px);
+      height: rem(44px);
+      font-size: rem(22px);
+
+      --c-icon-button-naked-outer-background-color--hover: var(
+        --mc-message-overlay-button-background-color--hover
+      );
+      --c-icon-button-naked-outer-background-color--focus: var(
+        --mc-message-overlay-button-background-color--focus
+      );
+      --c-icon-button-naked-outer-background-color--active: var(
+        --mc-message-overlay-button-background-color--active
+      );
     }
   }
 </style>
