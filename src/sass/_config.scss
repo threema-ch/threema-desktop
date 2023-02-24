@@ -80,6 +80,16 @@ $config: config-merge(components.$config, (
       --mc-message-mention-me-color,
       --mc-message-quote-border-width,
 
+      // File Message
+      --mc-message-file-icon-background-image,
+      --mc-message-file-icon-width,
+      --mc-message-file-icon-height,
+      --mc-message-file-info-column-gap,
+      --mc-message-file-info-row-gap,
+      --mc-message-file-icon-font-size,
+      --mc-message-file-icon-font-color,
+      --mc-message-file-size-color,
+
       // Message status
       --mc-message-status-acknowledged-color,
       --mc-message-status-declined-color,

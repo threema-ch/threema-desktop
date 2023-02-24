@@ -99,7 +99,6 @@
       'footer' auto
       / auto;
 
-    grid-row-gap: rem(2px);
     padding: rem(8px);
 
     .contact {
@@ -120,6 +119,10 @@
 
     .content {
       grid-area: content;
+      margin-bottom: rem(2px);
+      &:not(:first-child) {
+        margin-top: rem(2px);
+      }
     }
 
     .footer {

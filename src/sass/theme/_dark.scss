@@ -61,6 +61,16 @@ $dark: (
     message-mention-color: rgba(#ffffff, 88%),
     message-mention-me-background-color: theme.$consumer-green-600,
     message-mention-me-color: #ffffff,
+
+    // File Message
+    message-file-icon-background-image: url('/res/theme/dark/icon/file.svg'),
+    message-file-icon-width: em(32px),
+    message-file-icon-height: em(40px),
+    message-file-info-column-gap: em(8px),
+    message-file-info-row-gap: em(2px),
+    message-file-icon-font-size: em(8px),
+    message-file-icon-font-color: theme.$dark-text-e1,
+    message-file-size-color: theme.$dark-text-e2,
   ),
   compound-components: (
     // Profile picture upload

@@ -106,6 +106,16 @@ $themes: (
       --mc-message-mention-me-color: -g($mc, message-mention-me-color),
       --mc-message-quote-border-width: rem(2px),
 
+      // File Message
+      --mc-message-file-icon-background-image: -g($mc, message-file-icon-background-image),
+      --mc-message-file-icon-width: -g($mc, message-file-icon-width),
+      --mc-message-file-icon-height: -g($mc, message-file-icon-height),
+      --mc-message-file-info-column-gap: -g($mc, message-file-info-column-gap),
+      --mc-message-file-info-row-gap: -g($mc, message-file-info-row-gap),
+      --mc-message-file-icon-font-size: -g($mc, message-file-icon-font-size),
+      --mc-message-file-icon-font-color: -g($mc, message-file-icon-font-color),
+      --mc-message-file-size-color: -g($mc, message-file-size-color),
+
       // Message status
       --mc-message-status-acknowledged-color: -g($mc, message-status-acknowledged),
       --mc-message-status-declined-color: -g($mc, message-status-declined),
