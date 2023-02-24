@@ -177,6 +177,8 @@ function convertFileMessageDataState(view: FileMessageViewFragment): FileMessage
     }
 }
 
+type BaseMessageOmittedFields = 'type' | 'body' | 'state';
+
 function getConversationMessageBody(
     messageModel: AnyMessageModel,
     model: Repositories,
@@ -196,15 +198,23 @@ function getConversationMessageBody(
             const body = {text: messageModel.view.text};
             if (baseMessage.direction === 'incoming') {
                 messageData = {
-                    ...(baseMessage as Omit<IncomingMessage<AnyMessageBody>, 'type' | 'body'>),
+                    ...(baseMessage as Omit<
+                        IncomingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
                     type,
                     body,
+                    state: {type: 'synced'},
                 };
             } else {
                 messageData = {
-                    ...(baseMessage as Omit<OutgoingMessage<AnyMessageBody>, 'type' | 'body'>),
+                    ...(baseMessage as Omit<
+                        OutgoingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
                     type,
                     body,
+                    state: {type: 'synced'},
                 };
             }
             break;
@@ -220,14 +230,20 @@ function getConversationMessageBody(
             };
             if (messageModel.ctx === MessageDirection.INBOUND) {
                 messageData = {
-                    ...(baseMessage as Omit<IncomingMessage<AnyMessageBody>, 'type' | 'body'>),
+                    ...(baseMessage as Omit<
+                        IncomingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
                     type,
                     body,
                     state: convertFileMessageDataState(messageModel.view),
                 };
             } else {
                 messageData = {
-                    ...(baseMessage as Omit<OutgoingMessage<AnyMessageBody>, 'type' | 'body'>),
+                    ...(baseMessage as Omit<
+                        OutgoingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
                     type,
                     body,
                     state: convertFileMessageDataState(messageModel.view),
@@ -247,7 +263,7 @@ function getConversationMessageBodyBaseMessage(
     settings: Settings,
     user: User,
     getAndSubscribe: GetAndSubscribeFunction,
-): Omit<Message<AnyMessageBody>, 'type' | 'body' | 'state'> {
+): Omit<Message<AnyMessageBody>, BaseMessageOmittedFields> {
     let lastReaction:
         | {
               at: Date;
@@ -262,7 +278,7 @@ function getConversationMessageBodyBaseMessage(
     }
 
     // Determine base message contents depending on direction
-    let baseMessage: Omit<Message<AnyMessageBody>, 'type' | 'body' | 'state'>;
+    let baseMessage: Omit<Message<AnyMessageBody>, BaseMessageOmittedFields>;
     const id = u64ToHexLe(messageModel.view.id);
     switch (messageModel.ctx) {
         case MessageDirection.INBOUND: {
@@ -273,7 +289,7 @@ function getConversationMessageBodyBaseMessage(
 
             const incomingBaseMessage: Omit<
                 IncomingMessage<AnyMessageBody>,
-                'type' | 'body' | 'state'
+                BaseMessageOmittedFields
             > = {
                 direction: 'incoming',
                 id,
@@ -289,7 +305,7 @@ function getConversationMessageBodyBaseMessage(
             const status = statusFromView(messageModel.view)[0];
             const outgoingBaseMessage: Omit<
                 OutgoingMessage<AnyMessageBody>,
-                'type' | 'body' | 'state'
+                BaseMessageOmittedFields
             > = {
                 direction: 'outgoing',
                 id,
