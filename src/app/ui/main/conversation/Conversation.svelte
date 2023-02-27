@@ -162,7 +162,7 @@
       }
     | {
         readonly mode: 'text';
-        readonly text?: string | undefined;
+        readonly text?: string;
       };
   function updateComposeData(update: ComposeDataUpdate): void {
     composeData.update((currentData) => {
@@ -292,6 +292,14 @@
   }
 
   /**
+   * Remove the current quote
+   */
+  function removeQuote(event: MouseEvent): void {
+    updateComposeData({mode: 'text'});
+    textComposeArea.focus();
+  }
+
+  /**
    * Delete a message and remove it from being quoted (in case it is)
    */
   function deleteMessage(event: CustomEvent<MessageId>): void {
@@ -365,10 +373,7 @@
               {#key $composeData.quotedMessageViewModel}
                 <MessageQuote quote={$composeData.quotedMessageViewModel} />
               {/key}
-              <IconButton
-                flavor="naked"
-                on:click={() => updateComposeData({mode: 'text', text: undefined})}
-              >
+              <IconButton flavor="naked" on:click={removeQuote}>
                 <MdIcon theme="Filled">close</MdIcon>
               </IconButton>
             </div>
