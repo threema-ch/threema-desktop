@@ -66,8 +66,8 @@
     (conversationsSet, getAndSubscribe) => {
       const sortedConversations = [...conversationsSet]
         .filter((conversationPreviewModel) => {
-          const {lastUpdate, visibility} = getAndSubscribe(conversationPreviewModel.viewModel);
-          return lastUpdate !== undefined && visibility !== ConversationVisibility.ARCHIVED;
+          const {lastUpdate} = getAndSubscribe(conversationPreviewModel.viewModel);
+          return lastUpdate !== undefined;
         })
         .filter((conversationPreviewModel) => {
           const filterText = getAndSubscribe(conversationPreviewListFilter);
@@ -90,6 +90,7 @@
           const aViewModel = getAndSubscribe(a.viewModel);
           const bViewModel = getAndSubscribe(b.viewModel);
 
+          // Move pinned conversation to top
           const aIsPinned = aViewModel.visibility === ConversationVisibility.PINNED;
           const bIsPinned = bViewModel.visibility === ConversationVisibility.PINNED;
           if (aIsPinned && !bIsPinned) {
@@ -99,6 +100,17 @@
             return 1;
           }
 
+          // Move archived conversation to bottom
+          const aIsArchived = aViewModel.visibility === ConversationVisibility.ARCHIVED;
+          const bIsArchived = bViewModel.visibility === ConversationVisibility.ARCHIVED;
+          if (aIsArchived && !bIsArchived) {
+            return 1;
+          }
+          if (!aIsArchived && bIsArchived) {
+            return -1;
+          }
+
+          // Sort by lastUpdate
           const aTime = unwrap(aViewModel.lastUpdate).getTime();
           const bTime = unwrap(bViewModel.lastUpdate).getTime();
           if (aTime > bTime) {
