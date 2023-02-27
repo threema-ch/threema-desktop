@@ -35,6 +35,13 @@
     mediaFiles = files.map((file) => ({
       file,
     }));
+
+    // If only sending one file, add the current compose text as a caption.
+    if (mediaFiles.length === 1) {
+      mediaFiles[0].caption = composeBar.getText();
+      clearText();
+    }
+
     mediaMessageDialogVisible = true;
   }
 
