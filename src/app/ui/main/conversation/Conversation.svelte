@@ -13,7 +13,7 @@
     type SendMessageEventDetail,
   } from '~/app/ui/main/conversation';
   import {type ComposeData} from '~/app/ui/main/conversation/compose';
-  import ComposeAreaWrapper from '~/app/ui/main/conversation/compose/ComposeAreaWrapper.svelte';
+  import ComposeHandler from '~/app/ui/main/conversation/compose/ComposeHandler.svelte';
   import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
   import MessageQuote from '~/app/ui/main/conversation/conversation-messages/MessageQuote.svelte';
   import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
@@ -66,7 +66,7 @@
     conversationViewModel.viewModel;
   $: innerConversationViewModel = conversationViewModel.viewModel;
 
-  let textComposeArea: ComposeAreaWrapper;
+  let composeHandler: ComposeHandler;
 
   /**
    * Component event dispatcher
@@ -95,8 +95,8 @@
 
     const forwardedMessage = fwdMessage.get();
     if (forwardedMessage.type === 'text') {
-      textComposeArea.clearText();
-      textComposeArea.insertText(forwardedMessage.view.text);
+      composeHandler.clearText();
+      composeHandler.insertText(forwardedMessage.view.text);
     }
   }
 
@@ -222,21 +222,21 @@
     conversationDraftStore = conversationDrafts.getOrCreateStore(draftReceiverLookup);
     // Compose area does not exist on detail view in <large mode,
     // or, when an inactive group is displayed
-    if (!isTextComposeArea(textComposeArea)) {
+    if (!isComposeHandler(composeHandler)) {
       return;
     }
 
     // Save current message draft
-    const currentDraft = textComposeArea.getText();
-    conversationDraftStore.set(currentDraft.trim() === '' ? undefined : currentDraft);
-    textComposeArea.clearText();
+    const currentDraft = composeHandler.getText();
+    conversationDraftStore.set(currentDraft?.trim() === '' ? undefined : currentDraft);
+    composeHandler.clearText();
   }
 
   // Detect route changes
   let lastReceiverLookup = receiverLookup;
 
-  function isTextComposeArea(x: unknown): x is ComposeAreaWrapper {
-    return x !== undefined && x !== null && x instanceof ComposeAreaWrapper;
+  function isComposeHandler(x: unknown): x is ComposeHandler {
+    return x !== undefined && x !== null && x instanceof ComposeHandler;
   }
 
   // TODO(DESK-306): Replace with the real message drafts
@@ -263,17 +263,17 @@
         updateComposeData(getDefaultComposeData(draftMessage));
         // Javascript at it's best
         setTimeout(() => {
-          if (isTextComposeArea(textComposeArea)) {
-            textComposeArea.insertText(draftMessage ?? '');
-            textComposeArea.focus();
+          if (isComposeHandler(composeHandler)) {
+            composeHandler.insertText(draftMessage ?? '');
+            composeHandler.focus();
           }
         }, 0);
         // No route change, BUT empty compose area (may be a change of aside to main with medium/small layout)
-      } else if (isTextComposeArea(textComposeArea) && textComposeArea.getText() === '') {
+      } else if (isComposeHandler(composeHandler) && composeHandler.getText() === '') {
         conversationDraftStore = conversationDrafts.getOrCreateStore(currentReceiverLookup);
         const draftMessage = conversationDraftStore.get();
-        textComposeArea.insertText(draftMessage ?? '');
-        textComposeArea.focus();
+        composeHandler.insertText(draftMessage ?? '');
+        composeHandler.focus();
       }
     }
   });
@@ -288,7 +288,7 @@
       mode: 'quote',
       quotedMessageViewModel: event.detail,
     });
-    textComposeArea.focus();
+    composeHandler.focus();
   }
 
   /**
@@ -296,7 +296,7 @@
    */
   function removeQuote(event: MouseEvent): void {
     updateComposeData({mode: 'text'});
-    textComposeArea.focus();
+    composeHandler.focus();
   }
 
   /**
@@ -378,8 +378,8 @@
               </IconButton>
             </div>
           {/if}
-          <ComposeAreaWrapper
-            bind:this={textComposeArea}
+          <ComposeHandler
+            bind:this={composeHandler}
             initialText={$composeData.text}
             displayAttachmentButton={$composeData.mode !== 'quote'}
             on:recordAudio={() => {
