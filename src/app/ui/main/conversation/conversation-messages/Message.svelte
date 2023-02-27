@@ -88,20 +88,6 @@
     data-receiver-type={receiver.type}
     data-contact={showContactFor(receiver, message)}
   >
-    {#if message.state.type !== 'synced'}
-      <div class="overlay">
-        <button class="overlay-button" on:click={handleMessageOverlayClick}>
-          {#if message.state.type === 'unsynced'}
-            <MdIcon theme="Filled">file_download</MdIcon>
-          {:else if message.state.type === 'syncing'}
-            <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>-->
-            <IconButtonProgressBarOverlay />
-          {/if}
-        </button>
-      </div>
-    {/if}
-    <!-- /* TODO(DESK-932): Failed messages */ -->
-
     {#if showContactFor(receiver, message)}
       <span class="contact">
         <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
@@ -128,6 +114,20 @@
         reaction={message.lastReaction?.type}
       />
     </span>
+
+    {#if message.state.type !== 'synced'}
+      <div class="overlay">
+        <button class="overlay-button" on:click={handleMessageOverlayClick}>
+          {#if message.state.type === 'unsynced'}
+            <MdIcon theme="Filled">file_download</MdIcon>
+          {:else if message.state.type === 'syncing'}
+            <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>-->
+            <IconButtonProgressBarOverlay />
+          {/if}
+        </button>
+      </div>
+    {/if}
+    <!-- /* TODO(DESK-932): Failed messages */ -->
   </div>
 </template>
 

@@ -19,7 +19,7 @@
 
 <template>
   <div class="info" data-name={body.filename !== undefined}>
-    <!-- Note: Since the filename is already a button, accessibilty / tabbability for file download
+    <!-- Note: Since the filename is already a button, accessibility / tabbability for file download
     is already covered and we can ignore this warning. -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="icon" on:click={() => dispatch('saveFile')}>
