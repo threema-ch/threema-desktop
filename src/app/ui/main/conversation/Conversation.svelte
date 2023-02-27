@@ -288,6 +288,7 @@
       mode: 'quote',
       quotedMessageViewModel: event.detail,
     });
+    textComposeArea.focus();
   }
 
   /**
