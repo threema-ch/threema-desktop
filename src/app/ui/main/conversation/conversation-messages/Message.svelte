@@ -17,6 +17,7 @@
     type AnyReceiverData,
     type IncomingMessage,
     type Message,
+    type MessageStatus,
   } from '~/common/viewmodel/types';
   import {type Mention} from '~/common/viewmodel/utils/mentions';
 
@@ -45,7 +46,7 @@
 
   const dispatch = createEventDispatcher<{saveFile: undefined; abortSync: undefined}>();
 
-  // Check if we will display the contact informations.
+  // Check if we will display the contact information.
   function showContactFor(
     recv: AnyReceiverData,
     msg: Message<AnyMessageBody>,
@@ -66,7 +67,6 @@
         // Start down- or upload
         // TODO(DESK-316): Handle upload resumption for local unsynced files
         dispatch('saveFile');
-        // TODO(DESK-393): Click debouncing?
         break;
       case 'syncing':
         dispatch('abortSync');
@@ -78,6 +78,15 @@
       default:
         unreachable(message.state);
     }
+  }
+
+  let messageFooterStatus: MessageStatus | undefined;
+  $: if (message.state.type === 'failed') {
+    messageFooterStatus = 'error';
+  } else if (message.direction === 'outgoing') {
+    messageFooterStatus = message.status;
+  } else {
+    messageFooterStatus = undefined;
   }
 </script>
 
@@ -109,13 +118,13 @@
       <MessageFooter
         direction={message.direction}
         date={message.updatedAt}
-        status={message.direction === 'outgoing' ? message.status : undefined}
+        status={messageFooterStatus}
         receiverType={receiver.type}
         reaction={message.lastReaction?.type}
       />
     </span>
 
-    {#if message.state.type !== 'synced'}
+    {#if message.state.type === 'unsynced' || message.state.type === 'syncing'}
       <div class="overlay">
         <button class="overlay-button" on:click={handleMessageOverlayClick}>
           {#if message.state.type === 'unsynced'}
@@ -127,7 +136,6 @@
         </button>
       </div>
     {/if}
-    <!-- /* TODO(DESK-932): Failed messages */ -->
   </div>
 </template>
 

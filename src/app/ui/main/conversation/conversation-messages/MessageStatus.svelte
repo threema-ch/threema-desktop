@@ -61,7 +61,7 @@
 
     // On Group conversations, only show pending state
     &[data-receiver-type='group'] {
-      &:not([data-status='pending']) {
+      &:not([data-status='pending']):not([data-status='error']) {
         display: none;
       }
     }

@@ -137,6 +137,8 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
         fileData: message.fileData,
         thumbnailFileData: message.thumbnailFileData,
         state: getStateForFileMessage(message),
+        blobDownloadState: message.blobDownloadState,
+        thumbnailBlobDownloadState: message.thumbnailBlobDownloadState,
     };
     switch (common.direction) {
         case MessageDirection.INBOUND: {
@@ -262,6 +264,7 @@ async function downloadBlob(
                     return unreachable(type);
             }
         });
+
         if (downloadState === BlobDownloadState.PERMANENT_FAILURE) {
             switch (type) {
                 case 'main':
@@ -301,8 +304,11 @@ async function downloadBlob(
             downloadResult = await blob.download('public', blobId);
         } catch (error) {
             if (error instanceof BlobBackendError && error.type === 'not-found') {
-                // Irrecoverable error, blob not found.
+                // Permanent failure, blob not found
                 markDownloadAsFailed();
+            } else {
+                // Temporary failure
+                meta.update((view) => ({state: 'unsynced'}));
             }
             throw ensureError(error);
         }
