@@ -69,6 +69,18 @@
   let composeHandler: ComposeHandler;
 
   /**
+   * Whether the Media Message Dialog is visible or not
+   */
+  export let mediaMessageDialogVisible: boolean;
+
+  /**
+   * Open the media compose message dialog.
+   */
+  export function openMediaMessageDialog(files: File[]): void {
+    return composeHandler.openMediaMessageDialog(files);
+  }
+
+  /**
    * Component event dispatcher
    */
   const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
@@ -380,13 +392,15 @@
           {/if}
           <ComposeHandler
             bind:this={composeHandler}
+            bind:mediaMessageDialogVisible
             initialText={$composeData.text}
             displayAttachmentButton={$composeData.mode !== 'quote'}
+            {receiver}
             on:recordAudio={() => {
               // TODO(DESK-196)
             }}
             on:sendTextMessage={sendTextMessage}
-            on:fileDrop
+            on:sendMessage
           />
         {:else}
           {unreachable($composeData)}

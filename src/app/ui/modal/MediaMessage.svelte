@@ -122,7 +122,13 @@
 
 <template>
   <ModalWrapper>
-    <DropZone bind:zoneHover on:fileDrop={(event) => attachMoreFiles(event.detail)}>
+    <DropZone
+      bind:zoneHover
+      on:fileDrop={(event) => {
+        attachMoreFiles(event.detail);
+        event.stopPropagation();
+      }}
+    >
       <div class="drag-wrapper" class:bodyHover>
         <ModalDialog
           bind:visible

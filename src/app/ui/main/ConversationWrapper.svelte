@@ -5,11 +5,9 @@
   import {type SendMessageEventDetail} from '~/app/ui/main/conversation';
   import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
   import Welcome from '~/app/ui/main/Welcome.svelte';
-  import {type MediaFile} from '~/app/ui/modal/media-message';
-  import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
-  import {MessageDirection, ReceiverType} from '~/common/enum';
+  import {MessageDirection} from '~/common/enum';
   import {type AnyReceiverStore} from '~/common/model';
   import {randomMessageId} from '~/common/network/protocol/utils';
   import {unreachable} from '~/common/utils/assert';
@@ -23,17 +21,6 @@
 
   // Logger
   const log = logging.logger('component.conversation-wrapper');
-
-  // Media Files
-  let mediaMessageDialogVisible = false;
-  let mediaFiles: MediaFile[] = [];
-
-  function openMediaMessageDialog(files: File[]): void {
-    mediaFiles = files.map((file) => ({
-      file,
-    }));
-    mediaMessageDialogVisible = true;
-  }
 
   // Get conversation lookup info
   let receiverLookup: DbReceiverLookup;
@@ -62,6 +49,8 @@
       receiver = conversationViewModelParam.receiver;
     });
   }
+
+  let conversationElement: Conversation;
 
   function sendMessage(event: CustomEvent<SendMessageEventDetail>): void {
     let outgoingMessages: {
@@ -98,6 +87,7 @@
     }
   }
 
+  let mediaMessageDialogVisible = false;
   let zoneHover = false;
   let bodyHover = false;
   $: zoneHover = zoneHover;
@@ -114,37 +104,30 @@
 
 <template>
   {#if conversationViewModel !== undefined && receiver !== undefined && $receiver !== undefined}
-    <DropZone bind:zoneHover on:fileDrop={(event) => openMediaMessageDialog(event.detail)}>
+    <DropZone
+      bind:zoneHover
+      on:fileDrop={(event) => {
+        conversationElement.openMediaMessageDialog(event.detail);
+      }}
+    >
       <div class="drag-wrapper" class:bodyHover>
         <Conversation
+          bind:this={conversationElement}
+          bind:mediaMessageDialogVisible
           {conversationViewModel}
           {receiverLookup}
           {forwardedMessageLookup}
           {services}
-          on:fileDrop={(event) => openMediaMessageDialog(event.detail)}
           on:sendMessage={sendMessage}
         />
 
-        {#if zoneHover || bodyHover}
+        {#if (zoneHover || bodyHover) && !mediaMessageDialogVisible}
           <div class="drop-wrapper" class:zoneHover class:bodyHover>
             <div class="border">Drop files here to send</div>
           </div>
         {/if}
       </div>
     </DropZone>
-
-    {#if mediaMessageDialogVisible}
-      <MediaMessage
-        title={`Send File to ${
-          $receiver.type === ReceiverType.DISTRIBUTION_LIST
-            ? $receiver.view.stub
-            : $receiver.view.displayName
-        }`}
-        {mediaFiles}
-        bind:visible={mediaMessageDialogVisible}
-        on:sendMessage={sendMessage}
-      />
-    {/if}
   {:else}
     <Welcome />
   {/if}
