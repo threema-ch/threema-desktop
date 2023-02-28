@@ -10,6 +10,7 @@
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveFile from '~/app/ui/modal/media-message/ActiveFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
+  import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {assert} from '~/common/utils/assert';
@@ -17,6 +18,7 @@
   export let title: string;
   export let mediaFiles: MediaFile[];
   export let visible: boolean;
+  let confirmCloseDialogVisible = false;
 
   /**
    * Whether or not more files can be attached to the message.
@@ -92,8 +94,8 @@
       type: 'files',
       files: mediaFiles,
     });
-    // TODO(DESK-933): Activate visible=false for MediaMessage dialog after sending message.
-    //visible = false;
+
+    visible = false;
   }
 
   function attachMoreFiles(files: File[]): void {
@@ -101,6 +103,18 @@
       file,
     }));
     mediaFiles = [...mediaFiles, ...newMediaFiles];
+  }
+
+  function openConfirmCloseDialog(event: CustomEvent): void {
+    confirmCloseDialogVisible = true;
+    event.preventDefault();
+  }
+
+  /**
+   * Close this media message modal.
+   */
+  function close(_: CustomEvent): void {
+    visible = false;
   }
 
   let zoneHover = false;
@@ -133,8 +147,8 @@
         <ModalDialog
           bind:visible
           on:confirm
-          on:close={() => (visible = false)}
-          on:cancel={() => (visible = false)}
+          on:close={openConfirmCloseDialog}
+          on:cancel={openConfirmCloseDialog}
         >
           <TitleAndClose let:modal {modal} slot="header" {title} />
           <div class="body" slot="body">
@@ -176,6 +190,7 @@
       </div>
     </DropZone>
   </ModalWrapper>
+  <ConfirmClose bind:visible={confirmCloseDialogVisible} on:confirm={close} />
 </template>
 
 <style lang="scss">
