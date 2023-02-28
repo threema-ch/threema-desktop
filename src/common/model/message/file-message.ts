@@ -212,21 +212,29 @@ async function downloadBlob(
 ): Promise<ReadonlyUint8Array | undefined> {
     const {blob, crypto, file, timer} = services;
 
-    function markDownloadAsFailed(): void {
-        let change: Partial<FileMessageViewFragment>;
+    /**
+     * Mark the download of the file or thumbnail as permenantly failed.
+     *
+     * If it's a file download, update the state in the view to 'failed' as well.
+     */
+    function markDownloadAsPermanentlyFailed(): void {
+        let dbChange: Partial<FileMessageViewFragment>;
+        let viewChange: Partial<FileMessageViewFragment>;
         switch (type) {
             case 'main':
-                change = {blobDownloadState: BlobDownloadState.PERMANENT_FAILURE};
+                dbChange = {blobDownloadState: BlobDownloadState.PERMANENT_FAILURE};
+                viewChange = {...dbChange, state: 'failed'};
                 break;
             case 'thumbnail':
-                change = {thumbnailBlobDownloadState: BlobDownloadState.PERMANENT_FAILURE};
+                dbChange = {thumbnailBlobDownloadState: BlobDownloadState.PERMANENT_FAILURE};
+                viewChange = {...dbChange};
                 break;
             default:
                 unreachable(type);
         }
         meta.update(() => {
-            updateFileMessage(services, log, conversation.uid, messageUid, change);
-            return {change, state: 'failed'};
+            updateFileMessage(services, log, conversation.uid, messageUid, dbChange);
+            return viewChange;
         });
     }
 
@@ -290,7 +298,7 @@ async function downloadBlob(
 
         // If there is no blob ID and no file data, there's nothing to be downloaded
         if (blobId === undefined) {
-            markDownloadAsFailed();
+            markDownloadAsPermanentlyFailed();
             throw new Error('Both file data and blob ID are missing');
         }
 
@@ -305,9 +313,10 @@ async function downloadBlob(
         } catch (error) {
             if (error instanceof BlobBackendError && error.type === 'not-found') {
                 // Permanent failure, blob not found
-                markDownloadAsFailed();
-            } else {
-                // Temporary failure
+                markDownloadAsPermanentlyFailed();
+            } else if (type === 'main') {
+                // Temporary failure. If this is about the file (and not the thumbnail), revert the
+                // state to "unsynced".
                 meta.update((view) => ({state: 'unsynced'}));
             }
             throw ensureError(error);
