@@ -132,19 +132,26 @@
       quotedMessageId,
     });
 
+    // Clear draft and compose data
+    conversationDraftStore.set(undefined);
+    composeData.set(getDefaultComposeData(undefined));
+
+    sendMessageActions(ev);
+  }
+
+  /**
+   * Actions which should be executed when a message is being sent.
+   */
+  function sendMessageActions(_: CustomEvent): void {
+    // Set Nav to Conversation Preview List
     if ($router.nav?.id !== 'conversationList') {
-      // Set Nav to Conversation Preview List
       router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withTypedParams(undefined));
     }
 
     // Dispatch an event to scroll the conversation list all the way to the top
     conversationListEvent.post({action: 'scroll-to-top'});
 
-    // Clear draft and compose data
-    conversationDraftStore.set(undefined);
-    composeData.set(getDefaultComposeData(undefined));
-
-    // Scroll to the bottom of the conversation when sending a new message.
+    // Scroll to the bottom of the conversation
     anchorActive = true;
   }
 
@@ -400,7 +407,7 @@
               // TODO(DESK-196)
             }}
             on:sendTextMessage={sendTextMessage}
-            on:sendMessage
+            on:sendMessage={sendMessageActions}
           />
         {:else}
           {unreachable($composeData)}
