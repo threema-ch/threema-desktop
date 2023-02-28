@@ -567,7 +567,7 @@ export class Backend implements ProxyMarked {
             timer,
         });
         const viewModel = new ViewModelBackend(
-            {model, config, endpoint, logging, device},
+            {model, config, crypto, endpoint, logging, device},
             new ViewModelCache(),
         );
 

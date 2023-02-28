@@ -6,7 +6,6 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import {type SendMessageEventDetail} from '~/app/ui/main/conversation';
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveFile from '~/app/ui/modal/media-message/ActiveFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
@@ -14,6 +13,7 @@
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {assert} from '~/common/utils/assert';
+  import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
 
   export let title: string;
   export let mediaFiles: MediaFile[];
@@ -87,15 +87,24 @@
     caption.focus();
   }
 
-  function sendMessage(): void {
+  async function sendMessage(): Promise<void> {
     saveCurrentCaption();
+    visible = false;
+
+    const files = await Promise.all(
+      mediaFiles.map(async ({caption: fileCaption, file}) => ({
+        blob: new Uint8Array(await file.arrayBuffer()),
+        caption: fileCaption,
+        fileName: file.name,
+        fileSize: BigInt(file.size),
+        mimeType: file.type,
+      })),
+    );
 
     dispatch('sendMessage', {
       type: 'files',
-      files: mediaFiles,
+      files,
     });
-
-    visible = false;
   }
 
   function attachMoreFiles(files: File[]): void {

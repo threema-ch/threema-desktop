@@ -7,11 +7,7 @@
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
   import {isInactiveGroup} from '~/app/ui/generic/receiver';
-  import {
-    conversationDrafts,
-    conversationListEvent,
-    type SendMessageEventDetail,
-  } from '~/app/ui/main/conversation';
+  import {conversationDrafts, conversationListEvent} from '~/app/ui/main/conversation';
   import {type ComposeData} from '~/app/ui/main/conversation/compose';
   import ComposeHandler from '~/app/ui/main/conversation/compose/ComposeHandler.svelte';
   import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
@@ -31,6 +27,7 @@
   import {
     type ConversationViewModel,
     type InnerConversationViewModelStore,
+    type SendMessageEventDetail,
   } from '~/common/viewmodel/conversation';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
 
@@ -407,7 +404,10 @@
               // TODO(DESK-196)
             }}
             on:sendTextMessage={sendTextMessage}
-            on:sendMessage={sendMessageActions}
+            on:sendMessage={(event) => {
+              dispatch('sendMessage', event.detail);
+              sendMessageActions(event);
+            }}
           />
         {:else}
           {unreachable($composeData)}

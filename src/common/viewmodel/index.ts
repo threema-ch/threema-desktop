@@ -41,7 +41,7 @@ import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/vie
  */
 export type ServicesForViewModel = Pick<
     ServicesForBackend,
-    'config' | 'device' | 'endpoint' | 'logging' | 'model'
+    'config' | 'device' | 'endpoint' | 'logging' | 'model' | 'crypto'
 >;
 export interface IViewModelBackend extends ProxyMarked {
     readonly conversationPreviews: () => ConversationPreviewSetStore;

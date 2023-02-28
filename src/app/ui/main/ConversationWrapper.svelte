@@ -2,25 +2,22 @@
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
-  import {type SendMessageEventDetail} from '~/app/ui/main/conversation';
   import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
   import Welcome from '~/app/ui/main/Welcome.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
-  import {MessageDirection} from '~/common/enum';
   import {type AnyReceiverStore} from '~/common/model';
-  import {randomMessageId} from '~/common/network/protocol/utils';
-  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
-  import {type ConversationViewModel} from '~/common/viewmodel/conversation';
+  import {
+    type ConversationViewModel,
+    type IConversationViewModelController,
+    type SendMessageEventDetail,
+  } from '~/common/viewmodel/conversation';
 
   export let services: AppServices;
 
   // Unpack services and backend
-  const {router, backend, crypto, logging} = services;
-
-  // Logger
-  const log = logging.logger('component.conversation-wrapper');
+  const {router, backend} = services;
 
   // Get conversation lookup info
   let receiverLookup: DbReceiverLookup;
@@ -34,6 +31,7 @@
 
   let conversationViewModel: Remote<ConversationViewModel> | undefined;
   let receiver: Remote<AnyReceiverStore> | undefined;
+  let viewModelController: Remote<IConversationViewModelController> | undefined;
 
   // Look up conversation
   $: if (receiverLookup !== undefined) {
@@ -47,44 +45,14 @@
 
       conversationViewModel = conversationViewModelParam;
       receiver = conversationViewModelParam.receiver;
+      viewModelController = conversationViewModelParam.viewModelController;
     });
   }
 
   let conversationElement: Conversation;
 
-  function sendMessage(event: CustomEvent<SendMessageEventDetail>): void {
-    let outgoingMessages: {
-      readonly type: 'text';
-      readonly text: string;
-    }[];
-
-    switch (event.detail.type) {
-      case 'text':
-        outgoingMessages = [event.detail];
-        break;
-      case 'files':
-        // TODO(DESK-933): Hook this up to the outgoing file message task.
-        log.error(
-          `TODO(DESK-933): Upload and send ${event.detail.files.length} outgoing files: `,
-          event.detail.files,
-        );
-        outgoingMessages = [];
-        break;
-      default:
-        unreachable(event.detail);
-    }
-
-    for (const message of outgoingMessages) {
-      const id = randomMessageId(crypto);
-      log.debug(`Send ${message.type} message with id ${id}`);
-
-      void conversationViewModel?.conversation.get().controller.addMessage.fromLocal({
-        direction: MessageDirection.OUTBOUND,
-        id,
-        createdAt: new Date(),
-        ...message,
-      });
-    }
+  async function sendMessage(event: CustomEvent<SendMessageEventDetail>): Promise<void> {
+    await viewModelController?.sendMessage(event.detail);
   }
 
   let mediaMessageDialogVisible = false;
