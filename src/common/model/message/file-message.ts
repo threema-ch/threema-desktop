@@ -7,7 +7,13 @@ import {
     type DbMessageCommon,
     type DbMessageUid,
 } from '~/common/db';
-import {BlobDownloadState, MessageDirection, MessageType, ReceiverType} from '~/common/enum';
+import {
+    BlobDownloadState,
+    MessageDirection,
+    MessageDirectionUtils,
+    MessageType,
+    ReceiverType,
+} from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {
@@ -176,6 +182,7 @@ function getPreviewText({
 
 async function downloadBlob(
     type: 'main',
+    messageDirection: MessageDirection,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
@@ -186,6 +193,7 @@ async function downloadBlob(
 ): Promise<ReadonlyUint8Array>;
 async function downloadBlob(
     type: 'thumbnail',
+    messageDirection: MessageDirection,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
@@ -202,6 +210,7 @@ async function downloadBlob(
  */
 async function downloadBlob(
     type: 'main' | 'thumbnail',
+    messageDirection: MessageDirection,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
@@ -302,14 +311,52 @@ async function downloadBlob(
             throw new Error('Both file data and blob ID are missing');
         }
 
-        // Otherwise, download blob from the blob mirror
-        log.debug(`Downloading ${type} blob`);
+        // Otherwise, download blob from the blob mirror.
+        //
+        // First, determine the blob mirror scope for downloading and marking the download as done.
+        let blobScope: BlobScope;
+        switch (messageDirection) {
+            case MessageDirection.INBOUND:
+                // Inbound messages are generally downloaded with "public" scope, with certain
+                // exceptions.
+                switch (conversation.receiverLookup.type) {
+                    case ReceiverType.CONTACT:
+                    case ReceiverType.DISTRIBUTION_LIST:
+                        // For contacts and distribution lists, use public scope,
+                        // so that the blobs are removed from the public blob server.
+                        blobScope = 'public';
+                        break;
+                    case ReceiverType.GROUP:
+                        // For groups, use local scope, so that the blobs are retained
+                        // for the other group members when marking blob as done.
+                        blobScope = 'local';
+                        break;
+                    default:
+                        unreachable(conversation.receiverLookup);
+                }
+                break;
+            case MessageDirection.OUTBOUND:
+                // Outbound messages are only downloaded with "local" scope. This is especially
+                // important when marking the blob as done, to prevent deleting the blob before the
+                // recipient has downloaded it.
+                blobScope = 'local';
+                break;
+            default:
+                unreachable(messageDirection);
+        }
+
+        // Download
+        log.debug(
+            `Downloading ${type} blob for ${MessageDirectionUtils.nameOf(
+                messageDirection,
+            )} message (scope=${blobScope})`,
+        );
         if (type === 'main') {
             meta.update((view) => ({state: 'syncing'}));
         }
         let downloadResult;
         try {
-            downloadResult = await blob.download('public', blobId);
+            downloadResult = await blob.download(blobScope, blobId);
         } catch (error) {
             if (error instanceof BlobBackendError && error.type === 'not-found') {
                 // Permanent failure, blob not found
@@ -341,52 +388,37 @@ async function downloadBlob(
         };
 
         // Update database
-        let change: Partial<FileMessageViewFragment>;
+        let dbChange: Partial<FileMessageViewFragment>;
+        let viewChange: Partial<FileMessageViewFragment>;
         switch (type) {
             case 'main':
-                change = {fileData: storedFileData};
+                dbChange = {fileData: storedFileData};
+                viewChange = {...dbChange, state: 'synced'};
                 break;
             case 'thumbnail':
-                change = {thumbnailFileData: storedFileData};
+                dbChange = {thumbnailFileData: storedFileData};
+                viewChange = {...dbChange};
                 break;
             default:
                 unreachable(type);
         }
         meta.update(() => {
-            updateFileMessage(services, log, conversation.uid, messageUid, change);
-            switch (type) {
-                case 'main':
-                    return {...change, state: 'synced'};
-                case 'thumbnail':
-                    return change;
-                default:
-                    return unreachable(type);
-            }
+            updateFileMessage(services, log, conversation.uid, messageUid, dbChange);
+            return viewChange;
         });
 
         // Mark as downloaded
         //
         // Note: This is done in the background, we don't await the result of the done call.
-        let blobDoneScope: BlobScope;
-        switch (conversation.receiverLookup.type) {
-            case ReceiverType.CONTACT:
-            case ReceiverType.DISTRIBUTION_LIST:
-                // For contacts and distribution lists, use public scope,
-                // so that the blobs are removed from the public blob server.
-                blobDoneScope = 'public';
-                break;
-            case ReceiverType.GROUP:
-                // For groups, use local scope, so that the blobs are retained
-                // for the other group members.
-                blobDoneScope = 'local';
-                break;
-            default:
-                unreachable(conversation.receiverLookup);
-        }
-        downloadResult.done(blobDoneScope).catch((e) => {
+        log.debug(
+            `Marking ${type} blob for ${MessageDirectionUtils.nameOf(
+                messageDirection,
+            )} message as downloaded (scope=${blobScope})`,
+        );
+        downloadResult.done(blobScope).catch((e) => {
             log.error(`Failed to mark blob with id ${bytesToHex(blobId)} as done`, e);
         });
-        log.debug(`Downloaded ${type} blob`);
+        log.info(`Downloaded ${type} blob`);
 
         // Return data
         return decryptedBytes;
@@ -406,6 +438,7 @@ export class InboundFileMessageModelController
     public async blob(): Promise<ReadonlyUint8Array> {
         return await downloadBlob(
             'main',
+            MessageDirection.INBOUND,
             this._uid,
             this._conversation,
             this._services,
@@ -421,6 +454,7 @@ export class InboundFileMessageModelController
     ): Promise<ReadonlyUint8Array | undefined> {
         return await downloadBlob(
             'thumbnail',
+            MessageDirection.INBOUND,
             this._uid,
             this._conversation,
             this._services,
@@ -450,6 +484,7 @@ export class OutboundFileMessageModelController
     public async blob(): Promise<ReadonlyUint8Array> {
         return await downloadBlob(
             'main',
+            MessageDirection.OUTBOUND,
             this._uid,
             this._conversation,
             this._services,
@@ -465,6 +500,7 @@ export class OutboundFileMessageModelController
     ): Promise<ReadonlyUint8Array | undefined> {
         return await downloadBlob(
             'thumbnail',
+            MessageDirection.OUTBOUND,
             this._uid,
             this._conversation,
             this._services,
