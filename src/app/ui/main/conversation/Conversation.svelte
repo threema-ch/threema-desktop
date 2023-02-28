@@ -310,7 +310,7 @@
   /**
    * Remove the current quote
    */
-  function removeQuote(event: MouseEvent): void {
+  function removeQuote(_: MouseEvent): void {
     updateComposeData({mode: 'text'});
     composeHandler.focus();
   }
