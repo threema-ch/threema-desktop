@@ -307,8 +307,16 @@ async function downloadBlob(
 
         // If there is no blob ID and no file data, there's nothing to be downloaded
         if (blobId === undefined) {
-            markDownloadAsPermanentlyFailed();
-            throw new Error('Both file data and blob ID are missing');
+            switch (type) {
+                case 'main':
+                    markDownloadAsPermanentlyFailed();
+                    throw new Error('Both file data and blob ID are missing');
+                case 'thumbnail':
+                    // No thumbnail available
+                    return undefined;
+                default:
+                    return unreachable(type);
+            }
         }
 
         // Otherwise, download blob from the blob mirror.
