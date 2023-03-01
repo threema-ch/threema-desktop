@@ -320,18 +320,18 @@ async function downloadBlob(
         }
 
         // Otherwise, download blob from the blob mirror
-        const blobScope = determineBlobScope(messageDirection, conversation.receiverLookup.type);
+        const blobDownloadScope = determineBlobDownloadScope(messageDirection);
         log.debug(
             `Downloading ${type} blob for ${MessageDirectionUtils.nameOf(
                 messageDirection,
-            )} message (scope=${blobScope})`,
+            )} message (scope=${blobDownloadScope})`,
         );
         if (type === 'main') {
             meta.update((view) => ({state: 'syncing'}));
         }
         let downloadResult;
         try {
-            downloadResult = await blob.download(blobScope, blobId);
+            downloadResult = await blob.download(blobDownloadScope, blobId);
         } catch (error) {
             if (error instanceof BlobBackendError && error.type === 'not-found') {
                 // Permanent failure, blob not found
@@ -385,12 +385,16 @@ async function downloadBlob(
         // Mark as downloaded
         //
         // Note: This is done in the background, we don't await the result of the done call.
+        const blobDoneScope = determineBlobDoneScope(
+            messageDirection,
+            conversation.receiverLookup.type,
+        );
         log.debug(
             `Marking ${type} blob for ${MessageDirectionUtils.nameOf(
                 messageDirection,
-            )} message as downloaded (scope=${blobScope})`,
+            )} message as downloaded (scope=${blobDoneScope})`,
         );
-        downloadResult.done(blobScope).catch((e) => {
+        downloadResult.done(blobDoneScope).catch((e) => {
             log.error(`Failed to mark blob with id ${bytesToHex(blobId)} as done`, e);
         });
         log.info(`Downloaded ${type} blob`);
@@ -548,20 +552,33 @@ export class OutboundFileMessageModelStore extends LocalModelStore<OutboundFileM
 }
 
 /**
- * Determine the scope for downloading blobs and marking them as done.
+ * Determine the scope for downloading blobs.
  */
-function determineBlobScope(
+function determineBlobDownloadScope(messageDirection: MessageDirection): BlobScope {
+    switch (messageDirection) {
+        case MessageDirection.INBOUND:
+            return 'public';
+        case MessageDirection.OUTBOUND:
+            return 'local';
+        default:
+            return unreachable(messageDirection);
+    }
+}
+
+/**
+ * Determine the scope for marking blobs as done.
+ */
+function determineBlobDoneScope(
     messageDirection: MessageDirection,
     receiverType: ReceiverType,
 ): BlobScope {
-    // Outbound messages are only downloaded with "local" scope. This is especially important
-    // when marking the blob as done, to prevent deleting the blob before the recipient has
-    // downloaded it.
+    // Outbound messages are only marked as done with "local" scope, to prevent deleting the blob
+    // from the public blob server before the recipient has downloaded it.
     if (messageDirection === MessageDirection.OUTBOUND) {
         return 'local';
     }
 
-    // Inbound messages are generally downloaded with "public" scope, with certain exceptions.
+    // For inbound messages, it depends on the receiver type
     switch (receiverType) {
         case ReceiverType.CONTACT:
         case ReceiverType.DISTRIBUTION_LIST:
