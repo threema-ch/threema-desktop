@@ -52,7 +52,7 @@
   }
 
   /**
-   * Clear the current active media file and auto swicth to the next media file
+   * Clear the current active media file and auto switch to the next media file
    */
   function removeActiveMediaFile(): void {
     saveAndClearCurrentCaption();
@@ -108,10 +108,15 @@
   }
 
   function attachMoreFiles(files: File[]): void {
+    if (files.length === 0) {
+      return;
+    }
     const newMediaFiles = files.map((file) => ({
       file,
     }));
     mediaFiles = [...mediaFiles, ...newMediaFiles];
+    saveAndClearCurrentCaption();
+    setNewActiveMediaFile(newMediaFiles[0]);
   }
 
   function openConfirmCloseDialog(event: CustomEvent): void {
