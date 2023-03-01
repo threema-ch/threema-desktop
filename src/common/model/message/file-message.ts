@@ -319,41 +319,8 @@ async function downloadBlob(
             }
         }
 
-        // Otherwise, download blob from the blob mirror.
-        //
-        // First, determine the blob mirror scope for downloading and marking the download as done.
-        let blobScope: BlobScope;
-        switch (messageDirection) {
-            case MessageDirection.INBOUND:
-                // Inbound messages are generally downloaded with "public" scope, with certain
-                // exceptions.
-                switch (conversation.receiverLookup.type) {
-                    case ReceiverType.CONTACT:
-                    case ReceiverType.DISTRIBUTION_LIST:
-                        // For contacts and distribution lists, use public scope,
-                        // so that the blobs are removed from the public blob server.
-                        blobScope = 'public';
-                        break;
-                    case ReceiverType.GROUP:
-                        // For groups, use local scope, so that the blobs are retained
-                        // for the other group members when marking blob as done.
-                        blobScope = 'local';
-                        break;
-                    default:
-                        unreachable(conversation.receiverLookup);
-                }
-                break;
-            case MessageDirection.OUTBOUND:
-                // Outbound messages are only downloaded with "local" scope. This is especially
-                // important when marking the blob as done, to prevent deleting the blob before the
-                // recipient has downloaded it.
-                blobScope = 'local';
-                break;
-            default:
-                unreachable(messageDirection);
-        }
-
-        // Download
+        // Otherwise, download blob from the blob mirror
+        const blobScope = determineBlobScope(messageDirection, conversation.receiverLookup.type);
         log.debug(
             `Downloading ${type} blob for ${MessageDirectionUtils.nameOf(
                 messageDirection,
@@ -577,5 +544,35 @@ export class OutboundFileMessageModelStore extends LocalModelStore<OutboundFileM
                 },
             },
         );
+    }
+}
+
+/**
+ * Determine the scope for downloading blobs and marking them as done.
+ */
+function determineBlobScope(
+    messageDirection: MessageDirection,
+    receiverType: ReceiverType,
+): BlobScope {
+    // Outbound messages are only downloaded with "local" scope. This is especially important
+    // when marking the blob as done, to prevent deleting the blob before the recipient has
+    // downloaded it.
+    if (messageDirection === MessageDirection.OUTBOUND) {
+        return 'local';
+    }
+
+    // Inbound messages are generally downloaded with "public" scope, with certain exceptions.
+    switch (receiverType) {
+        case ReceiverType.CONTACT:
+        case ReceiverType.DISTRIBUTION_LIST:
+            // For contacts and distribution lists, use public scope, so that the blobs are removed
+            // from the public blob server.
+            return 'public';
+        case ReceiverType.GROUP:
+            // For groups, use local scope, so that the blobs are retained for the other group
+            // members when marking blob as done.
+            return 'local';
+        default:
+            return unreachable(receiverType);
     }
 }
