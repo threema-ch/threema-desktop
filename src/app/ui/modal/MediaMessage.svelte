@@ -6,6 +6,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveFile from '~/app/ui/modal/media-message/ActiveFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
@@ -134,6 +135,30 @@
   let zoneHover = false;
   let bodyHover = false;
 
+  // Emoji picker
+  let emojiPicker: EmojiPicker;
+  let emojiPickerPosition = {x: 0, y: 0};
+
+  /**
+   * Show emoji picker if it's invisible.
+   */
+  function showEmojiPicker(event: MouseEvent): void {
+    const isVisible: boolean = emojiPicker.isVisible();
+    if (isVisible) {
+      return;
+    }
+
+    // Show emoji picker at top left of button
+    const emojiButton = event.currentTarget as HTMLElement;
+    const rect = emojiButton.getBoundingClientRect();
+    emojiPickerPosition = {x: rect.left, y: rect.top};
+    emojiPicker.show();
+
+    // Prevent click event from bubbling up to the body element, where the emoji picker would
+    // immediately be closed again.
+    event.stopPropagation();
+  }
+
   onMount(() => {
     caption.focus();
   });
@@ -149,6 +174,13 @@
 />
 
 <template>
+  <div class="emoji-picker">
+    <EmojiPicker
+      bind:this={emojiPicker}
+      {...emojiPickerPosition}
+      on:insertEmoji={(event) => caption.insertText(event.detail)}
+    />
+  </div>
   <ModalWrapper>
     <DropZone
       bind:zoneHover
@@ -172,8 +204,10 @@
             <div class="caption">
               <Caption bind:this={caption} initialText={activeMediaFile?.caption} />
             </div>
-            <div class="emoji">
-              <MdIcon theme="Outlined">mood</MdIcon>
+            <div class="emoji-picker">
+              <IconButton flavor="naked" on:click={showEmojiPicker}>
+                <MdIcon theme="Outlined">insert_emoticon</MdIcon>
+              </IconButton>
             </div>
             <div class="miniatures">
               <Miniatures
@@ -269,17 +303,6 @@
 
     .caption {
       padding: rem(8px) rem(8px) rem(8px) rem(16px);
-    }
-    .emoji {
-      width: rem(40px);
-      height: rem(40px);
-      margin-right: rem(8px);
-      justify-self: end;
-      display: grid;
-      place-items: center;
-      user-select: none;
-      cursor: pointer;
-      font-size: rem(24px);
     }
     .miniatures {
       align-self: start;
