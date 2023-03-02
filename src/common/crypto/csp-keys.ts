@@ -1,9 +1,11 @@
 import {type Config} from '~/common/config';
-import {type PublicKey, wrapRawKey} from '~/common/crypto';
+import {type CryptoBackend, type PublicKey, wrapRawKey} from '~/common/crypto';
 import {deriveKey} from '~/common/crypto/blake2b';
+import {type CspNonceGuard} from '~/common/network/types';
 import {
     type ClientKey,
     type DirectoryChallengeResponseKey,
+    type MessageMetadataBox,
     type TemporaryServerKey,
     type VouchKey,
 } from '~/common/network/types/keys';
@@ -39,4 +41,24 @@ export function deriveDirectoryChallengeResponseKey(
         personal: PERSONAL,
         salt: 'dir',
     }) as DirectoryChallengeResponseKey;
+}
+
+/**
+ * Derive the key used for the `MessageMetadata` box.
+ */
+export function deriveMessageMetadataKey(
+    crypto: CryptoBackend,
+    ck: ClientKey,
+    contactPublicKey: PublicKey,
+    cspNonceGuard: CspNonceGuard,
+): MessageMetadataBox {
+    return crypto.getSecretBox(
+        ck
+            .deriveSharedKey(32, contactPublicKey, {
+                personal: PERSONAL,
+                salt: 'mm',
+            })
+            .asReadonly(),
+        cspNonceGuard,
+    ) as MessageMetadataBox;
 }

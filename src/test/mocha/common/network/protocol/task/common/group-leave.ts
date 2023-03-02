@@ -36,7 +36,7 @@ import {
 } from '~/test/mocha/common/backend-mocks';
 import {
     assertGroupHasMembers,
-    decodeLegacyMessageEncodable,
+    decodeMessageEncodable,
     decryptContainer,
     reflectContactSync,
 } from '~/test/mocha/common/network/protocol/task/task-test-helpers';
@@ -132,7 +132,7 @@ export function groupLeaveTests(
                       NetworkExpectationFactory.write((m) => {
                           assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
                           assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
-                          const message = decodeLegacyMessageEncodable(m.payload.payload);
+                          const message = decodeMessageEncodable(m.payload.payload);
                           expect(message.senderIdentity).to.eql(UTF8.encode(me));
                           expect(message.receiverIdentity).to.eql(creator.identity.bytes);
                           const messageContainer = decryptContainer(

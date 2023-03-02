@@ -85,6 +85,14 @@ export type DirectoryChallengeResponseKey = WeakOpaque<
 >;
 
 /**
+ * Box used for `MessageMetadata` encryption.
+ */
+export type MessageMetadataBox = WeakOpaque<
+    CspE2eBox,
+    {readonly MessageMetadataBox: unique symbol}
+>;
+
+/**
  * A symmetric blob encryption key. Must be exactly 32 bytes long.
  */
 export type RawBlobKey = WeakOpaque<ReadonlyRawKey<32>, {readonly RawBlobKey: unique symbol}>;

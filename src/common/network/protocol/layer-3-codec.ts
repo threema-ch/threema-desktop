@@ -563,6 +563,18 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                             cspDeviceId: csp.deviceId,
                         }),
                     }).encode,
+
+                    // Encode `message-payload-version` extension to request
+                    // `message-with-metadata-box` for incoming/outgoing messages.
+                    structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
+                        type: 0x02, // TODO(DESK-777): Hardcoded, nono!
+                        payload: structbuf.bridge.byteEncoder(
+                            structbuf.csp.handshake.MessagePayloadVersion,
+                            {
+                                version: 0x01, // TODO(DESK-777): Hardcoded, nono!
+                            },
+                        ),
+                    }).encode,
                 ),
             )
             .encryptWithCspNonce(csp.cck, csn);
@@ -644,7 +656,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
             case CspPayloadType.INCOMING_MESSAGE:
                 return {
                     type: maybePayloadType,
-                    payload: structbuf.csp.payload.LegacyMessage.decode(data),
+                    payload: structbuf.csp.payload.MessageWithMetadataBox.decode(data),
                 };
             case CspPayloadType.QUEUE_SEND_COMPLETE:
                 return {
@@ -855,7 +867,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
         return d2m.dgdik
             .encryptor(
                 buffer,
-                protobuf.utils.encoder(protobuf.d2d.DeviceInfo, {
+                protobuf.utils.byteEncoder(protobuf.d2d.DeviceInfo, {
                     // TODO(DESK-322): What padding constraints do we want to apply?
                     padding: bytePadPkcs7(buffer, randomPkcs7PaddingLength(crypto)),
                     platform:

@@ -115,7 +115,7 @@ export type InboundL3Message = InboundL3CspMessage | InboundL3D2mMessage;
 export type InboundL3CspMessage = CspMessage<
     | CspPayload<CspPayloadType.ECHO_REQUEST, structbuf.csp.payload.EchoRequest>
     | CspPayload<CspPayloadType.ECHO_RESPONSE, structbuf.csp.payload.EchoResponse>
-    | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.LegacyMessage>
+    | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.MessageWithMetadataBox>
     | CspPayload<CspPayloadType.OUTGOING_MESSAGE_ACK, structbuf.csp.payload.MessageAck>
     | CspPayload<CspPayloadType.CLOSE_ERROR, structbuf.csp.payload.CloseError>
     | CspPayload<CspPayloadType.ALERT, structbuf.csp.payload.Alert>
@@ -142,7 +142,7 @@ export type OutboundL3CspMessage = CspMessage<
       >
     | CspPayload<
           CspPayloadType.OUTGOING_MESSAGE,
-          LayerEncoder<structbuf.csp.payload.LegacyMessageEncodable>
+          LayerEncoder<structbuf.csp.payload.MessageWithMetadataBoxEncodable>
       >
     | CspPayload<
           CspPayloadType.INCOMING_MESSAGE_ACK,
@@ -179,7 +179,7 @@ export type OutboundL3D2mMessage =
 
 export type InboundL4Message = InboundL4CspMessage | InboundL4D2mMessage;
 export type InboundL4CspMessage = CspMessage<
-    | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.LegacyMessage>
+    | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.MessageWithMetadataBox>
     | CspPayload<CspPayloadType.OUTGOING_MESSAGE_ACK, structbuf.csp.payload.MessageAck>
     | CspPayload<CspPayloadType.CLOSE_ERROR, structbuf.csp.payload.CloseError>
     | CspPayload<CspPayloadType.ALERT, structbuf.csp.payload.Alert>
@@ -198,7 +198,7 @@ export type OutboundL4Message = OutboundL4CspMessage | OutboundL4D2mMessage;
 export type OutboundL4CspMessage = CspMessage<
     | CspPayload<
           CspPayloadType.OUTGOING_MESSAGE,
-          LayerEncoder<structbuf.csp.payload.LegacyMessageEncodable>
+          LayerEncoder<structbuf.csp.payload.MessageWithMetadataBoxEncodable>
       >
     | CspPayload<
           CspPayloadType.INCOMING_MESSAGE_ACK,
@@ -242,7 +242,7 @@ export type OutboundL4D2mTransactionMessage =
 // Task Messages (messages that are no protocol control messages)
 export type InboundTaskMessage = InboundCspTaskMessage | InboundD2mTaskMessage;
 export type InboundCspTaskMessage = CspMessage<
-    | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.LegacyMessage>
+    | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.MessageWithMetadataBox>
     | CspPayload<CspPayloadType.ALERT, structbuf.csp.payload.Alert>
     | CspPayload<CspPayloadType.CLOSE_ERROR, structbuf.csp.payload.CloseError>
 >;

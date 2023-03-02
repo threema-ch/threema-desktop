@@ -1,8 +1,9 @@
 /**
  * Incoming message task.
  */
-import {type EncryptedData, type Nonce} from '~/common/crypto';
+import {type EncryptedData, type Nonce, type PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
+import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {type DbContact} from '~/common/db';
 import {
     AcquaintanceLevel,
@@ -65,7 +66,6 @@ import {
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import * as validate from '~/common/network/structbuf/validate';
 import {
     type ContactConversationId,
     ensureIdentityString,
@@ -102,25 +102,24 @@ import {OutgoingCspMessageTask} from './outgoing-csp-message';
  * Ensure the provided timestamp on when a message has been created is not in
  * the future (clamp to _now_ if necessary).
  */
-function getClampedCreatedAt(createdAtS: u53): Date {
-    const createdAt = unixTimestamptoDateS(createdAtS);
+function getClampedCreatedAt(createdAt: Date): Date {
     const now = new Date();
     return now < createdAt ? now : createdAt;
 }
 
 function getCommonMessageInitFragment(
-    payload: structbuf.csp.payload.LegacyMessageLike,
+    createdAt: Date,
     cspMessageBody: ReadonlyUint8Array,
 ): Omit<MessageFor<MessageDirection.INBOUND, MessageType, 'init'>, 'id' | 'sender' | 'type'> {
     return {
-        createdAt: getClampedCreatedAt(payload.createdAt),
+        createdAt,
         receivedAt: new Date(), // Local date, to be replaced with reflection date later
         raw: cspMessageBody,
     };
 }
 
 function getTextMessageInitFragment(
-    payload: structbuf.csp.payload.LegacyMessageLike,
+    createdAt: Date,
     cspTextMessageBody: ReadonlyUint8Array,
     log: Logger,
     messageId: MessageId,
@@ -132,7 +131,7 @@ function getTextMessageInitFragment(
 
     const text = possibleQuote?.comment ?? messageText;
     return {
-        ...getCommonMessageInitFragment(payload, cspTextMessageBody),
+        ...getCommonMessageInitFragment(createdAt, cspTextMessageBody),
         type: 'text',
         text,
         quotedMessageId: possibleQuote?.quotedMessageId,
@@ -140,16 +139,15 @@ function getTextMessageInitFragment(
 }
 
 function getFileMessageInitFragment(
-    payload: structbuf.csp.payload.LegacyMessageLike,
+    createdAt: Date,
     cspFileMessageBody: ReadonlyUint8Array,
-    log: Logger,
 ): InboundFileMessageInitFragment {
     // Decode file message
     const fileData = structbuf.validate.csp.e2e.File.SCHEMA.parse(
         structbuf.csp.e2e.File.decode(cspFileMessageBody as Uint8Array),
     ).file;
     return {
-        ...getCommonMessageInitFragment(payload, cspFileMessageBody),
+        ...getCommonMessageInitFragment(createdAt, cspFileMessageBody),
         type: 'file',
         blobId: fileData.file.blobId,
         thumbnailBlobId: fileData.thumbnail?.blobId,
@@ -164,7 +162,7 @@ function getFileMessageInitFragment(
 }
 
 function getLocationMessageInitFragment(
-    payload: structbuf.csp.payload.LegacyMessageLike,
+    createdAt: Date,
     cspLocationMessageBody: ReadonlyUint8Array,
 ): InboundTextMessageInitFragment {
     // Decode location message as text message for now.
@@ -173,7 +171,7 @@ function getLocationMessageInitFragment(
         structbuf.csp.e2e.Location.decode(cspLocationMessageBody as Uint8Array),
     );
     return {
-        ...getCommonMessageInitFragment(payload, cspLocationMessageBody),
+        ...getCommonMessageInitFragment(createdAt, cspLocationMessageBody),
         type: 'text',
         text: getTextForLocation(location.location),
     };
@@ -236,6 +234,12 @@ function getD2dIncomingMessage(
 
 // Set of E2EE message types that may not be blocked under any circumstance
 const BLOCK_EXEMPTION_TYPES: ReadonlySet<u53> = CspE2eGroupControlTypeUtils.ALL;
+
+/** An existing contact or almost everything we need to create a contact. */
+type ContactOrInitFragment = LocalModelStore<Contact> | Omit<ContactInit, 'nickname'>;
+
+/** An existing contact or everything we need to create a contact. */
+type ContactOrInit = LocalModelStore<Contact> | ContactInit;
 
 /**
  * The message processing instructions determine how an incoming message should be processed.
@@ -338,16 +342,14 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     public readonly persist = false;
     public readonly transaction = undefined;
     private readonly _log: Logger;
-    private readonly _message: structbuf.csp.payload.LegacyMessageLike;
     private readonly _id: MessageId;
 
     public constructor(
         private readonly _services: ServicesForTasks,
-        message: structbuf.csp.payload.LegacyMessageLike,
+        private readonly _message: structbuf.csp.payload.MessageWithMetadataBoxLike,
     ) {
-        const messageIdHex = message.messageId.toString(16);
+        const messageIdHex = _message.messageId.toString(16);
         this._log = _services.logging.logger(`network.protocol.task.in-message.${messageIdHex}`);
-        this._message = message;
         this._id = ensureMessageId(this._message.messageId);
     }
 
@@ -396,21 +398,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Get the public key of the sender (and the contact model store, if
         // already existing).
-        let senderContactOrInit: LocalModelStore<Contact> | ContactInit | undefined =
+        let senderContactOrInitFragment: ContactOrInitFragment | undefined =
             model.contacts.getByIdentity(sender.string);
-        if (senderContactOrInit === undefined) {
-            // Get the nickname of the sender
-            let nickname;
-            try {
-                nickname = this._decodeSenderNickname();
-            } catch (error) {
-                this._log.warn(`Discard message with invalid nickname: ${error}`);
-                return await this._discard(handle);
-            }
-
+        if (senderContactOrInitFragment === undefined) {
             // Fetch from contact directory
             try {
-                senderContactOrInit = await this._getContactInit(sender.string, nickname);
+                senderContactOrInitFragment = await this._getContactInitFragment(sender.string);
             } catch (error) {
                 // Note: We could handle this more generously (by ignoring the message and risk
                 //       reordering) and/or try again a couple of times.
@@ -423,20 +416,45 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Discard messages from revoked/invalid contacts
         if (
-            senderContactOrInit === undefined ||
-            (senderContactOrInit instanceof LocalModelStore &&
-                senderContactOrInit.get().view.activityState === ActivityState.INVALID)
+            senderContactOrInitFragment === undefined ||
+            (senderContactOrInitFragment instanceof LocalModelStore &&
+                senderContactOrInitFragment.get().view.activityState === ActivityState.INVALID)
         ) {
             this._log.warn('Discarding message from a revoked or invalid sender');
+            return await this._discard(handle);
+        }
+
+        // Determine the sender's public key
+        const senderPublicKey =
+            senderContactOrInitFragment instanceof LocalModelStore
+                ? senderContactOrInitFragment.get().view.publicKey
+                : senderContactOrInitFragment.publicKey;
+
+        // Decrypt and decode the metadata, if any
+        //
+        // If there is metadata, ensure the message IDs match
+        let metadata;
+        try {
+            metadata = this._decodeAndDecryptMetadata(senderPublicKey);
+        } catch (error) {
+            this._log.warn(
+                `Discarding message because we could not decrypt or decode metadata: ${error}`,
+            );
+            return await this._discard(handle);
+        }
+        if (metadata !== undefined && metadata.messageId !== this._message.messageId) {
+            this._log.warn('Discarding message due to metadata message ID mismatch');
             return await this._discard(handle);
         }
 
         // Decrypt and decode the message
         let container;
         try {
-            container = this._decodeAndDecryptContainer(senderContactOrInit);
+            container = this._decodeAndDecryptContainer(senderPublicKey);
         } catch (error) {
-            this._log.warn(`Discarding message that we could not decrypt or decode: ${error}`);
+            this._log.warn(
+                `Discarding message because we could not decrypt or decode data: ${error}`,
+            );
             return await this._discard(handle);
         }
         const type = container.type;
@@ -450,7 +468,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         //
         // TODO(DESK-560): Full-featured contact blocking logic
         if (
-            this._isBlocked(sender.string, senderContactOrInit) &&
+            this._isBlocked(sender.string, senderContactOrInitFragment) &&
             !BLOCK_EXEMPTION_TYPES.has(type)
         ) {
             this._log.info(`Discarding message from blocked contact ${sender.string}`);
@@ -466,12 +484,14 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             this._log.info(`Discarding ${messageTypeDebug} message with invalid padding: ${error}`);
             return await this._discard(handle);
         }
+        let senderContactOrInit = this._getContactOrInit(senderContactOrInitFragment, metadata);
         let instructions;
         try {
             instructions = this._getInstructionsForMessage(
                 type,
                 cspMessageBody,
                 senderContactOrInit,
+                metadata,
             );
         } catch (error) {
             this._log.info(`Discarding ${messageTypeDebug} message with invalid content: ${error}`);
@@ -742,11 +762,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         return [sender, receiver];
     }
 
-    private _decodeSenderNickname(): string {
-        // Ignore the zero-padding, then decode as UTF-8
-        return UTF8.decode(byteWithoutZeroPadding(this._message.senderNickname));
-    }
-
     /**
      * Fetch identity data for the specified identity string and return a {@link ContactInit}.
      *
@@ -754,10 +769,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
      *   revoked
      * @throws {DirectoryError} if directory fetch failed.
      */
-    private async _getContactInit(
+    private async _getContactInitFragment(
         sender: IdentityString,
-        nickname: string,
-    ): Promise<ContactInit | undefined> {
+    ): Promise<Omit<ContactInit, 'nickname'> | undefined> {
         const {directory} = this._services;
         const fetched = await directory.identity(sender);
         if (fetched.state === ActivityState.INVALID) {
@@ -768,7 +782,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             publicKey: fetched.publicKey,
             firstName: '',
             lastName: '',
-            nickname: isNickname(nickname) ? nickname : undefined,
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: sender}),
             createdAt: new Date(),
             verificationLevel: VerificationLevel.UNVERIFIED,
@@ -783,21 +796,39 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         };
     }
 
-    private _decodeAndDecryptContainer(
-        contactOrInit: LocalModelStore<Contact> | ContactInit,
-    ): structbuf.csp.e2e.Container {
+    private _decodeAndDecryptMetadata(
+        senderPublicKey: PublicKey,
+    ): protobuf.validate.csp_e2e.MessageMetadata.Type | undefined {
+        const {crypto, device} = this._services;
+        if (this._message.metadataLength === 0) {
+            return undefined;
+        }
+        return protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
+            protobuf.csp_e2e.MessageMetadata.decode(
+                deriveMessageMetadataKey(
+                    crypto,
+                    device.csp.ck,
+                    senderPublicKey,
+                    device.csp.nonceGuard,
+                )
+                    .decryptorWithNonce(
+                        CREATE_BUFFER_TOKEN,
+                        this._message.messageAndMetadataNonce as Nonce,
+                        this._message.metadataContainer as EncryptedData,
+                    )
+                    .decrypt(),
+            ),
+        );
+    }
+
+    private _decodeAndDecryptContainer(senderPublicKey: PublicKey): structbuf.csp.e2e.Container {
         const {device} = this._services;
         return structbuf.csp.e2e.Container.decode(
             device.csp.ck
-                .getSharedBox(
-                    contactOrInit instanceof LocalModelStore
-                        ? contactOrInit.get().view.publicKey
-                        : contactOrInit.publicKey,
-                    device.csp.nonceGuard,
-                )
+                .getSharedBox(senderPublicKey, device.csp.nonceGuard)
                 .decryptorWithNonce(
                     CREATE_BUFFER_TOKEN,
-                    this._message.messageNonce as Nonce,
+                    this._message.messageAndMetadataNonce as Nonce,
                     this._message.messageBox as EncryptedData,
                 )
                 .decrypt(),
@@ -806,22 +837,66 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
     private _isBlocked(
         sender: IdentityString,
-        contactOrInit: LocalModelStore<Contact> | ContactInit,
+        senderContactOrInitFragment: ContactOrInitFragment,
     ): boolean {
         const {model} = this._services;
         return (
-            (!(contactOrInit instanceof LocalModelStore) && model.settings.blockUnknown) ||
+            (!(senderContactOrInitFragment instanceof LocalModelStore) &&
+                model.settings.blockUnknown) ||
             model.settings.contactIsBlocked(sender)
         );
+    }
+
+    private _getContactOrInit(
+        senderContactOrInitFragment: ContactOrInitFragment,
+        metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
+    ): ContactOrInit {
+        if (senderContactOrInitFragment instanceof LocalModelStore) {
+            return senderContactOrInitFragment;
+        }
+
+        // Get the nickname of the sender
+        let nickname;
+        try {
+            nickname = this._decodeSenderNickname(metadata);
+        } catch (error) {
+            this._log.warn(`Ignoring invalid nickname: ${error}`);
+        }
+
+        // Finalise the fragment
+        return {
+            ...senderContactOrInitFragment,
+            nickname: isNickname(nickname) ? nickname : undefined,
+        };
+    }
+
+    private _decodeSenderNickname(
+        metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
+    ): string {
+        // Prefer the nickname from the metadata
+        if (metadata !== undefined && metadata.nickname.length > 0) {
+            return metadata.nickname;
+        }
+
+        // Fall back to the legacy unencrypted nickname.
+        //
+        // Ignore the zero-padding, then decode as UTF-8
+        if (this._message.legacySenderNickname.byteLength === 0) {
+            return '';
+        }
+        return UTF8.decode(byteWithoutZeroPadding(this._message.legacySenderNickname));
     }
 
     private _getInstructionsForMessage(
         type: u53,
         cspMessageBody: ReadonlyUint8Array,
-        senderContactOrInit: LocalModelStore<Contact> | ContactInit,
+        senderContactOrInit: ContactOrInit,
+        metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
     ): MessageProcessingInstructions | 'forward' | 'discard' {
         const message = this._message;
-        const clampedCreatedAt = getClampedCreatedAt(message.createdAt);
+        const clampedCreatedAt = getClampedCreatedAt(
+            metadata?.createdAt ?? unixTimestamptoDateS(message.createdAt),
+        );
         const messageId = ensureMessageId(message.messageId);
 
         // Determine sender identity and conversation ID
@@ -853,7 +928,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     ? undefined
                     : ({
                           type: 'text',
-                          ...getCommonMessageInitFragment(message, cspMessageBody),
+                          ...getCommonMessageInitFragment(clampedCreatedAt, cspMessageBody),
                           text,
                       } as const);
 
@@ -874,7 +949,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 | CspE2eGroupStatusUpdateType
                 | CspE2eGroupControlType.GROUP_CALL_START,
         ): UnhandledMessageInstructions {
-            const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+            const validatedContainer = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
             );
             const conversationId: GroupConversationId = {
@@ -895,18 +970,14 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 switch (maybeCspE2eType) {
                     case CspE2eConversationType.TEXT:
                         initFragment = getTextMessageInitFragment(
-                            message,
+                            clampedCreatedAt,
                             cspMessageBody,
                             this._log,
                             this._id,
                         );
                         break;
                     case CspE2eConversationType.FILE:
-                        initFragment = getFileMessageInitFragment(
-                            message,
-                            cspMessageBody,
-                            this._log,
-                        );
+                        initFragment = getFileMessageInitFragment(clampedCreatedAt, cspMessageBody);
                         break;
                     default:
                         unreachable(maybeCspE2eType);
@@ -924,14 +995,15 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             case CspE2eGroupConversationType.GROUP_TEXT:
             case CspE2eGroupConversationType.GROUP_FILE: {
                 // A group text message is wrapped in a group-member-container
-                const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
-                );
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                    );
                 let initFragment;
                 switch (maybeCspE2eType) {
                     case CspE2eGroupConversationType.GROUP_TEXT:
                         initFragment = getTextMessageInitFragment(
-                            message,
+                            clampedCreatedAt,
                             validatedContainer.innerData,
                             this._log,
                             this._id,
@@ -939,9 +1011,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         break;
                     case CspE2eGroupConversationType.GROUP_FILE:
                         initFragment = getFileMessageInitFragment(
-                            message,
+                            clampedCreatedAt,
                             validatedContainer.innerData,
-                            this._log,
                         );
                         break;
                     default:
@@ -967,16 +1038,17 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     conversationId: senderConversationId,
                     missingContactHandling: 'create',
                     deliveryReceipt: true,
-                    initFragment: getLocationMessageInitFragment(message, cspMessageBody),
+                    initFragment: getLocationMessageInitFragment(clampedCreatedAt, cspMessageBody),
                     reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.LOCATION),
                 };
                 return instructions;
             }
             case CspE2eGroupConversationType.GROUP_LOCATION: {
                 // A group location message is wrapped in a group-member-container
-                const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
-                );
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                    );
                 const instructions: ConversationMessageInstructions = {
                     messageCategory: 'conversation-message',
                     conversationId: {
@@ -987,7 +1059,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     missingContactHandling: 'ignore',
                     deliveryReceipt: false,
                     initFragment: getLocationMessageInitFragment(
-                        message,
+                        clampedCreatedAt,
                         validatedContainer.innerData,
                     ),
                     reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.GROUP_LOCATION),
@@ -997,9 +1069,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
             // Contact control messages
             case CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE: {
-                const validatedSetProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
-                    structbuf.csp.e2e.SetProfilePicture.decode(cspMessageBody as Uint8Array),
-                );
+                const validatedSetProfilePicture =
+                    structbuf.validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                        structbuf.csp.e2e.SetProfilePicture.decode(cspMessageBody as Uint8Array),
+                    );
                 const instructions: ContactControlMessageInstructions = {
                     messageCategory: 'contact-control',
                     deliveryReceipt: false,
@@ -1044,10 +1117,13 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             // Group control messages
             case CspE2eGroupControlType.GROUP_SETUP: {
                 // A group-setup message is wrapped in a group-creator-container
-                const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
-                );
-                const validatedGroupSetup = validate.csp.e2e.GroupSetup.SCHEMA.parse(
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupCreatorContainer.decode(
+                            cspMessageBody as Uint8Array,
+                        ),
+                    );
+                const validatedGroupSetup = structbuf.validate.csp.e2e.GroupSetup.SCHEMA.parse(
                     structbuf.csp.e2e.GroupSetup.decode(validatedContainer.innerData),
                 );
                 // The group-setup message is a bit special, as it may need to create and reflect
@@ -1080,10 +1156,13 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case CspE2eGroupControlType.GROUP_NAME: {
                 // A group-name message is wrapped in a group-creator-container
-                const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
-                );
-                const validatedGroupName = validate.csp.e2e.GroupName.SCHEMA.parse(
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupCreatorContainer.decode(
+                            cspMessageBody as Uint8Array,
+                        ),
+                    );
+                const validatedGroupName = structbuf.validate.csp.e2e.GroupName.SCHEMA.parse(
                     structbuf.csp.e2e.GroupName.decode(validatedContainer.innerData),
                 );
                 const instructions: GroupControlMessageInstructions = {
@@ -1105,12 +1184,16 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE: {
                 // A group-set-profile-picture message is wrapped in a group-creator-container
-                const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
-                );
-                const validatedProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
-                    structbuf.csp.e2e.SetProfilePicture.decode(validatedContainer.innerData),
-                );
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupCreatorContainer.decode(
+                            cspMessageBody as Uint8Array,
+                        ),
+                    );
+                const validatedProfilePicture =
+                    structbuf.validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                        structbuf.csp.e2e.SetProfilePicture.decode(validatedContainer.innerData),
+                    );
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
                     // Group set profile picture messages are sent by creator. Since the creator has
@@ -1130,9 +1213,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE: {
                 // A group-delete-profile-picture message is wrapped in a group-creator-container
-                const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
-                );
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupCreatorContainer.decode(
+                            cspMessageBody as Uint8Array,
+                        ),
+                    );
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
                     // Group delete profile picture messages are sent by creator. Since the creator has
@@ -1152,9 +1238,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case CspE2eGroupControlType.GROUP_LEAVE: {
                 // A group-leave message is wrapped in a group-member-container
-                const validatedContainer = validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
-                );
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                    );
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
                     missingContactHandling: 'ignore',
@@ -1171,9 +1258,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
             case CspE2eGroupControlType.GROUP_REQUEST_SYNC: {
                 // A group-sync-request message is wrapped in a group-creator-container
-                const validatedContainer = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
-                    structbuf.csp.e2e.GroupCreatorContainer.decode(cspMessageBody as Uint8Array),
-                );
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupCreatorContainer.decode(
+                            cspMessageBody as Uint8Array,
+                        ),
+                    );
                 const instructions: GroupControlMessageInstructions = {
                     messageCategory: 'group-control',
                     missingContactHandling: 'ignore',

@@ -50,4 +50,3 @@ export const SCHEMA = validator(
     d2d.GroupSync,
     v.union(SCHEMA_CREATE, SCHEMA_UPDATE, SCHEMA_DELETE),
 );
-export type Type = v.Infer<typeof SCHEMA>;

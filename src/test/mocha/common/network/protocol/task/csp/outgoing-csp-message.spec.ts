@@ -17,7 +17,6 @@ import {
 } from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {type TextEncodable} from '~/common/network/structbuf/csp/e2e';
 import {
     ensureIdentityString,
     ensureMessageId,
@@ -43,8 +42,9 @@ import {
     type TestServices,
 } from '~/test/mocha/common/backend-mocks';
 import {
-    decodeLegacyMessageEncodable,
+    decodeMessageEncodable,
     decryptContainer,
+    decryptMetadata,
 } from '~/test/mocha/common/network/protocol/task/task-test-helpers';
 
 /**
@@ -61,6 +61,11 @@ export function run(): void {
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
             nickname: 'user2' as Nickname,
+            ck: createClientKey(),
+        };
+        const gateway = {
+            identity: new Identity(ensureIdentityString('*GATEWAY')),
+            nickname: 'gateway' as Nickname,
             ck: createClientKey(),
         };
 
@@ -80,28 +85,31 @@ export function run(): void {
         function getExpectedD2dOutgoingReflectedMessageUpdateSent(): NetworkExpectation {
             return NetworkExpectationFactory.reflectSingle((payload) => {
                 expect(payload.content).to.equal('outgoingMessageUpdate');
-                const msg = payload.outgoingMessageUpdate;
+                const message = payload.outgoingMessageUpdate;
                 assert(
-                    msg !== null && msg !== undefined,
+                    message !== null && message !== undefined,
                     'payload.outgoingMessageUpdate is null or undefined',
                 );
-                expect(msg.updates).to.have.length(1);
-                expect(msg.updates[0].sent).not.to.be.undefined;
+                expect(message.updates).to.have.length(1);
+                expect(message.updates[0].sent).not.to.be.undefined;
             });
         }
 
-        it('nickname is only sent if allowUserProfileDistribution is set', async function () {
-            const {crypto, model} = services;
+        async function runNicknameTest(
+            receiver: typeof user1,
+            allowUserProfileDistribution: boolean,
+            expectNickname: 'only-encrypted' | 'encrypted-and-legacy' | 'none',
+        ): Promise<void> {
+            const {crypto, device, model} = services;
 
-            const user1store = addTestUserAsContact(model, user1);
+            const receiverContact = addTestUserAsContact(model, receiver);
 
             const ownNickname = services.model.user.profileSettings.get().view.nickname;
             expect(ownNickname).not.to.be.empty;
 
             function makeProperties(
                 messageId: MessageId,
-                allowUserProfileDistribution: boolean,
-            ): MessageProperties<TextEncodable, CspE2eConversationType.TEXT> {
+            ): MessageProperties<structbuf.csp.e2e.TextEncodable, CspE2eConversationType.TEXT> {
                 return {
                     type: CspE2eConversationType.TEXT,
                     encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
@@ -114,51 +122,77 @@ export function run(): void {
                 };
             }
 
-            for (const sendNickname of [true, false]) {
-                const messageId = randomMessageId(crypto);
-                const task = new OutgoingCspMessageTask(
-                    services,
-                    user1store.get(),
-                    makeProperties(messageId, sendNickname),
-                );
-                const messageIdDelayed = Delayed.simple<MessageId>(
-                    'Message ID not yet ready',
-                    'Message ID already set',
-                    messageId,
-                );
-                const expectations: NetworkExpectation[] = [
-                    // First, the outgoing message must be reflected
-                    NetworkExpectationFactory.reflectSingle(),
+            const messageId = randomMessageId(crypto);
+            const task = new OutgoingCspMessageTask(
+                services,
+                receiverContact.get(),
+                makeProperties(messageId),
+            );
+            const messageIdDelayed = Delayed.simple<MessageId>(
+                'Message ID not yet ready',
+                'Message ID already set',
+                messageId,
+            );
+            const expectations: NetworkExpectation[] = [
+                // First, the outgoing message must be reflected
+                NetworkExpectationFactory.reflectSingle(),
 
-                    // Then the message is sent via CSP
-                    NetworkExpectationFactory.write((m) => {
-                        assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
-                        assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
-                        const message = decodeLegacyMessageEncodable(m.payload.payload);
-                        expect(message.senderIdentity).to.eql(UTF8.encode(me));
-                        const senderNickname = UTF8.decode(
-                            byteWithoutZeroPadding(message.senderNickname),
-                        );
-                        if (sendNickname) {
-                            expect(senderNickname).to.equal(ownNickname);
-                        } else {
-                            expect(senderNickname).to.equal('');
-                        }
-                    }),
+                // Then the message is sent via CSP
+                NetworkExpectationFactory.write((m) => {
+                    assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
+                    assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
+                    const message = decodeMessageEncodable(m.payload.payload);
+                    const metadata = decryptMetadata(
+                        services,
+                        message,
+                        device.csp.ck.public,
+                        receiver.ck,
+                    );
+                    expect(message.senderIdentity).to.eql(UTF8.encode(me));
+                    const legacySenderNickname = UTF8.decode(
+                        byteWithoutZeroPadding(message.legacySenderNickname),
+                    );
 
-                    // Read ack
-                    NetworkExpectationFactory.readIncomingMessageAck(
-                        user1.identity.string,
-                        messageIdDelayed,
-                    ),
+                    if (
+                        expectNickname === 'only-encrypted' ||
+                        expectNickname === 'encrypted-and-legacy'
+                    ) {
+                        expect(metadata?.nickname).to.equal(ownNickname);
+                    } else {
+                        expect(metadata?.nickname).to.equal('');
+                    }
+                    if (expectNickname === 'encrypted-and-legacy') {
+                        expect(legacySenderNickname).to.equal(ownNickname);
+                    } else {
+                        expect(legacySenderNickname).to.equal('');
+                    }
+                }),
 
-                    // Reflect OutoingMessageUpdate.Sent
-                    getExpectedD2dOutgoingReflectedMessageUpdateSent(),
-                ];
-                const handle = new TestHandle(services, expectations);
-                await task.run(handle);
-                handle.finish();
-            }
+                // Read ack
+                NetworkExpectationFactory.readIncomingMessageAck(
+                    receiver.identity.string,
+                    messageIdDelayed,
+                ),
+
+                // Reflect OutoingMessageUpdate.Sent
+                getExpectedD2dOutgoingReflectedMessageUpdateSent(),
+            ];
+            const handle = new TestHandle(services, expectations);
+            await task.run(handle);
+            handle.finish();
+        }
+
+        describe('nickname is', function () {
+            it('sent encrypted when user profile distribution is allowed and receiver is not a Gateway ID', async function () {
+                await runNicknameTest(user1, true, 'only-encrypted');
+            });
+            it('sent (encrypted and legacy) when user profile distribution is allowed and receiver is a Gateway ID', async function () {
+                await runNicknameTest(gateway, true, 'encrypted-and-legacy');
+            });
+            it('not sent when user profile distribution is not allowed', async function () {
+                await runNicknameTest(user1, false, 'none');
+                await runNicknameTest(gateway, false, 'none');
+            });
         });
 
         describe('group messaging', function () {
@@ -175,7 +209,7 @@ export function run(): void {
                     NetworkExpectationFactory.write((m) => {
                         assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
                         assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
-                        const message = decodeLegacyMessageEncodable(m.payload.payload);
+                        const message = decodeMessageEncodable(m.payload.payload);
                         expect(message.senderIdentity).to.eql(UTF8.encode(me));
 
                         const receiverIdentityString = ensureIdentityString(
@@ -211,15 +245,15 @@ export function run(): void {
             }): NetworkExpectation {
                 return NetworkExpectationFactory.reflectSingle((payload) => {
                     expect(payload.content).to.equal('outgoingMessage');
-                    const msg = payload.outgoingMessage;
+                    const message = payload.outgoingMessage;
                     assert(
-                        msg !== null && msg !== undefined,
+                        message !== null && message !== undefined,
                         'payload.outgoingMessage is null or undefined',
                     );
-                    const createdAt = unixTimestampToDateMs(intoU64(msg.createdAt));
+                    const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
                     expect(createdAt).to.eql(messageProperties.createdAt);
-                    expect(intoU64(msg.messageId)).to.equal(messageProperties.messageId);
-                    expect(msg.type).to.equal(messageProperties.type);
+                    expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
+                    expect(message.type).to.equal(messageProperties.type);
                 });
             }
 
@@ -229,17 +263,17 @@ export function run(): void {
             ): NetworkExpectation {
                 return NetworkExpectationFactory.reflectSingle((payload) => {
                     expect(payload.content).to.equal('outgoingMessageUpdate');
-                    const msg = payload.outgoingMessageUpdate;
+                    const message = payload.outgoingMessageUpdate;
                     assert(
-                        msg !== null && msg !== undefined,
+                        message !== null && message !== undefined,
                         'payload.outgoingMessageUpdate is null or undefined',
                     );
-                    expect(msg.updates).to.have.length(1);
-                    expect(msg.updates[0].conversation?.group).not.to.be.undefined;
-                    expect(msg.updates[0].conversation?.group?.creatorIdentity).to.equal(
+                    expect(message.updates).to.have.length(1);
+                    expect(message.updates[0].conversation?.group).not.to.be.undefined;
+                    expect(message.updates[0].conversation?.group?.creatorIdentity).to.equal(
                         creatorIdentity,
                     );
-                    expect(msg.updates[0].conversation?.group?.groupId).to.eql(
+                    expect(message.updates[0].conversation?.group?.groupId).to.eql(
                         intoUnsignedLong(groupId),
                     );
                 });

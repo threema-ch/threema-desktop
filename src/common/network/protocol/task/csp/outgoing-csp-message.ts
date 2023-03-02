@@ -2,6 +2,7 @@
  * Outgoing message task.
  */
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
+import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
     CspE2eContactControlType,
     CspE2eConversationType,
@@ -36,7 +37,6 @@ import {
 } from '~/common/network/protocol/task';
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import * as structbuf from '~/common/network/structbuf';
-import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
 import {conversationIdForReceiver, type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -48,8 +48,6 @@ import {
     intoUnsignedLong,
     u64ToHexLe,
 } from '~/common/utils/number';
-
-const LEGACY_MESSAGE_RESERVED_METADATA_LENGTH = new Uint8Array(2);
 
 /**
  * Message properties required to send a legacy CSP Message.
@@ -273,60 +271,89 @@ export class OutgoingCspMessageTask<
         messageBytes: Uint8Array,
     ): Promise<void> {
         const {device, crypto, model} = this._services;
-        const {createdAt: createdAtDate, messageId, type} = this._messageProperties;
+        const {createdAt, messageId, type} = this._messageProperties;
 
-        const createdAt = dateToUnixTimestampS(createdAtDate);
         const flags = this._messageProperties.cspMessageFlags.toBitmask();
 
-        // Determine own nickname (zero-padded)
-        const senderNickname = new Uint8Array(32);
+        // Encode nickname if the message makes it eligible to contain the nickname.
+        //
+        // Note: The legacy nickname is encoded directly into a zero-padded buffer because it has a
+        //       fixed length.
+        let nickname;
+        let encodedLegacyNickname;
         if (this._messageProperties.allowUserProfileDistribution) {
-            UTF8.encodeFullyInto(
-                model.user.profileSettings.get().view.nickname ?? '',
-                senderNickname,
-            );
+            nickname = model.user.profileSettings.get().view.nickname ?? '';
+            encodedLegacyNickname = UTF8.encodeFullyInto(nickname, new Uint8Array(32));
         }
 
         // TODO(DESK-573): Bundle sending of group messages
         for (const receiver of receivers) {
             const receiverIdentity = UTF8.encode(receiver.view.identity);
 
-            // Encrypt message
-            const sharedBox = device.csp.ck.getSharedBox(
+            // Encrypt metadata
+            //
+            // TODO(SE-234): Add post-encode padding rather than always needing to encode the legacy
+            //               nickname first.
+            const metadataPadding = new Uint8Array(
+                Math.max(0, 16 - (encodedLegacyNickname?.encoded.byteLength ?? 0)),
+            );
+            const [messageAndMetadataNonce, metadataContainer] = deriveMessageMetadataKey(
+                crypto,
+                device.csp.ck,
                 receiver.view.publicKey,
                 device.csp.nonceGuard,
-            );
-            const [messageNonce, messageBox] = sharedBox
+            )
+                .encryptor(
+                    CREATE_BUFFER_TOKEN,
+                    protobuf.utils.encoder(protobuf.csp_e2e.MessageMetadata, {
+                        padding: metadataPadding,
+                        nickname,
+                        messageId: intoUnsignedLong(messageId),
+                        createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+                    }),
+                )
+                .encryptWithRandomNonce();
+
+            // Encrypt message and use the same nonce as used for the metadata
+            const messageBox = device.csp.ck
+                .getSharedBox(receiver.view.publicKey, device.csp.nonceGuard)
                 .encryptor(
                     CREATE_BUFFER_TOKEN,
                     structbuf.bridge.encoder(structbuf.csp.e2e.Container, {
                         type,
-                        paddedData: pkcs7PaddedEncoder(
+                        paddedData: structbuf.bridge.pkcs7PaddedEncoder(
                             crypto,
                             MESSAGE_DATA_PADDING_LENGTH_MIN,
                             messageBytes,
                         ),
                     }),
                 )
-                .encryptWithRandomNonce();
+                .encryptWithNonce(messageAndMetadataNonce);
 
             // Send message
             await handle.write({
                 type: D2mPayloadType.PROXY,
                 payload: {
                     type: CspPayloadType.OUTGOING_MESSAGE,
-                    payload: structbuf.bridge.encoder(structbuf.csp.payload.LegacyMessage, {
-                        senderIdentity: device.identity.bytes,
-                        receiverIdentity,
-                        messageId,
-                        createdAt,
-                        flags,
-                        reserved: 0,
-                        reservedMetadataLength: LEGACY_MESSAGE_RESERVED_METADATA_LENGTH,
-                        senderNickname,
-                        messageNonce,
-                        messageBox,
-                    }),
+                    payload: structbuf.bridge.encoder(
+                        structbuf.csp.payload.MessageWithMetadataBox,
+                        {
+                            senderIdentity: device.identity.bytes,
+                            receiverIdentity,
+                            messageId,
+                            createdAt: dateToUnixTimestampS(createdAt),
+                            flags,
+                            reserved: 0x00,
+                            // Only send the legacy nickname to Threema Gateway IDs
+                            legacySenderNickname:
+                                nickname !== undefined && receiver.view.identity.startsWith('*')
+                                    ? UTF8.encodeFullyInto(nickname, new Uint8Array(32)).array
+                                    : new Uint8Array(32),
+                            metadataContainer,
+                            messageAndMetadataNonce,
+                            messageBox,
+                        },
+                    ),
                 },
             });
 

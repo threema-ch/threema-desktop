@@ -136,6 +136,9 @@ export function encoder<TProto extends ProtobufConstructor>(
 /**
  * Creates a byte encoder for a protobuf message and binds the protobuf's message data.
  *
+ * Prefer this over {@link encoder} if you just need a {@link ByteEncoder} and not a
+ * {@link ByteLengthEncoder}.
+ *
  * @param protobuf Protobuf message to be encoded.
  * @param data Protobuf message instance or property tuple.
  * @returns A byte encoder.

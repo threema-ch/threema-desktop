@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import {type ServicesForBackend} from '~/common/backend';
 import {NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN, type PlainData} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
+import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
     CspE2eConversationType,
     CspE2eDeliveryReceiptStatus,
@@ -12,6 +13,7 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import {d2d} from '~/common/network/protobuf';
+import * as protobuf from '~/common/network/protobuf';
 import {
     BLOB_FILE_NONCE,
     BLOB_THUMBNAIL_NONCE,
@@ -21,16 +23,20 @@ import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {pkcs7PaddedEncoder} from '~/common/network/structbuf/bridge';
-import {type LegacyMessageLike} from '~/common/network/structbuf/csp/payload';
-import {ensureIdentityString, type IdentityString, type Nickname} from '~/common/network/types';
+import {
+    ensureIdentityString,
+    ensureMessageId,
+    type IdentityString,
+    type MessageId,
+    type Nickname,
+} from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ByteLengthEncoder, type u8} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
-import {dateToUnixTimestampS} from '~/common/utils/number';
+import {dateToUnixTimestampMs, dateToUnixTimestampS, intoUnsignedLong} from '~/common/utils/number';
 import {
     addTestUserAsContact,
     createClientKey,
@@ -55,32 +61,57 @@ function createMessage(
     type: u8,
     innerPayload: ByteLengthEncoder,
     flags: CspMessageFlags,
-): structbuf.csp.payload.LegacyMessageLike {
+    overrides?: {
+        readonly messageId?: MessageId;
+        readonly metadata?: {
+            readonly messageId?: MessageId;
+        };
+    },
+): structbuf.csp.payload.MessageWithMetadataBoxLike {
     const {crypto, device} = services;
-    const sharedBox = device.csp.ck.getSharedBox(sender.ck.public, device.csp.nonceGuard);
-    const [messageNonce, messageBox] = sharedBox
+    const createdAt = new Date();
+    const messageId = overrides?.messageId ?? randomMessageId(crypto);
+    const [messageAndMetadataNonce, metadataContainer] = deriveMessageMetadataKey(
+        crypto,
+        device.csp.ck,
+        sender.ck.public,
+        device.csp.nonceGuard,
+    )
+        .encryptor(
+            CREATE_BUFFER_TOKEN,
+            protobuf.utils.encoder(protobuf.csp_e2e.MessageMetadata, {
+                padding: new Uint8Array(0),
+                nickname: sender.nickname,
+                messageId: intoUnsignedLong(overrides?.metadata?.messageId ?? messageId),
+                createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
+            }),
+        )
+        .encryptWithRandomNonce();
+    const messageBox = device.csp.ck
+        .getSharedBox(sender.ck.public, device.csp.nonceGuard)
         .encryptor(
             CREATE_BUFFER_TOKEN,
             structbuf.bridge.encoder(structbuf.csp.e2e.Container, {
                 type,
-                paddedData: pkcs7PaddedEncoder(
+                paddedData: structbuf.bridge.pkcs7PaddedEncoder(
                     crypto,
                     MESSAGE_DATA_PADDING_LENGTH_MIN,
                     innerPayload,
                 ),
             }),
         )
-        .encryptWithRandomNonce();
+        .encryptWithNonce(messageAndMetadataNonce);
     return {
         senderIdentity: sender.identity.bytes,
         receiverIdentity: UTF8.encode(receiver),
-        messageId: randomMessageId(crypto),
-        createdAt: dateToUnixTimestampS(new Date()),
+        messageId,
+        createdAt: dateToUnixTimestampS(createdAt),
         flags: flags.toBitmask(),
-        reserved: 0,
-        reservedMetadataLength: new Uint8Array(2),
-        senderNickname: UTF8.encode(sender.nickname ?? ''),
-        messageNonce,
+        reserved: 0x00,
+        metadataLength: metadataContainer.byteLength,
+        legacySenderNickname: UTF8.encode(sender.nickname ?? ''),
+        metadataContainer,
+        messageAndMetadataNonce,
         messageBox,
     };
 }
@@ -120,7 +151,7 @@ export function run(): void {
                 const {device, model} = services;
 
                 // Encode and encrypt message
-                const msg = createMessage(
+                const message = createMessage(
                     services,
                     {
                         identity: new Identity(me),
@@ -136,9 +167,61 @@ export function run(): void {
                 );
 
                 // Run task
-                const task = new IncomingMessageTask(services, msg);
+                const task = new IncomingMessageTask(services, message);
                 const expectations: NetworkExpectation[] = [
                     // We expect the message to be dropped because it's invalid
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                // Ensure that no text message was created
+                const contactForOwnIdentity = model.contacts.getByIdentity(me);
+                expect(contactForOwnIdentity, 'Contact for own identity should not exist').to.be
+                    .undefined;
+            });
+
+            it('discard messages where the message id of the metadata does not match', async function () {
+                const {model} = services;
+
+                // Add contacts
+                const user1Contact = addTestUserAsContact(model, user1);
+
+                // Get user conversation
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+                assert(conversation !== undefined, 'Conversation with user 1 not found');
+                expect(conversation.get().controller.getAllMessages().get().size).to.equal(0);
+
+                // Encode and encrypt message
+                const message = createMessage(
+                    services,
+                    {
+                        identity: user1.identity,
+                        ck: user1.ck,
+                        nickname: 'some user' as Nickname,
+                    },
+                    me,
+                    CspE2eConversationType.TEXT,
+                    structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                        text: UTF8.encode('hi'),
+                    }),
+                    CspMessageFlags.none(),
+                    {
+                        messageId: ensureMessageId(123456n),
+                        metadata: {
+                            messageId: ensureMessageId(123457n),
+                        },
+                    },
+                );
+
+                // Run task
+                const task = new IncomingMessageTask(services, message);
+                const expectations: NetworkExpectation[] = [
+                    // We expect the message to be dropped because the metadata message ID mismatches
                     NetworkExpectationFactory.writeIncomingMessageAck(),
                 ];
                 const handle = new TestHandle(services, expectations);
@@ -355,7 +438,7 @@ export function run(): void {
                 function makeGroupMessage(
                     sender: TestUser,
                     messageText: string,
-                ): LegacyMessageLike {
+                ): structbuf.csp.payload.MessageWithMetadataBoxLike {
                     return createMessage(
                         services,
                         {

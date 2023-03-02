@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import {type ServicesForBackend} from '~/common/backend';
 import {type EncryptedData, type Nonce, type NonceGuard, type PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
+import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
     type CspE2eDeliveryReceiptStatus,
     CspE2eGroupControlType,
@@ -12,11 +13,6 @@ import {
 import * as protobuf from '~/common/network/protobuf';
 import {CspPayloadType, D2mPayloadType, type LayerEncoder} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
-import {
-    type LegacyMessage,
-    type LegacyMessageEncodable,
-} from '~/common/network/structbuf/csp/payload';
-import * as validate from '~/common/network/structbuf/validate';
 import {
     type CspNonceGuard,
     ensureMessageId,
@@ -42,23 +38,47 @@ const CSP_NONCE_GUARD = {
 } as NonceGuard as CspNonceGuard;
 
 /**
- * Convert a layer encoder for a {@link LegacyMessageEncodable} to a {@link LegacyMessage} by
- * encoding and decoding.
+ * Convert a layer encoder for a message payload to the actual message by encoding and decoding.
  */
-export function decodeLegacyMessageEncodable(
-    encoder: LayerEncoder<LegacyMessageEncodable>,
-): LegacyMessage {
+export function decodeMessageEncodable(
+    encoder: LayerEncoder<structbuf.csp.payload.MessageWithMetadataBoxEncodable>,
+): structbuf.csp.payload.MessageWithMetadataBox {
     // Encode encodable
     const messageBytes = encoder.encode(new Uint8Array(encoder.byteLength()));
     // Decode bytes
-    return structbuf.csp.payload.LegacyMessage.decode(messageBytes);
+    return structbuf.csp.payload.MessageWithMetadataBox.decode(messageBytes);
 }
 
 /**
- * Decode and encrypt the container inside a {@link LegacyMessage}.
+ * Decode and encrypt the metadata box of a message payload.
+ */
+export function decryptMetadata(
+    {crypto}: Pick<ServicesForBackend, 'crypto'>,
+    message: structbuf.csp.payload.MessageWithMetadataBox,
+    senderPublicKey: PublicKey,
+    receiverCk: ClientKey,
+): protobuf.validate.csp_e2e.MessageMetadata.Type | undefined {
+    if (message.metadataLength === 0) {
+        return undefined;
+    }
+    return protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
+        protobuf.csp_e2e.MessageMetadata.decode(
+            deriveMessageMetadataKey(crypto, receiverCk, senderPublicKey, CSP_NONCE_GUARD)
+                .decryptorWithNonce(
+                    CREATE_BUFFER_TOKEN,
+                    message.messageAndMetadataNonce as Nonce,
+                    message.metadataContainer as EncryptedData,
+                )
+                .decrypt(),
+        ),
+    );
+}
+
+/**
+ * Decode and encrypt the container inside a message payload.
  */
 export function decryptContainer(
-    message: LegacyMessage,
+    message: structbuf.csp.payload.MessageWithMetadataBox,
     senderPublicKey: PublicKey,
     receiverCk: ClientKey,
 ): structbuf.csp.e2e.Container {
@@ -66,7 +86,7 @@ export function decryptContainer(
         .getSharedBox(senderPublicKey, CSP_NONCE_GUARD)
         .decryptorWithNonce(
             CREATE_BUFFER_TOKEN,
-            message.messageNonce as Nonce,
+            message.messageAndMetadataNonce as Nonce,
             message.messageBox as EncryptedData,
         )
         .decrypt();
@@ -121,7 +141,7 @@ export function reflectAndSendDeliveryReceipt(
             assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
 
             // Message must be sent from me to the recipient
-            const message = decodeLegacyMessageEncodable(m.payload.payload);
+            const message = decodeMessageEncodable(m.payload.payload);
             expect(message.senderIdentity).to.eql(device.identity.bytes);
             expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
             messageIdDelayed.set(ensureMessageId(message.messageId));
@@ -188,7 +208,7 @@ export function reflectAndSendGroupSetupToUser(
             assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
 
             // Message must be sent from me to user1
-            const message = decodeLegacyMessageEncodable(m.payload.payload);
+            const message = decodeMessageEncodable(m.payload.payload);
             expect(message.senderIdentity).to.eql(device.identity.bytes);
             expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
             messageIdDelayed.set(ensureMessageId(message.messageId));
@@ -244,10 +264,10 @@ export function reflectAndSendGroupNameToUser(
             expect(outgoingMessage.conversation?.contact).to.equal(recipient.identity.string);
 
             // Validate name
-            const container = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+            const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupCreatorContainer.decode(outgoingMessage.body),
             );
-            const groupName = validate.csp.e2e.GroupName.SCHEMA.parse(
+            const groupName = structbuf.validate.csp.e2e.GroupName.SCHEMA.parse(
                 structbuf.csp.e2e.GroupName.decode(container.innerData),
             );
             expect(groupName.name).to.equal(expectedName);
@@ -260,7 +280,7 @@ export function reflectAndSendGroupNameToUser(
             assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
 
             // Message must be sent from me to user1
-            const message = decodeLegacyMessageEncodable(m.payload.payload);
+            const message = decodeMessageEncodable(m.payload.payload);
             expect(message.senderIdentity).to.eql(device.identity.bytes);
             expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
             messageIdDelayed.set(ensureMessageId(message.messageId));
@@ -270,12 +290,12 @@ export function reflectAndSendGroupNameToUser(
             expect(messageContainer.type).to.equal(CspE2eGroupControlType.GROUP_NAME);
 
             // Validate name
-            const container = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+            const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupCreatorContainer.decode(
                     byteWithoutPkcs7(messageContainer.paddedData),
                 ),
             );
-            const groupName = validate.csp.e2e.GroupName.SCHEMA.parse(
+            const groupName = structbuf.validate.csp.e2e.GroupName.SCHEMA.parse(
                 structbuf.csp.e2e.GroupName.decode(container.innerData),
             );
             expect(groupName.name).to.equal(expectedName);
@@ -322,13 +342,14 @@ export function reflectAndSendGroupProfilePictureToUser(
             expect(outgoingMessage.conversation?.contact).to.equal(recipient.identity.string);
 
             // Validate profile picture message
-            const container = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+            const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupCreatorContainer.decode(outgoingMessage.body),
             );
             if (profilePictureSent) {
-                const groupSetProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
-                    structbuf.csp.e2e.SetProfilePicture.decode(container.innerData),
-                );
+                const groupSetProfilePicture =
+                    structbuf.validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                        structbuf.csp.e2e.SetProfilePicture.decode(container.innerData),
+                    );
                 expect(groupSetProfilePicture.pictureBlobId).not.to.be.empty;
                 expect(groupSetProfilePicture.key.length).to.equal(32);
             } else {
@@ -343,7 +364,7 @@ export function reflectAndSendGroupProfilePictureToUser(
             assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
 
             // Message must be sent from me to user1
-            const message = decodeLegacyMessageEncodable(m.payload.payload);
+            const message = decodeMessageEncodable(m.payload.payload);
             expect(message.senderIdentity).to.eql(device.identity.bytes);
             expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
             messageIdDelayed.set(ensureMessageId(message.messageId));
@@ -353,15 +374,16 @@ export function reflectAndSendGroupProfilePictureToUser(
             expect(messageContainer.type).to.equal(cspMessageType);
 
             // Validate contents
-            const container = validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+            const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupCreatorContainer.decode(
                     byteWithoutPkcs7(messageContainer.paddedData),
                 ),
             );
             if (profilePictureSent) {
-                const groupSetProfilePicture = validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
-                    structbuf.csp.e2e.SetProfilePicture.decode(container.innerData),
-                );
+                const groupSetProfilePicture =
+                    structbuf.validate.csp.e2e.SetProfilePicture.SCHEMA.parse(
+                        structbuf.csp.e2e.SetProfilePicture.decode(container.innerData),
+                    );
                 expect(groupSetProfilePicture.pictureBlobId).not.to.be.empty;
                 expect(groupSetProfilePicture.key.length).to.equal(32);
             } else {
