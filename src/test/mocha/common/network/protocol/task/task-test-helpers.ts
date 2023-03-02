@@ -7,7 +7,7 @@ import {
     NONCE_UNGUARDED_TOKEN,
     type PublicKey,
 } from '~/common/crypto';
-import {CREATE_BUFFER_TOKEN, type SharedBoxFactory} from '~/common/crypto/box';
+import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
     type CspE2eDeliveryReceiptStatus,
     CspE2eGroupControlType,
@@ -36,6 +36,7 @@ import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/as
 import {
     type NetworkExpectation,
     NetworkExpectationFactory,
+    type TestClientKey,
     type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 
@@ -58,7 +59,7 @@ export function decodeLegacyMessageEncodable(
 export function decryptContainer(
     message: LegacyMessage,
     senderPublicKey: PublicKey,
-    receiverKeypair: SharedBoxFactory,
+    receiverKeypair: TestClientKey,
 ): Container {
     const decrypted = receiverKeypair
         .getSharedBox(senderPublicKey, NONCE_UNGUARDED_TOKEN)

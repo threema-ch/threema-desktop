@@ -24,7 +24,10 @@ interface DeviceGroupKeyMap {
      */
     readonly dgpk: {
         key: WeakOpaque<RawKey<32>, {readonly DgpkKey: unique symbol}>;
-        box: WeakOpaque<SecureSharedBoxFactory, {readonly DgpkBox: unique symbol}>;
+        box: WeakOpaque<
+            SecureSharedBoxFactory<SecretBoxWithRandomNonce>,
+            {readonly DgpkBox: unique symbol}
+        >;
         salt: 'p';
     };
     /**

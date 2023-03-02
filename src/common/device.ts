@@ -28,11 +28,11 @@ export interface CspData {
 
 export type D2mData = {
     readonly deviceId: D2mDeviceId;
-    readonly nonceGuard: NonceGuard;
+    readonly nonceGuard: D2xNonceGuard;
 } & Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'>;
 
 export type D2dData = {
-    readonly nonceGuard: NonceGuard;
+    readonly nonceGuard: D2xNonceGuard;
 } & Pick<DeviceGroupBoxes, 'dgrk' | 'dgsddk' | 'dgtsk'>;
 
 export interface Device {

@@ -14,9 +14,10 @@ import {
     NACL_CONSTANTS,
     type Nonce,
     type NonceGuard,
+    type NonceUnguarded,
     wrapRawKey,
 } from '~/common/crypto';
-import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
+import {type CryptoBox, SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
 import {type CryptoPrng, randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
@@ -172,6 +173,8 @@ import {
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
 import {assertCspPayloadType, assertD2mPayloadType} from './assertions';
+
+export type TestClientKey = SharedBoxFactory<CryptoBox<never, never, never, never, NonceUnguarded>>;
 
 export class TestCrypto extends TweetNaClBackend {}
 
@@ -939,7 +942,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
 /**
  * Helper to generate a random keypair.
  */
-export function makeKeypair(): SharedBoxFactory {
+export function makeKeypair(): TestClientKey {
     const crypto = new TestTweetNaClBackend();
     const rawKey = wrapRawKey(randomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
     return new SharedBoxFactory(crypto, rawKey.asReadonly());
@@ -950,7 +953,7 @@ export function makeKeypair(): SharedBoxFactory {
  */
 export interface TestUser {
     identity: Identity;
-    keypair: SharedBoxFactory;
+    keypair: TestClientKey;
     nickname: Nickname | undefined;
     // Default: Now
     createdAt?: Date;

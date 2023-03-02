@@ -397,7 +397,9 @@ export class CryptoBox<
  * Consumes a secret key for public-key cryptography. Doesn't allow direct access to the secret key
  * by the public API.
  */
-export class SharedBoxFactory {
+export class SharedBoxFactory<
+    TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceGuard | NonceUnguarded>,
+> {
     /**
      * Get the derived public part of the secret key.
      */
@@ -421,14 +423,8 @@ export class SharedBoxFactory {
      * @param nonceGuard Optional nonce guard to prevent nonce reuse.
      * @returns A crypto box for encryption/decryption.
      */
-    public getSharedBox<
-        DCK extends Cookie,
-        ECK extends Cookie,
-        DSN extends u64,
-        ESN extends u64,
-        NG extends NonceGuard | NonceUnguarded,
-    >(publicKey: PublicKey, nonceGuard: NG): CryptoBox<DCK, ECK, DSN, ESN, NG> {
-        return this._crypto.getSharedBox(publicKey, this.#_secret, nonceGuard);
+    public getSharedBox(publicKey: PublicKey, nonceGuard: TBox['nonceGuard']): TBox {
+        return this._crypto.getSharedBox(publicKey, this.#_secret, nonceGuard) as TBox;
     }
 }
 
@@ -440,23 +436,16 @@ export class SharedBoxFactory {
  * IMPORTANT: After constructing an instance of this class, the `secret` key passed in will have
  *            been purged and should not be used anymore.
  */
-export class SecureSharedBoxFactory {
+export class SecureSharedBoxFactory<
+    TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceGuard | NonceUnguarded>,
+> {
     /**
      * Get the derived public part of the secret key.
      */
     public readonly public: PublicKey;
 
     readonly #_makeSharedSecret: (publicKey: PublicKey) => RawKey<32>;
-    readonly #_makeSharedBox: <
-        DCK extends Cookie,
-        ECK extends Cookie,
-        DSN extends u64,
-        ESN extends u64,
-        NG extends NonceGuard | NonceUnguarded,
-    >(
-        publicKey: PublicKey,
-        nonceGuard: NG,
-    ) => CryptoBox<DCK, ECK, DSN, ESN, NG>;
+    readonly #_makeSharedBox: (publicKey: PublicKey, nonceGuard: TBox['nonceGuard']) => TBox;
 
     private constructor(crypto: CryptoBackend, secret: RawKey<32>) {
         // Derive the public key
@@ -498,7 +487,7 @@ export class SecureSharedBoxFactory {
         this.#_makeSharedBox = (publicKey, nonceGuard) =>
             runWithKey((secretKey) =>
                 crypto.getSharedBox(publicKey, secretKey.asReadonly(), nonceGuard),
-            );
+            ) as TBox;
     }
 
     /**
@@ -506,7 +495,9 @@ export class SecureSharedBoxFactory {
      *
      * IMPORTANT: After wrapping, the key will have been purged and cannot be used anymore.
      */
-    public static consume(crypto: CryptoBackend, secret: RawKey<32>): SecureSharedBoxFactory {
+    public static consume<
+        TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceGuard | NonceUnguarded>,
+    >(crypto: CryptoBackend, secret: RawKey<32>): SecureSharedBoxFactory<TBox> {
         return new SecureSharedBoxFactory(crypto, secret);
     }
 
@@ -541,13 +532,7 @@ export class SecureSharedBoxFactory {
      * @param nonceGuard Optional nonce guard to prevent nonce reuse.
      * @returns A crypto box for encryption/decryption.
      */
-    public getSharedBox<
-        DCK extends Cookie,
-        ECK extends Cookie,
-        DSN extends u64,
-        ESN extends u64,
-        NG extends NonceGuard | NonceUnguarded,
-    >(publicKey: PublicKey, nonceGuard: NG): CryptoBox<DCK, ECK, DSN, ESN, NG> {
-        return this.#_makeSharedBox(publicKey, nonceGuard);
+    public getSharedBox(publicKey: PublicKey, nonceGuard: TBox['nonceGuard']): TBox {
+        return this.#_makeSharedBox(publicKey, nonceGuard) as TBox;
     }
 }

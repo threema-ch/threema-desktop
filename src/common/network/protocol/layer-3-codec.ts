@@ -11,7 +11,6 @@ import {
     type EncryptedDataWithNonceAhead,
     ensurePublicKey,
     NONCE_UNGUARDED_TOKEN,
-    type NonceGuard,
     type PlainData,
     type PublicKey,
 } from '~/common/crypto';
@@ -30,9 +29,11 @@ import {
     type ClientSequenceNumber,
     type ClientSequenceNumberValue,
     type CspDeviceId,
+    type CspNonceGuard,
     type CspPayloadBox,
     type D2mChallengeBox,
     type D2mDeviceId,
+    type D2xNonceGuard,
     type IdentityBytes,
     type ServerCookie,
     type ServerSequenceNumber,
@@ -125,7 +126,7 @@ export interface Layer3Controller {
         /**
          * Nonce guard used for E2E messages and `vouch-data`.
          */
-        readonly nonceGuard: NonceGuard;
+        readonly nonceGuard: CspNonceGuard;
 
         /**
          * Client Key (32 bytes, permanent secret key associated to the Threema ID).
@@ -199,7 +200,7 @@ export interface Layer3Controller {
         /**
          * Nonce guard used for D2D messages and the D2M challenge response.
          */
-        readonly nonceGuard: NonceGuard;
+        readonly nonceGuard: D2xNonceGuard;
 
         /**
          * The client's device ID towards the mediator server.
@@ -356,7 +357,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 // Store the server cookie and a box for subsequent payloads
                 const tsk = ensurePublicKey(challengeResponse.tsk) as TemporaryServerKey;
                 csp.sck.set(serverHello.sck as ServerCookie);
-                csp.box.set(csp.tck.getSharedBox(tsk, NONCE_UNGUARDED_TOKEN) as CspPayloadBox);
+                csp.box.set(csp.tck.getSharedBox(tsk, NONCE_UNGUARDED_TOKEN));
 
                 // Encode, encrypt and enqueue `login`
                 const loginMessage = this._createCspLogin(tsk);

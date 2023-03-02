@@ -1,5 +1,4 @@
 import {type ServicesForBackend} from '~/common/backend';
-import {type NonceGuard} from '~/common/crypto';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {ProtocolError} from '~/common/error';
 import {type CloseInfo} from '~/common/network';
@@ -9,9 +8,11 @@ import {
     type ClientCookie,
     type ClientSequenceNumber,
     type CspDeviceId,
+    type CspNonceGuard,
     type CspPayloadBox,
     type D2mChallengeBox,
     type D2mDeviceId,
+    type D2xNonceGuard,
     type IdentityBytes,
     type ServerCookie,
     type ServerSequenceNumber,
@@ -36,7 +37,7 @@ export interface ConnectionHandle {
 }
 
 interface CspControllerSource {
-    readonly nonceGuard: NonceGuard;
+    readonly nonceGuard: CspNonceGuard;
     readonly ck: ClientKey;
     readonly tck: TemporaryClientKey;
     readonly identity: IdentityBytes;
@@ -48,7 +49,7 @@ interface CspControllerSource {
 }
 
 type D2mControllerSource = {
-    readonly nonceGuard: NonceGuard;
+    readonly nonceGuard: D2xNonceGuard;
     readonly deviceId: D2mDeviceId;
     readonly deviceSlotExpirationPolicy: protobuf.d2m.DeviceSlotExpirationPolicy;
     readonly platformDetails: string;
@@ -56,11 +57,11 @@ type D2mControllerSource = {
 } & Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'>;
 
 type D2dControllerSource = {
-    readonly nonceGuard: NonceGuard;
+    readonly nonceGuard: D2xNonceGuard;
 } & Pick<DeviceGroupBoxes, 'dgrk' | 'dgtsk'>;
 
 class CspController {
-    public readonly nonceGuard: NonceGuard;
+    public readonly nonceGuard: CspNonceGuard;
     public readonly ck: ClientKey;
     public readonly tck: TemporaryClientKey;
     public readonly identity: IdentityBytes;
@@ -113,7 +114,7 @@ class CspController {
 }
 
 class D2mController implements Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'> {
-    public readonly nonceGuard: NonceGuard;
+    public readonly nonceGuard: D2xNonceGuard;
     public readonly dgpk: DeviceGroupBoxes['dgpk'];
     public readonly dgdik: DeviceGroupBoxes['dgdik'];
     public readonly deviceId: D2mDeviceId;
@@ -156,7 +157,7 @@ class D2mController implements Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'> {
 }
 
 class D2dController implements Pick<DeviceGroupBoxes, 'dgrk' | 'dgtsk'> {
-    public readonly nonceGuard: NonceGuard;
+    public readonly nonceGuard: D2xNonceGuard;
     public readonly dgrk: DeviceGroupBoxes['dgrk'];
     public readonly dgtsk: DeviceGroupBoxes['dgtsk'];
 

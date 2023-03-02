@@ -6,6 +6,7 @@ import {
     wrapRawKey,
 } from '~/common/crypto';
 import {type SecureSharedBoxFactory, type SharedBoxFactory} from '~/common/crypto/box';
+import {type CspE2eBox, type CspPayloadBox} from '~/common/network/types';
 import {type WeakOpaque} from '~/common/types';
 
 /**
@@ -32,7 +33,10 @@ export function wrapRawClientKey(key: Uint8Array): RawClientKey {
  *
  * IMPORTANT: This is **THE** key which requires ultimate care!
  */
-export type ClientKey = WeakOpaque<SecureSharedBoxFactory, {readonly ClientKey: unique symbol}>;
+export type ClientKey = WeakOpaque<
+    SecureSharedBoxFactory<CspE2eBox>,
+    {readonly ClientKey: unique symbol}
+>;
 
 /**
  * The raw device group key. It is a 32 bytes, permanent secret key associated to the Threema ID in
@@ -55,7 +59,7 @@ export function wrapRawDeviceGroupKey(key: Uint8Array): RawDeviceGroupKey {
  * Temporary Client Key (32 bytes). Should be different for every connection.
  */
 export type TemporaryClientKey = WeakOpaque<
-    SharedBoxFactory,
+    SharedBoxFactory<CspPayloadBox>,
     {readonly TemporaryClientKey: unique symbol}
 >;
 
