@@ -593,16 +593,6 @@ export class Backend implements ProxyMarked {
                 assertError(error, SafeError);
                 log.error('Safe Backup could not be imported with a fatal error', error);
 
-                const dialog = endpoint.exposeProperties({
-                    type: 'safe-restore',
-                    context: endpoint.exposeProperties({
-                        error,
-                    }),
-                } as const);
-
-                const dialogResult = await systemDialog.open(dialog);
-                await dialogResult.closed;
-
                 throw new BackendCreationError(
                     'restore-failed',
                     `Safe data restore failed: ${error.message}`,

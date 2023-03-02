@@ -1,6 +1,6 @@
 import {type SystemInfo} from '~/common/electron-ipc';
 import {type SafeError} from '~/common/error';
-import {type PropertiesMarked, type ProxyMarked} from '~/common/utils/endpoint';
+import {type ProxyMarked} from '~/common/utils/endpoint';
 
 /**
  * Base interface for all system dialogs.
@@ -69,11 +69,11 @@ export interface InvalidStateDialog extends SystemDialogBase {
 /**
  * Dialog which is shown on fatal safe restore errors.
  */
-export interface SafeRestoreStateDialog extends SystemDialogBase, PropertiesMarked {
+export interface SafeRestoreStateDialog extends SystemDialogBase {
     readonly type: 'safe-restore';
     readonly context: {
         readonly error: SafeError;
-    } & PropertiesMarked;
+    };
 }
 
 /**

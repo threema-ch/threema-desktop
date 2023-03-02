@@ -6,10 +6,10 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {isLinkingCode} from '~/app/ui/bootstrap';
+  import {type ContextStore} from '~/app/ui/bootstrap/process-step';
   import {type SafeCredentials} from '~/common/dom/safe';
   import {type u53} from '~/common/types';
   import {type WritableStore} from '~/common/utils/store';
-  import {type ContextStore} from '~/app/ui/bootstrap/process-step';
 
   /**
    * This store holds the linking context across multiple instances of the bootstrap component.
@@ -277,11 +277,11 @@
       </div>
       {#if showCodeError}
         {#if initialContext.customSafeServer === undefined}
-          <div class="error">Please enter a valid link code.</div>
+          <div class="error">Please enter a valid linking code.</div>
         {:else}
           <div class="error">
-            Please enter a valid link code and ensure that your custom Safe server credentials and
-            configuration (including CORS) are correct.
+            Please enter a valid linking code and ensure that your custom Safe server credentials
+            and configuration (including CORS) are correct.
           </div>
         {/if}
       {:else if $contextStore.error !== undefined}

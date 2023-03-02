@@ -11,7 +11,7 @@ import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directo
 import {isSafeBackupAvailable, type SafeCredentials} from '~/common/dom/safe';
 import {SAFE_BACKUP_AUTORESTORE} from '~/common/dom/safe-autorestore';
 import {ActivityState, type D2mLeaderState} from '~/common/enum';
-import {extractErrorMessage} from '~/common/error';
+import {extractErrorMessage, SafeError} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {type ProfilePictureView, type Repositories} from '~/common/model';
 import {type DisplayPacket} from '~/common/network/protocol/capture';
@@ -137,6 +137,7 @@ export class BackendController {
             },
         ) => Promise<InitialBootstrapData>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
+        showLinkingErrorDialog: (error: SafeError) => Promise<void>,
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
         const {endpoint, logging} = services;
         const log = logging.logger('backend-controller');
@@ -302,11 +303,16 @@ export class BackendController {
                 );
                 switch (error.type) {
                     case 'restore-failed':
-                        log.warn(extractErrorMessage(error, 'long'));
-                        bootstrapError = {
-                            message: 'Linking failed. Are the Identity and Link Code correct?',
-                            details: `${error.message}`,
-                        };
+                        if (error.cause instanceof SafeError) {
+                            await showLinkingErrorDialog(error.cause);
+                        } else {
+                            log.warn(extractErrorMessage(error, 'long'));
+                            bootstrapError = {
+                                message:
+                                    'Linking failed. Are the identity and linking code correct?',
+                                details: `${error.message}`,
+                            };
+                        }
                         break;
                     case 'no-identity':
                         throw new Error(

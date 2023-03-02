@@ -48,7 +48,7 @@
         Restoring of the safe backup data failed. Please relink this device to prevent message loss.
         <br />
         <br />
-        Reported error: <span>{context.error.message}</span>
+        Reported error: <code>{context.error.message}</code>
         <br />
         <br />
         Please report this error to Threema Support. For more information, see the

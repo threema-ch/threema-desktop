@@ -19,7 +19,7 @@ import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {checkForUpdate} from '~/common/dom/update-check';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
 import {type ElectronIpc} from '~/common/electron-ipc';
-import {extractErrorTraceback} from '~/common/error';
+import {extractErrorTraceback, type SafeError} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type IdentityString} from '~/common/network/types';
 import {type u53} from '~/common/types';
@@ -337,6 +337,24 @@ export async function main(appState: AppState): Promise<App> {
         return password;
     }
 
+    /**
+     * Show linking error dialog.
+     *
+     * When the dialog is confirmed the user profile will be deleted and the app will be restarted.
+     */
+    async function showLinkingErrorDialog(error: SafeError): Promise<void> {
+        await domContentLoaded;
+        log.debug('Showing linking error dialog');
+        elements.splash.classList.add('hidden'); // Hide splash screen
+        const dialog = systemDialog.open({
+            type: 'safe-restore',
+            context: {
+                error,
+            },
+        });
+        await dialog.closed;
+    }
+
     // Initialize local storage controller to ensure that theme selection is done when backend
     // controller is initialized
     const localStorageController = new LocalStorageController([
@@ -366,6 +384,7 @@ export async function main(appState: AppState): Promise<App> {
         endpoint.wrap(worker, logging.logger('com.backend-creator')),
         requestSafeCredentials,
         requestUserPassword,
+        showLinkingErrorDialog,
     );
     const services: AppServices = {
         config: CONFIG,
