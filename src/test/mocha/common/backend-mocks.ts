@@ -14,10 +14,10 @@ import {
     NACL_CONSTANTS,
     type Nonce,
     type NonceGuard,
-    type NonceUnguarded,
+    type RawKey,
     wrapRawKey,
 } from '~/common/crypto';
-import {type CryptoBox, SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
+import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
 import {type CryptoPrng, randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
@@ -173,8 +173,6 @@ import {
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
 import {assertCspPayloadType, assertD2mPayloadType} from './assertions';
-
-export type TestClientKey = SharedBoxFactory<CryptoBox<never, never, never, never, NonceUnguarded>>;
 
 export class TestCrypto extends TweetNaClBackend {}
 
@@ -940,12 +938,12 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
 }
 
 /**
- * Helper to generate a random client key.
+ * Helper to create a random client key.
  */
-export function makeClientKey(): TestClientKey {
+export function createClientKey(fromRawKey?: RawKey<32>): ClientKey {
     const crypto = new TestTweetNaClBackend();
-    const rawKey = wrapRawKey(randomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
-    return new SharedBoxFactory(crypto, rawKey.asReadonly());
+    const rawKey = fromRawKey ?? wrapRawKey(randomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
+    return SecureSharedBoxFactory.consume(crypto, rawKey) as ClientKey;
 }
 
 /**
@@ -953,7 +951,7 @@ export function makeClientKey(): TestClientKey {
  */
 export interface TestUser {
     identity: Identity;
-    ck: TestClientKey;
+    ck: ClientKey;
     nickname: Nickname | undefined;
     // Default: Now
     createdAt?: Date;
@@ -987,7 +985,7 @@ export function makeTestUser(
     nickname = `${identityString}'s nickname` as Nickname,
 ): TestUser {
     const identity = new Identity(ensureIdentityString(identityString));
-    const ck = makeClientKey();
+    const ck = createClientKey();
     return {
         identity,
         nickname,

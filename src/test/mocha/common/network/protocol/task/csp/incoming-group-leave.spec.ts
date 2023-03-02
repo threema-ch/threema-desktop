@@ -1,6 +1,6 @@
 import {ensureIdentityString, type Nickname} from '~/common/network/types';
 import {Identity} from '~/common/utils/identity';
-import {makeClientKey} from '~/test/mocha/common/backend-mocks';
+import {createClientKey} from '~/test/mocha/common/backend-mocks';
 import {groupLeaveTests} from '~/test/mocha/common/network/protocol/task/common/group-leave';
 
 /**
@@ -12,12 +12,12 @@ export function run(): void {
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
             nickname: 'user1' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
             nickname: 'user2' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
 
         describe('shared tests', function () {

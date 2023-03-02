@@ -16,7 +16,7 @@ import {Identity} from '~/common/utils/identity';
 import {
     addTestGroup,
     addTestUserAsContact,
-    makeClientKey,
+    createClientKey,
     makeTestServices,
     type NetworkExpectation,
     TestHandle,
@@ -32,12 +32,12 @@ export function run(): void {
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
             nickname: 'user1' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
             nickname: 'user2' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
 
         // Set up services and log printing

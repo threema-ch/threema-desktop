@@ -1,12 +1,7 @@
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {
-    type EncryptedData,
-    type Nonce,
-    NONCE_UNGUARDED_TOKEN,
-    type PublicKey,
-} from '~/common/crypto';
+import {type EncryptedData, type Nonce, type NonceGuard, type PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
     type CspE2eDeliveryReceiptStatus,
@@ -14,21 +9,22 @@ import {
     CspE2eStatusUpdateType,
     TransactionScope,
 } from '~/common/enum';
-import {d2d} from '~/common/network/protobuf';
+import * as protobuf from '~/common/network/protobuf';
 import {CspPayloadType, D2mPayloadType, type LayerEncoder} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
-import {type Container} from '~/common/network/structbuf/csp/e2e';
 import {
     type LegacyMessage,
     type LegacyMessageEncodable,
 } from '~/common/network/structbuf/csp/payload';
 import * as validate from '~/common/network/structbuf/validate';
 import {
+    type CspNonceGuard,
     ensureMessageId,
     type GroupId,
     type IdentityString,
     type MessageId,
 } from '~/common/network/types';
+import {type ClientKey} from '~/common/network/types/keys';
 import {assert, unwrap} from '~/common/utils/assert';
 import {byteWithoutPkcs7} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
@@ -36,9 +32,14 @@ import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/as
 import {
     type NetworkExpectation,
     NetworkExpectationFactory,
-    type TestClientKey,
     type TestUser,
 } from '~/test/mocha/common/backend-mocks';
+
+const CSP_NONCE_GUARD = {
+    use: () => {
+        // Ignore
+    },
+} as NonceGuard as CspNonceGuard;
 
 /**
  * Convert a layer encoder for a {@link LegacyMessageEncodable} to a {@link LegacyMessage} by
@@ -59,10 +60,10 @@ export function decodeLegacyMessageEncodable(
 export function decryptContainer(
     message: LegacyMessage,
     senderPublicKey: PublicKey,
-    receiverCk: TestClientKey,
-): Container {
+    receiverCk: ClientKey,
+): structbuf.csp.e2e.Container {
     const decrypted = receiverCk
-        .getSharedBox(senderPublicKey, NONCE_UNGUARDED_TOKEN)
+        .getSharedBox(senderPublicKey, CSP_NONCE_GUARD)
         .decryptorWithNonce(
             CREATE_BUFFER_TOKEN,
             message.messageNonce as Nonce,
@@ -108,7 +109,9 @@ export function reflectAndSendDeliveryReceipt(
         // Reflect outgoing delivery receipt
         NetworkExpectationFactory.reflectSingle((payload) => {
             expect(payload.content).to.equal('outgoingMessage');
-            expect(payload.outgoingMessage?.type).to.equal(d2d.MessageType.DELIVERY_RECEIPT);
+            expect(payload.outgoingMessage?.type).to.equal(
+                protobuf.d2d.MessageType.DELIVERY_RECEIPT,
+            );
         }),
 
         // Send outgoing delivery receipt

@@ -35,7 +35,7 @@ import {intoU64, intoUnsignedLong, unixTimestampToDateMs} from '~/common/utils/n
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 import {
     addTestUserAsContact,
-    makeClientKey,
+    createClientKey,
     makeTestServices,
     type NetworkExpectation,
     NetworkExpectationFactory,
@@ -56,12 +56,12 @@ export function run(): void {
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
             nickname: 'user1' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
             nickname: 'user2' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
 
         // Set up services and log printing

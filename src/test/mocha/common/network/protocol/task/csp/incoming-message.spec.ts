@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN, type PlainData, wrapRawKey} from '~/common/crypto';
-import {CREATE_BUFFER_TOKEN, SharedBoxFactory} from '~/common/crypto/box';
+import {NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN, type PlainData} from '~/common/crypto';
+import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
     CspE2eConversationType,
     CspE2eDeliveryReceiptStatus,
@@ -33,7 +33,7 @@ import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampS} from '~/common/utils/number';
 import {
     addTestUserAsContact,
-    makeClientKey,
+    createClientKey,
     makeTestServices,
     type NetworkExpectation,
     NetworkExpectationFactory,
@@ -94,12 +94,12 @@ export function run(): void {
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
             nickname: 'user1' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
             nickname: 'user2' as Nickname,
-            ck: makeClientKey(),
+            ck: createClientKey(),
         };
 
         // Set up services and log printing
@@ -117,20 +117,14 @@ export function run(): void {
 
         describe('validation', function () {
             it('discard messages that appear to be sent by ourselves', async function () {
-                const {crypto, model} = services;
+                const {device, model} = services;
 
                 // Encode and encrypt message
                 const msg = createMessage(
                     services,
                     {
                         identity: new Identity(me),
-                        ck: new SharedBoxFactory(
-                            crypto,
-                            wrapRawKey(
-                                Uint8Array.from(services.rawClientKeyBytes),
-                                NACL_CONSTANTS.KEY_LENGTH,
-                            ).asReadonly(),
-                        ),
+                        ck: device.csp.ck,
                         nickname: 'me myself' as Nickname,
                     },
                     me,
