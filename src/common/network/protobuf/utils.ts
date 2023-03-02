@@ -87,12 +87,11 @@ function createInPlaceWriter(array: Uint8Array): Writer {
 }
 
 /**
- * Creates an encoder for a protobuf message and binds the protobuf's message
- * data.
+ * Creates an encoder for a protobuf message and binds the protobuf's message data.
  *
- * This encoder type allows to request the byte length of the resulting
- * message. Note that this **may** be an expensive operation. Encoding
- * directly into a large buffer is preferred.
+ * This encoder type allows to request the byte length of the resulting message. Note that even
+ * though the encoded data is cached, this **may** be an expensive operation. Encoding directly into
+ * a large buffer is preferred.
  *
  * @param protobuf Protobuf message to be encoded.
  * @param data Protobuf message instance or property tuple.
@@ -102,11 +101,34 @@ export function encoder<TProto extends ProtobufConstructor>(
     protobuf: TProto,
     data: ProtobufInstanceOf<TProto> | EntireProtobufPropertiesOf<TProto>,
 ): LayerEncoder<ProtobufEncodableOf<TProto>> {
-    function encode(array: Uint8Array): Uint8Array {
-        return protobuf.encode(data, createInPlaceWriter(array)).finish();
+    let encoded: Uint8Array | undefined;
+    function encode(array: Uint8Array | undefined): Uint8Array {
+        if (array === undefined) {
+            // Check if we calculcated the byte length before. If so, we just return the same
+            // temporary buffer again.
+            if (encoded !== undefined) {
+                return encoded;
+            }
+
+            // We never calculcated the byte length, so we encode the data into a temporary buffer.
+            encoded = protobuf.encode(data).finish();
+            return encoded;
+        } else {
+            // Check if we calculcated the byte length before. If so, we need to copy the data from
+            // the temporary buffer and return the written subarray.
+            if (encoded !== undefined) {
+                array.set(encoded);
+                return array.subarray(0, encoded.byteLength);
+            }
+
+            // We never calculcated the byte length, so we encode the data directly into the final
+            // buffer.
+            return protobuf.encode(data, createInPlaceWriter(array)).finish();
+        }
     }
+
     return {
-        byteLength: (): u53 => protobuf.encode(data).len,
+        byteLength: () => encode(undefined).byteLength,
         encode,
     } as LayerEncoder<ProtobufEncodableOf<TProto>>;
 }
