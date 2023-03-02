@@ -38,5 +38,5 @@ export function deriveDirectoryChallengeResponseKey(
     return ck.deriveSharedKey(32, challengeRequestKey, {
         personal: PERSONAL,
         salt: 'dir',
-    });
+    }) as DirectoryChallengeResponseKey;
 }

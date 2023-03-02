@@ -15,7 +15,7 @@ import {
     type PublicKey,
 } from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
-import {deriveVouchKey} from '~/common/crypto/csp-auth-keys';
+import {deriveVouchKey} from '~/common/crypto/csp-keys';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {randomPkcs7PaddingLength} from '~/common/crypto/random';
 import {D2mPayloadTypeUtils, GlobalPropertyKey} from '~/common/enum';

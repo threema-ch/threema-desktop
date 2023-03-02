@@ -3,7 +3,7 @@ import * as v from '@badrap/valita';
 import {type ServicesForBackend} from '~/common/backend';
 import {ensurePublicKey} from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
-import {deriveDirectoryChallengeResponseKey} from '~/common/crypto/csp-auth-keys';
+import {deriveDirectoryChallengeResponseKey} from '~/common/crypto/csp-keys';
 import {ActivityState} from '~/common/enum';
 import {
     type DirectoryBackend,

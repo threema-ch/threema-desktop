@@ -514,14 +514,15 @@ export class SecureSharedBoxFactory<
     /**
      * Derive a subkey from the shared key with the provided Blake2b parameters.
      */
-    public deriveSharedKey<
-        TDerivedKeyLength extends Blake2bKeyLength,
-        TKey extends RawKey<TDerivedKeyLength>,
-    >(length: TDerivedKeyLength, publicKey: PublicKey, parameters: Blake2bParameters): TKey {
+    public deriveSharedKey<TDerivedKeyLength extends Blake2bKeyLength>(
+        length: TDerivedKeyLength,
+        publicKey: PublicKey,
+        parameters: Blake2bParameters,
+    ): RawKey<TDerivedKeyLength> {
         const sharedKey = this.#_makeSharedSecret(publicKey);
         const derivedKey = deriveKey(length, sharedKey, parameters);
         sharedKey.purge();
-        return derivedKey as RawKey<TDerivedKeyLength> as TKey;
+        return derivedKey as RawKey<TDerivedKeyLength>;
     }
 
     /**
