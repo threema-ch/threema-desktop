@@ -33,7 +33,7 @@ import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampS} from '~/common/utils/number';
 import {
     addTestUserAsContact,
-    makeKeypair,
+    makeClientKey,
     makeTestServices,
     type NetworkExpectation,
     NetworkExpectationFactory,
@@ -57,7 +57,7 @@ function createMessage(
     flags: CspMessageFlags,
 ): structbuf.csp.payload.LegacyMessageLike {
     const {crypto, device} = services;
-    const sharedBox = device.csp.ck.getSharedBox(sender.keypair.public, device.csp.nonceGuard);
+    const sharedBox = device.csp.ck.getSharedBox(sender.ck.public, device.csp.nonceGuard);
     const [messageNonce, messageBox] = sharedBox
         .encryptor(
             CREATE_BUFFER_TOKEN,
@@ -94,12 +94,12 @@ export function run(): void {
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
             nickname: 'user1' as Nickname,
-            keypair: makeKeypair(),
+            ck: makeClientKey(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
             nickname: 'user2' as Nickname,
-            keypair: makeKeypair(),
+            ck: makeClientKey(),
         };
 
         // Set up services and log printing
@@ -124,7 +124,7 @@ export function run(): void {
                     services,
                     {
                         identity: new Identity(me),
-                        keypair: new SharedBoxFactory(
+                        ck: new SharedBoxFactory(
                             crypto,
                             wrapRawKey(
                                 Uint8Array.from(services.rawClientKeyBytes),
@@ -179,7 +179,7 @@ export function run(): void {
                     services,
                     {
                         identity: user1.identity,
-                        keypair: user1.keypair,
+                        ck: user1.ck,
                         nickname: 'some user' as Nickname,
                     },
                     me,
@@ -269,7 +269,7 @@ export function run(): void {
                     services,
                     {
                         identity: user1.identity,
-                        keypair: user1.keypair,
+                        ck: user1.ck,
                         nickname: 'some user' as Nickname,
                     },
                     me,
@@ -366,7 +366,7 @@ export function run(): void {
                         services,
                         {
                             identity: sender.identity,
-                            keypair: sender.keypair,
+                            ck: sender.ck,
                             nickname: 'some user' as Nickname,
                         },
                         me,

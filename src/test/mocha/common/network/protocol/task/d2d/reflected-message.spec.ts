@@ -28,7 +28,7 @@ import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {
     addTestGroup,
     addTestUserAsContact,
-    makeKeypair,
+    makeClientKey,
     makeTestServices,
     TestHandle,
     type TestServices,
@@ -44,7 +44,7 @@ export function run(): void {
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
             nickname: 'user1' as Nickname,
-            keypair: makeKeypair(),
+            ck: makeClientKey(),
             conversationId: {
                 type: ReceiverType.CONTACT,
                 identity: ensureIdentityString('USER0001'),

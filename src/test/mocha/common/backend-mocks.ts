@@ -940,9 +940,9 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
 }
 
 /**
- * Helper to generate a random keypair.
+ * Helper to generate a random client key.
  */
-export function makeKeypair(): TestClientKey {
+export function makeClientKey(): TestClientKey {
     const crypto = new TestTweetNaClBackend();
     const rawKey = wrapRawKey(randomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
     return new SharedBoxFactory(crypto, rawKey.asReadonly());
@@ -953,7 +953,7 @@ export function makeKeypair(): TestClientKey {
  */
 export interface TestUser {
     identity: Identity;
-    keypair: TestClientKey;
+    ck: TestClientKey;
     nickname: Nickname | undefined;
     // Default: Now
     createdAt?: Date;
@@ -987,11 +987,11 @@ export function makeTestUser(
     nickname = `${identityString}'s nickname` as Nickname,
 ): TestUser {
     const identity = new Identity(ensureIdentityString(identityString));
-    const keypair = makeKeypair();
+    const ck = makeClientKey();
     return {
         identity,
         nickname,
-        keypair,
+        ck,
     };
 }
 
@@ -1001,7 +1001,7 @@ export function makeTestUser(
 export function makeContactInit(user: TestUser): ContactInit {
     return {
         identity: user.identity.string,
-        publicKey: user.keypair.public,
+        publicKey: user.ck.public,
         createdAt: user.createdAt ?? new Date(),
         firstName: user.firstName ?? '',
         lastName: user.lastName ?? '',
@@ -1026,7 +1026,7 @@ export function registerTestUser(directory: TestDirectoryBackend, user: TestUser
     directory.registerUser(user.identity.string, {
         identity: user.identity.string,
         state: user.activityState ?? ActivityState.ACTIVE,
-        publicKey: user.keypair.public,
+        publicKey: user.ck.public,
         featureMask: user.featureMask ?? ensureFeatureMask(FeatureMaskFlag.NONE),
         type: user.identityType ?? IdentityType.REGULAR,
     });

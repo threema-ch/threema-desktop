@@ -138,7 +138,7 @@ export function groupLeaveTests(
                           const messageContainer = decryptContainer(
                               message,
                               device.csp.ck.public,
-                              user2.keypair,
+                              user2.ck,
                           );
                           expect(messageContainer.type).to.equal(
                               CspE2eGroupControlType.GROUP_REQUEST_SYNC,

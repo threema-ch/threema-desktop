@@ -59,9 +59,9 @@ export function decodeLegacyMessageEncodable(
 export function decryptContainer(
     message: LegacyMessage,
     senderPublicKey: PublicKey,
-    receiverKeypair: TestClientKey,
+    receiverCk: TestClientKey,
 ): Container {
-    const decrypted = receiverKeypair
+    const decrypted = receiverCk
         .getSharedBox(senderPublicKey, NONCE_UNGUARDED_TOKEN)
         .decryptorWithNonce(
             CREATE_BUFFER_TOKEN,
@@ -124,11 +124,7 @@ export function reflectAndSendDeliveryReceipt(
             messageIdDelayed.set(ensureMessageId(message.messageId));
 
             // Validate message type
-            const messageContainer = decryptContainer(
-                message,
-                device.csp.ck.public,
-                recipient.keypair,
-            );
+            const messageContainer = decryptContainer(message, device.csp.ck.public, recipient.ck);
             expect(messageContainer.type).to.equal(CspE2eStatusUpdateType.DELIVERY_RECEIPT);
 
             // Validate message contents
@@ -195,11 +191,7 @@ export function reflectAndSendGroupSetupToUser(
             messageIdDelayed.set(ensureMessageId(message.messageId));
 
             // Message should contain a group setup
-            const messageContainer = decryptContainer(
-                message,
-                device.csp.ck.public,
-                recipient.keypair,
-            );
+            const messageContainer = decryptContainer(message, device.csp.ck.public, recipient.ck);
             expect(messageContainer.type).to.equal(CspE2eGroupControlType.GROUP_SETUP);
 
             // Validate member list
@@ -271,11 +263,7 @@ export function reflectAndSendGroupNameToUser(
             messageIdDelayed.set(ensureMessageId(message.messageId));
 
             // Message should contain a group name
-            const messageContainer = decryptContainer(
-                message,
-                device.csp.ck.public,
-                recipient.keypair,
-            );
+            const messageContainer = decryptContainer(message, device.csp.ck.public, recipient.ck);
             expect(messageContainer.type).to.equal(CspE2eGroupControlType.GROUP_NAME);
 
             // Validate name
@@ -358,11 +346,7 @@ export function reflectAndSendGroupProfilePictureToUser(
             messageIdDelayed.set(ensureMessageId(message.messageId));
 
             // Message should contain a group name
-            const messageContainer = decryptContainer(
-                message,
-                device.csp.ck.public,
-                recipient.keypair,
-            );
+            const messageContainer = decryptContainer(message, device.csp.ck.public, recipient.ck);
             expect(messageContainer.type).to.equal(cspMessageType);
 
             // Validate contents

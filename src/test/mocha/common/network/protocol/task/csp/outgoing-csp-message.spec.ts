@@ -35,7 +35,7 @@ import {intoU64, intoUnsignedLong, unixTimestampToDateMs} from '~/common/utils/n
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 import {
     addTestUserAsContact,
-    makeKeypair,
+    makeClientKey,
     makeTestServices,
     type NetworkExpectation,
     NetworkExpectationFactory,
@@ -56,12 +56,12 @@ export function run(): void {
         const user1 = {
             identity: new Identity(ensureIdentityString('USER0001')),
             nickname: 'user1' as Nickname,
-            keypair: makeKeypair(),
+            ck: makeClientKey(),
         };
         const user2 = {
             identity: new Identity(ensureIdentityString('USER0002')),
             nickname: 'user2' as Nickname,
-            keypair: makeKeypair(),
+            ck: makeClientKey(),
         };
 
         // Set up services and log printing
@@ -189,7 +189,7 @@ export function run(): void {
                         const messageContainer = decryptContainer(
                             message,
                             services.device.csp.ck.public,
-                            member.keypair,
+                            member.ck,
                         );
                         expect(messageContainer.type).to.equal(
                             CspE2eGroupConversationType.GROUP_TEXT,
