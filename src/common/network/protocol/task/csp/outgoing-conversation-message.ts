@@ -194,7 +194,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 const thumbnailBlobId = blobIds.thumbnailBlobId ?? view.thumbnailBlobId;
                 const fileJson = purgeUndefinedProperties({
                     j: 0, // Rendering type: File
-                    i: 0, // Deprecated rendering type for compatiblity
+                    i: 0, // Deprecated rendering type for compatibility
                     k: bytesToHex(view.encryptionKey.unwrap()), // Blob encryption key
                     b: bytesToHex(blobId), // File blob ID
                     m: view.mediaType, // File media type

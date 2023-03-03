@@ -1167,16 +1167,15 @@ type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
         | 'fileName'
         | 'fileSize'
         | 'caption'
+        | 'correlationId'
         | 'mediaType'
         | 'thumbnailMediaType'
         | 'blobId'
         | 'thumbnailBlobId'
+        | 'encryptionKey'
         | 'fileData'
         | 'thumbnailFileData'
-    > & {
-        readonly encryptionKey: RawBlobKey;
-        readonly correlationId?: string;
-    };
+    >;
 type InboundFileMessageInit = CommonFileMessageInit & InboundBaseMessageInit<MessageType.FILE>;
 type OutboundFileMessageInit = CommonFileMessageInit & OutboundBaseMessageInit<MessageType.FILE>;
 type CommonFileMessageController<TView extends CommonFileMessageView> =

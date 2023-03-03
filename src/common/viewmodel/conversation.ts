@@ -1,10 +1,17 @@
+import {NACL_CONSTANTS} from '~/common/crypto';
+import {randomString} from '~/common/crypto/random';
 import {MessageDirection} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {type AnyReceiverStore, type Conversation} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
+import {
+    type OutboundFileMessageInitFragment,
+    type OutboundTextMessageInitFragment,
+} from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {type MessageId} from '~/common/network/types';
-import {type u64} from '~/common/types';
+import {wrapRawBlobKey} from '~/common/network/types/keys';
+import {type u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {
     type PropertiesMarked,
@@ -35,8 +42,8 @@ export type SendMessageEventDetail =
               readonly blob: Uint8Array;
               readonly caption?: string;
               fileName: string;
-              fileSize: u64;
-              mimeType: string;
+              fileSize: u53;
+              mediaType: string;
           }[];
       };
 
@@ -68,37 +75,62 @@ export class ConversationViewModelController implements IConversationViewModelCo
     }
 
     public async sendMessage(messageEventDetail: Remote<SendMessageEventDetail>): Promise<void> {
-        const {crypto} = this._services;
-        let outgoingMessages: {
-            readonly type: 'text';
-            readonly text: string;
-        }[];
-
+        const {crypto, file} = this._services;
+        type OmittedKeys = 'direction' | 'id' | 'createdAt';
+        type OutgoingMessageInitFragment =
+            | Omit<OutboundTextMessageInitFragment, OmittedKeys>
+            | Omit<OutboundFileMessageInitFragment, OmittedKeys>;
+        let outgoingMessageInitFragments: OutgoingMessageInitFragment[] = [];
         switch (messageEventDetail.type) {
             case 'text':
-                outgoingMessages = [messageEventDetail];
+                outgoingMessageInitFragments = [
+                    {
+                        type: 'text',
+                        text: messageEventDetail.text,
+                        quotedMessageId: messageEventDetail.quotedMessageId,
+                    },
+                ];
                 break;
-            case 'files':
-                // TODO(DESK-316)
-                this._log.error(
-                    `TODO(DESK-316): Upload and send ${messageEventDetail.files.length} outgoing files: `,
-                    messageEventDetail.files,
+            case 'files': {
+                // If more than 1 file is being sent, set a correlation ID
+                const correlationId =
+                    messageEventDetail.files.length > 1 ? randomString(crypto, 32) : undefined;
+
+                // Generate random blob encryption key for the blobs (which will be encrypted and
+                // uploaded by the outgoing conversation message task)
+                const encryptionKey = wrapRawBlobKey(
+                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
                 );
-                outgoingMessages = [];
+
+                for (const fileInfo of messageEventDetail.files) {
+                    const fileData = await file.store(fileInfo.blob);
+                    // TODO(DESK-958): Generate a thumbnail for media files
+                    outgoingMessageInitFragments.push({
+                        type: 'file', // TODO(DESK-958): Might also be 'image', 'video' or something else.
+                        caption: fileInfo.caption,
+                        correlationId,
+                        encryptionKey,
+                        fileName: fileInfo.fileName,
+                        fileSize: fileInfo.fileSize,
+                        mediaType: fileInfo.mediaType,
+                        fileData,
+                    });
+                }
                 break;
+            }
             default:
                 unreachable(messageEventDetail);
         }
 
-        for (const message of outgoingMessages) {
+        for (const init of outgoingMessageInitFragments) {
             const id = randomMessageId(crypto);
-            this._log.debug(`Send ${message.type} message with id ${id}`);
+            this._log.debug(`Send ${init.type} message with id ${id}`);
 
             await this._conversation.get().controller.addMessage.fromLocal({
                 direction: MessageDirection.OUTBOUND,
                 id,
                 createdAt: new Date(),
-                ...message,
+                ...init,
             });
         }
     }
