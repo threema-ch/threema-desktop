@@ -8,7 +8,7 @@ import {
     type BlobScope,
     isBlobId,
 } from '~/common/network/protocol/blob';
-import {bytesToHex, byteToHex} from '~/common/utils/byte';
+import {bytesToHex, byteToHex, hexToBytes} from '~/common/utils/byte';
 import {u64ToHexLe} from '~/common/utils/number';
 
 type ServicesForBlobBackend = Pick<ServicesForBackend, 'config' | 'device'>;
@@ -68,7 +68,7 @@ export class FetchBlobBackend implements BlobBackend {
             );
         }
 
-        const blobId = (await response.text()).trim();
+        const blobId = hexToBytes((await response.text()).trim());
         if (!isBlobId(blobId)) {
             throw new BlobBackendError(
                 'invalid-blob-id',
