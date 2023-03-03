@@ -1,10 +1,11 @@
 import * as chai from 'chai';
 import Long from 'long';
 
-import {ensureU64, type u64} from '~/common/types';
+import {ensureU64, type u53, type u64} from '~/common/types';
 import {
     bigintSortAsc,
     bigintSortDesc,
+    byteSizeToHumanReadable,
     hexLeToU64,
     intoU64,
     u64ToHexLe,
@@ -97,6 +98,31 @@ export function run(): void {
                 expect([1n, 4n, 3n, 5n, 2n].sort(bigintSortDesc)).to.eql([5n, 4n, 3n, 2n, 1n]);
                 expect([-1n, 1n, -1n].sort(bigintSortDesc)).to.eql([1n, -1n, -1n]);
             });
+        });
+
+        describe('byteSizeToHumanReadable', function () {
+            const testCases: [bytes: u53, humanReadable: string][] = [
+                [0, '0 B'],
+                [1, '1 B'],
+                [987, '987 B'],
+                [1000, '1.00 kB'],
+                [1024, '1.02 kB'],
+                [1989, '1.99 kB'],
+                [1994, '1.99 kB'],
+                [1995, '2.00 kB'],
+                [2000, '2.00 kB'],
+                [1000000, '1.00 MB'],
+                [1000000000, '1.00 GB'],
+                [512120000000, '512.12 GB'],
+                [1000000000000, '1.00 TB'],
+                [1000000000000000, '1.00 PB'],
+            ];
+
+            for (const testCase of testCases) {
+                it(`converts ${testCase[0]} bytes to "${testCase[1]}"`, function () {
+                    expect(byteSizeToHumanReadable(testCase[0])).to.equal(testCase[1]);
+                });
+            }
         });
     });
 }

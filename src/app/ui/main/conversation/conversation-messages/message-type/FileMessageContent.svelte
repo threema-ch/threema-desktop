@@ -5,9 +5,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import {byteSizeToHumanReadable} from '#3sc/utils/number';
   import Text from '~/app/ui/generic/form/Text.svelte';
   import {getFileExtension} from '~/app/ui/modal/media-message';
+  import {byteSizeToHumanReadable} from '~/common/utils/number';
   import {type MessageBodyFor} from '~/common/viewmodel/types';
 
   export let body: MessageBodyFor<'file'>;

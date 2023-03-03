@@ -2,8 +2,8 @@
   import {createEventDispatcher} from 'svelte';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {byteSizeToHumanReadable} from '#3sc/utils/number';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
+  import {byteSizeToHumanReadable} from '~/common/utils/number';
 
   export let file: File | undefined;
 
