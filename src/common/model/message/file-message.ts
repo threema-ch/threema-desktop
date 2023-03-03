@@ -1,4 +1,4 @@
-import {NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {type Nonce, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
     type DbConversationUid,
@@ -33,15 +33,21 @@ import {
     type OutboundFileMessage,
     type OutboundFileMessageController,
     type OutboundFileMessageView,
+    type OutboundFileMessageViewBlobs,
     PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type UidOf,
 } from '~/common/model';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {BlobBackendError, type BlobScope} from '~/common/network/protocol/blob';
+import {
+    BlobBackendError,
+    type BlobScope,
+    encryptAndUploadBlobWithEncryptionKey,
+} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
-import {type ReadonlyUint8Array} from '~/common/types';
+import {type RawBlobKey} from '~/common/network/types/keys';
+import {type Mutable, type ReadonlyUint8Array} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {AsyncLock} from '~/common/utils/lock';
@@ -180,6 +186,8 @@ function getPreviewText({
     return (caption ?? fileName)?.slice(0, PREVIEW_MESSAGE_MAX_TEXT_LENGTH);
 }
 
+type BlobType = 'main' | 'thumbnail';
+
 async function downloadBlob(
     type: 'main',
     messageDirection: MessageDirection,
@@ -209,7 +217,7 @@ async function downloadBlob(
  * updated. Once that is done, the promise will resolve with the blob data.
  */
 async function downloadBlob(
-    type: 'main' | 'thumbnail',
+    type: BlobType,
     messageDirection: MessageDirection,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
@@ -222,7 +230,7 @@ async function downloadBlob(
     const {blob, crypto, file, timer} = services;
 
     /**
-     * Mark the download of the file or thumbnail as permenantly failed.
+     * Mark the download of the file or thumbnail as permanently failed.
      *
      * If it's a file download, update the state in the view to 'failed' as well.
      */
@@ -491,8 +499,111 @@ export class OutboundFileMessageModelController
     }
 
     /** @inheritdoc */
+    public async uploadBlobs(): Promise<OutboundFileMessageViewBlobs> {
+        type FileDataToUpload = Pick<
+            FileMessageViewFragment,
+            'fileData' | 'thumbnailFileData' | 'encryptionKey'
+        >;
+
+        // Determine which files to upload
+        const fileDataToUpload: FileDataToUpload = this.meta.run((handle) => {
+            const view = handle.view();
+            const data: Mutable<FileDataToUpload> = {
+                encryptionKey: view.encryptionKey,
+            };
+            if (view.blobId === undefined && view.fileData !== undefined) {
+                data.fileData = view.fileData;
+            }
+            if (view.thumbnailBlobId === undefined && view.thumbnailFileData !== undefined) {
+                data.thumbnailFileData = view.thumbnailFileData;
+            }
+            return data;
+        });
+        if (
+            fileDataToUpload.fileData === undefined &&
+            fileDataToUpload.thumbnailFileData === undefined
+        ) {
+            // Nothing to upload
+            return {};
+        }
+
+        // Upload all blobs concurrently
+        const promises = [];
+        if (fileDataToUpload.fileData !== undefined) {
+            this.meta.update((view) => ({state: 'syncing'}));
+            promises.push(
+                this._uploadFileAsBlob(
+                    'main',
+                    fileDataToUpload.fileData,
+                    BLOB_FILE_NONCE,
+                    fileDataToUpload.encryptionKey,
+                ),
+            );
+        }
+        if (fileDataToUpload.thumbnailFileData !== undefined) {
+            promises.push(
+                this._uploadFileAsBlob(
+                    'thumbnail',
+                    fileDataToUpload.thumbnailFileData,
+                    BLOB_THUMBNAIL_NONCE,
+                    fileDataToUpload.encryptionKey,
+                ),
+            );
+        }
+        const blobIdPromiseResults = await Promise.all(promises);
+        let blobIds: OutboundFileMessageViewBlobs = {};
+        for (const blobIdPromiseResult of blobIdPromiseResults) {
+            blobIds = {...blobIds, ...blobIdPromiseResult};
+        }
+
+        // Update database and view
+        this.meta.update((view) => {
+            const change: Mutable<Partial<OutboundFileMessageView>> = {
+                ...blobIds,
+            };
+
+            // Note: updateMessage cannot return a list of deleted files in this case because we
+            // only update the blob ids. Thus we can ignore the return value.
+            this._services.db.updateMessage(this._conversation.uid, {
+                ...change,
+                uid: this._uid,
+                type: this._type,
+            });
+
+            return {...change, state: 'synced'};
+        });
+
+        // TODO(DESK-960): Remove this return value when the caller properly reload models.
+        return blobIds;
+    }
+
+    /** @inheritdoc */
     protected _preview(): OutboundConversationPreviewMessageView['text'] {
         return this.meta.run((handle) => getPreviewText(handle.view()));
+    }
+
+    private async _uploadFileAsBlob(
+        type: BlobType,
+        data: FileData,
+        nonce: Nonce,
+        key: RawBlobKey,
+    ): Promise<Pick<OutboundFileMessageView, 'blobId' | 'thumbnailBlobId'>> {
+        const bytes = await this._services.file.load(data);
+        const {id} = await encryptAndUploadBlobWithEncryptionKey(
+            this._services,
+            bytes,
+            nonce,
+            key,
+            'public',
+        );
+        switch (type) {
+            case 'main':
+                return {blobId: id};
+            case 'thumbnail':
+                return {thumbnailBlobId: id};
+            default:
+                return unreachable(type);
+        }
     }
 }
 

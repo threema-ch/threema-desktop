@@ -8,7 +8,12 @@ import {
     ReceiverTypeUtils,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type AnyMessage, type AnyReceiver, type OutboundMessageFor} from '~/common/model';
+import {
+    type AnyMessage,
+    type AnyReceiver,
+    type OutboundFileMessageViewBlobs,
+    type OutboundMessageFor,
+} from '~/common/model';
 import {type CspE2eType, type LayerEncoder} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
@@ -31,9 +36,11 @@ import {
     type TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
 import {type MessageId} from '~/common/network/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';
+import {purgeUndefinedProperties} from '~/common/utils/object';
 
 /**
  * The outgoing message task has the following responsibilities:
@@ -103,20 +110,26 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
     }
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
-        const {view, type: messageType} = this._messageModel;
+        const {view: messageView, type: messageType} = this._messageModel;
         this._log.info(
             `Run for ${ReceiverTypeUtils.nameOf(
                 this._receiverModel.type,
             )?.toLowerCase()} ${messageType} message`,
         );
 
+        // Upload file message data
+        let blobIds: OutboundFileMessageViewBlobs | undefined;
+        if (messageType === 'file') {
+            // TODO(DESK-960): Reload model instead of using the blob ids from the return value.
+            blobIds = await this._messageModel.controller.uploadBlobs();
+        }
+
         // Initialize outgoing CSP message task
-        const messageView = view;
         const cspMessageFlags = CspMessageFlags.forMessageType(messageType);
         cspMessageFlags.groupMessage = this._receiverModel.type === ReceiverType.GROUP;
         const messageProperties = {
             type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<TReceiver>,
-            encoder: this._getCspEncoder(),
+            encoder: this._getCspEncoder(blobIds ?? {}),
             cspMessageFlags,
             messageId: messageView.id,
             createdAt: messageView.createdAt,
@@ -148,10 +161,12 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
 
     /**
      * Return the layer encoder for the message to be sent (without container).
+     *
+     * TODO(DESK-960): Do not pass in blobIds
      */
-    private _getCspEncoder(): LayerEncoder<
-        TextEncodable | FileEncodable | GroupMemberContainerEncodable
-    > {
+    private _getCspEncoder(
+        blobIds: OutboundFileMessageViewBlobs,
+    ): LayerEncoder<TextEncodable | FileEncodable | GroupMemberContainerEncodable> {
         let encoder;
         switch (this._messageModel.type) {
             case 'text': {
@@ -170,8 +185,32 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 });
                 break;
             }
-            case 'file':
-                throw new Error('TODO(DESK-316): Implement support for sending file messages');
+            case 'file': {
+                const view = this._messageModel.view;
+                const blobId = unwrap(
+                    blobIds.blobId ?? view.blobId,
+                    'Tried to send file message without blob ID',
+                );
+                const thumbnailBlobId = blobIds.thumbnailBlobId ?? view.thumbnailBlobId;
+                const fileJson = purgeUndefinedProperties({
+                    j: 0, // Rendering type: File
+                    i: 0, // Deprecated rendering type for compatiblity
+                    k: bytesToHex(view.encryptionKey.unwrap()), // Blob encryption key
+                    b: bytesToHex(blobId), // File blob ID
+                    m: view.mediaType, // File media type
+                    n: view.fileName, // File name
+                    s: view.fileSize, // File size in bytes
+                    t: thumbnailBlobId === undefined ? undefined : bytesToHex(thumbnailBlobId), // Blob containing the thumbnail file data
+                    p: view.thumbnailMediaType, // Media type of the thumbnail
+                    d: view.caption, // Caption text
+                    c: view.correlationId, // Correlation ID
+                });
+                encoder = structbuf.bridge.encoder(structbuf.csp.e2e.File, {
+                    file: UTF8.encode(JSON.stringify(fileJson)),
+                });
+                break;
+            }
+
             default:
                 return unreachable(this._messageModel);
         }

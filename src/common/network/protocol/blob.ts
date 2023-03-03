@@ -204,6 +204,44 @@ export async function downloadAndDecryptBlob(
     return decrypted;
 }
 
+export interface BlobInfo {
+    readonly id: BlobId;
+    readonly key: RawBlobKey;
+    readonly nonce: Nonce;
+}
+
+/**
+ * Encrypt the blob with a given key and upload the encrypted bytes.
+ *
+ * @throws {BlobBackendError} if uploading the blob fails.
+ * @throws {CryptoError} if encryption fails.
+ */
+export async function encryptAndUploadBlobWithEncryptionKey(
+    services: Pick<ServicesForTasks, 'blob' | 'crypto'>,
+    bytes: ReadonlyUint8Array,
+    nonce: Nonce,
+    key: RawBlobKey,
+    uploadScope: BlobScope,
+): Promise<BlobInfo> {
+    const {blob, crypto} = services;
+
+    // Encrypt blob bytes
+    const box = crypto.getSecretBox(key, NONCE_UNGUARDED_TOKEN);
+    const encryptedBytes = box
+        .encryptor(CREATE_BUFFER_TOKEN, bytes as PlainData)
+        .encryptWithNonce(nonce);
+
+    // Upload encrypted data
+    const blobId = await blob.upload(uploadScope, encryptedBytes);
+
+    // Return blob info
+    return {
+        id: blobId,
+        key,
+        nonce,
+    };
+}
+
 /**
  * Encrypt the blob with a random key and upload the encrypted bytes.
  *
@@ -215,23 +253,15 @@ export async function encryptAndUploadBlob(
     bytes: ReadonlyUint8Array,
     nonce: Nonce,
     uploadScope: BlobScope,
-): Promise<{id: BlobId; key: RawBlobKey; nonce: Nonce}> {
-    const {blob, crypto} = services;
-
-    // Encrypt blob bytes
-    const randomKey = wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)));
-    const box = crypto.getSecretBox(randomKey, NONCE_UNGUARDED_TOKEN);
-    const encryptedBytes = box
-        .encryptor(CREATE_BUFFER_TOKEN, bytes as PlainData)
-        .encryptWithNonce(nonce);
-
-    // Upload encrypted data
-    const blobId = await blob.upload(uploadScope, encryptedBytes);
-
-    // Return blob info
-    return {
-        id: blobId,
-        key: randomKey,
+): Promise<BlobInfo> {
+    const randomKey = wrapRawBlobKey(
+        services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+    );
+    return await encryptAndUploadBlobWithEncryptionKey(
+        services,
+        bytes,
         nonce,
-    };
+        randomKey,
+        uploadScope,
+    );
 }

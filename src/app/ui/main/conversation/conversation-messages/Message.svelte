@@ -65,7 +65,7 @@
     switch (message.state.type) {
       case 'unsynced':
         // Start down- or upload
-        // TODO(DESK-316): Handle upload resumption for local unsynced files
+        // TODO(DESK-961): Handle upload resumption for local unsynced files
         dispatch('saveFile');
         break;
       case 'syncing':

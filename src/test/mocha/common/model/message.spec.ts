@@ -106,8 +106,6 @@ export function run(): void {
                 },
             ];
 
-            // TODO(DESK-316): Add tests for outbound messages as well
-
             for (const testCase of testCases) {
                 // eslint-disable-next-line no-loop-func
                 it(`initialize state '${testCase.expectedState}' for inbound ${testCase.expectedState} message`, function () {

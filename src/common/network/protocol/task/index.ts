@@ -44,6 +44,7 @@ export type ServicesForTasks = Pick<
     | 'crypto'
     | 'device'
     | 'directory'
+    | 'file'
     | 'logging'
     | 'model'
     | 'notification'
