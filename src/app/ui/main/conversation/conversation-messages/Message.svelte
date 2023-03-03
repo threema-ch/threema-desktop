@@ -19,30 +19,23 @@
     type Message,
     type MessageStatus,
   } from '~/common/viewmodel/types';
-  import {type Mention} from '~/common/viewmodel/utils/mentions';
 
   import MessageContent from './MessageContent.svelte';
   import MessageQuote from './MessageQuote.svelte';
 
   /**
-   * The message to be parsed and displayed with the requested features.
+   * The conversation message viewmodel.
    */
-  export let message: Message<AnyMessageBody>;
+  export let messageViewModel: Remote<ConversationMessageViewModel>;
+
+  // Extract/alias message body from viewmodel
+  let message: ConversationMessageViewModel['body'];
+  $: message = messageViewModel.body;
 
   /**
    * Receiver type.
    */
   export let receiver: AnyReceiverData;
-
-  /**
-   * Quote
-   */
-  export let quote: Remote<ConversationMessageViewModel['quote']>;
-
-  /**
-   * Mentions parsed from the message
-   */
-  export let mentions: Remote<Mention>[];
 
   const dispatch = createEventDispatcher<{saveFile: undefined; abortSync: undefined}>();
 
@@ -102,17 +95,21 @@
         <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
       </span>
     {/if}
-    {#if quote !== undefined}
+    {#if messageViewModel.quote !== undefined}
       <div class="quote">
-        {#if quote === 'not-found'}
+        {#if messageViewModel.quote === 'not-found'}
           <p class="quote-not-found">The quoted message could not be found.</p>
         {:else}
-          <MessageQuote {quote} />
+          <MessageQuote quote={messageViewModel.quote} />
         {/if}
       </div>
     {/if}
     <span class="content">
-      <MessageContent {message} {mentions} on:saveFile={() => dispatch('saveFile')} />
+      <MessageContent
+        {message}
+        mentions={messageViewModel.mentions}
+        on:saveFile={() => dispatch('saveFile')}
+      />
     </span>
     <span class="footer">
       <MessageFooter
@@ -128,7 +125,13 @@
       <div class="overlay">
         <button class="overlay-button" on:click={handleMessageOverlayClick}>
           {#if message.state.type === 'unsynced'}
-            <MdIcon theme="Filled">file_download</MdIcon>
+            {#if messageViewModel.syncDirection === 'download'}
+              <MdIcon theme="Filled" title="Click to download file">file_download</MdIcon>
+            {:else if messageViewModel.syncDirection === 'upload'}
+              <MdIcon theme="Filled" title="Click to upload file">file_upload</MdIcon>
+            {:else}
+              <MdIcon theme="Filled" title="Unknown sync direction">help</MdIcon>
+            {/if}
           {:else if message.state.type === 'syncing'}
             <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>-->
             <IconButtonProgressBarOverlay />

@@ -276,10 +276,8 @@
 
       <div class="message" use:contextMenuAction={openContextMenuOnMouseEvent}>
         <MessageComponent
-          message={messageBody}
-          quote={$viewModelStore.quote}
+          messageViewModel={$viewModelStore}
           {receiver}
-          mentions={$viewModelStore.mentions}
           on:saveFile={saveFile}
           on:abortSync={() => {
             /* TODO(DESK-948): Implement cancellation */

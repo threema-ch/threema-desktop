@@ -82,6 +82,11 @@ export interface ConversationMessageViewModel extends PropertiesMarked {
      * Ordinal for message ordering in the conversation list.
      */
     readonly ordinal: u53;
+
+    /**
+     * The sync direction for unsynced or syncing messages.
+     */
+    readonly syncDirection: 'upload' | 'download' | undefined;
 }
 
 function getViewModel(
@@ -101,12 +106,26 @@ function getViewModel(
             resolveQuotedMessage,
         );
 
+        let syncDirection: ConversationMessageViewModel['syncDirection'];
+        if (message.type === 'file') {
+            if (message.view.state === 'unsynced' || message.view.state === 'syncing') {
+                const fileData = message.view.fileData;
+                const blobId = message.view.blobId;
+                if (fileData === undefined && blobId !== undefined) {
+                    syncDirection = 'download';
+                } else if (fileData !== undefined && blobId === undefined) {
+                    syncDirection = 'upload';
+                }
+            }
+        }
+
         const conversationMessage = {
             messageId: message.view.id,
             body: getConversationMessageBody(message, model, getAndSubscribe),
             mentions: getMentions(message, model),
             quote,
             ordinal: getMessageOrdinal(message),
+            syncDirection,
         };
         return endpoint.exposeProperties(conversationMessage);
     });
