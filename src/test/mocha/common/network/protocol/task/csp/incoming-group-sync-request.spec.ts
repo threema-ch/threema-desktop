@@ -132,7 +132,7 @@ export function run(): void {
                 const expectations = [];
                 // For unknown users, the user is first added and reflected
                 if (!userKnown) {
-                    expectations.push(...reflectContactSync(sender));
+                    expectations.push(...reflectContactSync(sender, 'create'));
                 }
                 // Then an empty group setup must be reflected and sent
                 expectations.push(...reflectAndSendGroupSetupToUser(services, sender, []));

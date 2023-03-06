@@ -38,7 +38,7 @@ export function run(): void {
 
         describe('another user can be added', function () {
             it('from remote', async function () {
-                const expectations = reflectContactSync(anotherUser);
+                const expectations = reflectContactSync(anotherUser, 'create');
                 const handle = new TestHandle(services, expectations);
                 await services.model.contacts.add.fromRemote(handle, makeContactInit(anotherUser));
                 expect(services.model.contacts.getAll().get().size).to.eql(1);

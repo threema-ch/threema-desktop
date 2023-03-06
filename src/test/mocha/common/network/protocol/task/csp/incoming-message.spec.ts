@@ -26,6 +26,7 @@ import * as structbuf from '~/common/network/structbuf';
 import {
     ensureIdentityString,
     ensureMessageId,
+    ensureNickname,
     type IdentityString,
     type MessageId,
     type Nickname,
@@ -48,7 +49,10 @@ import {
     type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 import {makeGroup} from '~/test/mocha/common/db-backend-tests';
-import {reflectAndSendDeliveryReceipt} from '~/test/mocha/common/network/protocol/task/task-test-helpers';
+import {
+    reflectAndSendDeliveryReceipt,
+    reflectContactSync,
+} from '~/test/mocha/common/network/protocol/task/task-test-helpers';
 
 /**
  * Create a message from {@link sender} to {@link receiver} and with the {@link innerPayload} used
@@ -232,6 +236,72 @@ export function run(): void {
                 const contactForOwnIdentity = model.contacts.getByIdentity(me);
                 expect(contactForOwnIdentity, 'Contact for own identity should not exist').to.be
                     .undefined;
+            });
+        });
+
+        describe('contact management', function () {
+            it('updates nickname for existing contacts', async function () {
+                const {model} = services;
+
+                const oldNickname = ensureNickname('oldnick');
+                const newNickname = ensureNickname('newnick');
+
+                // Add contacts
+                const user1Contact = addTestUserAsContact(model, {...user1, nickname: oldNickname});
+                expect(user1Contact.get().view.nickname).to.equal(oldNickname);
+
+                async function processMessageWithNickname(
+                    nickname: Nickname,
+                    expectContactReflection: boolean,
+                ): Promise<void> {
+                    // Create incoming text message with unchanged nickname
+                    const textMessage = createMessage(
+                        services,
+                        {
+                            ...user1,
+                            nickname,
+                        },
+                        me,
+                        CspE2eConversationType.TEXT,
+                        structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                            text: UTF8.encode('message'),
+                        }),
+                        CspMessageFlags.fromPartial({sendPushNotification: true}),
+                    );
+
+                    // Run task
+                    const task = new IncomingMessageTask(services, textMessage);
+                    const handle = new TestHandle(services, [
+                        // Reflect contact update if requested
+                        ...(expectContactReflection ? reflectContactSync(user1, 'update') : []),
+
+                        // Reflect and ack incoming text message
+                        NetworkExpectationFactory.reflectSingle((payload) => {
+                            expect(payload.incomingMessage).not.to.be.undefined;
+                            const incomingMessage = unwrap(payload.incomingMessage);
+                            expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                            expect(incomingMessage.type).to.equal(d2d.MessageType.TEXT);
+                        }),
+                        NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                        // Send delivery receipt
+                        ...reflectAndSendDeliveryReceipt(
+                            services,
+                            user1,
+                            CspE2eDeliveryReceiptStatus.RECEIVED,
+                        ),
+                    ]);
+                    await task.run(handle);
+                    handle.finish();
+                }
+
+                // When the nickname is unchanged, no contact update should be reflected
+                await processMessageWithNickname(oldNickname, false);
+                expect(user1Contact.get().view.nickname).to.equal(oldNickname);
+
+                // When the nickname is changed, a contact update should be reflected
+                await processMessageWithNickname(newNickname, true);
+                expect(user1Contact.get().view.nickname).to.equal(newNickname);
             });
         });
 

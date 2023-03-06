@@ -21,7 +21,7 @@ import {
     type MessageId,
 } from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
-import {assert, unwrap} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteWithoutPkcs7} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
@@ -402,16 +402,31 @@ export function reflectAndSendGroupProfilePictureToUser(
 /**
  * Expect a contact to be reflected.
  */
-export function reflectContactSync(user: TestUser): NetworkExpectation[] {
+export function reflectContactSync(
+    user: TestUser,
+    mode: 'create' | 'update',
+): NetworkExpectation[] {
     return [
         NetworkExpectationFactory.startTransaction(0, TransactionScope.CONTACT_SYNC),
         NetworkExpectationFactory.reflectSingle((payload) => {
             expect(payload.content).to.equal('contactSync');
             const outgoingMessage = unwrap(payload.contactSync, 'Contact sync is undefined');
-            expect(outgoingMessage.create, 'Contact create is undefined').not.to.be.undefined;
-            expect(outgoingMessage.create?.contact?.identity, 'Wrong contact reflected').to.equal(
-                user.identity.string,
-            );
+            let identity;
+            switch (mode) {
+                case 'create':
+                    expect(outgoingMessage.create, 'Contact create is undefined').not.to.be
+                        .undefined;
+                    identity = outgoingMessage.create?.contact?.identity;
+                    break;
+                case 'update':
+                    expect(outgoingMessage.update, 'Contact update is undefined').not.to.be
+                        .undefined;
+                    identity = outgoingMessage.update?.contact?.identity;
+                    break;
+                default:
+                    unreachable(mode);
+            }
+            expect(identity, 'Wrong contact reflected').to.equal(user.identity.string);
         }),
     ];
 }

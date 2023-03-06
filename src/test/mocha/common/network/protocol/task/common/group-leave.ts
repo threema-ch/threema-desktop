@@ -198,7 +198,7 @@ export function groupLeaveTests(
                 groupId,
                 creator,
                 senderContactInit,
-                [...reflectContactSync(sender)],
+                [...reflectContactSync(sender, 'create')],
                 mode,
                 'Leave from unknown user',
             );
