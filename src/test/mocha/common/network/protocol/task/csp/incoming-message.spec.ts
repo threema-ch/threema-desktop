@@ -254,11 +254,7 @@ export function run(): void {
                 const messageText = 'this is the secret message';
                 const textMessage = createMessage(
                     services,
-                    {
-                        identity: user1.identity,
-                        ck: user1.ck,
-                        nickname: 'some user' as Nickname,
-                    },
+                    user1,
                     me,
                     CspE2eConversationType.TEXT,
                     structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
@@ -344,11 +340,7 @@ export function run(): void {
                 const fileSizeBytes = 12342345;
                 const fileMessage = createMessage(
                     services,
-                    {
-                        identity: user1.identity,
-                        ck: user1.ck,
-                        nickname: 'some user' as Nickname,
-                    },
+                    user1,
                     me,
                     CspE2eConversationType.FILE,
                     structbuf.bridge.encoder(structbuf.csp.e2e.File, {
@@ -441,11 +433,7 @@ export function run(): void {
                 ): structbuf.csp.payload.MessageWithMetadataBoxLike {
                     return createMessage(
                         services,
-                        {
-                            identity: sender.identity,
-                            ck: sender.ck,
-                            nickname: 'some user' as Nickname,
-                        },
+                        sender,
                         me,
                         CspE2eGroupConversationType.GROUP_TEXT,
                         structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {

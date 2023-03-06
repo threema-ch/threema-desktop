@@ -74,6 +74,7 @@ import {
     type IdentityString,
     isNickname,
     type MessageId,
+    type Nickname,
 } from '~/common/network/types';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, ensureError, exhausted, unreachable} from '~/common/utils/assert';
@@ -513,7 +514,19 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Sync the contact within a transaction and store it permanently,
         // if necessary.
-        if (!(senderContactOrInit instanceof LocalModelStore)) {
+        if (senderContactOrInit instanceof LocalModelStore) {
+            // Contact exists. Update the nickname if necessary.
+            // TODO(SE-288) Determine what to do with the nickname in other messages.
+            if (instructions.messageCategory === 'conversation-message') {
+                const contactModel = senderContactOrInit.get();
+                const nicknameFromMessage = this._decodeSenderNickname(metadata);
+                if (contactModel.view.nickname !== nicknameFromMessage) {
+                    await contactModel.controller.update.fromRemote(handle, {
+                        nickname: nicknameFromMessage,
+                    });
+                }
+            }
+        } else {
             // Note: Some message types (e.g. status messages) should not trigger implicit contact
             //       creation. In this case, the message should be discarded without reflection,
             //       because without the contact (and a conversation belonging to this contact), the
@@ -855,36 +868,33 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             return senderContactOrInitFragment;
         }
 
-        // Get the nickname of the sender
-        let nickname;
-        try {
-            nickname = this._decodeSenderNickname(metadata);
-        } catch (error) {
-            this._log.warn(`Ignoring invalid nickname: ${error}`);
-        }
-
-        // Finalise the fragment
+        // Finalize the fragment
         return {
             ...senderContactOrInitFragment,
-            nickname: isNickname(nickname) ? nickname : undefined,
+            nickname: this._decodeSenderNickname(metadata),
         };
     }
 
     private _decodeSenderNickname(
         metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
-    ): string {
-        // Prefer the nickname from the metadata
+    ): Nickname | undefined {
+        let nickname;
+        // Prefer the nickname from the metadata else fall back to the legacy unencrypted nickname.
         if (metadata !== undefined && metadata.nickname.length > 0) {
-            return metadata.nickname;
+            nickname = metadata.nickname;
+        } else if (this._message.legacySenderNickname.byteLength === 0) {
+            return undefined;
+        } else {
+            // Ignore the zero-padding, then decode as UTF-8
+            try {
+                nickname = UTF8.decode(byteWithoutZeroPadding(this._message.legacySenderNickname));
+            } catch (error) {
+                this._log.warn(`Ignoring invalid nickname: ${error}`);
+                return undefined;
+            }
         }
 
-        // Fall back to the legacy unencrypted nickname.
-        //
-        // Ignore the zero-padding, then decode as UTF-8
-        if (this._message.legacySenderNickname.byteLength === 0) {
-            return '';
-        }
-        return UTF8.decode(byteWithoutZeroPadding(this._message.legacySenderNickname));
+        return isNickname(nickname) ? nickname : undefined;
     }
 
     private _getInstructionsForMessage(
