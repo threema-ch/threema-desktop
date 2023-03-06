@@ -1536,9 +1536,13 @@ export interface LocationLike {
      * line-separated UTF-8:
      *
      *     <latitude>,<longitude>[,<accuracy>]
+     *
+     * or
+     *
+     *     <latitude>,<longitude>[,<accuracy>]
      *     <address>
      *
-     * or alternatively
+     * or
      *
      *     <latitude>,<longitude>[,<accuracy>]
      *     <name>
