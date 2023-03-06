@@ -98,11 +98,11 @@ const SAFE_CONTACT_SCHEMA = v
         lastUpdate: nullOptional(v.number()),
         verification: v.number(),
         workVerified: v.boolean().optional(),
-        hidden: v.boolean().optional().default(false),
-        firstname: v.string().optional().default(''),
-        lastname: v.string().optional().default(''),
+        hidden: v.boolean().default(false),
+        firstname: v.string().default(''),
+        lastname: v.string().default(''),
         nickname: nullEmptyStringOptional(v.string().map(ensureNickname)),
-        private: v.boolean().optional().default(false),
+        private: v.boolean().default(false),
         readReceipts: v.number().optional(),
         typingIndicators: v.number().optional(),
     })
@@ -157,9 +157,9 @@ export const SAFE_SCHEMA = v
     .object({
         info: SAFE_INFO_SCHEMA,
         user: SAFE_USER_SCHEMA,
-        contacts: v.array(SAFE_CONTACT_SCHEMA).optional().default([]),
-        groups: v.array(SAFE_GROUP_SCHEMA).optional().default([]),
-        distributionlists: v.array(SAFE_DISTRIBUTION_LIST_SCHEMA).optional().default([]),
+        contacts: v.array(SAFE_CONTACT_SCHEMA).default([]),
+        groups: v.array(SAFE_GROUP_SCHEMA).default([]),
+        distributionlists: v.array(SAFE_DISTRIBUTION_LIST_SCHEMA).default([]),
         settings: SAFE_SETTINGS_SCHEMA,
     })
     .rest(v.unknown());
