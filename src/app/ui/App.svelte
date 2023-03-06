@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {type SvelteComponent, onMount} from 'svelte';
+  import {onMount, type SvelteComponent} from 'svelte';
 
   import {dragEvents} from '#3sc/utils/dragdrop';
   import {type AppServices} from '~/app/types';

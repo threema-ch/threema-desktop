@@ -1,16 +1,16 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {contactListFilter} from '~/app/ui/nav/receiver';
-  import ContactList from '~/app/ui/nav/receiver/ContactList.svelte';
-  import GroupList from '~/app/ui/nav/receiver/GroupList.svelte';
-  import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
-  import ContactNavBar from '~/app/ui/nav/receiver/ContactNavBar.svelte';
-  import {type ContactTab} from '~/app/ui/nav';
-  import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
-  import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
-  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
+  import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
+  import {type ContactTab} from '~/app/ui/nav';
+  import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
+  import {contactListFilter} from '~/app/ui/nav/receiver';
+  import ContactList from '~/app/ui/nav/receiver/ContactList.svelte';
+  import ContactNavBar from '~/app/ui/nav/receiver/ContactNavBar.svelte';
+  import GroupList from '~/app/ui/nav/receiver/GroupList.svelte';
+  import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import {unreachable} from '~/common/utils/assert';
 
   export let services: AppServices;
