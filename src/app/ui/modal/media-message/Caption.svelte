@@ -37,6 +37,7 @@
 <template>
   <div>
     <ComposeArea
+      on:submit
       bind:this={composeArea}
       placeholder="Add a caption to this media format"
       {initialText}

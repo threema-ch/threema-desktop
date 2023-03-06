@@ -1,3 +1,7 @@
+<!--
+  @component
+  The modal window used for sending files, images and other media.
+-->
 <script lang="ts">
   import {createEventDispatcher, onMount} from 'svelte';
 
@@ -89,7 +93,7 @@
     caption.focus();
   }
 
-  async function sendMessage(): Promise<void> {
+  async function sendMessages(): Promise<void> {
     saveCurrentCaption();
     visible = false;
 
@@ -203,7 +207,11 @@
           </div>
           <div class="footer" slot="footer">
             <div class="caption">
-              <Caption bind:this={caption} initialText={activeMediaFile?.caption} />
+              <Caption
+                bind:this={caption}
+                initialText={activeMediaFile?.caption}
+                on:submit={sendMessages}
+              />
             </div>
             <div class="emoji-picker">
               <IconButton flavor="naked" on:click={showEmojiPicker}>
@@ -224,7 +232,7 @@
               />
             </div>
             <div class="action">
-              <IconButton flavor="filled" on:click={sendMessage}>
+              <IconButton flavor="filled" on:click={sendMessages}>
                 <MdIcon theme="Filled">arrow_upward</MdIcon>
               </IconButton>
             </div>
