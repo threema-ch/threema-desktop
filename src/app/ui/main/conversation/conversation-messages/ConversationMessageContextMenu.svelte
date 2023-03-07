@@ -29,10 +29,16 @@
     wrapper.close();
   }
 
+  let showCopyLinkAction = false;
+
+  interface OpenOptions {
+    readonly showCopyLinkAction: boolean;
+  }
   /**
    * Open the context menu
    */
-  export function open(): void {
+  export function open(options: OpenOptions): void {
+    showCopyLinkAction = options.showCopyLinkAction;
     wrapper.open();
   }
 
@@ -44,6 +50,15 @@
   <div>
     <ContextMenuWrapper bind:this={wrapper} {directionX} on:clickoutside {x} {y}>
       <MenuContainer mode="small">
+        {#if showCopyLinkAction}
+          <MenuItem on:click={(e) => dispatchEvent('copyLink')}>
+            <span class="icon" slot="icon">
+              <MdIcon theme="Outlined">link</MdIcon>
+            </span>
+            <span>Copy Link</span>
+          </MenuItem>
+          <MenuItemDivider />
+        {/if}
         {#if message.direction === 'incoming' && !isGroupConversation}
           <MenuItem on:click={() => dispatchEvent('thumbup')}>
             <span class="icon" slot="icon">
@@ -79,7 +94,7 @@
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">content_copy</MdIcon>
           </span>
-          <span>Copy</span>
+          <span>Copy Message</span>
         </MenuItem>
         <MenuItem disabled={true} on:click={() => dispatchEvent('share')}>
           <span class="icon" slot="icon">

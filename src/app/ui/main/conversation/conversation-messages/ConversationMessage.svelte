@@ -85,6 +85,12 @@
   let isForwardMessageModalVisible = false;
   let isMessageDetailModalVisible = false;
 
+  let hrefToCopy: string | undefined = undefined;
+
+  function extractHrefFromEventTarget(event: MouseEvent): string | undefined {
+    return (event.target as HTMLElement)?.getAttribute('href') ?? undefined;
+  }
+
   function openContextMenuOnMouseEvent(event: MouseEvent): void {
     if (selectable) {
       return;
@@ -99,7 +105,9 @@
     }
 
     contextMenuPosition = {x: event.clientX, y: event.clientY};
-    contextMenu.open();
+
+    hrefToCopy = extractHrefFromEventTarget(event);
+    contextMenu.open({showCopyLinkAction: hrefToCopy !== undefined});
     isContextMenuVisible = true;
   }
 
@@ -121,6 +129,9 @@
       case 'copy':
         copyMessageContent();
         break;
+      case 'copyLink':
+        copyLink();
+        break;
       case 'delete':
         isDeleteMessageConfirmationModalVisible = true;
         break;
@@ -138,6 +149,18 @@
         break;
       default:
         unreachable(type);
+    }
+  }
+
+  function copyLink(): void {
+    if (hrefToCopy !== undefined) {
+      navigator.clipboard
+        .writeText(hrefToCopy)
+        .then(() => toast.addSimpleSuccess('Link copied to clipboard'))
+        .catch(() => toast.addSimpleFailure('Could not copy link to clipboard'));
+      hrefToCopy = undefined;
+    } else {
+      log.warn('Attempting to copy undefined link');
     }
   }
 
@@ -300,6 +323,7 @@
           isGroupConversation={receiver.type === 'group'}
           {...contextMenuPosition}
           on:copy={() => handleContextMenuEvent('copy')}
+          on:copyLink={() => handleContextMenuEvent('copyLink')}
           on:delete={() => handleContextMenuEvent('delete')}
           on:clickoutside={() => closeContextMenu()}
           on:showMessageDetails={() => handleContextMenuEvent('showMessageDetails')}
