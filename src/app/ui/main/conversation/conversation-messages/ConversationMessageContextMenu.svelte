@@ -32,11 +32,13 @@
   interface OpenOptions {
     readonly showCopyLinkAction: boolean;
     readonly showCopyMessageAction: boolean;
+    readonly showForwardAction: boolean;
   }
 
   let options: OpenOptions = {
     showCopyLinkAction: false,
     showCopyMessageAction: true,
+    showForwardAction: true,
   };
 
   /**
@@ -89,12 +91,14 @@
           </span>
           <span>Quote</span>
         </MenuItem>
-        <MenuItem on:click={() => dispatchEvent('forward')}>
-          <span class="icon" slot="icon">
-            <MdIcon theme="Outlined">forward</MdIcon>
-          </span>
-          <span>Forward</span>
-        </MenuItem>
+        {#if options.showForwardAction}
+          <MenuItem on:click={() => dispatchEvent('forward')}>
+            <span class="icon" slot="icon">
+              <MdIcon theme="Outlined">forward</MdIcon>
+            </span>
+            <span>Forward</span>
+          </MenuItem>
+        {/if}
         {#if options.showCopyMessageAction}
           <MenuItem on:click={() => dispatchEvent('copy')}>
             <span class="icon" slot="icon">

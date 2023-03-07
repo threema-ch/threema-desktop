@@ -110,6 +110,7 @@
     contextMenu.open({
       showCopyLinkAction: hrefToCopy !== undefined,
       showCopyMessageAction: showCopyMessageContent(),
+      showForwardAction: messageBody.type === 'text',
     });
     isContextMenuVisible = true;
   }
