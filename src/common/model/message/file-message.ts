@@ -33,7 +33,6 @@ import {
     type OutboundFileMessage,
     type OutboundFileMessageController,
     type OutboundFileMessageView,
-    type OutboundFileMessageViewBlobs,
     PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type UidOf,
@@ -499,7 +498,7 @@ export class OutboundFileMessageModelController
     }
 
     /** @inheritdoc */
-    public async uploadBlobs(): Promise<OutboundFileMessageViewBlobs> {
+    public async uploadBlobs(): Promise<void> {
         type FileDataToUpload = Pick<
             FileMessageViewFragment,
             'fileData' | 'thumbnailFileData' | 'encryptionKey'
@@ -524,7 +523,7 @@ export class OutboundFileMessageModelController
             fileDataToUpload.thumbnailFileData === undefined
         ) {
             // Nothing to upload
-            return {};
+            return;
         }
 
         // Upload all blobs concurrently
@@ -551,7 +550,7 @@ export class OutboundFileMessageModelController
             );
         }
         const blobIdPromiseResults = await Promise.all(promises);
-        let blobIds: OutboundFileMessageViewBlobs = {};
+        let blobIds: Pick<OutboundFileMessageView, 'blobId' | 'thumbnailBlobId'> = {};
         for (const blobIdPromiseResult of blobIdPromiseResults) {
             blobIds = {...blobIds, ...blobIdPromiseResult};
         }
@@ -572,9 +571,6 @@ export class OutboundFileMessageModelController
 
             return {...change, state: 'synced'};
         });
-
-        // TODO(DESK-960): Remove this return value when the caller properly reload models.
-        return blobIds;
     }
 
     /** @inheritdoc */

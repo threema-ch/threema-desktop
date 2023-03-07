@@ -82,7 +82,10 @@ export function run(): void {
             crypto: CryptoBackend,
             text = messageText,
             quotedMessageId: MessageId | undefined = undefined,
-        ): [model: OutboundTextMessageModel, store: OutboundTextMessageModelStore] {
+        ): {
+            readonly message: OutboundTextMessageModel;
+            readonly messageStore: OutboundTextMessageModelStore;
+        } {
             const messageStore = receiver.controller
                 .conversation()
                 .get()
@@ -94,7 +97,7 @@ export function run(): void {
                     text,
                     quotedMessageId,
                 }) as OutboundTextMessageModelStore;
-            return [messageStore.get(), messageStore];
+            return {message: messageStore.get(), messageStore};
         }
 
         // Set up services and log printing
@@ -135,11 +138,11 @@ export function run(): void {
             } as IOutgoingCspMessageTaskConstructor;
 
             const receiver = addTestUserAsContact(model, user1).get();
-            const [message] = addOutgoingTestMessageForReceiver(receiver, crypto);
+            const {messageStore} = addOutgoingTestMessageForReceiver(receiver, crypto);
             const task = new OutgoingConversationMessageTask(
                 services,
                 receiver,
-                message,
+                messageStore,
                 outgoingCspMessageTaskConstructor,
             );
             await task.run(handle);
@@ -150,7 +153,11 @@ export function run(): void {
         it('should initialize OutgoingCspMessageTask correctly for a text message', async function () {
             const {model, crypto} = services;
             const receiver = addTestUserAsContact(model, user1).get();
-            const [message] = addOutgoingTestMessageForReceiver(receiver, crypto, messageText);
+            const {message, messageStore} = addOutgoingTestMessageForReceiver(
+                receiver,
+                crypto,
+                messageText,
+            );
 
             const outgoingCspMessageTaskConstructor: IOutgoingCspMessageTaskConstructor =
                 class extends TestOutgoingCspMessageBaseMock<
@@ -182,7 +189,7 @@ export function run(): void {
             const task = new OutgoingConversationMessageTask(
                 services,
                 receiver,
-                message,
+                messageStore,
                 outgoingCspMessageTaskConstructor,
             );
             await task.run(handle);
@@ -195,7 +202,11 @@ export function run(): void {
                 creatorIdentity: user.view.identity,
                 members: [user.ctx],
             }).get();
-            const [message] = addOutgoingTestMessageForReceiver(receiver, crypto, messageText);
+            const {message, messageStore} = addOutgoingTestMessageForReceiver(
+                receiver,
+                crypto,
+                messageText,
+            );
 
             const outgoingCspMessageTaskConstructor: IOutgoingCspMessageTaskConstructor =
                 class extends TestOutgoingCspMessageBaseMock<
@@ -238,7 +249,7 @@ export function run(): void {
             const task = new OutgoingConversationMessageTask(
                 services,
                 receiver,
-                message,
+                messageStore,
                 outgoingCspMessageTaskConstructor,
             );
             await task.run(handle);
@@ -247,12 +258,12 @@ export function run(): void {
         it('should serialize a quote text message', async function () {
             const {model, crypto} = services;
             const receiver = addTestUserAsContact(model, user1).get();
-            const [
-                {
+            const {
+                message: {
                     view: {id: quotedMessageId},
                 },
-            ] = addOutgoingTestMessageForReceiver(receiver, crypto, 'asdf');
-            const [message] = addOutgoingTestMessageForReceiver(
+            } = addOutgoingTestMessageForReceiver(receiver, crypto, 'asdf');
+            const {message, messageStore} = addOutgoingTestMessageForReceiver(
                 receiver,
                 crypto,
                 messageText,
@@ -291,7 +302,7 @@ export function run(): void {
             const task = new OutgoingConversationMessageTask(
                 services,
                 receiver,
-                message,
+                messageStore,
                 outgoingCspMessageTaskConstructor,
             );
             await task.run(handle);
@@ -300,10 +311,7 @@ export function run(): void {
         it('should mark the message as sent with the reflection date', async function () {
             const {model, crypto} = services;
             const receiver = addTestUserAsContact(model, user1).get();
-            const [messageModel, messageStore] = addOutgoingTestMessageForReceiver(
-                receiver,
-                crypto,
-            );
+            const {messageStore} = addOutgoingTestMessageForReceiver(receiver, crypto);
             expect(messageStore.get().view.sentAt).to.be.undefined;
 
             const reflectionDate = new Date();
@@ -322,7 +330,7 @@ export function run(): void {
             const task = new OutgoingConversationMessageTask(
                 services,
                 receiver,
-                messageModel,
+                messageStore,
                 outgoingCspMessageTaskConstructor,
             );
             await task.run(handle);

@@ -3,17 +3,11 @@ import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
     MessageDirection,
-    type MessageType,
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {
-    type AnyMessage,
-    type AnyReceiver,
-    type OutboundFileMessageViewBlobs,
-    type OutboundMessageFor,
-} from '~/common/model';
+import {type AnyOutboundMessageModelStore, type AnyReceiver} from '~/common/model';
 import {type CspE2eType, type LayerEncoder} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
@@ -61,17 +55,17 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
     private readonly _log: Logger;
 
     /**
-     * Create a new instance of this task. Note that the {@param _messageModel} and
-     * {@param _receiverModel} must match.
+     * Create a new instance of this task. Note that the {@param _messageModelStore} must belong to
+     * the {@param _receiverModel}.
      */
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _receiverModel: TReceiver,
-        private readonly _messageModel: OutboundMessageFor<MessageType>['model'],
+        private readonly _messageModelStore: AnyOutboundMessageModelStore,
         private readonly _outgoingCspMessageTaskConstructor: IOutgoingCspMessageTaskConstructor = OutgoingCspMessageTask,
     ) {
         // Instantiate logger
-        const messageIdHex = u64ToHexLe(_messageModel.view.id);
+        const messageIdHex = u64ToHexLe(_messageModelStore.get().view.id);
         this._log = _services.logging.logger(`network.protocol.task.out-message.${messageIdHex}`);
     }
 
@@ -90,27 +84,31 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         const {model} = services;
         const messageIdHex = u64ToHexLe(messageId);
 
+        // Conversation
         const conversationStore = model.conversations.getForReceiver(receiver);
         if (conversationStore === undefined) {
             throw new Error(`Conversation for receiver ${JSON.stringify(receiver)} not found`);
         }
+
+        // Message
         const messageStore = conversationStore.get().controller.getMessage(messageId);
         if (messageStore === undefined) {
             throw new Error(`Message with ID ${messageIdHex} not found`);
         }
-
-        const receiverModel = conversationStore.get().controller.receiver().get() as TReceiver;
-        const messageModel = messageStore.get() as AnyMessage<'model'>;
         assert(
-            messageModel.ctx === MessageDirection.OUTBOUND,
+            messageStore.ctx === MessageDirection.OUTBOUND,
             'Outgoing message task requires outbound messages',
         );
 
-        return new OutgoingConversationMessageTask(services, receiverModel, messageModel);
+        // Receiver
+        const receiverStore = conversationStore.get().controller.receiver();
+        const receiverModel = receiverStore.get() as TReceiver;
+
+        return new OutgoingConversationMessageTask(services, receiverModel, messageStore);
     }
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
-        const {view: messageView, type: messageType} = this._messageModel;
+        const messageType = this._messageModelStore.type;
         this._log.info(
             `Run for ${ReceiverTypeUtils.nameOf(
                 this._receiverModel.type,
@@ -118,21 +116,20 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         );
 
         // Upload file message data
-        let blobIds: OutboundFileMessageViewBlobs | undefined;
         if (messageType === 'file') {
-            // TODO(DESK-960): Reload model instead of using the blob ids from the return value.
-            blobIds = await this._messageModel.controller.uploadBlobs();
+            await this._messageModelStore.get().controller.uploadBlobs();
         }
 
         // Initialize outgoing CSP message task
         const cspMessageFlags = CspMessageFlags.forMessageType(messageType);
         cspMessageFlags.groupMessage = this._receiverModel.type === ReceiverType.GROUP;
+        const {id: messageId, createdAt} = this._messageModelStore.get().view;
         const messageProperties = {
             type: this._getCspE2eType() as ValidCspMessageTypeForReceiver<TReceiver>,
-            encoder: this._getCspEncoder(blobIds ?? {}),
+            encoder: this._getCspEncoder(),
             cspMessageFlags,
-            messageId: messageView.id,
-            createdAt: messageView.createdAt,
+            messageId,
+            createdAt,
             allowUserProfileDistribution: true,
         } as const;
         const outCspMessageTask = new this._outgoingCspMessageTaskConstructor(
@@ -161,17 +158,16 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
 
     /**
      * Return the layer encoder for the message to be sent (without container).
-     *
-     * TODO(DESK-960): Do not pass in blobIds
      */
-    private _getCspEncoder(
-        blobIds: OutboundFileMessageViewBlobs,
-    ): LayerEncoder<TextEncodable | FileEncodable | GroupMemberContainerEncodable> {
+    private _getCspEncoder(): LayerEncoder<
+        TextEncodable | FileEncodable | GroupMemberContainerEncodable
+    > {
         let encoder;
-        switch (this._messageModel.type) {
+        const messageModel = this._messageModelStore.get();
+        switch (messageModel.type) {
             case 'text': {
                 // Get message text (or quote V2 text)
-                const {quotedMessageId, text: viewText} = this._messageModel.view;
+                const {quotedMessageId, text: viewText} = messageModel.view;
                 let textString;
                 if (quotedMessageId === undefined) {
                     textString = viewText;
@@ -186,12 +182,9 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 break;
             }
             case 'file': {
-                const view = this._messageModel.view;
-                const blobId = unwrap(
-                    blobIds.blobId ?? view.blobId,
-                    'Tried to send file message without blob ID',
-                );
-                const thumbnailBlobId = blobIds.thumbnailBlobId ?? view.thumbnailBlobId;
+                const view = messageModel.view;
+                const blobId = unwrap(view.blobId, 'Tried to send file message without blob ID');
+                const thumbnailBlobId = view.thumbnailBlobId;
                 const fileJson = purgeUndefinedProperties({
                     j: 0, // Rendering type: File
                     i: 0, // Deprecated rendering type for compatibility
@@ -212,7 +205,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
             }
 
             default:
-                return unreachable(this._messageModel);
+                return unreachable(messageModel);
         }
 
         if (this._receiverModel.type === ReceiverType.GROUP) {
@@ -234,27 +227,27 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
      */
     private _getCspE2eType(): CspE2eType {
         if (this._receiverModel.type === ReceiverType.GROUP) {
-            switch (this._messageModel.type) {
+            switch (this._messageModelStore.type) {
                 case 'text':
                     return CspE2eGroupConversationType.GROUP_TEXT;
                 case 'file':
                     return CspE2eGroupConversationType.GROUP_FILE;
                 default:
-                    return unreachable(this._messageModel);
+                    return unreachable(this._messageModelStore);
             }
         } else {
-            switch (this._messageModel.type) {
+            switch (this._messageModelStore.type) {
                 case 'text':
                     return CspE2eConversationType.TEXT;
                 case 'file':
                     return CspE2eConversationType.FILE;
                 default:
-                    return unreachable(this._messageModel);
+                    return unreachable(this._messageModelStore);
             }
         }
     }
 
     private _markMessageAsSent(date: Date): void {
-        this._messageModel.controller.sent(date);
+        this._messageModelStore.get().controller.sent(date);
     }
 }

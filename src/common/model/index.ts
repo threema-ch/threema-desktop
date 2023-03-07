@@ -1157,10 +1157,6 @@ export interface FileMessageViewFragment {
 type CommonFileMessageView = CommonBaseMessageView & FileMessageViewFragment;
 export type InboundFileMessageView = InboundBaseMessageView & CommonFileMessageView;
 export type OutboundFileMessageView = OutboundBaseMessageView & CommonFileMessageView;
-export type OutboundFileMessageViewBlobs = Pick<
-    OutboundFileMessageView,
-    'blobId' | 'thumbnailBlobId'
->;
 type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
     Pick<
         CommonFileMessageView,
@@ -1211,7 +1207,7 @@ export type OutboundFileMessageController = OutboundBaseMessageController<Outbou
         /**
          * Ensure that file and thumbnail data are uploaded to the blob server.
          */
-        readonly uploadBlobs: () => Promise<OutboundFileMessageViewBlobs>;
+        readonly uploadBlobs: () => Promise<void>;
     };
 type InboundFileMessageModel = LocalModel<
     InboundFileMessageView,

@@ -171,23 +171,24 @@ export class ConversationModelController implements ConversationController {
         fromLocal: async (
             init: DirectedMessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>,
         ) => {
-            const receiver = this.receiver().get();
+            const receiverStore = this.receiver();
+            const receiver = receiverStore.get();
 
             await this._ensureDirectAcquaintanceLevelForDirectMessages(
                 {source: TriggerSource.LOCAL},
                 receiver,
             );
 
-            const store = this._addMessage(init);
+            const messageStore = this._addMessage(init);
 
             // Trigger task if this message was created locally
             const {taskManager} = this._services;
             void taskManager.schedule(
-                new OutgoingConversationMessageTask(this._services, receiver, store.get()),
+                new OutgoingConversationMessageTask(this._services, receiver, messageStore),
             );
 
             // Return the added message
-            return store;
+            return messageStore;
         },
         fromSync: (init: DirectedMessageFor<MessageDirection, MessageType, 'init'>) =>
             this._addMessage(init),
