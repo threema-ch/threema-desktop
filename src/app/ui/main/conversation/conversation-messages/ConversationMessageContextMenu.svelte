@@ -29,16 +29,21 @@
     wrapper.close();
   }
 
-  let showCopyLinkAction = false;
-
   interface OpenOptions {
     readonly showCopyLinkAction: boolean;
+    readonly showCopyMessageAction: boolean;
   }
+
+  let options: OpenOptions = {
+    showCopyLinkAction: false,
+    showCopyMessageAction: true,
+  };
+
   /**
    * Open the context menu
    */
-  export function open(options: OpenOptions): void {
-    showCopyLinkAction = options.showCopyLinkAction;
+  export function open(openOptions: OpenOptions): void {
+    options = openOptions;
     wrapper.open();
   }
 
@@ -50,7 +55,7 @@
   <div>
     <ContextMenuWrapper bind:this={wrapper} {directionX} on:clickoutside {x} {y}>
       <MenuContainer mode="small">
-        {#if showCopyLinkAction}
+        {#if options.showCopyLinkAction}
           <MenuItem on:click={(e) => dispatchEvent('copyLink')}>
             <span class="icon" slot="icon">
               <MdIcon theme="Outlined">link</MdIcon>
@@ -90,12 +95,14 @@
           </span>
           <span>Forward</span>
         </MenuItem>
-        <MenuItem on:click={() => dispatchEvent('copy')}>
-          <span class="icon" slot="icon">
-            <MdIcon theme="Outlined">content_copy</MdIcon>
-          </span>
-          <span>Copy Message</span>
-        </MenuItem>
+        {#if options.showCopyMessageAction}
+          <MenuItem on:click={() => dispatchEvent('copy')}>
+            <span class="icon" slot="icon">
+              <MdIcon theme="Outlined">content_copy</MdIcon>
+            </span>
+            <span>Copy Message</span>
+          </MenuItem>
+        {/if}
         <MenuItem on:click={() => dispatchEvent('showMessageDetails')}>
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">info</MdIcon>

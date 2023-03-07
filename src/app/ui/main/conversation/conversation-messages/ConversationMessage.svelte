@@ -26,7 +26,7 @@
   import {type AnyMessageModelStore, type RemoteModelStoreFor} from '~/common/model';
   import {type MessageId} from '~/common/network/types';
   import {type ReadonlyUint8Array} from '~/common/types';
-  import {assert, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
+  import {assert, ensureError, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
@@ -107,7 +107,10 @@
     contextMenuPosition = {x: event.clientX, y: event.clientY};
 
     hrefToCopy = extractHrefFromEventTarget(event);
-    contextMenu.open({showCopyLinkAction: hrefToCopy !== undefined});
+    contextMenu.open({
+      showCopyLinkAction: hrefToCopy !== undefined,
+      showCopyMessageAction: showCopyMessageContent(),
+    });
     isContextMenuVisible = true;
   }
 
@@ -161,16 +164,53 @@
     }
   }
 
-  function copyMessageContent(): void {
+  function showCopyMessageContent(): boolean {
     switch (messageBody.type) {
       case 'text':
-        navigator.clipboard
-          .writeText(messageBody.body.text)
-          .then(() => toast.addSimpleSuccess('Message content copied to clipboard'))
-          .catch(() => toast.addSimpleFailure('Could not copy message content to clipboard'));
-        break;
+        return true;
+      case 'file':
+      case 'image':
+      case 'audio':
+      case 'video':
+        return messageBody.body.caption !== undefined && messageBody.body.caption.length > 0;
+      case 'location':
+        return false; // TODO(DESK-143)
+      case 'quote':
+        return false;
       default:
-        assertUnreachable(`unhandled message type ${messageBody.type}`);
+        return unreachable(messageBody);
+    }
+  }
+
+  // Note: Keep this function in sync with {@link showCopyMessageContent}
+  function copyMessageContent(): void {
+    let text: string;
+    switch (messageBody.type) {
+      case 'text':
+        text = messageBody.body.text;
+        break;
+      case 'file':
+      case 'image':
+      case 'audio':
+      case 'video':
+        text = messageBody.body.caption ?? '';
+        break;
+      case 'location':
+        // TODO(DESK-143)
+        return;
+      case 'quote':
+        return;
+      default:
+        unreachable(messageBody);
+    }
+
+    if (text.length > 0) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => toast.addSimpleSuccess('Message content copied to clipboard'))
+        .catch(() => toast.addSimpleFailure('Could not copy message content to clipboard'));
+    } else {
+      toast.addSimpleFailure('Nothing to copy');
     }
   }
 
