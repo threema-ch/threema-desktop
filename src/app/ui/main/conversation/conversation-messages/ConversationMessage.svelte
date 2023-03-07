@@ -86,9 +86,35 @@
   let isMessageDetailModalVisible = false;
 
   let hrefToCopy: string | undefined = undefined;
+  let messageContentToCopy: string | undefined = undefined;
 
   function extractHrefFromEventTarget(event: MouseEvent): string | undefined {
-    return (event.target as HTMLElement)?.getAttribute('href') ?? undefined;
+    const href = (event.target as HTMLElement)?.getAttribute('href') ?? undefined;
+    return href === undefined || href.length === 0 ? undefined : href;
+  }
+
+  function extractMessageContent(): string | undefined {
+    let content: string | undefined;
+    switch (messageBody.type) {
+      case 'text':
+        content = messageBody.body.text;
+        break;
+      case 'file':
+      case 'image':
+      case 'audio':
+      case 'video':
+        content = messageBody.body.caption;
+        break;
+      case 'location':
+        // TODO(DESK-143)
+        break;
+      case 'quote':
+        break;
+      default:
+        unreachable(messageBody);
+    }
+
+    return content === undefined || content.length === 0 ? undefined : content;
   }
 
   function openContextMenuOnMouseEvent(event: MouseEvent): void {
@@ -107,10 +133,14 @@
     contextMenuPosition = {x: event.clientX, y: event.clientY};
 
     hrefToCopy = extractHrefFromEventTarget(event);
+    messageContentToCopy = extractMessageContent();
+
     contextMenu.open({
-      showCopyLinkAction: hrefToCopy !== undefined,
-      showCopyMessageAction: showCopyMessageContent(),
-      showForwardAction: messageBody.type === 'text',
+      showAction: {
+        copyLink: hrefToCopy !== undefined,
+        copyMessage: messageContentToCopy !== undefined,
+        forward: messageBody.type === 'text',
+      },
     });
     isContextMenuVisible = true;
   }
@@ -165,51 +195,13 @@
     }
   }
 
-  function showCopyMessageContent(): boolean {
-    switch (messageBody.type) {
-      case 'text':
-        return true;
-      case 'file':
-      case 'image':
-      case 'audio':
-      case 'video':
-        return messageBody.body.caption !== undefined && messageBody.body.caption.length > 0;
-      case 'location':
-        return false; // TODO(DESK-143)
-      case 'quote':
-        return false;
-      default:
-        return unreachable(messageBody);
-    }
-  }
-
-  // Note: Keep this function in sync with {@link showCopyMessageContent}
   function copyMessageContent(): void {
-    let text: string;
-    switch (messageBody.type) {
-      case 'text':
-        text = messageBody.body.text;
-        break;
-      case 'file':
-      case 'image':
-      case 'audio':
-      case 'video':
-        text = messageBody.body.caption ?? '';
-        break;
-      case 'location':
-        // TODO(DESK-143)
-        return;
-      case 'quote':
-        return;
-      default:
-        unreachable(messageBody);
-    }
-
-    if (text.length > 0) {
+    if (messageContentToCopy !== undefined) {
       navigator.clipboard
-        .writeText(text)
+        .writeText(messageContentToCopy)
         .then(() => toast.addSimpleSuccess('Message content copied to clipboard'))
         .catch(() => toast.addSimpleFailure('Could not copy message content to clipboard'));
+      messageContentToCopy = undefined;
     } else {
       toast.addSimpleFailure('Nothing to copy');
     }

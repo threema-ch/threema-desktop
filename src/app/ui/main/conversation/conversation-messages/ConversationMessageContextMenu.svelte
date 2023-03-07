@@ -30,15 +30,19 @@
   }
 
   interface OpenOptions {
-    readonly showCopyLinkAction: boolean;
-    readonly showCopyMessageAction: boolean;
-    readonly showForwardAction: boolean;
+    readonly showAction: {
+      readonly copyLink: boolean;
+      readonly copyMessage: boolean;
+      readonly forward: boolean;
+    };
   }
 
   let options: OpenOptions = {
-    showCopyLinkAction: false,
-    showCopyMessageAction: true,
-    showForwardAction: true,
+    showAction: {
+      copyLink: false,
+      copyMessage: true,
+      forward: true,
+    },
   };
 
   /**
@@ -57,7 +61,7 @@
   <div>
     <ContextMenuWrapper bind:this={wrapper} {directionX} on:clickoutside {x} {y}>
       <MenuContainer mode="small">
-        {#if options.showCopyLinkAction}
+        {#if options.showAction.copyLink}
           <MenuItem on:click={(e) => dispatchEvent('copyLink')}>
             <span class="icon" slot="icon">
               <MdIcon theme="Outlined">link</MdIcon>
@@ -91,7 +95,7 @@
           </span>
           <span>Quote</span>
         </MenuItem>
-        {#if options.showForwardAction}
+        {#if options.showAction.forward}
           <MenuItem on:click={() => dispatchEvent('forward')}>
             <span class="icon" slot="icon">
               <MdIcon theme="Outlined">forward</MdIcon>
@@ -99,7 +103,7 @@
             <span>Forward</span>
           </MenuItem>
         {/if}
-        {#if options.showCopyMessageAction}
+        {#if options.showAction.copyMessage}
           <MenuItem on:click={() => dispatchEvent('copy')}>
             <span class="icon" slot="icon">
               <MdIcon theme="Outlined">content_copy</MdIcon>
