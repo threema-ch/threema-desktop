@@ -687,22 +687,19 @@ export class GroupModelController implements GroupController {
         const {taskManager} = this._services;
 
         await this._lock.with(async () => {
-            // Initial version (to detect modifications)
-            const initialVersion = this._version;
+            // Precondition: The group was not updated in the meantime
+            const currentVersion = this._version.current;
+            const precondition = (): boolean => this._version.current === currentVersion;
 
             // Create task to group change to other devices inside a transaction
             this._log.debug(`Syncing group data to other devices`);
-            const syncTask = new ReflectGroupSyncTransactionTask(
-                this._services,
-                () => this._version === initialVersion,
-                {
-                    type: 'update',
-                    groupId: this._groupId,
-                    creatorIdentity: this._creator,
-                    group: groupUpdate,
-                    conversation: conversationUpdate,
-                },
-            );
+            const syncTask = new ReflectGroupSyncTransactionTask(this._services, precondition, {
+                type: 'update',
+                groupId: this._groupId,
+                creatorIdentity: this._creator,
+                group: groupUpdate,
+                conversation: conversationUpdate,
+            });
 
             // Run task
             let result;
