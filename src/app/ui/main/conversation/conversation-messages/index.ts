@@ -8,6 +8,5 @@ export type ConversationMessageContextMenuEvent =
     | 'forward'
     | 'copy'
     | 'copyLink'
-    | 'share'
     | 'showMessageDetails'
     | 'delete';

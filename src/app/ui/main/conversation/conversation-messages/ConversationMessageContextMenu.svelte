@@ -96,12 +96,6 @@
           </span>
           <span>Copy Message</span>
         </MenuItem>
-        <MenuItem disabled={true} on:click={() => dispatchEvent('share')}>
-          <span class="icon" slot="icon">
-            <MdIcon theme="Outlined">share</MdIcon>
-          </span>
-          <span>Share</span>
-        </MenuItem>
         <MenuItem on:click={() => dispatchEvent('showMessageDetails')}>
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">info</MdIcon>

@@ -144,9 +144,6 @@
       case 'quote':
         dispatchEvent('quoteMessage', viewModelStore);
         break;
-      case 'share':
-        toast.addSimpleFailure('Sharing messages is currently not supported');
-        break;
       default:
         unreachable(type);
     }
