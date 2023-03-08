@@ -424,6 +424,10 @@ export namespace CspExtensionType {
     export type CLIENT_INFO = typeof CLIENT_INFO;
     export const CSP_DEVICE_ID = 1;
     export type CSP_DEVICE_ID = typeof CSP_DEVICE_ID;
+    export const MESSAGE_PAYLOAD_VERSION = 2;
+    export type MESSAGE_PAYLOAD_VERSION = typeof MESSAGE_PAYLOAD_VERSION;
+    export const DEVICE_COOKIE = 3;
+    export type DEVICE_COOKIE = typeof DEVICE_COOKIE;
 }
 /**
  * Chat server protocol 'clever extension' type.

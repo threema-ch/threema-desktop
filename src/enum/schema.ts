@@ -191,6 +191,8 @@ export enum D2mPayloadType {
 export enum CspExtensionType {
     CLIENT_INFO = 0x00,
     CSP_DEVICE_ID = 0x01,
+    MESSAGE_PAYLOAD_VERSION = 0x02,
+    DEVICE_COOKIE = 0x03,
 }
 
 /**

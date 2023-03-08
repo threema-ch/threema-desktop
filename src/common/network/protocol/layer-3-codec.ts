@@ -60,6 +60,7 @@ import {type ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type MonotonicEnumStore} from '~/common/utils/store';
 
 import {
+    CspExtensionType,
     type CspMessage,
     type CspPayload,
     CspPayloadType,
@@ -547,7 +548,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
                     // Encode `client-info` extension
                     structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: 0x00, // TODO(DESK-777): Hardcoded, nono!
+                        type: CspExtensionType.CLIENT_INFO,
                         payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.ClientInfo, {
                             clientInfo: {
                                 encode: (cia): Uint8Array =>
@@ -558,7 +559,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
                     // Encode `csp-device-id` extension
                     structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: 0x01, // TODO(DESK-777): Hardcoded, nono!
+                        type: CspExtensionType.CSP_DEVICE_ID,
                         payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.CspDeviceId, {
                             cspDeviceId: csp.deviceId,
                         }),
@@ -567,7 +568,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     // Encode `message-payload-version` extension to request
                     // `message-with-metadata-box` for incoming/outgoing messages.
                     structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: 0x02, // TODO(DESK-777): Hardcoded, nono!
+                        type: CspExtensionType.MESSAGE_PAYLOAD_VERSION,
                         payload: structbuf.bridge.byteEncoder(
                             structbuf.csp.handshake.MessagePayloadVersion,
                             {
