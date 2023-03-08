@@ -18,7 +18,7 @@ import {hash} from '~/common/crypto/blake2b';
 import {deriveVouchKey} from '~/common/crypto/csp-keys';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {randomPkcs7PaddingLength} from '~/common/crypto/random';
-import {D2mPayloadTypeUtils, GlobalPropertyKey} from '~/common/enum';
+import {CspMessagePayloadVersion, D2mPayloadTypeUtils, GlobalPropertyKey} from '~/common/enum';
 import {extractErrorMessage, ProtocolError} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {CloseCode} from '~/common/network/';
@@ -572,7 +572,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                         payload: structbuf.bridge.byteEncoder(
                             structbuf.csp.handshake.MessagePayloadVersion,
                             {
-                                version: 0x01, // TODO(DESK-777): Hardcoded, nono!
+                                version: CspMessagePayloadVersion.MESSAGE_WITH_METADATA_BOX,
                             },
                         ),
                     }).encode,

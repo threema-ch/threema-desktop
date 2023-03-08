@@ -196,6 +196,14 @@ export enum CspExtensionType {
 }
 
 /**
+ * CSP message payload struct version to be used.
+ */
+export enum CspMessagePayloadVersion {
+    LEGACY_MESSAGE = 0x00,
+    MESSAGE_WITH_METADATA_BOX = 0x01,
+}
+
+/**
  * Chat server protocol payload type.
  *
  * @generate name

@@ -433,6 +433,17 @@ export namespace CspExtensionType {
  * Chat server protocol 'clever extension' type.
  */
 export type CspExtensionType = (typeof CspExtensionType)[keyof typeof CspExtensionType];
+export namespace CspMessagePayloadVersion {
+    export const LEGACY_MESSAGE = 0;
+    export type LEGACY_MESSAGE = typeof LEGACY_MESSAGE;
+    export const MESSAGE_WITH_METADATA_BOX = 1;
+    export type MESSAGE_WITH_METADATA_BOX = typeof MESSAGE_WITH_METADATA_BOX;
+}
+/**
+ * CSP message payload struct version to be used.
+ */
+export type CspMessagePayloadVersion =
+    (typeof CspMessagePayloadVersion)[keyof typeof CspMessagePayloadVersion];
 export namespace CspPayloadType {
     export const ECHO_REQUEST = 0;
     export type ECHO_REQUEST = typeof ECHO_REQUEST;
