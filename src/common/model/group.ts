@@ -86,7 +86,6 @@ const ensureExactGroupUpdateFromToSync = createExactPropertyValidator<GroupUpdat
     {
         notificationTriggerPolicyOverride: OPTIONAL,
         notificationSoundPolicyOverride: OPTIONAL,
-        profilePictureAdminDefined: OPTIONAL,
     },
 );
 

@@ -569,7 +569,7 @@ export type GroupUpdateFromLocal = Pick<
 export type GroupUpdateFromToSync = Pick<
     GroupUpdate,
     'notificationTriggerPolicyOverride' | 'notificationSoundPolicyOverride'
-> & {profilePictureAdminDefined?: ReadonlyUint8Array};
+>;
 
 export type GroupController = ReceiverController & {
     readonly meta: ModelLifetimeGuard<GroupView>;
