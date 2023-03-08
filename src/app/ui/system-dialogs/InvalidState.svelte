@@ -45,8 +45,12 @@
     >
       <Title slot="header" title="Invalid Client State Detected" />
       <div class="body" slot="body">
-        An invalid client state has been detected. Please relink this device to prevent message
-        loss.
+        We have detected that your local data is not consistent with your mobile device. To prevent
+        data loss, you cannot currently send or receive new messages. We apologize for the
+        inconvience.
+        <br />
+        <br />
+        To continue using Threema, you have to remove your local profile and relink.
         <br />
         <br />
         {#if context.message !== undefined}
@@ -54,8 +58,8 @@
           <br />
           <br />
         {/if}
-        Please report this error to Threema Support. For more information, see the
-        <a href="https://three.ma/faq" target="_blank" rel="noreferrer noopener">FAQ</a>.
+        Please report this error to Threema Support from Threema on your mobile device (Settings > Beta
+        Feedback).
       </div>
       <div slot="footer" let:modal>
         {#if context.forceRelink}

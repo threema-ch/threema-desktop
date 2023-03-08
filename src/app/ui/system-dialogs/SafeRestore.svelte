@@ -51,7 +51,8 @@
         Reported error: <code>{context.error.message}</code>
         <br />
         <br />
-        Please report this error to Threema Support. For more information, see the
+        Please report this error to Threema Support from Threema on your mobile device (Settings > Beta
+        Feedback). For more information, see the
         <a href="https://three.ma/faq" target="_blank" rel="noreferrer noopener">FAQ</a>.
       </div>
       <div slot="footer" let:modal>
