@@ -319,7 +319,7 @@ export class ContactModelController implements ContactController {
     /**
      * A version counter that should be incremented for every contact update.
      */
-    private readonly _version = new SequenceNumberU53<u53>(0);
+    private readonly _versionSequence = new SequenceNumberU53<u53>(0);
 
     /**
      * Instantiate the ContactModelController.
@@ -362,7 +362,7 @@ export class ContactModelController implements ContactController {
     private _update(change: ContactUpdate): void {
         this.meta.update((contact) => {
             update(this._services, ensureExactContactUpdate(change), this.uid);
-            this._version.next();
+            this._versionSequence.next();
             return addDerivedData({...contact, ...change});
         });
     }
@@ -377,9 +377,9 @@ export class ContactModelController implements ContactController {
 
         await this._lock.with(async () => {
             // Precondition: The contact was not updated in the meantime
-            const currentVersion = this._version.current;
+            const currentVersion = this._versionSequence.current;
             const precondition = (): boolean =>
-                this.meta.active && this._version.current === currentVersion;
+                this.meta.active && this._versionSequence.current === currentVersion;
 
             // Reflect contact to other devices inside a transaction
             const syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {

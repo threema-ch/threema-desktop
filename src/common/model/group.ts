@@ -595,7 +595,7 @@ export class GroupModelController implements GroupController {
     /**
      * A version counter that should be incremented for every group update.
      */
-    private readonly _version = new SequenceNumberU53<u53>(0);
+    private readonly _versionSequence = new SequenceNumberU53<u53>(0);
 
     /**
      * Async lock for group updates.
@@ -627,7 +627,7 @@ export class GroupModelController implements GroupController {
             {
                 uid,
                 debugString: this._groupDebugString,
-                version: this._version,
+                version: this._versionSequence,
             },
             this.meta,
         );
@@ -650,7 +650,7 @@ export class GroupModelController implements GroupController {
     private _update(change: GroupUpdate): void {
         this.meta.update(() => {
             update(this._services, this.uid, ensureExactGroupUpdate(change));
-            this._version.next();
+            this._versionSequence.next();
             const derivedChange: Mutable<Partial<GroupView>, 'displayName'> = {...change};
 
             const identities = getGroupMemberIdentities(this._services, this.uid);
@@ -687,8 +687,8 @@ export class GroupModelController implements GroupController {
 
         await this._lock.with(async () => {
             // Precondition: The group was not updated in the meantime
-            const currentVersion = this._version.current;
-            const precondition = (): boolean => this._version.current === currentVersion;
+            const currentVersion = this._versionSequence.current;
+            const precondition = (): boolean => this._versionSequence.current === currentVersion;
 
             // Create task to group change to other devices inside a transaction
             this._log.debug(`Syncing group data to other devices`);

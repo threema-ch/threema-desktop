@@ -288,7 +288,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
     /**
      * A version counter that should be incremented for every profile picture update.
      */
-    private readonly _version = new SequenceNumberU53<u53>(0);
+    private readonly _versionSequence = new SequenceNumberU53<u53>(0);
 
     /**
      * Instantiate the ProfilePictureModelController.
@@ -368,7 +368,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
             }
 
             // Increment version
-            this._version.next();
+            this._versionSequence.next();
 
             // Update view
             this._log.debug(`Updated ${source} profile picture`);
@@ -404,9 +404,9 @@ export class ProfilePictureModelController implements ProfilePictureController {
 
         await this._lock.with(async () => {
             // Precondition: The profile picture was not updated in the meantime
-            const currentVersion = this._version.current;
+            const currentVersion = this._versionSequence.current;
             const precondition = (): boolean =>
-                this.meta.active && this._version.current === currentVersion;
+                this.meta.active && this._versionSequence.current === currentVersion;
 
             // Reflect contact update to other devices inside a transaction
             let profilePicture: ProfilePictureUpdate;
