@@ -21,24 +21,34 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
-        <release version="2.0.0-preview6" date="2023-02-27">
+        <release version="2.0.0-preview7" date="2023-03-09">
             <description>
                 <p>New features:</p>
                 <ul>
-                    <li>Download, store and display incoming file messages</li>
-                    <li>Allow quoting messages</li>
+                    <li>Support incoming file messages</li>
+                    <li>Allow sending outgoing file messages</li>
+                    <li>Message quoting</li>
+                    <li>Allow copying URLs via context menu</li>
                 </ul>
                 <p>Improvements:</p>
                 <ul>
-                    <li>Process incoming user profile updates, i.e. profile picture and nickname</li>
-                    <li>Show pinned chats at the top of the chat list and archived chats at the bottom</li>
+                    <li>Process incoming user profile updates from your iOS device, i.e. profile picture and nickname</li>
+                    <li>Update contact nickname when messages are received</li>
+                    <li>Use SI units for file sizes consistently with iOS and Android</li>
+                    <li>Support for encrypted message metadata</li>
                 </ul>
                 <p>Bugfixes:</p>
                 <ul>
                     <li>Fix renderer crashes on high database load</li>
                     <li>Avoid crash when opening a chat with a huge number of unread messages</li>
+                    <li>If an error occurs during linking, delete profile and force re-linking</li>
                 </ul>
-                <p>...and a few other changes and improvements.</p>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
+        <release version="2.0.0-preview6" date="2023-02-27">
+            <description>
+                <p>Internal release only, not published</p>
             </description>
         </release>
         <release version="2.0.0-preview5" date="2023-02-09">
@@ -81,6 +91,11 @@
                     <li>Disable non-functional drag&amp;drop support for now</li>
                 </ul>
                 <p>...and a few other changes and improvements.</p>
+            </description>
+        </release>
+        <release version="2.0.0-preview3" date="2023-01-12">
+            <description>
+                <p>Internal release only, not published</p>
             </description>
         </release>
         <release version="2.0.0-preview2" date="2022-12-21">
