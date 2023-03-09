@@ -6,17 +6,6 @@ understanding and extending the codebase.
 
 ## Overview
 
-Threema Desktop aims to support both a browser environment (`web`) and a
-desktop application environment (`electron`). The feature set is very similar,
-with a few important differences:
-
-- In the web browser, no persistent storage is supported. This means that all
-  data is kept only in-memory and will be gone after closing the browser
-  window.
-- Similarly, in the web browser, keys are volatile and will not be stored
-  persistently. In contrast, the desktop application stores keys in an
-  encrypted file (the `KeyStorage`).
-
 In the [Electron process
 model](https://www.electronjs.org/docs/latest/tutorial/process-model/), there
 are three different process types:
@@ -37,25 +26,17 @@ The entry point of the web application itself is located at `src/app/app.ts`.
 It loads all necessary services and also instantiates the backend worker.
 
 The backend worker contains all the main business logic used in Threema
-Desktop. It is the "core" of the application. Because the `web` and the
-`electron` environments must be set up differently, there are two different
-entry points:
-
-- Electron: `src/worker/backend/electron/backend.worker.ts`
-- Web: `src/worker/backend/web/backend.worker.ts`
-
-The decision, which of these two backend workers is being loaded, is
-implemented inside the Vite build system (inside the worker plugin).
+Desktop. It is the "core" of the application. The entry point can be found at
+`src/worker/backend/electron/backend.worker.ts`.
 
 ## Directory Structure
 
 All source code is in the `src` directory:
 
-- `src/app` is the application that runs in the renderer process (for web, this
-  is the entrypoint the browser will load). It allows access to the DOM and a
-  subset of the Electron API (if compiled for Electron).
-- `src/app/electron/main` is the entrypoint for Electron. It allows access to
-  the Electron API.
+- `src/app` is the application that runs in the renderer process. It allows
+  access to the DOM and a subset of the Electron API.
+- `src/app/electron/main` is the entrypoint for Electron. It allows full access
+  to the Electron API.
 - `src/common` is common code that can be imported by any of the other code
   bases.
 - `src/common/dom` is common code that uses parts of the DOM API and can be
@@ -70,9 +51,8 @@ All source code is in the `src` directory:
   started by the application. It does all the heavy lifting such as crypto,
   network connections and access to the database. It allows access to the
   WebWorker API (which is a subset of the DOM).
-- `src/worker/backend/electron` and `src/worker/backend/web` are the entry
-  points for the corresponding build variants. Code in these directories
-  should be as short as possible (glue code).
+- `src/worker/backend/electron` is the entrypoint for the electron build
+  variant. Code in this directory should be as short as possible (glue code).
 - `src/worker/service` is the entrypoint of the service worker that will be
   started by the application. It allows access to the WebWorker API (which is
   a subset of the DOM with some additional properties).
