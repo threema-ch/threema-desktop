@@ -43,9 +43,6 @@
         assert(ipc !== undefined);
         ipc.deleteProfileAndRestartApp();
         break;
-      case 'web':
-        window.location.reload();
-        break;
       default:
         unreachable(import.meta.env.BUILD_TARGET);
     }

@@ -33,15 +33,6 @@ stages:
     - node --version
     - npm --version
 
-build:web:
-  stage: build
-  needs: []
-  <<: *cache
-  <<: *before_script
-  script:
-    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
-    - npm run "web:build:consumer-sandbox"
-
 dist:electron:
   stage: build
   needs: []

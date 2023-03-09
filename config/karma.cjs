@@ -9,7 +9,7 @@ module.exports = (config) => {
         frameworks: ['mocha', 'chai'],
 
         // Test spec files
-        files: ['../build/web/karma-tests/run-specs.js'],
+        files: ['../build/electron/karma-tests/run-specs.js'],
 
         // Files to exclude
         exclude: [],

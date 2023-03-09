@@ -100,10 +100,6 @@ You can directly open the built version respectively with:
 - `npm run electron:dist:open:linux`
 - `npm run electron:dist:open:macos`
 
-To use Threema Desktop from the browser, use `npm run web:dev` and then open
-http://localhost:9977/ in your browser. (Note: Currently this works only in
-Chrome based browsers.)
-
 ### Package
 
 To create a distribution package target, run:

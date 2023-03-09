@@ -871,10 +871,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 protobuf.utils.byteEncoder(protobuf.d2d.DeviceInfo, {
                     // TODO(DESK-322): What padding constraints do we want to apply?
                     padding: bytePadPkcs7(buffer, randomPkcs7PaddingLength(crypto)),
-                    platform:
-                        import.meta.env.BUILD_TARGET === 'electron'
-                            ? protobuf.d2d.DeviceInfo.Platform.DESKTOP
-                            : protobuf.d2d.DeviceInfo.Platform.WEB,
+                    platform: protobuf.d2d.DeviceInfo.Platform.DESKTOP,
                     platformDetails: d2m.platformDetails,
                     appVersion: import.meta.env.BUILD_VERSION,
                     label: d2m.label,

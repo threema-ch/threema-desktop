@@ -134,10 +134,8 @@ async function updateCheck(
 export async function main(appState: AppState): Promise<App> {
     // Set up logging
     let logging = TagLogger.styled(CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
-    if (
-        import.meta.env.BUILD_TARGET === 'electron' &&
-        import.meta.env.BUILD_ENVIRONMENT === 'sandbox'
-    ) {
+    if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
+        // TODO(DESK-917): Make window.app non-optional
         assert(window.app?.logToFile !== undefined, 'Expected Electron IPC to be available');
         const fileLogger = new RemoteFileLogger(window.app.logToFile);
         logging = TeeLogger.factory([logging, TagLogger.unstyled(fileLogger, 'app')]);
@@ -209,6 +207,9 @@ export async function main(appState: AppState): Promise<App> {
     // Note: For now, we don't load the service worker in Electron but we may need it in the future.
     //       There were some crashes in the past, see:
     //       https://github.com/electron/electron/issues/24715
+    //
+    // TODO(DESK-917): Can we remove the service worker completely if we don't need the web target?
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (typeof self.ServiceWorker !== 'undefined' && import.meta.env.BUILD_TARGET !== 'electron') {
         // Install service worker.
         //
@@ -274,6 +275,8 @@ export async function main(appState: AppState): Promise<App> {
     log.info(`Worker ${workerUrl} created`);
 
     // For Electron, we must initialise the backend worker with the app path.
+    // TODO(DESK-917): Remove "if"
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (import.meta.env.BUILD_TARGET === 'electron') {
         const appPath = window.app?.getAppPath();
         assert(appPath !== undefined, 'Expected Electron IPC to be available');

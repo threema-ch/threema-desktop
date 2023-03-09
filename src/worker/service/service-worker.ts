@@ -8,7 +8,7 @@ import {SERVICE_WORKER_CONFIG} from './config';
 
 /**
  * This is the common entrypoint for the service worker, invoked by the app
- * via the specific 'web' or 'electron' loader entrypoints.
+ * via the specific 'electron' loader entrypoint.
  */
 declare const self: ServiceWorkerGlobalScope;
 export {};

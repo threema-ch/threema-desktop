@@ -378,6 +378,8 @@ export class Backend implements ProxyMarked {
             );
 
             // Write to key storage
+            // TODO(DESK-917): Remove "if"
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (import.meta.env.BUILD_TARGET === 'electron') {
                 assert(
                     factories.keyStorage !== undefined,
@@ -418,6 +420,8 @@ export class Backend implements ProxyMarked {
         }
 
         // Instantiate database backend
+        // TODO(DESK-917): Remove "if"
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (import.meta.env.BUILD_TARGET === 'electron') {
             // In an Electron build, try to read the credentials from the key storage.
             assert(
@@ -1107,10 +1111,7 @@ class Connection {
                 dgpk: device.d2m.dgpk,
                 dgdik: device.d2m.dgdik,
                 deviceId: device.d2m.deviceId,
-                deviceSlotExpirationPolicy:
-                    import.meta.env.BUILD_TARGET === 'electron'
-                        ? protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT
-                        : protobuf.d2m.DeviceSlotExpirationPolicy.VOLATILE,
+                deviceSlotExpirationPolicy: protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT,
                 platformDetails: d2mPlatformDetails,
                 // TODO(DESK-773): Make this user-configurable
                 label: 'Desktop',

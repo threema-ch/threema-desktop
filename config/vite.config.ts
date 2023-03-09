@@ -197,7 +197,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
         entry: entry as BuildEntry,
         variant: variant as BuildVariant,
         environment: environment as BuildEnvironment,
-        devServerPort: target === 'web' ? 9977 : 9988,
+        devServerPort: 9988,
     };
     if (process.env.VITE_PORT !== undefined) {
         env.devServerPort = Number.parseInt(process.env.VITE_PORT, 10);
@@ -221,19 +221,13 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
     // Determine plugins
     const plugins: Record<string, Plugin | readonly Plugin[] | undefined> = {
         tsWorkerPlugin: env.entry === 'app' ? tsWorkerPlugin() : undefined,
-        commonjsExternals:
-            env.target === 'electron'
-                ? cjsExternals({
-                      externals: [
-                          ...external,
-                          // Electron externals
-                          ...pkg.electron.external,
-                      ].map(
-                          (dependency: string) =>
-                              new RegExp(`^${escapeRegex(dependency)}(\\/.+)?$`, 'u'),
-                      ),
-                  })
-                : undefined,
+        commonjsExternals: cjsExternals({
+            externals: [
+                ...external,
+                // Electron externals
+                ...pkg.electron.external,
+            ].map((dependency: string) => new RegExp(`^${escapeRegex(dependency)}(\\/.+)?$`, 'u')),
+        }),
         tsconfigPaths: tsconfigPaths({
             projects: [
                 // Threema Svelte Components (#3sc)
@@ -308,11 +302,9 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
         clearScreen: false,
         build: {
             target:
-                env.target === 'web'
-                    ? // Highest bar is currently: FinalizationRegistry
-                      // https://caniuse.com/mdn-javascript_builtins_finalizationregistry
-                      ['chrome84', 'firefox79']
-                    : ['chrome96', 'node18'],
+                // Highest bar is currently: FinalizationRegistry
+                // https://caniuse.com/mdn-javascript_builtins_finalizationregistry
+                ['chrome96', 'node18'],
             outDir: `../build/${env.target}/${env.entry}`,
             emptyOutDir: true,
             assetsDir: '',

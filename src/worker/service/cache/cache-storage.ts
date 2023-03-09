@@ -58,11 +58,8 @@ export class CacheStorageResourceCache implements ResourceCache {
                 new URL(commonConfig.DIRECTORY_SERVER_URL).host,
             ]),
         };
-        // We only want to cache our sources for 'web' in production mode
-        // Note: Everything else will still be cached unless excluded
-        if (import.meta.env.BUILD_TARGET !== 'web' || import.meta.env.DEBUG) {
-            hosts.networkOnly.add(self.location.host);
-        }
+        // Don't cache our own resources
+        hosts.networkOnly.add(self.location.host);
         this._hosts = hosts;
     }
 

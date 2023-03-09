@@ -21,9 +21,8 @@ export type BuildMode = (typeof BUILD_MODES)[u53];
 /**
  * Build targets:
  * - electron: Runs standalone
- * - web: Runs in the browser
  */
-export const BUILD_TARGETS = ['electron', 'web'] as const;
+export const BUILD_TARGETS = ['electron'] as const;
 /** See {@link BUILD_TARGETS}. */
 export type BuildTarget = (typeof BUILD_TARGETS)[u53];
 

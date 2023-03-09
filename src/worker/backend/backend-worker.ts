@@ -18,7 +18,7 @@ export {};
 
 /**
  * This is the common entrypoint for the backend worker, invoked by the app
- * via the specific 'web' or 'electron' loader entrypoints.
+ * via the specific 'electron' loader entrypoint.
  */
 export function main(config: Config, factories: FactoriesForBackend): void {
     const logging = factories.logging('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);

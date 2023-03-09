@@ -31,7 +31,7 @@
     "electron:dev:work-sandbox": "npm run electron:rebuild && tools/dev-electron.sh work sandbox",
     "electron:dev:work-live": "npm run electron:rebuild && tools/dev-electron.sh work live",
     "electron:rebuild": "electron-rebuild",
-    "test:karma": "VITE_MAKE=web,karma-tests,consumer,sandbox vite build -m development -c config/vite.config.ts && karma start config/karma.cjs --single-run",
+    "test:karma": "VITE_MAKE=electron,karma-tests,consumer,sandbox vite build -m development -c config/vite.config.ts && karma start config/karma.cjs --single-run",
     "test:mocha": "VITE_MAKE=electron,mocha-tests,consumer,sandbox vite build -m development -c config/vite.config.ts && mocha build/electron/mocha-tests/run-specs.cjs",
     "lint": "for t in tsc:parallel svelte eslint prettier; do npm run lint:${t} || FAILED+=(${t}); done; if [ -n \"${FAILED}\" ]; then echo; echo 'Failed:' ${FAILED[@]}; echo; false; else echo; echo 'All linters passed.'; echo; fi",
     "lint:fix": "npm run lint:eslint:fix && npm run lint:prettier:fix",
@@ -50,10 +50,7 @@
     "safe-enums:generate:prettify": "prettier --write \"src/common/enum.ts\"",
     "structbuf:generate": "npm run structbuf:generate:module && npm run structbuf:generate:prettify",
     "structbuf:generate:module": "structbuf-typescript threema-protocols/*.yml -o src/common/network/structbuf --new-type true --byte-length true --snapshot true --clone true --base-class Struct=~/common/network/structbuf/base --external-import types=~/common/types",
-    "structbuf:generate:prettify": "prettier --write \"src/common/network/structbuf/**/*.ts\"",
-    "web:build:consumer-sandbox": "VITE_MAKE=web,app,consumer,sandbox vite build -m production -c config/vite.config.ts",
-    "web:build:consumer-live": "VITE_MAKE=web,app,consumer,live vite build -m production -c config/vite.config.ts",
-    "web:dev": "VITE_MAKE=web,app,consumer,sandbox vite -m development -c config/vite.config.ts"
+    "structbuf:generate:prettify": "prettier --write \"src/common/network/structbuf/**/*.ts\""
   },
   "engines": {
     "node": ">=18.12.1 <18.14.0",
