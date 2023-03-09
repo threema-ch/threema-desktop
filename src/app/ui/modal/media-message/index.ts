@@ -1,13 +1,8 @@
-/**
- * Get file extension name of given filename
- */
-export function getFileExtension(filename: string): string {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const extension = filename.split(/\./u).pop()!;
-    return extension.substring(0, 4);
-}
+import {type FilenameDetails} from '~/common/utils/file';
 
 export interface MediaFile {
-    caption?: string;
+    type: 'local' | 'pasted';
     file: File;
+    caption?: string;
+    sanitizedFilenameDetails: FilenameDetails;
 }

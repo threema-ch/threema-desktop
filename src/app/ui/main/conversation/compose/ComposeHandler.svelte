@@ -5,6 +5,7 @@
   import {ReceiverType} from '~/common/enum';
   import {type AnyReceiverStore} from '~/common/model';
   import {type Remote} from '~/common/utils/endpoint';
+  import {getSanitizedFileNameDetails} from '~/common/utils/file';
 
   /**
    * Text that will be used to initialize the compose area.
@@ -29,11 +30,26 @@
   let mediaFiles: MediaFile[] = [];
 
   /**
+   * Handle the pasted files by opening the media compose message dialog.
+   */
+  function handleFilePaste(files: File[]): void {
+    openMediaMessageDialog(files, 'pasted');
+  }
+
+  /**
+   * Handle the dropped files by opening the media compose message dialog.
+   */
+  export function handleFileDrop(files: File[]): void {
+    openMediaMessageDialog(files, 'local');
+  }
+
+  /**
    * Open the media compose message dialog.
    */
-  export function openMediaMessageDialog(files: File[]): void {
+  function openMediaMessageDialog(files: File[], type: MediaFile['type']): void {
     mediaFiles = files.map((file) => ({
-      type: 'local',
+      type,
+      sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
       file,
     }));
 
@@ -82,8 +98,8 @@
     {displayAttachmentButton}
     on:sendTextMessage
     on:recordAudio
-    on:filesPaste={(event) => openMediaMessageDialog(event.detail)}
-    on:fileDrop={(event) => openMediaMessageDialog(event.detail)}
+    on:filePaste={(event) => handleFilePaste(event.detail)}
+    on:fileDrop={(event) => handleFileDrop(event.detail)}
   />
 
   {#if mediaMessageDialogVisible}

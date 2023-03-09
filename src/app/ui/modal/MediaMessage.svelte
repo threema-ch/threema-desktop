@@ -18,6 +18,7 @@
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {ensureU53} from '~/common/types';
+  import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {assert} from '~/common/utils/assert';
   import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
 
@@ -119,6 +120,8 @@
     }
     const newMediaFiles = files.map(
       (file): MediaFile => ({
+        type: 'local',
+        sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
         file,
       }),
     );

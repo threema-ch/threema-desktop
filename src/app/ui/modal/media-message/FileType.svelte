@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {getFileExtension} from '.';
+  import {type FilenameDetails} from '~/common/utils/file';
 
-  export let filename: string;
+  export let filenameDetails: FilenameDetails;
 </script>
 
 <template>
   <div>
-    {getFileExtension(filename)}
+    {filenameDetails.displayType ?? '?'}
   </div>
 </template>
 

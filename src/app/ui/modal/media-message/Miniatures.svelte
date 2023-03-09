@@ -33,7 +33,7 @@
         >
           <div class="overlay" />
           <div class="type">
-            <FileType filename={mediaFile.file.name} />
+            <FileType filenameDetails={mediaFile.sanitizedFilenameDetails} />
           </div>
         </button>
       </li>

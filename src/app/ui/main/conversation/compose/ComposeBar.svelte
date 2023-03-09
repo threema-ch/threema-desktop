@@ -116,7 +116,7 @@
       bind:this={composeArea}
       bind:isEmpty={composeAreaIsEmpty}
       on:submit={sendTextMessage}
-      on:filesPaste
+      on:filePaste
     />
     <div class="icons-right">
       <IconButton flavor="naked" on:click={showEmojiPicker}>

@@ -8,7 +8,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {type ContextStore} from '~/app/ui/bootstrap/process-step';
   import {isCspDeviceId, isD2mDeviceId, isIdentityString} from '~/common/network/types';
-  import {type u64, ensureU64} from '~/common/types';
+  import {ensureU64, type u64} from '~/common/types';
   import {type WritableStore} from '~/common/utils/store';
 
   // Context

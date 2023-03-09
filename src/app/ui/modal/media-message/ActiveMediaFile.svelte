@@ -4,21 +4,39 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
+  import {unreachable} from '~/common/utils/assert';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
 
   export let mediaFile: MediaFile | undefined;
 
-  const dispatchEvent = createEventDispatcher();
+  const dispatchEvent = createEventDispatcher<{remove: undefined}>();
+
+  let filename: string;
+
+  $: if (mediaFile !== undefined) {
+    switch (mediaFile.type) {
+      case 'local':
+        filename = mediaFile.file.name;
+        break;
+
+      case 'pasted':
+        filename = mediaFile.sanitizedFilenameDetails.name;
+        break;
+
+      default:
+        unreachable(mediaFile.type);
+    }
+  }
 </script>
 
 <template>
   <div class="container">
     {#if mediaFile !== undefined}
       <div class="note">
-        {mediaFile.file.name} ({byteSizeToHumanReadable(mediaFile.file.size)})
+        {filename} ({byteSizeToHumanReadable(mediaFile.file.size)})
       </div>
       <div class="type">
-        <FileType filename={mediaFile.file.name} />
+        <FileType filenameDetails={mediaFile.sanitizedFilenameDetails} />
       </div>
       <div class="options">
         <div class="left" />

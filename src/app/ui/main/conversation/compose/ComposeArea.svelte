@@ -84,7 +84,7 @@
   }
 
   // Component event dispatcher
-  const dispatch = createEventDispatcher<{submit: undefined; filesPaste: File[]}>();
+  const dispatch = createEventDispatcher<{submit: undefined; filePaste: File[]}>();
 
   // Compose area container
   let wrapperDiv: HTMLElement;
@@ -160,7 +160,7 @@
 
     // Find available types
     const items: DataTransferItemList = ev.clipboardData.items;
-    let fileItems: DataTransferItem[] = [];
+    const fileItems: DataTransferItem[] = [];
     let textItem: DataTransferItem | undefined;
     // Note: Unfortunately `DataTransferItemList` not implement iterator, so for-of is not possible
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -189,14 +189,14 @@
         // Read clipboard data as file
         const file = fileItem.getAsFile();
         if (file === null) {
-          console.error('Could not get item as a blob');
+          // TODO(DESK-977): Log a warning or error: "Could not get item as a blob"
           return undefined;
         }
         return file;
       })
       .filter(isNotUndefined);
 
-    dispatch('filesPaste', pastedFiles);
+    dispatch('filePaste', pastedFiles);
   }
 
   onMount(() => {

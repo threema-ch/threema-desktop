@@ -6,7 +6,8 @@
   import {createEventDispatcher} from 'svelte';
 
   import Text from '~/app/ui/generic/form/Text.svelte';
-  import {getFileExtension} from '~/app/ui/modal/media-message';
+  import FileType from '~/app/ui/modal/media-message/FileType.svelte';
+  import {type FilenameDetails, getSanitizedFileNameDetails} from '~/common/utils/file';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
   import {type MessageBodyFor} from '~/common/viewmodel/types';
 
@@ -14,20 +15,27 @@
 
   const dispatch = createEventDispatcher<{saveFile: undefined}>();
 
-  const extension = body.filename !== undefined ? getFileExtension(body.filename) : 'FILE';
+  let filenameDetails: FilenameDetails;
+
+  $: if (body !== undefined) {
+    filenameDetails = getSanitizedFileNameDetails({
+      name: body.filename ?? '',
+      type: body.mediaType,
+    });
+  }
 </script>
 
 <template>
-  <div class="info" data-name={body.filename !== undefined}>
+  <div class="info" data-has-name={filenameDetails.name !== ''}>
     <!-- Note: Since the filename is already a button, accessibility / tabbability for file download
     is already covered and we can ignore this warning. -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="icon" on:click={() => dispatch('saveFile')}>
-      <div class="ext">{extension}</div>
+      <FileType {filenameDetails} />
     </div>
-    {#if body.filename !== undefined}
-      <button class="name" on:click={() => dispatch('saveFile')}>{body.filename}</button>
-    {/if}
+    <button class="name" on:click={() => dispatch('saveFile')}
+      >{filenameDetails.name !== '' ? filenameDetails.name : '(no name)'}</button
+    >
     <div class="size">{byteSizeToHumanReadable(body.size)}</div>
   </div>
   {#if body.caption !== undefined}
@@ -47,38 +55,24 @@
   .info {
     display: grid;
     grid-template:
+      'icon name' auto
       'icon size' auto
-      'icon .' auto
       / var(--mc-message-file-icon-width) auto;
     column-gap: var(--mc-message-file-info-column-gap);
     row-gap: var(--mc-message-file-info-row-gap);
     justify-items: start;
 
-    &[data-name='true'] {
-      grid-template:
-        'icon name' auto
-        'icon size' auto
-        / var(--mc-message-file-icon-width) auto;
+    &[data-has-name='false'] {
+      button {
+        font-style: italic;
+      }
     }
 
     .icon {
       grid-area: icon;
-      width: var(--mc-message-file-icon-width);
-      height: var(--mc-message-file-icon-height);
-      background-image: var(--mc-message-file-icon-background-image);
-      background-size: contain;
-      background-repeat: no-repeat;
-      overflow: hidden;
-      text-transform: uppercase;
-      display: grid;
-      place-items: center;
-      color: var(--mc-message-file-icon-font-color);
-      user-select: none;
-      cursor: pointer;
-
-      .ext {
-        font-size: var(--mc-message-file-icon-font-size);
-      }
+      width: 100%;
+      height: 100%;
+      font-size: var(--mc-message-file-icon-font-size);
     }
 
     .name {

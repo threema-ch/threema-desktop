@@ -73,8 +73,8 @@
   /**
    * Open the media compose message dialog.
    */
-  export function openMediaMessageDialog(files: File[]): void {
-    return composeHandler.openMediaMessageDialog(files);
+  export function handleFileDrop(files: File[]): void {
+    return composeHandler.handleFileDrop(files);
   }
 
   /**

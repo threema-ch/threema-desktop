@@ -75,7 +75,7 @@
     <DropZone
       bind:zoneHover
       on:fileDrop={(event) => {
-        conversationElement.openMediaMessageDialog(event.detail);
+        conversationElement.handleFileDrop(event.detail);
       }}
     >
       <div class="drag-wrapper" class:bodyHover>
