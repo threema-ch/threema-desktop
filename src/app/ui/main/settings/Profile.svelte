@@ -41,6 +41,7 @@
 
     .profile-picture {
       grid-area: profile-picture;
+      --c-profile-picture-size: #{rem(60px)};
     }
 
     .nickname {
