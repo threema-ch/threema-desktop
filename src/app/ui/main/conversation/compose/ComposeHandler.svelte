@@ -33,10 +33,11 @@
    */
   export function openMediaMessageDialog(files: File[]): void {
     mediaFiles = files.map((file) => ({
+      type: 'local',
       file,
     }));
 
-    // If only sending one file, add the current compose text as a caption.
+    // If there is only one file, move the current compose text to the caption.
     if (mediaFiles.length === 1) {
       mediaFiles[0].caption = composeBar.getText();
       clearText();
@@ -81,6 +82,7 @@
     {displayAttachmentButton}
     on:sendTextMessage
     on:recordAudio
+    on:filesPaste={(event) => openMediaMessageDialog(event.detail)}
     on:fileDrop={(event) => openMediaMessageDialog(event.detail)}
   />
 

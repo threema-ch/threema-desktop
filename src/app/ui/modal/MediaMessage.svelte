@@ -12,7 +12,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import {type MediaFile} from '~/app/ui/modal/media-message';
-  import ActiveFile from '~/app/ui/modal/media-message/ActiveFile.svelte';
+  import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
   import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
@@ -31,7 +31,7 @@
    */
   export let moreFilesAttachable = true;
 
-  let caption: Caption;
+  let captionComposeArea: Caption;
 
   let activeMediaFile: MediaFile | undefined = mediaFiles[0];
 
@@ -45,7 +45,7 @@
    */
   function saveCurrentCaption(): void {
     if (activeMediaFile !== undefined) {
-      activeMediaFile.caption = caption.getText();
+      activeMediaFile.caption = captionComposeArea.getText();
     }
   }
 
@@ -54,7 +54,7 @@
    */
   function saveAndClearCurrentCaption(): void {
     saveCurrentCaption();
-    caption.clearText();
+    captionComposeArea.clearText();
   }
 
   /**
@@ -89,8 +89,8 @@
       return;
     }
 
-    caption.insertText(mediaFile.caption ?? '');
-    caption.focus();
+    captionComposeArea.insertText(mediaFile.caption ?? '');
+    captionComposeArea.focus();
   }
 
   async function sendMessages(): Promise<void> {
@@ -98,9 +98,9 @@
     visible = false;
 
     const files = await Promise.all(
-      mediaFiles.map(async ({caption: fileCaption, file}) => ({
+      mediaFiles.map(async ({caption, file}) => ({
         blob: new Uint8Array(await file.arrayBuffer()),
-        caption: fileCaption,
+        caption,
         fileName: file.name,
         fileSize: ensureU53(file.size),
         mediaType: file.type,
@@ -117,9 +117,11 @@
     if (files.length === 0) {
       return;
     }
-    const newMediaFiles = files.map((file) => ({
-      file,
-    }));
+    const newMediaFiles = files.map(
+      (file): MediaFile => ({
+        file,
+      }),
+    );
     mediaFiles = [...mediaFiles, ...newMediaFiles];
     saveAndClearCurrentCaption();
     setNewActiveMediaFile(newMediaFiles[0]);
@@ -165,7 +167,7 @@
   }
 
   onMount(() => {
-    caption.focus();
+    captionComposeArea.focus();
   });
 </script>
 
@@ -183,7 +185,7 @@
     <EmojiPicker
       bind:this={emojiPicker}
       {...emojiPickerPosition}
-      on:insertEmoji={(event) => caption.insertText(event.detail)}
+      on:insertEmoji={(event) => captionComposeArea.insertText(event.detail)}
     />
   </div>
   <ModalWrapper>
@@ -203,12 +205,12 @@
         >
           <TitleAndClose let:modal {modal} slot="header" {title} />
           <div class="body" slot="body">
-            <ActiveFile file={activeMediaFile?.file} on:remove={removeActiveMediaFile} />
+            <ActiveMediaFile mediaFile={activeMediaFile} on:remove={removeActiveMediaFile} />
           </div>
           <div class="footer" slot="footer">
             <div class="caption">
               <Caption
-                bind:this={caption}
+                bind:this={captionComposeArea}
                 initialText={activeMediaFile?.caption}
                 on:submit={sendMessages}
               />

@@ -21,7 +21,7 @@
   import {createEventDispatcher, onMount} from 'svelte';
   import {type Readable} from 'svelte/store';
 
-  import {unreachable} from '~/common/utils/assert';
+  import {isNotUndefined, unreachable} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
 
   import {type ComposeAreaEnterKeyMode} from '.';
@@ -84,7 +84,7 @@
   }
 
   // Component event dispatcher
-  const dispatch = createEventDispatcher<{submit: undefined}>();
+  const dispatch = createEventDispatcher<{submit: undefined; filesPaste: File[]}>();
 
   // Compose area container
   let wrapperDiv: HTMLElement;
@@ -160,34 +160,43 @@
 
     // Find available types
     const items: DataTransferItemList = ev.clipboardData.items;
-    let fileItem: DataTransferItem | undefined;
+    let fileItems: DataTransferItem[] = [];
     let textItem: DataTransferItem | undefined;
     // Note: Unfortunately `DataTransferItemList` not implement iterator, so for-of is not possible
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (
-        item.kind === 'file' &&
-        (item.type.includes('image/') || item.type === 'application/x-moz-file')
-      ) {
-        fileItem = item;
-        break;
+      if (item.kind === 'file') {
+        fileItems.push(item);
       } else if (item.kind === 'string' && item.type === 'text/plain') {
         textItem = item;
         break;
       }
     }
 
-    // Handle pasting of files
-    if (fileItem !== undefined) {
-      // TODO(DESK-318). Note: For reading file data from clipboard event, look at Threema Web.
-    } else if (textItem !== undefined) {
+    if (textItem !== undefined) {
       const text = ev.clipboardData.getData('text/plain');
       // Note: If there is no data for the specified format, text will contain an empty string.
       if (text.length > 0) {
         area.insert_text(text);
       }
+      return;
     }
+
+    // Handle pasting of files
+    const pastedFiles = fileItems
+      .map((fileItem) => {
+        // Read clipboard data as file
+        const file = fileItem.getAsFile();
+        if (file === null) {
+          console.error('Could not get item as a blob');
+          return undefined;
+        }
+        return file;
+      })
+      .filter(isNotUndefined);
+
+    dispatch('filesPaste', pastedFiles);
   }
 
   onMount(() => {

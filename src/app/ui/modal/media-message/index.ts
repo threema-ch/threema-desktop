@@ -8,6 +8,6 @@ export function getFileExtension(filename: string): string {
 }
 
 export interface MediaFile {
-    file: File;
     caption?: string;
+    file: File;
 }

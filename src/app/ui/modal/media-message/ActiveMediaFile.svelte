@@ -2,22 +2,23 @@
   import {createEventDispatcher} from 'svelte';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {type MediaFile} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
 
-  export let file: File | undefined;
+  export let mediaFile: MediaFile | undefined;
 
   const dispatchEvent = createEventDispatcher();
 </script>
 
 <template>
   <div class="container">
-    {#if file !== undefined}
+    {#if mediaFile !== undefined}
       <div class="note">
-        {file.name} ({byteSizeToHumanReadable(file.size)})
+        {mediaFile.file.name} ({byteSizeToHumanReadable(mediaFile.file.size)})
       </div>
       <div class="type">
-        <FileType filename={file.name} />
+        <FileType filename={mediaFile.file.name} />
       </div>
       <div class="options">
         <div class="left" />
