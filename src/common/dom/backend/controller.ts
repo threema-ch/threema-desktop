@@ -27,7 +27,7 @@ import {
     type RemoteProxy,
 } from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore, type RemoteStore} from '~/common/utils/store';
-import {type IViewModelBackend} from '~/common/viewmodel';
+import {type IViewModelRepository} from '~/common/viewmodel';
 
 export interface UserData {
     readonly identity: IdentityString;
@@ -96,7 +96,7 @@ export class BackendController {
     public readonly deviceIds: DeviceIds;
     public readonly directory: Remote<DirectoryBackend>;
     public readonly model: Remote<Repositories>;
-    public readonly viewModel: Remote<IViewModelBackend>;
+    public readonly viewModel: Remote<IViewModelRepository>;
     public capturing?: {
         readonly packets: IQueryableStore<readonly DisplayPacket[]>;
         readonly stop: () => void;

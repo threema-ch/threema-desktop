@@ -43,7 +43,7 @@ export type ServicesForViewModel = Pick<
     ServicesForBackend,
     'config' | 'device' | 'endpoint' | 'file' | 'logging' | 'model' | 'crypto'
 >;
-export interface IViewModelBackend extends ProxyMarked {
+export interface IViewModelRepository extends ProxyMarked {
     readonly conversationPreviews: () => ConversationPreviewSetStore;
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModel | undefined;
 
@@ -65,7 +65,7 @@ export interface IViewModelBackend extends ProxyMarked {
     readonly profile: () => ProfileViewModelStore;
 }
 
-export class ViewModelBackend implements IViewModelBackend {
+export class ViewModelRepository implements IViewModelRepository {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
 
     public constructor(

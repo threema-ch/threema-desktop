@@ -12,7 +12,7 @@ import {type NotificationService} from './notification';
 import {type SystemDialogService} from './system-dialog';
 import {type EndpointService, type Remote} from './utils/endpoint';
 import {type Timer} from './utils/timer';
-import {type IViewModelBackend} from './viewmodel';
+import {type IViewModelRepository} from './viewmodel';
 
 /**
  * Services available in the backend.
@@ -28,7 +28,7 @@ export interface ServicesForBackend {
     readonly file: FileStorage;
     readonly logging: LoggerFactory;
     readonly model: Repositories;
-    readonly viewModel: IViewModelBackend;
+    readonly viewModel: IViewModelRepository;
     readonly notification: NotificationService;
     readonly systemDialog: Remote<SystemDialogService>;
     readonly taskManager: TaskManager;

@@ -22,7 +22,7 @@ import {
 } from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type IViewModelBackend, type ServicesForViewModel} from '~/common/viewmodel';
+import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
 import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
 import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 import {
@@ -61,17 +61,21 @@ export class ConversationViewModelController implements IConversationViewModelCo
     public constructor(
         private readonly _services: ServicesForViewModel,
         private readonly _conversation: LocalModelStore<Conversation>,
-        private readonly _viewModelBackend: IViewModelBackend,
+        private readonly _viewModelRepository: IViewModelRepository,
     ) {
         this._log = _services.logging.logger('viewmodel.conversation.controller');
     }
 
     public getConversationMessagesSetStore(): ConversationMessageSetStore {
-        return this._viewModelBackend.conversationMessageSet(this._conversation);
+        return this._viewModelRepository.conversationMessageSet(this._conversation);
     }
 
     public getConversationMessage(messageId: MessageId): ConversationMessage | undefined {
-        return this._viewModelBackend.conversationMessage(this._conversation, messageId, undefined);
+        return this._viewModelRepository.conversationMessage(
+            this._conversation,
+            messageId,
+            undefined,
+        );
     }
 
     public async sendMessage(messageEventDetail: Remote<SendMessageEventDetail>): Promise<void> {
@@ -155,7 +159,7 @@ export type InnerConversationViewModelStore = LocalStore<InnerConversationViewMo
 export function getConversationViewModel(
     services: ServicesForViewModel,
     conversation: LocalModelStore<Conversation>,
-    viewModelBackend: IViewModelBackend,
+    viewModelRepository: IViewModelRepository,
 ): ConversationViewModel {
     const {endpoint} = services;
 
@@ -164,7 +168,7 @@ export function getConversationViewModel(
     const viewModelController = new ConversationViewModelController(
         services,
         conversation,
-        viewModelBackend,
+        viewModelRepository,
     );
     return endpoint.exposeProperties({conversation, receiver, viewModelController, viewModel});
 }

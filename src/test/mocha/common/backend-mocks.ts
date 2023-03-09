@@ -157,7 +157,7 @@ import {type AbortSubscriber} from '~/common/utils/signal';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {GlobalTimer} from '~/common/utils/timer';
-import {type IViewModelBackend} from '~/common/viewmodel';
+import {type IViewModelRepository} from '~/common/viewmodel';
 import {
     type ContactListItemSetEntry,
     type ContactListItemSetStore,
@@ -449,7 +449,7 @@ export class TestModelRepositories implements Repositories {
     }
 }
 
-export class TestViewModel implements IViewModelBackend {
+export class TestViewModel implements IViewModelRepository {
     public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
 
     public constructor(private readonly _services: Omit<ServicesForBackend, 'viewModel'>) {}

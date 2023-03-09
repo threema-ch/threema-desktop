@@ -103,7 +103,7 @@ import {
     WritableStore,
 } from '~/common/utils/store';
 import {GlobalTimer} from '~/common/utils/timer';
-import {type IViewModelBackend, ViewModelBackend} from '~/common/viewmodel';
+import {type IViewModelRepository, ViewModelRepository} from '~/common/viewmodel';
 import {ViewModelCache} from '~/common/viewmodel/cache';
 
 /**
@@ -204,7 +204,7 @@ export class Backend implements ProxyMarked {
     public readonly deviceIds: DeviceIds;
     public readonly directory: DirectoryBackend;
     public readonly model: Repositories;
-    public readonly viewModel: IViewModelBackend;
+    public readonly viewModel: IViewModelRepository;
     public readonly connectionManager: ConnectionManager;
     private readonly _log: Logger;
     private _capture?: RawCaptureHandlers;
@@ -519,7 +519,7 @@ export class Backend implements ProxyMarked {
             systemDialog,
             timer,
         });
-        const viewModel = new ViewModelBackend(
+        const viewModel = new ViewModelRepository(
             {model, config, crypto, endpoint, file, logging, device},
             new ViewModelCache(),
         );
