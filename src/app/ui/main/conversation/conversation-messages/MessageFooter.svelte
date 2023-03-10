@@ -58,7 +58,7 @@
     grid-area: footer;
     display: grid;
     grid-template: 'time status' auto / 1fr;
-    grid-column-gap: var(--mc-message-footer-column-gap);
+    column-gap: var(--mc-message-footer-column-gap);
     justify-items: end;
     align-items: center;
 

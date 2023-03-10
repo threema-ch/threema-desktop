@@ -50,8 +50,8 @@
       'icon size' auto
       'icon .' auto
       / var(--mc-message-file-icon-width) auto;
-    grid-column-gap: var(--mc-message-file-info-column-gap);
-    grid-row-gap: var(--mc-message-file-info-row-gap);
+    column-gap: var(--mc-message-file-info-column-gap);
+    row-gap: var(--mc-message-file-info-row-gap);
     justify-items: start;
 
     &[data-name='true'] {

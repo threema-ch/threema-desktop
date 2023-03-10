@@ -19,7 +19,7 @@
   .icon-text {
     display: grid;
     grid-template: 'icon text' #{rem(48px)} / #{rem(48px)} auto;
-    grid-column-gap: rem(8px);
+    column-gap: rem(8px);
     align-items: center;
     @include def-var(--c-icon-font-size, #{rem(24px)});
     cursor: pointer;
