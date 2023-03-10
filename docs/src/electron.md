@@ -6,7 +6,7 @@ Here are some hints on how to debug issues with Electron issues:
 
 To run the application with verbose logging, start it like this
 
-    $ npm run electron:dev:consumer-sandbox -- --enable-logging --v=2
+    $ npm run dev:consumer-sandbox -- --enable-logging --v=2
 
 ## Debugging Crashes
 

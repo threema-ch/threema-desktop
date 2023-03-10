@@ -304,9 +304,9 @@ function runElectronDistScript(
     binaryBasename: string;
     binaryDirPath: string;
 } {
-    log.minor('Running electron:dist script to package binary release');
+    log.minor('Running dist script to package binary release');
 
-    const result = spawnSync(IS_WINDOWS ? 'npm.cmd' : 'npm', ['run', `electron:dist:${flavor}`], {
+    const result = spawnSync(IS_WINDOWS ? 'npm.cmd' : 'npm', ['run', `dist:${flavor}`], {
         cwd: dirs.root,
         encoding: 'utf8',
         shell: false,

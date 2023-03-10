@@ -67,7 +67,7 @@ modules:
       # Build Threema Desktop
       - |
         ln -s $XDG_CACHE_HOME/node-gyp $HOME/.electron-gyp # https://github.com/flatpak/flatpak-builder-tools/pull/260#discussion_r822084602
-        npm run electron:dist:{{flavor}}
+        npm run dist:{{flavor}}
       # Bundle app and dependencies
       - ls -lah build/electron/packaged/
       - cp -a build/electron/packaged/Threema*-linux-* /app/main

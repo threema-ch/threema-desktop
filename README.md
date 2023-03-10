@@ -88,7 +88,7 @@ Note that this requires a C compiler toolchain due to native dependencies, as me
 
 To build Threema Desktop, run:
 
-    npm run electron:dist:consumer-sandbox
+    npm run dist:consumer-sandbox
 
 Now you can find the application bundle at `build/electron/packaged/`, e.g.:
 
@@ -97,8 +97,8 @@ Now you can find the application bundle at `build/electron/packaged/`, e.g.:
 
 You can directly open the built version respectively with:
 
-- `npm run electron:dist:open:linux`
-- `npm run electron:dist:open:macos`
+- `npm run dist:open:linux`
+- `npm run dist:open:macos`
 
 ### Package
 

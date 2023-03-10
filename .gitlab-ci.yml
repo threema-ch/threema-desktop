@@ -33,14 +33,14 @@ stages:
     - node --version
     - npm --version
 
-dist:electron:
+dist:
   stage: build
   needs: []
   <<: *cache
   <<: *before_script
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
-    - npm run "electron:dist:consumer-sandbox"
+    - npm run "dist:consumer-sandbox"
 
 lint:
   stage: test
@@ -126,9 +126,9 @@ test:mocha:
 #    - apt-get update && apt-get install -y xvfb libxshmfence1 libnss3 libatk1.0-0 libatk-bridge2.0-0 libdrm2 libgtk-3-0 libgbm1 libasound2
 #  script:
 #    - npm ci --cache .npm
-#    - npm run electron:rebuild
+#    - npm run rebuild
 #    # Start electron application and wait for up to 45s
-#    - (xvfb-run npm run electron:dev:consumer-sandbox -- --no-sandbox && echo "success" > "result.txt") || echo "error" > result.txt &
+#    - (xvfb-run npm run dev:consumer-sandbox -- --no-sandbox && echo "success" > "result.txt") || echo "error" > result.txt &
 #    - for i in $(seq 45); do if [[ -f result.txt ]]; then break; else sleep 1; fi; done
 #    # Make sure application is stopped
 #    - if [[ -f "electron.pid" ]]; then kill -INT $(cat electron.pid); fi
