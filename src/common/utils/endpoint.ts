@@ -861,7 +861,7 @@ export class EndpointService {
 
             apply(target_, _, rawArgumentList): any {
                 throwIfProxyReleased(isReleasingOrReleased);
-                const last = path[path.length - 1];
+                const last = path.at(-1);
 
                 // We just pretend that `bind()` didn’t happen.
                 if (last === 'bind') {

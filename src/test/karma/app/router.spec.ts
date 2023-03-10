@@ -39,7 +39,7 @@ class TestEnvironment implements RouterEnvironment {
     public navigateBack(): void {
         this._historyStack.pop();
         const event = new PopStateEvent('popstate', {
-            state: this._historyStack[this._historyStack.length - 1],
+            state: this._historyStack.at(-1),
         });
         this._onpopstate?.(event);
     }
