@@ -10,7 +10,7 @@ export function hasProperty<
     TObject extends Record<string | u53 | symbol, unknown>,
     TKey extends keyof TObject,
 >(object: TObject, key: TKey): boolean {
-    return Object.prototype.hasOwnProperty.call(object, key);
+    return Object.hasOwn(object, key);
 }
 
 /**
