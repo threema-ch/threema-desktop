@@ -21,10 +21,9 @@
 - [ ] 📝 Commit messages [are meaningful](https://cbea.ms/git-commit/), *WIP* and *fixup* commits have been amended
 - [ ] 📖 If new interfaces were added, all properties are marked as `readonly` if possible
 - [ ] <details><summary>🚭 Initial smoke test passed</summary>
-  - It should work on the electron app
-  - It should work on the web app
-  - It should work with responsive design (i.e. for both desktop and mobile screen sizes)
-  - It should work with the iOS app
+  - The electron app should start
+  - UI changes: Test with responsive design (i.e. for both desktop and mobile screen sizes)
+  - Protocol related: Test with the iOS app
 </details>
 
 ## Review checklist
