@@ -6,7 +6,6 @@ import {randomBytes} from 'node:crypto';
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {PakoCompressor} from '~/common/compressor/pako';
 import {type Config} from '~/common/config';
 import {
     type EncryptedData,
@@ -118,6 +117,7 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {type ClientKey, wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
+import {ZlibCompressor} from '~/common/node/compressor';
 import {
     type ExtendedNotificationOptions,
     type NotificationCreator,
@@ -570,7 +570,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         directory: new TestDirectoryBackend(),
         logging,
         notification,
-        compressor: new PakoCompressor(),
+        compressor: new ZlibCompressor(),
         blob: new TestBlobBackend(),
         systemDialog: TEST_SYSTEM_DIALOG_SERVICE,
         file,
