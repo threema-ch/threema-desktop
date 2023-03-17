@@ -11,7 +11,7 @@
     type DistributionListView,
     type GroupView,
   } from '~/common/model';
-  import {assert, unreachable} from '~/common/utils/assert';
+  import {unreachable} from '~/common/utils/assert';
 
   export let services: AppServices;
 
@@ -38,14 +38,7 @@
 
     // Then, request deletion of profile directory and app restart
     const ipc = window.app;
-    switch (import.meta.env.BUILD_TARGET) {
-      case 'electron':
-        assert(ipc !== undefined);
-        ipc.deleteProfileAndRestartApp();
-        break;
-      default:
-        unreachable(import.meta.env.BUILD_TARGET);
-    }
+    ipc.deleteProfileAndRestartApp();
   }
 
   // Database inspection mode

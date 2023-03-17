@@ -23,7 +23,7 @@ import {extractErrorTraceback, type SafeError} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type IdentityString} from '~/common/network/types';
 import {type u53} from '~/common/types';
-import {assert, unwrap} from '~/common/utils/assert';
+import {unwrap} from '~/common/utils/assert';
 import {type ISubscribableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
@@ -36,7 +36,11 @@ import {type AppServices} from './types';
 // TODO(DESK-684): Consider using comlink/endpoint for IPC communication
 declare global {
     interface Window {
-        readonly app?: ElectronIpc;
+        /**
+         * The window.app property exposes the IPC interface towards the renderer thread. It is
+         * initialized in the preload script.
+         */
+        readonly app: ElectronIpc;
     }
 }
 
@@ -135,8 +139,6 @@ export async function main(appState: AppState): Promise<App> {
     // Set up logging
     let logging = TagLogger.styled(CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
     if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-        // TODO(DESK-917): Make window.app non-optional
-        assert(window.app?.logToFile !== undefined, 'Expected Electron IPC to be available');
         const fileLogger = new RemoteFileLogger(window.app.logToFile);
         logging = TeeLogger.factory([logging, TagLogger.unstyled(fileLogger, 'app')]);
     }
@@ -154,7 +156,7 @@ export async function main(appState: AppState): Promise<App> {
     function handleErrorEvent(event: ErrorEvent, prefix: string): void {
         const stacktrace =
             event.error instanceof Error ? extractErrorTraceback(event.error) : undefined;
-        window.app?.reportError({
+        window.app.reportError({
             message: `${prefix}${event.message}`,
             location: {filename: event.filename, line: event.lineno},
             stacktrace,
@@ -170,7 +172,7 @@ export async function main(appState: AppState): Promise<App> {
     self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
         const stacktrace =
             event.reason instanceof Error ? extractErrorTraceback(event.reason) : undefined;
-        window.app?.reportError({
+        window.app.reportError({
             message: 'Unhandled promise rejection in app',
             stacktrace,
         });
@@ -274,23 +276,19 @@ export async function main(appState: AppState): Promise<App> {
     };
     log.info(`Worker ${workerUrl} created`);
 
-    // For Electron, we must initialise the backend worker with the app path.
-    // TODO(DESK-917): Remove "if"
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (import.meta.env.BUILD_TARGET === 'electron') {
-        const appPath = window.app?.getAppPath();
-        assert(appPath !== undefined, 'Expected Electron IPC to be available');
-        // Send app path to backend worker and wait for it to be ready.
-        // Note: Comlink is not yet active at this point!
-        await new Promise((resolve) => {
-            function readyListener(): void {
-                worker.removeEventListener('message', readyListener);
-                resolve(undefined);
-            }
-            worker.addEventListener('message', readyListener);
-            worker.postMessage(appPath);
-        });
-    }
+    // Initialize the backend worker with the app path.
+    //
+    // Send app path to backend worker and wait for it to be ready.
+    // Note: Comlink is not yet active at this point!
+    const appPath = window.app.getAppPath();
+    await new Promise((resolve) => {
+        function readyListener(): void {
+            worker.removeEventListener('message', readyListener);
+            resolve(undefined);
+        }
+        worker.addEventListener('message', readyListener);
+        worker.postMessage(appPath);
+    });
 
     // Instantiate router
     const router = new Router(logging.logger('router'), {
@@ -401,7 +399,7 @@ export async function main(appState: AppState): Promise<App> {
     };
 
     // Check for updates in the background, if this is an Electron release build
-    if (!import.meta.env.DEBUG && window.app !== undefined) {
+    if (!import.meta.env.DEBUG) {
         void updateCheck(services, window.app);
     }
 
@@ -416,7 +414,7 @@ export async function main(appState: AppState): Promise<App> {
             title += ` (${count})`;
         }
         document.title = title;
-        window.app?.updateAppBadge(count ?? 0);
+        window.app.updateAppBadge(count ?? 0);
     }
     const totalUnreadMessageCountStore = await backend.model.conversations.totalUnreadMessageCount;
     totalUnreadMessageCountStore.subscribe(debounce(updateUnreadMessageAppBadge, 300));

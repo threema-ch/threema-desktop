@@ -4,7 +4,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type ConnectionErrorDialog} from '~/common/system-dialog';
-  import {assert, unreachable} from '~/common/utils/assert';
+  import {unreachable} from '~/common/utils/assert';
 
   export let visible: boolean;
 
@@ -12,14 +12,7 @@
 
   function deleteProfileAndRestartApp(): void {
     const ipc = window.app;
-    switch (import.meta.env.BUILD_TARGET) {
-      case 'electron':
-        assert(ipc !== undefined);
-        ipc.deleteProfileAndRestartApp();
-        break;
-      default:
-        unreachable(import.meta.env.BUILD_TARGET);
-    }
+    ipc.deleteProfileAndRestartApp();
   }
 
   function handleConfirmEvent(event: Event): void {
