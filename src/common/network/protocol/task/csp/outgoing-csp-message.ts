@@ -418,6 +418,9 @@ export class OutgoingCspMessageTask<
                     }
                 }
 
+                // Sort contacts to have a deterministic message sending order
+                receivers.sort((a, b) => a.view.identity.localeCompare(b.view.identity));
+
                 return receivers;
             }
 

@@ -322,8 +322,8 @@ export function run(): void {
 
                     // Reflect a message to every member and wait for the ack.
                     //
-                    // Note: This expects that the were sent in a synchronous manner in the order of
-                    //       the users in the database.
+                    // Note: This expects that the messages are sent in the same order as the group
+                    //       members in the database
                     ...getExpectedCspMessagesForGroupMember(user1, messageProperties.messageId),
                     ...getExpectedCspMessagesForGroupMember(user2, messageProperties.messageId),
 
