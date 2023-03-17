@@ -6,7 +6,7 @@ import {
     Backend,
     type BackendInit,
     type FactoriesForBackend,
-    type SafeBackupSource,
+    type SafeCredentialsAndDeviceIds,
 } from '~/common/dom/backend';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
@@ -34,7 +34,7 @@ export function main(config: Config, factories: FactoriesForBackend): void {
 
     const endpoint = createEndpointService({config, logging});
     const create = Object.assign(
-        async (init: BackendInit, safeBackupSource?: SafeBackupSource) => {
+        async (init: BackendInit, safeCredentialsAndDeviceIds?: SafeCredentialsAndDeviceIds) => {
             log.info('Creating backend');
             return await Backend.create(
                 init,
@@ -44,7 +44,7 @@ export function main(config: Config, factories: FactoriesForBackend): void {
                     logging,
                     endpoint,
                 },
-                safeBackupSource,
+                safeCredentialsAndDeviceIds,
             );
         },
         {

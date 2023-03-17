@@ -4,12 +4,11 @@ import {
     BackendCreationError,
     type BackendHandle,
     type BackendInit,
-    type SafeBackupSource,
+    type SafeCredentialsAndDeviceIds,
 } from '~/common/dom/backend';
 import {type DebugBackend} from '~/common/dom/debug';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
 import {isSafeBackupAvailable, type SafeCredentials} from '~/common/dom/safe';
-import {SAFE_BACKUP_AUTORESTORE} from '~/common/dom/safe-autorestore';
 import {ActivityState, type D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage, SafeError} from '~/common/error';
 import {type Logger} from '~/common/logging';
@@ -71,14 +70,14 @@ async function isIdentityValid(
  * Create an instance of the backend worker.
  *
  * @param init Data required for initialization
- * @param safeBackupSource If specified, this Safe backup will be restored before the backend is
- *   initialized. Note that any pre-existing database will be deleted.
+ * @param safeCredentialsAndDeviceIds If specified, this Safe backup will be restored before the
+ *   backend is initialized. Note that any pre-existing database will be deleted.
  * @returns An endpoint if the backend could be instantiated.
  * @throws {BackendCreationError} if something goes wrong (e.g. if no key)
  */
 type BackendCreator = (
     init: BackendInit,
-    safeBackupSource?: SafeBackupSource,
+    safeCredentialsAndDeviceIds?: SafeCredentialsAndDeviceIds,
 ) => Promise<EndpointFor<BackendHandle>>;
 
 export type InitialBootstrapData = SafeCredentials & DeviceIds & {newPassword: string};
@@ -236,7 +235,9 @@ export class BackendController {
             }
         }
 
-        let isNewIdentity = backendEndpoint === undefined;
+        // Determine whether this is a new identity. If it is, a welcome screen will be shown when
+        // first launching Threema Desktop.
+        const isNewIdentity = backendEndpoint === undefined;
 
         // If backend could not be created, that means that no identity was found.
         let bootstrapError;
@@ -244,50 +245,31 @@ export class BackendController {
         let newKeyStoragePassword: string | undefined;
 
         while (backendEndpoint === undefined) {
-            let credentials: SafeBackupSource;
+            // We need the directory backend to be able to validate the user's identity
+            const directory = new FetchDirectoryBackend({config: services.config});
 
-            if (import.meta.env.DEBUG && SAFE_BACKUP_AUTORESTORE !== undefined) {
-                // A safe backup was provided by the developer. Restore it.
-                log.debug('Auto-restoring Safe backup provided by developer');
-                credentials = {
-                    type: 'autorestore',
-                    ...SAFE_BACKUP_AUTORESTORE,
-                };
-
-                // Set key storage password to "dev" (fine for development purposes)
-                // TODO(DESK-731): Once DESK-731 is fixed, revert the password below to "dev"
-                newKeyStoragePassword = 'please-change-me-i-am-so-insecure';
-
-                // Avoid "new identity" screen when auto-restoring an identity
-                isNewIdentity = false;
-            } else {
-                // We need the directory backend to be able to validate the user's identity
-                const directory = new FetchDirectoryBackend({config: services.config});
-
-                // Request safe backup credentials from user
-                log.debug('Requesting Safe credentials from user');
-                const credentialsAndDeviceIds = await requestSafeCredentials(
-                    async (identity: IdentityString) => await isIdentityValid(directory, identity),
-                    async (safeCredentials: SafeCredentials) =>
-                        await isSafeBackupAvailable(services, safeCredentials),
-                    currentIdentity,
-                    bootstrapError,
-                );
-                currentIdentity = credentialsAndDeviceIds.identity;
-                credentials = {
-                    type: 'download',
-                    credentials: {
-                        identity: credentialsAndDeviceIds.identity,
-                        password: credentialsAndDeviceIds.password,
-                        customSafeServer: credentialsAndDeviceIds.customSafeServer,
-                    },
-                    deviceIds: {
-                        d2mDeviceId: credentialsAndDeviceIds.d2mDeviceId,
-                        cspDeviceId: credentialsAndDeviceIds.cspDeviceId,
-                    },
-                };
-                newKeyStoragePassword = credentialsAndDeviceIds.newPassword;
-            }
+            // Request safe backup credentials from user
+            log.debug('Requesting Safe credentials from user');
+            const credentialsAndDeviceIds = await requestSafeCredentials(
+                async (identity: IdentityString) => await isIdentityValid(directory, identity),
+                async (safeCredentials: SafeCredentials) =>
+                    await isSafeBackupAvailable(services, safeCredentials),
+                currentIdentity,
+                bootstrapError,
+            );
+            currentIdentity = credentialsAndDeviceIds.identity;
+            const credentials: SafeCredentialsAndDeviceIds = {
+                credentials: {
+                    identity: credentialsAndDeviceIds.identity,
+                    password: credentialsAndDeviceIds.password,
+                    customSafeServer: credentialsAndDeviceIds.customSafeServer,
+                },
+                deviceIds: {
+                    d2mDeviceId: credentialsAndDeviceIds.d2mDeviceId,
+                    cspDeviceId: credentialsAndDeviceIds.cspDeviceId,
+                },
+            };
+            newKeyStoragePassword = credentialsAndDeviceIds.newPassword;
 
             // Retry backend creation
             try {

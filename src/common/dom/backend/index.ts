@@ -65,8 +65,6 @@ import {OutgoingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/o
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/manager';
 import {
-    type CspDeviceId,
-    type D2mDeviceId,
     ensureIdentityString,
     ensureNickname,
     type IdentityString,
@@ -187,14 +185,12 @@ export interface FactoriesForBackend {
 }
 
 /**
- * Source of Safe backup data.
- *
- * Either credentials for downloading from the live server, or hardcoded backup data for direct
- * restoring.
+ * Safe credentials and the associated device IDs.
  */
-export type SafeBackupSource =
-    | {type: 'download'; credentials: SafeCredentials; deviceIds: DeviceIds}
-    | {type: 'autorestore'; identity: IdentityString; backupData: SafeBackupData};
+export interface SafeCredentialsAndDeviceIds {
+    readonly credentials: SafeCredentials;
+    readonly deviceIds: DeviceIds;
+}
 
 /**
  * The backend combines all required services and contains the core logic of our application.
@@ -233,8 +229,8 @@ export class Backend implements ProxyMarked {
      *   initialisation.
      * @param factories {FactoriesForBackend} The factories needed in the backend.
      * @param services The services needed in the backend.
-     * @param safeBackupSource If specified, this Safe backup will be restored before the backend is
-     *   initialized. Note that any pre-existing database will be deleted.
+     * @param safeCredentialsAndDeviceIds If specified, this Safe backup will be restored before the
+     *   backend is initialized. Note that any pre-existing database will be deleted.
      * @returns A remote BackendHandle that can be used by the main thread to access the backend
      *   worker.
      */
@@ -246,7 +242,7 @@ export class Backend implements ProxyMarked {
         }: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
-        safeBackupSource?: SafeBackupSource,
+        safeCredentialsAndDeviceIds?: SafeCredentialsAndDeviceIds,
     ): Promise<EndpointFor<BackendHandle>> {
         const log = logging.logger('backend.create');
 
@@ -289,55 +285,40 @@ export class Backend implements ProxyMarked {
         }
 
         // Restore from Threema Safe if credentials are passed in
-        if (safeBackupSource !== undefined) {
+        if (safeCredentialsAndDeviceIds !== undefined) {
+            log.info(`Restoring from Threema Safe`);
+
+            // Set device IDs
+            deviceIds = safeCredentialsAndDeviceIds.deviceIds;
+
+            // Validate identity string
             let identity: IdentityString;
+            try {
+                identity = ensureIdentityString(safeCredentialsAndDeviceIds.credentials.identity);
+            } catch (error) {
+                throw new BackendCreationError(
+                    'restore-failed',
+                    `Invalid Threema ID: ${safeCredentialsAndDeviceIds.credentials.identity}`,
+                    {from: error},
+                );
+            }
 
-            log.info(`Restoring from Threema Safe (${safeBackupSource.type})`);
-            switch (safeBackupSource.type) {
-                case 'autorestore':
-                    // Use identity and backup data as provided
-                    identity = safeBackupSource.identity;
-                    backupData = safeBackupSource.backupData;
-                    deviceIds = {
-                        d2mDeviceId: 1337n as D2mDeviceId,
-                        cspDeviceId: 7331n as CspDeviceId,
-                    };
-                    break;
-                case 'download':
-                    // Set device IDs
-                    deviceIds = safeBackupSource.deviceIds;
-
-                    // Validate identity string
-                    try {
-                        identity = ensureIdentityString(safeBackupSource.credentials.identity);
-                    } catch (error) {
-                        throw new BackendCreationError(
-                            'restore-failed',
-                            `Invalid Threema ID: ${safeBackupSource.credentials.identity}`,
-                            {from: error},
-                        );
-                    }
-
-                    // Download and validate backup
-                    try {
-                        backupData = await downloadSafeBackup(safeBackupSource.credentials, {
-                            compressor,
-                            config,
-                            crypto,
-                            logging,
-                        });
-                    } catch (error) {
-                        log.error(`Backup download failed: ${error}`);
-                        assertError(error, SafeError);
-                        throw new BackendCreationError(
-                            'restore-failed',
-                            `Backup download failed: ${error.message}`,
-                            {from: error},
-                        );
-                    }
-                    break;
-                default:
-                    unreachable(safeBackupSource);
+            // Download and validate backup
+            try {
+                backupData = await downloadSafeBackup(safeCredentialsAndDeviceIds.credentials, {
+                    compressor,
+                    config,
+                    crypto,
+                    logging,
+                });
+            } catch (error) {
+                log.error(`Backup download failed: ${error}`);
+                assertError(error, SafeError);
+                throw new BackendCreationError(
+                    'restore-failed',
+                    `Backup download failed: ${error.message}`,
+                    {from: error},
+                );
             }
 
             // Extract client key from backup data
@@ -416,7 +397,7 @@ export class Backend implements ProxyMarked {
             // No key storage was found. Signal this to the caller, so that the backup
             // restore flow can be triggered.
             assert(
-                safeBackupSource === undefined,
+                safeCredentialsAndDeviceIds === undefined,
                 'Safe credentials were provided, but no keystore exists',
             );
             throw new BackendCreationError('no-identity', 'No identity was found');

@@ -17,7 +17,6 @@ submodules are already included.)
 - [Development](#development)
   - [NodeJS](#nodejs)
   - [Code Structure / Architecture](#code-structure-architecture)
-  - [Auto-Restore Safe Backup](#auto-restore-safe-backup)
   - [Svelte Inline Scripts](#svelte-inline-scripts)
   - [Svelte Components](#svelte-components)
   - [Use `undefined` over `null`](#use-undefined-over-null)
@@ -131,18 +130,6 @@ on your device is being rejected by `npm install`.
     nvm install
 
 [nvm]: https://github.com/nvm-sh/nvm
-
-### Auto-Restore Safe Backup
-
-While developing, it is often easier to work with the web version
-(`npm run web:dev`). However, in contrast to the Electron version, the web
-version doesn't have any persistence for the identity, so you would need to
-re-initialize your identity on every page reload.
-
-To avoid this, you can save a Threema Safe backup JSON to a file at
-`identities/safe.<identity>.json`. This backup will be auto-restored on every
-page load. (Note: If multiple files match this pattern, then one is chosen at
-random.)
 
 ### Svelte Inline Scripts
 
