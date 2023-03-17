@@ -123,7 +123,7 @@ $light: (
     // Modal dialog
     modal-dialog-background-color: rgba(#ffffff, 74%),
     // MediaMessage Modal
-    media-message-background-color: rgba(#000000, 9%),
+    media-message-background-color: theme.$grey-900,
     media-message-active-file-chip-background-color: rgba(#ffffff, 54%),
     media-message-active-file-chip-text-color: theme.$light-text-e2,
     media-message-file-type-text-color: theme.$light-text-e1,
