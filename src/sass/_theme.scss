@@ -228,8 +228,8 @@ $themes: (
 
     // MediaMessage Modal
     --cc-media-message-background-color: -g($cc, media-message-background-color),
-    --cc-media-message-active-file-note-background-color: -g($cc, media-message-active-file-note-background-color),
-    --cc-media-message-active-file-note-text-color: -g($cc, media-message-active-file-note-text-color),
+    --cc-media-message-active-file-chip-background-color: -g($cc, media-message-active-file-chip-background-color),
+    --cc-media-message-active-file-chip-text-color: -g($cc, media-message-active-file-chip-text-color),
     --cc-media-message-file-type-text-color: -g($cc, media-message-file-type-text-color),
     --cc-media-message-file-type-background-image: -g($cc, media-message-file-type-background-image),
     --cc-media-message-active-file-options-background-color: -g($cc, media-message-active-file-options-background-color),

@@ -1,6 +1,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Image from '#3sc/components/blocks/Image/Image.svelte';
   import {type MediaFile} from '~/app/ui/modal/media-message';
@@ -33,7 +34,13 @@
       {/if}
     </div>
     <div class="options">
-      <div class="left" />
+      <div class="left">
+        <div class="send-option wip">
+          <!-- Hardcoded for now, as file can currently only be sent as file -->
+          <Checkbox id="send-as-file-checkbox" checked={true} disabled={true} />
+          <label class="label wip" for="send-as-file-checkbox">Send as File (Original Size)</label>
+        </div>
+      </div>
       <div class="right">
         <button class="remove-icon" on:click={() => dispatchEvent('remove')}>
           <MdIcon theme="Outlined">delete</MdIcon>
@@ -61,8 +68,8 @@
 
       .chip {
         @extend %font-small-400;
-        background-color: var(--cc-media-message-active-file-note-background-color);
-        color: var(--cc-media-message-active-file-note-text-color);
+        background-color: var(--cc-media-message-active-file-chip-background-color);
+        color: var(--cc-media-message-active-file-chip-text-color);
         border-radius: rem(4px);
         padding: rem(2px) rem(4px);
       }
@@ -96,6 +103,13 @@
       .left {
         grid-area: left;
         justify-self: start;
+
+        .send-option {
+          @extend %font-normal-400;
+          display: flex;
+          align-items: center;
+          justify-items: start;
+        }
       }
 
       .right {

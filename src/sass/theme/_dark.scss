@@ -125,9 +125,8 @@ $dark: (
     modal-dialog-background-color: rgba(#000000, 74%),
     // MediaMessage Modal
     media-message-background-color: theme.$grey-900,
-    media-message-active-file-note-background-color:
-      color.mix(#000000, theme.$light-background, 54%),
-    media-message-active-file-note-text-color: theme.$light-text-e2,
+    media-message-active-file-chip-background-color: rgba(#ffffff, 54%),
+    media-message-active-file-chip-text-color: theme.$light-text-e2,
     media-message-file-type-text-color: theme.$dark-text-e1,
     media-message-file-type-background-image: url('/res/theme/dark/icon/file.svg'),
     media-message-active-file-options-background-color: rgba(#000000, 54%),

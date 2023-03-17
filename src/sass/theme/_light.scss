@@ -124,8 +124,8 @@ $light: (
     modal-dialog-background-color: rgba(#ffffff, 74%),
     // MediaMessage Modal
     media-message-background-color: rgba(#000000, 9%),
-    media-message-active-file-note-background-color: rgba(#ffffff, 54%),
-    media-message-active-file-note-text-color: theme.$light-text-e2,
+    media-message-active-file-chip-background-color: rgba(#ffffff, 54%),
+    media-message-active-file-chip-text-color: theme.$light-text-e2,
     media-message-file-type-text-color: theme.$light-text-e1,
     media-message-file-type-background-image: url('/res/theme/light/icon/file.svg'),
     media-message-active-file-options-background-color: rgba(#000000, 54%),
