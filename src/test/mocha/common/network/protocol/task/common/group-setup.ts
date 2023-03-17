@@ -131,7 +131,7 @@ export function groupSetupTests(
         );
         assert(group !== undefined, 'Group was not created');
         const view = group.get().view;
-        expect(view.members).to.eql([creator.identity.string, member.identity.string]);
+        expect(view.members).to.have.members([creator.identity.string, member.identity.string]);
         expect(view.name).to.be.empty;
         expect(view.userState, 'userState').to.equal(GroupUserState.MEMBER);
         expect(view.notificationTriggerPolicyOverride).to.be.undefined;
@@ -205,7 +205,7 @@ export function groupSetupTests(
         );
         assert(group !== undefined, 'Group was not created');
         const view = group.get().view;
-        expect(view.members).to.eql([creator.identity.string, user2.identity.string]);
+        expect(view.members).to.have.members([creator.identity.string, user2.identity.string]);
         expect(view.name).to.be.empty;
         expect(view.userState).to.equal(GroupUserState.MEMBER);
         expect(view.notificationTriggerPolicyOverride).to.be.undefined;
@@ -259,11 +259,11 @@ export function groupSetupTests(
 
         // Ensure group was updated to include the additional member
         const view = group.get().view;
-        expect(view.members).to.eql([creator.identity.string, member.identity.string]);
+        expect(view.members).to.have.members([creator.identity.string, member.identity.string]);
         expect(view.userState).to.equal(GroupUserState.MEMBER);
 
         // Group creation date should not change
-        expect(view.createdAt).to.eql(groupCreatedAt);
+        expect(view.createdAt).to.deep.equal(groupCreatedAt);
     });
 
     it('handle being removed from a group', async function () {
@@ -310,11 +310,11 @@ export function groupSetupTests(
         // Ensure group was updated, we should not be part of the group anymore, but the member
         // list should not be modified
         const view = group.get().view;
-        expect(view.members).to.eql([creator.identity.string, member.identity.string]);
+        expect(view.members).to.have.members([creator.identity.string, member.identity.string]);
         expect(view.userState).to.equal(GroupUserState.KICKED);
 
         // Group creation date should not change
-        expect(view.createdAt).to.eql(groupCreatedAt);
+        expect(view.createdAt).to.deep.equal(groupCreatedAt);
     });
 
     it('handle being re-added to a group', async function () {
@@ -361,11 +361,11 @@ export function groupSetupTests(
         // Ensure group was updated, we should be part of the group again and the member list
         // should include user 2 as well
         const view = group.get().view;
-        expect(view.members).to.eql([creator.identity.string, member.identity.string]);
+        expect(view.members).to.have.members([creator.identity.string, member.identity.string]);
         expect(view.userState).to.equal(GroupUserState.MEMBER);
 
         // Group creation date should not change
-        expect(view.createdAt).to.eql(groupCreatedAt);
+        expect(view.createdAt).to.deep.equal(groupCreatedAt);
     });
 }
 

@@ -20,8 +20,12 @@ import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
 import {type CryptoPrng, randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
-import {type DatabaseBackend, type DbContactUid, type DbReceiverLookup} from '~/common/db';
-import {InMemoryDatabaseBackend} from '~/common/db/in-memory';
+import {
+    type DatabaseBackend,
+    type DbContactUid,
+    type DbReceiverLookup,
+    wrapRawDatabaseKey,
+} from '~/common/db';
 import {type Device} from '~/common/device';
 import {
     AcquaintanceLevel,
@@ -118,6 +122,7 @@ import {
 } from '~/common/network/types';
 import {type ClientKey, wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {ZlibCompressor} from '~/common/node/compressor';
+import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {
     type ExtendedNotificationOptions,
     type NotificationCreator,
@@ -219,6 +224,17 @@ export class NoopNonceGuard implements NonceGuard {
     public use(nonce: Nonce): void {
         // No-op
     }
+}
+
+export function initSqliteBackend(logger: Logger): SqliteDatabaseBackend {
+    // Instantiate SQLite backend, backed by in-memory table
+    const dbKey = wrapRawDatabaseKey(new Uint8Array(32));
+    const backend = SqliteDatabaseBackend.create(logger, ':memory:', dbKey);
+
+    // Run migrations
+    backend.runMigrations();
+
+    return backend;
 }
 
 /**
@@ -412,7 +428,7 @@ export class TestModelRepositories implements Repositories {
         userIdentity: IdentityString,
         services: Omit<ServicesForBackend, 'model' | 'viewModel'>,
     ) {
-        this.db = new InMemoryDatabaseBackend(services.logging.logger('db'));
+        this.db = initSqliteBackend(services.logging.logger('db'));
         const servicesForModel = {...services, db: this.db, model: this};
         this.user = new UserRepository(userIdentity, servicesForModel);
         this.contacts = new ContactModelRepository(servicesForModel);

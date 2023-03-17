@@ -52,7 +52,9 @@ import * as group from './group';
 import * as message from './message';
 import {MESSAGE_FACTORY} from './message/factory';
 
-export const cache = (() => {
+// TODO(DESK-697)
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function createCache() {
     const set = new LazyWeakRef<LocalSetStore<LocalModelStore<Conversation>>>();
     return {
         set,
@@ -71,7 +73,9 @@ export const cache = (() => {
             >(set),
         } as const,
     } as const;
-})();
+}
+
+let cache = createCache();
 
 const ensureExactConversationUpdate = createExactPropertyValidator<ConversationUpdate>(
     'ConversationUpdate',
@@ -632,7 +636,18 @@ export class ConversationModelRepository implements ConversationRepository {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
     public readonly totalUnreadMessageCount: LocalStore<u53>;
 
+    private readonly _log: Logger;
+
     public constructor(private readonly _services: ServicesForModel) {
+        this._log = _services.logging.logger('model.conversation-repository');
+
+        // TODO(DESK-697): This is a ugly workaround to make some tests work,
+        // but should be probably a private class attribute (not a trivial change as of now), or maybe be
+        // moved down to DB level. This case was the origin of DESK-697.
+        this._log.info('Creating new cache...');
+        cache = createCache();
+        message.recreateCaches();
+
         this.totalUnreadMessageCount = derive(this.getAll(), (conversations, getAndSubscribe) => {
             let totalCount = 0;
             for (const conversation of conversations) {

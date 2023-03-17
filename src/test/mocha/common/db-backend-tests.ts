@@ -281,15 +281,12 @@ export function createFileMessage(db: DatabaseBackend, init: TestFileMessageInit
 export function backendTests(
     this: Mocha.Suite,
     features: DatabaseBackendFeatures,
-    initBackend: () => [backend: DatabaseBackend, cleanup: () => void],
+    initBackend: () => DatabaseBackend,
 ): void {
     let db: DatabaseBackend;
-    let cleanup: () => void;
-
-    this.beforeEach(function () {
-        [db, cleanup] = initBackend();
+    this.beforeEach(() => {
+        db = initBackend();
     });
-    this.afterEach(() => cleanup());
 
     describe('Date handling', function () {
         it('Roundtrip', function () {

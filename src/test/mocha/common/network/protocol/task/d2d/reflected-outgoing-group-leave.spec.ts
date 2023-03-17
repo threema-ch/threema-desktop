@@ -145,7 +145,10 @@ export function run(): void {
             const group = model.groups.getByGroupIdAndCreator(groupId, creator);
             assert(group !== undefined, 'Group not found');
             expect(group.get().view.userState, 'Wrong user state').to.equal(GroupUserState.LEFT);
-            expect(group.get().view.members).to.eql([user1.identity.string, user2.identity.string]);
+            expect(group.get().view.members).to.have.members([
+                user1.identity.string,
+                user2.identity.string,
+            ]);
         });
     });
 }

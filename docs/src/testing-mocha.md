@@ -16,14 +16,12 @@ To filter tests, you can pass arguments to mocha:
 npm run test:mocha -- --grep "load stored files"
 ```
 
-By default, for database tests, an in-memory database is used. If you prefer to use a temporary
-database in your temporary directory, which can be inspected when a test fails, set the
-`TEST_DATABASE=tempfile` env var before running the tests.
+For database tests, an in-memory SQLite database is used.
 
 ## Task Tests
 
-We provide a `TestHandle` (in `src/test/mocha/common/backend-mocks.ts`) which
-mocks a handle and allows testing tasks.
+We provide a `TestHandle` (in `src/test/mocha/common/backend-mocks.ts`) which mocks a handle and
+allows testing tasks.
 
 The `TestHandle` expects an ordered list of network expectations, for example:
 

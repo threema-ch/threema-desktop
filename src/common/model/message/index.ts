@@ -70,10 +70,23 @@ export interface MessageFactory {
     ) => DbMessageFor<TType>;
 }
 
-const caches = new LazyMap<
-    UidOf<DbConversation>,
-    LocalModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>
->(() => new LocalModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>());
+// TODO(DESK-697)
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function createCaches() {
+    return new LazyMap<
+        UidOf<DbConversation>,
+        LocalModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>
+    >(() => new LocalModelStoreCache<UidOf<DbMessageCommon<MessageType>>, AnyMessageModelStore>());
+}
+
+let caches = createCaches();
+
+/**
+ * TODO(DESK-697): Remove this
+ */
+export function recreateCaches(): void {
+    caches = createCaches();
+}
 
 export function deactivateAndPurgeCache(conversationUid: UidOf<DbConversation>): void {
     // Purge all cached messages from the cache for that conversation

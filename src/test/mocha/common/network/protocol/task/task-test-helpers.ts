@@ -105,7 +105,7 @@ export function assertGroupHasMembers(
 ): void {
     const group = services.model.groups.getByGroupIdAndCreator(groupId, creatorIdentity);
     assert(group !== undefined, 'Group not found');
-    expect(group.get().view.members).to.eql(expectedMembers);
+    expect(group.get().view.members).to.have.members(expectedMembers);
 }
 
 /**
@@ -198,7 +198,7 @@ export function reflectAndSendGroupSetupToUser(
             const groupSetup = structbuf.validate.csp.e2e.GroupSetup.SCHEMA.parse(
                 structbuf.csp.e2e.GroupSetup.decode(container.innerData),
             );
-            expect(groupSetup.members).to.eql(expectedMembers);
+            expect(groupSetup.members).to.have.members(expectedMembers);
         }),
 
         // Group setup must be sent
@@ -226,7 +226,7 @@ export function reflectAndSendGroupSetupToUser(
             const groupSetup = structbuf.validate.csp.e2e.GroupSetup.SCHEMA.parse(
                 structbuf.csp.e2e.GroupSetup.decode(container.innerData),
             );
-            expect(groupSetup.members).to.eql(expectedMembers);
+            expect(groupSetup.members).to.have.members(expectedMembers);
         }),
 
         // Expect server ack for group setup
