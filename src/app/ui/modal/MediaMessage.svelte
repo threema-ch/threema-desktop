@@ -18,8 +18,8 @@
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {ensureU53} from '~/common/types';
-  import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {assert} from '~/common/utils/assert';
+  import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
 
   export let title: string;
@@ -208,7 +208,9 @@
         >
           <TitleAndClose let:modal {modal} slot="header" {title} />
           <div class="body" slot="body">
-            <ActiveMediaFile mediaFile={activeMediaFile} on:remove={removeActiveMediaFile} />
+            {#if activeMediaFile !== undefined}
+              <ActiveMediaFile mediaFile={activeMediaFile} on:remove={removeActiveMediaFile} />
+            {/if}
           </div>
           <div class="footer" slot="footer">
             <div class="caption">

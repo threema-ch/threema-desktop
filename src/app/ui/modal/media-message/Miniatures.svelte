@@ -1,8 +1,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
-  import FileTrigger from 'threema-svelte-components/src/components/blocks/FileTrigger/FileTrigger.svelte';
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
 
+  import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import Image from '#3sc/components/blocks/Image/Image.svelte';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
 
   import {type MediaFile} from '.';
@@ -32,9 +33,13 @@
           on:click={() => dispatchEvent('select', mediaFile)}
         >
           <div class="overlay" />
-          <div class="type">
-            <FileType filenameDetails={mediaFile.sanitizedFilenameDetails} />
-          </div>
+          {#if mediaFile.file.type.startsWith('image/')}
+            <Image class="thumbnail-image" src={mediaFile.file} alt={mediaFile.file.name} />
+          {:else}
+            <div class="type">
+              <FileType filenameDetails={mediaFile.sanitizedFilenameDetails} />
+            </div>
+          {/if}
         </button>
       </li>
     {/each}
@@ -73,6 +78,7 @@
   button {
     @include circle-button;
     border-radius: rem(4px);
+    overflow: hidden;
 
     &:disabled {
       opacity: 1;
@@ -80,40 +86,53 @@
   }
   button.file {
     $-file-size: rem(64px);
-    min-height: $-file-size;
-    min-width: $-file-size;
+    height: $-file-size;
+    width: $-file-size;
+    display: flex;
+    place-content: center;
     background-color: var(--cc-media-message-miniatures-background-color);
-    border: none;
+    outline: none;
 
     &.active {
-      border: solid 2px $consumer-green-600;
+      $-outline-width: 2px;
+      outline: solid $-outline-width $consumer-green-600;
+      outline-offset: -$-outline-width;
       .overlay {
         display: block;
       }
     }
+
     &:not(.active) {
       cursor: pointer;
+    }
+
+    .overlay {
+      display: none;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-color: rgba($consumer-green-600, 0.5);
+    }
+
+    :global(.thumbnail-image) {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+
+    .type {
+      height: rem(40px);
+      width: rem(32px);
+      font-size: rem(10px);
     }
   }
 
   button.add {
     font-size: rem(24px);
     color: var(--t-color-primary);
-  }
-
-  .overlay {
-    display: none;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-color: rgba($consumer-green-600, 0.5);
-  }
-
-  .type {
-    height: rem(40px);
-    width: rem(32px);
-    font-size: rem(10px);
   }
 </style>
