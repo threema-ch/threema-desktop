@@ -2,12 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import {CONFIG} from '~/common/config';
-import {
-    NO_DATABASE_KEY_TOKEN,
-    type NoDatabaseKeyToken,
-    type RawDatabaseKey,
-    type ServicesForDatabaseFactory,
-} from '~/common/db';
+import {type RawDatabaseKey, type ServicesForDatabaseFactory} from '~/common/db';
 import {type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {type ServicesForKeyStorageFactory} from '~/common/key-storage';
 import {CONSOLE_LOGGER, type Logger, TagLogger, TeeLogger} from '~/common/logging';
@@ -80,13 +75,8 @@ export default async function run(): Promise<void> {
 
         compressor: () => new ZlibCompressor(),
 
-        db: (
-            services: ServicesForDatabaseFactory,
-            log: Logger,
-            key: RawDatabaseKey | NoDatabaseKeyToken,
-        ) => {
+        db: (services: ServicesForDatabaseFactory, log: Logger, key: RawDatabaseKey) => {
             const {config} = services;
-            assert(key !== NO_DATABASE_KEY_TOKEN, 'Expected database key to be provided');
 
             // Instantiate backend
             const backend = SqliteDatabaseBackend.create(

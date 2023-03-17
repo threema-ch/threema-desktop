@@ -45,15 +45,6 @@ import {
 export const DATABASE_KEY_LENGTH = 32;
 
 /**
- * Token declaring a database as volatile (i.e. data is stored in memory only).
- */
-export const NO_DATABASE_KEY_TOKEN = Symbol('no-database-key-token');
-/**
- * The type of the {@link NO_DATABASE_KEY_TOKEN}.
- */
-export type NoDatabaseKeyToken = typeof NO_DATABASE_KEY_TOKEN;
-
-/**
  * Raw database key (32 bytes).
  *
  * IMPORTANT: DO NOT hold a reference to this key beyond construction

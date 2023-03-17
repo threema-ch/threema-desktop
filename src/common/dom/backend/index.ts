@@ -6,8 +6,6 @@ import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
     DATABASE_KEY_LENGTH,
     type DatabaseBackend,
-    NO_DATABASE_KEY_TOKEN,
-    type NoDatabaseKeyToken,
     type RawDatabaseKey,
     type ServicesForDatabaseFactory,
     wrapRawDatabaseKey,
@@ -178,13 +176,13 @@ export type BackendHandle = Pick<
  */
 export interface FactoriesForBackend {
     readonly logging: (rootTag: string, defaultStyle: string) => LoggerFactory;
-    readonly keyStorage?: (services: ServicesForKeyStorageFactory, log: Logger) => KeyStorage;
+    readonly keyStorage: (services: ServicesForKeyStorageFactory, log: Logger) => KeyStorage;
     readonly fileStorage: (services: ServicesForFileStorageFactory, log: Logger) => FileStorage;
     readonly compressor: () => Compressor;
     readonly db: (
         services: ServicesForDatabaseFactory,
         log: Logger,
-        key: RawDatabaseKey | NoDatabaseKeyToken,
+        key: RawDatabaseKey,
     ) => DatabaseBackend;
 }
 
@@ -263,7 +261,6 @@ export class Backend implements ProxyMarked {
             | undefined;
         let dgk: RawDeviceGroupKey | undefined;
         let deviceIds: DeviceIds | undefined;
-        let db: DatabaseBackend;
         let backupData: SafeBackupData | undefined = undefined;
 
         /**
@@ -378,40 +375,32 @@ export class Backend implements ProxyMarked {
             );
 
             // Write to key storage
-            // TODO(DESK-917): Remove "if"
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (import.meta.env.BUILD_TARGET === 'electron') {
-                assert(
-                    factories.keyStorage !== undefined,
-                    "Expect keyStorage to be provided for build target 'electron'",
+            assert(
+                keyStoragePassword !== undefined,
+                "Expect keyStoragePassword to be provided for build target 'electron'",
+            );
+            const keyStorage = factories.keyStorage(
+                {config, crypto},
+                logging.logger('key-storage'),
+            );
+            try {
+                await keyStorage.write(keyStoragePassword, {
+                    schemaVersion: 2,
+                    identityData: {
+                        identity,
+                        ck: rawCkForKeystore,
+                        serverGroup,
+                    },
+                    dgk,
+                    databaseKey,
+                    deviceIds: {...deviceIds},
+                });
+            } catch (error) {
+                throw new BackendCreationError(
+                    'key-storage-error',
+                    `Could not write to key storage: ${error}`,
+                    {from: error},
                 );
-                assert(
-                    keyStoragePassword !== undefined,
-                    "Expect keyStoragePassword to be provided for build target 'electron'",
-                );
-                const keyStorage = factories.keyStorage(
-                    {config, crypto},
-                    logging.logger('key-storage'),
-                );
-                try {
-                    await keyStorage.write(keyStoragePassword, {
-                        schemaVersion: 2,
-                        identityData: {
-                            identity,
-                            ck: rawCkForKeystore,
-                            serverGroup,
-                        },
-                        dgk,
-                        databaseKey,
-                        deviceIds: {...deviceIds},
-                    });
-                } catch (error) {
-                    throw new BackendCreationError(
-                        'key-storage-error',
-                        `Could not write to key storage: ${error}`,
-                        {from: error},
-                    );
-                }
             }
 
             // Purge sensitive data
@@ -420,119 +409,102 @@ export class Backend implements ProxyMarked {
         }
 
         // Instantiate database backend
-        // TODO(DESK-917): Remove "if"
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (import.meta.env.BUILD_TARGET === 'electron') {
-            // In an Electron build, try to read the credentials from the key storage.
+
+        // Try to read the credentials from the key storage.
+        const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
+        if (!keyStorage.isPresent()) {
+            // No key storage was found. Signal this to the caller, so that the backup
+            // restore flow can be triggered.
             assert(
-                factories.keyStorage !== undefined,
-                "Expect keyStorage to be provided for build target 'electron'",
+                safeBackupSource === undefined,
+                'Safe credentials were provided, but no keystore exists',
             );
-            const keyStorage = factories.keyStorage(
-                {config, crypto},
-                logging.logger('key-storage'),
-            );
-
-            if (!keyStorage.isPresent()) {
-                // No key storage was found. Signal this to the caller, so that the backup
-                // restore flow can be triggered.
-                assert(
-                    safeBackupSource === undefined,
-                    'Safe credentials were provided, but no keystore exists',
-                );
-                throw new BackendCreationError('no-identity', 'No identity was found');
-            }
-
-            if (keyStoragePassword === undefined) {
-                throw new BackendCreationError(
-                    'key-storage-error-missing-password',
-                    'Key storage cannot be decrypted, missing password?',
-                );
-            }
-
-            // Read from key storage
-            //
-            // TODO(DESK-383): We might need to move this whole section into a pre-step
-            //     before the backend is actually attempted to be created.
-            let keyStorageContents: KeyStorageContents;
-            try {
-                keyStorageContents = await keyStorage.read(keyStoragePassword);
-            } catch (error) {
-                assertError(error, KeyStorageError);
-                switch (error.type) {
-                    case 'not-found':
-                        // This should not happen as it is caught above.
-                        throw new Error(
-                            `Unexpected error type: ${error.type} (${extractErrorMessage(
-                                error,
-                                'short',
-                            )})`,
-                        );
-                    case 'not-readable':
-                        // TODO(DESK-383): Assume a permission issue. This cannot be solved by
-                        //     overwriting. Gracefully return to the UI and notify the user.
-                        throw new BackendCreationError(
-                            'key-storage-error',
-                            'Key storage is not readable',
-                            {from: error},
-                        );
-                    case 'malformed':
-                    case 'invalid':
-                        // TODO(DESK-383): Assume data corruption. Gracefully return to the UI,
-                        //     allow the user to purge all data and start with the device join
-                        //     process.
-                        throw new BackendCreationError(
-                            'key-storage-error',
-                            'Key storage contents are malformed or invalid',
-                            {from: error},
-                        );
-                    case 'undecryptable':
-                        // Assume that the password was incorrect and let the user retry.
-                        throw new BackendCreationError(
-                            'key-storage-error-wrong-password',
-                            'Key storage cannot be decrypted, wrong password?',
-                            {from: error},
-                        );
-                    case 'internal-error':
-                        throw new BackendCreationError(
-                            'key-storage-error',
-                            'Key storage cannot be read, internal error',
-                            {from: error},
-                        );
-                    case 'not-writable':
-                        return assertUnreachable(
-                            'Unexpected not-writable error when reading key storage',
-                        );
-                    default:
-                        unreachable(error.type);
-                }
-            }
-
-            identityData = {
-                identity: keyStorageContents.identityData.identity,
-                ck: SecureSharedBoxFactory.consume(
-                    crypto,
-                    keyStorageContents.identityData.ck,
-                ) as ClientKey,
-                serverGroup: keyStorageContents.identityData.serverGroup,
-            };
-
-            dgk = keyStorageContents.dgk;
-            deviceIds = keyStorageContents.deviceIds;
-
-            // Create database
-            //
-            // TODO(DESK-383): Some kind of signal whether the database file needs to exist needs
-            //     to be passed into the worker. If the database does not exist but should exist,
-            //     gracefully return to the UI, etc.
-            db = factories.db({config}, logging.logger('db'), keyStorageContents.databaseKey);
-        } else if (identityData !== undefined && dgk !== undefined && deviceIds !== undefined) {
-            // Client key was loaded from Safe backup. Instantiate in-memory database.
-            db = factories.db({config}, logging.logger('db'), NO_DATABASE_KEY_TOKEN);
-        } else {
-            // No safe backup was restored, we first need an identity!
             throw new BackendCreationError('no-identity', 'No identity was found');
         }
+
+        if (keyStoragePassword === undefined) {
+            throw new BackendCreationError(
+                'key-storage-error-missing-password',
+                'Key storage cannot be decrypted, missing password?',
+            );
+        }
+
+        // Read from key storage
+        //
+        // TODO(DESK-383): We might need to move this whole section into a pre-step
+        //     before the backend is actually attempted to be created.
+        let keyStorageContents: KeyStorageContents;
+        try {
+            keyStorageContents = await keyStorage.read(keyStoragePassword);
+        } catch (error) {
+            assertError(error, KeyStorageError);
+            switch (error.type) {
+                case 'not-found':
+                    // This should not happen as it is caught above.
+                    throw new Error(
+                        `Unexpected error type: ${error.type} (${extractErrorMessage(
+                            error,
+                            'short',
+                        )})`,
+                    );
+                case 'not-readable':
+                    // TODO(DESK-383): Assume a permission issue. This cannot be solved by
+                    //     overwriting. Gracefully return to the UI and notify the user.
+                    throw new BackendCreationError(
+                        'key-storage-error',
+                        'Key storage is not readable',
+                        {from: error},
+                    );
+                case 'malformed':
+                case 'invalid':
+                    // TODO(DESK-383): Assume data corruption. Gracefully return to the UI,
+                    //     allow the user to purge all data and start with the device join
+                    //     process.
+                    throw new BackendCreationError(
+                        'key-storage-error',
+                        'Key storage contents are malformed or invalid',
+                        {from: error},
+                    );
+                case 'undecryptable':
+                    // Assume that the password was incorrect and let the user retry.
+                    throw new BackendCreationError(
+                        'key-storage-error-wrong-password',
+                        'Key storage cannot be decrypted, wrong password?',
+                        {from: error},
+                    );
+                case 'internal-error':
+                    throw new BackendCreationError(
+                        'key-storage-error',
+                        'Key storage cannot be read, internal error',
+                        {from: error},
+                    );
+                case 'not-writable':
+                    return assertUnreachable(
+                        'Unexpected not-writable error when reading key storage',
+                    );
+                default:
+                    unreachable(error.type);
+            }
+        }
+
+        identityData = {
+            identity: keyStorageContents.identityData.identity,
+            ck: SecureSharedBoxFactory.consume(
+                crypto,
+                keyStorageContents.identityData.ck,
+            ) as ClientKey,
+            serverGroup: keyStorageContents.identityData.serverGroup,
+        };
+
+        dgk = keyStorageContents.dgk;
+        deviceIds = keyStorageContents.deviceIds;
+
+        // Create database
+        //
+        // TODO(DESK-383): Some kind of signal whether the database file needs to exist needs
+        //     to be passed into the worker. If the database does not exist but should exist,
+        //     gracefully return to the UI, etc.
+        const db = factories.db({config}, logging.logger('db'), keyStorageContents.databaseKey);
 
         // Create other service instances
         const timer = new GlobalTimer();
