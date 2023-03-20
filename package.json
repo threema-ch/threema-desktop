@@ -18,7 +18,6 @@
   "sideEffects": false,
   "scripts": {
     "clean": "rm -rf build && rm -rf packaging/build",
-    "coverage:report": "nyc report",
     "build": "npm run rebuild && node tools/build-electron.cjs",
     "dist:consumer-sandbox": "npm run build consumer sandbox && node tools/dist-electron.cjs consumer sandbox",
     "dist:consumer-live": "npm run build consumer live && node tools/dist-electron.cjs consumer live",
