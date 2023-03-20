@@ -1,0 +1,32 @@
+{
+  "name": "threema-desktop",
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "svelte.svelte-vscode",
+    "EditorConfig.EditorConfig",
+    "zxh404.vscode-proto3"
+  ],
+  "settings": {},
+  "containerUser": "threema",
+  "containerEnv": {
+    "CHROMIUM_FLAGS": "--disable-dev-shm-usage --no-sandbox"
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.local/share/ThreemaDesktop,target=/home/threema/.local/share/ThreemaDesktop,type=bind,consistency=cached"
+  ],
+  "build": {
+    "dockerfile": "./Dockerfile",
+    "args": {
+      "NODE_VERSION": "18.12.1"
+    }
+  },
+  "workspaceFolder": "/home/threema/threema-desktop",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/threema/threema-desktop,type=bind,consistency=cached",
+  "runArgs": [
+    "--network=host",
+    "--env=DISPLAY=${localEnv:DISPLAY}",
+    "--device=/dev/dri:/dev/dri",
+    "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw"
+  ]
+}

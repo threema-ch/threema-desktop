@@ -1,9 +1,8 @@
 # NodeJS
 /node_modules/
 
-# Build and tmp directories
+# Build directories
 /build/
-/src/common/tmp/
 /export/
 
 # Electron

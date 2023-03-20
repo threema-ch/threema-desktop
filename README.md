@@ -121,7 +121,20 @@ Below we'll provide a couple of hints and rules for working on this project.
 More developer docs can be found at
 <https://clients.pages.threema.dev/web/threema-desktop-web/>.
 
-### NodeJS
+### Dev Container
+
+You are highly encouraged to use the provided [VS Code Dev Container][vscode-devcontainer]
+considering that any `npm` dependency can run arbitrary code and we have a ton of development
+dependencies. Note that this currently requires Visual Studio Code (not Code OSS) and the
+proprietary [`ms-vscode-remote.remote-containers`][remote-containers-extension] extension.
+
+    > Dev Containers: Reopen in Container
+
+You will have to rebuild the Dev Container every time the Node version of `.nvmrc` changes.
+
+    > Dev Containers: Rebuild Container
+
+### Development Outside Dev Container
 
 The project provides an `.nvmrc` file in case the default NodeJS installation
 on your device is being rejected by `npm install`.
