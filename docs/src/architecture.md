@@ -53,9 +53,6 @@ All source code is in the `src` directory:
   WebWorker API (which is a subset of the DOM).
 - `src/worker/backend/electron` is the entrypoint for the electron build
   variant. Code in this directory should be as short as possible (glue code).
-- `src/worker/service` is the entrypoint of the service worker that will be
-  started by the application. It allows access to the WebWorker API (which is
-  a subset of the DOM with some additional properties).
 
 Only source files matching `entry.*.ts` or `entry.ts` are valid entry points.
 This ensures that no functions are being invoked implicitly when including

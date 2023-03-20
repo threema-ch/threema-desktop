@@ -243,8 +243,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                 './electron/tsconfig.json',
                 './worker/backend/tsconfig.json',
                 './worker/backend/electron/tsconfig.json',
-                './worker/service/tsconfig.json',
-                './service-worker-tsconfig.json',
 
                 // Tests
                 './test/common/tsconfig.json',
@@ -253,7 +251,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                 './test/karma/common/tsconfig.json',
                 './test/karma/common/dom/tsconfig.json',
                 './test/karma/worker/backend/tsconfig.json',
-                './test/karma/worker/service/tsconfig.json',
                 './test/mocha/tsconfig.json',
                 './test/mocha/app/tsconfig.json',
                 './test/mocha/common/tsconfig.json',
@@ -331,10 +328,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                     JSON.stringify(value),
                 ]),
             ),
-
-            // TODO(DESK-682): Inject output files from 'app' into 'service-worker via a plugin
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            'import.meta.outputFiles': JSON.stringify([]),
         },
         plugins: Object.values(plugins)
             .filter((plugin) => plugin !== undefined)

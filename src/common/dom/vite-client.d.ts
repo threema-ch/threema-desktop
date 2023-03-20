@@ -99,9 +99,3 @@ declare module '*?wrkr' {
         (): Worker;
     };
 }
-declare module '*?srvcwrkr' {
-    export const url: string;
-    export const register: {
-        (options?: Omit<RegistrationOptions, 'type'>): Promise<ServiceWorkerRegistration>;
-    };
-}

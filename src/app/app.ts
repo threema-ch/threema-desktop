@@ -204,61 +204,6 @@ export async function main(appState: AppState): Promise<App> {
     window.addEventListener('focus', handleAppVisibilityChange);
     window.addEventListener('blur', handleAppVisibilityChange);
 
-    // Attempt to load the service worker.
-    //
-    // Note: For now, we don't load the service worker in Electron but we may need it in the future.
-    //       There were some crashes in the past, see:
-    //       https://github.com/electron/electron/issues/24715
-    //
-    // TODO(DESK-917): Can we remove the service worker completely if we don't need the web target?
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (typeof self.ServiceWorker !== 'undefined' && import.meta.env.BUILD_TARGET !== 'electron') {
-        // Install service worker.
-        //
-        // IMPORTANT: This MUST be a template literal and reference `BUILD_TARGET` as we otherwise
-        //            bundle incorrect variants. Note that other variables than
-        //            `import.meta.env.BUILD_TARGET` are not supported!
-        const serviceWorkerUrl = new URL(
-            `../service-worker-${import.meta.env.BUILD_TARGET}.ts`,
-            import.meta.url,
-        );
-        try {
-            const registration = await navigator.serviceWorker.register(serviceWorkerUrl, {
-                type: import.meta.env.DEBUG ? 'module' : 'classic',
-                scope: `./`,
-            });
-            log.info(
-                `Service Worker ${serviceWorkerUrl} ` +
-                    `registered for scope ${registration.scope}, waiting for controller...`,
-            );
-
-            // Wait for the controller to become available
-            const controller = await new Promise<ServiceWorker>((resolve, reject) => {
-                if (navigator.serviceWorker.controller !== null) {
-                    resolve(navigator.serviceWorker.controller);
-                    return;
-                }
-                navigator.serviceWorker.oncontrollerchange = (): void => {
-                    navigator.serviceWorker.oncontrollerchange = null;
-                    if (navigator.serviceWorker.controller === null) {
-                        reject(new Error('Service worker controller unavailable'));
-                    } else {
-                        resolve(navigator.serviceWorker.controller);
-                    }
-                };
-            });
-            log.info(`Service worker controller established, state: ${controller.state}`);
-
-            // TODO(DESK-685): Do handshake to ensure the service worker version is compatible with
-            // our app version
-            controller.postMessage('TODO(DESK-685)');
-        } catch (error) {
-            log.error('Could not register service worker', error);
-        }
-    } else {
-        log.warn('Environment does not provide a service worker');
-    }
-
     // Load the backend worker.
     //
     // IMPORTANT: This MUST be a template literal and reference `BUILD_TARGET` as we otherwise
