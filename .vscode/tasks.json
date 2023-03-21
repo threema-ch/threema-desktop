@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start App (consumer-sandbox)",
+      "command": "npm",
+      "args": ["run", "electron:dev:consumer-sandbox"],
+      "type": "shell",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start App (work-sandbox)",
+      "command": "npm",
+      "args": ["run", "electron:dev:work-sandbox"],
+      "type": "shell",
+      "problemMatcher": []
+    }
+  ]
+}
