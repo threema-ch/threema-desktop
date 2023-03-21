@@ -17,7 +17,7 @@
   "main": "build/electron/electron-main/electron-main.cjs",
   "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf build && rm -rf packaging/build",
+    "clean": "rm -rf build node_modules packaging/build && for d in \"libs/\"*; do rm -rf $d/node_modules; done",
     "build": "npm run rebuild && node tools/build-electron.cjs",
     "dist:consumer-sandbox": "npm run build consumer sandbox && node tools/dist-electron.cjs consumer sandbox",
     "dist:consumer-live": "npm run build consumer live && node tools/dist-electron.cjs consumer live",
