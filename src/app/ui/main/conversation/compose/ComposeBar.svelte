@@ -7,6 +7,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
+  import Tooltip from '~/app/ui/generic/tooltip/Tooltip.svelte';
 
   /**
    * Text that will be used to initialize the compose area.
@@ -29,33 +30,38 @@
   let composeAreaIsEmpty: Readable<boolean>;
 
   // Emoji picker
+  let emojiButton: HTMLElement | undefined = undefined;
   let emojiPicker: EmojiPicker;
-  let emojiPickerPosition = {x: 0, y: 0};
-
-  // TODO(DESK-196): Record audio messages
-  // function recordAudio(): void {
-  //   dispatch('recordAudio');
-  // }
 
   /**
    * Show emoji picker if it's invisible.
    */
   function showEmojiPicker(event: MouseEvent): void {
-    const isVisible: boolean = emojiPicker.isVisible();
-    if (isVisible) {
+    if (emojiPicker.isVisible() === true) {
       return;
     }
 
-    // Show emoji picker at top left of button
-    const emojiButton = event.currentTarget as HTMLElement;
-    const rect = emojiButton.getBoundingClientRect();
-    emojiPickerPosition = {x: rect.left, y: rect.top};
+    emojiButton = event.currentTarget as HTMLElement;
+
     emojiPicker.show();
 
     // Prevent click event from bubbling up to the body element, where the emoji picker would
     // immediately be closed again.
     event.stopPropagation();
   }
+
+  // TODO(DESK-196): Record audio messages
+  // function recordAudio(): void {
+  //   dispatch('recordAudio');
+  // }
+
+  // let isVisiblePopover = false;
+  // let popoverEl: HTMLElement | undefined = undefined;
+
+  // function handlePopoverButtonClick(event: MouseEvent): void {
+  //   popoverEl = event.currentTarget as HTMLElement;
+  //   isVisiblePopover = !isVisiblePopover;
+  // }
 
   function sendTextMessage(): void {
     dispatch('sendTextMessage', composeArea.getText());
@@ -96,10 +102,27 @@
   <div class="emoji-picker">
     <EmojiPicker
       bind:this={emojiPicker}
-      {...emojiPickerPosition}
+      trigger={emojiButton}
       on:insertEmoji={(event) => composeArea.insertText(event.detail)}
     />
   </div>
+
+  <!-- <div class="popover">
+    <Popover
+      isVisible={isVisiblePopover}
+      anchor={popoverEl}
+      attachAt={{
+        x: 'left',
+        y: 'top',
+      }}
+      popoverOrigin={{
+        x: 'right',
+        y: 'bottom',
+      }}
+    >
+      <div style="width: 200px; height: 200px; background-color: red;" />
+    </Popover>
+  </div> -->
 
   <div class="wrapper">
     <div class="icons-left">
@@ -122,6 +145,20 @@
       <IconButton flavor="naked" on:click={showEmojiPicker}>
         <MdIcon theme="Outlined">insert_emoticon</MdIcon>
       </IconButton>
+      <Tooltip>
+        <IconButton slot="trigger" flavor="naked">
+          <MdIcon theme="Outlined">insert_emoticon</MdIcon>
+        </IconButton>
+
+        <div slot="tooltip">
+          <p>Tooltip content</p>
+        </div>
+      </Tooltip>
+      <!-- TODO: TEST -->
+      <!-- <IconButton flavor="naked" on:click={handlePopoverButtonClick}>
+        <MdIcon theme="Outlined">insert_emoticon</MdIcon>
+      </IconButton> -->
+      <!-- TODO: TEST -->
       {#if $composeAreaIsEmpty}
         <!-- <IconButton flavor="naked" on:click={recordAudio} class="wip">
         <MdIcon theme="Outlined">mic_none</MdIcon>

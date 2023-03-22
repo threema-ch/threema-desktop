@@ -4,9 +4,11 @@
 
   import EmojiGroups from '#3sc/components/generic/EmojiPicker/EmojiGroups.svelte';
   import EmojiPicker from '#3sc/components/generic/EmojiPicker/EmojiPicker.svelte';
-  import {type u32, type u53} from '~/common/types';
+  import {type u53} from '~/common/types';
 
-  let wrapper: HTMLElement;
+  import Popover from '../popover/Popover.svelte';
+
+  let wrapper: HTMLElement | undefined = undefined;
   let emojiGroups: EmojiGroups;
   let emojiPicker: EmojiPicker;
 
@@ -16,18 +18,20 @@
     insertEmoji: string;
   }>();
 
+  export let trigger: HTMLElement | undefined;
+
   /**
    * Reference position X for emoji picker
    */
-  export let x: u32;
+  // export let x: u32;
   /**
    * Reference position Y for emoji picker
    */
-  export let y: u32;
+  // export let y: u32;
 
   // Top left position of emoji picker
-  let xTopLeft: u32;
-  let yTopLeft: u32;
+  // let xTopLeft: u32;
+  // let yTopLeft: u32;
 
   /**
    * Return whether the emoji picker is visible.
@@ -51,12 +55,12 @@
   }
 
   // Recompute positioning when wrapper is shown
-  $: if (wrapper !== undefined && wrapper !== null) {
-    const computedStyle = window.getComputedStyle(wrapper);
-    // Note: Fixed positioning includes the margin, thus we need to subtract it below
-    xTopLeft = x - wrapper.offsetWidth - parseInt(computedStyle.marginLeft, 10);
-    yTopLeft = y - wrapper.offsetHeight - parseInt(computedStyle.marginTop, 10);
-  }
+  // $: if (wrapper !== undefined && wrapper !== null) {
+  //   const computedStyle = window.getComputedStyle(wrapper);
+  //   // Note: Fixed positioning includes the margin, thus we need to subtract it below
+  //   xTopLeft = x - wrapper.offsetWidth - parseInt(computedStyle.marginLeft, 10);
+  //   yTopLeft = y - wrapper.offsetHeight - parseInt(computedStyle.marginTop, 10);
+  // }
 
   function setActiveGroup(event: CustomEvent<u53>): void {
     emojiGroups.setActiveGroup(event.detail);
@@ -88,7 +92,7 @@
 <svelte:body on:click={onBodyClick} />
 
 <template>
-  {#if visible}
+  <!-- {#if visible}
     <div
       class="wrapper"
       bind:this={wrapper}
@@ -103,7 +107,29 @@
         on:activeGroupChange={setActiveGroup}
       />
     </div>
-  {/if}
+  {/if} -->
+  <Popover
+    isVisible={visible}
+    anchor={trigger}
+    attachAt={{
+      x: 'left',
+      y: 'top',
+    }}
+    popoverOrigin={{
+      x: 'right',
+      y: 'bottom',
+    }}
+    offset={{left: 24 - 10, top: 32 - 10}}
+  >
+    <div class="wrapper" bind:this={wrapper} transition:fade={{duration: 100}}>
+      <EmojiGroups bind:this={emojiGroups} on:groupClicked={scrollToGroup} />
+      <EmojiPicker
+        bind:this={emojiPicker}
+        on:insertEmoji={(event) => dispatch('insertEmoji', event.detail)}
+        on:activeGroupChange={setActiveGroup}
+      />
+    </div>
+  </Popover>
 </template>
 
 <style lang="scss">
@@ -111,10 +137,10 @@
 
   .wrapper {
     // Positioning
-    position: fixed;
-    right: 0;
-    bottom: rem(30px);
-    z-index: $z-index-context-menu;
+    // position: fixed;
+    // right: 0;
+    // bottom: rem(30px);
+    // z-index: $z-index-context-menu;
 
     // Layout
     display: grid;
