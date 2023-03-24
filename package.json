@@ -52,8 +52,8 @@
     "structbuf:generate:prettify": "prettier --write \"src/common/network/structbuf/**/*.ts\""
   },
   "engines": {
-    "node": ">=18.12.1 <18.14.0",
-    "npm": ">=8.19.2 <9.0.0"
+    "node": "18.12.1",
+    "npm": "8.19.2"
   },
   "dependencies": {
     "@badrap/valita": "0.1.9",
