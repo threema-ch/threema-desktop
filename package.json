@@ -30,7 +30,7 @@
     "rebuild": "electron-rebuild",
     "test:karma": "node tools/run-tests.cjs karma",
     "test:mocha": "node tools/run-tests.cjs mocha",
-    "lint": "for t in tsc:parallel svelte eslint prettier; do npm run lint:${t} || FAILED+=(${t}); done; if [ -n \"${FAILED}\" ]; then echo; echo 'Failed:' ${FAILED[@]}; echo; false; else echo; echo 'All linters passed.'; echo; fi",
+    "lint": "FAILED=\"\"; for t in tsc:parallel svelte eslint prettier; do npm run lint:${t} || FAILED=\"$FAILED $t\"; done; if [ -n \"$FAILED\" ]; then echo \"Failed: $FAILED\"; false; else echo \"All linters passed.\"; fi",
     "lint:fix": "npm run lint:eslint:fix && npm run lint:prettier:fix",
     "lint:tsc": "find src -name tsconfig.json -exec echo {} \\; -exec npx tsc --noEmit -p {} \\;",
     "lint:tsc:parallel": "find src -name tsconfig.json | xargs -I{} -P $(getconf _NPROCESSORS_ONLN) npx tsc --noEmit -p {}",
