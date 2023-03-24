@@ -28,19 +28,27 @@ import {
     type AcquaintanceLevel,
     type ActivityState,
     type BlobDownloadState,
+    type CallConnectionPolicy,
+    type CallPolicy,
     type ContactNotificationTriggerPolicy,
+    type ContactSyncPolicy,
     type ConversationCategory,
     type ConversationVisibility,
     type GlobalPropertyKey,
     type GroupNotificationTriggerPolicy,
     type GroupUserState,
     type IdentityType,
+    type KeyboardDataCollectionPolicy,
     type MessageDirection,
     type MessageReaction,
     type MessageType,
     type NotificationSoundPolicy,
+    type ReadReceiptPolicy,
     type ReceiverType,
+    type ScreenshotPolicy,
     type SyncState,
+    type TypingIndicatorPolicy,
+    type UnknownContactPolicy,
     type VerificationLevel,
     type WorkVerificationLevel,
 } from '~/common/enum';
@@ -343,6 +351,40 @@ export type ProfileSettingsController = {
 } & ProxyMarked;
 export type ProfileSettings = LocalModel<ProfileSettingsView, ProfileSettingsController>;
 
+// Privacy Settings
+
+// Note: Type must be compatible with common.settings.PrivacySettings
+export interface PrivacySettingsView {
+    readonly contactSyncPolicy?: ContactSyncPolicy;
+    readonly unknownContactPolicy?: UnknownContactPolicy;
+    readonly readReceiptPolicy?: ReadReceiptPolicy;
+    readonly typingIndicatorPolicy?: TypingIndicatorPolicy;
+    readonly screenshotPolicy?: ScreenshotPolicy;
+    readonly keyboardDataCollectionPolicy?: KeyboardDataCollectionPolicy;
+    readonly blockedIdentities?: {readonly identities: IdentityString[]};
+    readonly excludeFromSyncIdentities?: {readonly identities: IdentityString[]};
+}
+export type PrivacySettingsUpdate = Partial<PrivacySettingsView>;
+export type PrivacySettingsController = {
+    readonly meta: ModelLifetimeGuard<PrivacySettingsView>;
+    readonly update: (change: PrivacySettingsUpdate) => void;
+} & ProxyMarked;
+export type PrivacySettings = LocalModel<PrivacySettingsView, PrivacySettingsController>;
+
+// Calls Settings
+
+// Note: Type must be compatible with common.settings.CallsSettings
+export interface CallsSettingsView {
+    readonly callPolicy?: CallPolicy;
+    readonly callConnectionPolicy?: CallConnectionPolicy;
+}
+export type CallsSettingsUpdate = Partial<CallsSettingsView>;
+export type CallsSettingsController = {
+    readonly meta: ModelLifetimeGuard<CallsSettingsView>;
+    readonly update: (change: CallsSettingsUpdate) => void;
+} & ProxyMarked;
+export type CallsSettings = LocalModel<CallsSettingsView, CallsSettingsController>;
+
 // Global Properties
 
 /**
@@ -419,6 +461,8 @@ export type User = {
     readonly displayName: LocalStore<string>;
     readonly profilePicture: LocalStore<ProfilePictureView>;
     readonly profileSettings: LocalModelStore<ProfileSettings>;
+    readonly privacySettings: LocalModelStore<PrivacySettings>;
+    readonly callsSettings: LocalModelStore<CallsSettings>;
 } & ProxyMarked;
 
 // Receiver

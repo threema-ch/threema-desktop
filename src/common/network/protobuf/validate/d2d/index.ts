@@ -8,3 +8,4 @@ export * as OutgoingMessage from './outgoing-message';
 export * as OutgoingMessageUpdate from './outgoing-message-update';
 export * as MessageType from './message-type';
 export * as UserProfileSync from './user-profile-sync';
+export * as SettingsSync from './settings-sync';

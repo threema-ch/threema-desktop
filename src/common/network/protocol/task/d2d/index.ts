@@ -10,6 +10,7 @@ import {ReflectedIncomingMessageTask} from './reflected-incoming-message';
 import {ReflectedIncomingMessageUpdateTask} from './reflected-incoming-message-update';
 import {ReflectedOutgoingMessageTask} from './reflected-outgoing-message';
 import {ReflectedOutgoingMessageUpdateTask} from './reflected-outgoing-message-update';
+import {ReflectedSettingsSyncTask} from './reflected-settings-sync';
 import {ReflectedUserProfileSyncTask} from './reflected-user-profile-sync';
 
 export function getTaskForIncomingD2dMessage(
@@ -48,8 +49,9 @@ export function getTaskForIncomingD2dMessage(
             );
         case 'userProfileSync':
             return new ReflectedUserProfileSyncTask(services, envelope.userProfileSync);
-        case 'distributionListSync':
         case 'settingsSync':
+            return new ReflectedSettingsSyncTask(services, envelope.settingsSync);
+        case 'distributionListSync':
             return new TechDebtTask(services, `Handle inbound D2D ${envelope.content}`);
         default:
             return unreachable(envelope);

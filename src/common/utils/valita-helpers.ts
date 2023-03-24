@@ -4,6 +4,8 @@
 
 import * as v from '@badrap/valita';
 
+import {type u53} from '~/common/types';
+
 /**
  * Ensure that a value is an instance of a certain type.
  *
@@ -97,4 +99,17 @@ export function mappedOptional<T>(
                     return value;
             }
         });
+}
+
+function mappedEnum<T>(enumUtils: {fromNumber: (value: u53) => T}): v.Type<T> {
+    return v.number().map(enumUtils.fromNumber);
+}
+
+/**
+ * Parse a parameter that can be null, undefined, or empty string giving it a concrete type.
+ */
+export function optionalEnum<T>(enumUtils: {
+    fromNumber: (value: u53) => T;
+}): v.Optional<T | undefined> {
+    return nullOptional(mappedEnum(enumUtils));
 }

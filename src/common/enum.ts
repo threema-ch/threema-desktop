@@ -1824,6 +1824,184 @@ export namespace GroupUserStateUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace ContactSyncPolicy {
+    export const NOT_SYNCED = 0;
+    export type NOT_SYNCED = typeof NOT_SYNCED;
+    export const SYNC = 1;
+    export type SYNC = typeof SYNC;
+}
+/** @generate convert */
+export type ContactSyncPolicy = (typeof ContactSyncPolicy)[keyof typeof ContactSyncPolicy];
+export namespace ContactSyncPolicyUtils {
+    export const ALL: ReadonlySet<ContactSyncPolicy> = new Set([
+        ContactSyncPolicy.NOT_SYNCED,
+        ContactSyncPolicy.SYNC,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: ContactSyncPolicy): ContactSyncPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as ContactSyncPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid ContactSyncPolicy`);
+    }
+    export function containsNumber(value: u53): value is ContactSyncPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is ContactSyncPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace UnknownContactPolicy {
+    export const ALLOW_UNKNOWN = 0;
+    export type ALLOW_UNKNOWN = typeof ALLOW_UNKNOWN;
+    export const BLOCK_UNKNOWN = 1;
+    export type BLOCK_UNKNOWN = typeof BLOCK_UNKNOWN;
+}
+/** @generate convert */
+export type UnknownContactPolicy = (typeof UnknownContactPolicy)[keyof typeof UnknownContactPolicy];
+export namespace UnknownContactPolicyUtils {
+    export const ALL: ReadonlySet<UnknownContactPolicy> = new Set([
+        UnknownContactPolicy.ALLOW_UNKNOWN,
+        UnknownContactPolicy.BLOCK_UNKNOWN,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: UnknownContactPolicy): UnknownContactPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as UnknownContactPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid UnknownContactPolicy`);
+    }
+    export function containsNumber(value: u53): value is UnknownContactPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is UnknownContactPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace CallPolicy {
+    export const ALLOW_CALL = 0;
+    export type ALLOW_CALL = typeof ALLOW_CALL;
+    export const DENY_CALL = 1;
+    export type DENY_CALL = typeof DENY_CALL;
+}
+/** @generate convert */
+export type CallPolicy = (typeof CallPolicy)[keyof typeof CallPolicy];
+export namespace CallPolicyUtils {
+    export const ALL: ReadonlySet<CallPolicy> = new Set([
+        CallPolicy.ALLOW_CALL,
+        CallPolicy.DENY_CALL,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: CallPolicy): CallPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as CallPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid CallPolicy`);
+    }
+    export function containsNumber(value: u53): value is CallPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is CallPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace CallConnectionPolicy {
+    export const ALLOW_DIRECT = 0;
+    export type ALLOW_DIRECT = typeof ALLOW_DIRECT;
+    export const REQUIRE_RELAY = 1;
+    export type REQUIRE_RELAY = typeof REQUIRE_RELAY;
+}
+/** @generate convert */
+export type CallConnectionPolicy = (typeof CallConnectionPolicy)[keyof typeof CallConnectionPolicy];
+export namespace CallConnectionPolicyUtils {
+    export const ALL: ReadonlySet<CallConnectionPolicy> = new Set([
+        CallConnectionPolicy.ALLOW_DIRECT,
+        CallConnectionPolicy.REQUIRE_RELAY,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: CallConnectionPolicy): CallConnectionPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as CallConnectionPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid CallConnectionPolicy`);
+    }
+    export function containsNumber(value: u53): value is CallConnectionPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is CallConnectionPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace ScreenshotPolicy {
+    export const ALLOW_SCREENSHOT = 0;
+    export type ALLOW_SCREENSHOT = typeof ALLOW_SCREENSHOT;
+    export const DENY_SCREENSHOT = 1;
+    export type DENY_SCREENSHOT = typeof DENY_SCREENSHOT;
+}
+/** @generate convert */
+export type ScreenshotPolicy = (typeof ScreenshotPolicy)[keyof typeof ScreenshotPolicy];
+export namespace ScreenshotPolicyUtils {
+    export const ALL: ReadonlySet<ScreenshotPolicy> = new Set([
+        ScreenshotPolicy.ALLOW_SCREENSHOT,
+        ScreenshotPolicy.DENY_SCREENSHOT,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: ScreenshotPolicy): ScreenshotPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as ScreenshotPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid ScreenshotPolicy`);
+    }
+    export function containsNumber(value: u53): value is ScreenshotPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is ScreenshotPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace KeyboardDataCollectionPolicy {
+    export const ALLOW_DATA_COLLECTION = 0;
+    export type ALLOW_DATA_COLLECTION = typeof ALLOW_DATA_COLLECTION;
+    export const DENY_DATA_COLLECTION = 1;
+    export type DENY_DATA_COLLECTION = typeof DENY_DATA_COLLECTION;
+}
+/** @generate convert */
+export type KeyboardDataCollectionPolicy =
+    (typeof KeyboardDataCollectionPolicy)[keyof typeof KeyboardDataCollectionPolicy];
+export namespace KeyboardDataCollectionPolicyUtils {
+    export const ALL: ReadonlySet<KeyboardDataCollectionPolicy> = new Set([
+        KeyboardDataCollectionPolicy.ALLOW_DATA_COLLECTION,
+        KeyboardDataCollectionPolicy.DENY_DATA_COLLECTION,
+    ] as const);
+    export function fromNumber(
+        value: u53,
+        fallback?: KeyboardDataCollectionPolicy,
+    ): KeyboardDataCollectionPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as KeyboardDataCollectionPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid KeyboardDataCollectionPolicy`);
+    }
+    export function containsNumber(value: u53): value is KeyboardDataCollectionPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is KeyboardDataCollectionPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
 export namespace ElectronIpcCommand {
     export const ERROR = 'error';
     export type ERROR = typeof ERROR;

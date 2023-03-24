@@ -1,10 +1,14 @@
 import {ReceiverType} from '~/common/enum';
 import {
+    type CallsSettings,
+    type PrivacySettings,
     type ProfilePictureView,
     type ProfileSettings,
     type ServicesForModel,
     type User,
 } from '~/common/model/';
+import {CallsSettingsModelStore} from '~/common/model/settings/calls';
+import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {ensureNickname, type IdentityString} from '~/common/network/types';
@@ -20,6 +24,8 @@ export class UserModel implements User {
     public readonly displayName: LocalStore<string>;
     public readonly profilePicture: LocalStore<ProfilePictureView>;
     public readonly profileSettings: LocalModelStore<ProfileSettings>;
+    public readonly privacySettings: LocalModelStore<PrivacySettings>;
+    public readonly callsSettings: LocalModelStore<CallsSettings>;
 
     public constructor(services: ServicesForModel) {
         this.identity = services.device.identity.string;
@@ -27,6 +33,8 @@ export class UserModel implements User {
             nickname: ensureNickname(this.identity),
             profilePictureShareWith: {group: 'everyone'},
         });
+        this.privacySettings = new PrivacySettingsModelStore(services, {});
+        this.callsSettings = new CallsSettingsModelStore(services, {});
 
         this.displayName = derive(this.profileSettings, ({view: {nickname}}) =>
             nickname === undefined ? this.identity : nickname,

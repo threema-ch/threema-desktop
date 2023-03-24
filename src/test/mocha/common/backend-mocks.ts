@@ -48,6 +48,7 @@ import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, TagLogger} from '~/common/logging';
 import {
     type AnyMessageModelStore,
+    type CallsSettings,
     type Contact,
     type ContactInit,
     type ContactRepository,
@@ -56,6 +57,7 @@ import {
     type GroupRepository,
     type IGlobalPropertyRepository,
     type IProfilePictureRepository,
+    type PrivacySettings,
     type ProfilePictureView,
     type ProfileSettings,
     type Repositories,
@@ -71,6 +73,8 @@ import {
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
 import {ProfilePictureModelRepository} from '~/common/model/profile-picture';
+import {CallsSettingsModelStore} from '~/common/model/settings/calls';
+import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -382,6 +386,8 @@ class UserRepository implements User {
     public profilePicture: LocalStore<ProfilePictureView>;
     public readonly displayName: LocalStore<string>;
     public profileSettings: LocalModelStore<ProfileSettings>;
+    public privacySettings: LocalModelStore<PrivacySettings>;
+    public callsSettings: LocalModelStore<CallsSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
@@ -389,6 +395,9 @@ class UserRepository implements User {
             nickname: ensureNickname('Mocha Tests'),
             profilePictureShareWith: {group: 'everyone'},
         });
+        this.privacySettings = new PrivacySettingsModelStore(services, {});
+        this.callsSettings = new CallsSettingsModelStore(services, {});
+
         this.displayName = derive(this.profileSettings, ({view: {nickname}}) =>
             nickname === undefined ? this.identity : nickname,
         );

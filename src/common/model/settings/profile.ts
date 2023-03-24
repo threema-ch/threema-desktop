@@ -37,7 +37,7 @@ export class ProfileSettingsModelController implements ProfileSettingsController
 export class ProfileSettingsModelStore extends LocalModelStore<ProfileSettings> {
     public constructor(services: ServicesForModel, profileSettingsDefaults: ProfileSettingsView) {
         const {logging} = services;
-        const tag = 'ProfileSettings';
+        const tag = 'profile-settings';
         const profileSettings = services.db.getSettings('profile') ?? profileSettingsDefaults;
 
         super(profileSettings, new ProfileSettingsModelController(services), undefined, undefined, {

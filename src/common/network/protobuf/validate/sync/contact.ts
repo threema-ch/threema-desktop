@@ -35,7 +35,7 @@ const READ_RECEIPT_POLICY_OVERRIDE_SCHEMA = validator(
 );
 
 /** Validates {@link sync.Contact.TypingIndicatorPolicyOverride}. */
-const TYPING_INDICATOR_POILICY_OVERRIDE_SCHEMA = validator(
+const TYPING_INDICATOR_POLICY_OVERRIDE_SCHEMA = validator(
     sync.Contact.TypingIndicatorPolicyOverride,
     v
         .object({
@@ -46,7 +46,7 @@ const TYPING_INDICATOR_POILICY_OVERRIDE_SCHEMA = validator(
 );
 
 /** Validates {@link sync.Contact.NotificationTriggerPolicyOverride}. */
-const NOTIFICATION_TRIGGER_POLICY_OVERRRIDE_SCHEMA = validator(
+const NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA = validator(
     sync.Contact.NotificationTriggerPolicyOverride,
     v
         .object({
@@ -97,8 +97,8 @@ const BASE_SCHEMA = validator(sync.Contact, {
     featureMask: v.number().map(ensureFeatureMask),
     syncState: v.number().map(SyncStateUtils.fromNumber),
     readReceiptPolicyOverride: READ_RECEIPT_POLICY_OVERRIDE_SCHEMA,
-    typingIndicatorPolicyOverride: TYPING_INDICATOR_POILICY_OVERRIDE_SCHEMA,
-    notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRRIDE_SCHEMA,
+    typingIndicatorPolicyOverride: TYPING_INDICATOR_POLICY_OVERRIDE_SCHEMA,
+    notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA,
     notificationSoundPolicyOverride: NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA,
     contactDefinedProfilePicture: DeltaImage.SCHEMA,
     userDefinedProfilePicture: DeltaImage.SCHEMA,

@@ -614,6 +614,36 @@ export enum GroupUserState {
     /** The user left the group. Implies that the group has been marked as _left_. */
     LEFT = 2,
 }
+/** @generate convert */
+export enum ContactSyncPolicy {
+    NOT_SYNCED = 0,
+    SYNC = 1,
+}
+/** @generate convert */
+export enum UnknownContactPolicy {
+    ALLOW_UNKNOWN = 0,
+    BLOCK_UNKNOWN = 1,
+}
+/** @generate convert */
+export enum CallPolicy {
+    ALLOW_CALL = 0,
+    DENY_CALL = 1,
+}
+/** @generate convert */
+export enum CallConnectionPolicy {
+    ALLOW_DIRECT = 0,
+    REQUIRE_RELAY = 1,
+}
+/** @generate convert */
+export enum ScreenshotPolicy {
+    ALLOW_SCREENSHOT = 0,
+    DENY_SCREENSHOT = 1,
+}
+/** @generate convert */
+export enum KeyboardDataCollectionPolicy {
+    ALLOW_DATA_COLLECTION = 0,
+    DENY_DATA_COLLECTION = 1,
+}
 
 /**
  * ELECTRON

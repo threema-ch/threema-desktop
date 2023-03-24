@@ -20,7 +20,7 @@ import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
 import {instanceOf, nullOptional} from '~/common/utils/valita-helpers';
 
 /** Validates {@link sync.Group.NotificationTriggerPolicyOverride}. */
-const NOTIFICATION_TRIGGER_POLICY_OVERRRIDE_SCHEMA = validator(
+const NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA = validator(
     sync.Group.NotificationTriggerPolicyOverride,
     v
         .object({
@@ -59,7 +59,7 @@ const BASE_SCHEMA = validator(sync.Group, {
     name: v.string(),
     createdAt: instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
     userState: v.number().map(GroupUserStateUtils.fromNumber),
-    notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRRIDE_SCHEMA,
+    notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA,
     notificationSoundPolicyOverride: NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA,
     profilePicture: DeltaImage.SCHEMA,
     memberIdentities: Identities.SCHEMA,
