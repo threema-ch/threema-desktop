@@ -23,8 +23,6 @@
     "dist:consumer-live": "npm run build consumer live && node tools/dist-electron.cjs consumer live",
     "dist:work-sandbox": "npm run build work sandbox && node tools/dist-electron.cjs work sandbox",
     "dist:work-live": "npm run build work live && node tools/dist-electron.cjs work live",
-    "dist:open:linux": "build/electron/packaged/Threema\\ Tech\\ Preview-linux-$(uname -m | sed 's/86_//')/Threema\\ Tech\\ Preview",
-    "dist:open:macos": "open build/electron/packaged/Threema\\ Tech\\ Preview-darwin-$(uname -m | sed 's/86_//')/Threema\\ Tech\\ Preview.app",
     "dev:consumer-sandbox": "npm run rebuild && tools/dev-electron.sh consumer sandbox",
     "dev:consumer-live": "npm run rebuild && tools/dev-electron.sh consumer live",
     "dev:work-sandbox": "npm run rebuild && tools/dev-electron.sh work sandbox",
