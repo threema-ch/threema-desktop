@@ -9,9 +9,6 @@
   ],
   "settings": {},
   "containerUser": "threema",
-  "containerEnv": {
-    "CHROMIUM_FLAGS": "--disable-dev-shm-usage --no-sandbox"
-  },
   "mounts": [
     "source=${localEnv:HOME}/.local/share/ThreemaDesktop,target=/home/threema/.local/share/ThreemaDesktop,type=bind,consistency=cached"
   ],
@@ -25,6 +22,7 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/threema/threema-desktop,type=bind,consistency=cached",
   "runArgs": [
     "--network=host",
+    "--env-file=./.devcontainer/.env",
     "--env=DISPLAY=${localEnv:DISPLAY}",
     "--device=/dev/dri:/dev/dri",
     "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw"

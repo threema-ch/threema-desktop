@@ -12,6 +12,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     git \
     less \
     mesa-utils \
+    p7zip \
     protobuf-compiler \
     python3 \
     python3-setuptools \

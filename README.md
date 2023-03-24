@@ -134,6 +134,19 @@ You will have to rebuild the Dev Container every time the Node version of `.nvmr
 
     > Dev Containers: Rebuild Container
 
+It is also possible to use the native shell to run `npm` and `node` commands inside of the
+container. You'll need `jq` and a compatible shell, then run:
+
+    source ./.devcontainer/env.sh
+    node --version
+
+Limitations:
+
+- Needs X11 compatibility to run `npm run dev:*`. It may run slower and may not support all UI
+  features (e.g. drag & drop). To use the native UI, it is recommended to make a `npm run dist:*`
+  build and run that locally but only when needed.
+- Cannot run `npm run test:karma`. Let this be run by the CI after pushing a branch.
+
 ### Development Outside Dev Container
 
 The project provides an `.nvmrc` file in case the default NodeJS installation
