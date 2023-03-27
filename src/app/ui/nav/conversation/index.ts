@@ -117,18 +117,6 @@ export function filterConversations(
     );
 }
 
-export async function getStores(
-    conversation: RemoteModelFor<Conversation>,
-): Promise<ConversationPreviewStores> {
-    const {controller} = conversation;
-    const [receiver] = await Promise.all([controller.receiver()]);
-    const profilePicture = await receiver.get().controller.profilePicture;
-    return {
-        receiver,
-        profilePicture,
-    };
-}
-
 export function transformConversation(
     conversation: RemoteModelFor<Conversation>,
 ): ConversationPreviewData['conversation'] {

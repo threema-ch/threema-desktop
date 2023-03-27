@@ -2,10 +2,12 @@ import {type DbReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {
     type AnyConversationPreviewMessageView,
+    type AnyReceiverStore,
     type Contact,
     type Conversation,
     type ConversationView,
     type Group,
+    type ProfilePicture,
 } from '~/common/model';
 import {getDisplayName} from '~/common/model/contact';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
@@ -37,6 +39,8 @@ export function getConversationPreviewSetStore(
 
 export type ConversationPreview = {
     readonly conversationStore: LocalModelStore<Conversation>;
+    readonly receiver: AnyReceiverStore;
+    readonly profilePicture: LocalModelStore<ProfilePicture>;
     readonly viewModel: ConversationPreviewViewModel;
 } & PropertiesMarked;
 /**
@@ -47,9 +51,14 @@ function getConversationPreview(
     conversationStore: LocalModelStore<Conversation>,
 ): ConversationPreview {
     const {endpoint} = services;
+    const conversationController = conversationStore.get().controller;
+    const receiver = conversationController.receiver();
+    const profilePicture = receiver.get().controller.profilePicture;
 
     return endpoint.exposeProperties({
         conversationStore,
+        receiver,
+        profilePicture,
         viewModel: getViewModel(services, conversationStore),
     });
 }

@@ -20,13 +20,7 @@
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationPreview} from '~/common/viewmodel/conversation-preview';
 
-  import {
-    type ConversationPreviewData,
-    type ConversationPreviewStores,
-    getStores,
-    transformConversation,
-    transformReceiver,
-  } from '.';
+  import {type ConversationPreviewData, transformConversation, transformReceiver} from '.';
 
   /**
    * ConversationPreview
@@ -37,6 +31,16 @@
    * Conversation data store.
    */
   const conversation = conversationPreview.conversationStore;
+
+  /**
+   * Receiver
+   */
+  const receiver = conversationPreview.receiver;
+
+  /**
+   * Profile Picture
+   */
+  const profilePicture = conversationPreview.profilePicture;
 
   /**
    * Conversation preview Viewmodel
@@ -65,14 +69,10 @@
    */
   export let active = false;
 
-  let {receiver, profilePicture}: Partial<ConversationPreviewStores> = {};
   let {conversation: conversation$, receiver: receiver$}: Partial<ConversationPreviewData> = {};
 
   // Transform conversation data and set store instances
-  $: void getStores($conversation).then((stores) => {
-    conversation$ = transformConversation($conversation);
-    ({receiver, profilePicture} = stores);
-  });
+  $: conversation$ = transformConversation($conversation);
 
   // Transform receiver data
   $: {
