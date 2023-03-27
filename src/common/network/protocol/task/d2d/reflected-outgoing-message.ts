@@ -211,7 +211,7 @@ export class ReflectedOutgoingMessageTask
                 if (messageStore.type === 'file') {
                     messageStore
                         .get()
-                        .controller.thumbnailBlob(true)
+                        .controller.thumbnailBlob()
                         .catch((error) =>
                             this._log.error(
                                 `Downloading the thumbnail of a reflected outgoing message failed: ${error}`,
