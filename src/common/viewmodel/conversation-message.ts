@@ -1,4 +1,4 @@
-import {MessageDirection, MessageReaction, MessageType} from '~/common/enum';
+import {MessageDirection, type MessageReaction, MessageType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {
     type AnyMessageModel,
@@ -25,7 +25,6 @@ import {
     type FileMessageDataState,
     type IncomingMessage,
     type Message,
-    type MessageReaction as SCMessageReaction,
     type OutgoingMessage,
 } from '~/common/viewmodel/types';
 import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
@@ -286,13 +285,12 @@ function getConversationMessageBodyBaseMessage(
     let lastReaction:
         | {
               at: Date;
-              type: SCMessageReaction;
+              type: MessageReaction;
           }
         | undefined;
     if (messageModel.view.lastReaction !== undefined) {
         lastReaction = {
             ...messageModel.view.lastReaction,
-            type: transformReactionType(messageModel.view.lastReaction.type),
         };
     }
 
@@ -347,15 +345,4 @@ function getConversationMessageBodyBaseMessage(
             unreachable(messageModel);
     }
     return baseMessage;
-}
-
-function transformReactionType(reactionType: MessageReaction): SCMessageReaction {
-    switch (reactionType) {
-        case MessageReaction.ACKNOWLEDGE:
-            return 'acknowledged';
-        case MessageReaction.DECLINE:
-            return 'declined';
-        default:
-            return unreachable(reactionType);
-    }
 }

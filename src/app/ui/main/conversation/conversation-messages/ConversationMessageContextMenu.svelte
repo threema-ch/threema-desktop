@@ -8,6 +8,7 @@
   import {type ContextMenuDirectionX} from '~/app/ui/generic/context-menu';
   import ContextMenuWrapper from '~/app/ui/generic/context-menu/ContextMenuWrapper.svelte';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
+  import {MessageReaction} from '~/common/enum';
   import {type u32} from '~/common/types';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
@@ -73,16 +74,20 @@
         {#if message.direction === 'incoming' && !isGroupConversation}
           <MenuItem on:click={() => dispatchEvent('thumbup')}>
             <span class="icon" slot="icon">
-              <MdIcon theme={message.lastReaction?.type === 'acknowledged' ? 'Filled' : 'Outlined'}
-                >thumb_up</MdIcon
+              <MdIcon
+                theme={message.lastReaction?.type === MessageReaction.ACKNOWLEDGE
+                  ? 'Filled'
+                  : 'Outlined'}>thumb_up</MdIcon
               >
             </span>
             <span>Agree</span>
           </MenuItem>
           <MenuItem on:click={() => dispatchEvent('thumbdown')}>
             <span class="icon thumb-down" slot="icon">
-              <MdIcon theme={message.lastReaction?.type === 'declined' ? 'Filled' : 'Outlined'}
-                >thumb_down</MdIcon
+              <MdIcon
+                theme={message.lastReaction?.type === MessageReaction.DECLINE
+                  ? 'Filled'
+                  : 'Outlined'}>thumb_down</MdIcon
               >
             </span>
             <span>Disagree</span>

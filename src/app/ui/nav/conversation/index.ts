@@ -9,7 +9,6 @@ import {
     type ConversationCategory,
     type ConversationVisibility,
     IdentityType,
-    MessageReaction,
     ReceiverType,
 } from '~/common/enum';
 import {
@@ -30,7 +29,6 @@ import {type Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {
     type GroupUserState as GroupUserState3SC,
-    type MessageReaction as SCMessageReaction,
     type ReceiverBadgeType,
 } from '~/common/viewmodel/types';
 
@@ -132,17 +130,6 @@ export async function getStores(
         receiver,
         profilePicture,
     };
-}
-
-export function transformReactionType(reactionType: MessageReaction): SCMessageReaction {
-    switch (reactionType) {
-        case MessageReaction.ACKNOWLEDGE:
-            return 'acknowledged';
-        case MessageReaction.DECLINE:
-            return 'declined';
-        default:
-            return unreachable(reactionType);
-    }
 }
 
 export function transformConversation(

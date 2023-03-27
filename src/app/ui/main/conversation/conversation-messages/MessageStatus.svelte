@@ -1,8 +1,8 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {MessageReaction, MessageReactionUtils} from '~/common/enum';
   import {
     type MessageDirection,
-    type MessageReaction,
     type MessageStatus,
     type ReceiverType,
   } from '~/common/viewmodel/types';
@@ -17,15 +17,15 @@
 <template>
   <span
     data-direction={direction}
-    data-reaction={reaction}
+    data-reaction={reaction === undefined ? undefined : MessageReactionUtils.NAME_OF[reaction]}
     data-status={status}
     data-receiver-type={receiverType}
   >
     {#if direction === 'incoming' && outgoingReactionDisplay === 'arrow'}
       <MdIcon theme="Filled">reply</MdIcon>
-    {:else if reaction === 'acknowledged'}
+    {:else if reaction === MessageReaction.ACKNOWLEDGE}
       <MdIcon theme="Filled">thumb_up</MdIcon>
-    {:else if reaction === 'declined'}
+    {:else if reaction === MessageReaction.DECLINE}
       <MdIcon theme="Filled">thumb_down</MdIcon>
     {:else if status === 'pending'}
       <MdIcon theme="Filled">file_upload</MdIcon>
@@ -51,11 +51,11 @@
       color: var(--mc-message-status-error-color);
     }
 
-    &[data-reaction='acknowledged'] {
+    &[data-reaction='ACKNOWLEDGE'] {
       color: var(--mc-message-status-acknowledged-color);
     }
 
-    &[data-reaction='declined'] {
+    &[data-reaction='DECLINE'] {
       color: var(--mc-message-status-declined-color);
     }
 

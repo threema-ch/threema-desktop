@@ -2,19 +2,10 @@ import {
     type VerificationLevel,
     type VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
+import {type MessageReaction} from '~/common/enum';
 import {type ProfilePictureView} from '~/common/model';
 import {type u53} from '~/common/types';
 import {type ProfilePictureData} from '~/common/viewmodel/profile-picture';
-
-/**
- * Branding type.
- */
-export type Branding = 'consumer' | 'work';
-
-/**
- * Possible reactions towards a message.
- */
-export type MessageReaction = 'acknowledged' | 'declined';
 
 /**
  * Status of a message.

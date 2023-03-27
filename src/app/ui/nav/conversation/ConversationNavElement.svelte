@@ -25,7 +25,6 @@
     type ConversationPreviewStores,
     getStores,
     transformConversation,
-    transformReactionType,
     transformReceiver,
   } from '.';
 
@@ -189,9 +188,7 @@
                         ? 'incoming'
                         : 'outgoing'}
                       status={$lastMessage.status}
-                      reaction={$lastMessage.reaction !== undefined
-                        ? transformReactionType($lastMessage.reaction)
-                        : undefined}
+                      reaction={$lastMessage.reaction}
                       outgoingReactionDisplay="arrow"
                       receiverType={convertReceiverType(conversationType)}
                     />
