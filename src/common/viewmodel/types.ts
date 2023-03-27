@@ -67,13 +67,7 @@ export interface GroupData {
      * List of group member names.
      */
     readonly memberNames: string[];
-    /**
-     * Determinate if the user is part, kicked by or left the group
-     */
-    readonly userState: GroupUserState;
 }
-
-export type GroupUserState = 'member' | 'left' | 'kicked';
 
 /**
  * Distribution list data.

@@ -1,4 +1,3 @@
-import {isUserStateOfInactiveGroup, transformGroupUserState} from '~/app/ui/aside/group-details';
 import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromContact,
@@ -8,6 +7,7 @@ import {type DbConversationUid, type DbReceiverLookup} from '~/common/db';
 import {
     type ConversationCategory,
     type ConversationVisibility,
+    GroupUserState,
     IdentityType,
     ReceiverType,
 } from '~/common/enum';
@@ -27,10 +27,7 @@ import {type u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
-import {
-    type GroupUserState as GroupUserState3SC,
-    type ReceiverBadgeType,
-} from '~/common/viewmodel/types';
+import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
 /**
  * Transformed data necessary to display a conversation preview.
@@ -208,8 +205,7 @@ export function isInactiveGroup(receiver: RemoteModelFor<AnyReceiver> | undefine
     if (receiver === undefined || receiver.type !== ReceiverType.GROUP) {
         return false;
     }
-    const groupUserState: GroupUserState3SC = transformGroupUserState(receiver.view.userState);
-    return isUserStateOfInactiveGroup(groupUserState);
+    return receiver.view.userState !== GroupUserState.MEMBER;
 }
 
 /**

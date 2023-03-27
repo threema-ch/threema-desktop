@@ -7,12 +7,11 @@ import {GroupUserState, ReceiverType} from '~/common/enum';
 import {type Contact, type Group, type ProfilePicture, type RemoteModelFor} from '~/common/model';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type IdentityString} from '~/common/network/types';
-import {assertUnreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore} from '~/common/utils/store';
 import {type RemoteSetStore} from '~/common/utils/store/set-store';
 import {type GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
-import {type GroupData, type GroupUserState as GroupUserState3SC} from '~/common/viewmodel/types';
+import {type GroupData} from '~/common/viewmodel/types';
 
 /**
  * Sort group members by display name. Creator will always be shown as first member.
@@ -132,23 +131,6 @@ export async function getProfilePictureAndMemberStores(
     };
 }
 
-export function transformGroupUserState(userState: GroupUserState): GroupUserState3SC {
-    switch (userState) {
-        case GroupUserState.MEMBER:
-            return 'member';
-        case GroupUserState.KICKED:
-            return 'kicked';
-        case GroupUserState.LEFT:
-            return 'left';
-        default:
-            return assertUnreachable(userState);
-    }
-}
-
-export function isUserStateOfInactiveGroup(userState: GroupUserState3SC): boolean {
-    return userState !== 'member';
-}
-
 /**
  * Return whether the {@link GroupView} matches the {@link filter}.
  */
@@ -168,8 +150,6 @@ export function matchesGroupSearchFilter(
 }
 
 export function transformGroup(group: RemoteModelFor<Group>): TransformedGroup {
-    const userState = transformGroupUserState(group.view.userState);
-
     return {
         lookup: {
             type: ReceiverType.GROUP,
@@ -178,8 +158,7 @@ export function transformGroup(group: RemoteModelFor<Group>): TransformedGroup {
         creator: group.view.creatorIdentity,
         name: group.view.name,
         displayName: group.view.displayName,
-        userState,
-        isInactive: isUserStateOfInactiveGroup(userState),
+        isInactive: group.view.userState !== GroupUserState.MEMBER,
         notifications: transformNotificationPolicyFromGroup(group.view),
         members: [],
         memberNames: [],

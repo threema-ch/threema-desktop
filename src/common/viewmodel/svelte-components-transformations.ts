@@ -7,7 +7,6 @@ import {type DbReceiverLookup} from '~/common/db';
 import {
     ContactNotificationTriggerPolicy,
     GroupNotificationTriggerPolicy,
-    GroupUserState,
     IdentityType,
     NotificationSoundPolicy,
     ReceiverType,
@@ -30,7 +29,6 @@ import {unreachable} from '~/common/utils/assert';
 import {
     type AnyReceiverData,
     type ContactData,
-    type GroupUserState as GroupUserState3SC,
     type ReceiverBadgeType,
 } from '~/common/viewmodel/types';
 
@@ -103,7 +101,6 @@ function transformGroup(
         },
         members: group.view.members,
         memberNames,
-        userState: transformGroupUserState(group.view.userState),
         notifications: transformNotificationPolicyFromGroup(group.view),
     };
 }
@@ -193,19 +190,6 @@ export interface TransformedContact extends ContactData {
     readonly verificationLevelColors: VerificationLevelColors;
     readonly notifications: ReceiverNotificationPolicy;
     readonly activityState: 'active' | 'inactive' | 'invalid';
-}
-
-export function transformGroupUserState(userState: GroupUserState): GroupUserState3SC {
-    switch (userState) {
-        case GroupUserState.MEMBER:
-            return 'member';
-        case GroupUserState.KICKED:
-            return 'kicked';
-        case GroupUserState.LEFT:
-            return 'left';
-        default:
-            return unreachable(userState);
-    }
 }
 
 export function transformNotificationPolicyFromGroup(view: GroupView): ReceiverNotificationPolicy {
