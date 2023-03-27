@@ -371,7 +371,7 @@
           <ConversationMessageList
             {conversationMessagesSet}
             {receiverLookup}
-            receiver={$innerConversationViewModel.receiver}
+            {receiver}
             {conversation}
             {services}
             on:quoteMessage={quoteMessage}

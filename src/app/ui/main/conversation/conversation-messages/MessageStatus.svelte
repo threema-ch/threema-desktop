@@ -1,7 +1,13 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {MessageDirection, MessageReaction, MessageReactionUtils} from '~/common/enum';
-  import {type MessageStatus, type ReceiverType} from '~/common/viewmodel/types';
+  import {
+    MessageDirection,
+    MessageReaction,
+    MessageReactionUtils,
+    type ReceiverType,
+    ReceiverTypeUtils,
+  } from '~/common/enum';
+  import {type MessageStatus} from '~/common/viewmodel/types';
 
   export let direction: MessageDirection;
   export let status: MessageStatus | undefined;
@@ -15,7 +21,7 @@
     data-direction={direction}
     data-reaction={reaction === undefined ? undefined : MessageReactionUtils.NAME_OF[reaction]}
     data-status={status}
-    data-receiver-type={receiverType}
+    data-receiver-type={ReceiverTypeUtils.NAME_OF[receiverType]}
   >
     {#if direction === MessageDirection.INBOUND && outgoingReactionDisplay === 'arrow'}
       <MdIcon theme="Filled">reply</MdIcon>
@@ -56,7 +62,7 @@
     }
 
     // On Group conversations, only show pending state
-    &[data-receiver-type='group'] {
+    &[data-receiver-type='GROUP'] {
       &:not([data-status='pending']):not([data-status='error']) {
         display: none;
       }

@@ -11,7 +11,6 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import {type ConversationData} from '~/app/ui/main/conversation';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import MessageComponent from '~/app/ui/main/conversation/conversation-messages/Message.svelte';
@@ -28,7 +27,11 @@
     ReceiverType,
   } from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
-  import {type AnyMessageModelStore, type RemoteModelStoreFor} from '~/common/model';
+  import {
+    type AnyMessageModelStore,
+    type AnyReceiverStore,
+    type RemoteModelStoreFor,
+  } from '~/common/model';
   import {type MessageId} from '~/common/network/types';
   import {type ReadonlyUint8Array} from '~/common/types';
   import {assert, ensureError, unreachable} from '~/common/utils/assert';
@@ -38,9 +41,10 @@
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
   /**
-   * Receiver data.
+   * The Conversation's receiver
    */
-  export let receiver: ConversationData['receiver'];
+  export let receiver: Remote<AnyReceiverStore>;
+
   /**
    * Current receiver lookup
    */
@@ -305,7 +309,7 @@
     class="message-wrapper"
     class:selectable
     class:profile-picture={messageBody.direction === MessageDirection.INBOUND &&
-      receiver.type === 'group'}
+      receiver.type === ReceiverType.GROUP}
     data-direction={MessageDirectionUtils.NAME_OF[messageBody.direction]}
     data-id={messageBody.id}
     on:click={toggleSelect}
@@ -318,7 +322,7 @@
     {/if}
 
     <div class="container">
-      {#if messageBody.direction === MessageDirection.INBOUND && receiver.type === 'group'}
+      {#if messageBody.direction === MessageDirection.INBOUND && receiver.type === ReceiverType.GROUP}
         <div class="profile-picture-container">
           <button class="profile-picture" on:click={async () => await navigateToContact()}>
             <ProfilePictureComponent
@@ -356,7 +360,7 @@
           bind:this={contextMenu}
           directionX={messageBody.direction === MessageDirection.INBOUND ? 'auto' : 'left'}
           message={messageBody}
-          isGroupConversation={receiver.type === 'group'}
+          isGroupConversation={receiver.type === ReceiverType.GROUP}
           {...contextMenuPosition}
           on:copy={() => handleContextMenuEvent('copy')}
           on:copyLink={() => handleContextMenuEvent('copyLink')}

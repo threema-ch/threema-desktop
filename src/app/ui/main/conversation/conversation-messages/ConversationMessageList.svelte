@@ -13,12 +13,11 @@
     sortMessages,
     unsetUnreadMessageInfo,
   } from '~/app/ui/generic/form';
-  import {type ConversationData} from '~/app/ui/main/conversation';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
-  import {type Conversation} from '~/common/model';
+  import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type u53} from '~/common/types';
   import {type Remote} from '~/common/utils/endpoint';
@@ -37,9 +36,9 @@
   export let conversationMessagesSet: Remote<ConversationMessageSetStore>;
 
   /**
-   * Receiver data.
+   * The Conversation's receiver
    */
-  export let receiver: ConversationData['receiver'];
+  export let receiver: Remote<AnyReceiverStore>;
 
   /**
    * Current receiver lookup

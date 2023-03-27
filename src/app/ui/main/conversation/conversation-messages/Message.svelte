@@ -9,13 +9,13 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
-  import {MessageDirection} from '~/common/enum';
+  import {MessageDirection, ReceiverType} from '~/common/enum';
+  import {type AnyReceiverStore} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
   import {
     type AnyMessageBody,
-    type AnyReceiverData,
     type IncomingMessage,
     type Message,
     type MessageStatus,
@@ -34,19 +34,19 @@
   $: message = messageViewModel.body;
 
   /**
-   * Receiver type.
+   * The Conversation's receiver
    */
-  export let receiver: AnyReceiverData;
+  export let receiver: Remote<AnyReceiverStore>;
 
   const dispatch = createEventDispatcher<{saveFile: undefined; abortSync: undefined}>();
 
   // Check if we will display the contact information.
   function showContactFor(
-    recv: AnyReceiverData,
+    receiverType: ReceiverType,
     msg: Message<AnyMessageBody>,
   ): msg is IncomingMessage<AnyMessageBody> {
     return (
-      (recv.type === 'group' || recv.type === 'distribution-list') &&
+      (receiverType === ReceiverType.GROUP || receiverType === ReceiverType.DISTRIBUTION_LIST) &&
       msg.direction === MessageDirection.INBOUND &&
       msg.sender !== undefined
     );
@@ -85,12 +85,8 @@
 </script>
 
 <template>
-  <div
-    class="message"
-    data-receiver-type={receiver.type}
-    data-contact={showContactFor(receiver, message)}
-  >
-    {#if showContactFor(receiver, message)}
+  <div class="message" data-contact={showContactFor(receiver.type, message)}>
+    {#if showContactFor(receiver.type, message)}
       <span class="contact">
         <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
       </span>
