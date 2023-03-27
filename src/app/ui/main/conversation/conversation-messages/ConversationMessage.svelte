@@ -21,7 +21,12 @@
   import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
-  import {MessageDirection, MessageReaction, ReceiverType} from '~/common/enum';
+  import {
+    MessageDirection,
+    MessageDirectionUtils,
+    MessageReaction,
+    ReceiverType,
+  } from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import {type AnyMessageModelStore, type RemoteModelStoreFor} from '~/common/model';
   import {type MessageId} from '~/common/network/types';
@@ -299,8 +304,9 @@
   <div
     class="message-wrapper"
     class:selectable
-    class:profile-picture={messageBody.direction === 'incoming' && receiver.type === 'group'}
-    data-direction={messageBody.direction}
+    class:profile-picture={messageBody.direction === MessageDirection.INBOUND &&
+      receiver.type === 'group'}
+    data-direction={MessageDirectionUtils.NAME_OF[messageBody.direction]}
     data-id={messageBody.id}
     on:click={toggleSelect}
     on:keypress={toggleSelect}
@@ -312,7 +318,7 @@
     {/if}
 
     <div class="container">
-      {#if messageBody.direction === 'incoming' && receiver.type === 'group'}
+      {#if messageBody.direction === MessageDirection.INBOUND && receiver.type === 'group'}
         <div class="profile-picture-container">
           <button class="profile-picture" on:click={async () => await navigateToContact()}>
             <ProfilePictureComponent
@@ -348,7 +354,7 @@
         </button>
         <ContextMenu
           bind:this={contextMenu}
-          directionX={messageBody.direction === 'incoming' ? 'auto' : 'left'}
+          directionX={messageBody.direction === MessageDirection.INBOUND ? 'auto' : 'left'}
           message={messageBody}
           isGroupConversation={receiver.type === 'group'}
           {...contextMenuPosition}
@@ -479,7 +485,7 @@
       }
     }
 
-    &[data-direction='outgoing'] {
+    &[data-direction='OUTBOUND'] {
       grid-template: '. message' auto / 1fr auto;
 
       .container {
@@ -511,7 +517,7 @@
       &:hover {
         background-color: var(--t-nav-background-color);
 
-        &[data-direction='outgoing'] {
+        &[data-direction='OUTBOUND'] {
           .message {
             background-color: var(--mc-message-background-color-outgoing);
           }

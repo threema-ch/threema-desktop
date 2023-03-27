@@ -2,7 +2,7 @@ import {
     type VerificationLevel,
     type VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
-import {type MessageReaction} from '~/common/enum';
+import {type MessageDirection, type MessageReaction} from '~/common/enum';
 import {type ProfilePictureView} from '~/common/model';
 import {type u53} from '~/common/types';
 import {type ProfilePictureData} from '~/common/viewmodel/profile-picture';
@@ -317,8 +317,6 @@ export interface MessageBody<T extends MessageType> {
     readonly body: MessageBodyFor<T>;
 }
 
-export type MessageDirection = 'incoming' | 'outgoing';
-
 export type AnyMessageBody =
     | MessageBody<'text'>
     | MessageBody<'location'>
@@ -334,7 +332,7 @@ export interface Reaction {
 }
 
 export type IncomingMessage<B extends AnyMessageBody> = {
-    readonly direction: 'incoming';
+    readonly direction: MessageDirection.INBOUND;
     readonly id: string;
     readonly sender: ReceiverData<'contact'>;
     readonly isRead: boolean;
@@ -346,7 +344,7 @@ export type IncomingMessage<B extends AnyMessageBody> = {
 } & B;
 
 export type OutgoingMessage<B extends AnyMessageBody> = {
-    readonly direction: 'outgoing';
+    readonly direction: MessageDirection.OUTBOUND;
     readonly id: string;
     readonly status: MessageStatus;
     readonly sender: {

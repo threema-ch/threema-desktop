@@ -8,7 +8,7 @@
   import {type ContextMenuDirectionX} from '~/app/ui/generic/context-menu';
   import ContextMenuWrapper from '~/app/ui/generic/context-menu/ContextMenuWrapper.svelte';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
-  import {MessageReaction} from '~/common/enum';
+  import {MessageDirection, MessageReaction} from '~/common/enum';
   import {type u32} from '~/common/types';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
@@ -71,7 +71,7 @@
           </MenuItem>
           <MenuItemDivider />
         {/if}
-        {#if message.direction === 'incoming' && !isGroupConversation}
+        {#if message.direction === MessageDirection.INBOUND && !isGroupConversation}
           <MenuItem on:click={() => dispatchEvent('thumbup')}>
             <span class="icon" slot="icon">
               <MdIcon

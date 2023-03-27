@@ -1,12 +1,8 @@
 <script lang="ts">
   import Time from '~/app/ui/generic/form/Time.svelte';
   import MessageStatus from '~/app/ui/main/conversation/conversation-messages/MessageStatus.svelte';
-  import {type MessageReaction} from '~/common/enum';
-  import {
-    type MessageDirection,
-    type MessageStatus as MsgStatus,
-    type ReceiverType,
-  } from '~/common/viewmodel/types';
+  import {type MessageDirection, type MessageReaction} from '~/common/enum';
+  import {type MessageStatus as MsgStatus, type ReceiverType} from '~/common/viewmodel/types';
 
   /**
    * The last action date.

@@ -184,9 +184,7 @@
                     <MdIcon theme="Filled">group</MdIcon>
                   {:else}
                     <MessageStatus
-                      direction={$lastMessage.direction === MessageDirection.INBOUND
-                        ? 'incoming'
-                        : 'outgoing'}
+                      direction={$lastMessage.direction}
                       status={$lastMessage.status}
                       reaction={$lastMessage.reaction}
                       outgoingReactionDisplay="arrow"

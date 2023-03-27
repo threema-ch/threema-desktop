@@ -9,6 +9,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
+  import {MessageDirection} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
@@ -46,7 +47,7 @@
   ): msg is IncomingMessage<AnyMessageBody> {
     return (
       (recv.type === 'group' || recv.type === 'distribution-list') &&
-      msg.direction === 'incoming' &&
+      msg.direction === MessageDirection.INBOUND &&
       msg.sender !== undefined
     );
   }
@@ -76,7 +77,7 @@
   let messageFooterStatus: MessageStatus | undefined;
   $: if (message.state.type === 'failed') {
     messageFooterStatus = 'error';
-  } else if (message.direction === 'outgoing') {
+  } else if (message.direction === MessageDirection.OUTBOUND) {
     messageFooterStatus = message.status;
   } else {
     messageFooterStatus = undefined;
@@ -86,7 +87,6 @@
 <template>
   <div
     class="message"
-    data-direction={message.direction}
     data-receiver-type={receiver.type}
     data-contact={showContactFor(receiver, message)}
   >

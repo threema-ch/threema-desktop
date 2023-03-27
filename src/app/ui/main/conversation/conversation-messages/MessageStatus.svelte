@@ -1,11 +1,7 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {MessageReaction, MessageReactionUtils} from '~/common/enum';
-  import {
-    type MessageDirection,
-    type MessageStatus,
-    type ReceiverType,
-  } from '~/common/viewmodel/types';
+  import {MessageDirection, MessageReaction, MessageReactionUtils} from '~/common/enum';
+  import {type MessageStatus, type ReceiverType} from '~/common/viewmodel/types';
 
   export let direction: MessageDirection;
   export let status: MessageStatus | undefined;
@@ -21,7 +17,7 @@
     data-status={status}
     data-receiver-type={receiverType}
   >
-    {#if direction === 'incoming' && outgoingReactionDisplay === 'arrow'}
+    {#if direction === MessageDirection.INBOUND && outgoingReactionDisplay === 'arrow'}
       <MdIcon theme="Filled">reply</MdIcon>
     {:else if reaction === MessageReaction.ACKNOWLEDGE}
       <MdIcon theme="Filled">thumb_up</MdIcon>

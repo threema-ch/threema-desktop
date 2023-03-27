@@ -214,7 +214,7 @@ function getConversationMessageBody(
         case 'text': {
             const type = 'text';
             const body = {text: messageModel.view.text};
-            if (baseMessage.direction === 'incoming') {
+            if (baseMessage.direction === MessageDirection.INBOUND) {
                 messageData = {
                     ...(baseMessage as Omit<
                         IncomingMessage<AnyMessageBody>,
@@ -308,7 +308,7 @@ function getConversationMessageBodyBaseMessage(
                 IncomingMessage<AnyMessageBody>,
                 BaseMessageOmittedFields
             > = {
-                direction: 'incoming',
+                direction: messageModel.ctx,
                 id,
                 sender: contact,
                 isRead: messageModel.view.readAt !== undefined,
@@ -324,7 +324,7 @@ function getConversationMessageBodyBaseMessage(
                 OutgoingMessage<AnyMessageBody>,
                 BaseMessageOmittedFields
             > = {
-                direction: 'outgoing',
+                direction: messageModel.ctx,
                 id,
                 status,
                 sender: {
