@@ -27,17 +27,37 @@ stages:
       - .npm/
       - node_modules/
 
-# Generic "before script" that shows versions
-.before_script: &before_script
-  before_script:
-    - node --version
-    - npm --version
+# Generic "before script" steps that show versions
+.before_script_show_versions: &before_script_show_versions
+  - node --version
+  - npm --version
+
+# Generic "before script" for Windows to set up nvm
+.before_script_windows: &before_script_windows
+  - echo "`$Path is $env:Path"
+  # Update env variables
+  - $env:Path += ";C:\\ProgramData\\nvm"
+  - $env:NVM_HOME = "C:\\ProgramData\\nvm"
+  - $env:NVM_SYMLINK = "C:\\Program Files\\nodejs"
+  # Ensure the proper node version is available
+  - echo "Installing and using node version "(cat .nvmrc)
+  - nvm version
+  # Note: With nvm-windows <=1.1.9 there's a bug if the .nvmrc file does not contain
+  # an exact version: https://github.com/coreybutler/nvm-windows/pull/709
+  # Version 1.1.10 fixes it. Remove this note once that version is available on Chocolatey.
+  - nvm install (cat .nvmrc)
+  - nvm use (cat .nvmrc)
+  # Show versions
+  - node --version
+  - npm --version
+  - curl.exe --version
 
 dist:
   stage: build
   needs: []
   <<: *cache
-  <<: *before_script
+  before_script:
+    - *before_script_show_versions
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     - npm run "dist:consumer-sandbox"
@@ -46,7 +66,8 @@ lint:
   stage: test
   needs: []
   <<: *cache
-  <<: *before_script
+  before_script:
+    - *before_script_show_versions
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     - npm run "lint:$TARGET"
@@ -62,7 +83,8 @@ audit:
   stage: test
   needs: []
   <<: *cache
-  <<: *before_script
+  before_script:
+    - *before_script_show_versions
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     - npm audit --audit-level moderate
@@ -80,7 +102,8 @@ test:karma:
     paths:
       - .npm/
       - node_modules/
-  <<: *before_script
+  before_script:
+    - *before_script_show_versions
   script:
     # Install deps
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
@@ -94,11 +117,12 @@ test:karma:
       junit:
         - junit/karma.xml
 
-test:mocha:
+test:mocha:linux:
   stage: test
   needs: []
   <<: *cache
-  <<: *before_script
+  before_script:
+    - *before_script_show_versions
   script:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     # Run tests (with increased timeout of 10s, to avoid test failures when load on CI runner is high)
@@ -110,6 +134,20 @@ test:mocha:
     reports:
       junit:
         - junit/mocha.xml
+
+test:mocha:windows:
+  stage: test
+  # Build on Windows (powershell)
+  tags:
+    - windows
+  needs: []
+  before_script:
+    - *before_script_windows
+  script:
+    # Install dependencies
+    - npm ci --cache .npm
+    # Run tests (with increased timeout of 10s, to avoid test failures when load on CI runner is high)
+    - npm run "test:mocha" -- --timeout 10000
 
 # TODO(DESK-321): Fix! Right now this segfaults.
 # Additionally, the kill-on-error functionality was removed, so in
@@ -552,23 +590,7 @@ package:exe:
         throw "Error: Invalid ref"
       }
       echo "Build type is $BUILD_TYPE"
-    # Update env variables
-    - echo "`$Path is $env:Path"
-    - $env:Path += ";C:\\ProgramData\\nvm"
-    - $env:NVM_HOME = "C:\\ProgramData\\nvm"
-    - $env:NVM_SYMLINK = "C:\\Program Files\\nodejs"
-    # Ensure the proper node version is available
-    - echo "Installing and using node version "(cat .nvmrc)
-    - nvm version
-    # Note: With nvm-windows <=1.1.9 there's a bug if the .nvmrc file does not contain
-    # an exact version: https://github.com/coreybutler/nvm-windows/pull/709
-    # Version 1.1.10 fixes it. Remove this note once that version is available on Chocolatey.
-    - nvm install (cat .nvmrc)
-    - nvm use (cat .nvmrc)
-    # Show versions
-    - node --version
-    - npm --version
-    - curl.exe --version
+    - *before_script_windows
   script:
     # Install dependencies
     - npm ci --cache .npm
