@@ -62,7 +62,7 @@
     <ContextMenuWrapper bind:this={wrapper} {directionX} on:clickoutside {x} {y}>
       <MenuContainer mode="small">
         {#if options.showAction.copyLink}
-          <MenuItem on:click={(e) => dispatchEvent('copyLink')}>
+          <MenuItem on:click={() => dispatchEvent('copyLink')}>
             <span class="icon" slot="icon">
               <MdIcon theme="Outlined">link</MdIcon>
             </span>

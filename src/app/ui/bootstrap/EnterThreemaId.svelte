@@ -111,7 +111,7 @@
     }));
   }
 
-  function updateCustomSafeServer(url: string, username: string, password: string): void {
+  function updateCustomSafeServer(username: string, password: string): void {
     urlError = undefined;
 
     const parsedUrl = customSafeUrl !== '' ? parseUrl(customSafeUrl) : undefined;
@@ -130,7 +130,7 @@
       customSafeServer,
     }));
   }
-  $: updateCustomSafeServer(customSafeUrl, customSafeUsername, customSafePassword);
+  $: updateCustomSafeServer(customSafeUsername, customSafePassword);
 </script>
 
 <template>
