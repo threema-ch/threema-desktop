@@ -596,7 +596,7 @@ package:exe:
     - npm ci --cache .npm
 
     # Build EXE
-    - npm run package binary consumer-live,work-sandbox
+    - npm run package binarySigned consumer-live,work-sandbox
     - dir build\out\
 
     # Upload

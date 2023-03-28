@@ -25,8 +25,16 @@ const IS_POSIX = !IS_WINDOWS;
  *
  * Note: When updating this list, update the README as well.
  */
-type Target = 'source' | 'binary' | 'dmg' | 'dmgSigned' | 'exe' | 'flatpak';
-const TARGETS: Target[] = ['source', 'binary', 'dmg', 'dmgSigned', 'exe', 'flatpak'];
+type Target = 'source' | 'binary' | 'binarySigned' | 'dmg' | 'dmgSigned' | 'exe' | 'flatpak';
+const TARGETS: Target[] = [
+    'source',
+    'binary',
+    'binarySigned',
+    'dmg',
+    'dmgSigned',
+    'exe',
+    'flatpak',
+];
 
 type Flavor = 'work-sandbox' | 'consumer-live' | 'work-live';
 const FLAVORS: Flavor[] = ['work-sandbox', 'consumer-live', 'work-live'];
@@ -181,6 +189,7 @@ function printUsage(errormsg?: string): void {
     console.info(`  dmg: [FLAVORS]`);
     console.info(`  dmgSigned: [FLAVORS]`);
     console.info(`  binary: [FLAVORS]`);
+    console.info(`  binarySigned: [FLAVORS]`);
     console.info(`\nAvailable build flavors: consumer-live,work-sandbox,work-live`);
     console.info(`The FLAVORS arg can contain multiple flavors, separated by comma.`);
 }
@@ -221,7 +230,10 @@ function main(args: string[]): void {
             buildSource(dirs, args.slice(1));
             break;
         case 'binary':
-            buildBinaryArchives(dirs, args.slice(1));
+            buildBinaryArchives(dirs, false, args.slice(1));
+            break;
+        case 'binarySigned':
+            buildBinaryArchives(dirs, true, args.slice(1));
             break;
         case 'dmg':
             buildDmgs(dirs, false, args.slice(1)).catch((e) => {
@@ -345,8 +357,10 @@ function runElectronDistScript(
  *
  * - powershell
  */
-function buildBinaryArchives(dirs: Directories, args: string[]): void {
-    log.major('Building binary archives for the current architecture');
+function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[]): void {
+    log.major(
+        `Building ${signed ? 'signed' : 'unsigned'} binary archives for the current architecture`,
+    );
 
     // Check requirements
     requireCommand(IS_WINDOWS ? 'powershell' : 'bash');
@@ -363,15 +377,16 @@ function buildBinaryArchives(dirs: Directories, args: string[]): void {
 
     // Build all flavors
     for (const flavor of flavors) {
-        buildBinaryArchive(dirs, flavor);
+        buildBinaryArchive(dirs, flavor, signed);
     }
 }
 
-function buildBinaryArchive(dirs: Directories, flavor: Flavor): void {
+function buildBinaryArchive(dirs: Directories, flavor: Flavor, sign: boolean): void {
+    // Build
     const {binaryDirPath: binaryDirPathOld} = runElectronDistScript(dirs, flavor);
 
+    // Rename and copy to temporary directory
     log.minor(`Packaging binary: ${flavor}`);
-
     let name;
     switch (flavor) {
         case 'consumer-live':
@@ -386,7 +401,6 @@ function buildBinaryArchive(dirs: Directories, flavor: Flavor): void {
         default:
             unreachable(flavor);
     }
-
     const binaryDirNew = `${name}-desktop-bin-${process.platform}-${process.arch}`;
     const binaryDirPathNew = path.join(dirs.tmp, binaryDirNew);
     fsExtra.copySync(binaryDirPathOld, binaryDirPathNew, {
@@ -395,6 +409,67 @@ function buildBinaryArchive(dirs: Directories, flavor: Flavor): void {
         preserveTimestamps: false,
     });
 
+    // Sign
+    if (sign) {
+        if (IS_WINDOWS) {
+            // For more information on how to determine some of the env variables below, and for
+            // documentation on the syntax used, please refer to
+            // https://stackoverflow.com/a/54439759/284318
+            const signtoolPath = unwrap(
+                process.env.SIGNTOOL_EXE_PATH,
+                'Missing SIGNTOOL_EXE_PATH env var',
+            );
+            const certificatePath = unwrap(
+                process.env.WIN_SIGN_CERT_PATH,
+                'Missing WIN_SIGN_CERT_PATH env var',
+            );
+            const cryptographicProvider = unwrap(
+                process.env.WIN_SIGN_CRYPTO_PROVIDER,
+                'Missing WIN_SIGN_CRYPTO_PROVIDER env var',
+            );
+            const privateKeyContainerName = unwrap(
+                process.env.WIN_SIGN_CONTAINER_NAME,
+                'Missing WIN_SIGN_CONTAINER_NAME env var',
+            );
+            const tokenReader = unwrap(
+                process.env.WIN_SIGN_TOKEN_READER,
+                'Missing WIN_SIGN_TOKEN_READER env var',
+            );
+            const tokenPassword = unwrap(
+                process.env.WIN_SIGN_TOKEN_PASSWORD,
+                'Missing WIN_SIGN_TOKEN_PASSWORD env var',
+            );
+            const description = 'Threema Desktop';
+            const url = 'https://threema.ch/';
+            const fileDigest = 'sha512';
+            const timestampDigest = 'sha512';
+            const timestampUrl = 'http://timestamp.sectigo.com';
+            const keyContainer = `[${tokenReader}{{${tokenPassword}}}]=${privateKeyContainerName}`;
+            log.minor(
+                `Signing binary with certificate "${privateKeyContainerName}" from reader "${tokenReader}"`,
+            );
+            execFileSync(
+                signtoolPath,
+                // prettier-ignore
+                [
+                    'sign',
+                    '/d', description,
+                    '/du', url,
+                    '/fd', fileDigest,
+                    '/td', timestampDigest,
+                    '/tr', timestampUrl,
+                    '/f', certificatePath,
+                    '/csp', cryptographicProvider,
+                    '/kc', keyContainer,
+                    path.join(binaryDirPathNew, 'ThreemaDesktop.exe'),
+                ],
+            );
+        } else {
+            fail('Binary signing not supported on non-Windows hosts');
+        }
+    }
+
+    // Compress
     let binaryOutPath;
     if (IS_WINDOWS) {
         binaryOutPath = path.join(dirs.out, `${binaryDirNew}.zip`);
@@ -424,6 +499,7 @@ function buildBinaryArchive(dirs: Directories, flavor: Flavor): void {
         });
     }
 
+    // Generate checksums
     log.minor('Generating checksums');
     let shell: string;
     let args: string[];
@@ -451,7 +527,7 @@ function buildBinaryArchive(dirs: Directories, flavor: Flavor): void {
  * Build multiple macOS DMGs.
  */
 async function buildDmgs(dirs: Directories, signed: boolean, args: string[]): Promise<void> {
-    log.major('Building macOS DMGs');
+    log.major(`Building ${signed ? 'signed' : 'unsigned'} macOS DMGs`);
 
     // Parse args
     if (args.length === 0) {
