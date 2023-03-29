@@ -49,7 +49,6 @@
   @use 'component' as *;
   div {
     font-size: rem(14px);
-    color: var(--cc-media-message-active-file-caption-text-color);
     --cc-compose-area-margin: 0;
     --cc-compose-area-padding: 0;
   }
