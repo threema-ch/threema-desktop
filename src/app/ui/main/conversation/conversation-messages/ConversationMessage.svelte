@@ -372,12 +372,14 @@
           on:forward={() => handleContextMenuEvent('forward')}
           on:quote={() => handleContextMenuEvent('quote')}
         />
-        <MessageForward
-          {services}
-          bind:visible={isForwardMessageModalVisible}
-          sourceReceiverLookup={receiverLookup}
-          messageId={$messageStore.view.id}
-        />
+        {#if isForwardMessageModalVisible}
+          <MessageForward
+            {services}
+            bind:visible={isForwardMessageModalVisible}
+            sourceReceiverLookup={receiverLookup}
+            messageId={$messageStore.view.id}
+          />
+        {/if}
         <MessageDetail bind:visible={isMessageDetailModalVisible} message={$messageStore} />
         <MessageDelete
           bind:visible={isDeleteMessageConfirmationModalVisible}

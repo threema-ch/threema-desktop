@@ -131,9 +131,16 @@
     setNewActiveMediaFile(newMediaFiles[0]);
   }
 
-  function openConfirmCloseDialog(event: CustomEvent): void {
-    confirmCloseDialogVisible = true;
+  function closeWithOptionalConfirmation(event: CustomEvent): void {
     event.preventDefault();
+
+    const needsConfirmation = mediaFiles.length > 1 || captionComposeArea.getText() !== '';
+
+    if (needsConfirmation) {
+      confirmCloseDialogVisible = true;
+    } else {
+      close(event);
+    }
   }
 
   /**
@@ -173,8 +180,8 @@
         <ModalDialog
           bind:visible
           on:confirm
-          on:close={openConfirmCloseDialog}
-          on:cancel={openConfirmCloseDialog}
+          on:close={closeWithOptionalConfirmation}
+          on:cancel={closeWithOptionalConfirmation}
         >
           <TitleAndClose let:modal {modal} slot="header" {title} />
           <div class="body" slot="body">

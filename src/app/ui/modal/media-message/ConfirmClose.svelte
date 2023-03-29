@@ -17,7 +17,13 @@
     >
       <Title slot="header" title={'Discard Message Draft'} />
       <div class="body" slot="body">Discard current media message draft?</div>
-      <CancelAndConfirm slot="footer" let:modal {modal} confirmText="Discard" />
+      <CancelAndConfirm
+        slot="footer"
+        let:modal
+        {modal}
+        confirmText="Discard"
+        focusOnMount="confirm"
+      />
     </ModalDialog>
   </ModalWrapper>
 </template>
