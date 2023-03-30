@@ -86,7 +86,7 @@ mkdir "$build_dir"
 # Shallow clone
 branch=$(git rev-parse --abbrev-ref HEAD)
 log_major "Cloning repository (branch $branch)"
-git clone --depth 1 "file://$REPO_ROOT" "$tmp_dir"
+git clone -c protocol.file.allow=always --depth 1 "file://$REPO_ROOT" "$tmp_dir"
 
 # Rewrite submodule paths and check out submodules
 log_major "Rewrite and check out submodules"
@@ -94,7 +94,7 @@ cd "$tmp_dir"
 grep path .gitmodules | sed 's/.*path = //' | while IFS= read -r path; do
     git submodule set-url "$path" "../../$path"
 done
-git submodule update --init --recursive
+git -c protocol.file.allow=always submodule update --init --recursive
 
 # Remove some files
 cd "$tmp_dir"
