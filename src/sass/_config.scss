@@ -159,6 +159,9 @@ $config: config-merge(components.$config, (
       --cc-compose-area-margin,
       --cc-compose-area-quote-background-color,
 
+      // Compose bar
+      --cc-compose-bar-bytes-count-exceeded-color,
+
       // Emoji picker
       --cc-emoji-picker-background-color,
 

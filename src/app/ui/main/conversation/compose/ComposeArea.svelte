@@ -21,11 +21,13 @@
   import {createEventDispatcher, onMount} from 'svelte';
   import {type Readable} from 'svelte/store';
 
-  import {type u32} from '~/common/types';
+  import {type u32, type u53} from '~/common/types';
   import {isNotUndefined, unreachable} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
+  import {getUtf8ByteLength} from '~/common/utils/string';
+  import {debounce} from '~/common/utils/timer';
 
-  import {type ComposeAreaEnterKeyMode} from '.';
+  import {type ComposeAreaEnterKeyMode, DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS} from '.';
 
   /**
    * Placeholder text of the content editable.
@@ -60,6 +62,14 @@
   }
 
   /**
+   * Return the current byte length of the compose area's text content.
+   * This operation can be expensive, and should only be used sparingly.
+   */
+  export function getTextByteLength(): u53 {
+    return getUtf8ByteLength(getText());
+  }
+
+  /**
    * Insert more text content into the compose area
    */
   export function insertText(text: string): void {
@@ -85,7 +95,11 @@
   }
 
   // Component event dispatcher
-  const dispatch = createEventDispatcher<{submit: undefined; filePaste: File[]}>();
+  const dispatch = createEventDispatcher<{
+    submit: undefined;
+    filePaste: File[];
+    textByteLengthChanged: u53;
+  }>();
 
   // Compose area instance
   let area: ComposeArea;
@@ -96,6 +110,14 @@
 
   // Composition state flags
   let isComposing = false;
+
+  /**
+   * Debounced handling of content changes in the compose area.
+   */
+  const handleContentChangeDebounced = debounce(
+    () => dispatch('textByteLengthChanged', getTextByteLength()),
+    DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS,
+  );
 
   /**
    * Handle input changes in the compose area.
@@ -252,6 +274,13 @@
       box: 'content-box',
     });
 
+    // Register MutationObserver
+    const mutationObserver = new MutationObserver(handleContentChangeDebounced);
+    mutationObserver.observe(areaElement, {
+      subtree: true,
+      characterData: true,
+    });
+
     return () => {
       // Deregister composition start/end event handlers
       areaElement.removeEventListener('compositionstart', onCompositionStart);
@@ -262,6 +291,9 @@
 
       // Deregister ResizeObserver
       resizeObserver.disconnect();
+
+      // Deregister MutationObserver
+      mutationObserver.disconnect();
     };
   });
 </script>

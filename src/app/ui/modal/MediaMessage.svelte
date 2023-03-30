@@ -12,42 +12,62 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import ContextMenuWrapperWithPopperJS from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
-  import {type MediaFile} from '~/app/ui/modal/media-message';
+  import {MAX_CAPTION_BYTE_LENGTH, type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
   import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {ensureU53} from '~/common/types';
+  import {ensureU53, type u53} from '~/common/types';
   import {assert} from '~/common/utils/assert';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
+  import {WritableStore} from '~/common/utils/store';
+  import {getUtf8ByteLength} from '~/common/utils/string';
   import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
 
   export let title: string;
   export let mediaFiles: MediaFile[];
   export let visible: boolean;
-  let confirmCloseDialogVisible = false;
 
   /**
    * Whether or not more files can be attached to the message.
    */
   export let moreFilesAttachable = true;
 
+  let confirmCloseDialogVisible = false;
   let captionComposeArea: Caption;
-
   let activeMediaFile: MediaFile | undefined = mediaFiles[0];
+  let currentCaptionTextByteLength: u53 | undefined;
+  let isAnyCaptionTooLong: boolean | undefined;
 
   /**
    * Component event dispatcher
    */
   const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
 
+  function handleTextChange(event: CustomEvent<u53>): void {
+    currentCaptionTextByteLength = event.detail;
+  }
+
+  function calcIsAnyCaptionTooLong(): boolean {
+    return mediaFiles.some((mediaFile) => {
+      const caption = mediaFile.caption.get();
+
+      if (caption !== undefined) {
+        return getUtf8ByteLength(caption) > MAX_CAPTION_BYTE_LENGTH;
+      }
+
+      return false;
+    });
+  }
+
   /**
    * Save the current visible caption text string into the mediaFile.caption property
    */
   function saveCurrentCaption(): void {
     if (activeMediaFile !== undefined) {
-      activeMediaFile.caption = captionComposeArea.getText();
+      activeMediaFile.caption.set(captionComposeArea.getText());
+      isAnyCaptionTooLong = calcIsAnyCaptionTooLong();
     }
   }
 
@@ -91,18 +111,27 @@
       return;
     }
 
-    captionComposeArea.insertText(mediaFile.caption ?? '');
+    captionComposeArea.insertText(mediaFile.caption.get() ?? '');
     captionComposeArea.focus();
+
+    currentCaptionTextByteLength = captionComposeArea.getTextByteLength();
   }
 
   async function sendMessages(): Promise<void> {
+    currentCaptionTextByteLength = captionComposeArea.getTextByteLength();
+
+    // Prevent send if any caption is too long
+    if (currentCaptionTextByteLength > MAX_CAPTION_BYTE_LENGTH || isAnyCaptionTooLong === true) {
+      return;
+    }
+
     saveCurrentCaption();
     visible = false;
 
     const files = await Promise.all(
       mediaFiles.map(async ({caption, file}) => ({
         blob: new Uint8Array(await file.arrayBuffer()),
-        caption,
+        caption: caption.get(),
         fileName: file.name,
         fileSize: ensureU53(file.size),
         mediaType: file.type,
@@ -122,8 +151,9 @@
     const newMediaFiles = files.map(
       (file): MediaFile => ({
         type: 'local',
-        sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
         file,
+        caption: new WritableStore<string | undefined>(undefined),
+        sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
       }),
     );
     mediaFiles = [...mediaFiles, ...newMediaFiles];
@@ -152,6 +182,14 @@
 
   let zoneHover = false;
   let bodyHover = false;
+
+  $: isTextByteLengthVisible =
+    currentCaptionTextByteLength !== undefined &&
+    currentCaptionTextByteLength >= MAX_CAPTION_BYTE_LENGTH - 100;
+  $: isMaxTextByteLengthExceeded =
+    currentCaptionTextByteLength !== undefined &&
+    currentCaptionTextByteLength > MAX_CAPTION_BYTE_LENGTH;
+  $: isSendingDisabled = isMaxTextByteLengthExceeded || isAnyCaptionTooLong === true;
 
   onMount(() => {
     captionComposeArea.focus();
@@ -193,9 +231,15 @@
             <div class="caption">
               <Caption
                 bind:this={captionComposeArea}
-                initialText={activeMediaFile?.caption}
+                initialText={activeMediaFile?.caption?.get()}
                 on:submit={sendMessages}
+                on:textByteLengthChanged={handleTextChange}
               />
+              {#if isTextByteLengthVisible}
+                <div class="bytes-count" class:exceeded={isMaxTextByteLengthExceeded}>
+                  {currentCaptionTextByteLength}/{MAX_CAPTION_BYTE_LENGTH}
+                </div>
+              {/if}
             </div>
             <ContextMenuWrapperWithPopperJS
               placement="top-end"
@@ -227,7 +271,7 @@
               />
             </div>
             <div class="action">
-              <IconButton flavor="filled" on:click={sendMessages}>
+              <IconButton flavor="filled" on:click={sendMessages} disabled={isSendingDisabled}>
                 <MdIcon theme="Filled">arrow_upward</MdIcon>
               </IconButton>
             </div>
@@ -307,12 +351,23 @@
 
     .caption {
       padding: rem(8px) rem(8px) rem(8px) rem(16px);
+
+      .bytes-count {
+        display: flex;
+        place-content: end;
+
+        &.exceeded {
+          color: var(--cc-compose-bar-bytes-count-exceeded-color);
+        }
+      }
     }
+
     .miniatures {
       align-self: start;
       height: rem(64px);
       padding: 0 rem(16px) 0 rem(16px);
     }
+
     .action {
       align-self: start;
       padding-top: rem(12px);

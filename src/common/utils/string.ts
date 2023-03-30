@@ -1,4 +1,15 @@
 import {type u53} from '~/common/types';
+import {UTF8} from '~/common/utils/codec';
+
+/**
+ * Get the length in bytes of an utf-8 encoded `string`.
+ *
+ * @param str The utf-8 `string` to get the byte length from.
+ * @returns The byte length of the supplied `str.
+ */
+export function getUtf8ByteLength(str: string): u53 {
+    return UTF8.encode(str).byteLength;
+}
 
 /**
  * Sort function that sorts strings in a case-insensitive and locale-aware way. If two strings are

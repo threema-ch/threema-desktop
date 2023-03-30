@@ -8,6 +8,14 @@
   import ContextMenuWrapperWithPopperJS from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
+  import {type u53} from '~/common/types';
+
+  /**
+   * The maximum allowed byte length of the message text.
+   *
+   * TODO(SE-266): Update (message) size limitation
+   */
+  const MAX_TEXT_BYTE_LENGTH = 7000;
 
   /**
    * Text that will be used to initialize the compose area.
@@ -28,20 +36,10 @@
   // Reference to the compose area component
   let composeArea: ComposeArea;
   let composeAreaIsEmpty: Readable<boolean>;
+  let composeAreaTextByteLength: u53;
 
   // Emoji picker
   let emojiPickerWrapper: ContextMenuWrapperWithPopperJS;
-
-  // TODO(DESK-196): Record audio messages
-  // function recordAudio(): void {
-  //   dispatch('recordAudio');
-  // }
-
-  function sendTextMessage(): void {
-    dispatch('sendTextMessage', composeArea.getText());
-    composeArea.clearText();
-    emojiPickerWrapper.close();
-  }
 
   /**
    * Insert more text content into the compose area
@@ -70,6 +68,31 @@
   export function focus(): void {
     composeArea.focus();
   }
+
+  // TODO(DESK-196): Record audio messages
+  // function recordAudio(): void {
+  //   dispatch('recordAudio');
+  // }
+
+  function sendTextMessage(): void {
+    composeAreaTextByteLength = composeArea.getTextByteLength();
+
+    // Prevent send if message is too long
+    if (composeAreaTextByteLength > MAX_TEXT_BYTE_LENGTH) {
+      return;
+    }
+
+    dispatch('sendTextMessage', composeArea.getText());
+    composeArea.clearText();
+    emojiPickerWrapper.close();
+  }
+
+  function handleTextChange(event: CustomEvent<u53>): void {
+    composeAreaTextByteLength = event.detail;
+  }
+
+  $: isTextByteLengthVisible = composeAreaTextByteLength >= MAX_TEXT_BYTE_LENGTH - 200;
+  $: isMaxTextByteLengthExceeded = composeAreaTextByteLength > MAX_TEXT_BYTE_LENGTH;
 </script>
 
 <template>
@@ -87,10 +110,16 @@
       {initialText}
       bind:this={composeArea}
       bind:isEmpty={composeAreaIsEmpty}
+      on:textByteLengthChanged={handleTextChange}
       on:submit={sendTextMessage}
       on:filePaste
     />
     <div class="icons-right">
+      {#if isTextByteLengthVisible}
+        <div class="bytes-count" class:exceeded={isMaxTextByteLengthExceeded}>
+          {composeAreaTextByteLength}/{MAX_TEXT_BYTE_LENGTH}
+        </div>
+      {/if}
       <ContextMenuWrapperWithPopperJS
         bind:this={emojiPickerWrapper}
         placement="top"
@@ -113,7 +142,11 @@
         <MdIcon theme="Outlined">mic_none</MdIcon>
       </IconButton> -->
       {:else}
-        <IconButton flavor="filled" on:click={sendTextMessage}>
+        <IconButton
+          flavor="filled"
+          on:click={sendTextMessage}
+          disabled={isMaxTextByteLengthExceeded}
+        >
           <MdIcon theme="Filled">arrow_upward</MdIcon>
         </IconButton>
       {/if}
@@ -134,5 +167,16 @@
   .icons-left,
   .icons-right {
     display: flex;
+  }
+
+  .icons-right {
+    .bytes-count {
+      display: flex;
+      place-items: center;
+
+      &.exceeded {
+        color: var(--cc-compose-bar-bytes-count-exceeded-color);
+      }
+    }
   }
 </style>

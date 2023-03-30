@@ -119,6 +119,8 @@ $dark: (
     compose-area-padding: rem(10px) rem(8px) 0 rem(8px),
     compose-area-margin: 0 0 rem(8px) 0,
     compose-area-quote-background: rgba(#000000, 12%),
+    // Compose bar
+    compose-bar-bytes-count-exceeded-color: theme.$alert-red,
     // Emoji picker
     emoji-picker-background-color: #2e2e2e,
     // Modal dialog

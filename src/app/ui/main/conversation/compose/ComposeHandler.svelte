@@ -6,6 +6,7 @@
   import {type AnyReceiverStore} from '~/common/model';
   import {type Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
+  import {WritableStore} from '~/common/utils/store';
 
   /**
    * Text that will be used to initialize the compose area.
@@ -49,13 +50,14 @@
   function openMediaMessageDialog(files: File[], type: MediaFile['type']): void {
     mediaFiles = files.map((file) => ({
       type,
-      sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
       file,
+      caption: new WritableStore<string | undefined>(undefined),
+      sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
     }));
 
     // If there is only one file, move the current compose text to the caption.
     if (mediaFiles.length === 1) {
-      mediaFiles[0].caption = composeBar.getText();
+      mediaFiles[0].caption.set(composeBar.getText());
       clearText();
     }
 

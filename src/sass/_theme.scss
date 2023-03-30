@@ -220,6 +220,9 @@ $themes: (
     --cc-compose-area-margin: -g($cc, compose-area-margin),
     --cc-compose-area-quote-background-color: -g($cc, compose-area-quote-background),
 
+    // Compose bar
+    --cc-compose-bar-bytes-count-exceeded-color: -g($cc, compose-bar-bytes-count-exceeded-color),
+
     // Emoji picker
     --cc-emoji-picker-background-color: -g($cc, emoji-picker-background-color),
 

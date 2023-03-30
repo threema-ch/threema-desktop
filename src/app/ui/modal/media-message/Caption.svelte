@@ -1,5 +1,6 @@
 <script lang="ts">
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
+  import {type u53} from '~/common/types';
 
   export let initialText: string | undefined = undefined;
 
@@ -17,6 +18,14 @@
    */
   export function getText(): string {
     return composeArea.getText();
+  }
+
+  /**
+   * Return the current byte length of the compose area's text content. This operation can be
+   * expensive, and should only be used sparingly.
+   */
+  export function getTextByteLength(): u53 {
+    return composeArea.getTextByteLength();
   }
 
   /**
@@ -38,6 +47,7 @@
   <div>
     <ComposeArea
       on:submit
+      on:textByteLengthChanged
       bind:this={composeArea}
       placeholder="Add a caption to this media format"
       {initialText}
