@@ -1,9 +1,9 @@
 app-id: {{app-id}}
 runtime: org.freedesktop.Platform
-runtime-version: '21.08'
+runtime-version: '22.08'
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
-base-version: '21.08'
+base-version: '22.08'
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.node18
 command: run.sh
@@ -61,7 +61,12 @@ modules:
             done
     build-commands:
       # Install npm dependencies
-      - npm install --offline
+      #
+      # Note: In `package.json`, we pin the node/npm versions to a specific
+      # value. Because the Flatpak runtime does not ensure a specific minor or
+      # patch version of node, we skip the strict engine checks in npm by
+      # passing in `--engine-strict=false`.
+      - npm --engine-strict=false install --offline
       # Remove previous build artifacts
       - rm -rf build/electron/packaged
       # Build Threema Desktop
