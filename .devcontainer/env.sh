@@ -40,5 +40,10 @@ function node {
     run_in_container node "$@"
 }
 
+# Add prompt prefix
+if [[ "$PS1" != "[dev]"* ]]; then
+    export PS1="[dev]$PS1"
+fi
+
 # Announce
 echo "npm and node commands are now run inside threema-desktop-env:${NODE_VERSION}"
