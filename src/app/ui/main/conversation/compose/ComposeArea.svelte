@@ -21,6 +21,7 @@
   import {createEventDispatcher, onMount} from 'svelte';
   import {type Readable} from 'svelte/store';
 
+  import {type u32} from '~/common/types';
   import {isNotUndefined, unreachable} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
 
@@ -80,17 +81,18 @@
    * Focus wrapper div
    */
   export function focus(): void {
-    wrapperDiv.focus();
+    areaElement.focus();
   }
 
   // Component event dispatcher
   const dispatch = createEventDispatcher<{submit: undefined; filePaste: File[]}>();
 
-  // Compose area container
-  let wrapperDiv: HTMLElement;
-
   // Compose area instance
   let area: ComposeArea;
+
+  // Compose area
+  let areaElement: HTMLElement;
+  let areaElementHeight: u32 | undefined = undefined;
 
   // Composition state flags
   let isComposing = false;
@@ -201,7 +203,7 @@
 
   onMount(() => {
     // Bind compose area to DOM
-    area = ComposeArea.bind_to(wrapperDiv);
+    area = ComposeArea.bind_to(areaElement);
 
     // Auto focus on mount
     focus();
@@ -233,46 +235,89 @@
 
     // Register composition start/end event handlers
     // Note: Svelte does not support these events natively yet...
-    wrapperDiv.addEventListener('compositionstart', onCompositionStart);
-    wrapperDiv.addEventListener('compositionend', onCompositionEnd);
+    areaElement.addEventListener('compositionstart', onCompositionStart);
+    areaElement.addEventListener('compositionend', onCompositionEnd);
 
     // Load initial text
     if (initialText !== undefined) {
       area.insert_text(initialText);
     }
 
+    // Register ResizeObserver
+    function resizeHandler(entries: ResizeObserverEntry[]): void {
+      areaElementHeight = entries.find((entry) => entry.target === areaElement)?.contentRect.height;
+    }
+    const resizeObserver = new ResizeObserver(resizeHandler);
+    resizeObserver.observe(areaElement, {
+      box: 'content-box',
+    });
+
     return () => {
       // Deregister composition start/end event handlers
-      wrapperDiv.removeEventListener('compositionstart', onCompositionStart);
-      wrapperDiv.removeEventListener('compositionend', onCompositionEnd);
+      areaElement.removeEventListener('compositionstart', onCompositionStart);
+      areaElement.removeEventListener('compositionend', onCompositionEnd);
 
       // Deregister selection change event handlers
       document.removeEventListener('selectionchange', onDocumentSelectionChange);
+
+      // Deregister ResizeObserver
+      resizeObserver.disconnect();
     };
   });
 </script>
 
 <template>
-  <div
-    contenteditable="true"
-    {placeholder}
-    on:input={onInput}
-    on:keydown={onKeyDown}
-    on:paste|preventDefault={onPaste}
-    bind:this={wrapperDiv}
-  />
+  <div class="container">
+    <div
+      class="spacer"
+      style:height={areaElementHeight !== undefined ? `${areaElementHeight}px` : '0'}
+    />
+    <div
+      class="compose-area"
+      contenteditable="true"
+      {placeholder}
+      on:input={onInput}
+      on:keydown={onKeyDown}
+      on:paste|preventDefault={onPaste}
+      bind:this={areaElement}
+    />
+  </div>
 </template>
 
 <style lang="scss">
   @use 'component' as *;
 
-  div {
+  .container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .spacer,
+  .compose-area {
+    padding: var(--cc-compose-area-padding);
+    margin: var(--cc-compose-area-margin);
+  }
+
+  .spacer {
+    position: relative;
+    width: 100%;
+    max-height: rem(100px);
+    box-sizing: content-box;
+  }
+
+  .compose-area {
+    position: absolute;
+    height: auto;
+    min-height: rem(20px);
+    left: 0;
+    right: 0;
+
     outline: 0 solid transparent;
     cursor: text;
     max-height: rem(100px);
     overflow-y: scroll;
-    padding: var(--cc-compose-area-padding);
-    margin: var(--cc-compose-area-margin);
     display: grid;
     align-items: end;
     word-wrap: anywhere;
