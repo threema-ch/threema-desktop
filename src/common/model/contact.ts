@@ -591,6 +591,8 @@ export class ContactModelRepository implements ContactRepository {
                     // Local contact already exists.
                     //
                     // Note: This can only happen because another device synchronized creation of this contact.
+                    //
+                    // TODO(DESK-1001): Do we need to update the contact here?
                     return unwrap(getByIdentity(this._services, init.identity));
                 default:
                     return unreachable(result);
