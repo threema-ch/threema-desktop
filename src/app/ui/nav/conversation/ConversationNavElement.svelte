@@ -1,7 +1,8 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
-  import {type Router} from '~/app/routing/router';
+  import {getFragmentForRoute, type Router} from '~/app/routing/router';
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Time from '~/app/ui/generic/form/Time.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
@@ -86,6 +87,13 @@
     }
   }
 
+  function getConversationFragment(): string {
+    const route = ROUTE_DEFINITIONS.main.conversation.withTypedParams({
+      receiverLookup: receiver$.lookup,
+    });
+    return `#${getFragmentForRoute(route) ?? ''}`;
+  }
+
   // Temporary draft mechanism. TODO(DESK-306) full implementation.
   let conversationDraft: string | undefined;
 
@@ -107,7 +115,12 @@
 <template>
   <div class="container" class:active>
     <SwipeArea {group}>
-      <section slot="main" class="conversation" on:click={() => switchToConversation(receiver$)}>
+      <a
+        href={getConversationFragment()}
+        slot="main"
+        class="conversation"
+        on:click|preventDefault={() => switchToConversation(receiver$)}
+      >
         {#if conversation$ !== undefined && receiver$ !== undefined && $profilePicture !== undefined}
           <DeprecatedReceiver
             profilePicture={{
@@ -184,7 +197,7 @@
             </div>
           </DeprecatedReceiver>
         {/if}
-      </section>
+      </a>
 
       <aside slot="right" class="buttons">
         <SwipeAreaButton>
@@ -247,6 +260,8 @@
   }
 
   .conversation {
+    @include clicktarget-link-rect;
+
     .properties {
       height: rem(20px);
       grid-area: properties;

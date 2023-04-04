@@ -26,10 +26,13 @@ const INITIAL_STATE: RouterState = {
 };
 
 /**
- * Return a fragment for the specified route with the specified params.
+ * Return a fragment for the specified main route with the specified params.
  */
-function getFragmentForRoute(route: AnyRouteInstance['main'], log: Logger): string | undefined {
-    log.debug('getFragmentForRoute route', route);
+export function getFragmentForRoute(
+    route: AnyRouteInstance['main'],
+    log?: Logger,
+): string | undefined {
+    log?.debug('getFragmentForRoute route', route);
 
     // Look up route path
     const path = ROUTE_DEFINITIONS.main[route.id].path;
