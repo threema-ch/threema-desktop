@@ -9,17 +9,11 @@
   import {type DbReceiverLookup} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationVisibility} from '~/common/enum';
-  import {type Settings} from '~/common/model';
   import {unreachable, unwrap} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {type ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
   import {type SvelteAction} from '~/common/viewmodel/types';
-
-  /**
-   * App settings.
-   */
-  export let settings: Remote<Settings>;
 
   /**
    * Set store of all conversation previews.
@@ -181,7 +175,7 @@
         class:snap={anchorActive}
         use:rememberNodeForReceiver={conversationPreview.viewModel.get().receiverLookup}
       >
-        <ConversationNavElement {conversationPreview} {settings} {router} {group} active={false} />
+        <ConversationNavElement {conversationPreview} {router} {group} active={false} />
       </div>
     {/each}
   </div>

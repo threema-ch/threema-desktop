@@ -10,7 +10,7 @@
 
   export let services: AppServices;
   const {
-    backend: {viewModel, model},
+    backend: {viewModel},
     logging,
     router,
   } = services;
@@ -52,7 +52,7 @@
     </div>
     <div class="conversation-preview-list">
       {#await viewModel.conversationPreviews() then conversationPreviews}
-        <ConversationNavList settings={model.settings} {conversationPreviews} {router} />
+        <ConversationNavList {conversationPreviews} {router} />
       {/await}
     </div>
   </div>

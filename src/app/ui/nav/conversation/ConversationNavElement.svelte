@@ -16,7 +16,6 @@
     MessageDirection,
     ReceiverType,
   } from '~/common/enum';
-  import {type Settings} from '~/common/model';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationPreview} from '~/common/viewmodel/conversation-preview';
 
@@ -53,10 +52,6 @@
   const lastMessage = $viewModel.lastMessage;
 
   /**
-   * App settings.
-   */
-  export let settings: Remote<Settings>;
-  /**
    * Router
    */
   export let router: Router;
@@ -69,18 +64,11 @@
    */
   export let active = false;
 
-  let {conversation: conversation$, receiver: receiver$}: Partial<ConversationPreviewData> = {};
-
   // Transform conversation data and set store instances
   $: conversation$ = transformConversation($conversation);
 
   // Transform receiver data
-  $: {
-    if ($receiver === undefined) {
-      break $;
-    }
-    void transformReceiver(settings, $receiver).then((r) => (receiver$ = r));
-  }
+  $: receiver$ = transformReceiver($receiver);
 
   /**
    * Switch the currently open conversation.

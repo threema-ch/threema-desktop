@@ -20,12 +20,10 @@ import {
     type ProfilePicture,
     type RemoteModelFor,
     type RemoteModelStoreFor,
-    type Settings,
 } from '~/common/model';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
-import {type Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {type ReceiverBadgeType} from '~/common/viewmodel/types';
 
@@ -128,10 +126,7 @@ export function transformConversation(
     };
 }
 
-async function transformContact(
-    settings: Remote<Settings>,
-    contact: RemoteModelFor<Contact>,
-): Promise<ConversationPreviewData['receiver']> {
+function transformContact(contact: RemoteModelFor<Contact>): ConversationPreviewData['receiver'] {
     // Determine badge type.
     //
     // Note: We only display contact badges when the identity type differs from our own identity
@@ -156,7 +151,7 @@ async function transformContact(
         },
         badge,
         name: contact.view.displayName,
-        blocked: await settings.contactIsBlocked(contact.view.identity),
+        blocked: false, // TODO(DESK-419): await settings.contactIsBlocked(contact.view.identity),
         notifications: transformNotificationPolicyFromContact(contact.view),
     };
 }
@@ -173,13 +168,12 @@ function transformGroup(group: RemoteModelFor<Group>): ConversationPreviewData['
     };
 }
 
-export async function transformReceiver(
-    settings: Remote<Settings>,
+export function transformReceiver(
     receiver: RemoteModelFor<AnyReceiver>,
-): Promise<ConversationPreviewData['receiver']> {
+): ConversationPreviewData['receiver'] {
     switch (receiver.type) {
         case ReceiverType.CONTACT:
-            return await transformContact(settings, receiver);
+            return transformContact(receiver);
         case ReceiverType.DISTRIBUTION_LIST:
             throw new Error('TODO(DESK-236): Distribution lists');
         case ReceiverType.GROUP:

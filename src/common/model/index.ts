@@ -19,6 +19,7 @@ import {
     type DbContact,
     type DbContactUid,
     type DbConversation,
+    type DbDistributionListUid,
     type DbGroup,
     type DbGroupUid,
     type DbReceiverLookup,
@@ -575,7 +576,7 @@ type DistributionListController = ReceiverController & {
 export type DistributionList = LocalModel<
     DistributionListView,
     DistributionListController,
-    undefined,
+    DbDistributionListUid,
     ReceiverType.DISTRIBUTION_LIST
 >;
 
