@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <button on:click type="button">
+  <button on:click type="button" tabindex="-1">
     <span class="icon">
       <slot name="icon" />
     </span>
