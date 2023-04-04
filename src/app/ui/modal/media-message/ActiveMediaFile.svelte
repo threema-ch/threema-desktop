@@ -123,7 +123,7 @@
   }
 
   button.remove-icon {
-    @include circle-button;
+    @include clicktarget-button-circle;
     border-radius: rem(4px);
 
     width: rem(40px);

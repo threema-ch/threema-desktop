@@ -191,7 +191,7 @@
     align-items: center;
 
     .overlay-button {
-      @include circle-button;
+      @include clicktarget-button-circle;
       display: flex;
       justify-content: center;
       align-items: center;

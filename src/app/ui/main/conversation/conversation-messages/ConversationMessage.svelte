@@ -445,7 +445,7 @@
         padding-left: rem(4px);
 
         .caret {
-          @include circle-button;
+          @include clicktarget-button-circle;
           display: none;
           user-select: none;
           justify-self: start;
@@ -484,7 +484,7 @@
           font-size: rem(4px);
 
           .profile-picture {
-            @include circle-button;
+            @include clicktarget-button-circle;
             --c-profile-picture-size: #{rem(24px)};
           }
         }

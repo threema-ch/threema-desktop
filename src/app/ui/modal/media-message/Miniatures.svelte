@@ -64,7 +64,7 @@
   }
 
   button {
-    @include circle-button;
+    @include clicktarget-button-circle;
     border-radius: rem(4px);
     overflow: hidden;
 

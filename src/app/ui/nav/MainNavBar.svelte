@@ -73,7 +73,7 @@
 
     .profile-picture {
       @include def-var(--c-profile-picture-size, $-profile-picture-size);
-      @include circle-button;
+      @include clicktarget-button-circle;
       justify-self: start;
     }
   }

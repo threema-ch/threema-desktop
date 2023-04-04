@@ -76,7 +76,7 @@
     }
 
     .name {
-      @include square-button;
+      @include clicktarget-button-rect;
       grid-area: name;
       padding: rem(2px) rem(4px);
       margin: rem(-2px) rem(-4px);
