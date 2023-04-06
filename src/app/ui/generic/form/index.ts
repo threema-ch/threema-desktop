@@ -290,5 +290,22 @@ export function textProcessor(text: string | undefined, mentions: Mention[]): st
         [TokenType.Tilde]: 'md-strike',
     });
 
-    return autolinker.link(text);
+    return autolinker.link(text, {
+        phone: false,
+        replaceFn: (match) => {
+            if (match.type === 'url') {
+                // Override anchor display text with the original text
+                const tag = match.buildTag().setInnerHtml(match.getMatchedText());
+
+                // If no scheme was given use `https://` instead of `http://`
+                if (match.getUrlMatchType() === 'tld') {
+                    tag.setAttr('href', match.getUrl().replace('http://', 'https://'));
+                }
+
+                return tag;
+            }
+
+            return true;
+        },
+    });
 }
