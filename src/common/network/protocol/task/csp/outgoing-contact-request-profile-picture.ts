@@ -48,7 +48,7 @@ export class OutgoingContactRequestProfilePictureTask implements ActiveTask<void
                     structbuf.csp.e2e.ContactRequestProfilePicture,
                     {},
                 ),
-                cspMessageFlags: CspMessageFlags.fromPartial({sendPushNotification: true}),
+                cspMessageFlags: CspMessageFlags.none(),
                 messageId: randomMessageId(this._services.crypto),
                 createdAt: new Date(),
                 allowUserProfileDistribution: false,
