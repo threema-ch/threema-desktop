@@ -344,6 +344,9 @@
       });
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let messagesContainer: HTMLElement | null = null;
+
   onDestroy(() => {
     saveMessageDraftAndClear(lastReceiverLookup);
     routerUnsubscribe();
@@ -374,7 +377,7 @@
         </div>
       </div>
     {:else}
-      <div class="messages">
+      <div bind:this={messagesContainer} class="messages">
         {#await conversationViewModel.viewModelController.getConversationMessagesSetStore() then conversationMessagesSet}
           <ConversationMessageList
             {conversationMessagesSet}
@@ -382,6 +385,7 @@
             {receiver}
             {conversation}
             {services}
+            container={messagesContainer}
             on:quoteMessage={quoteMessage}
             on:deleteMessage={deleteMessage}
           />
@@ -496,6 +500,7 @@
     }
 
     .messages {
+      position: relative;
       grid-area: messages;
       scroll-snap-type: y mandatory;
       overflow-y: auto;

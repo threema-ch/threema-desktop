@@ -1,64 +1,35 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
+  import {fade} from 'svelte/transition';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
-  import ContextMenuWrapper from '~/app/ui/generic/context-menu/ContextMenuWrapper.svelte';
-  import {type u32} from '~/common/types';
 
-  export let x: u32;
-  export let y: u32;
-  export let closeContextMenu: () => void;
   export let isConversationEmptyActionEnabled = false;
-
-  let wrapper: ContextMenuWrapper;
-
-  /**
-   * Close the context menu
-   */
-  export function close(): void {
-    wrapper.close();
-  }
-
-  /**
-   * Open the context menu
-   */
-  export function open(): void {
-    wrapper.open();
-  }
 
   const dispatchEvent = createEventDispatcher<{emptyConversationActionClicked: undefined}>();
 
   function closeMenuAndDispatchEvent(eventName: 'emptyConversationActionClicked'): () => void {
     return () => {
-      closeContextMenu();
       dispatchEvent(eventName);
     };
   }
 </script>
 
 <template>
-  <div>
-    <ContextMenuWrapper
-      bind:this={wrapper}
-      directionX="auto"
-      on:clickoutside={closeContextMenu}
-      {x}
-      {y}
-    >
-      <MenuContainer mode="small">
-        <MenuItem
-          disabled={!isConversationEmptyActionEnabled}
-          on:click={closeMenuAndDispatchEvent('emptyConversationActionClicked')}
-        >
-          <span class="icon" slot="icon">
-            <MdIcon theme="Outlined">delete_sweep</MdIcon>
-          </span>
-          <span>Empty Chat</span>
-        </MenuItem>
-      </MenuContainer>
-    </ContextMenuWrapper>
+  <div transition:fade={{duration: 100}}>
+    <MenuContainer mode="small">
+      <MenuItem
+        disabled={!isConversationEmptyActionEnabled}
+        on:click={closeMenuAndDispatchEvent('emptyConversationActionClicked')}
+      >
+        <span class="icon" slot="icon">
+          <MdIcon theme="Outlined">delete_sweep</MdIcon>
+        </span>
+        <span>Empty Chat</span>
+      </MenuItem>
+    </MenuContainer>
   </div>
 </template>
 
@@ -67,5 +38,6 @@
 
   div {
     --c-menu-container-width: #{rem(180px)};
+    @extend %elevation-060;
   }
 </style>

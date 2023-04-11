@@ -51,6 +51,12 @@
   export let conversation: RemoteModelStore<Conversation>;
 
   /**
+   * The reference to the element which contains this message list.
+   */
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  export let container: HTMLElement | null;
+
+  /**
    * A store that only triggers updates when the conversation ID changes.
    *
    * Note that the `conversation` store will trigger updates for many other things, such as changing
@@ -157,6 +163,7 @@
       {receiverLookup}
       selectable={false}
       {services}
+      {container}
       on:quoteMessage
       on:deleteMessage
     />

@@ -6,6 +6,7 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import ContextMenuWrapperWithPopperJs from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import {type ConversationTopBarMode} from '~/app/ui/main/conversation/top-bar';
   import ConversationTopBarContextMenu from '~/app/ui/main/conversation/top-bar/ConversationTopBarContextMenu.svelte';
@@ -95,15 +96,10 @@
     router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
   }
 
-  // Context menu
-  let contextMenu: ConversationTopBarContextMenu;
-  let contextMenuPosition = {x: 0, y: 0};
-  let isContextMenuVisible = false;
+  let topBar: HTMLElement;
   let isConversationEmptyDialogVisible = false;
   let isConversationEmptyActionEnabled = false;
   let conversationMessageCount = 0;
-  let topBar: HTMLElement;
-  let menuButton: HTMLElement;
 
   $: $conversation.controller
     .getAllMessages()
@@ -118,32 +114,10 @@
       isConversationEmptyActionEnabled = false;
     });
 
-  function closeContextMenu(): void {
-    contextMenu.close();
-    isContextMenuVisible = false;
-  }
-
-  function toggleContextMenuOnMouseEvent(event: MouseEvent): void {
-    if (isContextMenuVisible) {
-      closeContextMenu();
-      return;
-    }
-
-    // Prevent click trigger on body, which would close the context menu instantly
-    event.stopPropagation();
-
-    contextMenuPosition = {
-      x: menuButton.offsetLeft + menuButton.offsetWidth,
-      y: topBar.offsetHeight,
-    };
-
-    contextMenu.open();
-    isContextMenuVisible = true;
-  }
-
   function confirmEmptyConversationAction(): void {
     isConversationEmptyDialogVisible = true;
   }
+
   function deleteAllConversationMessages(): void {
     $conversation.controller.removeAllMessages
       .fromLocal()
@@ -198,11 +172,23 @@
             <MdIcon theme="Outlined">notifications_active</MdIcon>
           </IconButton> -->
           {#if receiver.type !== 'distribution-list'}
-            <div bind:this={menuButton}>
-              <IconButton flavor="naked" on:click={toggleContextMenuOnMouseEvent}>
+            <ContextMenuWrapperWithPopperJs
+              placement={'bottom-end'}
+              offset={{
+                skidding: 0,
+                distance: 4,
+              }}
+            >
+              <IconButton slot="trigger" flavor="naked">
                 <MdIcon theme="Outlined">more_vert</MdIcon>
               </IconButton>
-            </div>
+
+              <ConversationTopBarContextMenu
+                slot="panel"
+                {isConversationEmptyActionEnabled}
+                on:emptyConversationActionClicked={confirmEmptyConversationAction}
+              />
+            </ContextMenuWrapperWithPopperJs>
           {/if}
         </div>
       </div>
@@ -216,14 +202,6 @@
       </TopBarMode>
     {/if}
   </div>
-
-  <ConversationTopBarContextMenu
-    bind:this={contextMenu}
-    {...contextMenuPosition}
-    {closeContextMenu}
-    {isConversationEmptyActionEnabled}
-    on:emptyConversationActionClicked={confirmEmptyConversationAction}
-  />
 
   <ConversationEmptyConfirmationDialog
     bind:visible={isConversationEmptyDialogVisible}

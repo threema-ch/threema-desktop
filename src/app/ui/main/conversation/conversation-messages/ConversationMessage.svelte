@@ -12,8 +12,9 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
+  import ContextMenuWrapperWithPopperJs from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
-  import ContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
+  import ConversationMessageContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import MessageComponent from '~/app/ui/main/conversation/conversation-messages/Message.svelte';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
   import MessageDetail from '~/app/ui/modal/MessageDetail.svelte';
@@ -34,7 +35,7 @@
     type RemoteModelStoreFor,
   } from '~/common/model';
   import {type MessageId} from '~/common/network/types';
-  import {type ReadonlyUint8Array} from '~/common/types';
+  import {type ReadonlyUint8Array, type u32} from '~/common/types';
   import {assert, ensureError, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
@@ -76,17 +77,20 @@
    */
   export let messageStore: RemoteModelStoreFor<AnyMessageModelStore>;
 
+  /**
+   * The reference to the element which contains this message element.
+   */
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  export let container: HTMLElement | null;
+
   let messageBody: Message<AnyMessageBody> = $viewModelStore.body;
   $: messageBody = $viewModelStore.body;
 
   // Context menu
-  let contextMenu: ContextMenu;
-  let contextMenuPosition = {x: 0, y: 0};
+  // let contextMenu: ContextMenu;
+  let contextMenuWrapper: ContextMenuWrapperWithPopperJs;
+  let contextMenuPosition: {x: u32; y: u32} | undefined = undefined;
   let isContextMenuVisible = false;
-  function closeContextMenu(): void {
-    contextMenu.close();
-    isContextMenuVisible = false;
-  }
 
   let isDeleteMessageConfirmationModalVisible = false;
   let isForwardMessageModalVisible = false;
@@ -124,36 +128,35 @@
     return content === undefined || content.length === 0 ? undefined : content;
   }
 
-  function openContextMenuOnMouseEvent(event: MouseEvent): void {
+  function handleContextMenuAction(event: MouseEvent): void {
     if (selectable) {
       return;
     }
 
+    messageContentToCopy = extractMessageContent();
+    hrefToCopy = extractHrefFromEventTarget(event);
+
     if (event.type === 'contextmenu') {
-      // Prevent browser context menu - do show only our own
-      event.preventDefault();
-    } else if (event.type === 'click') {
-      // Prevent click trigger on body, which would close the contextmenu instantly
-      event.stopPropagation();
+      contextMenuPosition = {x: event.clientX, y: event.clientY};
+    } else {
+      contextMenuPosition = undefined;
     }
 
-    contextMenuPosition = {x: event.clientX, y: event.clientY};
+    contextMenuWrapper.open();
+  }
 
-    hrefToCopy = extractHrefFromEventTarget(event);
+  function handleContextMenuTriggerClicked(): void {
+    if (selectable) {
+      return;
+    }
+
+    contextMenuPosition = undefined;
     messageContentToCopy = extractMessageContent();
-
-    contextMenu.open({
-      showAction: {
-        copyLink: hrefToCopy !== undefined,
-        copyMessage: messageContentToCopy !== undefined,
-        forward: messageBody.type === 'text',
-      },
-    });
-    isContextMenuVisible = true;
   }
 
   function handleContextMenuEvent(type: ConversationMessageContextMenuEvent): void {
-    closeContextMenu();
+    contextMenuWrapper.close();
+
     switch (type) {
       case 'thumbup':
       case 'thumbdown':
@@ -353,7 +356,7 @@
         </div>
       {/if}
 
-      <div class="message" use:contextMenuAction={openContextMenuOnMouseEvent}>
+      <div class="message" use:contextMenuAction={handleContextMenuAction}>
         <MessageComponent
           messageViewModel={$viewModelStore}
           {receiver}
@@ -365,29 +368,52 @@
         <div class="hover" class:visible={isContextMenuVisible} />
       </div>
       <div class="options">
-        <button
-          class="caret"
-          class:visible={isContextMenuVisible}
-          on:click={openContextMenuOnMouseEvent}
+        <ContextMenuWrapperWithPopperJs
+          bind:this={contextMenuWrapper}
+          position={contextMenuPosition}
+          placement={messageBody.direction === MessageDirection.INBOUND
+            ? 'bottom-start'
+            : 'bottom-end'}
+          offset={{
+            skidding: 0,
+            distance: 4,
+          }}
+          container={container ?? undefined}
+          restrictBoundsToContainer={true}
+          triggerBehavior="open"
+          on:clickTrigger={handleContextMenuTriggerClicked}
+          on:open={() => {
+            isContextMenuVisible = true;
+          }}
+          on:close={() => {
+            isContextMenuVisible = false;
+          }}
         >
-          <MdIcon theme="Outlined">expand_more</MdIcon>
-        </button>
-        <ContextMenu
-          bind:this={contextMenu}
-          directionX={messageBody.direction === MessageDirection.INBOUND ? 'auto' : 'left'}
-          message={messageBody}
-          isGroupConversation={receiver.type === ReceiverType.GROUP}
-          {...contextMenuPosition}
-          on:copy={() => handleContextMenuEvent('copy')}
-          on:copyLink={() => handleContextMenuEvent('copyLink')}
-          on:delete={() => handleContextMenuEvent('delete')}
-          on:clickoutside={() => closeContextMenu()}
-          on:showMessageDetails={() => handleContextMenuEvent('showMessageDetails')}
-          on:thumbup={() => handleContextMenuEvent('thumbup')}
-          on:thumbdown={() => handleContextMenuEvent('thumbdown')}
-          on:forward={() => handleContextMenuEvent('forward')}
-          on:quote={() => handleContextMenuEvent('quote')}
-        />
+          <button slot="trigger" class="caret" class:visible={isContextMenuVisible}>
+            <MdIcon theme="Outlined">expand_more</MdIcon>
+          </button>
+
+          <ConversationMessageContextMenu
+            slot="panel"
+            message={messageBody}
+            isGroupConversation={receiver.type === ReceiverType.GROUP}
+            options={{
+              showAction: {
+                copyLink: hrefToCopy !== undefined,
+                copyMessage: messageContentToCopy !== undefined,
+                forward: messageBody.type === 'text',
+              },
+            }}
+            on:copy={() => handleContextMenuEvent('copy')}
+            on:copyLink={() => handleContextMenuEvent('copyLink')}
+            on:delete={() => handleContextMenuEvent('delete')}
+            on:showMessageDetails={() => handleContextMenuEvent('showMessageDetails')}
+            on:thumbup={() => handleContextMenuEvent('thumbup')}
+            on:thumbdown={() => handleContextMenuEvent('thumbdown')}
+            on:forward={() => handleContextMenuEvent('forward')}
+            on:quote={() => handleContextMenuEvent('quote')}
+          />
+        </ContextMenuWrapperWithPopperJs>
         {#if isForwardMessageModalVisible}
           <MessageForward
             {services}
