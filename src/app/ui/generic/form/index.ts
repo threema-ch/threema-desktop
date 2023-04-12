@@ -292,19 +292,19 @@ export function textProcessor(text: string | undefined, mentions: Mention[]): st
 
     return autolinker.link(text, {
         phone: false,
+        stripPrefix: false,
+        stripTrailingSlash: false,
+        urls: {
+            ipV4Matches: false,
+        },
         replaceFn: (match) => {
-            if (match.type === 'url') {
-                // Override anchor display text with the original text
-                const tag = match.buildTag().setInnerHtml(match.getMatchedText());
-
+            if (match.type === 'url' && match.getUrlMatchType() === 'tld') {
                 // If no scheme was given use `https://` instead of `http://`
-                if (match.getUrlMatchType() === 'tld') {
-                    tag.setAttr('href', match.getUrl().replace('http://', 'https://'));
-                }
-
-                return tag;
+                // See https://github.com/gregjacobs/Autolinker.js/issues/319
+                return match
+                    .buildTag()
+                    .setAttr('href', match.getUrl().replace('http://', 'https://'));
             }
-
             return true;
         },
     });
