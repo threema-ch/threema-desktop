@@ -12,7 +12,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import ContextMenuWrapperWithPopperJs from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import ConversationMessageContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import MessageComponent from '~/app/ui/main/conversation/conversation-messages/Message.svelte';
@@ -35,12 +35,13 @@
     type RemoteModelStoreFor,
   } from '~/common/model';
   import {type MessageId} from '~/common/network/types';
-  import {type ReadonlyUint8Array, type u32} from '~/common/types';
+  import {type ReadonlyUint8Array} from '~/common/types';
   import {assert, ensureError, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
+  import {VirtualRect} from '~/app/ui/generic/popover';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-message');
 
@@ -88,8 +89,8 @@
 
   // Context menu
   // let contextMenu: ContextMenu;
-  let contextMenuWrapper: ContextMenuWrapperWithPopperJs;
-  let contextMenuPosition: {x: u32; y: u32} | undefined = undefined;
+  let contextMenuPopover: Popover;
+  let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
   let isContextMenuVisible = false;
 
   let isDeleteMessageConfirmationModalVisible = false;
@@ -137,12 +138,19 @@
     hrefToCopy = extractHrefFromEventTarget(event);
 
     if (event.type === 'contextmenu') {
-      contextMenuPosition = {x: event.clientX, y: event.clientY};
+      contextMenuVirtualTrigger = {
+        width: 0,
+        height: 0,
+        left: event.clientX,
+        right: 0,
+        top: event.clientY,
+        bottom: 0,
+      };
     } else {
-      contextMenuPosition = undefined;
+      contextMenuVirtualTrigger = undefined;
     }
 
-    contextMenuWrapper.open();
+    contextMenuPopover.open();
   }
 
   function handleContextMenuTriggerClicked(): void {
@@ -150,12 +158,12 @@
       return;
     }
 
-    contextMenuPosition = undefined;
+    contextMenuVirtualTrigger = undefined;
     messageContentToCopy = extractMessageContent();
   }
 
   function handleContextMenuEvent(type: ConversationMessageContextMenuEvent): void {
-    contextMenuWrapper.close();
+    contextMenuPopover.close();
 
     switch (type) {
       case 'thumbup':
@@ -368,24 +376,38 @@
         <div class="hover" class:visible={isContextMenuVisible} />
       </div>
       <div class="options">
-        <ContextMenuWrapperWithPopperJs
-          bind:this={contextMenuWrapper}
-          position={contextMenuPosition}
-          placement={messageBody.direction === MessageDirection.INBOUND
-            ? 'bottom-start'
-            : 'bottom-end'}
-          offset={{
-            skidding: 0,
-            distance: 4,
-          }}
+        <Popover
+          bind:this={contextMenuPopover}
+          reference={contextMenuVirtualTrigger}
           container={container ?? undefined}
-          restrictBoundsToContainer={true}
+          anchorPoints={messageBody.direction === MessageDirection.INBOUND
+            ? {
+                reference: {
+                  horizontal: 'left',
+                  vertical: 'bottom',
+                },
+                popover: {
+                  horizontal: 'left',
+                  vertical: 'top',
+                },
+              }
+            : {
+                reference: {
+                  horizontal: 'right',
+                  vertical: 'bottom',
+                },
+                popover: {
+                  horizontal: 'right',
+                  vertical: 'top',
+                },
+              }}
+          offset={{left: 0, top: 4}}
           triggerBehavior="open"
-          on:clickTrigger={handleContextMenuTriggerClicked}
-          on:open={() => {
+          on:clicktrigger={handleContextMenuTriggerClicked}
+          on:hasopened={() => {
             isContextMenuVisible = true;
           }}
-          on:close={() => {
+          on:hasclosed={() => {
             isContextMenuVisible = false;
           }}
         >
@@ -394,7 +416,7 @@
           </button>
 
           <ConversationMessageContextMenu
-            slot="panel"
+            slot="popover"
             message={messageBody}
             isGroupConversation={receiver.type === ReceiverType.GROUP}
             options={{
@@ -413,7 +435,7 @@
             on:forward={() => handleContextMenuEvent('forward')}
             on:quote={() => handleContextMenuEvent('quote')}
           />
-        </ContextMenuWrapperWithPopperJs>
+        </Popover>
         {#if isForwardMessageModalVisible}
           <MessageForward
             {services}

@@ -5,10 +5,10 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ContextMenuWrapperWithPopperJS from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
   import {type u53} from '~/common/types';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
 
   /**
    * The maximum allowed byte length of the message text.
@@ -39,7 +39,7 @@
   let composeAreaTextByteLength: u53;
 
   // Emoji picker
-  let emojiPickerWrapper: ContextMenuWrapperWithPopperJS;
+  let emojiPickerWrapper: Popover;
 
   /**
    * Insert more text content into the compose area
@@ -120,12 +120,21 @@
           {composeAreaTextByteLength}/{MAX_TEXT_BYTE_LENGTH}
         </div>
       {/if}
-      <ContextMenuWrapperWithPopperJS
+      <Popover
         bind:this={emojiPickerWrapper}
-        placement="top"
+        anchorPoints={{
+          reference: {
+            horizontal: 'right',
+            vertical: 'top',
+          },
+          popover: {
+            horizontal: 'right',
+            vertical: 'bottom',
+          },
+        }}
         offset={{
-          skidding: 0,
-          distance: 14,
+          left: $composeAreaIsEmpty ? 8 : 48,
+          top: -14,
         }}
       >
         <IconButton slot="trigger" flavor="naked">
@@ -133,10 +142,10 @@
         </IconButton>
 
         <EmojiPicker
-          slot="panel"
+          slot="popover"
           on:insertEmoji={(event) => composeArea.insertText(event.detail)}
         />
-      </ContextMenuWrapperWithPopperJS>
+      </Popover>
       {#if $composeAreaIsEmpty}
         <!-- <IconButton flavor="naked" on:click={recordAudio} class="wip">
         <MdIcon theme="Outlined">mic_none</MdIcon>

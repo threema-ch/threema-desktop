@@ -6,7 +6,7 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
-  import ContextMenuWrapperWithPopperJs from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import {type ConversationTopBarMode} from '~/app/ui/main/conversation/top-bar';
   import ConversationTopBarContextMenu from '~/app/ui/main/conversation/top-bar/ConversationTopBarContextMenu.svelte';
@@ -96,7 +96,6 @@
     router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
   }
 
-  let topBar: HTMLElement;
   let isConversationEmptyDialogVisible = false;
   let isConversationEmptyActionEnabled = false;
   let conversationMessageCount = 0;
@@ -126,7 +125,7 @@
 </script>
 
 <template>
-  <div data-mode={mode} bind:this={topBar}>
+  <div data-mode={mode}>
     {#if mode === 'conversation-detail'}
       <div class="detail" data-type={receiver.type} data-display={$display}>
         {#if $display === 'small'}
@@ -172,11 +171,20 @@
             <MdIcon theme="Outlined">notifications_active</MdIcon>
           </IconButton> -->
           {#if receiver.type !== 'distribution-list'}
-            <ContextMenuWrapperWithPopperJs
-              placement={'bottom-end'}
+            <Popover
+              anchorPoints={{
+                reference: {
+                  horizontal: 'right',
+                  vertical: 'bottom',
+                },
+                popover: {
+                  horizontal: 'right',
+                  vertical: 'top',
+                },
+              }}
               offset={{
-                skidding: 0,
-                distance: 4,
+                left: 0,
+                top: 4,
               }}
             >
               <IconButton slot="trigger" flavor="naked">
@@ -184,11 +192,11 @@
               </IconButton>
 
               <ConversationTopBarContextMenu
-                slot="panel"
+                slot="popover"
                 {isConversationEmptyActionEnabled}
                 on:emptyConversationActionClicked={confirmEmptyConversationAction}
               />
-            </ContextMenuWrapperWithPopperJs>
+            </Popover>
           {/if}
         </div>
       </div>

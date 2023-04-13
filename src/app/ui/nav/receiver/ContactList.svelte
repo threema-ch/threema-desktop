@@ -5,7 +5,8 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import ContextMenuWrapperWithPopperJs from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
+  import {type VirtualRect} from '~/app/ui/generic/popover';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
@@ -39,9 +40,9 @@
   const swipeGroup = new SwipeAreaGroup();
 
   // Context menu
-  let contextMenuWrapper: ContextMenuWrapperWithPopperJs;
+  let contextMenuPopover: Popover;
   let contextGroup: HTMLElement;
-  let contextMenuPosition = {x: 0, y: 0};
+  let contextMenuPosition: VirtualRect | undefined;
   let currentContact: SetValue<IQueryableStoreValue<typeof contacts>> | undefined;
 
   // "Delete contact" modal dialog
@@ -68,11 +69,11 @@
   );
 
   onDestroy((): void => {
-    contextMenuWrapper.close();
+    contextMenuPopover.close();
   });
 
   function handleClickedOnEditContact(): void {
-    contextMenuWrapper.close();
+    contextMenuPopover.close();
     if (currentContact === undefined) {
       return;
     }
@@ -85,7 +86,7 @@
   }
 
   async function handleClickedOnDeleteContact(): Promise<void> {
-    contextMenuWrapper.close();
+    contextMenuPopover.close();
     if (currentContact === undefined) {
       return;
     }
@@ -165,8 +166,15 @@
         use:contextMenuAction={(event) => {
           event.preventDefault();
           currentContact = contact;
-          contextMenuPosition = {x: event.clientX, y: event.clientY};
-          contextMenuWrapper.open(event);
+          contextMenuPosition = {
+            left: event.clientX,
+            right: 0,
+            top: event.clientY,
+            bottom: 0,
+            width: 0,
+            height: 0,
+          };
+          contextMenuPopover.open(event);
         }}
         use:scrollIntoViewIfConversationDisplayed={contact.contactUid}
       >
@@ -181,23 +189,30 @@
     {/each}
   </div>
 
-  <ContextMenuWrapperWithPopperJs
-    bind:this={contextMenuWrapper}
+  <Popover
+    bind:this={contextMenuPopover}
     container={contextGroup}
-    position={contextMenuPosition}
-    placement="right-start"
-    on:clickOutside={(event) => {
-      if (event.detail === undefined || event.detail.isClickWithinContainer === true) {
-        currentContact = undefined;
-      }
+    reference={contextMenuPosition}
+    anchorPoints={{
+      reference: {
+        horizontal: 'left',
+        vertical: 'bottom',
+      },
+      popover: {
+        horizontal: 'left',
+        vertical: 'top',
+      },
+    }}
+    on:clickoutside={() => {
+      currentContact = undefined;
     }}
   >
     <ContactListContextMenu
-      slot="panel"
+      slot="popover"
       on:edit={handleClickedOnEditContact}
       on:delete={handleClickedOnDeleteContact}
     />
-  </ContextMenuWrapperWithPopperJs>
+  </Popover>
 
   <DeleteDialog
     bind:visible={deleteContactDialogVisible}

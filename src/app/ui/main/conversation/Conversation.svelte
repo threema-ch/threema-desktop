@@ -500,7 +500,6 @@
     }
 
     .messages {
-      position: relative;
       grid-area: messages;
       scroll-snap-type: y mandatory;
       overflow-y: auto;

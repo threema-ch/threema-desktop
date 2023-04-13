@@ -10,7 +10,6 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import ContextMenuWrapperWithPopperJS from '~/app/ui/generic/context-menu/ContextMenuWrapperWithPopperJS.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import {MAX_CAPTION_BYTE_LENGTH, type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
@@ -24,6 +23,7 @@
   import {WritableStore} from '~/common/utils/store';
   import {getUtf8ByteLength} from '~/common/utils/string';
   import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
 
   export let title: string;
   export let mediaFiles: MediaFile[];
@@ -241,11 +241,20 @@
                 </div>
               {/if}
             </div>
-            <ContextMenuWrapperWithPopperJS
-              placement="top-end"
+            <Popover
+              anchorPoints={{
+                reference: {
+                  horizontal: 'right',
+                  vertical: 'top',
+                },
+                popover: {
+                  horizontal: 'right',
+                  vertical: 'bottom',
+                },
+              }}
               offset={{
-                skidding: 0,
-                distance: 14,
+                left: 0,
+                top: -14,
               }}
             >
               <IconButton slot="trigger" flavor="naked">
@@ -253,10 +262,10 @@
               </IconButton>
 
               <EmojiPicker
-                slot="panel"
+                slot="popover"
                 on:insertEmoji={(event) => captionComposeArea.insertText(event.detail)}
               />
-            </ContextMenuWrapperWithPopperJS>
+            </Popover>
             <div class="miniatures">
               <Miniatures
                 {mediaFiles}

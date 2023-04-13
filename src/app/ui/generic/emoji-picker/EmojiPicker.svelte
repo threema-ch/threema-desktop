@@ -1,6 +1,5 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
-  import {fade} from 'svelte/transition';
 
   import EmojiGroups from '#3sc/components/generic/EmojiPicker/EmojiGroups.svelte';
   import EmojiPicker from '#3sc/components/generic/EmojiPicker/EmojiPicker.svelte';
@@ -23,7 +22,7 @@
 </script>
 
 <template>
-  <div class="wrapper" transition:fade={{duration: 100}}>
+  <div class="wrapper">
     <EmojiGroups bind:this={emojiGroups} on:groupClicked={scrollToGroup} />
     <EmojiPicker
       bind:this={emojiPicker}
