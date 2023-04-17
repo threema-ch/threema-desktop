@@ -436,7 +436,7 @@ package:flatpak-public:
     GPG_ID: 8BC90B39A3DEA043F88607CA74463EA2AF62F4C6
     # Set FTP_PASS variable in CI!
 
-package:dmg:
+package:macos:
   stage: package
   rules:
     - if: $CI_COMMIT_BRANCH == 'develop'
@@ -570,7 +570,7 @@ package:dmg:
         - .npm/
         - node_modules/
 
-package:exe:
+package:windows:
   stage: package
   rules:
     - if: $CI_COMMIT_BRANCH == 'develop'
@@ -595,11 +595,14 @@ package:exe:
     # Install dependencies
     - npm ci --cache .npm
 
-    # Build EXE
+    # Build EXE binary
     - npm run package binarySigned consumer-live,work-sandbox
-    - dir build\out\
+
+    # Build MSIX package
+    - npm run package msixSigned consumer-live,work-sandbox
 
     # Upload
+    - dir build\out\
     - |
       foreach ($flavor in "consumer-live","work-sandbox") {
         switch ($flavor) {
@@ -610,28 +613,41 @@ package:exe:
             $name = "threema-red"
           }
         }
-        $sourceFile = "build/out/${name}-desktop-bin-win32-${env:ARCH}.zip"
+        $sourceFileExe = "build/out/${name}-desktop-bin-win32-${env:ARCH}.zip"
+        $sourceFileMsix = "build/out/${name}-desktop-windows-${env:ARCH}.msix"
         switch ($BUILD_TYPE) {
           "nightly" {
-            $filename = "$name-desktop-nightly-bin-windows-${env:ARCH}.zip"
+            $filenameExe = "$name-desktop-nightly-bin-windows-${env:ARCH}.zip"
+            $filenameMsix = "$name-desktop-nightly-windows-${env:ARCH}.msix"
 
             # Upload, overwrite if it exists
-            echo "Uploading $filename"
-            curl.exe -T "$sourceFile" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$FILENAME" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+            echo "Uploading $filenameExe"
+            curl.exe -T "$sourceFileExe" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+            echo "Uploading $filenameMsix"
+            curl.exe -T "$sourceFileMsix" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
           }
           "release" {
-            $filename = "$name-desktop-$CI_COMMIT_REF_NAME-bin-windows-${env:ARCH}.zip"
+            $filenameExe = "$name-desktop-$CI_COMMIT_REF_NAME-bin-windows-${env:ARCH}.zip"
+            $filenameMsix = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.msix"
 
             # Ensure that build wasn't already uploaded
-            $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filename" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
+            $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
             If ($ftp_status -eq 350) {
-              throw "File $filename already exists on FTP server"
+              throw "File $filenameExe already exists on FTP server"
+            }
+            $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
+            If ($ftp_status -eq 350) {
+              throw "File $filenameMsix already exists on FTP server"
             }
 
-            # Upload ZIP and checksums
+            # Upload ZIP, MSIX and checksums
             Foreach ($ext in '','.sha256') {
-              echo "Uploading $filename"
-              curl.exe -T "$sourceFile$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filename$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+              echo "Uploading $filenameExe$ext"
+              curl.exe -T "$sourceFileExe$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+            }
+            Foreach ($ext in '','.sha256') {
+              echo "Uploading $filenameMsix$ext"
+              curl.exe -T "$sourceFileMsix$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
             }
           }
           default {

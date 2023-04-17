@@ -206,7 +206,7 @@ type PackageJson = Readonly<v.Infer<typeof PACKAGE_JSON_SCHEMA>>;
 function readPackageJson(dirs: Directories): PackageJson {
     // Note: Theoretically it should be possible to import the package.json file directly, but I
     // couldn't get it to work
-    const packageJson = fs.readFileSync(path.join(dirs.root, 'package.json'), {encoding: 'utf-8'});
+    const packageJson = fs.readFileSync(path.join(dirs.root, 'package.json'), {encoding: 'utf8'});
     return PACKAGE_JSON_SCHEMA.parse(JSON.parse(packageJson));
 }
 
@@ -448,6 +448,7 @@ function signWindowsBinaryOrPackage(pathToSign: string, flavor: Flavor): void {
             '/kc', keyContainer,
             pathToSign,
         ],
+        {encoding: 'utf8'},
     );
 }
 
@@ -843,7 +844,7 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
     const applicationId = identityName;
 
     // Write manifest file
-    const manifestTemplate = fs.readFileSync('msix/AppxManifest.xml', {encoding: 'utf-8'});
+    const manifestTemplate = fs.readFileSync('msix/AppxManifest.xml', {encoding: 'utf8'});
     const manifest = manifestTemplate
         .replaceAll('{{identityName}}', identityName)
         .replaceAll('{{identityVersion}}', appVersion)
@@ -853,7 +854,14 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
         .replaceAll('{{backgroundColor}}', backgroundColor);
     const manifestPath = path.join(binaryDirPath, 'AppxManifest.xml');
     log.minor(`Writing Manifest to ${manifestPath}`);
-    fs.writeFileSync(manifestPath, manifest, {encoding: 'utf-8'});
+    fs.writeFileSync(manifestPath, manifest, {encoding: 'utf8'});
+
+    // Subprocess options
+    const options = {
+        cwd: dirs.root,
+        encoding: 'utf8' as const,
+        shell: false,
+    };
 
     // Generate unsigned .msix file
     const appId = determineAppIdentifier(flavor);
@@ -869,8 +877,8 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
             '/d', binaryDirPath,
             '/p', msixOutPath,
         ],
+        options,
     );
-
     // Sign
     if (sign) {
         signWindowsBinaryOrPackage(msixOutPath, flavor);
@@ -881,11 +889,7 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
     execFileSync(
         'powershell.exe',
         [path.join(dirs.root, 'packaging', 'generate-checksums.ps1'), '-filepath', msixOutPath],
-        {
-            cwd: dirs.root,
-            encoding: 'utf8',
-            shell: false,
-        },
+        options,
     );
 
     log.major(`Done, wrote ${msixOutPath}`);
