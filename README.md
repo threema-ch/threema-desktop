@@ -111,7 +111,8 @@ Possible targets:
 - `binary`: An archive containing a raw binary build for the current architecture
 - `dmg`: An unsigned macOS DMG
 - `dmgSigned`: A signed macOS DMG
-- `exe`: An unsigned Windows EXE
+- `msix`: An unsigned Windows MSIX package
+- `msixSigned`: A signed Windows MSIX package
 - `flatpak`: A Linux Flatpak in a local repository
 
 ## Development

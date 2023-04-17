@@ -26,7 +26,15 @@ const IS_POSIX = !IS_WINDOWS;
  *
  * Note: When updating this list, update the README as well.
  */
-type Target = 'source' | 'binary' | 'binarySigned' | 'dmg' | 'dmgSigned' | 'msix' | 'flatpak';
+type Target =
+    | 'source'
+    | 'binary'
+    | 'binarySigned'
+    | 'dmg'
+    | 'dmgSigned'
+    | 'msix'
+    | 'msixSigned'
+    | 'flatpak';
 const TARGETS: Target[] = [
     'source',
     'binary',
@@ -34,6 +42,7 @@ const TARGETS: Target[] = [
     'dmg',
     'dmgSigned',
     'msix',
+    'msixSigned',
     'flatpak',
 ];
 
@@ -225,6 +234,7 @@ function printUsage(errormsg?: string): void {
     console.info(`  dmg: [FLAVORS]`);
     console.info(`  dmgSigned: [FLAVORS]`);
     console.info(`  msix: [FLAVORS]`);
+    console.info(`  msixSigned: [FLAVORS]`);
     console.info(`  binary: [FLAVORS]`);
     console.info(`  binarySigned: [FLAVORS]`);
     console.info(`\nAvailable build flavors: consumer-live,work-sandbox,work-live`);
@@ -284,6 +294,9 @@ function main(args: string[]): void {
             break;
         case 'msix':
             buildMsixs(dirs, false, args.slice(1));
+            break;
+        case 'msixSigned':
+            buildMsixs(dirs, true, args.slice(1));
             break;
         case 'flatpak':
             buildFlatpaks(dirs, args.slice(1));
@@ -383,6 +396,62 @@ function runElectronDistScript(
 }
 
 /**
+ * Sign a Windows Binary (.exe) or Package (.msix).
+ */
+function signWindowsBinaryOrPackage(pathToSign: string, flavor: Flavor): void {
+    // For more information on how to determine some of the env variables below, and for
+    // documentation on the syntax used, please refer to
+    // https://stackoverflow.com/a/54439759/284318
+    const signtoolPath = unwrap(process.env.SIGNTOOL_EXE_PATH, 'Missing SIGNTOOL_EXE_PATH env var');
+    const certificatePath = unwrap(
+        process.env.WIN_SIGN_CERT_PATH,
+        'Missing WIN_SIGN_CERT_PATH env var',
+    );
+    const cryptographicProvider = unwrap(
+        process.env.WIN_SIGN_CRYPTO_PROVIDER,
+        'Missing WIN_SIGN_CRYPTO_PROVIDER env var',
+    );
+    const privateKeyContainerName = unwrap(
+        process.env.WIN_SIGN_CONTAINER_NAME,
+        'Missing WIN_SIGN_CONTAINER_NAME env var',
+    );
+    const tokenReader = unwrap(
+        process.env.WIN_SIGN_TOKEN_READER,
+        'Missing WIN_SIGN_TOKEN_READER env var',
+    );
+    const tokenPassword = unwrap(
+        process.env.WIN_SIGN_TOKEN_PASSWORD,
+        'Missing WIN_SIGN_TOKEN_PASSWORD env var',
+    );
+    const description = determineAppName(flavor);
+    const url = 'https://threema.ch/';
+    const fileDigest = 'sha512';
+    const timestampDigest = 'sha512';
+    const timestampUrl = 'http://timestamp.sectigo.com';
+    const keyContainer = `[${tokenReader}{{${tokenPassword}}}]=${privateKeyContainerName}`;
+    const filename = path.basename(pathToSign);
+    log.minor(
+        `Signing binary "${filename}" with certificate "${privateKeyContainerName}" from reader "${tokenReader}"`,
+    );
+    execFileSync(
+        signtoolPath,
+        // prettier-ignore
+        [
+            'sign',
+            '/d', description,
+            '/du', url,
+            '/fd', fileDigest,
+            '/td', timestampDigest,
+            '/tr', timestampUrl,
+            '/f', certificatePath,
+            '/csp', cryptographicProvider,
+            '/kc', keyContainer,
+            pathToSign,
+        ],
+    );
+}
+
+/**
  * Build Electron binaries for the current architecture.
  *
  * Requirements (POSIX):
@@ -436,58 +505,7 @@ function buildBinaryArchive(dirs: Directories, flavor: Flavor, sign: boolean): v
     // Sign
     if (sign) {
         if (IS_WINDOWS) {
-            // For more information on how to determine some of the env variables below, and for
-            // documentation on the syntax used, please refer to
-            // https://stackoverflow.com/a/54439759/284318
-            const signtoolPath = unwrap(
-                process.env.SIGNTOOL_EXE_PATH,
-                'Missing SIGNTOOL_EXE_PATH env var',
-            );
-            const certificatePath = unwrap(
-                process.env.WIN_SIGN_CERT_PATH,
-                'Missing WIN_SIGN_CERT_PATH env var',
-            );
-            const cryptographicProvider = unwrap(
-                process.env.WIN_SIGN_CRYPTO_PROVIDER,
-                'Missing WIN_SIGN_CRYPTO_PROVIDER env var',
-            );
-            const privateKeyContainerName = unwrap(
-                process.env.WIN_SIGN_CONTAINER_NAME,
-                'Missing WIN_SIGN_CONTAINER_NAME env var',
-            );
-            const tokenReader = unwrap(
-                process.env.WIN_SIGN_TOKEN_READER,
-                'Missing WIN_SIGN_TOKEN_READER env var',
-            );
-            const tokenPassword = unwrap(
-                process.env.WIN_SIGN_TOKEN_PASSWORD,
-                'Missing WIN_SIGN_TOKEN_PASSWORD env var',
-            );
-            const description = 'Threema Desktop';
-            const url = 'https://threema.ch/';
-            const fileDigest = 'sha512';
-            const timestampDigest = 'sha512';
-            const timestampUrl = 'http://timestamp.sectigo.com';
-            const keyContainer = `[${tokenReader}{{${tokenPassword}}}]=${privateKeyContainerName}`;
-            log.minor(
-                `Signing binary with certificate "${privateKeyContainerName}" from reader "${tokenReader}"`,
-            );
-            execFileSync(
-                signtoolPath,
-                // prettier-ignore
-                [
-                    'sign',
-                    '/d', description,
-                    '/du', url,
-                    '/fd', fileDigest,
-                    '/td', timestampDigest,
-                    '/tr', timestampUrl,
-                    '/f', certificatePath,
-                    '/csp', cryptographicProvider,
-                    '/kc', keyContainer,
-                    path.join(binaryDirPathNew, 'ThreemaDesktop.exe'),
-                ],
-            );
+            signWindowsBinaryOrPackage(path.join(binaryDirPathNew, 'ThreemaDesktop.exe'), flavor);
         } else {
             fail('Binary signing not supported on non-Windows hosts');
         }
@@ -784,6 +802,10 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
         process.env.WIN_MAKEAPPX_EXE_PATH,
         'Missing WIN_MAKEAPPX_EXE_PATH env var',
     );
+    const certificateSubject = unwrap(
+        process.env.WIN_SIGN_CERT_SUBJECT,
+        'Missing WIN_SIGN_CERT_SUBJECT env var',
+    );
 
     // Build electron distribution
     const {binaryDirPath} = runElectronDistScript(dirs, flavor);
@@ -825,6 +847,7 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
     const manifest = manifestTemplate
         .replaceAll('{{identityName}}', identityName)
         .replaceAll('{{identityVersion}}', appVersion)
+        .replaceAll('{{identityPublisher}}', certificateSubject)
         .replaceAll('{{displayName}}', displayName)
         .replaceAll('{{applicationId}}', applicationId)
         .replaceAll('{{backgroundColor}}', backgroundColor);
@@ -847,6 +870,11 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
             '/p', msixOutPath,
         ],
     );
+
+    // Sign
+    if (sign) {
+        signWindowsBinaryOrPackage(msixOutPath, flavor);
+    }
 }
 
 /**
