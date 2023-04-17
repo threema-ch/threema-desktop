@@ -145,15 +145,17 @@ async function packageApp(variant, environment) {
         icon,
         extraResource: [
             // Extra resources that are placed in the "resources" directory
-            resolve(
-                __dirname,
-                '..',
-                'src',
-                'public',
-                'res',
-                'icons',
-                `${variant}-${environment}`,
-                'icon-512.png',
+            ...['icon-512.png', 'icon-150-flat.png', 'icon-44-flat.png'].map((filename) =>
+                resolve(
+                    __dirname,
+                    '..',
+                    'src',
+                    'public',
+                    'res',
+                    'icons',
+                    `${variant}-${environment}`,
+                    `${filename}`,
+                ),
             ),
         ],
         derefSymlinks: true,
