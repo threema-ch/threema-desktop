@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  For more information about this file, see
+  https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-manual-conversion
+-->
+<Package
+    xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+    xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+    xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+    xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+>
+    <Identity
+        Name="{{identityName}}"
+        Version="{{identityVersion}}"
+        Publisher="{{identityPublisher}}"
+        ProcessorArchitecture="x64"
+    />
+    <Properties>
+        <DisplayName>{{displayName}}</DisplayName>
+        <PublisherDisplayName>Threema GmbH</PublisherDisplayName>
+        <Description
+        >Threema for desktop is a desktop client for Threema, a privacy-focused end-to-end encrypted mobile messenger hosted and developed in Switzerland.</Description>
+        <Logo>resources\icon-150-flat.png</Logo>
+    </Properties>
+    <Resources>
+        <Resource Language="en-us" />
+    </Resources>
+    <Dependencies>
+        <!-- Min: Windows 10 21H2 (November 2021 Update)-->
+        <!-- Max: Windows 11 22H2 (October 2022 Update)-->
+        <TargetDeviceFamily
+            Name="Windows.Desktop"
+            MinVersion="10.0.19044.0"
+            MaxVersionTested="10.0.22621.0"
+        />
+    </Dependencies>
+    <Capabilities>
+        <rescap:Capability Name="runFullTrust" />
+        <Capability Name="internetClient" />
+    </Capabilities>
+    <Applications>
+        <Application
+            Id="{{applicationId}}"
+            Executable="ThreemaDesktop.exe"
+            uap10:RuntimeBehavior="packagedClassicApp"
+            uap10:TrustLevel="mediumIL"
+        >
+            <uap:VisualElements
+                DisplayName="{{displayName}}"
+                Description="Use {{displayName}} from your desktop"
+                Square150x150Logo="resources\icon-150-flat.png"
+                Square44x44Logo="resources\icon-44-flat.png"
+                BackgroundColor="{{backgroundColor}}"
+            />
+        </Application>
+    </Applications>
+</Package>

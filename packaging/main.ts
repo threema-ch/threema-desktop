@@ -7,6 +7,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as process from 'node:process';
 
+import * as v from '@badrap/valita';
 import type createDMG from 'electron-installer-dmg';
 import * as fsExtra from 'fs-extra';
 
@@ -25,14 +26,14 @@ const IS_POSIX = !IS_WINDOWS;
  *
  * Note: When updating this list, update the README as well.
  */
-type Target = 'source' | 'binary' | 'binarySigned' | 'dmg' | 'dmgSigned' | 'exe' | 'flatpak';
+type Target = 'source' | 'binary' | 'binarySigned' | 'dmg' | 'dmgSigned' | 'msix' | 'flatpak';
 const TARGETS: Target[] = [
     'source',
     'binary',
     'binarySigned',
     'dmg',
     'dmgSigned',
-    'exe',
+    'msix',
     'flatpak',
 ];
 
@@ -166,6 +167,41 @@ function determineAppRdn(flavor: Flavor): string {
 }
 
 /**
+ * Determine the app identifier (used e.g. in filenames).
+ */
+function determineAppIdentifier(flavor: Flavor): string {
+    switch (flavor) {
+        case 'consumer-live':
+            return 'threema-desktop';
+        case 'work-live':
+            return 'threema-work-desktop';
+        case 'work-sandbox':
+            return 'threema-red-desktop';
+        default:
+            return unreachable(flavor);
+    }
+}
+
+/**
+ * Minimal package.json schema, extracting some components we need.
+ */
+const PACKAGE_JSON_SCHEMA = v
+    .object({
+        version: v.string(),
+        versionCode: v.number(),
+    })
+    .rest(v.unknown());
+
+type PackageJson = Readonly<v.Infer<typeof PACKAGE_JSON_SCHEMA>>;
+
+function readPackageJson(dirs: Directories): PackageJson {
+    // Note: Theoretically it should be possible to import the package.json file directly, but I
+    // couldn't get it to work
+    const packageJson = fs.readFileSync(path.join(dirs.root, 'package.json'), {encoding: 'utf-8'});
+    return PACKAGE_JSON_SCHEMA.parse(JSON.parse(packageJson));
+}
+
+/**
  * Directory paths.
  */
 interface Directories {
@@ -188,6 +224,7 @@ function printUsage(errormsg?: string): void {
     console.info(`  flatpak: [FLAVORS]`);
     console.info(`  dmg: [FLAVORS]`);
     console.info(`  dmgSigned: [FLAVORS]`);
+    console.info(`  msix: [FLAVORS]`);
     console.info(`  binary: [FLAVORS]`);
     console.info(`  binarySigned: [FLAVORS]`);
     console.info(`\nAvailable build flavors: consumer-live,work-sandbox,work-live`);
@@ -245,8 +282,8 @@ function main(args: string[]): void {
                 fail(`Building signed DMG failed: ${e}`);
             });
             break;
-        case 'exe':
-            buildExe(dirs);
+        case 'msix':
+            buildMsixs(dirs, false, args.slice(1));
             break;
         case 'flatpak':
             buildFlatpaks(dirs, args.slice(1));
@@ -387,21 +424,8 @@ function buildBinaryArchive(dirs: Directories, flavor: Flavor, sign: boolean): v
 
     // Rename and copy to temporary directory
     log.minor(`Packaging binary: ${flavor}`);
-    let name;
-    switch (flavor) {
-        case 'consumer-live':
-            name = 'threema';
-            break;
-        case 'work-live':
-            name = 'threema-work';
-            break;
-        case 'work-sandbox':
-            name = 'threema-red';
-            break;
-        default:
-            unreachable(flavor);
-    }
-    const binaryDirNew = `${name}-desktop-bin-${process.platform}-${process.arch}`;
+    const appId = determineAppIdentifier(flavor);
+    const binaryDirNew = `${appId}-bin-${process.platform}-${process.arch}`;
     const binaryDirPathNew = path.join(dirs.tmp, binaryDirNew);
     fsExtra.copySync(binaryDirPathOld, binaryDirPathNew, {
         errorOnExist: true,
@@ -731,14 +755,98 @@ function lockKeychain(): void {
 }
 
 /**
- * Build a Windows EXE.
- *
- * TBD: Portable or installer?
+ * Build multiple Windows MSIX package.
  */
-function buildExe(dirs: Directories): void {
-    log.major('Building Windows EXE');
-    log.error('TODO(DESK-740)');
-    process.exit(2);
+function buildMsixs(dirs: Directories, signed: boolean, args: string[]): void {
+    log.major(`Building ${signed ? 'signed' : 'unsigned'} Windows MSIX packages`);
+
+    // Parse args
+    if (args.length === 0) {
+        printUsage();
+        process.exit(1);
+    }
+    const flavors = parseFlavors(args[0]);
+
+    // Build all flavors
+    for (const flavor of flavors) {
+        buildMsix(dirs, flavor, signed);
+    }
+}
+
+/**
+ * Build a concrete Windows MSIX.
+ */
+function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
+    log.minor(`Building MSIX: ${flavor}`);
+
+    // Look up required env variables
+    const makeappxPath = unwrap(
+        process.env.WIN_MAKEAPPX_EXE_PATH,
+        'Missing WIN_MAKEAPPX_EXE_PATH env var',
+    );
+
+    // Build electron distribution
+    const {binaryDirPath} = runElectronDistScript(dirs, flavor);
+
+    // Determine version
+    //
+    // Note: Windows validates the version, it must roughly match the format "1.2.3" or "1.2.3.4".
+    // To see the full RegEx, run the Add-AppxPackage command with an invalid version (if you dare).
+    const packageJson = readPackageJson(dirs);
+    const appVersion = `${packageJson.version.replace(
+        /^(?<majorMinor>[0-9]*\.[0-9]*)\..*/u,
+        '$<majorMinor>',
+    )}.${packageJson.versionCode}.0`;
+
+    // Variables depending on build flavor
+    const displayName = determineAppName(flavor);
+    let identityName;
+    let backgroundColor;
+    switch (flavor) {
+        case 'consumer-live':
+            identityName = 'Threema.Desktop.Consumer';
+            backgroundColor = '#05a63f';
+            break;
+        case 'work-live':
+            identityName = 'Threema.Desktop.Work';
+            backgroundColor = '#0096ff';
+            break;
+        case 'work-sandbox':
+            identityName = 'Threema.Desktop.Red';
+            backgroundColor = '#b94137';
+            break;
+        default:
+            unreachable(flavor);
+    }
+    const applicationId = identityName;
+
+    // Write manifest file
+    const manifestTemplate = fs.readFileSync('msix/AppxManifest.xml', {encoding: 'utf-8'});
+    const manifest = manifestTemplate
+        .replaceAll('{{identityName}}', identityName)
+        .replaceAll('{{identityVersion}}', appVersion)
+        .replaceAll('{{displayName}}', displayName)
+        .replaceAll('{{applicationId}}', applicationId)
+        .replaceAll('{{backgroundColor}}', backgroundColor);
+    const manifestPath = path.join(binaryDirPath, 'AppxManifest.xml');
+    log.minor(`Writing Manifest to ${manifestPath}`);
+    fs.writeFileSync(manifestPath, manifest, {encoding: 'utf-8'});
+
+    // Generate unsigned .msix file
+    const appId = determineAppIdentifier(flavor);
+    const msixOutPath = path.join(dirs.out, `${appId}-windows-${process.arch}.msix`);
+    log.minor(`Writing MSIX file to ${msixOutPath}`);
+    execFileSync(
+        makeappxPath,
+        // prettier-ignore
+        [
+            'pack',
+            '/v',
+            '/h', 'SHA512',
+            '/d', binaryDirPath,
+            '/p', msixOutPath,
+        ],
+    );
 }
 
 /**
