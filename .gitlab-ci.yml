@@ -617,7 +617,7 @@ package:windows:
         $sourceFileMsix = "build/out/${name}-desktop-windows-${env:ARCH}.msix"
         switch ($BUILD_TYPE) {
           "nightly" {
-            $filenameExe = "$name-desktop-nightly-bin-windows-${env:ARCH}.zip"
+            $filenameExe = "$name-desktop-nightly-windows-${env:ARCH}.zip"
             $filenameMsix = "$name-desktop-nightly-windows-${env:ARCH}.msix"
 
             # Upload, overwrite if it exists
@@ -627,7 +627,7 @@ package:windows:
             curl.exe -T "$sourceFileMsix" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
           }
           "release" {
-            $filenameExe = "$name-desktop-$CI_COMMIT_REF_NAME-bin-windows-${env:ARCH}.zip"
+            $filenameExe = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.zip"
             $filenameMsix = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.msix"
 
             # Ensure that build wasn't already uploaded
