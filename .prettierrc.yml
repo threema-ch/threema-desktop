@@ -11,6 +11,9 @@ trailingComma: all
 # Global svelte rules
 svelteSortOrder: options-scripts-markup-styles
 
+# Global XML rules
+xmlWhitespaceSensitivity: strict # Note: Change to "preserve" once a new release of @prettier/plugin-xml is out
+
 # Overrides
 overrides:
   - files: '*.{css,json,md,scss,yml}'
