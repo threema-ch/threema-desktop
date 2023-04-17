@@ -875,6 +875,20 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
     if (sign) {
         signWindowsBinaryOrPackage(msixOutPath, flavor);
     }
+
+    // Generate checksums
+    log.minor('Generating checksums');
+    execFileSync(
+        'powershell.exe',
+        [path.join(dirs.root, 'packaging', 'generate-checksums.ps1'), '-filepath', msixOutPath],
+        {
+            cwd: dirs.root,
+            encoding: 'utf8',
+            shell: false,
+        },
+    );
+
+    log.major(`Done, wrote ${msixOutPath}`);
 }
 
 /**
