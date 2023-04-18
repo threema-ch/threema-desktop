@@ -9,11 +9,19 @@
   import {MessageDirection, MessageReaction} from '~/common/enum';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
+  interface OpenOptions {
+    readonly showAction: {
+      readonly copyLink: boolean;
+      readonly copyMessage: boolean;
+      readonly forward: boolean;
+    };
+  }
+
   export let message: Pick<Message<AnyMessageBody>, 'direction' | 'lastReaction'>;
 
   export let isGroupConversation: boolean;
 
-  export let options = {
+  export let options: OpenOptions = {
     showAction: {
       copyLink: false,
       copyMessage: true,

@@ -1,6 +1,5 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
-  import {fade} from 'svelte/transition';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
@@ -18,7 +17,7 @@
 </script>
 
 <template>
-  <div transition:fade={{duration: 100}}>
+  <div>
     <MenuContainer mode="small">
       <MenuItem
         disabled={!isConversationEmptyActionEnabled}

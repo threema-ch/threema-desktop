@@ -3,17 +3,19 @@
   An element that sticks to another element (the _reference_), 
   while ensuring that it doesn't overflow a _container_ (or the window). It handles:
 
-  - Opening and closing
-  - Positioning
+  - Opening and closing.
+  - Positioning.
+  - Animations.
+  - Updating the {@link popoverStore} to ensure that only a single popover is visible.
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
   import {fade} from 'svelte/transition';
 
   import {
-    type AnchorPoints,
+    type AnchorPoint,
     clickoutside,
-    getPopoverTranslation,
+    getPopoverOffset,
     type Offset,
     popoverStore,
     type VirtualRect,
@@ -50,7 +52,7 @@
    * }
    * ```
    */
-  export let anchorPoints: AnchorPoints = {
+  export let anchorPoints: AnchorPoint = {
     reference: {horizontal: 'left', vertical: 'bottom'},
     popover: {horizontal: 'left', vertical: 'top'},
   };
@@ -74,7 +76,7 @@
   export let triggerBehavior: 'toggle' | 'open' = 'toggle';
 
   /**
-   * If the popper element should be closed when a click is detected outside its bounds.
+   * If the `popover` should be closed when a click is detected outside its bounds.
    */
   export let closeOnClickOutside = true;
 
@@ -106,7 +108,7 @@
       return undefined;
     }
 
-    const popoverOffset = getPopoverTranslation(
+    const popoverOffset = getPopoverOffset(
       constraintContainer ?? document.body,
       positioningContainer,
       currentReference,

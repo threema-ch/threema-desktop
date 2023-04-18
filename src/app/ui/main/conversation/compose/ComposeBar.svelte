@@ -6,9 +6,9 @@
   import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
   import {type u53} from '~/common/types';
-  import Popover from '~/app/ui/generic/popover/Popover.svelte';
 
   /**
    * The maximum allowed byte length of the message text.

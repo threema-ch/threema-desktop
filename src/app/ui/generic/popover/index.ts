@@ -1,6 +1,6 @@
 import {type ActionReturn} from 'svelte/action';
 
-import {type u32} from '~/common/types';
+import {type u53} from '~/common/types';
 import {WritableStore} from '~/common/utils/store';
 
 /*
@@ -8,7 +8,7 @@ import {WritableStore} from '~/common/utils/store';
  */
 
 /**
- * The data that is sent as the `detail` of the `CustomEvent`.
+ * The data that is sent as the `detail` of the {@link CustomEvent}.
  */
 interface ClickOutsideEventDetail {
     readonly event: MouseEvent;
@@ -64,31 +64,44 @@ export function clickoutside(
  * Popover
  */
 
+/**
+ * Describes a relative or absolute distance from another position.
+ */
 export interface Offset {
-    readonly left: u32;
-    readonly top: u32;
+    readonly left: u53;
+    readonly top: u53;
 }
 
+/**
+ * Describes a point on a rectangular shape.
+ */
 export interface RectPoint {
     readonly horizontal: 'left' | 'center' | 'right';
     readonly vertical: 'top' | 'center' | 'bottom';
 }
 
-export interface AnchorPoints {
+/**
+ * Describes the desired convergence point of the `reference` and popover.
+ */
+export interface AnchorPoint {
     readonly reference: RectPoint;
     readonly popover: RectPoint;
 }
 
-export type PartialDOMRect = Omit<DOMRect, 'x' | 'y' | 'toJSON'>;
-
+/**
+ * Describes a rectangle which is similar to a {@link DOMRect}, but doesn't have to acually exist in
+ * the DOM.
+ */
 export interface VirtualRect extends PartialDOMRect {
-    readonly left: u32;
-    readonly right: u32;
-    readonly top: u32;
-    readonly bottom: u32;
-    readonly width: u32;
-    readonly height: u32;
+    readonly left: u53;
+    readonly right: u53;
+    readonly top: u53;
+    readonly bottom: u53;
+    readonly width: u53;
+    readonly height: u53;
 }
+
+type PartialDOMRect = Omit<DOMRect, 'x' | 'y' | 'toJSON'>;
 
 /**
  * A function which will close the currently opened popover.
@@ -103,20 +116,37 @@ type PopoverCloseFunction = (event?: MouseEvent) => void;
 export const popoverStore = new WritableStore<PopoverCloseFunction | undefined>(undefined);
 
 const flips = ['horizontal', 'vertical', 'both', 'none'] as const;
-type Flip = (typeof flips)[u32];
+type Flip = (typeof flips)[u53];
 
-export function getPopoverTranslation(
+/**
+ * Calculates and returns the {@link Offset} that can be used to move/translate the popover to the
+ * desired position.
+ *
+ * @param constraintContainer The container element that constrains the positioning of this popover.
+ * @param positioningContainer The container element that is used as the origin to calculate
+ * relative positioning.
+ * @param reference Element or virtual element that the popover will be anchored to.
+ * @param popover The popover element.
+ * @param anchorPoints Configuration of where the popover should attach to the anchor.
+ * @param offset An optional offset to move the popover relative to the anchor.
+ * @param flip Whether the popover should flip so that it doesn't overflow the
+ * `constraintContainer`.
+ * @returns The {@link Offset} the popover should move to be at the desired position.
+ */
+export function getPopoverOffset(
     constraintContainer: HTMLElement,
     positioningContainer: HTMLElement,
     reference: HTMLElement | VirtualRect,
     popover: HTMLElement,
-    anchorPoints: AnchorPoints,
+    anchorPoints: AnchorPoint,
     offset: Offset = {left: 0, top: 0},
     flip = true,
 ): Offset {
+    // Get the `DOMRect` of the popover, but disregard any previously applied transforms.
     const popoverRect = getUntransformedBoundingClientRect(popover);
 
-    const preferredPopoverTranslation = getPopoverTranslationUnchecked(
+    // Calculate the preferred `Offset` of the popover without considering any constraints.
+    const preferredPopoverTranslation = getUnconstrainedPopoverOffset(
         positioningContainer,
         reference,
         popover,
@@ -125,64 +155,95 @@ export function getPopoverTranslation(
     );
     const translatedPopoverRect = getRectPlusOffset(popoverRect, preferredPopoverTranslation);
 
+    // Calculate the necessary `Flip` that needs to be applied so that the popover is fully visible.
     const suggestedPopoverFlip = flip
         ? getSuggestedPopoverFlip(translatedPopoverRect, constraintContainer)
         : 'none';
 
+    // Calculate and return the final `Offset` of the popover, and account for a possible `Flip`.
     return suggestedPopoverFlip === 'none'
         ? preferredPopoverTranslation
-        : getPopoverTranslationUnchecked(
+        : getUnconstrainedPopoverOffset(
               positioningContainer,
               reference,
               popover,
-              getFlippedAnchorPoints(anchorPoints, suggestedPopoverFlip),
+              getFlippedAnchorPoint(anchorPoints, suggestedPopoverFlip),
               getFlippedOffset(offset, suggestedPopoverFlip),
           );
 }
 
-function getPopoverTranslationUnchecked(
+/**
+ * Calculates and returns the {@link Offset} that can be used to move/translate the popover to the
+ * desired position without considering any constraints.
+ *
+ * @param positioningContainer The container element that is used as the origin to calculate
+ * relative positioning.
+ * @param reference Element or virtual element that the popover will be anchored to.
+ * @param popover The popover element.
+ * @param anchorPoints Configuration of where the popover should attach to the anchor.
+ * @param offset An optional offset to move the popover relative to the anchor.
+ * @returns The {@link Offset} the popover should move to be at the desired position.
+ */
+function getUnconstrainedPopoverOffset(
     positioningContainer: HTMLElement,
     reference: HTMLElement | VirtualRect,
     popover: HTMLElement,
-    anchorPoints: AnchorPoints,
+    anchorPoints: AnchorPoint,
     offset: Offset = {left: 0, top: 0},
 ): Offset {
-    // Rects
+    // Get `DOMRect`s.
     const positioningContainerRect: PartialDOMRect = positioningContainer.getBoundingClientRect();
     const referenceRect: PartialDOMRect =
         reference instanceof HTMLElement ? reference.getBoundingClientRect() : reference;
     const popoverRect: PartialDOMRect = getUntransformedBoundingClientRect(popover);
 
-    // Anchor Point offsets
+    // Calculate `AnchorPoint` offsets.
     const referenceAnchorPointOffset = getRectPointOffset(referenceRect, anchorPoints.reference);
     const popoverAnchorPointOffset = getRectPointOffset(popoverRect, anchorPoints.popover);
 
-    // Deltas
-    const popoverToContainerOffset = getRectDelta(popoverRect, positioningContainerRect);
-    const referenceToContainerOffset = getRectDelta(referenceRect, positioningContainerRect);
+    // Calculate Deltas.
+    const popoverToContainerOffset = getRelativeRectOffset(popoverRect, positioningContainerRect);
+    const referenceToContainerOffset = getRelativeRectOffset(
+        referenceRect,
+        positioningContainerRect,
+    );
 
-    // Popover translation
-    const left =
-        popoverToContainerOffset.left +
-        referenceToContainerOffset.left +
-        (referenceAnchorPointOffset.left - popoverAnchorPointOffset.left) +
-        offset.left;
-    const top =
-        popoverToContainerOffset.top +
-        referenceToContainerOffset.top +
-        (referenceAnchorPointOffset.top - popoverAnchorPointOffset.top) +
-        offset.top;
-
-    return {left, top};
+    // Calculate and return translation.
+    return {
+        left:
+            popoverToContainerOffset.left +
+            referenceToContainerOffset.left +
+            (referenceAnchorPointOffset.left - popoverAnchorPointOffset.left) +
+            offset.left,
+        top:
+            popoverToContainerOffset.top +
+            referenceToContainerOffset.top +
+            (referenceAnchorPointOffset.top - popoverAnchorPointOffset.top) +
+            offset.top,
+    };
 }
 
-function getRectDelta(rect: PartialDOMRect, toRect: PartialDOMRect): Offset {
+/**
+ * Calculates and returns the relative distance between two {@link PartialDOMRect}s.
+ *
+ * @param rect The {@link PartialDOMRect} to calculate the distance from.
+ * @param toRect The {@link PartialDOMRect} to calculate the distance to.
+ * @returns The relative distance between the two {@link PartialDOMRect}s as an {@link Offset}.
+ */
+function getRelativeRectOffset(rect: PartialDOMRect, toRect: PartialDOMRect): Offset {
     return {
         left: rect.left - toRect.left,
         top: rect.top - toRect.top,
     };
 }
 
+/**
+ * Calculates and returns the {@link PartialDOMRect} that describes the spatial properties of an
+ * {@link HTMLElement} without considering any transforms that have been applied to it.
+ *
+ * @param element The {@link HTMLElement} to get the {@link PartialDOMRect} from.
+ * @returns The calculated {@link PartialDOMRect}.
+ */
 function getUntransformedBoundingClientRect(element: HTMLElement): PartialDOMRect {
     const rect = element.getBoundingClientRect();
     const computedStyle = getComputedStyle(element);
@@ -200,6 +261,15 @@ function getUntransformedBoundingClientRect(element: HTMLElement): PartialDOMRec
     return getRectWithOffset(rect, {left: offsetWithoutTransform.x, top: offsetWithoutTransform.y});
 }
 
+/**
+ * Calculates and returns the distance of a {@link RectPoint} from a {@link PartialDOMRect} as an
+ * {@link Offset}.
+ *
+ * @param rect The {@link PartialDOMRect} that the `rectPoint` belongs to.
+ * @param rectPoint The {@link RectPoint} to calculate its {@link Offset} from (relative to the
+ * `rect`).
+ * @returns The distance of the `rectPoint` relative to the `rect`.
+ */
 function getRectPointOffset(rect: PartialDOMRect, rectPoint: RectPoint): Offset {
     const horizontalOffsetMap = {
         left: 0,
@@ -219,6 +289,14 @@ function getRectPointOffset(rect: PartialDOMRect, rectPoint: RectPoint): Offset 
     };
 }
 
+/**
+ * Calculates and returns the required {@link Flip} so that the popover doesn't overflow the
+ * `constraintContainer`.
+ *
+ * @param popoverRect The {@link PartialDOMRect} of the popover.
+ * @param constraintContainer The container that constrains the positioning of the popover.
+ * @returns A proposed {@link Flip} to apply to the popover.
+ */
 function getSuggestedPopoverFlip(
     popoverRect: PartialDOMRect,
     constraintContainer: HTMLElement,
@@ -248,9 +326,17 @@ function getSuggestedPopoverFlip(
     return 'none';
 }
 
-function getFlippedAnchorPoints(anchorPoints: AnchorPoints, flip: Flip): AnchorPoints {
+/**
+ * Calculates and returns the inverse {@link AnchorPoint} definition based on an existing
+ * {@link AnchorPoint} and a {@link Flip}.
+ *
+ * @param anchorPoint The {@link AnchorPoint} to flip.
+ * @param flip The {@link Flip} to use to invert the `anchorPoint` by.
+ * @returns A new {@link AnchorPoint} inverted by the supplied {@link Flip}.
+ */
+function getFlippedAnchorPoint(anchorPoint: AnchorPoint, flip: Flip): AnchorPoint {
     if (flip === 'none') {
-        return anchorPoints;
+        return anchorPoint;
     }
 
     const horizontalInverseMap: Record<RectPoint['horizontal'], RectPoint['horizontal']> = {
@@ -271,7 +357,7 @@ function getFlippedAnchorPoints(anchorPoints: AnchorPoints, flip: Flip): AnchorP
     const {
         reference: {horizontal: rh, vertical: rv},
         popover: {horizontal: ph, vertical: pv},
-    } = anchorPoints;
+    } = anchorPoint;
 
     return {
         reference: {
@@ -285,6 +371,14 @@ function getFlippedAnchorPoints(anchorPoints: AnchorPoints, flip: Flip): AnchorP
     };
 }
 
+/**
+ * Calculates and returns an inverse {@link Offset} based on an existing {@link Offset} and a
+ * {@link Flip}.
+ *
+ * @param offset The {@link Offset} to flip.
+ * @param flip The {@link Flip} to apply to the `offset`.
+ * @returns A new {@link Offset} inverted by the supplied {@link Flip}.
+ */
 function getFlippedOffset(offset: Offset, flip: Flip): Offset {
     const isFlipHorizontal = flip === 'horizontal' || flip === 'both';
     const isFlipVertical = flip === 'vertical' || flip === 'both';
@@ -295,6 +389,13 @@ function getFlippedOffset(offset: Offset, flip: Flip): Offset {
     };
 }
 
+/**
+ * Calculates and returns if a {@link PartialDOMRect} is (spatially) enclosed by a container.
+ *
+ * @param rect The {@link PartialDOMRect} to check if its area is enclosed by the `container`.
+ * @param container The {@link HTMLElement} to check if it encloses the area of the `rect`.
+ * @returns Whether the `rect` is enclosed by the area of the `container`, by direction.
+ */
 function getIsRectInVisibleAreaOfContainer(
     rect: PartialDOMRect,
     container: HTMLElement,
@@ -314,10 +415,25 @@ function getIsRectInVisibleAreaOfContainer(
     };
 }
 
+/**
+ * Returns a new {@link PartialDOMRect} based on the supplied `rect` and the `offset` added.
+ *
+ * @param rect The {@link PartialDOMRect} to add the `offset` to.
+ * @param offset The {@link Offset} to add to the `rect`.
+ * @returns A new {@link PartialDOMRect} with the `offset` added.
+ */
 function getRectPlusOffset(rect: PartialDOMRect, offset: Offset): PartialDOMRect {
     return new DOMRect(rect.left + offset.left, rect.top + offset.top, rect.width, rect.height);
 }
 
+/**
+ * Returns a new {@link PartialDOMRect} based on the supplied `rect`, with its positional properties
+ * replaced by the supplied `offset`.
+ *
+ * @param rect The {@link PartialDOMRect} to replace the position of.
+ * @param offset The {@link Offset} to replace the position of the `rect` with.
+ * @returns A new {@link PartialDOMRect} with the position replaced.
+ */
 function getRectWithOffset(rect: PartialDOMRect, offset: Offset): PartialDOMRect {
     return new DOMRect(offset.left, offset.top, rect.width, rect.height);
 }

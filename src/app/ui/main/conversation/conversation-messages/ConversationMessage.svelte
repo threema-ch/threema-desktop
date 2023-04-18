@@ -12,6 +12,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
+  import {type VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import ConversationMessageContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
@@ -41,7 +42,6 @@
   import {type RemoteStore} from '~/common/utils/store';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
-  import {VirtualRect} from '~/app/ui/generic/popover';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-message');
 
@@ -88,7 +88,6 @@
   $: messageBody = $viewModelStore.body;
 
   // Context menu
-  // let contextMenu: ContextMenu;
   let contextMenuPopover: Popover;
   let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
   let isContextMenuVisible = false;
