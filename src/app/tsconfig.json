@@ -6,9 +6,15 @@
 
     // Needed for vite-tsconfig-paths to handle paths from non-TS files
     // (such as Svelte components)
-    "allowJs": true
+    "allowJs": true,
+    "resolveJsonModule": true
   },
 
-  "include": ["../common/dom/vite-client.d.ts", "**/*.ts", "**/*.svelte"],
+  "include": [
+    "../common/dom/vite-client.d.ts",
+    "**/*.ts",
+    "**/*.svelte",
+    "../translations/**/*.json"
+  ],
   "exclude": ["electron/main/**"]
 }

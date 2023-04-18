@@ -13,3 +13,6 @@
 
 # IDEs
 /.idea/
+
+# Unused translation keys
+src/translations/**/*_old.json

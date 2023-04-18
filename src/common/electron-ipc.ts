@@ -12,6 +12,7 @@ export interface ErrorDetails {
 export interface SystemInfo {
     readonly os: 'linux' | 'macos' | 'windows' | 'other';
     readonly arch: string;
+    readonly locale: string;
 }
 
 /**

@@ -2,6 +2,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {type AppServices} from '~/app/types';
+  import {type Locale, LOCALES} from '~/common/dom/ui/locale';
   import {type Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
   import {
@@ -19,7 +20,7 @@
   const {backend, storage} = services;
 
   // Unpack stores
-  const {theme} = storage;
+  const {theme, locale} = storage;
 
   let notificationPermission: NotificationPermission = Notification.permission;
 
@@ -147,6 +148,19 @@
   if ($theme === themes[0]) {
     cycleTheme();
   }
+
+  const locales: Locale[] = [...LOCALES];
+
+  function cycleLocale(): void {
+    $locale = locales.shift() ?? LOCALES[0];
+    locales.push($locale);
+  }
+
+  // Cycle locale once if the current locale is the first in the list to avoid a NoOp the first time
+  // we click on the "Cycle Locale" button
+  if ($locale === locales[0]) {
+    cycleLocale();
+  }
 </script>
 
 <template>
@@ -157,6 +171,13 @@
       <span class="icon-and-text"
         ><MdIcon theme="Filled">invert_colors</MdIcon>
         Cycle Theme [{$theme}]</span
+      >
+    </Button>
+
+    <Button flavor="filled" on:click={cycleLocale}>
+      <span class="icon-and-text"
+        ><MdIcon theme="Filled">language</MdIcon>
+        Cycle Locale [{$locale}]</span
       >
     </Button>
 

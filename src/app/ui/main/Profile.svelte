@@ -5,11 +5,13 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import {i18n} from '~/app/ui/i18n';
   import ProfileComponent from '~/app/ui/main/settings/Profile.svelte';
   import Select from '~/app/ui/main/settings/Select.svelte';
   import Text from '~/app/ui/main/settings/Text.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';
+  import {LOCALES} from '~/common/dom/ui/locale';
   import {display} from '~/common/dom/ui/state';
   import {THEMES} from '~/common/dom/ui/theme';
   import {type u53} from '~/common/types';
@@ -24,7 +26,7 @@
     router,
     storage,
   } = services;
-  const {debugPanelState, theme} = storage;
+  const {debugPanelState, theme, locale} = storage;
 
   let profile: Remote<ProfileViewModelStore>;
   viewModel
@@ -111,6 +113,13 @@
       <Text label="Copyright" value="Threema GmbH © 2020-2023" />
 
       <Select label="Theme" bind:value={$theme} options={THEMES} />
+
+      <Select
+        label={i18n.t('global.language')}
+        bind:value={$locale}
+        options={LOCALES}
+        optionToLabel={(l) => i18n.t(`global.locale.${l}`)}
+      />
 
       {#if showToggleDebugMode}
         <div class="debug-button">

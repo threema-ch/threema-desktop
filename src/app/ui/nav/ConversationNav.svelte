@@ -3,6 +3,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavList from '~/app/ui/nav/conversation/ConversationNavList.svelte';
   import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
@@ -48,7 +49,10 @@
       {/if}
     </div>
     <div class="search">
-      <SearchInput placeholder={'Find Chat'} bind:value={$conversationPreviewListFilter} />
+      <SearchInput
+        placeholder={i18n.t('input.findChat.placeholder')}
+        bind:value={$conversationPreviewListFilter}
+      />
     </div>
     <div class="conversation-preview-list">
       {#await viewModel.conversationPreviews() then conversationPreviews}

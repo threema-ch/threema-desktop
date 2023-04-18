@@ -1,10 +1,12 @@
 <script lang="ts">
   import {identity} from 'svelte/internal';
 
+  type T = $$Generic<string>;
+
   export let label: string | undefined = undefined;
-  export let value: string;
-  export let options: readonly string[];
-  export let optionToLabel: (option: string) => string = identity;
+  export let value: T;
+  export let options: readonly T[];
+  export let optionToLabel: (option: T) => string = identity;
 </script>
 
 <template>

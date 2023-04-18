@@ -3,7 +3,6 @@
  *
  * Note: For types shared across the entire project, src/common/types.ts should be used instead.
  */
-
 import {type Config} from '~/common/config';
 import {type CryptoBackend} from '~/common/crypto';
 import {type BackendController} from '~/common/dom/backend/controller';

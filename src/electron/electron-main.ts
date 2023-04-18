@@ -454,6 +454,7 @@ function main(
         return url?.replace(/#.*/u, '') === appUrl;
     }
 
+    electron.app.getLocale();
     /**
      * Whether a relaunch was already requested.
      *
@@ -573,6 +574,7 @@ function main(
                 return {
                     os: operatingSystem,
                     arch: process.arch,
+                    locale: electron.app.getLocale(),
                 };
             },
         );

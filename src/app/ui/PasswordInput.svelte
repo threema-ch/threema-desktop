@@ -5,6 +5,7 @@
   import Password from '#3sc/components/blocks/Input/Password.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
   /**
@@ -44,14 +45,17 @@
 <template>
   <div class="wrapper">
     <ModalDialog visible={true} closableWithEscape={false} on:confirm={handleOnSubmit}>
-      <Title slot="header" title="Enter Password" />
+      <Title slot="header" title={i18n.t('input.password.label')} />
       <div class="body" slot="body" data-has-error={showErrorMessage}>
         <Password
           error={showErrorMessage
-            ? 'The entered password is incorrect. Please try again.'
+            ? i18n.t(
+                'passwordInput.hint.wrongPassword',
+                'The entered password is incorrect. Please try again.',
+              )
             : undefined}
           bind:this={passwordInput}
-          label="Password"
+          label={i18n.t('input.password.placeholder')}
           bind:value={password}
           on:input={clearError}
           on:keydown={(event) => {
@@ -61,10 +65,11 @@
           }}
         />
         <div class="hint">
-          Forgot password? Please see the
-          <a href="https://threema.ch/faq/md_password" target="_blank" rel="noreferrer noopener"
-            >FAQ</a
-          >.
+          {@html i18n.t('input.password.hint.forgotPassword', {
+            aOpening:
+              '<a href="https://threema.ch/faq/md_password" target="_blank" rel="noreferrer noopener">',
+            aClosing: '</a>',
+          })}
         </div>
       </div>
       <div class="footer" slot="footer">
@@ -73,7 +78,7 @@
           disabled={password.length < minPasswordLength || showErrorMessage}
           on:click={handleOnSubmit}
         >
-          Continue
+          {i18n.t('button.label.continue', 'Continue')}
         </Button>
       </div>
     </ModalDialog>

@@ -8,11 +8,18 @@ import {
     ensureDebugPanelHeight,
     ensureDebugPanelState,
 } from '~/common/dom/ui/debug';
+import {ensureLocale, isLocale, type Locale} from '~/common/dom/ui/locale';
 import {applyTheme, ensureTheme, type Theme} from '~/common/dom/ui/theme';
-import {type ISubscribableStore, type IWritableStore, WritableStore} from '~/common/utils/store';
+import {
+    type IQueryableStore,
+    type ISubscribableStore,
+    type IWritableStore,
+    WritableStore,
+} from '~/common/utils/store';
 
 const KEYS = {
     theme: 'theme',
+    locale: 'locale',
     debugPanelState: 'debug-panel-state',
     debugPanelHeight: 'debug-panel-height',
 } as const;
@@ -27,8 +34,9 @@ export class LocalStorageController {
         ISubscribableStore<DebugPanelState>;
     public readonly debugPanelHeight: IWritableStore<string> & ISubscribableStore<string>;
     public readonly theme: IWritableStore<Theme> & ISubscribableStore<Theme>;
+    public readonly locale: IWritableStore<Locale> & IQueryableStore<Locale>;
 
-    public constructor(containers: HTMLElement[]) {
+    public constructor(containers: HTMLElement[], systemLocale: string) {
         // Debug panel
         this.debugPanelState = new WritableStore(
             ensureDebugPanelState(localStorage.getItem(KEYS.debugPanelState) ?? ''),
@@ -49,6 +57,16 @@ export class LocalStorageController {
             localStorage.setItem(KEYS.theme, theme);
             for (const container of containers) {
                 applyTheme(theme, container);
+            }
+        });
+
+        // Locale
+        this.locale = new WritableStore(
+            ensureLocale(localStorage.getItem(KEYS.locale) ?? systemLocale),
+        );
+        this.locale.subscribe((locale) => {
+            if (isLocale(locale)) {
+                localStorage.setItem(KEYS.locale, locale);
             }
         });
     }

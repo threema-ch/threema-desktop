@@ -9,6 +9,7 @@ import {type AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
 import Bootstrap from '~/app/ui/Bootstrap.svelte';
 import {type BootstrapParams} from '~/app/ui/bootstrap/process-step';
+import {i18n} from '~/app/ui/i18n';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {CONFIG} from '~/common/config';
@@ -22,7 +23,7 @@ import {FrontendSystemDialogService} from '~/common/dom/ui/system-dialog';
 import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {checkForUpdate} from '~/common/dom/update-check';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
-import {type ElectronIpc} from '~/common/electron-ipc';
+import {type ElectronIpc, type SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback, type SafeError} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type IdentityString} from '~/common/network/types';
@@ -108,14 +109,11 @@ function attachApp(services: AppServices, isNewIdentity: boolean, elements: Elem
  */
 async function updateCheck(
     services: Pick<AppServices, 'config' | 'logging' | 'timer' | 'systemDialog'>,
-    electronIpc: ElectronIpc,
+    systemInfo: SystemInfo,
 ): Promise<void> {
     const {config, logging, timer} = services;
     const log = logging.logger('update-check');
     log.info('Checking for updates...');
-
-    // Get system info (if we're in an Electron build)
-    const systemInfo = await electronIpc.getSystemInfo();
 
     // Check for updates. If update is found, notify user after a short delay.
     const updateInfo = await checkForUpdate(config, log, systemInfo);
@@ -159,6 +157,26 @@ export async function main(appState: AppState): Promise<App> {
         });
     });
 
+    const systemInfo = await window.app.getSystemInfo();
+
+    const elements: Elements = {
+        splash: unwrap(document.body.querySelector<HTMLElement>('#splash')),
+        container: unwrap(document.body.querySelector<HTMLElement>('#container')),
+        systemDialogs: unwrap(document.body.querySelector<HTMLElement>('#dialogs')),
+    };
+
+    // Initialize local storage controller to ensure that theme selection is done when backend
+    // controller is initialized
+    const localStorageController = new LocalStorageController(
+        [elements.container, elements.systemDialogs],
+        systemInfo.locale,
+    );
+
+    await i18n.initialize({
+        localeStore: localStorageController.locale,
+        logging,
+    });
+
     // Global error handlers
     function handleErrorEvent(event: ErrorEvent, prefix: string): void {
         const stacktrace =
@@ -188,12 +206,6 @@ export async function main(appState: AppState): Promise<App> {
             event.preventDefault();
         }
     });
-
-    const elements: Elements = {
-        splash: unwrap(document.body.querySelector<HTMLElement>('#splash')),
-        container: unwrap(document.body.querySelector<HTMLElement>('#container')),
-        systemDialogs: unwrap(document.body.querySelector<HTMLElement>('#dialogs')),
-    };
 
     // Apply theme branding from build variant
     applyThemeBranding(import.meta.env.BUILD_VARIANT, elements.container);
@@ -308,13 +320,6 @@ export async function main(appState: AppState): Promise<App> {
         await dialog.closed;
     }
 
-    // Initialize local storage controller to ensure that theme selection is done when backend
-    // controller is initialized
-    const localStorageController = new LocalStorageController([
-        elements.container,
-        elements.systemDialogs,
-    ]);
-
     // Initialize global dialog component
     attachSystemDialogs(CONFIG, logging, elements.systemDialogs);
 
@@ -352,7 +357,7 @@ export async function main(appState: AppState): Promise<App> {
 
     // Check for updates in the background, if this is an Electron release build
     if (!import.meta.env.DEBUG) {
-        void updateCheck(services, window.app);
+        void updateCheck(services, systemInfo);
     }
 
     // Subscribe to unread message count changes and update all counters.
