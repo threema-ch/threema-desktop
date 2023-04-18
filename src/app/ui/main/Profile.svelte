@@ -5,7 +5,7 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
-  import {i18n, LOCALES} from '~/app/ui/i18n';
+  import {i18n, type Locale, LOCALES} from '~/app/ui/i18n';
   import ProfileComponent from '~/app/ui/main/settings/Profile.svelte';
   import Select from '~/app/ui/main/settings/Select.svelte';
   import Text from '~/app/ui/main/settings/Text.svelte';
@@ -14,6 +14,7 @@
   import {display} from '~/common/dom/ui/state';
   import {THEMES} from '~/common/dom/ui/theme';
   import {type u53} from '~/common/types';
+  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
@@ -69,6 +70,22 @@
   if ($debugPanelState === 'show') {
     showToggleDebugMode = true;
   }
+
+  // We could inline i18n.t(`global.locale.${l}`) but then the translations for the languages are
+  // unfortunately stripped from the translation files when running `npm run i18n:parse`.
+  function optionToLabel(l: Locale): string {
+    switch (l) {
+      case 'cimode':
+        return i18n.t('global.locale.cimode');
+      case 'en':
+        return i18n.t('global.locale.en');
+      case 'de':
+        return i18n.t('global.locale.de');
+
+      default:
+        return unreachable(l);
+    }
+  }
 </script>
 
 <template>
@@ -117,7 +134,7 @@
         label={i18n.t('global.language')}
         bind:value={$locale}
         options={LOCALES}
-        optionToLabel={(l) => i18n.t(`global.locale.${l}`)}
+        {optionToLabel}
       />
 
       {#if showToggleDebugMode}

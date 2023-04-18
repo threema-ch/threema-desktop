@@ -50,7 +50,7 @@
         <Password
           error={showErrorMessage
             ? i18n.t(
-                'passwordInput.hint.wrongPassword',
+                'input.password.hint.wrongPassword',
                 'The entered password is incorrect. Please try again.',
               )
             : undefined}
