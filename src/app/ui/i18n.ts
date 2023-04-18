@@ -1,13 +1,15 @@
 import {default as i18next} from 'i18next';
 
-import {FALLBACK_LOCALE, isLocale, type Locale} from '~/common/dom/ui/locale';
 import {type Logger, type LoggerFactory, type LogRecordFn} from '~/common/logging';
+import {type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
+import {keys} from '~/common/utils/object';
 import {type IQueryableStore, type ISubscribableStore, WritableStore} from '~/common/utils/store';
 
 import translationDe from '../../translations/de/translation.json';
 import translationEn from '../../translations/en/translation.json';
 
+// Consider keeping the locales in sync in the config/i18next-parser.config.js file.
 export const resources = {
     en: {
         translation: translationEn,
@@ -16,6 +18,51 @@ export const resources = {
         translation: translationDe,
     },
 } as const;
+
+/**
+ * Available locales.
+ */
+const LOCALES_WITH_TRANSLATIONS = keys(resources);
+
+// Note: 'cimode' is a special locale from i18next to always display the translation key instead
+// of the translation.
+export const LOCALES = import.meta.env.DEBUG
+    ? ([...LOCALES_WITH_TRANSLATIONS, 'cimode'] as const)
+    : LOCALES_WITH_TRANSLATIONS;
+
+export type Locale = (typeof LOCALES)[u53];
+
+export const FALLBACK_LOCALE: Locale = 'en' as const;
+
+export function ensureLocale(locale: string | undefined): Locale {
+    if (locale === undefined) {
+        return FALLBACK_LOCALE;
+    }
+
+    return getClosestAvailableLocale(locale);
+}
+
+export function isLocale(locale: string): locale is Locale {
+    return (LOCALES as readonly string[]).includes(locale);
+}
+
+function getClosestAvailableLocale(locale: string): Locale {
+    if (isLocale(locale)) {
+        return locale;
+    }
+
+    try {
+        const minimizedLocale = new Intl.Locale(locale).language;
+        if (isLocale(minimizedLocale)) {
+            return minimizedLocale;
+        }
+    } catch (error) {
+        // Unable to create an Intl.Locale object from locale.
+        // Ignoring error.
+    }
+
+    return FALLBACK_LOCALE;
+}
 
 interface LocaleConfig {
     localeStore: IQueryableStore<Locale>;

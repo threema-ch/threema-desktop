@@ -34,3 +34,7 @@ export function isIterable(object: unknown): object is Iterable<unknown> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return typeof (object as any)[Symbol.iterator] === 'function';
 }
+
+export function keys<T>(obj: {[key in keyof T]: unknown}): (keyof T)[] {
+    return Object.keys(obj) as (keyof T)[];
+}

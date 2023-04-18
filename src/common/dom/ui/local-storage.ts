@@ -3,12 +3,12 @@
 // Note: The local storage keys need to be in sync with the critical JS in
 //       index.html
 
+import {ensureLocale, isLocale, type Locale} from '~/app/ui/i18n';
 import {
     type DebugPanelState,
     ensureDebugPanelHeight,
     ensureDebugPanelState,
 } from '~/common/dom/ui/debug';
-import {ensureLocale, isLocale, type Locale} from '~/common/dom/ui/locale';
 import {applyTheme, ensureTheme, type Theme} from '~/common/dom/ui/theme';
 import {
     type IQueryableStore,
