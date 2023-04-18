@@ -2,6 +2,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import ProfileComponent from '~/app/ui/main/settings/Profile.svelte';
@@ -18,13 +19,12 @@
   export let services: AppServices;
   const {
     backend: {viewModel},
-    logging,
     router,
     storage,
   } = services;
   const {debugPanelState, theme} = storage;
 
-  const log = logging.logger('component.profile');
+  const log = globals.unwrap().uiLogging.logger('ui.component.profile');
 
   let profile: Remote<ProfileViewModelStore>;
   viewModel

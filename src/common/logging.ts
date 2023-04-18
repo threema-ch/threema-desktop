@@ -37,12 +37,12 @@ export interface Logger {
  * A factory that initialies logging and hands out {@link Logger}
  * instances.
  */
-export interface LoggerFactory {
+export interface LoggerFactory<TTag extends string = string> {
     /**
      * Create a new logger instance with a specific tag that inherits
      * properties from the root logger.
      */
-    logger: (tag: string, style?: string) => Logger;
+    logger: (tag: TTag, style?: string) => Logger;
 }
 
 /**

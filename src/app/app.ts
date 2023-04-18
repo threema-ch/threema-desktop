@@ -2,6 +2,10 @@ import '../sass/app.scss';
 
 import {default as initComposeArea} from '@threema/compose-area/web';
 
+import {APP_CONFIG} from '~/app/config';
+import {globals} from '~/app/globals';
+import {Router, type RouterState} from '~/app/routing/router';
+import {type AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
 import Bootstrap from '~/app/ui/Bootstrap.svelte';
 import {type BootstrapParams} from '~/app/ui/bootstrap/process-step';
@@ -26,10 +30,6 @@ import {type u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {type ISubscribableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
-
-import {APP_CONFIG} from './config';
-import {Router, type RouterState} from './routing/router';
-import {type AppServices} from './types';
 
 // Extend global APIs
 //
@@ -342,6 +342,11 @@ export async function main(appState: AppState): Promise<App> {
         backend,
         router,
     };
+
+    // Initialize globals
+    globals.set({
+        uiLogging: logging,
+    });
 
     // Check for updates in the background, if this is an Electron release build
     if (!import.meta.env.DEBUG) {
