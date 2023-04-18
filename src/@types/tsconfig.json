@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["dom", "esnext"]
+  },
+
+  "include": ["../common/dom/vite-client.d.ts", "**/*.ts"]
+}

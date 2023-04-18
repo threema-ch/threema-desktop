@@ -11,6 +11,7 @@
   },
 
   "include": [
+    "../@types/**/*.d.ts",
     "../common/dom/vite-client.d.ts",
     "**/*.ts",
     "**/*.svelte",
