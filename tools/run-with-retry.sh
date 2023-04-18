@@ -7,6 +7,7 @@ set -euo pipefail
 GREP_PATTERN_NPM="connect ETIMEDOUT"
 GREP_PATTERN_EOF="SyntaxError: unexpected EOF while parsing"
 GREP_PATTERN_ABORTED="ReadError: The server aborted pending request"
+GREP_PATTERN_HTTP500="Error: 500 response downloading"
 
 function print_usage() {
     echo "Usage: $0 --retries <retries> --delay <delay> [-- ...]"
@@ -55,12 +56,15 @@ for attempt in $(seq "$retries"); do
             npm_timeout=$(grep -c "$GREP_PATTERN_NPM" $TMPFILE || true)
             npm_eof=$(grep -c "$GREP_PATTERN_EOF" $TMPFILE || true)
             npm_aborted=$(grep -c "$GREP_PATTERN_ABORTED" $TMPFILE || true)
+            npm_http500=$(grep -c "$GREP_PATTERN_HTTP500" $TMPFILE || true)
             if [ "$npm_timeout" -gt 0 ]; then
                 echo "==> Detected npm timeout."
             elif [ "$npm_eof" -gt 0 ]; then
                 echo "==> Detected npm parsing EOF."
             elif [ "$npm_aborted" -gt 0 ]; then
                 echo "==> Detected npm server connection abort."
+            elif [ "$npm_http500" -gt 0 ]; then
+                echo "==> Detected npm internal server error."
             else
                 echo "==> No known error detected. Aborting."
                 exit 3
