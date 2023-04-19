@@ -1,28 +1,28 @@
 {
+  "button": {
+    "label": {
+      "continue": "Continue"
+    }
+  },
   "global": {
+    "language": "Language",
     "locale": {
       "cimode": "Dev Mode (Keys instead of translations)",
-      "en": "English",
-      "de": "Deutsch (German)"
-    },
-    "language": "Language"
+      "de": "Deutsch (German)",
+      "en": "English"
+    }
   },
   "input": {
     "findChat": {
       "placeholder": "Find Chat"
     },
     "password": {
-      "label": "Enter Password",
       "hint": {
-        "wrongPassword": "The entered password is incorrect. Please try again.",
-        "forgotPassword": "Forgot password? Please see the {{- aOpening}}FAQ{{- aClosing}}."
+        "forgotPassword": "Forgot password? Please see the {{- aOpening}}FAQ{{- aClosing}}.",
+        "wrongPassword": "The entered password is incorrect. Please try again."
       },
+      "label": "Enter Password",
       "placeholder": "Passwort"
-    }
-  },
-  "button": {
-    "label": {
-      "continue": "Continue"
     }
   }
 }

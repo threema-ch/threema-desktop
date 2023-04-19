@@ -1,28 +1,28 @@
 {
+  "button": {
+    "label": {
+      "continue": "Weiter"
+    }
+  },
   "global": {
+    "language": "Sprache",
     "locale": {
       "cimode": "Dev Mode (Keys statt Übersetzungen)",
-      "en": "English (Englisch)",
-      "de": "Deutsch"
-    },
-    "language": "Sprache"
+      "de": "Deutsch",
+      "en": "English (Englisch)"
+    }
   },
   "input": {
     "findChat": {
       "placeholder": "Chat finden"
     },
     "password": {
-      "label": "Passwort eingeben",
       "hint": {
-        "wrongPassword": "Das eingegebene Passwort ist nicht gültig. Versuche es bitten nochmals.",
-        "forgotPassword": "Passwort vergessen? Lese bitte die {{- aOpening}}FAQ{{- aClosing}}."
+        "forgotPassword": "Passwort vergessen? Lese bitte die {{- aOpening}}FAQ{{- aClosing}}.",
+        "wrongPassword": "Das eingegebene Passwort ist nicht gültig. Versuche es bitten nochmals."
       },
+      "label": "Passwort eingeben",
       "placeholder": "Passwort"
-    }
-  },
-  "button": {
-    "label": {
-      "continue": "Weiter"
     }
   }
 }
