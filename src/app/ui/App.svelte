@@ -7,7 +7,6 @@
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
   import SuccessLinked from '~/app/ui/bootstrap/SuccessLinked.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
-  import {i18n} from '~/app/ui/i18n';
   import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
   import MainProfile from '~/app/ui/main/Profile.svelte';
   import MainWelcome from '~/app/ui/main/Welcome.svelte';
@@ -34,8 +33,6 @@
   // Unpack stores
   const {debugPanelState} = services.storage;
   const {connectionState} = services.backend;
-
-  const {currentLanguage} = i18n;
 
   // Create display mode observer
   const displayModeObserver = new DisplayModeObserver(display);
@@ -133,38 +130,36 @@
 
 <template>
   <div class="wrapper" data-connection-state={$connectionState}>
-    {#key $currentLanguage}
-      <!-- App -->
+    <!-- App -->
 
-      {#if $connectionState !== ConnectionState.CONNECTED}
-        <NetworkAlert />
+    {#if $connectionState !== ConnectionState.CONNECTED}
+      <NetworkAlert />
+    {/if}
+
+    <div class="app" data-display={$display} data-layout={$layout[$display]}>
+      <Snackbar />
+
+      <!-- Nav Panel-->
+      <nav>
+        <svelte:component this={navPanelComponent} {services} />
+      </nav>
+
+      <!-- Main Panel -->
+      <main>
+        <svelte:component this={mainPanelComponent} {services} />
+      </main>
+
+      <!-- Aside Panel -->
+      {#if asidePanelComponent !== undefined}
+        <aside>
+          <svelte:component this={asidePanelComponent} {services} />
+        </aside>
       {/if}
 
-      <div class="app" data-display={$display} data-layout={$layout[$display]}>
-        <Snackbar />
-
-        <!-- Nav Panel-->
-        <nav>
-          <svelte:component this={navPanelComponent} {services} />
-        </nav>
-
-        <!-- Main Panel -->
-        <main>
-          <svelte:component this={mainPanelComponent} {services} />
-        </main>
-
-        <!-- Aside Panel -->
-        {#if asidePanelComponent !== undefined}
-          <aside>
-            <svelte:component this={asidePanelComponent} {services} />
-          </aside>
-        {/if}
-
-        {#if modalComponent !== undefined}
-          <svelte:component this={modalComponent} {services} />
-        {/if}
-      </div>
-    {/key}
+      {#if modalComponent !== undefined}
+        <svelte:component this={modalComponent} {services} />
+      {/if}
+    </div>
 
     <!-- Debug Panel -->
     {#if $debugPanelState === 'show'}

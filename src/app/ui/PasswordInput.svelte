@@ -45,17 +45,17 @@
 <template>
   <div class="wrapper">
     <ModalDialog visible={true} closableWithEscape={false} on:confirm={handleOnSubmit}>
-      <Title slot="header" title={i18n.t('input.password.label')} />
+      <Title slot="header" title={$i18n.t('input.password.label')} />
       <div class="body" slot="body" data-has-error={showErrorMessage}>
         <Password
           error={showErrorMessage
-            ? i18n.t(
+            ? $i18n.t(
                 'input.password.hint.wrongPassword',
                 'The entered password is incorrect. Please try again.',
               )
             : undefined}
           bind:this={passwordInput}
-          label={i18n.t('input.password.placeholder')}
+          label={$i18n.t('input.password.placeholder')}
           bind:value={password}
           on:input={clearError}
           on:keydown={(event) => {
@@ -65,7 +65,7 @@
           }}
         />
         <div class="hint">
-          {@html i18n.t('input.password.hint.forgotPassword', {
+          {@html $i18n.t('input.password.hint.forgotPassword', {
             aOpening:
               '<a href="https://threema.ch/faq/md_password" target="_blank" rel="noreferrer noopener">',
             aClosing: '</a>',
@@ -78,7 +78,7 @@
           disabled={password.length < minPasswordLength || showErrorMessage}
           on:click={handleOnSubmit}
         >
-          {i18n.t('button.label.continue', 'Continue')}
+          {$i18n.t('button.label.continue', 'Continue')}
         </Button>
       </div>
     </ModalDialog>

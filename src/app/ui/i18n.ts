@@ -1,10 +1,11 @@
-import {default as i18next} from 'i18next';
+import {default as i18next, type i18n as i18nType} from 'i18next';
 
 import {type Logger, type LoggerFactory, type LogRecordFn} from '~/common/logging';
 import {type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {keys} from '~/common/utils/object';
-import {type IQueryableStore, type ISubscribableStore, WritableStore} from '~/common/utils/store';
+import {type IQueryableStore, WritableStore} from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
 
 import translationDe from '../../translations/de/translation.json';
 import translationEn from '../../translations/en/translation.json';
@@ -75,22 +76,42 @@ function i18nLogAdapter(logRecordFn: LogRecordFn): (args: unknown[]) => void {
     };
 }
 
-const currentLanguage = new WritableStore<Locale>(FALLBACK_LOCALE);
 let log: Logger;
 
-async function initialize(config: LocaleConfig): Promise<void> {
+// Returning an object `{i18n: i18nType}` instead of directly `i18n: i18nType` is a way to force
+// triggering an update.
+function createI18nStore(i18n: i18nType): WritableStore<{i18n: i18nType}> {
+    const i18nStore = new WritableStore<{i18n: i18nType}>({i18n});
+
+    function forceStoreRefresh(): void {
+        i18nStore.set({i18n});
+    }
+
+    i18n.on('initialized', forceStoreRefresh);
+    i18n.on('loaded', forceStoreRefresh);
+    i18n.on('added', forceStoreRefresh);
+    i18n.on('languageChanged', forceStoreRefresh);
+
+    return i18nStore;
+}
+
+const i18nStore = createI18nStore(i18next);
+
+function currentI18n(): i18nType {
+    return i18nStore.get().i18n;
+}
+
+export async function initialize(config: LocaleConfig): Promise<void> {
     log = config.logging.logger('i18n');
 
-    if (i18next.isInitialized) {
+    if (currentI18n().isInitialized) {
         log.warn('Already initialized');
         return;
     }
 
     log.info('Initializing...', {config});
 
-    const lng = config.localeStore.get();
-
-    await i18next
+    await currentI18n()
         .use({
             type: 'logger',
             log: i18nLogAdapter(log.info),
@@ -98,19 +119,17 @@ async function initialize(config: LocaleConfig): Promise<void> {
             error: i18nLogAdapter(log.error),
         })
         .init({
-            lng,
+            lng: config.localeStore.get(),
             resources,
             fallbackLng: FALLBACK_LOCALE,
             debug: import.meta.env.DEBUG,
             returnNull: false,
         });
 
-    currentLanguage.set(lng);
-
     log.info('Initialization complete', {
-        language: i18next.language,
-        resolvedLanguage: i18next.resolvedLanguage,
-        loadedLanguages: i18next.languages,
+        language: currentI18n().language,
+        resolvedLanguage: currentI18n().resolvedLanguage,
+        loadedLanguages: currentI18n().languages,
     });
 
     config.localeStore.subscribe((locale) => {
@@ -121,23 +140,17 @@ async function initialize(config: LocaleConfig): Promise<void> {
 }
 
 async function setLanguage(locale: Locale): Promise<void> {
-    assert(i18next.isInitialized, 'i18n must be initialized before calling `setLanguage`');
+    assert(currentI18n().isInitialized, 'i18n must be initialized before calling `setLanguage`');
 
-    if (i18next.language === locale) {
+    if (currentI18n().language === locale) {
         return;
     }
 
-    await i18next.changeLanguage(locale);
-
-    currentLanguage.set(locale);
+    await currentI18n().changeLanguage(locale);
 }
 
-export const i18n = {
-    initialize,
-    /**
-     * This store is updated after localStorage.locale, when the i18n framework is ready with the
-     * new language, to avoid racing conditions.
-     */
-    currentLanguage: currentLanguage as ISubscribableStore<Locale>,
-    t: i18next.t,
-} as const;
+// Svelte only re-renders the component using the store, when the store is updated.
+// Returning an object is a way to force triggering an update.
+export const i18n: IQueryableStore<Pick<i18nType, 't'>> = derive(i18nStore, (updatedI18nStore) => ({
+    t: updatedI18nStore.i18n.t,
+}));

@@ -9,7 +9,7 @@ import {type AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
 import Bootstrap from '~/app/ui/Bootstrap.svelte';
 import {type BootstrapParams} from '~/app/ui/bootstrap/process-step';
-import {i18n} from '~/app/ui/i18n';
+import * as i18n from '~/app/ui/i18n';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {CONFIG} from '~/common/config';

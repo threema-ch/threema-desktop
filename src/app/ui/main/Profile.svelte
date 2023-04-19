@@ -71,21 +71,21 @@
     showToggleDebugMode = true;
   }
 
-  // We could inline i18n.t(`global.locale.${l}`) but then the translations for the languages are
+  // We could inline $i18n.t(`global.locale.${l}`) but then the translations for the languages are
   // unfortunately stripped from the translation files when running `npm run i18n:parse`.
-  function optionToLabel(l: Locale): string {
+  $: optionToLabel = (l: Locale): string => {
     switch (l) {
       case 'cimode':
-        return i18n.t('global.locale.cimode');
+        return $i18n.t('global.locale.cimode');
       case 'en':
-        return i18n.t('global.locale.en');
+        return $i18n.t('global.locale.en');
       case 'de':
-        return i18n.t('global.locale.de');
+        return $i18n.t('global.locale.de');
 
       default:
         return unreachable(l);
     }
-  }
+  };
 </script>
 
 <template>
@@ -131,7 +131,7 @@
       <Select label="Theme" bind:value={$theme} options={THEMES} />
 
       <Select
-        label={i18n.t('global.language')}
+        label={$i18n.t('global.language')}
         bind:value={$locale}
         options={LOCALES}
         {optionToLabel}
