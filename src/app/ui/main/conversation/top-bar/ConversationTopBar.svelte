@@ -3,6 +3,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {type ConversationData} from '~/app/ui/main/conversation';
@@ -18,6 +19,8 @@
   import {type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {unreachable} from '~/common/utils/assert';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.conversation-top-bar');
 
   /**
    * Current display mode.
@@ -53,10 +56,7 @@
    * App services.
    */
   export let services: AppServices;
-  const {router, logging} = services;
-
-  // Logger
-  const log = logging.logger('component.conversation-top-bar');
+  const {router} = services;
 
   // Determine if this is an inactive group
   export let isInactiveGroup: boolean;
@@ -112,7 +112,8 @@
       isConversationEmptyActionEnabled = conversationMessageCount > 0;
     })
     .catch((error) => {
-      log.error(`Failed to fetch conversation messages: ${error}`);
+      log.error('Failed to fetch conversation messages', error);
+
       conversationMessageCount = 0;
       isConversationEmptyActionEnabled = false;
     });
@@ -146,7 +147,7 @@
   function deleteAllConversationMessages(): void {
     $conversation.controller.removeAllMessages
       .fromLocal()
-      .catch((error) => log.error(`Could not remove messages from conversation: ${error}`));
+      .catch((error) => log.error('Could not remove messages from conversation', error));
   }
 </script>
 

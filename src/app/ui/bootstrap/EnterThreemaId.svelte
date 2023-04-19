@@ -6,10 +6,13 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {globals} from '~/app/globals';
   import {type ContextStore} from '~/app/ui/bootstrap/process-step';
   import {isCspDeviceId, isD2mDeviceId, isIdentityString} from '~/common/network/types';
   import {ensureU64, type u64} from '~/common/types';
   import {type WritableStore} from '~/common/utils/store';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.enter-threema-id');
 
   // Context
   export let contextStore: WritableStore<ContextStore>;
@@ -68,8 +71,8 @@
       if (parsedInt !== undefined && parsedInt.toString() === value) {
         return ensureU64(BigInt(parsedInt));
       }
-    } catch (e) {
-      // Into the void
+    } catch (error) {
+      log.error('Could not parse device id');
     }
     return undefined;
   }
@@ -84,7 +87,10 @@
 
       return parsedUrl.toString();
     } catch (error) {
-      urlError = 'Please enter a valid URL.';
+      const message = 'Please enter a valid URL.';
+
+      log.error(message);
+      urlError = message;
       return undefined;
     }
   }

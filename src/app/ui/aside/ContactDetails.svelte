@@ -3,6 +3,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
+  import {globals} from '~/app/globals';
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
@@ -26,6 +27,8 @@
   import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';
   import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.contact-details');
 
   /**
    * App Services
@@ -122,7 +125,10 @@
         toast.addSimpleSuccess(`Successfully removed contact "${displayName}"`);
       })
       .catch(() => {
-        toast.addSimpleFailure(`Could not delete contact "${displayName}"`);
+        const message = 'Could not delete contact';
+
+        log.error(message);
+        toast.addSimpleFailure(`${message} "${displayName}"`);
       });
 
     deleteContactDialogVisible = false;

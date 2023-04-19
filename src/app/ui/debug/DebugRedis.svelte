@@ -1,8 +1,11 @@
 <script lang="ts">
-  import {toast} from '~/app/ui/snackbar';
+  import {globals} from '~/app/globals';
   import {type AppServices} from '~/app/types';
+  import {toast} from '~/app/ui/snackbar';
   import {assert} from '~/common/utils/assert';
   import {type SvelteAction} from '~/common/viewmodel/types';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.debug-redis');
 
   export let services: AppServices;
 
@@ -16,7 +19,12 @@
     navigator.clipboard
       .writeText(text)
       .then(() => toast.addSimpleSuccess('Debug content copied to clipboard'))
-      .catch(() => toast.addSimpleFailure('Could not copy debug content to clipboard'));
+      .catch(() => {
+        const message = 'Could not copy debug content to clipboard';
+
+        log.error(message);
+        toast.addSimpleFailure(message);
+      });
   }
 
   function copyToClipboardAction(node: HTMLElement): SvelteAction {

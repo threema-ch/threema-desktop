@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
@@ -8,14 +9,13 @@
   import {type Remote} from '~/common/utils/endpoint';
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
+  const log = globals.unwrap().uiLogging.logger('ui.component.conversation-nav');
+
   export let services: AppServices;
   const {
     backend: {viewModel},
-    logging,
     router,
   } = services;
-
-  const log = logging.logger('component.profile');
 
   let profile: Remote<ProfileViewModelStore>;
   viewModel
@@ -24,7 +24,7 @@
       profile = loadedProfile;
     })
     .catch((error) => {
-      log.error(`Loading profile view model failed`, error);
+      log.error('Loading profile view model failed', error);
     });
 </script>
 

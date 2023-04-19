@@ -4,6 +4,7 @@
   import IconButton from 'threema-svelte-components/src/components/blocks/Button/IconButton.svelte';
   import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
 
+  import {globals} from '~/app/globals';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
   import {isInactiveGroup} from '~/app/ui/generic/receiver';
@@ -31,6 +32,8 @@
   } from '~/common/viewmodel/conversation';
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
 
+  const log = globals.unwrap().uiLogging.logger('ui.component.conversation');
+
   /**
    * App services.
    */
@@ -46,7 +49,7 @@
   }
 
   /**
-   * The Conversation ViewModel
+   * The Conversation ViewModel.
    */
   export let conversationViewModel: Remote<ConversationViewModel>;
 
@@ -333,7 +336,12 @@
     conversation
       .get()
       .controller.removeMessage.fromLocal(messageId)
-      .catch(() => toast.addSimpleFailure('Could not delete message'));
+      .catch(() => {
+        const message = 'Could not delete message';
+
+        log.error(message);
+        toast.addSimpleFailure(message);
+      });
   }
 
   onDestroy(() => {

@@ -8,6 +8,7 @@
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
@@ -40,6 +41,8 @@
   import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
+  const log = globals.unwrap().uiLogging.logger('ui.component.conversation-message');
+
   /**
    * The Conversation's receiver
    */
@@ -61,12 +64,7 @@
    * App services.
    */
   export let services: AppServices;
-  const {router, logging} = services;
-
-  /**
-   * Logger
-   */
-  const log = logging.logger('component.conversation-message');
+  const {router} = services;
 
   /**
    * The ConversationMessageViewModel
@@ -167,7 +165,12 @@
             type === 'thumbdown' ? MessageReaction.DECLINE : MessageReaction.ACKNOWLEDGE,
             new Date(),
           )
-          .catch(() => toast.addSimpleFailure('Could not react to message'));
+          .catch(() => {
+            const message = 'Could not react to message';
+
+            log.error(message);
+            toast.addSimpleFailure(message);
+          });
         break;
       case 'copy':
         copyMessageContent();
@@ -197,7 +200,12 @@
       navigator.clipboard
         .writeText(hrefToCopy)
         .then(() => toast.addSimpleSuccess('Link copied to clipboard'))
-        .catch(() => toast.addSimpleFailure('Could not copy link to clipboard'));
+        .catch((error) => {
+          const message = 'Could not copy link to clipboard';
+
+          log.error(message, error);
+          toast.addSimpleFailure(message);
+        });
       hrefToCopy = undefined;
     } else {
       log.warn('Attempting to copy undefined link');
@@ -209,9 +217,15 @@
       navigator.clipboard
         .writeText(messageContentToCopy)
         .then(() => toast.addSimpleSuccess('Message content copied to clipboard'))
-        .catch(() => toast.addSimpleFailure('Could not copy message content to clipboard'));
+        .catch((error) => {
+          const message = 'Could not copy message content to clipboard';
+
+          log.error(message, error);
+          toast.addSimpleFailure(message);
+        });
       messageContentToCopy = undefined;
     } else {
+      log.warn('Attempting to copy undefined message content');
       toast.addSimpleFailure('Nothing to copy');
     }
   }
@@ -290,8 +304,10 @@
     try {
       blobBytes = await store.controller.blob();
     } catch (error) {
-      log.error(`Blob retrieval failed: ${extractErrorMessage(ensureError(error), 'short')}`);
-      toast.addSimpleFailure(`Could not retrieve file data: ${error}`);
+      const message = 'Could not retrieve file data';
+
+      log.error(message, extractErrorMessage(ensureError(error), 'short'));
+      toast.addSimpleFailure(message);
       return;
     }
 

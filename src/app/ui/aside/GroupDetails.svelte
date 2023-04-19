@@ -2,13 +2,14 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {globals} from '~/app/globals';
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {
+    getProfilePictureAndMemberStores,
     type GroupPreviewStores,
     type TransformedGroup,
-    getProfilePictureAndMemberStores,
     transformGroup,
   } from '~/app/ui/aside/group-details';
   import GroupMembers from '~/app/ui/aside/group-details/GroupMembers.svelte';
@@ -21,6 +22,8 @@
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {ensureIdentityString} from '~/common/network/types';
   import {type IQueryableStore} from '~/common/utils/store';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.group-details');
 
   /**
    * App Services
@@ -105,7 +108,10 @@
         toast.addSimpleSuccess(`Successfully removed group "${groupName}"`);
       })
       .catch(() => {
-        toast.addSimpleFailure(`Could not delete group "${groupName}"`);
+        const message = 'Could not delete group';
+
+        log.error(message);
+        toast.addSimpleFailure(`${message} "${groupName}"`);
       });
 
     deleteGroupDialogVisible = false;

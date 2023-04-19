@@ -16,6 +16,8 @@
   import {type Remote} from '~/common/utils/endpoint';
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
+  const log = globals.unwrap().uiLogging.logger('ui.component.profile');
+
   export let services: AppServices;
   const {
     backend: {viewModel},
@@ -24,8 +26,6 @@
   } = services;
   const {debugPanelState, theme} = storage;
 
-  const log = globals.unwrap().uiLogging.logger('ui.component.profile');
-
   let profile: Remote<ProfileViewModelStore>;
   viewModel
     .profile()
@@ -33,7 +33,7 @@
       profile = loadedProfile;
     })
     .catch((error) => {
-      log.error(`Loading profile view model failed`, error);
+      log.error('Loading profile view model failed', error);
     });
 
   function closeProfile(): void {

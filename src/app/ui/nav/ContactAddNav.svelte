@@ -4,15 +4,18 @@
   import WizardButton from '#3sc/components/blocks/Button/WizardButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Text from '#3sc/components/blocks/Input/Text.svelte';
-  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
-  import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
-  import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
+  import {globals} from '~/app/globals';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
+  import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
+  import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
   import {AcquaintanceLevel, ActivityState} from '~/common/enum';
   import {type ValidIdentityData} from '~/common/network/protocol/directory';
   import {isIdentityString} from '~/common/network/types';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.contact-add-nav');
 
   export let services: AppServices;
   const {backend, router} = services;
@@ -68,10 +71,16 @@
       ) {
         navigateToContactDetails(identityData);
       } else {
-        identityFieldError = 'Threema ID is already part of your contact list';
+        const message = 'Threema ID is already part of your contact list';
+
+        log.error(message);
+        identityFieldError = message;
         // TODO(DESK-361): forward to contact edit of existing identity (?)
       }
     } catch (error) {
+      const message = 'Cannot check contact validity. Are you connected to the internet?';
+
+      log.error(message);
       identityFieldError = 'Cannot check contact validity. Are you connected to the internet?';
     }
   }

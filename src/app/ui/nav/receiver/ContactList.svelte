@@ -1,16 +1,17 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
 
-  import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
-  import {contactListFilter, matchesContactSearchFilter} from '~/app/ui/nav/receiver';
-  import ContactListItem from '~/app/ui/nav/receiver/ContactListItem.svelte';
-  import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import ContextMenu from '~/app/ui/nav/receiver/ContactListContextMenu.svelte';
-  import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
-  import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
-  import {toast} from '~/app/ui/snackbar';
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import {contextMenuAction} from '~/app/ui/generic/context-menu';
+  import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
+  import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
+  import {contactListFilter, matchesContactSearchFilter} from '~/app/ui/nav/receiver';
+  import ContextMenu from '~/app/ui/nav/receiver/ContactListContextMenu.svelte';
+  import ContactListItem from '~/app/ui/nav/receiver/ContactListItem.svelte';
+  import {toast} from '~/app/ui/snackbar';
   import {type DbContactUid} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ReceiverType} from '~/common/enum';
@@ -20,6 +21,8 @@
   import {derive} from '~/common/utils/store/derived-store';
   import {localeSort} from '~/common/utils/string';
   import {type ContactListItemSetStore} from '~/common/viewmodel/contact-list-item';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.contact-list');
 
   /**
    * App Services.
@@ -134,7 +137,10 @@
         toast.addSimpleSuccess(`Successfully removed contact "${displayName}"`);
       })
       .catch(() => {
-        toast.addSimpleFailure(`Could not delete contact "${displayName}"`);
+        const message = 'Could not delete contact';
+
+        log.error(message);
+        toast.addSimpleFailure(`${message} "${displayName}"`);
       });
 
     // TODO (routing): Move route to (?) if current contact is current active chat

@@ -21,6 +21,7 @@
   import {createEventDispatcher, onMount} from 'svelte';
   import {type Readable} from 'svelte/store';
 
+  import {globals} from '~/app/globals';
   import {type u32, type u53} from '~/common/types';
   import {isNotUndefined, unreachable} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
@@ -28,6 +29,8 @@
   import {debounce} from '~/common/utils/timer';
 
   import {type ComposeAreaEnterKeyMode, DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS} from '.';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.compose-area');
 
   /**
    * Placeholder text of the content editable.
@@ -213,7 +216,9 @@
         // Read clipboard data as file
         const file = fileItem.getAsFile();
         if (file === null) {
-          // TODO(DESK-977): Log a warning or error: "Could not get item as a blob"
+          log.error(
+            `Could not get pasted item as a blob (kind: ${fileItem.kind}, type: ${fileItem.type})`,
+          );
           return undefined;
         }
         return file;
