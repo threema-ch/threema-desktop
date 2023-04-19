@@ -558,7 +558,7 @@ export class Backend implements ProxyMarked {
             }
 
             requestContactProfilePictures(backend._services);
-            requestGroupSync(backend._services, log);
+            requestGroupSync(backend._services);
         }
 
         // Expose the backend on a new channel
@@ -924,7 +924,7 @@ function requestContactProfilePictures(services: ServicesForBackend): void {
     void taskManager.schedule(task);
 }
 
-function requestGroupSync(services: ServicesForBackend, log: Logger): void {
+function requestGroupSync(services: ServicesForBackend): void {
     const {model, taskManager} = services;
 
     // Gather all groups where we're an active member and not the creator
@@ -933,18 +933,11 @@ function requestGroupSync(services: ServicesForBackend, log: Logger): void {
     for (const group of model.groups.getAll().get()) {
         const view = group.get().view;
         if (view.creatorIdentity === ownIdentity) {
-            log.debug(
-                `Not scheduling group sync request for group "${view.displayName}" (we're the creator)`,
-            );
             continue;
         }
         if (view.userState !== GroupUserState.MEMBER) {
-            log.debug(
-                `Not scheduling group sync request for group "${view.displayName}" (we're not a member)`,
-            );
             continue;
         }
-        log.debug(`Scheduling group sync request for group "${view.displayName}"`);
         groups.push(group);
     }
 
