@@ -817,7 +817,7 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
     // To see the full RegEx, run the Add-AppxPackage command with an invalid version (if you dare).
     const packageJson = readPackageJson(dirs);
     const appVersion = `${packageJson.version.replace(
-        /^(?<majorMinor>[0-9]*\.[0-9]*)\..*/u,
+        /^(?<majorMinor>[0-9]*\.[0-9]*).*/u,
         '$<majorMinor>',
     )}.${packageJson.versionCode}.0`;
 
