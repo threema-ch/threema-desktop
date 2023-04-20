@@ -4,6 +4,7 @@
   import {type AppServices} from '~/app/types';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {type ContactTab} from '~/app/ui/nav';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import {contactListFilter} from '~/app/ui/nav/receiver';
@@ -26,19 +27,22 @@
   $: {
     switch (activeTab) {
       case 'work-contacts':
-        searchInputPlaceholder = 'Search Company Contacts';
+        searchInputPlaceholder = $i18n.t('topic.people.search-company-contacts-placeholder');
         break;
       case 'private-contacts':
-        searchInputPlaceholder = 'Search Contacts';
-        addButtonText = 'New Contact';
+        searchInputPlaceholder = $i18n.t('topic.people.search-contacts-placeholder');
+        addButtonText = $i18n.t('topic.people.new-contact-action', 'New Contact');
         break;
       case 'groups':
-        searchInputPlaceholder = 'Search Groups';
-        addButtonText = 'New Group';
+        searchInputPlaceholder = $i18n.t('topic.people.search-groups-placeholder');
+        addButtonText = $i18n.t('topic.people.new-group-action', 'New Group');
         break;
       case 'distribution-lists':
-        searchInputPlaceholder = 'Search Distribution Lists';
-        addButtonText = 'New Distribution List';
+        searchInputPlaceholder = $i18n.t('topic.people.search-distribution-lists-placeholder');
+        addButtonText = $i18n.t(
+          'topic.people.new-distribution-list-action',
+          'New Distribution List',
+        );
         break;
       default:
         unreachable(activeTab);

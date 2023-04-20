@@ -1,5 +1,6 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {i18n} from '~/app/ui/i18n';
 </script>
 
 <template>
@@ -8,7 +9,10 @@
       <MdIcon theme="Outlined">error_outline</MdIcon>
     </div>
     <div class="message">
-      No server connection. Try reconnecting to Wi-Fi, or check your modem and router.
+      {$i18n.t(
+        'status.error.network',
+        'No server connection. Try reconnecting to Wi-Fi, or check your modem and router.',
+      )}
     </div>
   </div>
 </template>

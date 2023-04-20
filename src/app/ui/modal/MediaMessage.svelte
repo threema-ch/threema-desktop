@@ -11,6 +11,7 @@
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {MAX_CAPTION_BYTE_LENGTH, type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
@@ -289,7 +290,9 @@
 
         {#if zoneHover || bodyHover}
           <div class="drop-wrapper" class:zoneHover class:bodyHover>
-            <div class="border">Drop files here to add</div>
+            <div class="border">
+              {$i18n.t('topic.messaging.drop-files-add-hint', 'Drop files here to add')}
+            </div>
           </div>
         {/if}
       </div>

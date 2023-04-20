@@ -45,18 +45,18 @@
 <template>
   <div class="wrapper">
     <ModalDialog visible={true} closableWithEscape={false} on:confirm={handleOnSubmit}>
-      <Title slot="header" title={$i18n.t('input.password.label', {number: 1})} />
+      <Title slot="header" title={$i18n.t('topic.start.enter-password-title', 'Enter Password')} />
       <div class="body" slot="body" data-has-error={showErrorMessage}>
         <Password
+          bind:this={passwordInput}
+          bind:value={password}
           error={showErrorMessage
             ? $i18n.t(
-                'input.password.hint.wrongPassword',
+                'status.error.password',
                 'The entered password is incorrect. Please try again.',
               )
             : undefined}
-          bind:this={passwordInput}
-          label={$i18n.t('input.password.placeholder')}
-          bind:value={password}
+          label={$i18n.t('common.password', 'Password')}
           on:input={clearError}
           on:keydown={(event) => {
             if (event.key === 'Enter') {
@@ -65,11 +65,11 @@
           }}
         />
         <div class="hint">
-          {@html $i18n.t('input.password.hint.forgotPassword', {
-            aOpening:
-              '<a href="https://threema.ch/faq/md_password" target="_blank" rel="noreferrer noopener">',
-            aClosing: '</a>',
-          })}
+          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
+          {@html $i18n.t(
+            'topic.start.enter-password-hint',
+            'Forgot password? Please see the <a href="https://threema.ch/faq/md_password" target="_blank" rel="noreferrer noopener">FAQ</a>.',
+          )}
         </div>
       </div>
       <div class="footer" slot="footer">
@@ -78,7 +78,7 @@
           disabled={password.length < minPasswordLength || showErrorMessage}
           on:click={handleOnSubmit}
         >
-          {$i18n.t('button.label.continue', 'Continue')}
+          {$i18n.t('common.continue', 'Continue')}
         </Button>
       </div>
     </ModalDialog>

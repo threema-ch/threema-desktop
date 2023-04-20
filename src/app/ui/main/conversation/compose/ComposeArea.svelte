@@ -36,7 +36,7 @@
   /**
    * Placeholder text of the content editable.
    */
-  export let placeholder: string | undefined = 'Write a message...';
+  export let placeholder: string;
 
   /**
    * Enter key mode.

@@ -1,5 +1,6 @@
 <script lang="ts">
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {type ProfilePictureView} from '~/common/model';
 
@@ -13,14 +14,14 @@
     <div class="profile-picture">
       <ProfilePicture
         img={transformProfilePicture(profilePicture.picture)}
-        alt="Your profile picture"
+        alt={$i18n.t('topic.people.user-profile-picture-description')}
         {initials}
         color={profilePicture.color}
         shape="circle"
       />
     </div>
     <div class="nickname">
-      <div class="label">Nickname</div>
+      <div class="label">{$i18n.t('common.nickname')}</div>
       <div class="value">{displayName}</div>
     </div>
     <div class="qr-code" />

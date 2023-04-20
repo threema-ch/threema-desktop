@@ -4,6 +4,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {i18n} from '~/app/ui/i18n';
 
   const dispatch = createEventDispatcher();
 </script>
@@ -13,8 +14,10 @@
     <IconButton flavor="naked" on:click={() => dispatch('back')}>
       <MdIcon theme="Outlined">arrow_back</MdIcon>
     </IconButton>
-    New Contact
-    <Button on:click={() => dispatch('cancel')} flavor="naked" size="small">Cancel</Button>
+    {$i18n.t('topic.people.new-contact-label', 'New Contact')}
+    <Button on:click={() => dispatch('cancel')} flavor="naked" size="small"
+      >{$i18n.t('common.cancel', 'Cancel')}</Button
+    >
   </header>
 </template>
 

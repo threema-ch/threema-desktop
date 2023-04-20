@@ -6,6 +6,7 @@
   import {createEventDispatcher} from 'svelte';
 
   import Text from '~/app/ui/generic/form/Text.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
   import {type FilenameDetails, getSanitizedFileNameDetails} from '~/common/utils/file';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
@@ -34,7 +35,9 @@
       <FileType {filenameDetails} />
     </div>
     <button class="name" on:click={() => dispatch('saveFile')}
-      >{filenameDetails.name !== '' ? filenameDetails.name : '(no name)'}</button
+      >{filenameDetails.name !== ''
+        ? filenameDetails.name
+        : $i18n.t('topic.messaging.undefined-file-name', '(no name)')}</button
     >
     <div class="size">{byteSizeToHumanReadable(body.size)}</div>
   </div>

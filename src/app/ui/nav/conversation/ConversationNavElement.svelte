@@ -8,6 +8,7 @@
   import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts} from '~/app/ui/main/conversation';
   import MessageStatus from '~/app/ui/main/conversation/conversation-messages/MessageStatus.svelte';
   import {conversationPreviewListFilter, isInactiveGroup} from '~/app/ui/nav/conversation';
@@ -124,7 +125,7 @@
         {#if conversation$ !== undefined && receiver$ !== undefined && $profilePicture !== undefined}
           <DeprecatedReceiver
             profilePicture={{
-              alt: `Profile picture of ${receiver$.name}`,
+              alt: $i18n.t('topic.people.profile-picture-description', {name: receiver$.name}),
               profilePicture: $profilePicture.view,
               initials: $viewModel.receiver.initials,
               unread: conversation$.unread,
@@ -135,7 +136,7 @@
               titleLineThrough: isInactiveGroup($receiver),
               subtitle:
                 conversation$.category === ConversationCategory.PROTECTED
-                  ? 'Private'
+                  ? $i18n.t('topic.messaging.conversation-category-protected', 'Private')
                   : conversationDraft ?? $lastMessage?.text,
               isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
               // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
@@ -204,19 +205,19 @@
           <div slot="icon">
             <ThreemaIcon theme="Outlined">unpin</ThreemaIcon>
           </div>
-          <div slot="name">Unpin</div>
+          <div slot="name">{$i18n.t('topic.messaging.conversation-unpin-action', 'Unpin')}</div>
         </SwipeAreaButton>
         <SwipeAreaButton>
           <div slot="icon">
             <MdIcon theme="Outlined">archive</MdIcon>
           </div>
-          <div slot="name">Archive</div>
+          <div slot="name">{$i18n.t('topic.messaging.conversation-archive-action', 'Archive')}</div>
         </SwipeAreaButton>
         <SwipeAreaButton>
           <div slot="icon">
             <MdIcon theme="Outlined">more_vert</MdIcon>
           </div>
-          <div slot="name">More</div>
+          <div slot="name">{$i18n.t('topic.messaging.conversation-more-action', 'More')}</div>
         </SwipeAreaButton>
       </aside>
     </SwipeArea>

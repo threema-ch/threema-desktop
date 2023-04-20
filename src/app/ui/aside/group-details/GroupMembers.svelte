@@ -5,6 +5,7 @@
   import {sortGroupMembers} from '~/app/ui/aside/group-details';
   import GroupMember from '~/app/ui/aside/group-details/GroupMember.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
   import {type DbContactUid} from '~/common/db';
   import {type BackendController} from '~/common/dom/backend/controller';
@@ -91,20 +92,24 @@
 <template>
   <div class="group-members">
     <div class="label">
-      {numberOfParticipants} Group Member{numberOfParticipants === 1 ? '' : 's'}
+      {$i18n.t(
+        'topic.people.group-member-count',
+        '{n, plural, =0 {No Group Members} =1 {1 Group Member} other {# Group Members}}',
+        {n: numberOfParticipants},
+      )}
     </div>
     <div class="members">
       {#if isCurrentUserGroupCreator}
         <DeprecatedReceiver
           clickable={false}
           profilePicture={{
-            alt: `My profile picture`,
+            alt: $i18n.t('topic.people.user-profile-picture-description', 'My profile picture'),
             profilePicture: $userProfilePicture,
-            initials: 'ME',
+            initials: $i18n.t('topic.people.user-profile-picture-initials', 'ME'),
             unread: 0,
           }}
           title={{
-            title: 'Me',
+            title: $i18n.t('topic.people.user-profile-picture-name', 'Me'),
             isCreator: true,
           }}
         >
@@ -123,12 +128,12 @@
         <DeprecatedReceiver
           clickable={false}
           profilePicture={{
-            alt: `My profile picture`,
+            alt: $i18n.t('topic.people.user-profile-picture-description', 'My profile picture'),
             profilePicture: $userProfilePicture,
-            initials: 'ME',
+            initials: $i18n.t('topic.people.user-profile-picture-initials', 'ME'),
             unread: 0,
           }}
-          title={{title: 'Me'}}
+          title={{title: $i18n.t('topic.people.user-profile-picture-name', 'Me')}}
         >
           <div class="identity" slot="additional-bottom">{backend.user.identity}</div>
         </DeprecatedReceiver>
@@ -136,13 +141,19 @@
     </div>
     {#if isExpandCollapseButtonNeeded}
       {#if isParticipantsListExpanded}
-        <LinkElement on:click={toggleParticipantsListExpanded} label={'Show less'}>
+        <LinkElement
+          on:click={toggleParticipantsListExpanded}
+          label={$i18n.t('common.show-less', 'Show less')}
+        >
           <span class="expand" slot="icon-left">
             <MdIcon theme="Outlined">expand_less</MdIcon>
           </span>
         </LinkElement>
       {:else}
-        <LinkElement on:click={toggleParticipantsListExpanded} label={'Show all'}>
+        <LinkElement
+          on:click={toggleParticipantsListExpanded}
+          label={$i18n.t('common.show-all', 'Show all')}
+        >
           <span class="expand" slot="icon-left">
             <MdIcon theme="Outlined">expand_more</MdIcon>
           </span>

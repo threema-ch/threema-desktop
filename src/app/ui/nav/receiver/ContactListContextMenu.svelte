@@ -15,7 +15,7 @@
         <span class="icon" slot="icon">
           <MdIcon theme="Outlined">edit</MdIcon>
         </span>
-        <span>Edit</span>
+        <span>{$i18n.t('common.edit')}</span>
       </MenuItem>
       {#if import.meta.env.BUILD_VARIANT !== 'work'}
         <MenuItem on:click={() => dispatchEvent('delete')}>
@@ -34,6 +34,5 @@
 
   div {
     --c-menu-container-width: auto;
-    @extend %elevation-060;
   }
 </style>

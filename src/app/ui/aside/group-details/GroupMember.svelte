@@ -1,11 +1,12 @@
 <script lang="ts">
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {
-    type TransformedContact,
     getStores,
     showFullNameAndNickname,
     transformContact,
+    type TransformedContact,
   } from '~/app/ui/nav/receiver';
   import {
     type Contact,
@@ -52,7 +53,9 @@
     <DeprecatedReceiver
       on:click
       profilePicture={{
-        alt: `Profile picture of ${contact$.displayName}`,
+        alt: $i18n.t('topic.people.profile-picture-description', {
+          name: contact$.displayName,
+        }),
         profilePicture: $profilePicture.view,
         initials: contact$.initials,
         unread: 0,

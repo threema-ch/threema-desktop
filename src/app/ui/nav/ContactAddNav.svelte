@@ -10,6 +10,7 @@
   import {type AppServices} from '~/app/types';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
   import {AcquaintanceLevel, ActivityState} from '~/common/enum';
   import {type ValidIdentityData} from '~/common/network/protocol/directory';
@@ -48,8 +49,12 @@
     }
 
     if (identity === services.backend.user.identity) {
-      identityFieldError =
-        'You cannot add your own Threema ID as contact. Hint: To keep private notes you can create a group with only yourself as member.';
+      identityFieldError = i18n
+        .get()
+        .t(
+          'status.error.add-contact-identity',
+          'You cannot add your own Threema ID as contact. Hint: To keep private notes you can create a group with only yourself as member.',
+        );
       return;
     }
 
@@ -58,7 +63,9 @@
       const identityData = await backend.directory.identity(identity);
 
       if (identityData.state === ActivityState.INVALID) {
-        identityFieldError = 'Threema ID was not found or has been revoked';
+        identityFieldError = i18n
+          .get()
+          .t('status.error.threema-id-unknown', 'Threema ID was not found or has been revoked');
         return;
       }
 
@@ -71,17 +78,25 @@
       ) {
         navigateToContactDetails(identityData);
       } else {
-        const message = 'Threema ID is already part of your contact list';
+        const message = i18n
+          .get()
+          .t(
+            'status.error.add-contact-existing',
+            'Threema ID is already part of your contact list',
+          );
 
         log.error(message);
         identityFieldError = message;
         // TODO(DESK-361): forward to contact edit of existing identity (?)
       }
     } catch (error) {
-      const message = 'Cannot check contact validity. Are you connected to the internet?';
-
-      log.error(message);
-      identityFieldError = 'Cannot check contact validity. Are you connected to the internet?';
+      log.error('Cannot check contact validity. Are you connected to the internet?');
+      identityFieldError = i18n
+        .get()
+        .t(
+          'status.error.threema-id-validation',
+          'Cannot check contact validity. Are you connected to the internet?',
+        );
     }
   }
 
@@ -102,14 +117,17 @@
       <ContactAddNavBar on:back={navigateToContactList} on:cancel={navigateToContactList} />
     </div>
     <span class="note-enter"
-      >Please enter the Threema ID of the contact you would like to add:
+      >{$i18n.t(
+        'topic.people.add-contact-description',
+        'Please enter the Threema ID of the contact you would like to add:',
+      )}
     </span>
     <div class="threema-id">
       <Text
         bind:this={threemaIdTextField}
         bind:value={identity}
         error={identityFieldError}
-        label="Threema ID"
+        label={$i18n.t('common.threema-id')}
         spellcheck={false}
       />
     </div>
@@ -130,7 +148,10 @@
     {#if import.meta.env.BUILD_VARIANT === 'work'}
       <hr />
       <span class="note-directory">
-        Or search a contact in corporate directory and add it to your personal contact list:
+        {$i18n.t(
+          'topic.people.add-work-directory-contact-description',
+          'Or search a contact in corporate directory and add it to your personal contact list:',
+        )}
       </span>
       <div
         class="add-contact"
@@ -143,14 +164,19 @@
           <div slot="icon" class="icon">
             <MdIcon theme="Filled">add</MdIcon>
           </div>
-          <div slot="text">Add Contact from Directory</div>
+          <div slot="text">
+            {$i18n.t(
+              'topic.people.add-work-directory-contact-action',
+              'Add Contact from Directory',
+            )}
+          </div>
         </IconText>
       </div>
     {/if}
 
     <div class="next">
       <WizardButton disabled={!isIdentityString(identity)} on:click={handleNextClicked}>
-        Next
+        {$i18n.t('common.next')}
       </WizardButton>
     </div>
   </form>

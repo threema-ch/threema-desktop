@@ -3,6 +3,7 @@
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
+  import {i18n} from '~/app/ui/i18n';
 
   import {type Receiver} from '.';
 
@@ -78,21 +79,23 @@
         {#if receiver.type === 'group'}
           {@const membersCount = receiver.membersCount}
           <div class="count">
-            {membersCount} Member{#if membersCount > 1}s{/if}
+            {$i18n.t('topic.people.member-count', '{n, plural, =1 {1 Member} other {# Members}}', {
+              n: membersCount,
+            })}
           </div>
         {/if}
         <div class="subtitle">
           {#if isInactive}
-            <span class="badge inactive">Inactive</span>
+            <span class="badge inactive">{$i18n.t('common.inactive', 'Inactive')}</span>
           {/if}
           {#if isCreator}
-            <span class="badge creator">Creator</span>
+            <span class="badge creator">{$i18n.t('common.creator', 'Creator')}</span>
           {/if}
           {#if isArchived}
-            <span class="badge archived">Archived</span>
+            <span class="badge archived">{$i18n.t('common.archived', 'Archived')}</span>
           {/if}
           {#if isDraft}
-            <span class="draft">Draft:</span>
+            <span class="draft">{$i18n.t('common.draft-prefix', 'Draft:')}</span>
           {/if}
           {#if subTitle !== undefined}
             <HighlightableText text={subTitle} substringToHighlight={filter} />

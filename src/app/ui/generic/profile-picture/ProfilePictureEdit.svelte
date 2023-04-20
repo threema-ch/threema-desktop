@@ -2,6 +2,7 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {type ProfilePicture as ProfilePictureModel} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
@@ -22,7 +23,7 @@
     <div class="profile-picture">
       <ProfilePicture
         img={transformProfilePicture($profilePicture.view.picture)}
-        alt={`Profile picture of ${name}`}
+        alt={$i18n.t('topic.people.profile-picture-description', {name})}
         initials=""
         color={$profilePicture.view.color}
         shape="circle"

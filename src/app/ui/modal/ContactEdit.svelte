@@ -9,6 +9,7 @@
   import {type AppServices} from '~/app/types';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import ProfilePictureEdit from '~/app/ui/generic/profile-picture/ProfilePictureEdit.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {getStores} from '~/app/ui/nav/receiver';
   import {type Contact, type ProfilePicture} from '~/common/model';
@@ -86,7 +87,12 @@
         on:close={closeModal}
         on:cancel={closeModal}
       >
-        <Title slot="header" title="Edit Name" />
+        <Title
+          slot="header"
+          title={$i18n.t('topic.people.edit-contact-prompt-title', 'Edit {name}', {
+            name: displayName,
+          })}
+        />
         <form
           class="body"
           slot="body"
@@ -98,8 +104,15 @@
           <div class="profile-picture">
             <ProfilePictureEdit {profilePicture} name={displayName} />
           </div>
-          <TextInput bind:this={inputFirstName} bind:value={firstName} label="First Name" />
-          <TextInput bind:value={lastName} label="Last Name" />
+          <TextInput
+            bind:this={inputFirstName}
+            bind:value={firstName}
+            label={$i18n.t('topic.people.first-name-label', 'First Name')}
+          />
+          <TextInput
+            bind:value={lastName}
+            label={$i18n.t('topic.people.last-name-label', 'Last Name')}
+          />
         </form>
         <CancelAndConfirm slot="footer" let:modal {modal} />
       </ModalDialog>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type PublicKey} from '~/common/crypto';
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';
@@ -18,23 +19,27 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <TitleAndClose let:modal {modal} slot="header" title="Threema ID" />
+      <TitleAndClose let:modal {modal} slot="header" title={$i18n.t('common.threema-id')} />
       <div class="body" slot="body">
-        <p>
-          Each Threema user gets a randomly generated, 8-digit Threema ID when starting the app for
-          the first time. This ID is your unique address in Threema and makes it possible to use
-          Threema completely anonymously, without disclosing any personal information.
-        </p>
-        <p>
-          Your Threema ID is just one of two components that make up your identity in Threema. The
-          other one is the so called key pair (consisting of a public key and a private key) which
-          is essential for the encryption. Your Threema ID is permanently tied to your public key.
-          While the public key is sent to Threema's servers to be distributed to your chat partners,
-          the private key remains on your device where it is securely stored. All messages directed
-          to you will be individually encrypted with your public key on the sender's device. They
-          can only be decrypted with your personal private key.
-        </p>
-        <span class="public_key">Public Key</span>
+        <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
+        {@html $i18n.t(
+          'topic.people.identity-info',
+          `<p>
+            Each Threema user gets a randomly generated, 8-digit Threema ID when starting the app for
+            the first time. This ID is your unique address in Threema and makes it possible to use
+            Threema completely anonymously, without disclosing any personal information.
+          </p>
+          <p>
+            Your Threema ID is just one of two components that make up your identity in Threema. The
+            other one is the so called key pair (consisting of a public key and a private key) which
+            is essential for the encryption. Your Threema ID is permanently tied to your public key.
+            While the public key is sent to Threema's servers to be distributed to your chat partners,
+            the private key remains on your device where it is securely stored. All messages directed
+            to you will be individually encrypted with your public key on the sender's device. They
+            can only be decrypted with your personal private key.
+          </p>`,
+        )}
+        <span class="public_key">{$i18n.t('common.public-key')}</span>
         <pre><code>{publicKeyGrid(publicKey)}</code></pre>
       </div>
     </ModalDialog>

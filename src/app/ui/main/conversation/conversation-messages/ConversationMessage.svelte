@@ -176,10 +176,10 @@
             new Date(),
           )
           .catch(() => {
-            const message = 'Could not react to message';
-
-            log.error(message);
-            toast.addSimpleFailure(message);
+            log.error('Could not react to message');
+            toast.addSimpleFailure(
+              i18n.get().t('status.error.message-reaction', 'Could not react to message'),
+            );
           });
         break;
       case 'copy':
@@ -209,12 +209,16 @@
     if (hrefToCopy !== undefined) {
       navigator.clipboard
         .writeText(hrefToCopy)
-        .then(() => toast.addSimpleSuccess('Link copied to clipboard'))
+        .then(() =>
+          toast.addSimpleSuccess(
+            i18n.get().t('status.success.message-link-copy', 'Link copied to clipboard'),
+          ),
+        )
         .catch((error) => {
-          const message = 'Could not copy link to clipboard';
-
-          log.error(message, error);
-          toast.addSimpleFailure(message);
+          log.error('Could not copy link to clipboard', error);
+          toast.addSimpleFailure(
+            i18n.get().t('status.error.message-link-copy', 'Could not copy link to clipboard'),
+          );
         });
       hrefToCopy = undefined;
     } else {
@@ -226,17 +230,30 @@
     if (messageContentToCopy !== undefined) {
       navigator.clipboard
         .writeText(messageContentToCopy)
-        .then(() => toast.addSimpleSuccess('Message content copied to clipboard'))
+        .then(() =>
+          toast.addSimpleSuccess(
+            i18n
+              .get()
+              .t('status.success.message-content-copy', 'Message content copied to clipboard'),
+          ),
+        )
         .catch((error) => {
-          const message = 'Could not copy message content to clipboard';
-
-          log.error(message, error);
-          toast.addSimpleFailure(message);
+          log.error('Could not copy message content to clipboard', error);
+          toast.addSimpleFailure(
+            i18n
+              .get()
+              .t(
+                'status.error.message-content-copy',
+                'Could not copy message content to clipboard',
+              ),
+          );
         });
       messageContentToCopy = undefined;
     } else {
       log.warn('Attempting to copy undefined message content');
-      toast.addSimpleFailure('Nothing to copy');
+      toast.addSimpleFailure(
+        i18n.get().t('status.error.undefined-message-content-on-copy', 'Nothing to copy'),
+      );
     }
   }
 
@@ -314,10 +331,10 @@
     try {
       blobBytes = await store.controller.blob();
     } catch (error) {
-      const message = 'Could not retrieve file data';
-
-      log.error(message, extractErrorMessage(ensureError(error), 'short'));
-      toast.addSimpleFailure(message);
+      log.error('Could not retrieve file data', extractErrorMessage(ensureError(error), 'short'));
+      toast.addSimpleFailure(
+        i18n.get().t('status.error.file-data-retrieval', 'Could not retrieve file data'),
+      );
       return;
     }
 

@@ -7,6 +7,7 @@
 
   import IconButtonProgressBarOverlay from '#3sc/components/blocks/Button/IconButtonProgressBarOverlay.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
   import {MessageDirection, ReceiverType} from '~/common/enum';
@@ -94,7 +95,9 @@
     {#if messageViewModel.quote !== undefined}
       <div class="quote">
         {#if messageViewModel.quote === 'not-found'}
-          <p class="quote-not-found">The quoted message could not be found.</p>
+          <p class="quote-not-found">
+            {$i18n.t('status.error.quote-not-found', 'The quoted message could not be found.')}
+          </p>
         {:else}
           <MessageQuote quote={messageViewModel.quote} />
         {/if}
@@ -122,11 +125,29 @@
         <button class="overlay-button" on:click={handleMessageOverlayClick}>
           {#if message.state.type === 'unsynced'}
             {#if messageViewModel.syncDirection === 'download'}
-              <MdIcon theme="Filled" title="Click to download file">file_download</MdIcon>
+              <MdIcon
+                theme="Filled"
+                title={$i18n.t(
+                  'topic.messaging.file-sync-action-download-hint',
+                  'Click to download file',
+                )}>file_download</MdIcon
+              >
             {:else if messageViewModel.syncDirection === 'upload'}
-              <MdIcon theme="Filled" title="Click to upload file">file_upload</MdIcon>
+              <MdIcon
+                theme="Filled"
+                title={$i18n.t(
+                  'topic.messaging.file-sync-action-upload-hint',
+                  'Click to upload file',
+                )}>file_upload</MdIcon
+              >
             {:else}
-              <MdIcon theme="Filled" title="Unknown sync direction">help</MdIcon>
+              <MdIcon
+                theme="Filled"
+                title={$i18n.t(
+                  'topic.messaging.file-sync-action-unknown-hint',
+                  'Unknown sync direction',
+                )}>help</MdIcon
+              >
             {/if}
           {:else if message.state.type === 'syncing'}
             <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>-->

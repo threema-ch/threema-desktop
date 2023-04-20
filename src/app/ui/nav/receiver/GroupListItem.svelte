@@ -6,6 +6,7 @@
   import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {type DbGroupUid} from '~/common/db';
   import {GroupUserState, ReceiverType} from '~/common/enum';
   import {type ProfilePicture} from '~/common/model';
@@ -69,7 +70,7 @@
       type: 'group',
       profilePicture: {
         profilePicture: $profilePicture.view,
-        alt: `Profile picture of ${viewModel.displayName}`,
+        alt: $i18n.t('topic.people.profile-picture-description', {name: viewModel.displayName}),
         initials: viewModel.initials,
         unread: 0,
       },
@@ -109,13 +110,13 @@
           <div slot="icon">
             <MdIcon theme="Outlined">edit</MdIcon>
           </div>
-          <div slot="name">Edit</div>
+          <div slot="name">{$i18n.t('common.edit')}</div>
         </SwipeAreaButton>
         <SwipeAreaButton>
           <div slot="icon">
             <MdIcon theme="Outlined">delete</MdIcon>
           </div>
-          <div slot="name">Delete</div>
+          <div slot="name">{$i18n.t('common.delete')}</div>
         </SwipeAreaButton>
       </aside>
     </SwipeArea>

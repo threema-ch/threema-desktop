@@ -13,13 +13,13 @@
     sortMessages,
     unsetUnreadMessageInfo,
   } from '~/app/ui/generic/form';
+  import {i18n} from '~/app/ui/i18n';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type u53} from '~/common/types';
   import {type Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {debounce} from '~/common/utils/timer';
@@ -127,18 +127,6 @@
     }
   }
 
-  function unreadMessageSeparatorLabel(unreadMessageCount: u53): string {
-    if (unreadMessageCount < 1) {
-      return '';
-    }
-
-    if (unreadMessageCount === 1) {
-      return '1 New Message';
-    }
-
-    return `${unreadMessageCount} New Messages`;
-  }
-
   $: if ($appVisibility === 'focused') {
     void $conversation.controller.read.fromLocal(new Date());
   }
@@ -149,7 +137,11 @@
     {#if index === unreadMessageInfo.earliestUnreadMessageIndex}
       <div class="unread-messages-separator">
         {#if !unreadMessageInfo.hasOutboundMessageAfterEarliestUnreadMessage}
-          {unreadMessageSeparatorLabel(unreadMessageInfo.inboundUnreadMessageCount)}
+          {$i18n.t(
+            'topic.messaging.message-unread-count',
+            '{n, plural, =0 {} =1 {1 New Message} other {# New Messages}}',
+            {n: unreadMessageInfo.inboundUnreadMessageCount},
+          )}
         {/if}
       </div>
     {:else if hasDirectionChanged($sortedMessages, index)}
@@ -170,8 +162,11 @@
   {:else}
     <SystemMessage>
       <MdIcon slot="icon" theme="Outlined">info</MdIcon>
-      This chat is linked with your mobile device.<br />
-      All future messages will appear here.
+      <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
+      {@html $i18n.t(
+        'topic.messaging.chat-empty-state-info',
+        'This chat is linked with your mobile device. <br />All future messages will appear here.',
+      )}
     </SystemMessage>
   {/each}
 </template>

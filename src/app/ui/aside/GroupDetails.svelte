@@ -13,6 +13,7 @@
     transformGroup,
   } from '~/app/ui/aside/group-details';
   import GroupMembers from '~/app/ui/aside/group-details/GroupMembers.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
   import {toast} from '~/app/ui/snackbar';
@@ -105,13 +106,19 @@
     $group.controller.remove
       .fromLocal()
       .then(() => {
-        toast.addSimpleSuccess(`Successfully removed group "${groupName}"`);
+        toast.addSimpleSuccess(
+          $i18n.t('status.success.remove-group', 'Successfully removed group "{name}"', {
+            name: groupName,
+          }),
+        );
       })
       .catch(() => {
-        const message = 'Could not delete group';
-
-        log.error(message);
-        toast.addSimpleFailure(`${message} "${groupName}"`);
+        log.error('Could not delete group');
+        toast.addSimpleFailure(
+          $i18n.t('status.error.remove-group', 'Could not delete group "{name}"', {
+            name: groupName,
+          }),
+        );
       });
 
     deleteGroupDialogVisible = false;
@@ -123,7 +130,7 @@
   <div class="aside-group">
     <header>
       <span />
-      Group Detail
+      {$i18n.t('topic.people.group-detail', 'Group Detail')}
       <IconButton flavor="naked" on:click={closeAside}>
         <MdIcon theme="Outlined">close</MdIcon>
       </IconButton>
@@ -135,7 +142,9 @@
           <ProfilePicture
             on:click={() => (groupProfilePictureDialogVisible = true)}
             img={transformProfilePicture($profilePicture.view.picture)}
-            alt="Profile picture of {group$.displayName}"
+            alt={$i18n.t('topic.people.profile-picture-description', {
+              name: group$.displayName,
+            })}
             initials={group$.displayName.slice(0, 2)}
             color={$profilePicture.view.color}
             shape="circle"
@@ -147,7 +156,7 @@
       </div>
       <div class="edit">
         <!--<span on:click={openGroupEditDialog}>Edit</span>-->
-        <span class="wip">Edit</span>
+        <span class="wip">{$i18n.t('common.edit')}</span>
       </div>
 
       <GroupMembers
@@ -209,7 +218,9 @@
       <ProfilePictureDialog bind:visible={groupProfilePictureDialogVisible}
         ><ProfilePicture
           img={transformProfilePicture($profilePicture.view.picture)}
-          alt="Profile picture of {group$.displayName}"
+          alt={$i18n.t('topic.people.profile-picture-description', {
+            name: group$.displayName,
+          })}
           initials={group$.displayName.slice(0, 2)}
           color={$profilePicture.view.color}
           shape="square"

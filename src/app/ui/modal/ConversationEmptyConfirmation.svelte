@@ -2,6 +2,7 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
@@ -14,21 +15,36 @@
   export let conversationMessageCount: u53;
 
   let confirmText: string;
-  let conversationDisplayName: string;
+  let description: string;
   $: switch (receiverType) {
     case 'contact':
-      confirmText = `Empty Chat`;
-      conversationDisplayName = `chat with ${truncate(receiverName, 80)}`;
+      confirmText = $i18n.t('topic.messaging.empty-chat-action', 'Empty Chat');
+      description = $i18n.t(
+        'topic.messaging.empty-chat-confirmation-description',
+        "This will delete the {n, plural, =1 {only message} other {# messages}} of this chat with {name} on this device. Your linked devices won't be affected.",
+        {n: conversationMessageCount, name: truncate(receiverName, 80)},
+      );
       break;
 
     case 'group':
-      confirmText = `Empty Group Chat`;
-      conversationDisplayName = `"${truncate(receiverName, 80)}" group chat`;
+      confirmText = $i18n.t('topic.messaging.empty-group-chat-action', 'Empty Group Chat');
+      description = $i18n.t(
+        'topic.messaging.empty-group-chat-confirmation-description',
+        'This will delete the {n, plural, =1 {only message} other {# messages}} of this "{name}" group chat on this device. Your linked devices won\'t be affected.',
+        {n: conversationMessageCount, name: truncate(receiverName, 80)},
+      );
       break;
 
     case 'distribution-list':
-      confirmText = `Empty Distribution List`;
-      conversationDisplayName = `"${truncate(receiverName, 80)}" distribution list`;
+      confirmText = $i18n.t(
+        'topic.messaging.empty-distribution-list-action',
+        'Empty Distribution List',
+      );
+      description = $i18n.t(
+        'topic.messaging.empty-distribution-list-chat-confirmation-description',
+        'This will delete the {n, plural, =1 {only message} other {# messages}} of this "{name}" distribution list on this device. Your linked devices won\'t be affected.',
+        {n: conversationMessageCount, name: truncate(receiverName, 80)},
+      );
       break;
 
     default:
@@ -44,15 +60,9 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <Title slot="header" title="Empty Chat" />
+      <Title slot="header" title={$i18n.t('topic.messaging.empty-chat-label', 'Empty Chat')} />
       <div class="body" slot="body">
-        This will delete the
-        {#if conversationMessageCount === 1}
-          only message
-        {:else}
-          {conversationMessageCount} messages
-        {/if}
-        of this {conversationDisplayName} on this device. Your linked devices won't be affected.
+        {description}
       </div>
       <CancelAndConfirm slot="footer" let:modal {modal} {confirmText} />
     </ModalDialog>

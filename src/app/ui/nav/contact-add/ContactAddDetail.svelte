@@ -8,6 +8,7 @@
   import {type AppServices} from '~/app/types';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import ProfilePictureUpload from '~/app/ui/generic/profile-picture/ProfilePictureUpload.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
   import {
@@ -122,22 +123,26 @@
       <ProfilePictureUpload />
     </span>
     <div class="threema-id">
-      <Text disabled={true} value={identityData.identity} label="Threema ID" />
+      <Text disabled={true} value={identityData.identity} label={$i18n.t('common.threema-id')} />
     </div>
     <div class="firstname">
       <Text
         bind:this={contactFirstnameTextField}
         bind:value={firstName}
-        label="First Name"
+        label={$i18n.t('topic.people.first-name-label')}
         spellcheck={false}
       />
     </div>
     <div class="lastname">
-      <Text bind:value={lastName} label="Last Name" spellcheck={false} />
+      <Text
+        bind:value={lastName}
+        label={$i18n.t('topic.people.last-name-label')}
+        spellcheck={false}
+      />
     </div>
 
     <div class="next">
-      <WizardButton on:click={handleAddContact}>Next</WizardButton>
+      <WizardButton on:click={handleAddContact}>{$i18n.t('common.next')}</WizardButton>
     </div>
   </form>
 </template>

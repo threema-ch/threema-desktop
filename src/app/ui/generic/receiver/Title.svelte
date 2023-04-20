@@ -1,5 +1,6 @@
 <script lang="ts">
   import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
+  import {i18n} from '~/app/ui/i18n';
 
   export let title: string;
   export let titleLineThrough = false;
@@ -22,16 +23,16 @@
       </div>
       <div class="subtitle">
         {#if isInactive}
-          <span class="badge inactive">Inactive</span>
+          <span class="badge inactive">{$i18n.t('common.inactive')}</span>
         {/if}
         {#if isCreator}
-          <span class="badge creator">Creator</span>
+          <span class="badge creator">{$i18n.t('common.creator')}</span>
         {/if}
         {#if isArchived}
-          <span class="badge archived">Archived</span>
+          <span class="badge archived">{$i18n.t('common.archived')}</span>
         {/if}
         {#if isDraft}
-          <span class="draft">Draft:</span>
+          <span class="draft">{$i18n.t('common.draft-prefix')}</span>
         {/if}
         {#if subtitle !== undefined}
           <HighlightableText text={subtitle} substringToHighlight={filter} />

@@ -3,6 +3,7 @@
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {i18n} from '~/app/ui/i18n';
 
   const dispatch = createEventDispatcher();
 </script>
@@ -17,7 +18,7 @@
     >
       <MdIcon theme="Outlined">arrow_back</MdIcon>
     </IconButton>
-    Contacts
+    {$i18n.t('topic.people.contacts-label', 'Contacts')}
     <IconButton
       on:click={() => {
         dispatch('more');

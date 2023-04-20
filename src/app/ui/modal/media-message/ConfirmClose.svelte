@@ -2,6 +2,7 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let visible: boolean;
@@ -15,13 +16,21 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <Title slot="header" title={'Discard Message Draft'} />
-      <div class="body" slot="body">Discard current media message draft?</div>
+      <Title
+        slot="header"
+        title={$i18n.t('topic.messaging.discard-media-message-title', 'Discard Message Draft')}
+      />
+      <div class="body" slot="body">
+        {$i18n.t(
+          'topic.messaging.discard-media-message-prompt',
+          'Discard current media message draft?',
+        )}
+      </div>
       <CancelAndConfirm
         slot="footer"
         let:modal
         {modal}
-        confirmText="Discard"
+        confirmText={$i18n.t('common.discard', 'Discard')}
         focusOnMount="confirm"
       />
     </ModalDialog>

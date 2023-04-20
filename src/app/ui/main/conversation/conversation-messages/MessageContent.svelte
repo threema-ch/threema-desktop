@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import Text from '~/app/ui/generic/form/Text.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import FileMessageContent from '~/app/ui/main/conversation/conversation-messages/message-type/FileMessageContent.svelte';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
   import {type Mention} from '~/common/viewmodel/utils/mentions';
@@ -35,7 +36,11 @@
         <FileMessageContent body={message.body} on:saveFile />
       </div>
     {:else}
-      <div class="unsupported-message">Unsupported message type `{message.type}`</div>
+      <div class="unsupported-message">
+        {$i18n.t('status.error.unsupported-message-type', 'Unsupported message type "{type}"', {
+          type: message.type,
+        })}
+      </div>
     {/if}
   </div>
 </template>

@@ -4,6 +4,7 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {type ProfilePictureView} from '~/common/model';
 
@@ -22,7 +23,7 @@
     >
       <ProfilePicture
         img={transformProfilePicture(profilePicture.picture)}
-        alt="Your profile picture"
+        alt={$i18n.t('topic.people.user-profile-picture-description')}
         {initials}
         color={profilePicture.color}
         shape="circle"

@@ -8,6 +8,7 @@
   import {type VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
   import {contactListFilter, matchesContactSearchFilter} from '~/app/ui/nav/receiver';
@@ -153,13 +154,11 @@
       .get()
       .controller.remove.fromLocal()
       .then(() => {
-        toast.addSimpleSuccess(`Successfully removed contact "${displayName}"`);
+        toast.addSimpleSuccess($i18n.t('status.success.remove-contact', {name: displayName}));
       })
       .catch(() => {
-        const message = 'Could not delete contact';
-
-        log.error(message);
-        toast.addSimpleFailure(`${message} "${displayName}"`);
+        log.error('Could not delete contact');
+        toast.addSimpleFailure($i18n.t('status.error.remove-contact', {name: displayName}));
       });
 
     // TODO (routing): Move route to (?) if current contact is current active chat

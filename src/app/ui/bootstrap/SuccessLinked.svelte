@@ -4,6 +4,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
+  import {i18n} from '~/app/ui/i18n';
 
   const dispatchEvent = createEventDispatcher();
 </script>
@@ -14,15 +15,22 @@
       <div class="party">
         {@html PartyPopper}
       </div>
-      <div class="title">Device Linked Successfully</div>
+      <div class="title">
+        {$i18n.t('topic.start.link-device-success-title', 'Device Linked Successfully')}
+      </div>
       <div class="description">
-        You can now use Threema on this computer<br />(even when your iOS device happens to be
-        turned off).
+        <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
+        {@html $i18n.t(
+          'topic.start.link-device-success-description',
+          'You can now use Threema on this computer <br />(even when your iOS device happens to be turned off).',
+        )}
       </div>
       <div class="hint">
-        Please remember that this is a tech preview. Known issues are listed
-        <a href="https://threema.ch/faq/md_limit" target="_blank" rel="noreferrer noopener">here</a
-        >.
+        <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
+        {@html $i18n.t(
+          'topic.start.link-device-success-hint',
+          'Please remember that this is a tech preview. Known issues are listed <a href="https://threema.ch/faq/md_limit" target="_blank" rel="noreferrer noopener">here</a>.',
+        )}
       </div>
       <div class="button">
         <Button flavor="filled" on:click={() => dispatchEvent('close')}>Close</Button>

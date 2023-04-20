@@ -2,6 +2,7 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type SafeRestoreStateDialog} from '~/common/system-dialog';
 
@@ -32,20 +33,30 @@
       on:cancel
       closableWithEscape={false}
     >
-      <Title slot="header" title="Safe Restore Error" />
+      <Title
+        slot="header"
+        title={$i18n.t('topic.system.safe-restore-error-prompt-title', 'Safe Restore Error')}
+      />
       <div class="body" slot="body">
-        Restoring of the safe backup data failed. Please relink this device to prevent message loss.
-        <br />
-        <br />
-        Reported error: <code>{context.error.message}</code>
-        <br />
-        <br />
-        Please report this error to Threema Support from Threema on your mobile device (Settings > Beta
-        Feedback). For more information, see the
-        <a href="https://three.ma/faq" target="_blank" rel="noreferrer noopener">FAQ</a>.
+        {$i18n.t(
+          'topic.system.safe-restore-error-prompt',
+          `Restoring of the safe backup data failed. Please relink this device to prevent message loss.
+          <br />
+          <br />
+          Reported error: <code>{context.error.message}</code>
+          <br />
+          <br />
+          Please report this error to Threema Support from Threema on your mobile device (Settings > Beta
+          Feedback). For more information, see the
+          <a href="https://three.ma/faq" target="_blank" rel="noreferrer noopener">FAQ</a>.`,
+        )}
       </div>
       <div slot="footer" let:modal>
-        <CancelAndConfirm {modal} showCancel={false} confirmText="Relink device" />
+        <CancelAndConfirm
+          {modal}
+          showCancel={false}
+          confirmText={$i18n.t('topic.system.relink-device-action', 'Relink device')}
+        />
       </div>
     </ModalDialog>
   </ModalWrapper>

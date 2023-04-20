@@ -7,6 +7,7 @@
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type ContactTab} from '~/app/ui/nav/index';
   import {
@@ -53,16 +54,25 @@
 
   $: switch (activeTab) {
     case 'work-contacts':
-      searchInputPlaceholder = 'Search Company Contacts';
+      searchInputPlaceholder = $i18n.t(
+        'topic.people.search-company-contacts-placeholder',
+        'Search Company Contacts',
+      );
       break;
     case 'private-contacts':
-      searchInputPlaceholder = 'Search Contacts';
+      searchInputPlaceholder = $i18n.t(
+        'topic.people.search-contacts-placeholder',
+        'Search Contacts',
+      );
       break;
     case 'groups':
-      searchInputPlaceholder = 'Search Groups';
+      searchInputPlaceholder = $i18n.t('topic.people.search-groups-placeholder', 'Search Groups');
       break;
     case 'distribution-lists':
-      searchInputPlaceholder = 'Search Distribution Lists';
+      searchInputPlaceholder = $i18n.t(
+        'topic.people.search-distribution-lists-placeholder',
+        'Search Distribution Lists',
+      );
       break;
     default:
       unreachable(activeTab);
@@ -85,7 +95,12 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <TitleAndClose let:modal {modal} slot="header" title="Select Recipient" />
+      <TitleAndClose
+        let:modal
+        {modal}
+        slot="header"
+        title={$i18n.t('topic.messaging.select-recipient-label', 'Select Recipient')}
+      />
       <div class="body" slot="body">
         <div class="switch">
           <ReceiverTabSwitcher bind:activeTab tmpShowGroup={false} />
@@ -112,7 +127,9 @@
                           })}
                         {filter}
                         profilePicture={{
-                          alt: `Profile picture of ${transformedContact.displayName}`,
+                          alt: $i18n.t('topic.people.profile-picture-description', {
+                            name: transformedContact.displayName,
+                          }),
                           profilePicture: stores.profilePicture.get().view,
                           initials: transformedContact.initials,
                           unread: 0,

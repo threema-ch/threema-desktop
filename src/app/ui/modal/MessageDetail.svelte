@@ -2,6 +2,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
@@ -33,23 +34,40 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <TitleAndClose let:modal {modal} slot="header" title="Message Details" />
+      <TitleAndClose
+        let:modal
+        {modal}
+        slot="header"
+        title={$i18n.t('topic.messaging.message-details-prompt-title', 'Message Details')}
+      />
       <div class="body" slot="body">
-        <ListElement label="Created">{message.view.createdAt.toLocaleString()}</ListElement>
+        <ListElement label={$i18n.t('topic.messaging.message-created-date-label', 'Created')}
+          >{message.view.createdAt.toLocaleString()}</ListElement
+        >
         {#if message.ctx === MessageDirection.INBOUND}
-          <ListElement label="Received">{message.view.receivedAt.toLocaleString()}</ListElement>
+          <ListElement label={$i18n.t('topic.messaging.message-received-date-label', 'Received')}
+            >{message.view.receivedAt.toLocaleString()}</ListElement
+          >
         {/if}
         {#if message.ctx === MessageDirection.OUTBOUND}
-          <ListElement label="Sent">{message.view.sentAt?.toLocaleString() ?? '-'}</ListElement>
-          <ListElement label="Delivered"
+          <ListElement label={$i18n.t('topic.messaging.message-sent-date-label', 'Sent')}
+            >{message.view.sentAt?.toLocaleString() ?? '-'}</ListElement
+          >
+          <ListElement label={$i18n.t('topic.messaging.message-delivered-date-label', 'Delivered')}
             >{message.view.deliveredAt?.toLocaleString() ?? '-'}</ListElement
           >
         {/if}
-        <ListElement label="Read">{message.view.readAt?.toLocaleString() ?? '-'}</ListElement>
+        <ListElement label={$i18n.t('topic.messaging.message-read-date-label', 'Read')}
+          >{message.view.readAt?.toLocaleString() ?? '-'}</ListElement
+        >
         <Divider />
-        <ListElement label="Message ID">{u64ToHexLe(message.view.id)}</ListElement>
+        <ListElement label={$i18n.t('topic.messaging.message-id-label', 'Message ID')}
+          >{u64ToHexLe(message.view.id)}</ListElement
+        >
         <Divider />
-        <ListElement label="Last Reaction">
+        <ListElement
+          label={$i18n.t('topic.messaging.message-last-reaction-label', 'Last Reaction')}
+        >
           {#if message.view.lastReaction === undefined}
             -
           {:else}

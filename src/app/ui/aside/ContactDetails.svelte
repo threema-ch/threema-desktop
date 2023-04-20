@@ -7,6 +7,7 @@
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import IdenitityInformationDialog from '~/app/ui/modal/ContactIdenitityInformation.svelte';
   import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
@@ -127,13 +128,19 @@
     contactController.remove
       .fromLocal()
       .then(() => {
-        toast.addSimpleSuccess(`Successfully removed contact "${displayName}"`);
+        toast.addSimpleSuccess(
+          $i18n.t('status.success.remove-contact', 'Successfully removed contact "{name}"', {
+            name: displayName,
+          }),
+        );
       })
       .catch(() => {
-        const message = 'Could not delete contact';
-
-        log.error(message);
-        toast.addSimpleFailure(`${message} "${displayName}"`);
+        log.error('Could not delete contact');
+        toast.addSimpleFailure(
+          $i18n.t('status.error.remove-contact', 'Could not delete contact "{name}"', {
+            name: displayName,
+          }),
+        );
       });
 
     deleteContactDialogVisible = false;
@@ -145,7 +152,7 @@
   <div class="aside-contact">
     <header>
       <span />
-      Contact Detail
+      {$i18n.t('topic.people.contact-detail', 'Contact Detail')}
       <IconButton flavor="naked" on:click={closeAside}>
         <MdIcon theme="Outlined">close</MdIcon>
       </IconButton>
@@ -157,7 +164,9 @@
           <ProfilePictureComponent
             on:click={() => (contactProfilePictureDialogVisible = true)}
             img={transformProfilePicture($profilePicture.view.picture)}
-            alt="Profile picture of {$contactViewModel.displayName}"
+            alt={$i18n.t('topic.people.profile-picture-description', 'Profile picture of {name}', {
+              name: $contactViewModel.displayName,
+            })}
             initials={$contactViewModel.initials}
             color={$profilePicture.view.color}
             shape="circle"
@@ -168,16 +177,19 @@
         {$contactViewModel.displayName}
       </div>
       <div class="edit">
-        <span on:click={openContactEditDialog}>Edit</span>
+        <span on:click={openContactEditDialog}>{$i18n.t('common.edit', 'Edit')}</span>
       </div>
-      <ListElement on:click={() => (identityInformationDialogVisible = true)} label="Threema ID">
+      <ListElement
+        on:click={() => (identityInformationDialogVisible = true)}
+        label={$i18n.t('common.threema-id', 'Threema ID')}
+      >
         {$contactViewModel.identity}
         <MdIcon slot="icon" theme="Outlined">info</MdIcon>
       </ListElement>
       <div class="level">
         <ListElement
           on:click={() => (verificationLevelsDialogVisible = true)}
-          label="Verification Level"
+          label={$i18n.t('common.verification-level', 'Verification Level')}
         >
           <VerificationDots
             colors={$contactViewModel.verificationLevelColors}
@@ -186,7 +198,9 @@
           <MdIcon slot="icon" theme="Outlined">info</MdIcon>
         </ListElement>
       </div>
-      <ListElement label="Nickname">{$contactViewModel.nickname ?? '-'}</ListElement>
+      <ListElement label={$i18n.t('common.nickname', 'Nickname')}
+        >{$contactViewModel.nickname ?? '-'}</ListElement
+      >
       <Divider />
       <!-- <div class="gallery">
         <LinkElement wip label="Media Gallery">
@@ -230,7 +244,9 @@
       <ProfilePictureDialog bind:visible={contactProfilePictureDialogVisible}
         ><ProfilePictureComponent
           img={transformProfilePicture($profilePicture.view.picture)}
-          alt="Profile picture of {$contactViewModel.fullName}"
+          alt={$i18n.t('topic.people.profile-picture-description', {
+            name: $contactViewModel.fullName,
+          })}
           initials={$contactViewModel.initials}
           color={$profilePicture.view.color}
           shape="square"

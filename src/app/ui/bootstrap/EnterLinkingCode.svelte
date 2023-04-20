@@ -7,6 +7,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {isLinkingCode} from '~/app/ui/bootstrap';
   import {type ContextStore} from '~/app/ui/bootstrap/process-step';
+  import {i18n} from '~/app/ui/i18n';
   import {type SafeCredentials} from '~/common/dom/safe';
   import {type u53} from '~/common/types';
   import {type WritableStore} from '~/common/utils/store';
@@ -211,9 +212,17 @@
     on:confirm={submitLinkingCode}
     on:cancel={() => dispatchEvent('prev')}
   >
-    <Title slot="header" title="Enter Linking Code" />
+    <Title
+      slot="header"
+      title={$i18n.t('topic.start.link-device-code-title', 'Enter Linking Code')}
+    />
     <div class="body" slot="body">
-      <div class="hint">Your Linking Code is displayed on your mobile device.</div>
+      <div class="hint">
+        {$i18n.t(
+          'topic.start.link-device-code-hint',
+          'Your Linking Code is displayed on your mobile device.',
+        )}
+      </div>
       <div class="code-parts">
         <Text
           error={showCodeError ? '' : undefined}
@@ -277,17 +286,25 @@
       </div>
       {#if showCodeError}
         {#if initialContext.customSafeServer === undefined}
-          <div class="error">Please enter a valid linking code.</div>
+          <div class="error">
+            {$i18n.t('status.error.linking-code', 'Please enter a valid linking code.')}
+          </div>
         {:else}
           <div class="error">
-            Please enter a valid linking code and ensure that your custom Safe server credentials
-            and configuration (including CORS) are correct.
+            {$i18n.t(
+              'status.error.linking-code-advanced',
+              'Please enter a valid linking code and ensure that your custom Safe server credentials and configuration (including CORS) are correct.',
+            )}
           </div>
         {/if}
       {:else if $contextStore.error !== undefined}
         <div class="error">
           <div>{$contextStore.error.message}</div>
-          <div class="error-details">Technical Details: {$contextStore.error.details}</div>
+          <div class="error-details">
+            {$i18n.t('status.error.technical-details', 'Technical Details: {details}', {
+              details: $contextStore.error.details,
+            })}
+          </div>
         </div>
       {/if}
     </div>
@@ -295,8 +312,8 @@
       slot="footer"
       let:modal
       {modal}
-      confirmText="Next"
-      cancelText="Back"
+      confirmText={$i18n.t('common.next')}
+      cancelText={$i18n.t('common.back')}
       confirmDisabled={!isValidLinkingCodeFormat || showCodeError || isLinkingCodeBeingValidated}
     />
   </ModalDialog>

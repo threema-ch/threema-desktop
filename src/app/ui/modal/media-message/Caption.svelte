@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {i18n} from '~/app/ui/i18n';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
   import {type u53} from '~/common/types';
 
@@ -49,7 +50,10 @@
       on:submit
       on:textByteLengthChanged
       bind:this={composeArea}
-      placeholder="Add a caption to this media format"
+      placeholder={$i18n.t(
+        'topic.messaging.caption-compose-area-placeholder',
+        'Add a caption to this media format',
+      )}
       {initialText}
     />
   </div>

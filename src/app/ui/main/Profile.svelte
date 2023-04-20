@@ -73,13 +73,13 @@
   /**
    * Hints for `npm run i18n:parse`:
    *
-   * t('global.locale.cimode');
-   * t('global.locale.en');
-   * t('global.locale.de');
+   * t('locale.cimode');
+   * t('locale.en');
+   * t('locale.de');
    *
    * DOC: https://github.com/i18next/i18next-parser#caveats
    */
-  $: optionToLabel = (l: Locale): string => $i18n.t(`global.locale.${l}`);
+  $: optionToLabel = (l: Locale): string => $i18n.t(`locale.${l}`);
 </script>
 
 <template>
@@ -100,32 +100,38 @@
         on:back={closeProfile}
       />
 
-      <Text label="Threema ID" value={$profile.identity} />
+      <Text label={$i18n.t('common.threema-id')} value={$profile.identity} />
 
       <div class="public-key">
-        <span class="label">Public Key</span>
+        <span class="label">{$i18n.t('common.public-key', 'Public Key')}</span>
         <pre><code>{publicKeyGrid($profile.publicKey)}</code></pre>
       </div>
 
       <Text
-        label="Application Name"
+        label={$i18n.t('common.application-name', 'Application Name')}
         value={import.meta.env.BUILD_VARIANT === 'work' ? 'Threema Work' : 'Threema'}
       />
 
       <div on:click={handleVersionClick}>
-        <Text label="Application Version" value={import.meta.env.BUILD_VERSION} />
+        <Text
+          label={$i18n.t('common.application-version', 'Application Version')}
+          value={import.meta.env.BUILD_VERSION}
+        />
       </div>
 
       {#if `v${import.meta.env.BUILD_VERSION}` !== import.meta.env.GIT_REVISION && import.meta.env.GIT_REVISION !== ''}
-        <Text label="Git Revision" value={import.meta.env.GIT_REVISION} />
+        <Text
+          label={$i18n.t('common.git-revision', 'Git Revision')}
+          value={import.meta.env.GIT_REVISION}
+        />
       {/if}
 
-      <Text label="Copyright" value="Threema GmbH © 2020-2023" />
+      <Text label={$i18n.t('common.copyright', 'Copyright')} value="Threema GmbH © 2020-2023" />
 
-      <Select label="Theme" bind:value={$theme} options={THEMES} />
+      <Select label={$i18n.t('common.theme', 'Theme')} bind:value={$theme} options={THEMES} />
 
       <Select
-        label={$i18n.t('global.language')}
+        label={$i18n.t('common.language', 'Language')}
         bind:value={$locale}
         options={LOCALES}
         {optionToLabel}

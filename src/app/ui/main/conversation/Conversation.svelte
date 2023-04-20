@@ -8,6 +8,7 @@
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
   import {isInactiveGroup} from '~/app/ui/generic/receiver';
+  import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts, conversationListEvent} from '~/app/ui/main/conversation';
   import {type ComposeData} from '~/app/ui/main/conversation/compose';
   import ComposeHandler from '~/app/ui/main/conversation/compose/ComposeHandler.svelte';
@@ -337,10 +338,8 @@
       .get()
       .controller.removeMessage.fromLocal(messageId)
       .catch(() => {
-        const message = 'Could not delete message';
-
-        log.error(message);
-        toast.addSimpleFailure(message);
+        log.error('Could not delete message');
+        toast.addSimpleFailure($i18n.t('status.error.remove-message', 'Could not delete message'));
       });
   }
 
@@ -366,14 +365,21 @@
         {receiverLookup}
         {services}
       >
+        <!-- TODO(DESK-1012): What is going on here (this doesn't end up in the DOM...)? -->
         <span class="top-title" slot="title">Conversation title</span>
       </ConversationTopBar>
     </div>
     {#if $conversation.view.category === ConversationCategory.PROTECTED}
       <div class="private">
         <div class="box">
-          <div class="header">Private Chat</div>
-          <div class="body">Private chats are not supported in {import.meta.env.APP_NAME}.</div>
+          <div class="header">{$i18n.t('topic.messaging.private-chat', 'Private Chat')}</div>
+          <div class="body">
+            {$i18n.t(
+              'status.error.unsupported-private-chats',
+              'Private chats are not supported in {appName}.',
+              {appName: import.meta.env.APP_NAME},
+            )}
+          </div>
         </div>
       </div>
     {:else}
@@ -394,7 +400,9 @@
       </div>
       <div class="bottom-bar">
         {#if isInactiveGroup($receiver)}
-          <div class="deleted-group-message">You are no longer part of this group.</div>
+          <div class="deleted-group-message">
+            {$i18n.t('status.error.group-membership', 'You are no longer part of this group.')}
+          </div>
         {:else if $composeData.mode === 'text' || $composeData.mode === 'quote'}
           {#if $composeData.mode === 'quote'}
             <div class="quote">

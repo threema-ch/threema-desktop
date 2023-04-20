@@ -2,6 +2,7 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let displayName: string;
@@ -16,11 +17,24 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <Title slot="header" title="Unable to Delete Contact" />
+      <Title
+        slot="header"
+        title={$i18n.t('status.error.remove-contact-prompt-title', 'Unable to Delete Contact')}
+      />
       <div class="body" slot="body">
-        "{displayName}" is still member of a group. Remove contact from group, or delete group.
+        {$i18n.t(
+          'status.error.remove-contact-prompt',
+          '"{name}" is still member of a group. Remove contact from group, or delete group.',
+          {name: displayName},
+        )}
       </div>
-      <CancelAndConfirm slot="footer" let:modal {modal} showCancel={false} confirmText="OK" />
+      <CancelAndConfirm
+        slot="footer"
+        let:modal
+        {modal}
+        showCancel={false}
+        confirmText={$i18n.t('common.ok', 'OK')}
+      />
     </ModalDialog>
   </ModalWrapper>
 </template>

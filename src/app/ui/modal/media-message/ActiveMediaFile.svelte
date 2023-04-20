@@ -4,6 +4,7 @@
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Image from '#3sc/components/blocks/Image/Image.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
@@ -38,7 +39,12 @@
         <div class="send-option wip">
           <!-- Hardcoded for now, as file can currently only be sent as file -->
           <Checkbox id="send-as-file-checkbox" checked={true} disabled={true} />
-          <label class="label wip" for="send-as-file-checkbox">Send as File (Original Size)</label>
+          <label class="label wip" for="send-as-file-checkbox"
+            >{$i18n.t(
+              'topic.messaging.send-as-file-checkbox-label',
+              'Send as File (Original Size)',
+            )}</label
+          >
         </div>
       </div>
       <div class="right">

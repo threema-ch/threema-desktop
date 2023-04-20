@@ -2,6 +2,7 @@
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import {i18n} from '~/app/ui/i18n';
   import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
   import Welcome from '~/app/ui/main/Welcome.svelte';
   import {toast} from '~/app/ui/snackbar';
@@ -38,7 +39,9 @@
     void backend.viewModel.conversation(receiverLookup).then((conversationViewModelParam) => {
       if (conversationViewModelParam === undefined) {
         // Show toast and navigate to welcome page
-        toast.addSimpleFailure(`Conversation not found`);
+        toast.addSimpleFailure(
+          i18n.get().t('status.error.undefined-conversation', 'Conversation not found'),
+        );
         router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
         return;
       }
@@ -91,7 +94,9 @@
 
         {#if (zoneHover || bodyHover) && !mediaMessageDialogVisible}
           <div class="drop-wrapper" class:zoneHover class:bodyHover>
-            <div class="border">Drop files here to send</div>
+            <div class="border">
+              {$i18n.t('topic.messaging.drop-files-send-hint', 'Drop files here to send')}
+            </div>
           </div>
         {/if}
       </div>

@@ -8,6 +8,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {globals} from '~/app/globals';
   import {type ContextStore} from '~/app/ui/bootstrap/process-step';
+  import {i18n} from '~/app/ui/i18n';
   import {isCspDeviceId, isD2mDeviceId, isIdentityString} from '~/common/network/types';
   import {ensureU64, type u64} from '~/common/types';
   import {type WritableStore} from '~/common/utils/store';
@@ -35,7 +36,6 @@
     : '';
 
   // Error messages
-  const identityStringError = 'This Threema ID is not valid';
   let showIdentityStringError = false;
   let urlError: string | undefined;
 
@@ -150,9 +150,11 @@
     <div class="body" slot="body">
       <div class="hint">Your Threema ID is displayed on your mobile device.</div>
       <Text
-        error={showIdentityStringError ? identityStringError : undefined}
+        error={showIdentityStringError
+          ? $i18n.t('status.error.threema-id', 'This Threema ID is not valid')
+          : undefined}
         bind:this={threemaIdInput}
-        label="Threema ID"
+        label={$i18n.t('common.threema-id')}
         bind:value={threemaId}
         maxlength={8}
         spellcheck={false}
@@ -174,29 +176,40 @@
             }
           }}
         >
-          {showAdvancedOptions ? 'Hide' : 'Show'} advanced options
+          {showAdvancedOptions
+            ? $i18n.t('common.hide-advanced-options', 'Hide advanced options')
+            : $i18n.t('common.show-advanced-options', 'Show advanced options')}
         </span>
       </div>
       <div class="options">
         {#if showAdvancedOptions}
           <Text
             error={urlError}
-            label="Custom Threema Safe URL"
+            label={$i18n.t(
+              'topic.start.custom-threema-safe-url-input-label',
+              'Custom Threema Safe URL',
+            )}
             bind:value={customSafeUrl}
             spellcheck={false}
           />
           <Text
-            label="Custom Threema Safe Username (Optional)"
+            label={$i18n.t(
+              'topic.start.custom-threema-safe-username-input-label',
+              'Custom Threema Safe Username (Optional)',
+            )}
             bind:value={customSafeUsername}
             spellcheck={false}
           />
           <Password
-            label="Custom Threema Safe Password (Optional)"
+            label={$i18n.t(
+              'topic.start.custom-threema-safe-password-input-label',
+              'Custom Threema Safe Password (Optional)',
+            )}
             bind:value={customSafePassword}
           />
           {#if import.meta.env.DEBUG}
             <Text
-              label="D2M Device Id"
+              label={$i18n.t('topic.start.d2m-device-id-input-label', 'D2M Device Id')}
               error={d2mDeviceId.length > 0 && $contextStore.d2mDeviceId === undefined
                 ? ''
                 : undefined}
@@ -207,7 +220,7 @@
               error={cspDeviceId.length > 0 && $contextStore.cspDeviceId === undefined
                 ? ''
                 : undefined}
-              label="CSP Device Id"
+              label={$i18n.t('topic.start.csp-device-id-input-label', 'CSP Device Id')}
               bind:value={cspDeviceId}
               spellcheck={false}
             />
@@ -219,8 +232,8 @@
       slot="footer"
       let:modal
       {modal}
-      confirmText="Next"
-      cancelText="Back"
+      confirmText={$i18n.t('common.next')}
+      cancelText={$i18n.t('common.back')}
       confirmDisabled={threemaId.length !== 8 || showIdentityStringError}
     />
   </ModalDialog>

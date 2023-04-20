@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import {type AppServices} from '~/app/types';
   import {matchesGroupSearchFilter} from '~/app/ui/aside/group-details';
+  import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import GroupListItem from '~/app/ui/nav/receiver/GroupListItem.svelte';
   import {type DbGroupUid} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';

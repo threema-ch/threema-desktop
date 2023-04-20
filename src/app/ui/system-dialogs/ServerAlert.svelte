@@ -2,6 +2,7 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type ServerAlertDialog} from '~/common/system-dialog';
 
@@ -25,7 +26,7 @@
         {context.text}
       </div>
       <div slot="footer" let:modal>
-        <CancelAndConfirm {modal} showCancel={false} confirmText="OK" />
+        <CancelAndConfirm {modal} showCancel={false} confirmText={$i18n.t('common.ok')} />
       </div>
     </ModalDialog>
   </ModalWrapper>

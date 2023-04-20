@@ -10,6 +10,7 @@
   import {getProfilePictureAndMemberStores} from '~/app/ui/aside/group-details';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import ProfilePictureEdit from '~/app/ui/generic/profile-picture/ProfilePictureEdit.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type Group, type ProfilePicture} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
@@ -66,10 +67,10 @@
   $: inputNameError = ((): string | undefined => {
     const byteLength = encoder.encode(name.trim()).byteLength;
     if (byteLength === 0) {
-      return 'Should not be empty';
+      return $i18n.t('status.error.group-name-empty', 'Should not be empty');
     }
     if (byteLength > GROUP_NAME_MAX_LENGTH) {
-      return 'Name is too long';
+      return $i18n.t('status.error.group-name-max-length', 'Name is too long');
     }
     return undefined;
   })();
@@ -88,7 +89,10 @@
         on:close={closeModal}
         on:cancel={closeModal}
       >
-        <Title slot="header" title="Edit Name" />
+        <Title
+          slot="header"
+          title={$i18n.t('topic.people.edit-group-prompt-title', 'Edit {name}', {name})}
+        />
         <form
           class="body"
           slot="body"
@@ -104,7 +108,7 @@
             bind:this={inputName}
             error={inputNameError}
             bind:value={name}
-            label="Group Name"
+            label={$i18n.t('topic.people.group-name-label', 'Group Name')}
           />
         </form>
         <CancelAndConfirm

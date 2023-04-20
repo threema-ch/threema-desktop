@@ -5,8 +5,9 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import {type WritableStore} from '~/common/utils/store';
   import {type ContextStore} from '~/app/ui/bootstrap/process-step';
+  import {i18n} from '~/app/ui/i18n';
+  import {type WritableStore} from '~/common/utils/store';
 
   export let contextStore: WritableStore<ContextStore>;
 
@@ -49,7 +50,11 @@
   function checkNewPasswordInputError(): boolean {
     newPasswordInputError =
       newPassword.length < minPasswordLength
-        ? `Please enter at least ${minPasswordLength} characters`
+        ? i18n
+            .get()
+            .t('status.error.new-password-length', 'Please enter at least {min} characters', {
+              min: minPasswordLength,
+            })
         : undefined;
 
     return hasNewPasswordInputError();
@@ -61,7 +66,9 @@
 
   function checkNewPasswordConfirmationInputError(): boolean {
     newPasswordConfirmationInputError =
-      newPassword !== newPasswordConfirmation ? 'Passwords do not match' : undefined;
+      newPassword !== newPasswordConfirmation
+        ? i18n.get().t('status.error.new-password-confirmation', 'Passwords do not match')
+        : undefined;
 
     return hasNewPasswordConfirmationInputError();
   }
@@ -101,17 +108,19 @@
       }}
       on:cancel={() => dispatchEvent('prev')}
     >
-      <Title slot="header" title="Set Password" />
+      <Title slot="header" title={$i18n.t('topic.start.new-password-title', 'Set Password')} />
       <div class="body" slot="body">
         <div class="hint">
-          The password will protect your messages, Threema ID and other data on this computer. You
-          have to enter it when starting Threema for Desktop.
+          {$i18n.t(
+            'topic.start.new-password-hint',
+            'The password will protect your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop.',
+          )}
         </div>
         <div class="passwordInput" data-has-error={newPasswordInputError !== undefined}>
           <Password
             error={newPasswordInputError}
             bind:this={newPasswordInput}
-            label="New Password"
+            label={$i18n.t('topic.start.new-password-input-label', 'New Password')}
             bind:value={newPassword}
             on:input={clearErrors}
             on:keydown={(event) => {
@@ -125,7 +134,7 @@
           <Password
             error={newPasswordConfirmationInputError}
             bind:this={newPasswordConfirmationInput}
-            label="Confirm Password"
+            label={$i18n.t('topic.start.new-password-confirmation-input-label', 'Confirm Password')}
             bind:value={newPasswordConfirmation}
             on:input={clearErrors}
             on:keydown={(event) => {
@@ -140,8 +149,8 @@
         slot="footer"
         let:modal
         {modal}
-        confirmText="Next"
-        cancelText="Back"
+        confirmText={$i18n.t('common.next', 'Next')}
+        cancelText={$i18n.t('common.back', 'Back')}
         confirmDisabled={hasErrors()}
       />
     </ModalDialog>

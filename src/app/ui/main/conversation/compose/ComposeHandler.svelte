@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {i18n} from '~/app/ui/i18n';
   import ComposeBar from '~/app/ui/main/conversation/compose/ComposeBar.svelte';
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
@@ -106,11 +107,12 @@
 
   {#if mediaMessageDialogVisible}
     <MediaMessage
-      title={`Send File to ${
-        $receiver.type === ReceiverType.DISTRIBUTION_LIST
-          ? $receiver.view.stub
-          : $receiver.view.displayName
-      }`}
+      title={$i18n.t('topic.messaging.send-file-to-recipient-title', 'Send File to {name}', {
+        name:
+          $receiver.type === ReceiverType.DISTRIBUTION_LIST
+            ? $receiver.view.stub
+            : $receiver.view.displayName,
+      })}
       {mediaFiles}
       bind:visible={mediaMessageDialogVisible}
       on:sendMessage

@@ -2,6 +2,7 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let displayName: string;
@@ -17,15 +18,26 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <Title slot="header" title={`Delete "${displayName}"`} />
+      <Title
+        slot="header"
+        title={$i18n.t('topic.people.delete-contact-prompt-title', 'Delete "{name}"', {
+          name: displayName,
+        })}
+      />
       <div class="body" slot="body">
-        Do you really want to delete this contact and the associated chat history?
+        {$i18n.t(
+          'topic.people.delete-contact-prompt',
+          'Do you really want to delete this contact and the associated chat history?',
+        )}
       </div>
       <CancelAndConfirm
         slot="footer"
         let:modal
         {modal}
-        confirmText="Delete Contact + Chat History"
+        confirmText={$i18n.t(
+          'topic.people.delete-contact-confirmation',
+          'Delete Contact + Chat History',
+        )}
       />
     </ModalDialog>
   </ModalWrapper>

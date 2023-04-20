@@ -1,3 +1,4 @@
+import {i18n} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
 import {type BackendController} from '~/common/dom/backend/controller';
 import {ConnectionState} from '~/common/enum';
@@ -12,6 +13,13 @@ export function checkContactCreationAllowed(backend: BackendController): boolean
         return true;
     }
 
-    toast.addSimpleFailure('Unable to add contact. Please check your Internet connection.');
+    toast.addSimpleFailure(
+        i18n
+            .get()
+            .t(
+                'status.error.add-contact',
+                'Unable to add contact. Please check your Internet connection.',
+            ),
+    );
     return false;
 }
