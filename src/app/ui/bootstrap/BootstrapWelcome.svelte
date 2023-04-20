@@ -14,7 +14,7 @@
     <div class="body" slot="body">
       <div class="hint">
         This tech preview only works in conjunction with the beta version of Threema for iOS. Please
-        note that some features, such as image and file support, are not yet available.
+        note that some features are not yet available.
         <a href="https://threema.ch/faq/md_overview" target="_blank" rel="noreferrer noopener"
           >Learn more...</a
         >
