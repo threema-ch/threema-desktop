@@ -14,7 +14,6 @@
   import {display} from '~/common/dom/ui/state';
   import {THEMES} from '~/common/dom/ui/theme';
   import {type u53} from '~/common/types';
-  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
@@ -71,21 +70,16 @@
     showToggleDebugMode = true;
   }
 
-  // We could inline $i18n.t(`global.locale.${l}`) but then the translations for the languages are
-  // unfortunately stripped from the translation files when running `npm run i18n:parse`.
-  $: optionToLabel = (l: Locale): string => {
-    switch (l) {
-      case 'cimode':
-        return $i18n.t('global.locale.cimode');
-      case 'en':
-        return $i18n.t('global.locale.en');
-      case 'de':
-        return $i18n.t('global.locale.de');
-
-      default:
-        return unreachable(l);
-    }
-  };
+  /**
+   * Hints for `npm run i18n:parse`:
+   *
+   * t('global.locale.cimode');
+   * t('global.locale.en');
+   * t('global.locale.de');
+   *
+   * DOC: https://github.com/i18next/i18next-parser#caveats
+   */
+  $: optionToLabel = (l: Locale): string => $i18n.t(`global.locale.${l}`);
 </script>
 
 <template>
