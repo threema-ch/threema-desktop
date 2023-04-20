@@ -45,7 +45,7 @@
 <template>
   <div class="wrapper">
     <ModalDialog visible={true} closableWithEscape={false} on:confirm={handleOnSubmit}>
-      <Title slot="header" title={$i18n.t('input.password.label', {count: 1})} />
+      <Title slot="header" title={$i18n.t('input.password.label', {number: 1})} />
       <div class="body" slot="body" data-has-error={showErrorMessage}>
         <Password
           error={showErrorMessage

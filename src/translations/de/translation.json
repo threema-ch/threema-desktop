@@ -21,7 +21,7 @@
         "forgotPassword": "Passwort vergessen? Lese bitte die {aOpening}FAQ{aClosing}.",
         "wrongPassword": "Das eingegebene Passwort ist nicht gültig. Versuche es bitten nochmals."
       },
-      "label": "{count, plural, =0 {Keine Passwörter} =1 {Passwort} other {# Passwörter}} eingeben",
+      "label": "{number, plural, =0 {Keine Passwörter} =1 {Passwort} other {# Passwörter}} eingeben",
       "placeholder": "Passwort"
     }
   }
