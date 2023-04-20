@@ -1,4 +1,5 @@
 import {default as i18next, type i18n as i18nType} from 'i18next';
+import ICU from 'i18next-icu';
 
 import {type Logger, type LoggerFactory, type LogRecordFn} from '~/common/logging';
 import {type u53} from '~/common/types';
@@ -118,6 +119,7 @@ export async function initialize(config: LocaleConfig): Promise<void> {
             warn: i18nLogAdapter(log.warn),
             error: i18nLogAdapter(log.error),
         })
+        .use(ICU)
         .init({
             lng: config.localeStore.get(),
             resources,

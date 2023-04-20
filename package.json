@@ -64,6 +64,8 @@
     "better-sqlcipher": "file:libs/better-sqlcipher",
     "fast-sha256": "1.3.0",
     "i18next": "~22.4.14",
+    "i18next-icu": "~2.3.0",
+    "intl-messageformat": "~10.3.4",
     "long": "5.2.1",
     "protobufjs": "6.11.3",
     "scrypt-js": "3.0.1",

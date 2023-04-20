@@ -18,11 +18,11 @@
     },
     "password": {
       "hint": {
-        "forgotPassword": "Forgot password? Please see the {{- aOpening}}FAQ{{- aClosing}}.",
+        "forgotPassword": "Forgot password? Please see the {aOpening}FAQ{aClosing}.",
         "wrongPassword": "The entered password is incorrect. Please try again."
       },
-      "label": "Enter Password",
-      "placeholder": "Passwort"
+      "label": "Enter {count, plural, =0 {no password} =1 {password} other {# passwords}}",
+      "placeholder": "Password"
     }
   }
 }

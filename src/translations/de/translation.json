@@ -18,10 +18,10 @@
     },
     "password": {
       "hint": {
-        "forgotPassword": "Passwort vergessen? Lese bitte die {{- aOpening}}FAQ{{- aClosing}}.",
+        "forgotPassword": "Passwort vergessen? Lese bitte die {aOpening}FAQ{aClosing}.",
         "wrongPassword": "Das eingegebene Passwort ist nicht gültig. Versuche es bitten nochmals."
       },
-      "label": "Passwort eingeben",
+      "label": "{count, plural, =0 {Keine Passwörter} =1 {Passwort} other {# Passwörter}} eingeben",
       "placeholder": "Passwort"
     }
   }
