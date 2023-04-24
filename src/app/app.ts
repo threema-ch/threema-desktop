@@ -144,6 +144,13 @@ export async function main(appState: AppState): Promise<App> {
     }
     const log = logging.logger('main');
 
+    // Initialize globals
+    globals.set({
+        // Note: It is important that this logger is initialized before we initialize the backend,
+        // because the logger is used in components that are part of the linking process.
+        uiLogging: logging,
+    });
+
     // Promise that resolves when the 'DOMContentLoaded' event happens
     const domContentLoaded = new Promise<void>((resolve) => {
         document.addEventListener('DOMContentLoaded', () => {
@@ -342,11 +349,6 @@ export async function main(appState: AppState): Promise<App> {
         backend,
         router,
     };
-
-    // Initialize globals
-    globals.set({
-        uiLogging: logging,
-    });
 
     // Check for updates in the background, if this is an Electron release build
     if (!import.meta.env.DEBUG) {
