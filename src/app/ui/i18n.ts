@@ -1,3 +1,6 @@
+/* eslint '@typescript-eslint/no-misused-promises': 0 */
+// SOURCE: https://github.com/i18next/i18next/issues/1901
+
 import {default as i18next, type i18n as i18nType} from 'i18next';
 import ICU from 'i18next-icu';
 
