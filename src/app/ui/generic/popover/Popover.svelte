@@ -101,30 +101,6 @@
   let position: Offset | undefined = undefined;
   let isVisible = false;
 
-  function calculatePosition(): typeof position {
-    const currentReference = reference ?? trigger ?? undefined;
-
-    if (!positioningContainer || !currentReference || !popover) {
-      return undefined;
-    }
-
-    const popoverOffset = getPopoverOffset(
-      constraintContainer ?? document.body,
-      positioningContainer,
-      currentReference,
-      popover,
-      anchorPoints,
-      offset,
-      flip,
-    );
-
-    return popoverOffset;
-  }
-
-  function updatePosition(): void {
-    position = calculatePosition();
-  }
-
   /**
    * Close the `popover`.
    */
@@ -153,6 +129,39 @@
     popoverStore.set(close);
 
     isVisible = true;
+  }
+
+  /**
+   * Force recalculation of the popup's positioning, and update.
+   */
+  export function forceReposition(): void {
+    if (isVisible) {
+      updatePosition();
+    }
+  }
+
+  function calculatePosition(): typeof position {
+    const currentReference = reference ?? trigger ?? undefined;
+
+    if (!positioningContainer || !currentReference || !popover) {
+      return undefined;
+    }
+
+    const popoverOffset = getPopoverOffset(
+      constraintContainer ?? document.body,
+      positioningContainer,
+      currentReference,
+      popover,
+      anchorPoints,
+      offset,
+      flip,
+    );
+
+    return popoverOffset;
+  }
+
+  function updatePosition(): void {
+    position = calculatePosition();
   }
 
   function handleTriggerClick(event: MouseEvent): void {

@@ -18,8 +18,9 @@
 -->
 <script lang="ts">
   import {ComposeArea} from '@threema/compose-area/web';
-  import {createEventDispatcher, onMount} from 'svelte';
+  import {createEventDispatcher, onDestroy, onMount} from 'svelte';
   import {type Readable} from 'svelte/store';
+  import {ElementResizeObserver} from 'threema-svelte-components/src/utils/observer';
 
   import {globals} from '~/app/globals';
   import {type u32, type u53} from '~/common/types';
@@ -102,6 +103,8 @@
     submit: undefined;
     filePaste: File[];
     textByteLengthChanged: u53;
+    heightWillChange: undefined;
+    heightDidChange: undefined;
   }>();
 
   // Compose area instance
@@ -110,6 +113,32 @@
   // Compose area
   let areaElement: HTMLElement;
   let areaElementHeight: u32 | undefined = undefined;
+  const areaElementObserver = new ElementResizeObserver((info) => {
+    const {height} = info.contentRect;
+
+    if (areaElementHeight !== height) {
+      requestAnimationFrame(() => {
+        areaElementHeight = height;
+
+        dispatch('heightWillChange');
+      });
+    }
+  }, onDestroy);
+
+  // Spacer
+  let spacerElement: HTMLElement;
+  let spacerElementHeight: u32 | undefined = undefined;
+  const spacerElementObserver = new ElementResizeObserver((info) => {
+    const {height} = info.contentRect;
+
+    if (spacerElementHeight !== height) {
+      requestAnimationFrame(() => {
+        spacerElementHeight = height;
+
+        dispatch('heightDidChange');
+      });
+    }
+  }, onDestroy);
 
   // Composition state flags
   let isComposing = false;
@@ -270,14 +299,9 @@
       area.insert_text(initialText);
     }
 
-    // Register ResizeObserver
-    function resizeHandler(entries: ResizeObserverEntry[]): void {
-      areaElementHeight = entries.find((entry) => entry.target === areaElement)?.contentRect.height;
-    }
-    const resizeObserver = new ResizeObserver(resizeHandler);
-    resizeObserver.observe(areaElement, {
-      box: 'content-box',
-    });
+    // Attach observers
+    areaElementObserver.set(areaElement);
+    spacerElementObserver.set(spacerElement);
 
     // Register MutationObserver
     const mutationObserver = new MutationObserver(handleContentChangeDebounced);
@@ -294,9 +318,6 @@
       // Deregister selection change event handlers
       document.removeEventListener('selectionchange', onDocumentSelectionChange);
 
-      // Deregister ResizeObserver
-      resizeObserver.disconnect();
-
       // Deregister MutationObserver
       mutationObserver.disconnect();
     };
@@ -306,17 +327,18 @@
 <template>
   <div class="container">
     <div
+      bind:this={spacerElement}
       class="spacer"
       style:height={areaElementHeight !== undefined ? `${areaElementHeight}px` : '0'}
     />
     <div
+      bind:this={areaElement}
       class="compose-area"
       contenteditable="true"
       {placeholder}
       on:input={onInput}
       on:keydown={onKeyDown}
       on:paste|preventDefault={onPaste}
-      bind:this={areaElement}
     />
   </div>
 </template>

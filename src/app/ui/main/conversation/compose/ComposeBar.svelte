@@ -33,7 +33,7 @@
     sendTextMessage: string;
   }>();
 
-  // Reference to the compose area component
+  let composeBar: HTMLElement | null;
   let composeArea: ComposeArea;
   let composeAreaIsEmpty: Readable<boolean>;
   let composeAreaTextByteLength: u53;
@@ -96,7 +96,7 @@
 </script>
 
 <template>
-  <div class="wrapper">
+  <div class="wrapper" bind:this={composeBar}>
     <div class="icons-left">
       {#if displayAttachmentButton}
         <FileTrigger on:fileDrop multiple>
@@ -113,6 +113,9 @@
       on:textByteLengthChanged={handleTextChange}
       on:submit={sendTextMessage}
       on:filePaste
+      on:heightDidChange={() => {
+        emojiPickerWrapper.forceReposition();
+      }}
     />
     <div class="icons-right">
       {#if isTextByteLengthVisible}
@@ -122,6 +125,7 @@
       {/if}
       <Popover
         bind:this={emojiPickerWrapper}
+        reference={composeBar}
         anchorPoints={{
           reference: {
             horizontal: 'right',
@@ -131,10 +135,6 @@
             horizontal: 'right',
             vertical: 'bottom',
           },
-        }}
-        offset={{
-          left: $composeAreaIsEmpty ? 8 : 48,
-          top: -14,
         }}
       >
         <IconButton slot="trigger" flavor="naked">
