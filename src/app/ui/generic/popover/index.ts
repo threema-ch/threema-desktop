@@ -409,9 +409,16 @@ function getIsRectInVisibleAreaOfContainer(
         right: Math.min(containerRect.right, window.innerWidth),
     };
 
+    // Ceil and floor rounding are necessary in case the app on electron is not being displayed at
+    // 100% zoom.
+    // REF: https://bugs.chromium.org/p/chromium/issues/detail?id=359691
     return {
-        horizontal: rect.left >= visibleArea.left && rect.right <= visibleArea.right,
-        vertical: rect.top >= visibleArea.top && rect.bottom <= visibleArea.bottom,
+        horizontal:
+            Math.ceil(rect.left) >= Math.floor(visibleArea.left) &&
+            Math.floor(rect.right) <= Math.ceil(visibleArea.right),
+        vertical:
+            Math.ceil(rect.top) >= Math.floor(visibleArea.top) &&
+            Math.floor(rect.bottom) <= Math.ceil(visibleArea.bottom),
     };
 }
 
