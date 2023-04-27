@@ -20,6 +20,7 @@ import {
 import * as structbuf from '~/common/network/structbuf';
 import {isMessageId} from '~/common/network/types';
 import {exhausted} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
 
 function unhandled(
     params:
@@ -75,7 +76,7 @@ export abstract class ReflectedMessageTaskBase<
         protected readonly _direction: 'incoming' | 'outgoing',
     ) {
         const messageId = isMessageId(_unvalidatedMessage.messageId)
-            ? _unvalidatedMessage.messageId
+            ? u64ToHexLe(_unvalidatedMessage.messageId)
             : 'unknown';
         this._log = _services.logging.logger(
             `network.protocol.task.in-${this._direction}-message.${messageId}`,

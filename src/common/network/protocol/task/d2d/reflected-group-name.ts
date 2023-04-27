@@ -10,6 +10,7 @@ import {
     type GroupName,
 } from '~/common/network/structbuf/validate/csp/e2e';
 import {type IdentityString, type MessageId} from '~/common/network/types';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process reflected incoming or outgoing group name messages.
@@ -25,7 +26,7 @@ export class ReflectedGroupNameTask implements ComposableTask<PassiveTaskCodecHa
         private readonly _container: GroupCreatorContainer.Type,
         private readonly _groupName: GroupName.Type,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.reflected-group-name.${messageIdHex}`,
         );

@@ -15,6 +15,7 @@ import {
 } from '~/common/network/protocol/task';
 import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {type IdentityString, type MessageId} from '~/common/network/types';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Base class for handling CSP or D2D incoming group leave messages.
@@ -34,7 +35,7 @@ export abstract class GroupLeaveTaskBase<
         protected readonly _container: GroupMemberContainer.Type,
         taskName: string,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(`network.protocol.task.${taskName}.${messageIdHex}`);
         if (_senderContactOrInit instanceof LocalModelStore) {
             this._senderIdentity = _senderContactOrInit.get().view.identity;

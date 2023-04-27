@@ -17,6 +17,7 @@ import {
 } from '~/common/network/protocol/task/common/group-helpers';
 import {type GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {type IdentityString, type MessageId} from '~/common/network/types';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process incoming group sync request messages.
@@ -34,7 +35,7 @@ export class IncomingGroupSyncRequestTask
         private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
         private readonly _container: GroupCreatorContainer.Type,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.in-group-sync-request.${messageIdHex}`,
         );

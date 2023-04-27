@@ -11,7 +11,7 @@ import {
 } from '~/common/network/protocol/task';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {type IdentityString, type MessageId} from '~/common/network/types';
-import {intoUnsignedLong} from '~/common/utils/number';
+import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 
 import {OutgoingCspMessageTask} from './outgoing-csp-message';
 
@@ -32,7 +32,7 @@ export class IncomingForwardSecurityEnvelopeTask
         private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
         private readonly _fsEnvelope: protobuf.csp_e2e_fs.ForwardSecurityEnvelope,
     ) {
-        const messageIdHex = _messageId.toString(16);
+        const messageIdHex = u64ToHexLe(_messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.in-fs-envelope.${messageIdHex}`,
         );

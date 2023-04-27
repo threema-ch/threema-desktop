@@ -17,6 +17,7 @@ import {
 } from '~/common/network/structbuf/validate/csp/e2e';
 import {type IdentityString, type MessageId} from '~/common/network/types';
 import {ensureError} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process incoming group set/delete profile picture messages.
@@ -35,7 +36,7 @@ export class IncomingGroupProfilePictureTask
         private readonly _container: GroupCreatorContainer.Type,
         private readonly _profilePicture: SetProfilePicture.Type | undefined,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.in-group-profile-picture.${messageIdHex}`,
         );

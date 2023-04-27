@@ -349,7 +349,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         private readonly _services: ServicesForTasks,
         private readonly _message: structbuf.csp.payload.MessageWithMetadataBoxLike,
     ) {
-        const messageIdHex = _message.messageId.toString(16);
+        const messageIdHex = u64ToHexLe(_message.messageId);
         this._log = _services.logging.logger(`network.protocol.task.in-message.${messageIdHex}`);
         this._id = ensureMessageId(this._message.messageId);
     }

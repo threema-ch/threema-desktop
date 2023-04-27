@@ -19,6 +19,7 @@ import {
 } from '~/common/network/structbuf/validate/csp/e2e';
 import {type MessageId} from '~/common/network/types';
 import {idColorIndex} from '~/common/utils/id-color';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process reflected outgoing group setup messages.
@@ -38,7 +39,7 @@ export class ReflectedOutgoingGroupSetupTask
         private readonly _container: GroupCreatorContainer.Type,
         private readonly _groupSetup: GroupSetup.Type,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.reflected-out-group-setup.${messageIdHex}`,
         );

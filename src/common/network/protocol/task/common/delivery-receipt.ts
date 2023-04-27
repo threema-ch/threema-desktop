@@ -16,6 +16,7 @@ import {getConversationById} from '~/common/network/protocol/task/message-proces
 import {type DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
 import {type ConversationId, type MessageId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Base class for handling incoming or reflected outgoing delivery receipts, either from CSP or from
@@ -40,7 +41,7 @@ export abstract class DeliveryReceiptTaskBase<
         private readonly _createdAt: Date,
         private readonly _expectedReferencedMessageDirection: MessageDirection,
     ) {
-        const messageIdHex = deliveryReceiptMessageId.toString(16);
+        const messageIdHex = u64ToHexLe(deliveryReceiptMessageId);
         this._log = _services.logging.logger(
             `network.protocol.task.delivery-receipt.${messageIdHex}`,
         );

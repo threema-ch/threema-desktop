@@ -8,6 +8,7 @@ import {
 } from '~/common/network/protocol/task';
 import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {type MessageId} from '~/common/network/types';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process reflected outgoing group leave messages.
@@ -25,7 +26,7 @@ export class ReflectedOutgoingGroupLeaveTask
         messageId: MessageId,
         private readonly _container: GroupMemberContainer.Type,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.reflected-out-group-leave.${messageIdHex}`,
         );

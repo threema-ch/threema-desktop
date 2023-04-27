@@ -12,6 +12,7 @@ import {
 import {type SetProfilePicture} from '~/common/network/structbuf/validate/csp/e2e';
 import {type MessageId} from '~/common/network/types';
 import {assert, ensureError} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Receive and process incoming contact set/delete profile picture messages.
@@ -27,7 +28,7 @@ export class IncomingContactProfilePictureTask
         private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
         private readonly _profilePicture: SetProfilePicture.Type | undefined,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.in-contact-profile-picture.${messageIdHex}`,
         );

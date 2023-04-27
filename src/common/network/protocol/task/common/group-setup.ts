@@ -21,6 +21,7 @@ import {
 import {type IdentityString, type MessageId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
+import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Base class for handling CSP or D2D incoming group setup messages.
@@ -40,7 +41,7 @@ export abstract class GroupSetupTaskBase<
         private readonly _groupSetup: GroupSetup.Type,
         taskName: string,
     ) {
-        const messageIdHex = messageId.toString(16);
+        const messageIdHex = u64ToHexLe(messageId);
         this._log = _services.logging.logger(`network.protocol.task.${taskName}.${messageIdHex}`);
         this._groupDebugString = groupDebugString(_senderIdentity, _container.groupId);
     }
