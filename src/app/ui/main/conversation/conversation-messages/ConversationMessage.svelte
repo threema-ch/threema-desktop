@@ -401,7 +401,7 @@
                 },
               }}
           offset={{left: 0, top: 4}}
-          triggerBehavior="open"
+          triggerBehavior={contextMenuVirtualTrigger === undefined ? 'toggle' : 'open'}
           on:clicktrigger={handleContextMenuTriggerClicked}
           on:hasopened={() => {
             isContextMenuVisible = true;
