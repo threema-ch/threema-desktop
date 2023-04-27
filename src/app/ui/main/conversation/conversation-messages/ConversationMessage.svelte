@@ -408,6 +408,8 @@
           }}
           on:hasclosed={() => {
             isContextMenuVisible = false;
+            hrefToCopy = undefined;
+            messageContentToCopy = undefined;
           }}
         >
           <button slot="trigger" class="caret" class:visible={isContextMenuVisible}>
