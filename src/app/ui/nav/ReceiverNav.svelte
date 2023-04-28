@@ -112,7 +112,7 @@
           <GroupList {services} {groups} />
         {/await}
       {:else}
-        Not right now..
+        <div class="wip">Not yet implemented</div>
       {/if}
     </div>
   </div>
@@ -173,6 +173,9 @@
         'search  ' rem(44px)
         'list    ' minmax(0, 1fr)
         / 100%;
+    }
+    .wip {
+      margin: rem(40px) auto;
     }
   }
 </style>
