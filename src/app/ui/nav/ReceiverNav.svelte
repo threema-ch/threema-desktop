@@ -54,6 +54,11 @@
   }
 
   function handleAdd(): void {
+    if (import.meta.env.BUILD_VARIANT === 'work') {
+      // For the time being adding contacts is not allowed in the Work variant
+      return;
+    }
+
     if (!checkContactCreationAllowed(backend)) {
       return;
     }
@@ -72,7 +77,7 @@
 </script>
 
 <template>
-  <div id="nav-wrapper" data-tab={activeTab}>
+  <div id="nav-wrapper" data-tab={activeTab} data-variant={import.meta.env.BUILD_VARIANT}>
     <div class="bar">
       <ContactNavBar on:back={navigateBack} />
     </div>
@@ -86,7 +91,7 @@
         bind:value={$contactListFilter}
       />
     </div>
-    {#if activeTab !== 'work-contacts'}
+    {#if import.meta.env.BUILD_VARIANT !== 'work'}
       <div class="add">
         <IconText on:click={handleAdd} wip={activeTab !== 'private-contacts'}>
           <div slot="icon" class="icon">
@@ -160,6 +165,7 @@
       display: grid;
     }
 
+    &[data-variant='work'],
     &[data-tab='work-contacts'] {
       grid-template:
         'bar     ' rem(40px)
