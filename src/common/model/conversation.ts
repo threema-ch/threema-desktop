@@ -5,6 +5,7 @@ import {
     Existence,
     MessageDirection,
     type MessageType,
+    ReadReceiptPolicy,
     ReceiverType,
     TriggerSource,
 } from '~/common/enum';
@@ -407,8 +408,8 @@ export class ConversationModelController implements ConversationController {
                 const readMessageIds = db.markConversationAsRead(this.uid, readAt).map((m) => m.id);
 
                 if (readMessageIds.length > 0) {
-                    this._updateReadInboundMessageStores(readMessageIds, readAt);
-                    this._scheduleReflectMarkMessagesAsRead(readMessageIds, readAt);
+                    this._markMessagesAsRead(readMessageIds, readAt);
+                    this._sendAndReflectReadReceipts(readMessageIds, readAt);
                 }
 
                 return {unreadMessageCount: 0};
@@ -416,7 +417,7 @@ export class ConversationModelController implements ConversationController {
         });
     }
 
-    private _updateReadInboundMessageStores(readMessageIds: MessageId[], readAt: Date): void {
+    private _markMessagesAsRead(readMessageIds: MessageId[], readAt: Date): void {
         for (const readMessageId of readMessageIds) {
             const messageModelStore = this.getMessage(readMessageId);
             assert(messageModelStore?.ctx === MessageDirection.INBOUND);
@@ -424,45 +425,67 @@ export class ConversationModelController implements ConversationController {
         }
     }
 
-    private _scheduleReflectMarkMessagesAsRead(readMessageIds: MessageId[], readAt: Date): void {
-        // If delivery receipts are enabled and the conversation is a contact conversation,
-        // send and reflect a delivery receipt. Otherwise, reflect an IncomingMessageUpdate.
-        // TODO(DESK-612): Allow disabling delivery receipts
-        const deliveryReceiptsDisabled = false;
+    /**
+     * If delivery receipts are enabled and the conversation is a contact conversation, send and
+     * reflect a delivery receipt. Otherwise, reflect an {@link IncomingMessageUpdate}.
+     */
+    private _sendAndReflectReadReceipts(readMessageIds: MessageId[], readAt: Date): void {
+        const {readReceiptPolicy} = this._services.model.user.privacySettings.get().view;
 
-        if (
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            !deliveryReceiptsDisabled &&
-            this._receiverLookup.type === ReceiverType.CONTACT
-        ) {
-            const contactReceiver = this.receiver();
-            assert(contactReceiver.type === ReceiverType.CONTACT);
-
-            void this._services.taskManager.schedule(
-                new OutgoingDeliveryReceiptTask(
-                    this._services,
-                    contactReceiver,
-                    CspE2eDeliveryReceiptStatus.READ,
-                    readAt,
-                    readMessageIds,
-                ),
+        if (readReceiptPolicy === ReadReceiptPolicy.DONT_SEND_READ_RECEIPT) {
+            this._log.info(
+                'Skip sending read receipts as global ReadReceiptPolicy is set to DONT_SEND_READ_RECEIPT',
             );
-        } else {
-            const conversation = this.conversationId();
-
-            const messageUniqueIdsToUpdate = readMessageIds.map((messageId) => ({
-                messageId,
-                conversation,
-            }));
-
-            void this._services.taskManager.schedule(
-                new ReflectIncomingMessageUpdateTask(
-                    this._services,
-                    messageUniqueIdsToUpdate,
-                    readAt,
-                ),
-            );
+            this._reflectMarkMessagesAsRead(readMessageIds, readAt);
+            return;
         }
+
+        switch (this._receiverLookup.type) {
+            case ReceiverType.CONTACT:
+                this._sendReadReceiptsToContact(readMessageIds, readAt);
+                break;
+
+            case ReceiverType.GROUP:
+            case ReceiverType.DISTRIBUTION_LIST:
+                this._reflectMarkMessagesAsRead(readMessageIds, readAt);
+                break;
+
+            default:
+                unreachable(this._receiverLookup);
+        }
+    }
+
+    /**
+     * Note that since this method schedules a {@link OutgoingDeliveryReceiptTask} the read status
+     * will also be synced with the linked devices without having to manually schedule a
+     * {@link ReflectIncomingMessageUpdateTask}.
+     */
+    private _sendReadReceiptsToContact(readMessageIds: MessageId[], readAt: Date): void {
+        const contactReceiver = this.receiver();
+        assert(contactReceiver.type === ReceiverType.CONTACT);
+
+        void this._services.taskManager.schedule(
+            new OutgoingDeliveryReceiptTask(
+                this._services,
+                contactReceiver,
+                CspE2eDeliveryReceiptStatus.READ,
+                readAt,
+                readMessageIds,
+            ),
+        );
+    }
+
+    private _reflectMarkMessagesAsRead(readMessageIds: MessageId[], readAt: Date): void {
+        const conversation = this.conversationId();
+
+        const messageUniqueIdsToUpdate = readMessageIds.map((messageId) => ({
+            messageId,
+            conversation,
+        }));
+
+        void this._services.taskManager.schedule(
+            new ReflectIncomingMessageUpdateTask(this._services, messageUniqueIdsToUpdate, readAt),
+        );
     }
 
     private async _ensureDirectAcquaintanceLevelForDirectMessages(
