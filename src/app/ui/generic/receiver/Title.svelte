@@ -23,16 +23,16 @@
       </div>
       <div class="subtitle">
         {#if isInactive}
-          <span class="badge inactive">{$i18n.t('common.inactive')}</span>
+          <span class="badge inactive">{$i18n.t('contacts.label--status-inactive')}</span>
         {/if}
         {#if isCreator}
-          <span class="badge creator">{$i18n.t('common.creator')}</span>
+          <span class="badge creator">{$i18n.t('contacts.label--status-creator')}</span>
         {/if}
         {#if isArchived}
-          <span class="badge archived">{$i18n.t('common.archived')}</span>
+          <span class="badge archived">{$i18n.t('contacts.label--status-archived')}</span>
         {/if}
         {#if isDraft}
-          <span class="draft">{$i18n.t('common.draft-prefix')}</span>
+          <span class="draft">{$i18n.t('messaging.label--prefix-draft')}</span>
         {/if}
         {#if subtitle !== undefined}
           <HighlightableText text={subtitle} substringToHighlight={filter} />

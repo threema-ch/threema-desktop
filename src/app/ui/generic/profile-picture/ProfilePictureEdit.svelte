@@ -23,7 +23,7 @@
     <div class="profile-picture">
       <ProfilePicture
         img={transformProfilePicture($profilePicture.view.picture)}
-        alt={$i18n.t('topic.people.profile-picture-description', {name})}
+        alt={$i18n.t('contacts.hint--profile-picture', {name})}
         initials=""
         color={$profilePicture.view.color}
         shape="circle"

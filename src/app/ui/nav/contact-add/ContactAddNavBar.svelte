@@ -14,9 +14,9 @@
     <IconButton flavor="naked" on:click={() => dispatch('back')}>
       <MdIcon theme="Outlined">arrow_back</MdIcon>
     </IconButton>
-    {$i18n.t('topic.people.new-contact-label', 'New Contact')}
+    {$i18n.t('contacts.label--add-contact', 'New Contact')}
     <Button on:click={() => dispatch('cancel')} flavor="naked" size="small"
-      >{$i18n.t('common.cancel', 'Cancel')}</Button
+      >{$i18n.t('contacts.action--add-contact-cancel', 'Cancel')}</Button
     >
   </header>
 </template>

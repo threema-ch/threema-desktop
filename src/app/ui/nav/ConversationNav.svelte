@@ -50,7 +50,7 @@
     </div>
     <div class="search">
       <SearchInput
-        placeholder={$i18n.t('topic.messaging.find-chat-placeholder', 'Find Chat')}
+        placeholder={$i18n.t('messaging.label--search-conversation', 'Find Chat')}
         bind:value={$conversationPreviewListFilter}
       />
     </div>

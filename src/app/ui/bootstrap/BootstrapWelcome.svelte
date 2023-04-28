@@ -5,52 +5,76 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import MarkupText from '~/app/ui/MarkupText.svelte';
 
   const dispatchEvent = createEventDispatcher();
 </script>
 
 <template>
   <ModalDialog visible={true} closableWithEscape={false}>
-    <Title slot="header" title="Multi-Device Preview" />
+    <Title slot="header" title={$i18n.t('dialog--welcome.label--title', 'Multi-Device Preview')} />
     <div class="body" slot="body">
       <div class="hint">
-        <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-        {@html $i18n.t(
-          'topic.start.tech-preview-info',
-          'This tech preview only works in conjunction with the beta version of Threema for iOS. Please note that some features are not yet available. <a href="https://threema.ch/faq/md_overview" target="_blank" rel="noreferrer noopener">Learn more...</a>.',
-        )}
+        <MarkupText
+          markup={$i18n.t(
+            'dialog--welcome.markup--intro',
+            'This tech preview only works in conjunction with the beta version of Threema for iOS. Please note that some features are not yet available. <1>Learn more...</1>.',
+          )}
+        >
+          <a
+            slot="1"
+            href="https://threema.ch/faq/md_overview"
+            target="_blank"
+            rel="noreferrer noopener"
+            let:text>{text}</a
+          >
+        </MarkupText>
       </div>
-      <div class="title">{$i18n.t('topic.start.link-device-title', 'Link Your iOS Device')}</div>
+      <div class="title">
+        {$i18n.t('dialog--welcome.label--link-device-instructions', 'Link Your iOS Device')}
+      </div>
       <div class="steps">
         <div class="step">
-          <div class="title">{$i18n.t('topic.start.link-device-step-1-title', 'Step 1:')}</div>
+          <div class="title">
+            {$i18n.t('dialog--welcome.label--link-device-step-1', 'Step 1:')}
+          </div>
           <div class="description">
-            <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-            {@html $i18n.t(
-              'topic.start.link-device-step-1-description',
-              '<a href="https://threema.ch/en/faq/ios_betatest" target="_blank" rel="noreferrer noopener">Install the multi-device beta of Threema for iOS on your device</a>.',
-            )}
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--welcome.markup--link-device-step-1',
+                '<1>Install the multi-device beta of Threema for iOS on your device</1>.',
+              )}
+            >
+              <a
+                slot="1"
+                href="https://threema.ch/en/faq/ios_betatest"
+                target="_blank"
+                rel="noreferrer noopener"
+                let:text>{text}</a
+              >
+            </MarkupText>
           </div>
         </div>
         <div class="step">
-          <div class="title">{$i18n.t('topic.start.link-device-step-2-title', 'Step 2:')}</div>
+          <div class="title">{$i18n.t('dialog--welcome.label--link-device-step-2', 'Step 2:')}</div>
           <div class="description">
-            <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
             <!-- TODO(DESK-1012): Are the following quotation mark characters intentional? -->
-            {@html $i18n.t(
-              'topic.start.link-device-step-2-description',
-              `Open the beta version, navigate to <br />“Settings > Multi-Device Preview,” and <br />activate “This Device”`,
-            )}
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--welcome.markup--link-device-step-2',
+                'Open the beta version, navigate to <1>“Settings > Multi-Device Preview,”</1> and activate <2>“This Device”</2>.',
+              )}
+            >
+              <span slot="1" style="white-space: nowrap;" let:text>{text}</span>
+              <span slot="2" style="white-space: nowrap;" let:text>{text}</span>
+            </MarkupText>
           </div>
         </div>
         <div class="step button">
-          <div class="title">{$i18n.t('topic.start.link-device-step-3-title', 'Step 3:')}</div>
+          <div class="title">{$i18n.t('dialog--welcome.label--link-device-step-3', 'Step 3:')}</div>
           <div class="description">
             <Button flavor="filled" on:click={() => dispatchEvent('next')}
-              >{$i18n.t(
-                'topic.start.link-device-step-3-button-label',
-                'Enter your Threema ID here',
-              )}</Button
+              >{$i18n.t('dialog--welcome.action--confirm', 'Enter your Threema ID here')}</Button
             >
           </div>
         </div>

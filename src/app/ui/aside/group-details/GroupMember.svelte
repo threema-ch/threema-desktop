@@ -53,7 +53,7 @@
     <DeprecatedReceiver
       on:click
       profilePicture={{
-        alt: $i18n.t('topic.people.profile-picture-description', {
+        alt: $i18n.t('contacts.hint--profile-picture', {
           name: contact$.displayName,
         }),
         profilePicture: $profilePicture.view,

@@ -3,6 +3,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import MarkupText from '~/app/ui/MarkupText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type SafeRestoreStateDialog} from '~/common/system-dialog';
 
@@ -35,27 +36,51 @@
     >
       <Title
         slot="header"
-        title={$i18n.t('topic.system.safe-restore-error-prompt-title', 'Safe Restore Error')}
+        title={$i18n.t('dialog--error-safe-restore.label--title', 'Safe Restore Error')}
       />
       <div class="body" slot="body">
-        {$i18n.t(
-          'topic.system.safe-restore-error-prompt',
-          `Restoring of the safe backup data failed. Please relink this device to prevent message loss.
-          <br />
-          <br />
-          Reported error: <code>{context.error.message}</code>
-          <br />
-          <br />
-          Please report this error to Threema Support from Threema on your mobile device (Settings > Beta
-          Feedback). For more information, see the
-          <a href="https://three.ma/faq" target="_blank" rel="noreferrer noopener">FAQ</a>.`,
-        )}
+        <!-- TODO(DESK-1012): Verify if this works and looks good -->
+        <p>
+          <MarkupText
+            markup={$i18n.t(
+              'dialog--error-safe-restore.markup--description-p1',
+              'Restoring of the safe backup data failed. Please relink this device to prevent message loss.',
+            )}
+          />
+        </p>
+        <p>
+          <MarkupText
+            markup={$i18n.t(
+              'dialog--error-safe-restore.markup--description-p2',
+              'Reported error: <1>{error}</1>',
+              {error: context.error.message},
+            )}
+          >
+            <code slot="1" let:text>{text}</code>
+          </MarkupText>
+        </p>
+        <p>
+          <MarkupText
+            markup={$i18n.t(
+              'dialog--error-safe-restore.markup--description-p3',
+              'Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback). For more information, see the <1>FAQ</1>.',
+            )}
+          >
+            <a
+              slot="1"
+              href="https://three.ma/faq"
+              target="_blank"
+              rel="noreferrer noopener"
+              let:text>{text}</a
+            >
+          </MarkupText>
+        </p>
       </div>
       <div slot="footer" let:modal>
         <CancelAndConfirm
           {modal}
           showCancel={false}
-          confirmText={$i18n.t('topic.system.relink-device-action', 'Relink device')}
+          confirmText={$i18n.t('dialog--error-safe-restore.action--confirm', 'Relink device')}
         />
       </div>
     </ModalDialog>

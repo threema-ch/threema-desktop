@@ -18,11 +18,11 @@
     >
       <Title
         slot="header"
-        title={$i18n.t('topic.messaging.discard-media-message-title', 'Discard Message Draft')}
+        title={$i18n.t('dialog--discard-media-message.label--title', 'Discard Message Draft')}
       />
       <div class="body" slot="body">
         {$i18n.t(
-          'topic.messaging.discard-media-message-prompt',
+          'dialog--discard-media-message.prose--prompt',
           'Discard current media message draft?',
         )}
       </div>
@@ -30,7 +30,7 @@
         slot="footer"
         let:modal
         {modal}
-        confirmText={$i18n.t('common.discard', 'Discard')}
+        confirmText={$i18n.t('dialog--discard-media-message.action--confirm', 'Discard')}
         focusOnMount="confirm"
       />
     </ModalDialog>

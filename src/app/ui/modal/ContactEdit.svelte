@@ -89,7 +89,7 @@
       >
         <Title
           slot="header"
-          title={$i18n.t('topic.people.edit-contact-prompt-title', 'Edit {name}', {
+          title={$i18n.t('dialog--edit-contact.label--title', 'Edit {name}', {
             name: displayName,
           })}
         />
@@ -107,11 +107,11 @@
           <TextInput
             bind:this={inputFirstName}
             bind:value={firstName}
-            label={$i18n.t('topic.people.first-name-label', 'First Name')}
+            label={$i18n.t('dialog--edit-contact.label--first-name', 'First Name')}
           />
           <TextInput
             bind:value={lastName}
-            label={$i18n.t('topic.people.last-name-label', 'Last Name')}
+            label={$i18n.t('dialog--edit-contact.label--last-name', 'Last Name')}
           />
         </form>
         <CancelAndConfirm slot="footer" let:modal {modal} />

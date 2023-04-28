@@ -20,13 +20,13 @@
     >
       <Title
         slot="header"
-        title={$i18n.t('topic.people.delete-contact-prompt-title', 'Delete "{name}"', {
+        title={$i18n.t('dialog--delete-contact.label--title', 'Delete "{name}"', {
           name: displayName,
         })}
       />
       <div class="body" slot="body">
         {$i18n.t(
-          'topic.people.delete-contact-prompt',
+          'dialog--delete-contact.prose--prompt',
           'Do you really want to delete this contact and the associated chat history?',
         )}
       </div>
@@ -35,7 +35,7 @@
         let:modal
         {modal}
         confirmText={$i18n.t(
-          'topic.people.delete-contact-confirmation',
+          'dialog--delete-contact.action--confirm',
           'Delete Contact + Chat History',
         )}
       />

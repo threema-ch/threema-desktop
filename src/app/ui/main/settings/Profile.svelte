@@ -14,14 +14,14 @@
     <div class="profile-picture">
       <ProfilePicture
         img={transformProfilePicture(profilePicture.picture)}
-        alt={$i18n.t('topic.people.user-profile-picture-description')}
+        alt={$i18n.t('settings.hint--own-profile-picture', 'My profile picture')}
         {initials}
         color={profilePicture.color}
         shape="circle"
       />
     </div>
     <div class="nickname">
-      <div class="label">{$i18n.t('common.nickname')}</div>
+      <div class="label">{$i18n.t('settings.label--nickname', 'Nickname')}</div>
       <div class="value">{displayName}</div>
     </div>
     <div class="qr-code" />

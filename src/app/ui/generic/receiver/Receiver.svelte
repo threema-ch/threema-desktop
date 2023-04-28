@@ -79,23 +79,32 @@
         {#if receiver.type === 'group'}
           {@const membersCount = receiver.membersCount}
           <div class="count">
-            {$i18n.t('topic.people.member-count', '{n, plural, =1 {1 Member} other {# Members}}', {
-              n: membersCount,
-            })}
+            {$i18n.t(
+              'contacts.label--group-members-count-short',
+              '{n, plural, =1 {1 Member} other {# Members}}',
+              {
+                n: membersCount,
+              },
+            )}
           </div>
         {/if}
         <div class="subtitle">
           {#if isInactive}
-            <span class="badge inactive">{$i18n.t('common.inactive', 'Inactive')}</span>
+            <span class="badge inactive"
+              >{$i18n.t('contacts.label--status-inactive', 'Inactive')}</span
+            >
           {/if}
           {#if isCreator}
-            <span class="badge creator">{$i18n.t('common.creator', 'Creator')}</span>
+            <span class="badge creator">{$i18n.t('contacts.label--status-creator', 'Creator')}</span
+            >
           {/if}
           {#if isArchived}
-            <span class="badge archived">{$i18n.t('common.archived', 'Archived')}</span>
+            <span class="badge archived"
+              >{$i18n.t('contacts.label--status-archived', 'Archived')}</span
+            >
           {/if}
           {#if isDraft}
-            <span class="draft">{$i18n.t('common.draft-prefix', 'Draft:')}</span>
+            <span class="draft">{$i18n.t('messaging.label--prefix-draft', 'Draft:')}</span>
           {/if}
           {#if subTitle !== undefined}
             <HighlightableText text={subTitle} substringToHighlight={filter} />

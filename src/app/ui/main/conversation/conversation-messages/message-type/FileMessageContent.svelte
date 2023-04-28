@@ -37,7 +37,7 @@
     <button class="name" on:click={() => dispatch('saveFile')}
       >{filenameDetails.name !== ''
         ? filenameDetails.name
-        : $i18n.t('topic.messaging.undefined-file-name', '(no name)')}</button
+        : $i18n.t('messaging.label--default-filename', '(no name)')}</button
     >
     <div class="size">{byteSizeToHumanReadable(body.size)}</div>
   </div>

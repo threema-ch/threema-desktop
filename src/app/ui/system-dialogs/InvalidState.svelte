@@ -35,48 +35,54 @@
     >
       <Title
         slot="header"
-        title={$i18n.t('topic.system.invalid-state-prompt-title', 'Invalid Client State Detected')}
+        title={$i18n.t('dialog--invalid-state.label--title', 'Invalid Client State Detected')}
       />
       <div class="body" slot="body">
-        <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-        {@html $i18n.t(
-          'topic.system.invalid-state-prompt-client-update-required',
-          `We have detected that your local data is not consistent with your mobile device. To prevent
-          data loss, you cannot currently send or receive new messages. We apologize for the
-          inconvience.
-          <br />
-          <br />
-          To continue using Threema, you have to remove your local profile and relink.
-          <br />
-          <br />
-          {error}
-          Please report this error to Threema Support from Threema on your mobile device (Settings > Beta
-          Feedback).`,
-          {
-            error:
-              context.message !== undefined
-                ? `Reported error: <span>{context.message}</span>
-                  <br />
-                  <br />`
-                : '',
-          },
-        )}
+        <!-- TODO(DESK-1012): Verify if this works and looks good -->
+        <p>
+          {$i18n.t(
+            'dialog--invalid-state.prose--description-p1',
+            'We have detected that your local data is not consistent with your mobile device. To prevent data loss, you cannot currently send or receive new messages. We apologize for the inconvience.',
+          )}
+        </p>
+        <p>
+          {$i18n.t(
+            'dialog--invalid-state.prose--description-p2',
+            'To continue using Threema, you have to remove your local profile and relink.',
+          )}
+        </p>
+        {#if context.message !== undefined}
+          <p>
+            {$i18n.t('dialog--invalid-state.prose--description-p3', 'Reported error: {error}', {
+              error: context.message,
+            })}
+          </p>
+        {/if}
+        <p>
+          {$i18n.t(
+            'dialog--invalid-state.prose--description-p4',
+            'Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback).',
+          )}
+        </p>
       </div>
       <div slot="footer" let:modal>
         {#if context.forceRelink}
           <CancelAndConfirm
             {modal}
             showCancel={false}
-            confirmText={$i18n.t('topic.system.remove-profile-and-relink-action')}
+            confirmText={$i18n.t(
+              'dialog--invalid-state.action--force-relink-confirm',
+              'Remove local profile and relink',
+            )}
           />
         {:else}
           <CancelAndConfirm
             {modal}
             cancelText={$i18n.t(
-              'topic.system.continue-with-invalid-state-action',
+              'dialog--invalid-state.action--default-cancel',
               'Continue with invalid state (Debug)',
             )}
-            confirmText={$i18n.t('topic.system.relink-action', 'Relink')}
+            confirmText={$i18n.t('dialog--invalid-state.action--default-confirm', 'Relink')}
           />
         {/if}
       </div>

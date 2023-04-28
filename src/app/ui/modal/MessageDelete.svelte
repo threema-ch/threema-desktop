@@ -18,16 +18,13 @@
     >
       <Title
         slot="header"
-        title={$i18n.t(
-          'topic.messaging.delete-message-prompt-title',
-          'Delete message from this device?',
-        )}
+        title={$i18n.t('dialog--delete-message.label--title', 'Delete message from this device?')}
       />
       <CancelAndConfirm
         slot="footer"
         let:modal
         {modal}
-        confirmText={$i18n.t('topic.messaging.delete-message-action', 'Delete Message')}
+        confirmText={$i18n.t('dialog--delete-message.action--confirm', 'Delete Message')}
       />
     </ModalDialog>
   </ModalWrapper>

@@ -291,7 +291,10 @@
         {#if zoneHover || bodyHover}
           <div class="drop-wrapper" class:zoneHover class:bodyHover>
             <div class="border">
-              {$i18n.t('topic.messaging.drop-files-add-hint', 'Drop files here to add')}
+              {$i18n.t(
+                'dialog--compose-media-message.hint--drop-files-to-add',
+                'Drop files here to add',
+              )}
             </div>
           </div>
         {/if}

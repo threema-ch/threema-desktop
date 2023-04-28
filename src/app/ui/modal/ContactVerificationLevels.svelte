@@ -23,12 +23,12 @@
         let:modal
         {modal}
         slot="header"
-        title={$i18n.t('topic.people.verification-levels-prompt-title', 'Verification Levels')}
+        title={$i18n.t('dialog--verification-levels.label--title', 'Verification Levels')}
       />
       <div class="body" slot="body">
         <div class="main_desc">
           {$i18n.t(
-            'topic.people.verification-levels-prompt-hint',
+            'dialog--verification-levels.prose--intro',
             'The dots are an indicator for a contact`s verification level.',
           )}
         </div>
@@ -40,11 +40,8 @@
 
           <span>
             {$i18n.t(
-              'topic.people.verification-levels-prompt-unverified-description',
-              `The ID and public key have been obtained from the server because you received a message
-              from this contact for the first time or added the ID manually. No matching contact was
-              found in your address book (by phone number or email), and therefore you cannot be sure
-              that the person is who they claim to be in their messages.`,
+              'dialog--verification-levels.prose--level-unverified',
+              'The ID and public key have been obtained from the server because you received a message from this contact for the first time or added the ID manually. No matching contact was found in your address book (by phone number or email), and therefore you cannot be sure that the person is who they claim to be in their messages.',
             )}
           </span>
         </div>
@@ -60,16 +57,13 @@
           <span>
             {#if verificationLevelColors === 'default'}
               {$i18n.t(
-                'topic.people.verification-levels-prompt-server-verified-default-description',
-                `The ID has been matched with a contact in your address book (by phone number or
-                email). Since the server verifies phone numbers and email addresses, you can be
-                reasonably sure that the person is who they claim to be.`,
+                'dialog--verification-levels.prose--level-server-verified-default',
+                'The ID has been matched with a contact in your address book (by phone number or email). Since the server verifies phone numbers and email addresses, you can be reasonably sure that the person is who they claim to be.',
               )}
             {:else if verificationLevelColors === 'shared-work-subscription'}
               {$i18n.t(
-                'topic.people.verification-levels-prompt-server-verified-shared-work-subscription-description',
-                `This verification level is only available in Threema Work; it indicates that the
-                Threema ID belongs to an internal company contact.`,
+                'dialog--verification-levels.prose--level-server-verified-work',
+                'This verification level is only available in Threema Work; it indicates that the Threema ID belongs to an internal company contact.',
               )}
             {/if}
           </span>
@@ -81,17 +75,13 @@
           </span>
           {#if verificationLevelColors === 'default'}
             {$i18n.t(
-              'topic.people.verification-levels-prompt-fully-verified-default-description',
-              `You have personally verified the ID and public key of the person by scanning their QR
-              code. Assuming their device has not been hijacked, you can be very sure that messages
-              from this contact were really written by the person that they indicate.`,
+              'dialog--verification-levels.prose--level-fully-verified-default',
+              'You have personally verified the ID and public key of the person by scanning their QR code. Assuming their device has not been hijacked, you can be very sure that messages from this contact were really written by the person that they indicate.',
             )}
           {:else if verificationLevelColors === 'shared-work-subscription'}
             {$i18n.t(
-              'topic.people.verification-levels-prompt-fully-verified-shared-work-subscription-description',
-              `This verification level is only available in Threema Work; it indicates that the Threema
-              ID belongs to an internal contact whose ID and public key you have verified by scanning
-              their QR code.`,
+              'dialog--verification-levels.prose--level-fully-verified-work',
+              'This verification level is only available in Threema Work; it indicates that the Threema ID belongs to an internal contact whose ID and public key you have verified by scanning their QR code.',
             )}
           {/if}
           <span />

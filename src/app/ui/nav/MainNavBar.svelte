@@ -23,7 +23,7 @@
     >
       <ProfilePicture
         img={transformProfilePicture(profilePicture.picture)}
-        alt={$i18n.t('topic.people.user-profile-picture-description')}
+        alt={$i18n.t('contacts.hint--own-profile-picture')}
         {initials}
         color={profilePicture.color}
         shape="circle"

@@ -81,13 +81,20 @@
     try {
       const parsedUrl = new URL(url);
       if (parsedUrl.protocol !== 'https:') {
-        urlError = 'Please enter a valid URL. https protocol is required.';
+        urlError = i18n
+          .get()
+          .t(
+            'dialog--setup-threema-id.error--url-protocol',
+            'Please enter a valid URL. https protocol is required.',
+          );
         return undefined;
       }
 
       return parsedUrl.toString();
     } catch (error) {
-      const message = 'Please enter a valid URL.';
+      const message = i18n
+        .get()
+        .t('dialog--setup-threema-id.error--url', 'Please enter a valid URL.');
 
       log.error(message);
       urlError = message;
@@ -146,15 +153,23 @@
     on:confirm={checkThreemaId}
     on:cancel={() => dispatchEvent('prev')}
   >
-    <Title slot="header" title="Enter Your Threema ID" />
+    <Title
+      slot="header"
+      title={$i18n.t('dialog--setup-threema-id.label--title', 'Enter Your Threema ID')}
+    />
     <div class="body" slot="body">
-      <div class="hint">Your Threema ID is displayed on your mobile device.</div>
+      <div class="hint">
+        {$i18n.t(
+          'dialog--setup-threema-id.prose--instructions',
+          'Your Threema ID is displayed on your mobile device.',
+        )}
+      </div>
       <Text
         error={showIdentityStringError
-          ? $i18n.t('status.error.threema-id', 'This Threema ID is not valid')
+          ? $i18n.t('dialog--setup-threema-id.error--invalid-id', 'This Threema ID is not valid')
           : undefined}
         bind:this={threemaIdInput}
-        label={$i18n.t('common.threema-id')}
+        label={$i18n.t('dialog--setup-threema-id.label--threema-id', 'Threema ID')}
         bind:value={threemaId}
         maxlength={8}
         spellcheck={false}
@@ -177,8 +192,14 @@
           }}
         >
           {showAdvancedOptions
-            ? $i18n.t('common.hide-advanced-options', 'Hide advanced options')
-            : $i18n.t('common.show-advanced-options', 'Show advanced options')}
+            ? $i18n.t(
+                'dialog--setup-threema-id.action--hide-advanced-options',
+                'Hide advanced options',
+              )
+            : $i18n.t(
+                'dialog--setup-threema-id.action--show-advanced-options',
+                'Show advanced options',
+              )}
         </span>
       </div>
       <div class="options">
@@ -186,7 +207,7 @@
           <Text
             error={urlError}
             label={$i18n.t(
-              'topic.start.custom-threema-safe-url-input-label',
+              'dialog--setup-threema-id.label--custom-threema-safe-url',
               'Custom Threema Safe URL',
             )}
             bind:value={customSafeUrl}
@@ -194,7 +215,7 @@
           />
           <Text
             label={$i18n.t(
-              'topic.start.custom-threema-safe-username-input-label',
+              'dialog--setup-threema-id.label--custom-threema-safe-username',
               'Custom Threema Safe Username (Optional)',
             )}
             bind:value={customSafeUsername}
@@ -202,14 +223,14 @@
           />
           <Password
             label={$i18n.t(
-              'topic.start.custom-threema-safe-password-input-label',
+              'dialog--setup-threema-id.label--custom-threema-safe-password',
               'Custom Threema Safe Password (Optional)',
             )}
             bind:value={customSafePassword}
           />
           {#if import.meta.env.DEBUG}
             <Text
-              label={$i18n.t('topic.start.d2m-device-id-input-label', 'D2M Device Id')}
+              label={$i18n.t('dialog--setup-threema-id.label--d2m-device-id', 'D2M Device Id')}
               error={d2mDeviceId.length > 0 && $contextStore.d2mDeviceId === undefined
                 ? ''
                 : undefined}
@@ -220,7 +241,7 @@
               error={cspDeviceId.length > 0 && $contextStore.cspDeviceId === undefined
                 ? ''
                 : undefined}
-              label={$i18n.t('topic.start.csp-device-id-input-label', 'CSP Device Id')}
+              label={$i18n.t('dialog--setup-threema-id.label--csp-device-id', 'CSP Device Id')}
               bind:value={cspDeviceId}
               spellcheck={false}
             />
@@ -232,8 +253,8 @@
       slot="footer"
       let:modal
       {modal}
-      confirmText={$i18n.t('common.next')}
-      cancelText={$i18n.t('common.back')}
+      confirmText={$i18n.t('dialog--setup-threema-id.action--confirm', 'Next')}
+      cancelText={$i18n.t('dialog--setup-threema-id.action--cancel', 'Back')}
       confirmDisabled={threemaId.length !== 8 || showIdentityStringError}
     />
   </ModalDialog>

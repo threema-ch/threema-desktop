@@ -116,6 +116,7 @@
       on:heightDidChange={() => {
         emojiPickerWrapper.forceReposition();
       }}
+      placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
     />
     <div class="icons-right">
       {#if isTextByteLengthVisible}

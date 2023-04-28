@@ -8,6 +8,8 @@
   import {i18n} from '~/app/ui/i18n';
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
+  import MarkupText from './MarkupText.svelte';
+
   /**
    * A promise that can be awaited. It will resolve once the password been entered by the user.
    */
@@ -45,18 +47,21 @@
 <template>
   <div class="wrapper">
     <ModalDialog visible={true} closableWithEscape={false} on:confirm={handleOnSubmit}>
-      <Title slot="header" title={$i18n.t('topic.start.enter-password-title', 'Enter Password')} />
+      <Title
+        slot="header"
+        title={$i18n.t('dialog--startup-unlock.label--title', 'Enter Password')}
+      />
       <div class="body" slot="body" data-has-error={showErrorMessage}>
         <Password
           bind:this={passwordInput}
           bind:value={password}
           error={showErrorMessage
             ? $i18n.t(
-                'status.error.password',
+                'dialog--startup-unlock.error--incorrect-password',
                 'The entered password is incorrect. Please try again.',
               )
             : undefined}
-          label={$i18n.t('common.password', 'Password')}
+          label={$i18n.t('dialog--startup-unlock.label--password', 'Password')}
           on:input={clearError}
           on:keydown={(event) => {
             if (event.key === 'Enter') {
@@ -65,11 +70,20 @@
           }}
         />
         <div class="hint">
-          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-          {@html $i18n.t(
-            'topic.start.enter-password-hint',
-            'Forgot password? Please see the <a href="https://threema.ch/faq/md_password" target="_blank" rel="noreferrer noopener">FAQ</a>.',
-          )}
+          <MarkupText
+            markup={$i18n.t(
+              'dialog--startup-unlock.markup--password-hint',
+              'Forgot password? Please see some <1>FAQ</1>.',
+            )}
+          >
+            <a
+              slot="1"
+              href="https://threema.ch/faq/md_password"
+              target="_blank"
+              rel="noreferrer noopener"
+              let:text>{text}</a
+            >
+          </MarkupText>
         </div>
       </div>
       <div class="footer" slot="footer">
@@ -78,7 +92,7 @@
           disabled={password.length < minPasswordLength || showErrorMessage}
           on:click={handleOnSubmit}
         >
-          {$i18n.t('common.continue', 'Continue')}
+          {$i18n.t('dialog--startup-unlock.action--confirm', 'Continue')}
         </Button>
       </div>
     </ModalDialog>

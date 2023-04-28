@@ -40,7 +40,7 @@
       if (conversationViewModelParam === undefined) {
         // Show toast and navigate to welcome page
         toast.addSimpleFailure(
-          i18n.get().t('status.error.undefined-conversation', 'Conversation not found'),
+          i18n.get().t('messaging.error--conversation-not-found', 'Conversation not found'),
         );
         router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
         return;
@@ -95,7 +95,7 @@
         {#if (zoneHover || bodyHover) && !mediaMessageDialogVisible}
           <div class="drop-wrapper" class:zoneHover class:bodyHover>
             <div class="border">
-              {$i18n.t('topic.messaging.drop-files-send-hint', 'Drop files here to send')}
+              {$i18n.t('messaging.hint--drop-files-to-send', 'Drop files here to send')}
             </div>
           </div>
         {/if}

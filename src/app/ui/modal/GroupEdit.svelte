@@ -67,10 +67,10 @@
   $: inputNameError = ((): string | undefined => {
     const byteLength = encoder.encode(name.trim()).byteLength;
     if (byteLength === 0) {
-      return $i18n.t('status.error.group-name-empty', 'Should not be empty');
+      return $i18n.t('dialog--edit-group.error--group-name-empty', 'Should not be empty');
     }
     if (byteLength > GROUP_NAME_MAX_LENGTH) {
-      return $i18n.t('status.error.group-name-max-length', 'Name is too long');
+      return $i18n.t('dialog--edit-group.error--group-name-too-long', 'Name is too long');
     }
     return undefined;
   })();
@@ -91,7 +91,7 @@
       >
         <Title
           slot="header"
-          title={$i18n.t('topic.people.edit-group-prompt-title', 'Edit {name}', {name})}
+          title={$i18n.t('dialog--edit-group.label--title', 'Edit {name}', {name})}
         />
         <form
           class="body"
@@ -108,7 +108,7 @@
             bind:this={inputName}
             error={inputNameError}
             bind:value={name}
-            label={$i18n.t('topic.people.group-name-label', 'Group Name')}
+            label={$i18n.t('dialog--edit-group.label--group-name', 'Group Name')}
           />
         </form>
         <CancelAndConfirm

@@ -17,7 +17,7 @@ export function checkContactCreationAllowed(backend: BackendController): boolean
         i18n
             .get()
             .t(
-                'status.error.add-contact',
+                'contacts.error--add-contact',
                 'Unable to add contact. Please check your Internet connection.',
             ),
     );

@@ -55,22 +55,25 @@
   $: switch (activeTab) {
     case 'work-contacts':
       searchInputPlaceholder = $i18n.t(
-        'topic.people.search-company-contacts-placeholder',
+        'dialog--forward-message.label--search-work-contacts',
         'Search Company Contacts',
       );
       break;
     case 'private-contacts':
       searchInputPlaceholder = $i18n.t(
-        'topic.people.search-contacts-placeholder',
+        'dialog--forward-message.label--search-private-contacts',
         'Search Contacts',
       );
       break;
     case 'groups':
-      searchInputPlaceholder = $i18n.t('topic.people.search-groups-placeholder', 'Search Groups');
+      searchInputPlaceholder = $i18n.t(
+        'dialog--forward-message.label--search-groups',
+        'Search Groups',
+      );
       break;
     case 'distribution-lists':
       searchInputPlaceholder = $i18n.t(
-        'topic.people.search-distribution-lists-placeholder',
+        'dialog--forward-message.label--search-distribution-lists',
         'Search Distribution Lists',
       );
       break;
@@ -99,7 +102,7 @@
         let:modal
         {modal}
         slot="header"
-        title={$i18n.t('topic.messaging.select-recipient-label', 'Select Recipient')}
+        title={$i18n.t('dialog--forward-message.label--title', 'Select Recipient')}
       />
       <div class="body" slot="body">
         <div class="switch">
@@ -127,9 +130,13 @@
                           })}
                         {filter}
                         profilePicture={{
-                          alt: $i18n.t('topic.people.profile-picture-description', {
-                            name: transformedContact.displayName,
-                          }),
+                          alt: $i18n.t(
+                            'dialog--forward-message.hint--profile-picture',
+                            'Profile picture of {name}',
+                            {
+                              name: transformedContact.displayName,
+                            },
+                          ),
                           profilePicture: stores.profilePicture.get().view,
                           initials: transformedContact.initials,
                           unread: 0,

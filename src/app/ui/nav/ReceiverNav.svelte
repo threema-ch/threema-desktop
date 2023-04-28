@@ -27,22 +27,28 @@
   $: {
     switch (activeTab) {
       case 'work-contacts':
-        searchInputPlaceholder = $i18n.t('topic.people.search-company-contacts-placeholder');
+        searchInputPlaceholder = $i18n.t(
+          'contacts.label--search-work-contacts',
+          'Search Company Contacts',
+        );
         break;
       case 'private-contacts':
-        searchInputPlaceholder = $i18n.t('topic.people.search-contacts-placeholder');
-        addButtonText = $i18n.t('topic.people.new-contact-action', 'New Contact');
+        searchInputPlaceholder = $i18n.t(
+          'contacts.label--search-private-contacts',
+          'Search Contacts',
+        );
+        addButtonText = $i18n.t('contacts.action--add-contact', 'New Contact');
         break;
       case 'groups':
-        searchInputPlaceholder = $i18n.t('topic.people.search-groups-placeholder');
-        addButtonText = $i18n.t('topic.people.new-group-action', 'New Group');
+        searchInputPlaceholder = $i18n.t('contacts.label--search-groups', 'Search Groups');
+        addButtonText = $i18n.t('contacts.action--add-group', 'New Group');
         break;
       case 'distribution-lists':
-        searchInputPlaceholder = $i18n.t('topic.people.search-distribution-lists-placeholder');
-        addButtonText = $i18n.t(
-          'topic.people.new-distribution-list-action',
-          'New Distribution List',
+        searchInputPlaceholder = $i18n.t(
+          'contacts.label--search-distribution-lists',
+          'Search Distribution Lists',
         );
+        addButtonText = $i18n.t('contacts.action--add-distribution-list', 'New Distribution List');
         break;
       default:
         unreachable(activeTab);

@@ -51,7 +51,7 @@
       on:textByteLengthChanged
       bind:this={composeArea}
       placeholder={$i18n.t(
-        'topic.messaging.caption-compose-area-placeholder',
+        'dialog--compose-media-message.label--media-message-caption',
         'Add a caption to this media format',
       )}
       {initialText}

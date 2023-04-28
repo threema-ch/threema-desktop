@@ -52,9 +52,13 @@
       newPassword.length < minPasswordLength
         ? i18n
             .get()
-            .t('status.error.new-password-length', 'Please enter at least {min} characters', {
-              min: minPasswordLength,
-            })
+            .t(
+              'dialog--setup-password.error--password-length',
+              'Please enter at least {min} characters',
+              {
+                min: minPasswordLength,
+              },
+            )
         : undefined;
 
     return hasNewPasswordInputError();
@@ -67,7 +71,7 @@
   function checkNewPasswordConfirmationInputError(): boolean {
     newPasswordConfirmationInputError =
       newPassword !== newPasswordConfirmation
-        ? i18n.get().t('status.error.new-password-confirmation', 'Passwords do not match')
+        ? i18n.get().t('dialog--setup-password.error--password-equality', 'Passwords do not match')
         : undefined;
 
     return hasNewPasswordConfirmationInputError();
@@ -108,11 +112,11 @@
       }}
       on:cancel={() => dispatchEvent('prev')}
     >
-      <Title slot="header" title={$i18n.t('topic.start.new-password-title', 'Set Password')} />
+      <Title slot="header" title={$i18n.t('dialog--setup-password.label--title', 'Set Password')} />
       <div class="body" slot="body">
         <div class="hint">
           {$i18n.t(
-            'topic.start.new-password-hint',
+            'dialog--setup-password.prose--instructions',
             'The password will protect your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop.',
           )}
         </div>
@@ -120,7 +124,7 @@
           <Password
             error={newPasswordInputError}
             bind:this={newPasswordInput}
-            label={$i18n.t('topic.start.new-password-input-label', 'New Password')}
+            label={$i18n.t('dialog--setup-password.label--new-password', 'New Password')}
             bind:value={newPassword}
             on:input={clearErrors}
             on:keydown={(event) => {
@@ -134,7 +138,10 @@
           <Password
             error={newPasswordConfirmationInputError}
             bind:this={newPasswordConfirmationInput}
-            label={$i18n.t('topic.start.new-password-confirmation-input-label', 'Confirm Password')}
+            label={$i18n.t(
+              'dialog--setup-password.label--new-password-confirmation',
+              'Confirm Password',
+            )}
             bind:value={newPasswordConfirmation}
             on:input={clearErrors}
             on:keydown={(event) => {
@@ -149,8 +156,8 @@
         slot="footer"
         let:modal
         {modal}
-        confirmText={$i18n.t('common.next', 'Next')}
-        cancelText={$i18n.t('common.back', 'Back')}
+        confirmText={$i18n.t('dialog--setup-password.action--confirm', 'Next')}
+        cancelText={$i18n.t('dialog--setup-password.action--cancel', 'Back')}
         confirmDisabled={hasErrors()}
       />
     </ModalDialog>

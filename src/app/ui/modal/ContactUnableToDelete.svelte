@@ -19,11 +19,11 @@
     >
       <Title
         slot="header"
-        title={$i18n.t('status.error.remove-contact-prompt-title', 'Unable to Delete Contact')}
+        title={$i18n.t('dialog--error-delete-contact.label--title', 'Unable to Delete Contact')}
       />
       <div class="body" slot="body">
         {$i18n.t(
-          'status.error.remove-contact-prompt',
+          'dialog--error-delete-contact.error--is-group-member',
           '"{name}" is still member of a group. Remove contact from group, or delete group.',
           {name: displayName},
         )}
@@ -33,7 +33,7 @@
         let:modal
         {modal}
         showCancel={false}
-        confirmText={$i18n.t('common.ok', 'OK')}
+        confirmText={$i18n.t('dialog--error-delete-contact.action--confirm', 'OK')}
       />
     </ModalDialog>
   </ModalWrapper>

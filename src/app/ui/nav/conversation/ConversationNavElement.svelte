@@ -125,7 +125,7 @@
         {#if conversation$ !== undefined && receiver$ !== undefined && $profilePicture !== undefined}
           <DeprecatedReceiver
             profilePicture={{
-              alt: $i18n.t('topic.people.profile-picture-description', {name: receiver$.name}),
+              alt: $i18n.t('contacts.hint--profile-picture', {name: receiver$.name}),
               profilePicture: $profilePicture.view,
               initials: $viewModel.receiver.initials,
               unread: conversation$.unread,
@@ -136,7 +136,7 @@
               titleLineThrough: isInactiveGroup($receiver),
               subtitle:
                 conversation$.category === ConversationCategory.PROTECTED
-                  ? $i18n.t('topic.messaging.conversation-category-protected', 'Private')
+                  ? $i18n.t('messaging.label--protected-conversation', 'Private')
                   : conversationDraft ?? $lastMessage?.text,
               isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
               // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
@@ -205,19 +205,21 @@
           <div slot="icon">
             <ThreemaIcon theme="Outlined">unpin</ThreemaIcon>
           </div>
-          <div slot="name">{$i18n.t('topic.messaging.conversation-unpin-action', 'Unpin')}</div>
+          <div slot="name">{$i18n.t('messaging.action--conversation-option-unpin', 'Unpin')}</div>
         </SwipeAreaButton>
         <SwipeAreaButton>
           <div slot="icon">
             <MdIcon theme="Outlined">archive</MdIcon>
           </div>
-          <div slot="name">{$i18n.t('topic.messaging.conversation-archive-action', 'Archive')}</div>
+          <div slot="name">
+            {$i18n.t('messaging.action--conversation-option-archive', 'Archive')}
+          </div>
         </SwipeAreaButton>
         <SwipeAreaButton>
           <div slot="icon">
             <MdIcon theme="Outlined">more_vert</MdIcon>
           </div>
-          <div slot="name">{$i18n.t('topic.messaging.conversation-more-action', 'More')}</div>
+          <div slot="name">{$i18n.t('messaging.action--conversation-option-more', 'More')}</div>
         </SwipeAreaButton>
       </aside>
     </SwipeArea>

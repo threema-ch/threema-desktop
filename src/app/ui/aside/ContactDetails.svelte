@@ -129,7 +129,7 @@
       .fromLocal()
       .then(() => {
         toast.addSimpleSuccess(
-          $i18n.t('status.success.remove-contact', 'Successfully removed contact "{name}"', {
+          $i18n.t('contacts.success--delete-contact', 'Successfully removed contact "{name}"', {
             name: displayName,
           }),
         );
@@ -137,7 +137,7 @@
       .catch(() => {
         log.error('Could not delete contact');
         toast.addSimpleFailure(
-          $i18n.t('status.error.remove-contact', 'Could not delete contact "{name}"', {
+          $i18n.t('contacts.error--delete-contact', 'Could not delete contact "{name}"', {
             name: displayName,
           }),
         );
@@ -152,7 +152,7 @@
   <div class="aside-contact">
     <header>
       <span />
-      {$i18n.t('topic.people.contact-detail', 'Contact Detail')}
+      {$i18n.t('contacts.label--contact-detail', 'Contact Detail')}
       <IconButton flavor="naked" on:click={closeAside}>
         <MdIcon theme="Outlined">close</MdIcon>
       </IconButton>
@@ -164,7 +164,7 @@
           <ProfilePictureComponent
             on:click={() => (contactProfilePictureDialogVisible = true)}
             img={transformProfilePicture($profilePicture.view.picture)}
-            alt={$i18n.t('topic.people.profile-picture-description', 'Profile picture of {name}', {
+            alt={$i18n.t('contacts.hint--profile-picture', 'Profile picture of {name}', {
               name: $contactViewModel.displayName,
             })}
             initials={$contactViewModel.initials}
@@ -177,11 +177,11 @@
         {$contactViewModel.displayName}
       </div>
       <div class="edit">
-        <span on:click={openContactEditDialog}>{$i18n.t('common.edit', 'Edit')}</span>
+        <span on:click={openContactEditDialog}>{$i18n.t('contacts.action--edit', 'Edit')}</span>
       </div>
       <ListElement
         on:click={() => (identityInformationDialogVisible = true)}
-        label={$i18n.t('common.threema-id', 'Threema ID')}
+        label={$i18n.t('contacts.label--threema-id', 'Threema ID')}
       >
         {$contactViewModel.identity}
         <MdIcon slot="icon" theme="Outlined">info</MdIcon>
@@ -189,7 +189,7 @@
       <div class="level">
         <ListElement
           on:click={() => (verificationLevelsDialogVisible = true)}
-          label={$i18n.t('common.verification-level', 'Verification Level')}
+          label={$i18n.t('contacts.label--verification-level', 'Verification Level')}
         >
           <VerificationDots
             colors={$contactViewModel.verificationLevelColors}
@@ -198,7 +198,7 @@
           <MdIcon slot="icon" theme="Outlined">info</MdIcon>
         </ListElement>
       </div>
-      <ListElement label={$i18n.t('common.nickname', 'Nickname')}
+      <ListElement label={$i18n.t('contacts.label--nickname', 'Nickname')}
         >{$contactViewModel.nickname ?? '-'}</ListElement
       >
       <Divider />
@@ -228,7 +228,10 @@
         <MdIcon slot="icon-left" theme="Outlined">block</MdIcon>
       </LinkElement> -->
       {#if import.meta.env.BUILD_VARIANT !== 'work'}
-        <LinkElement on:click={handleClickedOnDeleteContact} label="Delete Contact">
+        <LinkElement
+          on:click={handleClickedOnDeleteContact}
+          label={$i18n.t('contacts.action--delete-contact', 'Delete Contact')}
+        >
           <MdIcon slot="icon-left" theme="Outlined">delete</MdIcon>
         </LinkElement>
       {/if}
@@ -244,7 +247,7 @@
       <ProfilePictureDialog bind:visible={contactProfilePictureDialogVisible}
         ><ProfilePictureComponent
           img={transformProfilePicture($profilePicture.view.picture)}
-          alt={$i18n.t('topic.people.profile-picture-description', {
+          alt={$i18n.t('contacts.hint--profile-picture', {
             name: $contactViewModel.fullName,
           })}
           initials={$contactViewModel.initials}

@@ -178,7 +178,7 @@
           .catch(() => {
             log.error('Could not react to message');
             toast.addSimpleFailure(
-              i18n.get().t('status.error.message-reaction', 'Could not react to message'),
+              i18n.get().t('messaging.error--reaction', 'Could not react to message'),
             );
           });
         break;
@@ -211,13 +211,13 @@
         .writeText(hrefToCopy)
         .then(() =>
           toast.addSimpleSuccess(
-            i18n.get().t('status.success.message-link-copy', 'Link copied to clipboard'),
+            i18n.get().t('messaging.success--copy-message-link', 'Link copied to clipboard'),
           ),
         )
         .catch((error) => {
           log.error('Could not copy link to clipboard', error);
           toast.addSimpleFailure(
-            i18n.get().t('status.error.message-link-copy', 'Could not copy link to clipboard'),
+            i18n.get().t('messaging.error--copy-message-link', 'Could not copy link to clipboard'),
           );
         });
       hrefToCopy = undefined;
@@ -234,7 +234,7 @@
           toast.addSimpleSuccess(
             i18n
               .get()
-              .t('status.success.message-content-copy', 'Message content copied to clipboard'),
+              .t('messaging.success--copy-message-content', 'Message content copied to clipboard'),
           ),
         )
         .catch((error) => {
@@ -243,7 +243,7 @@
             i18n
               .get()
               .t(
-                'status.error.message-content-copy',
+                'messaging.error--copy-message-content',
                 'Could not copy message content to clipboard',
               ),
           );
@@ -252,7 +252,7 @@
     } else {
       log.warn('Attempting to copy undefined message content');
       toast.addSimpleFailure(
-        i18n.get().t('status.error.undefined-message-content-on-copy', 'Nothing to copy'),
+        i18n.get().t('messaging.error--copy-undefined-message-content', 'Nothing to copy'),
       );
     }
   }
@@ -333,7 +333,7 @@
     } catch (error) {
       log.error('Could not retrieve file data', extractErrorMessage(ensureError(error), 'short'));
       toast.addSimpleFailure(
-        i18n.get().t('status.error.file-data-retrieval', 'Could not retrieve file data'),
+        i18n.get().t('messaging.error--retrieve-file-data', 'Could not retrieve file data'),
       );
       return;
     }

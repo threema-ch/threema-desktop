@@ -41,7 +41,7 @@
           <Checkbox id="send-as-file-checkbox" checked={true} disabled={true} />
           <label class="label wip" for="send-as-file-checkbox"
             >{$i18n.t(
-              'topic.messaging.send-as-file-checkbox-label',
+              'dialog--compose-media-message.label--send-as-file-option',
               'Send as File (Original Size)',
             )}</label
           >

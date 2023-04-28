@@ -18,7 +18,7 @@
     >
       <MdIcon theme="Outlined">arrow_back</MdIcon>
     </IconButton>
-    {$i18n.t('topic.people.contacts-label', 'Contacts')}
+    {$i18n.t('contacts.label--contacts', 'Contacts')}
     <IconButton
       on:click={() => {
         dispatch('more');

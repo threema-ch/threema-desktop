@@ -15,7 +15,7 @@
         <span class="icon" slot="icon">
           <MdIcon theme="Outlined">edit</MdIcon>
         </span>
-        <span>{$i18n.t('common.edit')}</span>
+        <span>{$i18n.t('contacts.action--edit')}</span>
       </MenuItem>
       {#if import.meta.env.BUILD_VARIANT !== 'work'}
         <MenuItem on:click={() => dispatchEvent('delete')}>

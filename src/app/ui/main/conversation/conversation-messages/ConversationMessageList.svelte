@@ -16,6 +16,7 @@
   import {i18n} from '~/app/ui/i18n';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
+  import MarkupText from '~/app/ui/MarkupText.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
@@ -138,7 +139,7 @@
       <div class="unread-messages-separator">
         {#if !unreadMessageInfo.hasOutboundMessageAfterEarliestUnreadMessage}
           {$i18n.t(
-            'topic.messaging.message-unread-count',
+            'messaging.label--unread-messages-count',
             '{n, plural, =0 {} =1 {1 New Message} other {# New Messages}}',
             {n: unreadMessageInfo.inboundUnreadMessageCount},
           )}
@@ -162,11 +163,14 @@
   {:else}
     <SystemMessage>
       <MdIcon slot="icon" theme="Outlined">info</MdIcon>
-      <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-      {@html $i18n.t(
-        'topic.messaging.chat-empty-state-info',
-        'This chat is linked with your mobile device. <br />All future messages will appear here.',
-      )}
+      <MarkupText
+        markup={$i18n.t(
+          'messaging.markup--chat-empty-state',
+          'This chat is linked with your mobile device. <1/>All future messages will appear here.',
+        )}
+      >
+        <br slot="1" />
+      </MarkupText>
     </SystemMessage>
   {/each}
 </template>

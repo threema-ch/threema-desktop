@@ -123,26 +123,32 @@
       <ProfilePictureUpload />
     </span>
     <div class="threema-id">
-      <Text disabled={true} value={identityData.identity} label={$i18n.t('common.threema-id')} />
+      <Text
+        disabled={true}
+        value={identityData.identity}
+        label={$i18n.t('contacts.label--threema-id')}
+      />
     </div>
     <div class="firstname">
       <Text
         bind:this={contactFirstnameTextField}
         bind:value={firstName}
-        label={$i18n.t('topic.people.first-name-label')}
+        label={$i18n.t('contacts.label--first-name', 'First Name')}
         spellcheck={false}
       />
     </div>
     <div class="lastname">
       <Text
         bind:value={lastName}
-        label={$i18n.t('topic.people.last-name-label')}
+        label={$i18n.t('contacts.label--last-name', 'Last Name')}
         spellcheck={false}
       />
     </div>
 
     <div class="next">
-      <WizardButton on:click={handleAddContact}>{$i18n.t('common.next')}</WizardButton>
+      <WizardButton on:click={handleAddContact}
+        >{$i18n.t('contacts.action--add-contact-next')}</WizardButton
+      >
     </div>
   </form>
 </template>

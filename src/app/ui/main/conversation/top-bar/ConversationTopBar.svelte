@@ -138,7 +138,7 @@
         <div class="profile-picture" on:click={openAside}>
           <ProfilePicture
             img={transformProfilePicture(receiver.profilePicture.img)}
-            alt={$i18n.t('topic.people.profile-picture-description', {name: receiver.name})}
+            alt={$i18n.t('contacts.hint--profile-picture', {name: receiver.name})}
             initials={receiver.profilePicture.initials}
             color={receiver.profilePicture.color}
             shape="circle"

@@ -93,7 +93,7 @@
   <div class="group-members">
     <div class="label">
       {$i18n.t(
-        'topic.people.group-member-count',
+        'contacts.label--group-members-count-long',
         '{n, plural, =0 {No Group Members} =1 {1 Group Member} other {# Group Members}}',
         {n: numberOfParticipants},
       )}
@@ -103,13 +103,13 @@
         <DeprecatedReceiver
           clickable={false}
           profilePicture={{
-            alt: $i18n.t('topic.people.user-profile-picture-description', 'My profile picture'),
+            alt: $i18n.t('contacts.hint--profile-picture-own', 'My profile picture'),
             profilePicture: $userProfilePicture,
-            initials: $i18n.t('topic.people.user-profile-picture-initials', 'ME'),
+            initials: $i18n.t('contacts.label--own-initials', 'ME'),
             unread: 0,
           }}
           title={{
-            title: $i18n.t('topic.people.user-profile-picture-name', 'Me'),
+            title: $i18n.t('contacts.label--own-name', 'Me'),
             isCreator: true,
           }}
         >
@@ -128,12 +128,12 @@
         <DeprecatedReceiver
           clickable={false}
           profilePicture={{
-            alt: $i18n.t('topic.people.user-profile-picture-description', 'My profile picture'),
+            alt: $i18n.t('contacts.hint--own-profile-picture', 'My profile picture'),
             profilePicture: $userProfilePicture,
-            initials: $i18n.t('topic.people.user-profile-picture-initials', 'ME'),
+            initials: $i18n.t('contacts.label--own-initials', 'ME'),
             unread: 0,
           }}
-          title={{title: $i18n.t('topic.people.user-profile-picture-name', 'Me')}}
+          title={{title: $i18n.t('contacts.label--own-name', 'Me')}}
         >
           <div class="identity" slot="additional-bottom">{backend.user.identity}</div>
         </DeprecatedReceiver>
@@ -143,7 +143,7 @@
       {#if isParticipantsListExpanded}
         <LinkElement
           on:click={toggleParticipantsListExpanded}
-          label={$i18n.t('common.show-less', 'Show less')}
+          label={$i18n.t('contacts.action--group-members-show-less', 'Show less')}
         >
           <span class="expand" slot="icon-left">
             <MdIcon theme="Outlined">expand_less</MdIcon>
@@ -152,7 +152,7 @@
       {:else}
         <LinkElement
           on:click={toggleParticipantsListExpanded}
-          label={$i18n.t('common.show-all', 'Show all')}
+          label={$i18n.t('contacts.action--group-members-show-all', 'Show all')}
         >
           <span class="expand" slot="icon-left">
             <MdIcon theme="Outlined">expand_more</MdIcon>

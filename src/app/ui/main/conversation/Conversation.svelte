@@ -339,7 +339,9 @@
       .controller.removeMessage.fromLocal(messageId)
       .catch(() => {
         log.error('Could not delete message');
-        toast.addSimpleFailure($i18n.t('status.error.remove-message', 'Could not delete message'));
+        toast.addSimpleFailure(
+          $i18n.t('messaging.error--delete-message', 'Could not delete message'),
+        );
       });
   }
 
@@ -372,10 +374,15 @@
     {#if $conversation.view.category === ConversationCategory.PROTECTED}
       <div class="private">
         <div class="box">
-          <div class="header">{$i18n.t('topic.messaging.private-chat', 'Private Chat')}</div>
+          <div class="header">
+            {$i18n.t(
+              'dialog--unsupported-feature-protected-conversation.label--title',
+              'Private Chat',
+            )}
+          </div>
           <div class="body">
             {$i18n.t(
-              'status.error.unsupported-private-chats',
+              'dialog--unsupported-feature-protected-conversation.prose--description',
               'Private chats are not supported in {appName}.',
               {appName: import.meta.env.APP_NAME},
             )}
@@ -401,7 +408,7 @@
       <div class="bottom-bar">
         {#if isInactiveGroup($receiver)}
           <div class="deleted-group-message">
-            {$i18n.t('status.error.group-membership', 'You are no longer part of this group.')}
+            {$i18n.t('messaging.error--group-membership', 'You are no longer part of this group.')}
           </div>
         {:else if $composeData.mode === 'text' || $composeData.mode === 'quote'}
           {#if $composeData.mode === 'quote'}

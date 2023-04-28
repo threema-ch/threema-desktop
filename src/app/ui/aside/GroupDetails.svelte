@@ -107,7 +107,7 @@
       .fromLocal()
       .then(() => {
         toast.addSimpleSuccess(
-          $i18n.t('status.success.remove-group', 'Successfully removed group "{name}"', {
+          $i18n.t('contacts.success--delete-group', 'Successfully removed group "{name}"', {
             name: groupName,
           }),
         );
@@ -115,7 +115,7 @@
       .catch(() => {
         log.error('Could not delete group');
         toast.addSimpleFailure(
-          $i18n.t('status.error.remove-group', 'Could not delete group "{name}"', {
+          $i18n.t('contacts.error--delete-group', 'Could not delete group "{name}"', {
             name: groupName,
           }),
         );
@@ -130,7 +130,7 @@
   <div class="aside-group">
     <header>
       <span />
-      {$i18n.t('topic.people.group-detail', 'Group Detail')}
+      {$i18n.t('contacts.label--group-detail', 'Group Detail')}
       <IconButton flavor="naked" on:click={closeAside}>
         <MdIcon theme="Outlined">close</MdIcon>
       </IconButton>
@@ -142,7 +142,7 @@
           <ProfilePicture
             on:click={() => (groupProfilePictureDialogVisible = true)}
             img={transformProfilePicture($profilePicture.view.picture)}
-            alt={$i18n.t('topic.people.profile-picture-description', {
+            alt={$i18n.t('contacts.hint--profile-picture', {
               name: group$.displayName,
             })}
             initials={group$.displayName.slice(0, 2)}
@@ -156,7 +156,7 @@
       </div>
       <div class="edit">
         <!--<span on:click={openGroupEditDialog}>Edit</span>-->
-        <span class="wip">{$i18n.t('common.edit')}</span>
+        <span class="wip">{$i18n.t('contacts.action--edit')}</span>
       </div>
 
       <GroupMembers
@@ -218,7 +218,7 @@
       <ProfilePictureDialog bind:visible={groupProfilePictureDialogVisible}
         ><ProfilePicture
           img={transformProfilePicture($profilePicture.view.picture)}
-          alt={$i18n.t('topic.people.profile-picture-description', {
+          alt={$i18n.t('contacts.hint--profile-picture', {
             name: group$.displayName,
           })}
           initials={group$.displayName.slice(0, 2)}

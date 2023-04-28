@@ -10,7 +10,7 @@
     </div>
     <div class="message">
       {$i18n.t(
-        'status.error.network',
+        'system.error--connection',
         'No server connection. Try reconnecting to Wi-Fi, or check your modem and router.',
       )}
     </div>

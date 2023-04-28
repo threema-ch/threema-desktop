@@ -37,7 +37,7 @@
       </div>
     {:else}
       <div class="unsupported-message">
-        {$i18n.t('status.error.unsupported-message-type', 'Unsupported message type "{type}"', {
+        {$i18n.t('messaging.error--unsupported-message-type', 'Unsupported message type "{type}"', {
           type: message.type,
         })}
       </div>

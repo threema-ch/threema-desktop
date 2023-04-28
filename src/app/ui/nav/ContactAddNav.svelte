@@ -52,7 +52,7 @@
       identityFieldError = i18n
         .get()
         .t(
-          'status.error.add-contact-identity',
+          'contacts.error--add-contact-threema-id-is-own',
           'You cannot add your own Threema ID as contact. Hint: To keep private notes you can create a group with only yourself as member.',
         );
       return;
@@ -65,7 +65,10 @@
       if (identityData.state === ActivityState.INVALID) {
         identityFieldError = i18n
           .get()
-          .t('status.error.threema-id-unknown', 'Threema ID was not found or has been revoked');
+          .t(
+            'contacts.error--add-contact-threema-id-not-found',
+            'Threema ID was not found or has been revoked',
+          );
         return;
       }
 
@@ -81,7 +84,7 @@
         const message = i18n
           .get()
           .t(
-            'status.error.add-contact-existing',
+            'contacts.error--add-contact-threema-id-already-added',
             'Threema ID is already part of your contact list',
           );
 
@@ -94,7 +97,7 @@
       identityFieldError = i18n
         .get()
         .t(
-          'status.error.threema-id-validation',
+          'contacts.error--add-contact-threema-id-unable-to-validate',
           'Cannot check contact validity. Are you connected to the internet?',
         );
     }
@@ -118,7 +121,7 @@
     </div>
     <span class="note-enter"
       >{$i18n.t(
-        'topic.people.add-contact-description',
+        'contacts.prose--add-contact-instructions',
         'Please enter the Threema ID of the contact you would like to add:',
       )}
     </span>
@@ -127,7 +130,7 @@
         bind:this={threemaIdTextField}
         bind:value={identity}
         error={identityFieldError}
-        label={$i18n.t('common.threema-id')}
+        label={$i18n.t('contacts.label--threema-id', 'Threema ID')}
         spellcheck={false}
       />
     </div>
@@ -149,7 +152,7 @@
       <hr />
       <span class="note-directory">
         {$i18n.t(
-          'topic.people.add-work-directory-contact-description',
+          'contacts.prose--add-contact-instructions-work-directory',
           'Or search a contact in corporate directory and add it to your personal contact list:',
         )}
       </span>
@@ -166,7 +169,7 @@
           </div>
           <div slot="text">
             {$i18n.t(
-              'topic.people.add-work-directory-contact-action',
+              'contacts.action--add-contact-from-work-directory',
               'Add Contact from Directory',
             )}
           </div>
@@ -176,7 +179,7 @@
 
     <div class="next">
       <WizardButton disabled={!isIdentityString(identity)} on:click={handleNextClicked}>
-        {$i18n.t('common.next')}
+        {$i18n.t('contacts.action--add-contact-next', 'Next')}
       </WizardButton>
     </div>
   </form>

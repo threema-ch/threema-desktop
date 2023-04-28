@@ -11,16 +11,17 @@ import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
-import translationDe from '../../translations/de/translation.json';
+import translationDeDev from '../../translations/de-DEV/translation.json';
 import translationEn from '../../translations/en/translation.json';
 
 // Consider keeping the locales in sync in the config/i18next-parser.config.js file.
 export const resources = {
-    en: {
+    'en': {
         translation: translationEn,
     },
-    de: {
-        translation: translationDe,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    'de-DEV': {
+        translation: translationDeDev,
     },
 } as const;
 
@@ -33,7 +34,7 @@ const LOCALES_WITH_TRANSLATIONS = keys(resources);
 // of the translation.
 export const LOCALES = import.meta.env.DEBUG
     ? ([...LOCALES_WITH_TRANSLATIONS, 'cimode'] as const)
-    : LOCALES_WITH_TRANSLATIONS;
+    : LOCALES_WITH_TRANSLATIONS.filter((locale) => locale !== 'de-DEV');
 
 export type Locale = (typeof LOCALES)[u53];
 

@@ -3,6 +3,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import MarkupText from '~/app/ui/MarkupText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type AppUpdateDialog} from '~/common/system-dialog';
 
@@ -24,42 +25,87 @@
       <Title
         slot="header"
         title={$i18n.t(
-          'topic.system.update-prompt-title',
+          'dialog--app-update.label--title',
           'Update available: {current} → {latest}',
-          {current: context.currentVersion, latest: context.latestVersion},
+          {
+            current: context.currentVersion,
+            latest: context.latestVersion,
+          },
         )}
       />
       <div class="body" slot="body">
-        <p>{$i18n.t('topic.system.update-prompt', 'An update for Threema is available!')}</p>
+        <p>
+          {$i18n.t('dialog--app-update.prose--intro', 'An update for Threema is available!')}
+        </p>
         {#if context.systemInfo.os === 'linux'}
-          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-          {@html $i18n.t(
-            'topic.system.update-prompt-hint-linux',
-            `<p>
-              Please install the update through your system package manager, or by running
-              <code>flatpak update</code> in your terminal.
-            </p>
-            <p>
-              For more information about this update, see
-              <a href="https://three.ma/md" target="_blank" rel="noopener noreferrer">three.ma/md</a>.
-            </p>`,
-          )}
-        {:else if ['windows', 'macos'].includes(context.systemInfo.os)}
-          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-          {@html $i18n.t(
-            'topic.system.update-prompt-hint-windows-macos',
-            `<p>
-              Please update by downloading and installing the latest release from
-              <a href="https://three.ma/md" target="_blank" rel="noopener noreferrer">three.ma/md</a>.
-            </p>`,
-          )}
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--app-update.markup--linux-p1',
+                'Please install the update through your system package manager, or by running <1>flatpak update</1> in your terminal.',
+              )}
+            >
+              <code slot="1" let:text>{text}</code>
+            </MarkupText>
+          </p>
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--app-update.markup--linux-p2',
+                'For more information about this update, see <1>three.ma/md</1>.',
+              )}
+            >
+              <a
+                slot="1"
+                href="https://three.ma/md"
+                target="_blank"
+                rel="noreferrer noopener"
+                let:text>{text}</a
+              >
+            </MarkupText>
+          </p>
+        {:else if context.systemInfo.os === 'macos'}
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--app-update.markup--macos-p1',
+                'Please update by downloading and installing the latest release from <1>three.ma/md</1>.',
+              )}
+            >
+              <a
+                slot="1"
+                href="https://three.ma/md"
+                target="_blank"
+                rel="noreferrer noopener"
+                let:text>{text}</a
+              >
+            </MarkupText>
+          </p>
+        {:else if context.systemInfo.os === 'windows'}
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--app-update.markup--windows-p1',
+                'Please update by downloading and installing the latest release from <1>three.ma/md</1>.',
+              )}
+            >
+              <a
+                slot="1"
+                href="https://three.ma/md"
+                target="_blank"
+                rel="noreferrer noopener"
+                let:text>{text}</a
+              >
+            </MarkupText>
+          </p>
         {:else}
-          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-          {@html $i18n.t(
-            'topic.system.update-prompt-hint-other-os',
-            `<p>Please update {name}.</p>`,
-            {name: import.meta.env.APP_NAME},
-          )}
+          <p>
+            <MarkupText
+              markup={$i18n.t('dialog--app-update.markup--other-os-p1', 'Please update {name}.', {
+                name: import.meta.env.APP_NAME,
+              })}
+            />
+          </p>
         {/if}
       </div>
       <CancelAndConfirm
@@ -67,7 +113,7 @@
         let:modal
         {modal}
         showCancel={false}
-        confirmText={$i18n.t('common.ok')}
+        confirmText={$i18n.t('dialog--app-update.action--confirm', 'OK')}
       />
     </ModalDialog>
   </ModalWrapper>

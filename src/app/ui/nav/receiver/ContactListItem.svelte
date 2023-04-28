@@ -77,7 +77,7 @@
       type: 'contact',
       profilePicture: {
         profilePicture: $profilePicture.view,
-        alt: $i18n.t('topic.people.profile-picture-description', {name: viewModel.displayName}),
+        alt: $i18n.t('contacts.hint--profile-picture', {name: viewModel.displayName}),
         initials: viewModel.initials,
         badge: viewModel.badge,
         unread: 0,
@@ -126,13 +126,13 @@
           <div slot="icon">
             <MdIcon theme="Outlined">edit</MdIcon>
           </div>
-          <div slot="name">{$i18n.t('common.edit')}</div>
+          <div slot="name">{$i18n.t('contacts.action--edit')}</div>
         </SwipeAreaButton>
         <SwipeAreaButton>
           <div slot="icon">
             <MdIcon theme="Outlined">delete</MdIcon>
           </div>
-          <div slot="name">{$i18n.t('common.delete')}</div>
+          <div slot="name">{$i18n.t('contacts.action--delete')}</div>
         </SwipeAreaButton>
       </aside>
     </SwipeArea>

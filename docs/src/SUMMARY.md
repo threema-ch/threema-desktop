@@ -8,6 +8,7 @@
   - [Dependencies](./dependencies.md)
   - [Models](./models.md)
   - [Cryptography](./cryptography.md)
+  - [Internationalization](./internationalization.md)
 - [Testing](./testing.md)
   - [Mocha: Node Unit Tests](./testing-mocha.md)
   - [Karma: DOM Unit Tests](./testing-karma.md)

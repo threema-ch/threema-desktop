@@ -3,6 +3,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import MarkupText from '~/app/ui/MarkupText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type ConnectionErrorDialog} from '~/common/system-dialog';
   import {unreachable} from '~/common/utils/assert';
@@ -38,47 +39,81 @@
     >
       <Title
         slot="header"
-        title={$i18n.t('topic.system.connection-error-prompt-title', 'Connection Failed')}
+        title={$i18n.t('dialog--error-connection.label--title', 'Connection Failed')}
       />
       <div class="body" slot="body">
+        <!-- TODO(DESK-1012): Verify if this works and looks good -->
         {#if context.type === 'mediator-update-required'}
-          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-          {@html $i18n.t(
-            'topic.system.connection-error-prompt-mediator-update-required',
-            `This version of Threema is not compatible with your mediator server. The server uses an
-            outdated protocol version and must be updated first.
-            <br />
-            <br />
-            Please contact your Threema server administrator.`,
-          )}
+          <p>
+            {$i18n.t(
+              'dialog--error-connection.prose--mediator-update-required-p1',
+              'This version of Threema is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.',
+            )}
+          </p>
+          <p>
+            {$i18n.t(
+              'dialog--error-connection.prose--mediator-update-required-p2',
+              'Please contact your Threema server administrator.',
+            )}
+          </p>
         {:else if context.type === 'client-update-required'}
-          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-          {@html $i18n.t(
-            'topic.system.connection-error-prompt-client-update-required',
-            `This version of Threema is no longer supported (outdated protocol version).
-            <br />
-            <br />
-            To continue using Threema, please
-            <a href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
-              >update to the latest version</a
-            >.`,
-          )}
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--error-connection.markup--client-update-required-p1',
+                'This version of Threema is no longer supported (outdated protocol version).',
+              )}
+            />
+          </p>
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--error-connection.markup--client-update-required-p2',
+                'To continue using Threema, please <1>update to the latest version</1>.',
+              )}
+            >
+              <a
+                slot="1"
+                href="https://three.ma/md"
+                target="_blank"
+                rel="noreferrer noopener"
+                let:text>{text}</a
+              >
+            </MarkupText>
+          </p>
         {:else if context.type === 'client-was-dropped'}
-          <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-          {@html $i18n.t(
-            'topic.system.connection-error-prompt-client-was-dropped',
-            `This device has been unlinked. This means that you cannot currently send or receive new
-            messages.
-            <br />
-            <br />
-            If this was not triggered by you, please note that this might happen for technical reasons
-            during the Tech Preview phase. We apologize for the inconvience.
-            <br />
-            <br />
-            For more information, see the
-            <a href="https://threema.ch/faq/md_limit" target="_blank" rel="noreferrer noopener">FAQ</a
-            >.`,
-          )}
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--error-connection.markup--client-was-dropped-p1',
+                'This device has been unlinked. This means that you cannot currently send or receive new messages.',
+              )}
+            />
+          </p>
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--error-connection.markup--client-was-dropped-p2',
+                'If this was not triggered by you, please note that this might happen for technical reasons during the Tech Preview phase. We apologize for the inconvience.',
+              )}
+            />
+          </p>
+          <p>
+            <MarkupText
+              markup={$i18n.t(
+                'dialog--error-connection.markup--client-was-dropped-p3',
+                'For more information, see the <1>FAQ</1>.',
+              )}
+            >
+              <a
+                slot="1"
+                href="https://threema.ch/faq/md_limit"
+                target="_blank"
+                rel="noreferrer noopener"
+                let:text>{text}</a
+              >
+            </MarkupText>
+          </p>
         {:else}
           {unreachable(context)}
         {/if}
@@ -87,9 +122,9 @@
         {#if context.type === 'client-was-dropped'}
           <CancelAndConfirm
             {modal}
-            cancelText={$i18n.t('common.ok')}
+            cancelText={$i18n.t('dialog--error-connection.action--client-was-dropped-cancel', 'OK')}
             confirmText={$i18n.t(
-              'topic.system.remove-profile-and-relink-action',
+              'dialog--error-connection.action--client-was-dropped-confirm',
               'Remove local profile and relink',
             )}
           />
@@ -98,11 +133,15 @@
           {#if context.userCanReconnect}
             <CancelAndConfirm
               {modal}
-              cancelText={$i18n.t('common.ok')}
-              confirmText={$i18n.t('topic.system.reconnect-action', 'Reconnect')}
+              cancelText={$i18n.t('dialog--error-connection.action--default-cancel', 'OK')}
+              confirmText={$i18n.t('dialog--error-connection.action--default-confirm', 'Reconnect')}
             />
           {:else}
-            <CancelAndConfirm {modal} showCancel={false} confirmText={$i18n.t('common.ok')} />
+            <CancelAndConfirm
+              {modal}
+              showCancel={false}
+              confirmText={$i18n.t('dialog--error-connection.action--default-cancel')}
+            />
           {/if}
         {/if}
       </div>
@@ -118,5 +157,9 @@
     padding: rem(16px);
     border-radius: rem(8px);
     overflow: hidden;
+  }
+
+  div > p:first-child {
+    margin-top: 0;
   }
 </style>

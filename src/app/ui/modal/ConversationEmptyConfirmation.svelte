@@ -18,18 +18,24 @@
   let description: string;
   $: switch (receiverType) {
     case 'contact':
-      confirmText = $i18n.t('topic.messaging.empty-chat-action', 'Empty Chat');
+      confirmText = $i18n.t(
+        'dialog--empty-conversation.action--contact-conversation-confirm',
+        'Empty Chat',
+      );
       description = $i18n.t(
-        'topic.messaging.empty-chat-confirmation-description',
+        'dialog--empty-conversation.prose--contact-conversation-prompt',
         "This will delete the {n, plural, =1 {only message} other {# messages}} of this chat with {name} on this device. Your linked devices won't be affected.",
         {n: conversationMessageCount, name: truncate(receiverName, 80)},
       );
       break;
 
     case 'group':
-      confirmText = $i18n.t('topic.messaging.empty-group-chat-action', 'Empty Group Chat');
+      confirmText = $i18n.t(
+        'dialog--empty-conversation.action--group-conversation-confirm',
+        'Empty Group Chat',
+      );
       description = $i18n.t(
-        'topic.messaging.empty-group-chat-confirmation-description',
+        'dialog--empty-conversation.prose--group-conversation-prompt',
         'This will delete the {n, plural, =1 {only message} other {# messages}} of this "{name}" group chat on this device. Your linked devices won\'t be affected.',
         {n: conversationMessageCount, name: truncate(receiverName, 80)},
       );
@@ -37,11 +43,11 @@
 
     case 'distribution-list':
       confirmText = $i18n.t(
-        'topic.messaging.empty-distribution-list-action',
+        'dialog--empty-conversation.action--distribution-list-conversation-confirm',
         'Empty Distribution List',
       );
       description = $i18n.t(
-        'topic.messaging.empty-distribution-list-chat-confirmation-description',
+        'dialog--empty-conversation.prose--distribution-list-conversation-prompt',
         'This will delete the {n, plural, =1 {only message} other {# messages}} of this "{name}" distribution list on this device. Your linked devices won\'t be affected.',
         {n: conversationMessageCount, name: truncate(receiverName, 80)},
       );
@@ -60,7 +66,10 @@
       on:close={() => (visible = false)}
       on:cancel={() => (visible = false)}
     >
-      <Title slot="header" title={$i18n.t('topic.messaging.empty-chat-label', 'Empty Chat')} />
+      <Title
+        slot="header"
+        title={$i18n.t('dialog--empty-conversation.label--title', 'Empty Chat')}
+      />
       <div class="body" slot="body">
         {description}
       </div>

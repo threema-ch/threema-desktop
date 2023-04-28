@@ -107,7 +107,7 @@
 
   {#if mediaMessageDialogVisible}
     <MediaMessage
-      title={$i18n.t('topic.messaging.send-file-to-recipient-title', 'Send File to {name}', {
+      title={$i18n.t('dialog--compose-media-message.label--title', 'Send File to {name}', {
         name:
           $receiver.type === ReceiverType.DISTRIBUTION_LIST
             ? $receiver.view.stub

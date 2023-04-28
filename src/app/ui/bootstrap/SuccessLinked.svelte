@@ -5,6 +5,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
   import {i18n} from '~/app/ui/i18n';
+  import MarkupText from '~/app/ui/MarkupText.svelte';
 
   const dispatchEvent = createEventDispatcher();
 </script>
@@ -16,24 +17,39 @@
         {@html PartyPopper}
       </div>
       <div class="title">
-        {$i18n.t('topic.start.link-device-success-title', 'Device Linked Successfully')}
+        {$i18n.t('dialog--success-link-device.label--title', 'Device Linked Successfully')}
       </div>
       <div class="description">
-        <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-        {@html $i18n.t(
-          'topic.start.link-device-success-description',
-          'You can now use Threema on this computer <br />(even when your iOS device happens to be turned off).',
-        )}
+        <!-- TODO(DESK-1012): Verify if this works -->
+        <MarkupText
+          markup={$i18n.t(
+            'dialog--success-link-device.markup--description',
+            'You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).',
+          )}
+        >
+          <br slot="1" />
+        </MarkupText>
       </div>
       <div class="hint">
-        <!-- TODO(DESK-1012): This is suboptimal for multiple reasons (security concerns, css scoping issues [e.g., the link is currently blue instead of grey.], etc.) -->
-        {@html $i18n.t(
-          'topic.start.link-device-success-hint',
-          'Please remember that this is a tech preview. Known issues are listed <a href="https://threema.ch/faq/md_limit" target="_blank" rel="noreferrer noopener">here</a>.',
-        )}
+        <MarkupText
+          markup={$i18n.t(
+            'dialog--success-link-device.markup--tech-preview',
+            'Please remember that this is a tech preview. Known issues are listed <1>here</1>.',
+          )}
+        >
+          <a
+            slot="1"
+            href="https://threema.ch/faq/md_limit"
+            target="_blank"
+            rel="noreferrer noopener"
+            let:text>{text}</a
+          >
+        </MarkupText>
       </div>
       <div class="button">
-        <Button flavor="filled" on:click={() => dispatchEvent('close')}>Close</Button>
+        <Button flavor="filled" on:click={() => dispatchEvent('close')}
+          >{$i18n.t('dialog--success-link-device.action--confirm', 'Close')}</Button
+        >
       </div>
     </div>
   </ModalDialog>

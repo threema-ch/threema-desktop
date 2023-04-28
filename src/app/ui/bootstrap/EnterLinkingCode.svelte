@@ -214,12 +214,12 @@
   >
     <Title
       slot="header"
-      title={$i18n.t('topic.start.link-device-code-title', 'Enter Linking Code')}
+      title={$i18n.t('dialog--setup-linking-code.label--title', 'Enter Linking Code')}
     />
     <div class="body" slot="body">
       <div class="hint">
         {$i18n.t(
-          'topic.start.link-device-code-hint',
+          'dialog--setup-linking-code.prose--instructions',
           'Your Linking Code is displayed on your mobile device.',
         )}
       </div>
@@ -287,12 +287,15 @@
       {#if showCodeError}
         {#if initialContext.customSafeServer === undefined}
           <div class="error">
-            {$i18n.t('status.error.linking-code', 'Please enter a valid linking code.')}
+            {$i18n.t(
+              'dialog--setup-linking-code.error--invalid-code',
+              'Please enter a valid linking code.',
+            )}
           </div>
         {:else}
           <div class="error">
             {$i18n.t(
-              'status.error.linking-code-advanced',
+              'dialog--setup-linking-code.error--invalid-code-advanced',
               'Please enter a valid linking code and ensure that your custom Safe server credentials and configuration (including CORS) are correct.',
             )}
           </div>
@@ -301,7 +304,7 @@
         <div class="error">
           <div>{$contextStore.error.message}</div>
           <div class="error-details">
-            {$i18n.t('status.error.technical-details', 'Technical Details: {details}', {
+            {$i18n.t('dialog--setup-linking-code.error--unknown', 'Technical Details: {details}', {
               details: $contextStore.error.details,
             })}
           </div>
@@ -312,8 +315,8 @@
       slot="footer"
       let:modal
       {modal}
-      confirmText={$i18n.t('common.next')}
-      cancelText={$i18n.t('common.back')}
+      confirmText={$i18n.t('dialog--setup-linking-code.action--confirm', 'Next')}
+      cancelText={$i18n.t('dialog--setup-linking-code.action--cancel', 'Back')}
       confirmDisabled={!isValidLinkingCodeFormat || showCodeError || isLinkingCodeBeingValidated}
     />
   </ModalDialog>

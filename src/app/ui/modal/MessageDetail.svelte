@@ -38,35 +38,35 @@
         let:modal
         {modal}
         slot="header"
-        title={$i18n.t('topic.messaging.message-details-prompt-title', 'Message Details')}
+        title={$i18n.t('dialog--message-details.label--title', 'Message Details')}
       />
       <div class="body" slot="body">
-        <ListElement label={$i18n.t('topic.messaging.message-created-date-label', 'Created')}
+        <ListElement label={$i18n.t('dialog--message-details.label--created-date', 'Created')}
           >{message.view.createdAt.toLocaleString()}</ListElement
         >
         {#if message.ctx === MessageDirection.INBOUND}
-          <ListElement label={$i18n.t('topic.messaging.message-received-date-label', 'Received')}
+          <ListElement label={$i18n.t('dialog--message-details.label--received-date', 'Received')}
             >{message.view.receivedAt.toLocaleString()}</ListElement
           >
         {/if}
         {#if message.ctx === MessageDirection.OUTBOUND}
-          <ListElement label={$i18n.t('topic.messaging.message-sent-date-label', 'Sent')}
+          <ListElement label={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}
             >{message.view.sentAt?.toLocaleString() ?? '-'}</ListElement
           >
-          <ListElement label={$i18n.t('topic.messaging.message-delivered-date-label', 'Delivered')}
+          <ListElement label={$i18n.t('dialog--message-details.label--delivered-date', 'Delivered')}
             >{message.view.deliveredAt?.toLocaleString() ?? '-'}</ListElement
           >
         {/if}
-        <ListElement label={$i18n.t('topic.messaging.message-read-date-label', 'Read')}
+        <ListElement label={$i18n.t('dialog--message-details.label--read-date', 'Read')}
           >{message.view.readAt?.toLocaleString() ?? '-'}</ListElement
         >
         <Divider />
-        <ListElement label={$i18n.t('topic.messaging.message-id-label', 'Message ID')}
+        <ListElement label={$i18n.t('dialog--message-details.label--message-id', 'Message ID')}
           >{u64ToHexLe(message.view.id)}</ListElement
         >
         <Divider />
         <ListElement
-          label={$i18n.t('topic.messaging.message-last-reaction-label', 'Last Reaction')}
+          label={$i18n.t('dialog--message-details.label--last-reaction', 'Last Reaction')}
         >
           {#if message.view.lastReaction === undefined}
             -

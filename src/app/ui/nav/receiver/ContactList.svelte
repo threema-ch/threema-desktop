@@ -154,11 +154,11 @@
       .get()
       .controller.remove.fromLocal()
       .then(() => {
-        toast.addSimpleSuccess($i18n.t('status.success.remove-contact', {name: displayName}));
+        toast.addSimpleSuccess($i18n.t('contacts.success--delete-contact', {name: displayName}));
       })
       .catch(() => {
         log.error('Could not delete contact');
-        toast.addSimpleFailure($i18n.t('status.error.remove-contact', {name: displayName}));
+        toast.addSimpleFailure($i18n.t('contacts.error--delete-contact', {name: displayName}));
       });
 
     // TODO (routing): Move route to (?) if current contact is current active chat

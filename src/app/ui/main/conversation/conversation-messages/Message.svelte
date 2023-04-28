@@ -96,7 +96,10 @@
       <div class="quote">
         {#if messageViewModel.quote === 'not-found'}
           <p class="quote-not-found">
-            {$i18n.t('status.error.quote-not-found', 'The quoted message could not be found.')}
+            {$i18n.t(
+              'messaging.error--quoted-message-not-found',
+              'The quoted message could not be found.',
+            )}
           </p>
         {:else}
           <MessageQuote quote={messageViewModel.quote} />
@@ -127,24 +130,20 @@
             {#if messageViewModel.syncDirection === 'download'}
               <MdIcon
                 theme="Filled"
-                title={$i18n.t(
-                  'topic.messaging.file-sync-action-download-hint',
-                  'Click to download file',
-                )}>file_download</MdIcon
+                title={$i18n.t('messaging.action--file-sync-download', 'Click to download file')}
+                >file_download</MdIcon
               >
             {:else if messageViewModel.syncDirection === 'upload'}
               <MdIcon
                 theme="Filled"
-                title={$i18n.t(
-                  'topic.messaging.file-sync-action-upload-hint',
-                  'Click to upload file',
-                )}>file_upload</MdIcon
+                title={$i18n.t('messaging.action--file-sync-upload', 'Click to upload file')}
+                >file_upload</MdIcon
               >
             {:else}
               <MdIcon
                 theme="Filled"
                 title={$i18n.t(
-                  'topic.messaging.file-sync-action-unknown-hint',
+                  'messaging.action--file-sync-unknown-direction',
                   'Unknown sync direction',
                 )}>help</MdIcon
               >
