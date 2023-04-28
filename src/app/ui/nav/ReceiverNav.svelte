@@ -11,6 +11,7 @@
   import ContactNavBar from '~/app/ui/nav/receiver/ContactNavBar.svelte';
   import GroupList from '~/app/ui/nav/receiver/GroupList.svelte';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
+  import {WorkVerificationLevel} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
 
   export let services: AppServices;
@@ -91,7 +92,28 @@
         bind:value={$contactListFilter}
       />
     </div>
-    {#if import.meta.env.BUILD_VARIANT !== 'work'}
+
+    {#if import.meta.env.BUILD_VARIANT === 'work'}
+      <div class="list">
+        {#if activeTab === 'private-contacts'}
+          {#await services.backend.viewModel.contactListItems() then contacts}
+            <ContactList {services} {contacts} workVerificationLevel={WorkVerificationLevel.NONE} />
+          {/await}
+        {:else if activeTab === 'groups'}
+          {#await services.backend.viewModel.groupListItems() then groups}
+            <GroupList {services} {groups} />
+          {/await}
+        {:else}
+          {#await services.backend.viewModel.contactListItems() then contacts}
+            <ContactList
+              {services}
+              {contacts}
+              workVerificationLevel={WorkVerificationLevel.WORK_SUBSCRIPTION_VERIFIED}
+            />
+          {/await}
+        {/if}
+      </div>
+    {:else}
       <div class="add">
         <IconText on:click={handleAdd} wip={activeTab !== 'private-contacts'}>
           <div slot="icon" class="icon">
@@ -100,21 +122,18 @@
           <div slot="text">{addButtonText}</div>
         </IconText>
       </div>
+      <div class="list">
+        {#if activeTab === 'private-contacts'}
+          {#await services.backend.viewModel.contactListItems() then contacts}
+            <ContactList {services} {contacts} />
+          {/await}
+        {:else if activeTab === 'groups'}
+          {#await services.backend.viewModel.groupListItems() then groups}
+            <GroupList {services} {groups} />
+          {/await}
+        {/if}
+      </div>
     {/if}
-
-    <div class="list">
-      {#if activeTab === 'private-contacts'}
-        {#await services.backend.viewModel.contactListItems() then contacts}
-          <ContactList {services} {contacts} />
-        {/await}
-      {:else if activeTab === 'groups'}
-        {#await services.backend.viewModel.groupListItems() then groups}
-          <GroupList {services} {groups} />
-        {/await}
-      {:else}
-        <div class="wip">Not yet implemented</div>
-      {/if}
-    </div>
   </div>
 </template>
 

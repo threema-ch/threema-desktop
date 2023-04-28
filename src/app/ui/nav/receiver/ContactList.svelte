@@ -16,7 +16,7 @@
   import {toast} from '~/app/ui/snackbar';
   import {type DbContactUid} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
-  import {ReceiverType} from '~/common/enum';
+  import {ReceiverType, type WorkVerificationLevel} from '~/common/enum';
   import {type Remote} from '~/common/utils/endpoint';
   import {type SetValue} from '~/common/utils/set';
   import {type IQueryableStoreValue} from '~/common/utils/store';
@@ -30,10 +30,16 @@
    * App Services.
    */
   export let services: AppServices;
+
   /**
    * Set of all contact view models.
    */
   export let contacts: Remote<ContactListItemSetStore>;
+
+  /**
+   * The wanted {@link WorkVerificationLevel} to display.
+   */
+  export let workVerificationLevel: WorkVerificationLevel | undefined = undefined;
 
   const {router} = services;
 
@@ -55,9 +61,15 @@
     [...contactSet]
       // Filter: Only include direct contacts matching the search filter
       .filter((contact) => {
+        const contactModel = getAndSubscribe(contact.contactModelStore);
         const viewModel = getAndSubscribe(contact.viewModelStore);
         const filterText = getAndSubscribe(contactListFilter);
-        return viewModel.showInContactList && matchesContactSearchFilter(filterText, viewModel);
+        return (
+          (workVerificationLevel === undefined ||
+            contactModel.view.workVerificationLevel === workVerificationLevel) &&
+          viewModel.showInContactList &&
+          matchesContactSearchFilter(filterText, viewModel)
+        );
       })
       // Sort: By display name
       .sort((a, b) =>
