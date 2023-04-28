@@ -111,6 +111,11 @@
   }
 
   function deleteContact(): void {
+    if (import.meta.env.BUILD_VARIANT === 'work') {
+      // For the time being deleting contacts is not allowed in the Work variant
+      return;
+    }
+
     if (currentContact === undefined) {
       return;
     }

@@ -17,12 +17,14 @@
         </span>
         <span>Edit</span>
       </MenuItem>
-      <MenuItem on:click={() => dispatchEvent('delete')}>
-        <span class="icon" slot="icon">
-          <MdIcon theme="Outlined">delete</MdIcon>
-        </span>
-        <span>Delete</span>
-      </MenuItem>
+      {#if import.meta.env.BUILD_VARIANT !== 'work'}
+        <MenuItem on:click={() => dispatchEvent('delete')}>
+          <span class="icon" slot="icon">
+            <MdIcon theme="Outlined">delete</MdIcon>
+          </span>
+          <span>Delete</span>
+        </MenuItem>
+      {/if}
     </MenuContainer>
   </div>
 </template>

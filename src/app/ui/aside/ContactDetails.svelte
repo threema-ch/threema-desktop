@@ -98,6 +98,11 @@
   }
 
   function deleteContact(): void {
+    if (import.meta.env.BUILD_VARIANT === 'work') {
+      // For the time being deleting contacts is not allowed in the Work variant
+      return;
+    }
+
     if (contactViewModel === undefined || contactController === undefined) {
       return;
     }
@@ -208,9 +213,11 @@
       <!-- <LinkElement wip label="Block Contact">
         <MdIcon slot="icon-left" theme="Outlined">block</MdIcon>
       </LinkElement> -->
-      <LinkElement on:click={handleClickedOnDeleteContact} label="Delete Contact">
-        <MdIcon slot="icon-left" theme="Outlined">delete</MdIcon>
-      </LinkElement>
+      {#if import.meta.env.BUILD_VARIANT !== 'work'}
+        <LinkElement on:click={handleClickedOnDeleteContact} label="Delete Contact">
+          <MdIcon slot="icon-left" theme="Outlined">delete</MdIcon>
+        </LinkElement>
+      {/if}
 
       <DeleteDialog
         bind:visible={deleteContactDialogVisible}
