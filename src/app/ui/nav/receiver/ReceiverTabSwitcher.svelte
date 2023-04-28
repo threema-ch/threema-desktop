@@ -53,7 +53,9 @@
     }
 
     &[data-variant='work'] {
-      grid-template: 'work contacts groups distributionlists';
+      // TODO(DESK-236): Display distribution list again after the model has been introduced
+      // grid-template: 'work contacts groups distributionlists';
+      grid-template: 'work contacts groups';
     }
   }
 </style>
