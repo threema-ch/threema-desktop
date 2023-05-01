@@ -3,7 +3,6 @@ import {type DbContactUid} from '~/common/db';
 import {
     AcquaintanceLevel,
     type ActivityState,
-    IdentityType,
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
@@ -17,6 +16,8 @@ import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import {type ServicesForViewModel} from '~/common/viewmodel';
+import {type ReceiverBadgeType} from '~/common/viewmodel/types';
+import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 /**
  * TODO(DESK-709): Type from svelte-components, get rid of this.
@@ -27,11 +28,6 @@ export type VerificationLevelColors = 'default' | 'shared-work-subscription';
  * TODO(DESK-709): Type from svelte-components, get rid of this.
  */
 export type VerificationLevel = 'unverified' | 'server-verified' | 'fully-verified';
-
-/**
- * TODO(DESK-709): Type from svelte-components, get rid of this.
- */
-export type ContactBadge = 'contact-consumer' | 'contact-work';
 
 export type ContactListItemSetStore = LocalDerivedSetStore<
     LocalSetStore<LocalModelStore<Contact>>,
@@ -99,7 +95,7 @@ export interface ContactListItemViewModel extends PropertiesMarked {
     readonly displayName: string;
     readonly initials: string;
     readonly profilePicture: LocalModelStore<ProfilePicture>;
-    readonly badge: ContactBadge | undefined;
+    readonly badge: ReceiverBadgeType | undefined;
     readonly isNew: boolean;
     readonly verificationLevel: VerificationLevel;
     readonly verificationLevelColors: VerificationLevelColors;
@@ -128,7 +124,7 @@ function getViewModelStore(
             displayName: getDisplayName(contact.view),
             initials: contact.view.initials,
             profilePicture: contact.controller.profilePicture,
-            badge: transformContactBadge(contact.view),
+            badge: getContactBadge(contact.view),
             // TODO(DESK-381): Determine whether contact is a new contact
             isNew: Math.random() < 0.5,
             ...transformContactVerificationLevel(contact.view),
@@ -179,23 +175,4 @@ function transformContactVerificationLevel(
 
 function getFullName(contact: Pick<ContactView, 'firstName' | 'lastName'>): string {
     return `${contact.firstName} ${contact.lastName}`.trim();
-}
-
-/**
- * Determine badge type.
- *
- * Note: We only display contact badges when the identity type differs from our own identity
- *       type (i.e. the build variant).
- */
-function transformContactBadge(
-    contact: Pick<ContactView, 'identityType'>,
-): ContactBadge | undefined {
-    switch (contact.identityType) {
-        case IdentityType.REGULAR:
-            return import.meta.env.BUILD_VARIANT !== 'consumer' ? 'contact-consumer' : undefined;
-        case IdentityType.WORK:
-            return import.meta.env.BUILD_VARIANT !== 'work' ? 'contact-work' : undefined;
-        default:
-            return unreachable(contact.identityType);
-    }
 }

@@ -10,7 +10,6 @@ import {type PublicKey} from '~/common/crypto';
 import {type DbReceiverLookup} from '~/common/db';
 import {
     AcquaintanceLevel,
-    IdentityType,
     ReceiverType,
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
@@ -30,7 +29,8 @@ import {type Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {localeSort} from '~/common/utils/string';
 import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
-import {type ContactData, type ReceiverBadgeType} from '~/common/viewmodel/types';
+import {type ContactData} from '~/common/viewmodel/types';
+import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 /**
  * Transformed data necessary to display a contact in several places in the UI.
@@ -175,22 +175,6 @@ export async function transformContact(
     settings: Remote<Settings>,
     contact: RemoteModelFor<Contact>,
 ): Promise<TransformedContact> {
-    // Determine badge type.
-    //
-    // Note: We only display contact badges when the identity type differs from our own identity
-    //       type (i.e. the build variant).
-    let badge: ReceiverBadgeType | undefined;
-    switch (contact.view.identityType) {
-        case IdentityType.REGULAR:
-            badge = import.meta.env.BUILD_VARIANT !== 'consumer' ? 'contact-consumer' : undefined;
-            break;
-        case IdentityType.WORK:
-            badge = import.meta.env.BUILD_VARIANT !== 'work' ? 'contact-work' : undefined;
-            break;
-        default:
-            unreachable(contact.view.identityType);
-    }
-
     // Determine activity state
     let activityState: TransformedContact['activityState'];
     switch (contact.view.activityState) {
@@ -221,7 +205,7 @@ export async function transformContact(
         identity: contact.view.identity,
         publicKey: contact.view.publicKey,
         isNew,
-        badge,
+        badge: getContactBadge(contact.view),
         nickname: isNickname(contact.view.nickname) ? contact.view.nickname : undefined,
         firstName: contact.view.firstName,
         lastName: contact.view.lastName,

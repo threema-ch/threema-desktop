@@ -7,7 +7,6 @@ import {type DbReceiverLookup} from '~/common/db';
 import {
     ContactNotificationTriggerPolicy,
     GroupNotificationTriggerPolicy,
-    IdentityType,
     NotificationSoundPolicy,
     ReceiverType,
     VerificationLevel as NumericVerificationLevel,
@@ -26,13 +25,9 @@ import {
 } from '~/common/model';
 import {type Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
-import {
-    type AnyReceiverData,
-    type ContactData,
-    type ReceiverBadgeType,
-} from '~/common/viewmodel/types';
-
-import {getMemberNames} from './group-list-item';
+import {getMemberNames} from '~/common/viewmodel/group-list-item';
+import {type AnyReceiverData, type ContactData} from '~/common/viewmodel/types';
+import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 export type TransformedReceiverData = AnyReceiverData & {
     /**
@@ -48,22 +43,6 @@ export function transformContact(
     profilePicture: ProfilePicture,
     settings: Settings,
 ): TransformedReceiverData {
-    // Determine badge type.
-    //
-    // Note: We only display contact badges when the identity type differs from our own identity
-    //       type (i.e. the build variant).
-    let badge: ReceiverBadgeType | undefined;
-    switch (contact.view.identityType) {
-        case IdentityType.REGULAR:
-            badge = import.meta.env.BUILD_VARIANT !== 'consumer' ? 'contact-consumer' : undefined;
-            break;
-        case IdentityType.WORK:
-            badge = import.meta.env.BUILD_VARIANT !== 'work' ? 'contact-work' : undefined;
-            break;
-        default:
-            unreachable(contact.view.identityType);
-    }
-
     // Determine verification level
     const {verificationLevel, verificationLevelColors} = transformContactVerificationLevel(contact);
 
@@ -76,7 +55,7 @@ export function transformContact(
             color: profilePicture.view.color,
             initials: contact.view.initials,
         },
-        badge,
+        badge: getContactBadge(contact.view),
         verificationLevel,
         verificationLevelColors,
         blocked: settings.contactIsBlocked(contact.view.identity),

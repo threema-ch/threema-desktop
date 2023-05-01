@@ -8,7 +8,6 @@ import {
     type ConversationCategory,
     type ConversationVisibility,
     GroupUserState,
-    IdentityType,
     ReceiverType,
 } from '~/common/enum';
 import {
@@ -26,6 +25,7 @@ import {type u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {type ReceiverBadgeType} from '~/common/viewmodel/types';
+import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 /**
  * Transformed data necessary to display a conversation preview.
@@ -127,29 +127,12 @@ export function transformConversation(
 }
 
 function transformContact(contact: RemoteModelFor<Contact>): ConversationPreviewData['receiver'] {
-    // Determine badge type.
-    //
-    // Note: We only display contact badges when the identity type differs from our own identity
-    //       type (i.e. the build variant).
-    let badge: ReceiverBadgeType | undefined;
-    switch (contact.view.identityType) {
-        case IdentityType.REGULAR:
-            badge = import.meta.env.BUILD_VARIANT !== 'consumer' ? 'contact-consumer' : undefined;
-            break;
-        case IdentityType.WORK:
-            badge = import.meta.env.BUILD_VARIANT !== 'work' ? 'contact-work' : undefined;
-            break;
-        default:
-            unreachable(contact.view.identityType);
-    }
-
-    // Done
     return {
         lookup: {
             type: ReceiverType.CONTACT,
             uid: contact.ctx,
         },
-        badge,
+        badge: getContactBadge(contact.view),
         name: contact.view.displayName,
         blocked: false, // TODO(DESK-419): await settings.contactIsBlocked(contact.view.identity),
         notifications: transformNotificationPolicyFromContact(contact.view),

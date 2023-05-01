@@ -40,7 +40,7 @@ export interface ContactData {
     /**
      * Optional badge of the receiver.
      */
-    readonly badge?: 'contact-consumer' | 'contact-work';
+    readonly badge?: ReceiverBadgeType;
     /**
      * Verification level.
      */
