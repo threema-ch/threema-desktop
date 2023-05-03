@@ -5,6 +5,7 @@
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
   import MenuItemDivider from '#3sc/components/generic/Menu/MenuItemDivider.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import {MessageDirection, MessageReaction} from '~/common/enum';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
@@ -41,7 +42,7 @@
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">link</MdIcon>
           </span>
-          <span>Copy Link</span>
+          <span>{$i18n.t('messaging.action--message-option-copy-link', 'Copy Link')}</span>
         </MenuItem>
         <MenuItemDivider />
       {/if}
@@ -54,7 +55,7 @@
                 : 'Outlined'}>thumb_up</MdIcon
             >
           </span>
-          <span>Agree</span>
+          <span>{$i18n.t('messaging.action--message-option-agree', 'Agree')}</span>
         </MenuItem>
         <MenuItem on:click={() => dispatchEvent('thumbdown')}>
           <span class="icon thumb-down" slot="icon">
@@ -63,7 +64,7 @@
               >thumb_down</MdIcon
             >
           </span>
-          <span>Disagree</span>
+          <span>{$i18n.t('messaging.action--message-option-disagree', 'Disagree')}</span>
         </MenuItem>
         <MenuItemDivider />
       {/if}
@@ -71,14 +72,14 @@
         <span class="icon" slot="icon">
           <MdIcon theme="Outlined">format_quote</MdIcon>
         </span>
-        <span>Quote</span>
+        <span>{$i18n.t('messaging.action--message-option-quote', 'Quote')}</span>
       </MenuItem>
       {#if options.showAction.forward}
         <MenuItem on:click={() => dispatchEvent('forward')}>
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">forward</MdIcon>
           </span>
-          <span>Forward</span>
+          <span>{$i18n.t('messaging.action--message-option-forward', 'Forward')}</span>
         </MenuItem>
       {/if}
       {#if options.showAction.copyMessage}
@@ -86,20 +87,20 @@
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">content_copy</MdIcon>
           </span>
-          <span>Copy Message</span>
+          <span>{$i18n.t('messaging.action--message-option-copy', 'Copy Message')}</span>
         </MenuItem>
       {/if}
       <MenuItem on:click={() => dispatchEvent('showMessageDetails')}>
         <span class="icon" slot="icon">
           <MdIcon theme="Outlined">info</MdIcon>
         </span>
-        <span>Message Details</span>
+        <span>{$i18n.t('messaging.action--message-option-details', 'Message Details')}</span>
       </MenuItem>
       <MenuItem on:click={() => dispatchEvent('delete')}>
         <span class="icon" slot="icon">
           <MdIcon theme="Outlined">delete</MdIcon>
         </span>
-        <span>Delete</span>
+        <span>{$i18n.t('messaging.action--message-option-delete', 'Delete')}</span>
       </MenuItem>
     </MenuContainer>
   </div>

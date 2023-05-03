@@ -7,6 +7,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
   import {type u53} from '~/common/types';
 
@@ -33,7 +34,7 @@
     sendTextMessage: string;
   }>();
 
-  let composeBar: HTMLElement | null;
+  let composeBar: HTMLElement | undefined;
   let composeArea: ComposeArea;
   let composeAreaIsEmpty: Readable<boolean>;
   let composeAreaTextByteLength: u53;

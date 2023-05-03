@@ -14,6 +14,7 @@
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import {type VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import ConversationMessageContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import MessageComponent from '~/app/ui/main/conversation/conversation-messages/Message.svelte';

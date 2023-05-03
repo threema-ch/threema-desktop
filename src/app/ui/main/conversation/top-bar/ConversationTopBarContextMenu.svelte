@@ -4,6 +4,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
+  import {i18n} from '~/app/ui/i18n';
 
   export let isConversationEmptyActionEnabled = false;
 
@@ -26,7 +27,7 @@
         <span class="icon" slot="icon">
           <MdIcon theme="Outlined">delete_sweep</MdIcon>
         </span>
-        <span>Empty Chat</span>
+        <span>{$i18n.t('messaging.action--empty-conversation', 'Empty Chat')}</span>
       </MenuItem>
     </MenuContainer>
   </div>

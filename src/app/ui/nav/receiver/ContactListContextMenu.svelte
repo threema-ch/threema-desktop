@@ -4,6 +4,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
+  import {i18n} from '~/app/ui/i18n';
 
   const dispatchEvent = createEventDispatcher();
 </script>
@@ -22,7 +23,7 @@
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">delete</MdIcon>
           </span>
-          <span>Delete</span>
+          <span>{$i18n.t('contacts.action--delete')}</span>
         </MenuItem>
       {/if}
     </MenuContainer>
