@@ -23,7 +23,7 @@
           <span class="icon" slot="icon">
             <MdIcon theme="Outlined">delete</MdIcon>
           </span>
-          <span>{$i18n.t('contacts.action--delete')}</span>
+          <span>{$i18n.t('contacts.action--delete', 'Delete')}</span>
         </MenuItem>
       {/if}
     </MenuContainer>
