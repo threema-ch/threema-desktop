@@ -3,7 +3,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import MarkupText from '~/app/ui/MarkupText.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type AppUpdateDialog} from '~/common/system-dialog';
 
@@ -39,18 +39,18 @@
         </p>
         {#if context.systemInfo.os === 'linux'}
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--app-update.markup--linux-p1',
                 'Please install the update through your system package manager, or by running <1>flatpak update</1> in your terminal.',
               )}
             >
               <code slot="1" let:text>{text}</code>
-            </MarkupText>
+            </SubstitutableText>
           </p>
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--app-update.markup--linux-p2',
                 'For more information about this update, see <1>three.ma/md</1>.',
               )}
@@ -62,12 +62,12 @@
                 rel="noreferrer noopener"
                 let:text>{text}</a
               >
-            </MarkupText>
+            </SubstitutableText>
           </p>
         {:else if context.systemInfo.os === 'macos'}
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--app-update.markup--macos-p1',
                 'Please update by downloading and installing the latest release from <1>three.ma/md</1>.',
               )}
@@ -79,12 +79,12 @@
                 rel="noreferrer noopener"
                 let:text>{text}</a
               >
-            </MarkupText>
+            </SubstitutableText>
           </p>
         {:else if context.systemInfo.os === 'windows'}
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--app-update.markup--windows-p1',
                 'Please update by downloading and installing the latest release from <1>three.ma/md</1>.',
               )}
@@ -96,12 +96,12 @@
                 rel="noreferrer noopener"
                 let:text>{text}</a
               >
-            </MarkupText>
+            </SubstitutableText>
           </p>
         {:else}
           <p>
-            <MarkupText
-              markup={$i18n.t('dialog--app-update.markup--other-os-p1', 'Please update {name}.', {
+            <SubstitutableText
+              text={$i18n.t('dialog--app-update.markup--other-os-p1', 'Please update {name}.', {
                 name: import.meta.env.APP_NAME,
               })}
             />

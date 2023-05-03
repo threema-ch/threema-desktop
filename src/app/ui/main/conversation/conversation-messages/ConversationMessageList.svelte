@@ -16,7 +16,7 @@
   import {i18n} from '~/app/ui/i18n';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
-  import MarkupText from '~/app/ui/MarkupText.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
@@ -163,14 +163,14 @@
   {:else}
     <SystemMessage>
       <MdIcon slot="icon" theme="Outlined">info</MdIcon>
-      <MarkupText
-        markup={$i18n.t(
+      <SubstitutableText
+        text={$i18n.t(
           'messaging.markup--chat-empty-state',
           'This chat is linked with your mobile device. <1/>All future messages will appear here.',
         )}
       >
         <br slot="1" />
-      </MarkupText>
+      </SubstitutableText>
     </SystemMessage>
   {/each}
 </template>

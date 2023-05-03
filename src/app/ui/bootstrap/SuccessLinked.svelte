@@ -5,7 +5,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
   import {i18n} from '~/app/ui/i18n';
-  import MarkupText from '~/app/ui/MarkupText.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
 
   const dispatchEvent = createEventDispatcher();
 </script>
@@ -21,18 +21,18 @@
       </div>
       <div class="description">
         <!-- TODO(DESK-1012): Verify if this works -->
-        <MarkupText
-          markup={$i18n.t(
+        <SubstitutableText
+          text={$i18n.t(
             'dialog--success-link-device.markup--description',
             'You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).',
           )}
         >
           <br slot="1" />
-        </MarkupText>
+        </SubstitutableText>
       </div>
       <div class="hint">
-        <MarkupText
-          markup={$i18n.t(
+        <SubstitutableText
+          text={$i18n.t(
             'dialog--success-link-device.markup--tech-preview',
             'Please remember that this is a tech preview. Known issues are listed <1>here</1>.',
           )}
@@ -44,7 +44,7 @@
             rel="noreferrer noopener"
             let:text>{text}</a
           >
-        </MarkupText>
+        </SubstitutableText>
       </div>
       <div class="button">
         <Button flavor="filled" on:click={() => dispatchEvent('close')}

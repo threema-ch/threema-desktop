@@ -3,7 +3,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import MarkupText from '~/app/ui/MarkupText.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type SafeRestoreStateDialog} from '~/common/system-dialog';
 
@@ -41,27 +41,27 @@
       <div class="body" slot="body">
         <!-- TODO(DESK-1012): Verify if this works and looks good -->
         <p>
-          <MarkupText
-            markup={$i18n.t(
+          <SubstitutableText
+            text={$i18n.t(
               'dialog--error-safe-restore.markup--description-p1',
               'Restoring of the safe backup data failed. Please relink this device to prevent message loss.',
             )}
           />
         </p>
         <p>
-          <MarkupText
-            markup={$i18n.t(
+          <SubstitutableText
+            text={$i18n.t(
               'dialog--error-safe-restore.markup--description-p2',
               'Reported error: <1>{error}</1>',
               {error: context.error.message},
             )}
           >
             <code slot="1" let:text>{text}</code>
-          </MarkupText>
+          </SubstitutableText>
         </p>
         <p>
-          <MarkupText
-            markup={$i18n.t(
+          <SubstitutableText
+            text={$i18n.t(
               'dialog--error-safe-restore.markup--description-p3',
               'Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback). For more information, see the <1>FAQ</1>.',
             )}
@@ -73,7 +73,7 @@
               rel="noreferrer noopener"
               let:text>{text}</a
             >
-          </MarkupText>
+          </SubstitutableText>
         </p>
       </div>
       <div slot="footer" let:modal>

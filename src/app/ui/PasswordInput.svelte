@@ -8,7 +8,7 @@
   import {i18n} from '~/app/ui/i18n';
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
-  import MarkupText from './MarkupText.svelte';
+  import SubstitutableText from './SubstitutableText.svelte';
 
   /**
    * A promise that can be awaited. It will resolve once the password been entered by the user.
@@ -70,8 +70,8 @@
           }}
         />
         <div class="hint">
-          <MarkupText
-            markup={$i18n.t(
+          <SubstitutableText
+            text={$i18n.t(
               'dialog--startup-unlock.markup--password-hint',
               'Forgot password? Please see some <1>FAQ</1>.',
             )}
@@ -83,7 +83,7 @@
               rel="noreferrer noopener"
               let:text>{text}</a
             >
-          </MarkupText>
+          </SubstitutableText>
         </div>
       </div>
       <div class="footer" slot="footer">

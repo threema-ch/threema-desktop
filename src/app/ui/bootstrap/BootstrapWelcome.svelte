@@ -5,7 +5,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import MarkupText from '~/app/ui/MarkupText.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
 
   const dispatchEvent = createEventDispatcher();
 </script>
@@ -15,8 +15,8 @@
     <Title slot="header" title={$i18n.t('dialog--welcome.label--title', 'Multi-Device Preview')} />
     <div class="body" slot="body">
       <div class="hint">
-        <MarkupText
-          markup={$i18n.t(
+        <SubstitutableText
+          text={$i18n.t(
             'dialog--welcome.markup--intro',
             'This tech preview only works in conjunction with the beta version of Threema for iOS. Please note that some features are not yet available. <1>Learn more...</1>.',
           )}
@@ -28,7 +28,7 @@
             rel="noreferrer noopener"
             let:text>{text}</a
           >
-        </MarkupText>
+        </SubstitutableText>
       </div>
       <div class="title">
         {$i18n.t('dialog--welcome.label--link-device-instructions', 'Link Your iOS Device')}
@@ -39,8 +39,8 @@
             {$i18n.t('dialog--welcome.label--link-device-step-1', 'Step 1:')}
           </div>
           <div class="description">
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--welcome.markup--link-device-step-1',
                 '<1>Install the multi-device beta of Threema for iOS on your device</1>.',
               )}
@@ -52,22 +52,22 @@
                 rel="noreferrer noopener"
                 let:text>{text}</a
               >
-            </MarkupText>
+            </SubstitutableText>
           </div>
         </div>
         <div class="step">
           <div class="title">{$i18n.t('dialog--welcome.label--link-device-step-2', 'Step 2:')}</div>
           <div class="description">
             <!-- TODO(DESK-1012): Are the following quotation mark characters intentional? -->
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--welcome.markup--link-device-step-2',
                 'Open the beta version, navigate to <1>“Settings > Multi-Device Preview,”</1> and activate <2>“This Device”</2>.',
               )}
             >
               <span slot="1" style="white-space: nowrap;" let:text>{text}</span>
               <span slot="2" style="white-space: nowrap;" let:text>{text}</span>
-            </MarkupText>
+            </SubstitutableText>
           </div>
         </div>
         <div class="step button">

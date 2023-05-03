@@ -3,7 +3,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import MarkupText from '~/app/ui/MarkupText.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type ConnectionErrorDialog} from '~/common/system-dialog';
   import {unreachable} from '~/common/utils/assert';
@@ -58,16 +58,16 @@
           </p>
         {:else if context.type === 'client-update-required'}
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--error-connection.markup--client-update-required-p1',
                 'This version of Threema is no longer supported (outdated protocol version).',
               )}
             />
           </p>
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--error-connection.markup--client-update-required-p2',
                 'To continue using Threema, please <1>update to the latest version</1>.',
               )}
@@ -79,28 +79,28 @@
                 rel="noreferrer noopener"
                 let:text>{text}</a
               >
-            </MarkupText>
+            </SubstitutableText>
           </p>
         {:else if context.type === 'client-was-dropped'}
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--error-connection.markup--client-was-dropped-p1',
                 'This device has been unlinked. This means that you cannot currently send or receive new messages.',
               )}
             />
           </p>
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--error-connection.markup--client-was-dropped-p2',
                 'If this was not triggered by you, please note that this might happen for technical reasons during the Tech Preview phase. We apologize for the inconvience.',
               )}
             />
           </p>
           <p>
-            <MarkupText
-              markup={$i18n.t(
+            <SubstitutableText
+              text={$i18n.t(
                 'dialog--error-connection.markup--client-was-dropped-p3',
                 'For more information, see the <1>FAQ</1>.',
               )}
@@ -112,7 +112,7 @@
                 rel="noreferrer noopener"
                 let:text>{text}</a
               >
-            </MarkupText>
+            </SubstitutableText>
           </p>
         {:else}
           {unreachable(context)}

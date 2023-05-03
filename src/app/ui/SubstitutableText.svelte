@@ -1,11 +1,11 @@
 <script lang="ts">
-  export let markup: string;
+  export let text: string;
 
   const splitterRegex =
     // eslint-disable-next-line threema/ban-stateful-regex-flags
     /<(?<voidTag>[12345])\/>|<(?<tag>[12345])>(?<text>[^<]*)<\/\k<tag>>|(?<plain>.+?)/gu;
 
-  $: fragments = [...markup.matchAll(splitterRegex)].map(({groups}) => ({
+  $: fragments = [...text.matchAll(splitterRegex)].map(({groups}) => ({
     plain: groups?.plain,
     tag: groups?.tag ?? groups?.voidTag,
     isVoidTag: groups?.voidTag !== undefined,
