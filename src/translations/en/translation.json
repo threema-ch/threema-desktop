@@ -234,7 +234,7 @@
   },
   "locale": {
     "cimode": "Developer Mode",
-    "de-DEV": "German [dev]",
+    "debug": "Debug Language",
     "en": "English"
   },
   "messaging": {

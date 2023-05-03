@@ -11,30 +11,35 @@ import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
-import translationDeDev from '../../translations/de-DEV/translation.json';
+import translationDebug from '../../translations/debug/translation.json';
 import translationEn from '../../translations/en/translation.json';
+
+const debugResources = {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    debug: {
+        translation: translationDebug,
+    },
+} as const;
 
 // Consider keeping the locales in sync in the config/i18next-parser.config.js file.
 export const resources = {
-    'en': {
+    en: {
         translation: translationEn,
     },
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    'de-DEV': {
-        translation: translationDeDev,
-    },
+    ...debugResources,
 } as const;
 
 /**
  * Available locales.
  */
+const DEBUG_LOCALES = keys(debugResources);
 const LOCALES_WITH_TRANSLATIONS = keys(resources);
 
 // Note: 'cimode' is a special locale from i18next to always display the translation key instead
 // of the translation.
 export const LOCALES = import.meta.env.DEBUG
     ? ([...LOCALES_WITH_TRANSLATIONS, 'cimode'] as const)
-    : LOCALES_WITH_TRANSLATIONS.filter((locale) => locale !== 'de-DEV');
+    : LOCALES_WITH_TRANSLATIONS.filter((locale) => !(DEBUG_LOCALES as string[]).includes(locale));
 
 export type Locale = (typeof LOCALES)[u53];
 
@@ -130,6 +135,13 @@ export async function initialize(config: LocaleConfig): Promise<void> {
             fallbackLng: FALLBACK_LOCALE,
             debug: import.meta.env.DEBUG,
             returnNull: false,
+            i18nFormat: {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                parseLngForICU: (locale: string) =>
+                    (DEBUG_LOCALES as string[]).includes(locale)
+                        ? locale.replace('-DEBUG', '')
+                        : locale,
+            },
         });
 
     log.info('Initialization complete', {
