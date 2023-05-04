@@ -63,31 +63,39 @@
     "label--title": "Send File to {name}"
   },
   "dialog--delete-contact": {
+    "action--cancel": "Cancel",
     "action--confirm": "Delete Contact + Chat History",
     "label--title": "Delete \"{name}\"",
     "prose--prompt": "Do you really want to delete this contact and the associated chat history?"
   },
   "dialog--delete-message": {
+    "action--cancel": "Cancel",
     "action--confirm": "Delete Message",
     "label--title": "Delete message from this device?"
   },
   "dialog--discard-media-message": {
+    "action--cancel": "Cancel",
     "action--confirm": "Discard",
     "label--title": "Discard Message Draft",
     "prose--prompt": "Discard current media message draft?"
   },
   "dialog--edit-contact": {
+    "action--cancel": "Cancel",
+    "action--confirm": "OK",
     "label--first-name": "First Name",
     "label--last-name": "Last Name",
     "label--title": "Edit {name}"
   },
   "dialog--edit-group": {
+    "action--cancel": "Cancel",
+    "action--confirm": "OK",
     "error--group-name-empty": "Should not be empty",
     "error--group-name-too-long": "Name is too long",
     "label--group-name": "Group Name",
     "label--title": "Edit {name}"
   },
   "dialog--empty-conversation": {
+    "action--cancel": "Cancel",
     "action--contact-conversation-confirm": "Empty Chat",
     "action--distribution-list-conversation-confirm": "Empty Distribution List",
     "action--group-conversation-confirm": "Empty Group Chat",

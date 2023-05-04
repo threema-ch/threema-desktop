@@ -73,7 +73,13 @@
       <div class="body" slot="body">
         {description}
       </div>
-      <CancelAndConfirm slot="footer" let:modal {modal} {confirmText} />
+      <CancelAndConfirm
+        slot="footer"
+        cancelText={$i18n.t('dialog--empty-conversation.action--cancel', 'Cancel')}
+        {confirmText}
+        let:modal
+        {modal}
+      />
     </ModalDialog>
   </ModalWrapper>
 </template>

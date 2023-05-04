@@ -34,6 +34,7 @@
         slot="footer"
         let:modal
         {modal}
+        cancelText={$i18n.t('dialog--delete-contact.action--cancel', 'Cancel')}
         confirmText={$i18n.t(
           'dialog--delete-contact.action--confirm',
           'Delete Contact + Chat History',

@@ -32,7 +32,6 @@
         slot="footer"
         let:modal
         {modal}
-        showCancel={false}
         confirmText={$i18n.t('dialog--error-delete-contact.action--confirm', 'OK')}
       />
     </ModalDialog>

@@ -28,10 +28,11 @@
       </div>
       <CancelAndConfirm
         slot="footer"
-        let:modal
-        {modal}
+        cancelText={$i18n.t('dialog--discard-media-message.action--cancel', 'Cancel')}
         confirmText={$i18n.t('dialog--discard-media-message.action--confirm', 'Discard')}
         focusOnMount="confirm"
+        let:modal
+        {modal}
       />
     </ModalDialog>
   </ModalWrapper>

@@ -78,9 +78,8 @@
       </div>
       <div slot="footer" let:modal>
         <CancelAndConfirm
-          {modal}
-          showCancel={false}
           confirmText={$i18n.t('dialog--error-safe-restore.action--confirm', 'Relink device')}
+          {modal}
         />
       </div>
     </ModalDialog>

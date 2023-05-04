@@ -110,10 +110,9 @@
       </div>
       <CancelAndConfirm
         slot="footer"
+        confirmText={$i18n.t('dialog--app-update.action--confirm', 'OK')}
         let:modal
         {modal}
-        showCancel={false}
-        confirmText={$i18n.t('dialog--app-update.action--confirm', 'OK')}
       />
     </ModalDialog>
   </ModalWrapper>

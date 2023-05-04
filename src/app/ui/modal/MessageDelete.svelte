@@ -22,9 +22,10 @@
       />
       <CancelAndConfirm
         slot="footer"
+        cancelText={$i18n.t('dialog--delete-message.action--cancel', 'Cancel')}
+        confirmText={$i18n.t('dialog--delete-message.action--confirm', 'Delete Message')}
         let:modal
         {modal}
-        confirmText={$i18n.t('dialog--delete-message.action--confirm', 'Delete Message')}
       />
     </ModalDialog>
   </ModalWrapper>

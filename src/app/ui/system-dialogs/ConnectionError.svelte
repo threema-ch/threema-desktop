@@ -3,8 +3,8 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {type ConnectionErrorDialog} from '~/common/system-dialog';
   import {unreachable} from '~/common/utils/assert';
 
@@ -121,26 +121,25 @@
       <div slot="footer" let:modal>
         {#if context.type === 'client-was-dropped'}
           <CancelAndConfirm
-            {modal}
             cancelText={$i18n.t('dialog--error-connection.action--client-was-dropped-cancel', 'OK')}
             confirmText={$i18n.t(
               'dialog--error-connection.action--client-was-dropped-confirm',
               'Remove local profile and relink',
             )}
+            {modal}
           />
         {:else}
           <!-- Default buttons -->
           {#if context.userCanReconnect}
             <CancelAndConfirm
-              {modal}
               cancelText={$i18n.t('dialog--error-connection.action--default-cancel', 'OK')}
               confirmText={$i18n.t('dialog--error-connection.action--default-confirm', 'Reconnect')}
+              {modal}
             />
           {:else}
             <CancelAndConfirm
-              {modal}
-              showCancel={false}
               confirmText={$i18n.t('dialog--error-connection.action--default-cancel')}
+              {modal}
             />
           {/if}
         {/if}

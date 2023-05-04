@@ -68,21 +68,20 @@
       <div slot="footer" let:modal>
         {#if context.forceRelink}
           <CancelAndConfirm
-            {modal}
-            showCancel={false}
             confirmText={$i18n.t(
               'dialog--invalid-state.action--force-relink-confirm',
               'Remove local profile and relink',
             )}
+            {modal}
           />
         {:else}
           <CancelAndConfirm
-            {modal}
             cancelText={$i18n.t(
               'dialog--invalid-state.action--default-cancel',
               'Continue with invalid state (Debug)',
             )}
             confirmText={$i18n.t('dialog--invalid-state.action--default-confirm', 'Relink')}
+            {modal}
           />
         {/if}
       </div>

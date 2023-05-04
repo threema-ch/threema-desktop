@@ -114,7 +114,13 @@
             label={$i18n.t('dialog--edit-contact.label--last-name', 'Last Name')}
           />
         </form>
-        <CancelAndConfirm slot="footer" let:modal {modal} />
+        <CancelAndConfirm
+          slot="footer"
+          cancelText={$i18n.t('dialog--edit-contact.action--cancel', 'Cancel')}
+          confirmText={$i18n.t('dialog--edit-contact.action--confirm', 'OK')}
+          let:modal
+          {modal}
+        />
       </ModalDialog>
     </ModalWrapper>
   {/if}

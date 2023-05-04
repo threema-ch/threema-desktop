@@ -63,31 +63,39 @@
     "label--title": "[d] Datei an {name} senden"
   },
   "dialog--delete-contact": {
+    "action--cancel": "[d] Abbrechen",
     "action--confirm": "[d] Kontakt + Chatverlauf löschen",
     "label--title": "[d] \"{name}\" löschen",
     "prose--prompt": "[d] Möchten Sie diesen Kontakt und den zugehörigen Chatverlauf wirklich löschen?"
   },
   "dialog--delete-message": {
+    "action--cancel": "[d] Abbrechen",
     "action--confirm": "[d] Nachricht löschen",
     "label--title": "[d] Nachricht von diesem Gerät löschen?"
   },
   "dialog--discard-media-message": {
+    "action--cancel": "[d] Abbrechen",
     "action--confirm": "[d] Verwerfen",
     "label--title": "[d] Nachrichtenentwurf verwerfen",
     "prose--prompt": "[d] Aktuellen Mediennachrichtenentwurf verwerfen?"
   },
   "dialog--edit-contact": {
+    "action--cancel": "[d] Abbrechen",
+    "action--confirm": "[d] OK",
     "label--first-name": "[d] Vorname",
     "label--last-name": "[d] Nachname",
     "label--title": "[d] {name} bearbeiten"
   },
   "dialog--edit-group": {
+    "action--cancel": "[d] Abbrechen",
+    "action--confirm": "[d] OK",
     "error--group-name-empty": "[d] Darf nicht leer sein",
     "error--group-name-too-long": "[d] Name ist zu lang",
     "label--group-name": "[d] Gruppenname",
     "label--title": "[d] {name} bearbeiten"
   },
   "dialog--empty-conversation": {
+    "action--cancel": "[d] Abbrechen",
     "action--contact-conversation-confirm": "[d] Chat leeren",
     "action--distribution-list-conversation-confirm": "[d] Verteilerliste leeren",
     "action--group-conversation-confirm": "[d] Gruppenchat leeren",

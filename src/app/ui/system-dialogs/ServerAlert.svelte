@@ -27,9 +27,8 @@
       </div>
       <div slot="footer" let:modal>
         <CancelAndConfirm
-          {modal}
-          showCancel={false}
           confirmText={$i18n.t('dialog--server-alert.action--confirm', 'OK')}
+          {modal}
         />
       </div>
     </ModalDialog>
