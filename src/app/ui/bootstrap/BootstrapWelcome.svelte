@@ -58,7 +58,6 @@
         <div class="step">
           <div class="title">{$i18n.t('dialog--welcome.label--link-device-step-2', 'Step 2:')}</div>
           <div class="description">
-            <!-- TODO(DESK-1012): Are the following quotation mark characters intentional? -->
             <SubstitutableText
               text={$i18n.t(
                 'dialog--welcome.markup--link-device-step-2',

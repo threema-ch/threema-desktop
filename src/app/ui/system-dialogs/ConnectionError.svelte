@@ -42,7 +42,6 @@
         title={$i18n.t('dialog--error-connection.label--title', 'Connection Failed')}
       />
       <div class="body" slot="body">
-        <!-- TODO(DESK-1012): Verify if this works and looks good -->
         {#if context.type === 'mediator-update-required'}
           <p>
             {$i18n.t(

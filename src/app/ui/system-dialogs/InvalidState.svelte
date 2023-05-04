@@ -38,7 +38,6 @@
         title={$i18n.t('dialog--invalid-state.label--title', 'Invalid Client State Detected')}
       />
       <div class="body" slot="body">
-        <!-- TODO(DESK-1012): Verify if this works and looks good -->
         <p>
           {$i18n.t(
             'dialog--invalid-state.prose--description-p1',

@@ -20,7 +20,6 @@
         {$i18n.t('dialog--success-link-device.label--title', 'Device Linked Successfully')}
       </div>
       <div class="description">
-        <!-- TODO(DESK-1012): Verify if this works -->
         <SubstitutableText
           text={$i18n.t(
             'dialog--success-link-device.markup--description',

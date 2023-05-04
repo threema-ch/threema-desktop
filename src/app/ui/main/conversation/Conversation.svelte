@@ -367,7 +367,6 @@
         {receiverLookup}
         {services}
       >
-        <!-- TODO(DESK-1012): What is going on here (this doesn't end up in the DOM...)? -->
         <span class="top-title" slot="title">Conversation title</span>
       </ConversationTopBar>
     </div>

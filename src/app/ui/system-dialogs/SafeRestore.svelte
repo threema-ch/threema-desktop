@@ -39,7 +39,6 @@
         title={$i18n.t('dialog--error-safe-restore.label--title', 'Safe Restore Error')}
       />
       <div class="body" slot="body">
-        <!-- TODO(DESK-1012): Verify if this works and looks good -->
         <p>
           <SubstitutableText
             text={$i18n.t(
