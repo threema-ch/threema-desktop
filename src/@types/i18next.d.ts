@@ -12,7 +12,7 @@ declare module 'i18next' {
         // `returnNull` type to `false`.
         //
         //  Source: https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz
-        returnNull: false;
-        resources: (typeof resources)['en'];
+        readonly returnNull: false;
+        readonly resources: (typeof resources)['en'];
     }
 }

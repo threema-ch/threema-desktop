@@ -76,8 +76,8 @@ function getClosestAvailableLocale(locale: string): Locale {
 }
 
 interface LocaleConfig {
-    localeStore: IQueryableStore<Locale>;
-    logging: LoggerFactory;
+    readonly localeStore: IQueryableStore<Locale>;
+    readonly logging: LoggerFactory;
 }
 
 function i18nLogAdapter(logRecordFn: LogRecordFn): (args: unknown[]) => void {
