@@ -137,10 +137,8 @@ export async function initialize(config: LocaleConfig): Promise<void> {
             returnNull: false,
             i18nFormat: {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                parseLngForICU: (locale: string) =>
-                    (DEBUG_LOCALES as string[]).includes(locale)
-                        ? locale.replace('-DEBUG', '')
-                        : locale,
+                parseLngForICU: (locale: (typeof LOCALES_WITH_TRANSLATIONS)[u53]) =>
+                    (DEBUG_LOCALES as string[]).includes(locale) ? 'de' : locale,
             },
         });
 
