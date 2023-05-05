@@ -52,15 +52,11 @@
             <SubstitutableText
               text={$i18n.t(
                 'dialog--app-update.markup--linux-p2',
-                'For more information about this update, see <1>three.ma/md</1>.',
+                'For more information about this update, see <1 />.',
               )}
             >
-              <a
-                slot="1"
-                href="https://three.ma/md"
-                target="_blank"
-                rel="noreferrer noopener"
-                let:text>{text}</a
+              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
+                >three.ma/md</a
               >
             </SubstitutableText>
           </p>
@@ -69,15 +65,11 @@
             <SubstitutableText
               text={$i18n.t(
                 'dialog--app-update.markup--macos-p1',
-                'Please update by downloading and installing the latest release from <1>three.ma/md</1>.',
+                'Please update by downloading and installing the latest release from <1 />.',
               )}
             >
-              <a
-                slot="1"
-                href="https://three.ma/md"
-                target="_blank"
-                rel="noreferrer noopener"
-                let:text>{text}</a
+              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
+                >three.ma/md</a
               >
             </SubstitutableText>
           </p>
@@ -86,15 +78,11 @@
             <SubstitutableText
               text={$i18n.t(
                 'dialog--app-update.markup--windows-p1',
-                'Please update by downloading and installing the latest release from <1>three.ma/md</1>.',
+                'Please update by downloading and installing the latest release from <1 />.',
               )}
             >
-              <a
-                slot="1"
-                href="https://three.ma/md"
-                target="_blank"
-                rel="noreferrer noopener"
-                let:text>{text}</a
+              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
+                >three.ma/md</a
               >
             </SubstitutableText>
           </p>

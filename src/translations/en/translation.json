@@ -50,10 +50,10 @@
     "action--confirm": "OK",
     "label--title": "Update available: {current} → {latest}",
     "markup--linux-p1": "Please install the update through your system package manager, or by running <1>flatpak update</1> in your terminal.",
-    "markup--linux-p2": "For more information about this update, see <1>three.ma/md</1>.",
-    "markup--macos-p1": "Please update by downloading and installing the latest release from <1>three.ma/md</1>.",
+    "markup--linux-p2": "For more information about this update, see <1 />.",
+    "markup--macos-p1": "Please update by downloading and installing the latest release from <1 />.",
     "markup--other-os-p1": "Please update {name}.",
-    "markup--windows-p1": "Please update by downloading and installing the latest release from <1>three.ma/md</1>.",
+    "markup--windows-p1": "Please update by downloading and installing the latest release from <1 />.",
     "prose--intro": "An update for Threema is available!"
   },
   "dialog--compose-media-message": {

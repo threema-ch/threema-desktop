@@ -50,10 +50,10 @@
     "action--confirm": "[d] OK",
     "label--title": "[d] Update verfügbar: {current} → {latest}",
     "markup--linux-p1": "[d] Bitte installieren Sie das Update über Ihren Systempaketmanager oder führen Sie <1>flatpak update</1> in Ihrem Terminal aus.",
-    "markup--linux-p2": "[d] Weitere Informationen zu diesem Update finden Sie unter <1>three.ma/md</1>.",
-    "markup--macos-p1": "[d] Bitte aktualisieren Sie, indem Sie die neueste Version von <1>three.ma/md</1> herunterladen und installieren.",
+    "markup--linux-p2": "[d] Weitere Informationen zu diesem Update finden Sie unter <1 />.",
+    "markup--macos-p1": "[d] Bitte aktualisieren Sie, indem Sie die neueste Version von <1 /> herunterladen und installieren.",
     "markup--other-os-p1": "[d] Bitte aktualisieren Sie {name}.",
-    "markup--windows-p1": "[d] Bitte aktualisieren Sie, indem Sie die neueste Version von <1>three.ma/md</1> herunterladen und installieren.",
+    "markup--windows-p1": "[d] Bitte aktualisieren Sie, indem Sie die neueste Version von <1 /> herunterladen und installieren.",
     "prose--intro": "[d] Ein Update für Threema ist verfügbar!"
   },
   "dialog--compose-media-message": {
