@@ -105,3 +105,12 @@ export type RawBlobKey = WeakOpaque<ReadonlyRawKey<32>, {readonly RawBlobKey: un
 export function wrapRawBlobKey(key: Uint8Array): RawBlobKey {
     return wrapRawKey(key, NACL_CONSTANTS.KEY_LENGTH).asReadonly() as RawBlobKey;
 }
+
+/**
+ * Rendezvous Authentication Key (32 bytes). Used for authentication and initial encryption in the
+ * Rendezvous protocol.
+ */
+export type RendezvousAuthenticationKey = WeakOpaque<
+    ReadonlyRawKey<32>,
+    {readonly RendezvousAuthenticationKey: unique symbol}
+>;

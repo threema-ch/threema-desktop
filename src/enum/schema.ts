@@ -51,6 +51,7 @@ export const enum TransferTag {
     SAFE_ERROR = 19,
     BACKEND_CREATION_ERROR = 20,
     TASK_ERROR = 21,
+    RENDEZVOUS_PROTOCOL_ERROR = 22,
 }
 
 /**

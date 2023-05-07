@@ -44,7 +44,7 @@ export default async function run(): Promise<void> {
     }
 
     // Start backend worker for Electron
-    main(CONFIG, {
+    await main(CONFIG, {
         logging: (rootTag, defaultStyle) => {
             const tagLogging = TagLogger.styled(CONSOLE_LOGGER, rootTag, defaultStyle);
             if (fileLogger === undefined) {

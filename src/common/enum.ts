@@ -53,6 +53,8 @@ export namespace TransferTag {
     export type BACKEND_CREATION_ERROR = typeof BACKEND_CREATION_ERROR;
     export const TASK_ERROR = 21;
     export type TASK_ERROR = typeof TASK_ERROR;
+    export const RENDEZVOUS_PROTOCOL_ERROR = 22;
+    export type RENDEZVOUS_PROTOCOL_ERROR = typeof RENDEZVOUS_PROTOCOL_ERROR;
 }
 /**
  * ENDPOINT
