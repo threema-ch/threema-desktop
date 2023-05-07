@@ -1,7 +1,6 @@
 import {type u53} from '~/common/types';
-
-import {assert} from './assert';
-import {ResolvablePromise} from './resolvable-promise';
+import {assert} from '~/common/utils/assert';
+import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
 export interface QueueValue<V> {
     value: V;
@@ -31,6 +30,10 @@ export class Queue<V, E extends Error = Error> {
     public constructor() {
         this._error = new ResolvablePromise();
         this._promise = new ResolvablePromise();
+    }
+
+    public get aborted(): Promise<never> {
+        return this._error;
     }
 
     public get empty(): boolean {
@@ -107,6 +110,10 @@ export class UnboundedQueue<V, E extends Error = Error> {
         if (this._values.length > 0) {
             this._waiters.get.resolve();
         }
+    }
+
+    public get aborted(): Promise<never> {
+        return this._waiters.error;
     }
 
     public get empty(): boolean {
