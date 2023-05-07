@@ -36,7 +36,7 @@ declare global {
         readonly url: string;
         readonly connection: Promise<WebSocketConnection>;
         readonly closed: Promise<WebSocketCloseInfo>;
-        close: (closeInfo?: WebSocketCloseInfo) => void;
+        close: (info?: WebSocketCloseInfo) => void;
     }
 
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -97,8 +97,8 @@ class WebSocketEventWrapperSource implements UnderlyingSource<ArrayBuffer | stri
         });
     }
 
-    public async cancel(closeInfo: WebSocketCloseInfo = {}): Promise<void> {
-        this._ws.close(closeInfo.code, closeInfo.reason);
+    public async cancel(reason?: {readonly ws?: WebSocketCloseInfo}): Promise<void> {
+        this._ws.close(reason?.ws?.code, reason?.ws?.reason);
         await this._closed;
     }
 }
@@ -153,8 +153,8 @@ class WebSocketEventWrapperSink implements UnderlyingSink<BufferSource | string>
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async abort(closeInfo: WebSocketCloseInfo = {}): Promise<void> {
-        this._ws.close(closeInfo.code, closeInfo.reason);
+    public async abort(reason?: {readonly ws?: WebSocketCloseInfo}): Promise<void> {
+        this._ws.close(reason?.ws?.code, reason?.ws?.reason);
     }
 }
 
@@ -231,8 +231,8 @@ export class WebSocketEventWrapperStream implements WebSocketStream {
         };
     }
 
-    public close(closeInfo?: WebSocketCloseInfo): void {
-        this._ws.close(closeInfo?.code, closeInfo?.reason);
+    public close(info?: WebSocketCloseInfo): void {
+        this._ws.close(info?.code, info?.reason);
     }
 }
 

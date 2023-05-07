@@ -1188,9 +1188,7 @@ class Connection {
      * Note: This immediately resolves the 'closed' promise with the requested close info, even if
      * the closing flow is still ongoing.
      */
-    public disconnect(
-        closeInfo: CloseInfo = {code: CloseCode.NORMAL, clientInitiated: true},
-    ): void {
-        this._mediator.close(closeInfo);
+    public disconnect(info: CloseInfo = {code: CloseCode.NORMAL, clientInitiated: true}): void {
+        this._mediator.close(info);
     }
 }
