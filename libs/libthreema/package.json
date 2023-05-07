@@ -1,0 +1,14 @@
+{
+  "name": "libthreema-wasm",
+  "version": "0.1.0",
+  "files": [
+    "libthreema_wasm_bg.wasm",
+    "libthreema_wasm.js",
+    "libthreema_wasm.d.ts"
+  ],
+  "module": "libthreema_wasm.js",
+  "types": "libthreema_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
