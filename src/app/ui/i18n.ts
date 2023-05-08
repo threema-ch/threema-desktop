@@ -11,11 +11,56 @@ import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
-import translationDebug from '../../translations/debug/translation.json';
-import translationEn from '../../translations/en/translation.json';
+import translationDebugJson from '../../translations/debug/translation.json';
+import translationEnJson from '../../translations/en/translation.json';
+
+/**
+ * Define English as the base translation. All other translations will have to provide all keys
+ * defined by this the English translation.
+ */
+type BaseTranslation = typeof translationEnJson;
+
+/**
+ * This type ensures that all translations provide all the keys defined in the base translation, and
+ * that all keys follow the format described in the documentation.
+ */
+type TranslationNamespace = {
+    readonly [TKey in keyof BaseTranslation]: TKey extends Lowercase<string>
+        ? TKey extends 'locale'
+            ? Record<Locale, string>
+            : TKey extends `${string}--${string}`
+            ? TKey extends `${OptionalTranslationTopicModifier}--${Lowercase<string>}`
+                ? TranslationTopic<BaseTranslation[TKey]>
+                : never
+            : TranslationTopic<BaseTranslation[TKey]>
+        : never;
+};
+
+type TranslationTopic<TRecord extends Record<string, string>> = {
+    readonly [TKey in keyof TRecord]: TKey extends `${TranslationKeyModifier}--${Lowercase<string>}`
+        ? string
+        : never;
+};
+
+type OptionalTranslationTopicModifier = 'dialog';
+
+type TranslationKeyModifier =
+    | 'error'
+    | 'success'
+    | 'action'
+    | 'label'
+    | 'hint'
+    | 'markup'
+    | 'prose';
+
+// Casting the `translation*Json` values imported from the JSON files to `TranslationNamespace`
+// ensures that all translations provide all the keys defined in the base translation, e.g. English,
+// and that all keys follow the format described in the documentation. Otherwise a type error is
+// raised here at compile time.
+const translationDebug: TranslationNamespace = translationDebugJson;
+const translationEn: TranslationNamespace = translationEnJson;
 
 const debugResources = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     debug: {
         translation: translationDebug,
     },
