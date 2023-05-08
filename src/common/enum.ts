@@ -2009,8 +2009,6 @@ export namespace ElectronIpcCommand {
     export type GET_APP_PATH = typeof GET_APP_PATH;
     export const GET_SYSTEM_INFO = 'getSystemInfo';
     export type GET_SYSTEM_INFO = typeof GET_SYSTEM_INFO;
-    export const GET_TRANSLATION_RESOURCES = 'getTranslationResources';
-    export type GET_TRANSLATION_RESOURCES = typeof GET_TRANSLATION_RESOURCES;
     export const LOG_TO_FILE = 'logToFile';
     export type LOG_TO_FILE = typeof LOG_TO_FILE;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';

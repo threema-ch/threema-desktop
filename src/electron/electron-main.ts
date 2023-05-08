@@ -454,7 +454,6 @@ function main(
         return url?.replace(/#.*/u, '') === appUrl;
     }
 
-    electron.app.getLocale();
     /**
      * Whether a relaunch was already requested.
      *

@@ -654,7 +654,6 @@ export enum ElectronIpcCommand {
     ERROR = 'error',
     GET_APP_PATH = 'getAppApath',
     GET_SYSTEM_INFO = 'getSystemInfo',
-    GET_TRANSLATION_RESOURCES = 'getTranslationResources',
     LOG_TO_FILE = 'logToFile',
     DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart',
     UPDATE_APP_BADGE = 'updateAppBadge',
