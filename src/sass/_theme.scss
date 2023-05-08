@@ -141,7 +141,7 @@ $themes: (
 
     // Profile picture overlay
     --cc-profile-picture-overlay-unread-background-color:
-    color-conforms(-g($cc, profile-picture-overlay-unread-background), $alpha: false),
+    color-conforms(-g($b, primary-background), $alpha: false),
     --cc-profile-picture-overlay-unread-text-color:
     color-conforms(-g($cc, profile-picture-overlay-unread-text), $alpha: false),
     --cc-profile-picture-overlay-badge-icon-color:

@@ -82,10 +82,9 @@ $dark: (
     // Profile picture upload
     profile-picture-upload-background-color: rgba(#ffffff, 4%),
     // Profile picture overlay
-    profile-picture-overlay-unread-background: theme.$consumer-green-600,
     profile-picture-overlay-unread-text: theme.$primary-text-e1,
     profile-picture-overlay-badge-icon: theme.$dark-text-e2,
-    profile-picture-overlay-badge-icon-consumer: purple,
+    profile-picture-overlay-badge-icon-consumer: theme.$consumer-green-600,
     profile-picture-overlay-badge-icon-work: theme.$work-blue-800,
     // Conversation
     conversation-message-options-caret-color: rgba(#ffffff, 88%),
