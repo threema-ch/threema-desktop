@@ -48,7 +48,7 @@
       {/if}
       {#if message.direction === MessageDirection.INBOUND && !isGroupConversation}
         <MenuItem on:click={() => dispatchEvent('thumbup')}>
-          <span class="icon" slot="icon">
+          <span class="icon thumb-up" slot="icon">
             <MdIcon
               theme={message.lastReaction?.type === MessageReaction.ACKNOWLEDGE
                 ? 'Filled'
@@ -113,8 +113,12 @@
     --c-menu-container-width: #{rem(180px)};
     @extend %elevation-060;
 
+    .thumb-up {
+      color: var(--mc-message-status-acknowledged-color);
+    }
+
     .thumb-down {
-      color: $warning-orange;
+      color: var(--mc-message-status-declined-color);
     }
   }
 </style>
