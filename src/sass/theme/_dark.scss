@@ -5,135 +5,140 @@
 @use 'threema-svelte-components/src/sass/theme';
 @use 'threema-svelte-components/src/sass/conversion' as *;
 
-$dark: (
-  app: (
-    // Scrollbar
-    scrollbar-thumb: rgba(#000000, 26%),
-    scrollbar-thumb--hover: rgba(#000000, 54%),
-    // Global
-    background-lightness--hover: -12%,
-    background-lightness--active: -38%,
-    text-e1: theme.$dark-text-e1,
-    text-e2: theme.$dark-text-e2,
-    text-e3: theme.$dark-text-e3,
-    text-anchor: theme.$work-blue-600,
-    // Colors
-    // color-primary: theme.$consumer-green-600,
-    // Main panels
-    panel-gap: color.scale(theme.$dark-background, $lightness: +10.5%),
-    nav-background: color.scale(theme.$dark-background, $lightness: -12%),
-    main-background: theme.$dark-background,
-    aside-background: theme.$dark-background,
-    pairing-background: #000000,
-    main-welcome-icon-fill-opacity: 12%,
-  ),
-  individual-components: (
-    // List Element
-    list-element-background-color--hover: rgba(#000000, 12%),
-    list-element-color: rgba(#ffffff, 54%),
-    // Divider
-    divider-background-color: rgba(#000000, 38%),
-    // ContactNavigationContext Button
-    contact-navigation-context-button-border-color--hover: rgba(#000000, 12%),
-    contact-navigation-context-button-background-color--hover: rgba(#000000, 12%),
-    contact-navigation-context-button-border-color--focus: #ffffff,
-    contact-navigation-context-button-background-color--focus: rgba(#000000, 12%),
-    contact-navigation-context-button-color--active: theme.$primary-text-e1,
-    contact-navigation-context-button-opacity--disabled: 38%,
-  ),
-  message-components: (
-    // Message footer
-    message-footer-time: theme.$dark-text-e2,
+@function -g($map, $key, $keys...) {
+  @return map-get-req($map, $key, $keys...);
+}
 
-    // Message status
-    message-status-acknowledged: theme.$consumer-green-600,
-    message-status-declined: theme.$warning-orange,
-    message-status-error: theme.$alert-red,
+@function generate-dark-theme($branding) {
+  @return (
+    app: (
+      // Scrollbar
+      scrollbar-thumb: rgba(#000000, 26%),
+      scrollbar-thumb--hover: rgba(#000000, 54%),
+      // Global
+      background-lightness--hover: -12%,
+      background-lightness--active: -38%,
+      text-e1: theme.$dark-text-e1,
+      text-e2: theme.$dark-text-e2,
+      text-e3: theme.$dark-text-e3,
+      text-anchor: theme.$work-blue-600,
+      primary-text-anchor: -g($branding, primary-color-600),
+      // Main panels
+      panel-gap: color.scale(theme.$dark-background, $lightness: +10.5%),
+      nav-background: color.scale(theme.$dark-background, $lightness: -12%),
+      main-background: theme.$dark-background,
+      aside-background: theme.$dark-background,
+      pairing-background: #000000,
+      main-welcome-icon-fill-opacity: 12%,
+    ),
+    individual-components: (
+      // List Element
+      list-element-background-color--hover: rgba(#000000, 12%),
+      list-element-color: rgba(#ffffff, 54%),
+      // Divider
+      divider-background-color: rgba(#000000, 38%),
+      // ContactNavigationContext Button
+      contact-navigation-context-button-border-color--hover: rgba(#000000, 12%),
+      contact-navigation-context-button-background-color--hover: rgba(#000000, 12%),
+      contact-navigation-context-button-border-color--focus: #ffffff,
+      contact-navigation-context-button-background-color--focus: rgba(#000000, 12%),
+      contact-navigation-context-button-color--active: theme.$primary-text-e1,
+      contact-navigation-context-button-opacity--disabled: 38%,
+    ),
+    message-components: (
+      // Message footer
+      message-footer-time: theme.$dark-text-e2,
 
-    // General message container
-    message-hover-background-color: rgba(#000000, 12%),
-    message-background-color-incoming: rgba(theme.$light-background, 0.12),
-    message-background-color-outgoing: rgba(theme.$light-background, 0.06),
-    message-overlay-background-color: rgba(#000000, 62%),
-    message-overlay-button-color: theme.$light-text-e2,
-    message-overlay-button-background-color: #ffffff,
-    message-overlay-button-background-color--hover: #eeeeee,
-    message-overlay-button-background-color--focus: #eeeeee,
-    message-overlay-button-background-color--active: #dddddd,
-    message-mention-background-color: rgba(#000000, 26%),
-    message-mention-color: rgba(#ffffff, 88%),
-    message-mention-me-background-color: theme.$consumer-green-600,
-    message-mention-me-color: #ffffff,
+      // Message status
+      message-status-acknowledged: theme.$consumer-green-600,
+      message-status-declined: theme.$warning-orange,
+      message-status-error: theme.$alert-red,
 
-    // File Message
-    message-file-icon-background-image: url('/res/theme/dark/icon/file.svg'),
-    message-file-icon-width: em(32px),
-    message-file-icon-height: em(40px),
-    message-file-info-column-gap: em(8px),
-    message-file-info-row-gap: em(2px),
-    message-file-icon-font-size: em(8px),
-    message-file-icon-font-color: theme.$dark-text-e1,
-    message-file-size-color: theme.$dark-text-e2,
-  ),
-  compound-components: (
-    // Profile picture upload
-    profile-picture-upload-background-color: rgba(#ffffff, 4%),
-    // Profile picture overlay
-    profile-picture-overlay-unread-text: theme.$primary-text-e1,
-    profile-picture-overlay-badge-icon: theme.$dark-text-e2,
-    profile-picture-overlay-badge-icon-consumer: theme.$consumer-green-600,
-    profile-picture-overlay-badge-icon-work: theme.$work-blue-800,
-    // Conversation
-    conversation-message-options-caret-color: rgba(#ffffff, 88%),
-    // Conversation preview
-    conversation-preview-archived-background: rgba(#ffffff, 88%),
-    conversation-preview-archived-text: theme.$light-text-e1,
-    conversation-preview-inactive-background: rgba(#ffffff, 88%),
-    conversation-preview-inactive-text: theme.$light-text-e1,
-    conversation-preview-draft-text: theme.$alert-red,
-    conversation-preview-properties-background:
-      color.scale(theme.$dark-background, $lightness: -28%),
-    conversation-preview-properties-icon: theme.$dark-text-e2,
-    conversation-preview-properties-icon-pin: theme.$pin-yellow,
-    conversation-preview-message-text: theme.$dark-text-e2,
-    conversation-preview-status-text: theme.$dark-text-e2,
-    conversation-preview-swipe-area-gap-lightness: -12%,
-    // Contact preview
-    contact-preview-inactive-background: rgba(#000000, 88%),
-    contact-preview-inactive-text: theme.$dark-text-e1,
-    contact-preview-creator-background: theme.$dark-text-e1,
-    contact-preview-creator-text: rgba(#000000, 88%),
-    // Search input
-    search-input-background: rgba(#ffffff, 4%),
-    search-input-background--hover: rgba(#000000, 12%),
-    search-input-background--focus: rgba(#000000, 38%),
-    // Icon text
-    menu-item-icon-text-background-color--hover: rgba(#000000, 12%),
-    menu-item-icon-text-background-color--active: rgba(#000000, 38%),
-    // Compose area
-    compose-area-placeholder-text: theme.$dark-text-e2,
-    compose-area-padding: rem(10px) rem(8px) 0 rem(8px),
-    compose-area-margin: 0 0 rem(8px) 0,
-    compose-area-quote-background: rgba(#000000, 12%),
-    // Compose bar
-    compose-bar-bytes-count-exceeded-color: theme.$alert-red,
-    // Emoji picker
-    emoji-picker-background-color: #2e2e2e,
-    // Modal dialog
-    modal-dialog-background-color: rgba(#000000, 74%),
-    // MediaMessage Modal
-    media-message-background-color: theme.$grey-900,
-    media-message-active-file-chip-background-color: rgba(#ffffff, 54%),
-    media-message-active-file-chip-text-color: theme.$light-text-e2,
-    media-message-file-type-text-color: theme.$dark-text-e1,
-    media-message-file-type-background-image: url('/res/theme/dark/icon/file.svg'),
-    media-message-active-file-options-background-color: rgba(#000000, 54%),
-    media-message-active-file-options-text-color: #ffffff,
-    media-message-miniatures-background-color: rgba(#ffffff, 12%),
-    media-message-miniatures-text-color: theme.$dark-text-e1,
-  ),
-  debug-components: (
-    // Top bar
-    top-bar-background-color: color.scale(theme.$dark-background, $lightness: -24%),
-  ),
-);
+      // General message container
+      message-hover-background-color: rgba(#000000, 12%),
+      message-background-color-incoming: rgba(theme.$light-background, 0.12),
+      message-background-color-outgoing: rgba(theme.$light-background, 0.06),
+      message-overlay-background-color: rgba(#000000, 62%),
+      message-overlay-button-color: theme.$light-text-e2,
+      message-overlay-button-background-color: #ffffff,
+      message-overlay-button-background-color--hover: #eeeeee,
+      message-overlay-button-background-color--focus: #eeeeee,
+      message-overlay-button-background-color--active: #dddddd,
+      message-mention-background-color: rgba(#000000, 26%),
+      message-mention-color: rgba(#ffffff, 88%),
+      message-mention-me-background-color: -g($branding, primary-color-600),
+      message-mention-me-color: #ffffff,
+
+      // File Message
+      message-file-icon-background-image: url('/res/theme/dark/icon/file.svg'),
+      message-file-icon-width: em(32px),
+      message-file-icon-height: em(40px),
+      message-file-info-column-gap: em(8px),
+      message-file-info-row-gap: em(2px),
+      message-file-icon-font-size: em(8px),
+      message-file-icon-font-color: theme.$dark-text-e1,
+      message-file-size-color: theme.$dark-text-e2,
+    ),
+    compound-components: (
+      // Profile picture upload
+      profile-picture-upload-background-color: rgba(#ffffff, 4%),
+      // Profile picture overlay
+      profile-picture-overlay-unread-text: theme.$primary-text-e1,
+      profile-picture-overlay-badge-icon: theme.$dark-text-e2,
+      profile-picture-overlay-badge-icon-consumer: theme.$consumer-green-600,
+      profile-picture-overlay-badge-icon-work: theme.$work-blue-800,
+      // Conversation
+      conversation-message-options-caret-color: rgba(#ffffff, 88%),
+      // Conversation preview
+      conversation-preview-archived-background: rgba(#ffffff, 88%),
+      conversation-preview-archived-text: theme.$light-text-e1,
+      conversation-preview-inactive-background: rgba(#ffffff, 88%),
+      conversation-preview-inactive-text: theme.$light-text-e1,
+      conversation-preview-draft-text: theme.$alert-red,
+      conversation-preview-properties-background:
+        color.scale(theme.$dark-background, $lightness: -28%),
+      conversation-preview-properties-icon: theme.$dark-text-e2,
+      conversation-preview-properties-icon-pin: theme.$pin-yellow,
+      conversation-preview-message-text: theme.$dark-text-e2,
+      conversation-preview-status-text: theme.$dark-text-e2,
+      conversation-preview-swipe-area-gap-lightness: -12%,
+      // Contact preview
+      contact-preview-inactive-background: rgba(#000000, 88%),
+      contact-preview-inactive-text: theme.$dark-text-e1,
+      contact-preview-creator-background: theme.$dark-text-e1,
+      contact-preview-creator-text: rgba(#000000, 88%),
+      // Search input
+      search-input-background: rgba(#ffffff, 4%),
+      search-input-background--hover: rgba(#000000, 12%),
+      search-input-background--focus: rgba(#000000, 38%),
+      // Icon text
+      menu-item-icon-text-background-color--hover: rgba(#000000, 12%),
+      menu-item-icon-text-background-color--active: rgba(#000000, 38%),
+      // Compose area
+      compose-area-placeholder-text: theme.$dark-text-e2,
+      compose-area-padding: rem(10px) rem(8px) 0 rem(8px),
+      compose-area-margin: 0 0 rem(8px) 0,
+      compose-area-quote-background: rgba(#000000, 12%),
+      // Compose bar
+      compose-bar-bytes-count-exceeded-color: theme.$alert-red,
+      // Emoji picker
+      emoji-picker-background-color: #2e2e2e,
+      // Modal dialog
+      modal-dialog-background-color: rgba(#000000, 74%),
+      // MediaMessage Modal
+      media-message-background-color: theme.$grey-900,
+      media-message-active-file-chip-background-color: rgba(#ffffff, 54%),
+      media-message-active-file-chip-text-color: theme.$light-text-e2,
+      media-message-file-type-text-color: theme.$dark-text-e1,
+      media-message-file-type-background-image: url('/res/theme/dark/icon/file.svg'),
+      media-message-active-file-options-background-color: rgba(#000000, 54%),
+      media-message-active-file-options-text-color: #ffffff,
+      media-message-miniatures-background-color: rgba(#ffffff, 12%),
+      media-message-miniatures-text-color: theme.$dark-text-e1,
+    ),
+    debug-components: (
+      // Top bar
+      top-bar-background-color: color.scale(theme.$dark-background, $lightness: -24%),
+    )
+  );
+}

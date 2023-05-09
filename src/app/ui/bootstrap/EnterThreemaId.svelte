@@ -281,7 +281,7 @@
     .advanced {
       margin-left: rem(8px);
       span {
-        color: $consumer-green-600;
+        color: var(--t-primary-text-anchor-color);
         cursor: pointer;
       }
     }

@@ -1,0 +1,19 @@
+@use 'sass:color';
+@use 'sass:map';
+@use 'threema-svelte-components/src/sass/css-var' as *;
+@use 'threema-svelte-components/src/sass/utils' as *;
+@use 'threema-svelte-components/src/sass/theme';
+@use 'threema-svelte-components/src/sass/conversion' as *;
+
+$work: (
+  primary-color-50: theme.$work-blue-50,
+  primary-color-100: theme.$work-blue-100,
+  primary-color-200: theme.$work-blue-200,
+  primary-color-300: theme.$work-blue-300,
+  primary-color-400: theme.$work-blue-400,
+  primary-color-500: theme.$work-blue-500,
+  primary-color-600: theme.$work-blue-600,
+  primary-color-700: theme.$work-blue-700,
+  primary-color-800: theme.$work-blue-800,
+  primary-color-900: theme.$work-blue-900,
+);

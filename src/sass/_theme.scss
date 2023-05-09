@@ -4,13 +4,14 @@
 @use 'threema-svelte-components/src/sass/utils' as *;
 @use 'threema-svelte-components/src/sass/conversion' as *;
 @use 'threema-svelte-components/src/sass/theme';
+@use './branding/consumer' as *;
+@use './branding/work' as *;
 @use './theme/light' as *;
 @use './theme/dark' as *;
 
-// prettier-ignore
-$themes: (
-  light: $light,
-  dark: $dark,
+$brandings: (
+  consumer: $consumer,
+  work: $work,
 );
 
 @function -g($map, $key, $keys...) {
@@ -32,6 +33,7 @@ $themes: (
     --t-text-e2-color: -g($t, text-e2),
     --t-text-e3-color: -g($t, text-e3),
     --t-text-anchor-color: -g($t, text-anchor),
+    --t-primary-text-anchor-color: -g($t, primary-text-anchor),
 
     // Colors
     --t-color-primary: -g($b, primary-background),
@@ -256,32 +258,48 @@ $themes: (
   );
 }
 
-@mixin theme($theme-name, $theme) {
-  @each $branding-name, $branding in theme.$brandings {
-    &[data-branding='#{$branding-name}'] {
-      $theme: config-merge(-g(theme.$themes, $theme-name), $theme);
+@function -generate-theme($branding, $theme-name) {
+  @if $theme-name == 'light' {
+    @return generate-light-theme($branding);
+  } @else if $theme-name == 'dark' {
+    @return generate-dark-theme($branding);
+  }
+}
 
-      @include def-var(-app-theme($theme, $branding)...);
-      @include def-var(theme.components-theme($theme, $branding)...);
-      @include def-var(-individual-components-theme($theme, $branding)...);
-      @include def-var(-message-components-theme($theme, $branding)...);
-      @include def-var(-compound-components-theme($theme, $branding)...);
-      @include def-var(-debug-components-theme($theme, $branding)...);
-    }
+@mixin branded-theme($branding-name, $theme-name) {
+  $branding: config-merge(-g(theme.$brandings, $branding-name), -g($brandings, $branding-name));
+
+  &[data-branding='#{$branding-name}'] {
+    $theme: config-merge(-g(theme.$themes, $theme-name), -generate-theme($branding, $theme-name));
+
+    @include def-var(-app-theme($theme, $branding)...);
+    @include def-var(theme.components-theme($theme, $branding)...);
+    @include def-var(-individual-components-theme($theme, $branding)...);
+    @include def-var(-message-components-theme($theme, $branding)...);
+    @include def-var(-compound-components-theme($theme, $branding)...);
+    @include def-var(-debug-components-theme($theme, $branding)...);
   }
 }
 
 @mixin themes() {
-  @each $theme-name, $theme in $themes {
+  $theme-names: ('light', 'dark');
+
+  @each $theme-name in $theme-names {
     [data-theme='#{$theme-name}'] {
-      @include theme($theme-name, $theme);
+      @each $branding-name, $branding in $brandings {
+        @include branded-theme($branding-name, $theme-name);
+      }
     }
   }
 
   [data-theme='system'] {
-    @include theme('light', $light);
+    @each $branding-name, $branding in $brandings {
+      @include branded-theme($branding-name, 'light');
+    }
     @media (prefers-color-scheme: dark) {
-      @include theme('dark', $dark);
+      @each $branding-name, $branding in $brandings {
+        @include branded-theme($branding-name, 'dark');
+      }
     }
   }
 }
