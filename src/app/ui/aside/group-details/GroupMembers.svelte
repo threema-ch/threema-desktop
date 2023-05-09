@@ -166,7 +166,15 @@
 <style lang="scss">
   @use 'component' as *;
 
+  $-temp-vars: (--cc-t-background-color);
+
   .group-members {
+    @include def-var($-temp-vars, --cc-t-background-color, var(--t-main-background-color));
+    @include def-var(
+      $--ic-swipe-area-right-size: 75%,
+      $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
+    );
+
     display: grid;
     grid-template:
       'label' auto

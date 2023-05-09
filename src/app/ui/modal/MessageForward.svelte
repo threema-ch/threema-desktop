@@ -210,6 +210,10 @@
       align-content: start;
 
       .recipient {
+        @include def-var($-temp-vars, --cc-t-background-color, var(--t-main-background-color));
+        @include def-var(
+          $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
+        );
         background-color: var($-temp-vars, --cc-t-background-color);
 
         .verification-dots {
