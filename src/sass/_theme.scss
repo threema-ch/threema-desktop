@@ -19,6 +19,7 @@ $themes: (
 
 @function -app-theme($theme, $branding) {
   $t: -g($theme, app);
+  $b: $branding;
 
   // prettier-ignore
   @return (
@@ -33,7 +34,7 @@ $themes: (
     --t-text-anchor-color: -g($t, text-anchor),
 
     // Colors
-    --t-color-primary: -g($t, color-primary),
+    --t-color-primary: -g($b, primary-background),
 
     // Main panels
     --t-panel-gap-color: color-conforms(-g($t, panel-gap), $alpha: false),
