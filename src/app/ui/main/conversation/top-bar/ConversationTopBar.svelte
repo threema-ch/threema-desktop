@@ -145,10 +145,10 @@
             shape="circle"
           />
         </div>
-        <div class="title" class:group-inactive={isInactiveGroup} on:click={openAside}>
-          {receiver.name}
+        <div class="title" class:group-inactive={isInactiveGroup}>
+          <span on:click={openAside}>{receiver.name}</span>
         </div>
-        <div class="details" on:click={openAside}>
+        <div class="details">
           {#if receiver.type === 'contact'}
             <VerificationDots
               colors={receiver.verificationLevelColors}
@@ -228,17 +228,17 @@
     .detail {
       display: grid;
       grid-template:
-        'profile-picture title   actions' #{rem(24px)}
-        'profile-picture details actions' #{rem(16px)}
-        / #{rem(40px)} 1fr auto;
+        'profile-picture title   spacer actions' #{rem(24px)}
+        'profile-picture details spacer actions' #{rem(16px)}
+        / #{rem(40px)} auto 1fr auto;
       column-gap: rem(8px);
       padding: #{rem(12px)} #{rem(8px)} #{rem(12px)} #{rem(16px)};
 
       &[data-display='small'] {
         grid-template:
-          'back profile-picture title   actions' #{rem(24px)}
-          'back profile-picture details actions' #{rem(16px)}
-          / #{rem(40px)} #{rem(40px)} 1fr auto;
+          'back profile-picture title   spacer actions' #{rem(24px)}
+          'back profile-picture details spacer actions' #{rem(16px)}
+          / #{rem(40px)} #{rem(40px)} auto 1fr auto;
       }
 
       .back {
@@ -259,10 +259,13 @@
         margin-bottom: rem(-4px);
         color: var(--t-text-e1-color);
         grid-area: title;
-        cursor: pointer;
 
         &.group-inactive {
           text-decoration: line-through;
+        }
+
+        > span {
+          cursor: pointer;
         }
       }
 
@@ -271,7 +274,6 @@
         @extend %text-overflow-ellipsis;
         color: var(--t-text-e2-color);
         grid-area: details;
-        cursor: pointer;
       }
 
       .actions {
