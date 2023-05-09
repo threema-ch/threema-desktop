@@ -5,7 +5,7 @@ import {default as i18next, type i18n as i18nType} from 'i18next';
 import ICU from 'i18next-icu';
 
 import {type Logger, type LoggerFactory, type LogRecordFn} from '~/common/logging';
-import {type u53} from '~/common/types';
+import {type StrictPartial, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
@@ -15,28 +15,27 @@ import translationDebugJson from '../../translations/debug/translation.json';
 import translationEnJson from '../../translations/en/translation.json';
 
 /**
- * Define English as the base translation. All other translations will have to provide all keys
- * defined by this the English translation.
+ * Define English as the base translation. All other translations will only be able to (optionally)
+ * provide keys defined by the base translation.
  */
 type BaseTranslation = typeof translationEnJson;
 
 /**
- * This type ensures that all translations provide all the keys defined in the base translation, and
- * that all keys follow the format described in the documentation.
+ * This type together with {@link BaseTranslationTopic} ensure that the keys defined in the base
+ * translation strictly follow the format described in the documentation.
  */
-type TranslationNamespace = {
+type BaseTranslationNamespace = {
     readonly [TKey in keyof BaseTranslation]: TKey extends Lowercase<string>
         ? TKey extends 'locale'
             ? Record<Locale, string>
             : TKey extends `${string}--${string}`
             ? TKey extends `${OptionalTranslationTopicModifier}--${Lowercase<string>}`
-                ? TranslationTopic<BaseTranslation[TKey]>
+                ? BaseTranslationTopic<BaseTranslation[TKey]>
                 : never
-            : TranslationTopic<BaseTranslation[TKey]>
+            : BaseTranslationTopic<BaseTranslation[TKey]>
         : never;
 };
-
-type TranslationTopic<TRecord extends Record<string, string>> = {
+type BaseTranslationTopic<TRecord extends Record<string, string>> = {
     readonly [TKey in keyof TRecord]: TKey extends `${TranslationKeyModifier}--${Lowercase<string>}`
         ? string
         : never;
@@ -53,12 +52,18 @@ type TranslationKeyModifier =
     | 'markup'
     | 'prose';
 
-// Casting the `translation*Json` values imported from the JSON files to `TranslationNamespace`
-// ensures that all translations provide all the keys defined in the base translation, e.g. English,
-// and that all keys follow the format described in the documentation. Otherwise a type error is
-// raised here at compile time.
-const translationDebug: TranslationNamespace = translationDebugJson;
-const translationEn: TranslationNamespace = translationEnJson;
+// This cast makes usage of the `BaseTranslationNamespace` to ensure that all keys in the base
+// translation follow the format described in the documentation. Otherwise a type error is raised
+// here when typechecking.
+const translationEn: BaseTranslationNamespace = translationEnJson;
+
+// Casting the `translation*Json` (other than the base `translationEnJson`) values imported from the
+// JSON files as `StrictPartial` of `BaseTranslationNamespace` ensures that all translations provide
+// only keys defined in the base translation while allowing for missing keys. If a translation
+// provides a key that does not exist in the base translation, a type error is raised here when
+// typechecking.
+const translationDebug: StrictPartial<typeof translationDebugJson, BaseTranslationNamespace> =
+    translationDebugJson;
 
 const debugResources = {
     debug: {
