@@ -1,16 +1,4 @@
-/**
- * Short list of IANA media types for which we might want to ensure that the extension is correct.
- */
-const MEDIA_TYPE_TO_EXTENSIONS: Record<string, readonly string[] | undefined> = {
-    /* eslint-disable @typescript-eslint/naming-convention */
-    'application/pdf': ['pdf'],
-    'image/gif': ['gif'],
-    'image/jpeg': ['jpeg', 'jpg'],
-    'image/png': ['png'],
-    'image/x-icon': ['ico'],
-    'image/x-ms-bmp': ['bmp'],
-    /* eslint-enable @typescript-eslint/naming-convention */
-};
+import {mediaTypeToExtensions} from '#3sc/utils/mediatype';
 
 /**
  * Get file basename and extension of the given filename.
@@ -38,7 +26,7 @@ export interface FilenameDetails {
 
 export function getSanitizedFileNameDetails(file: {name: string; type: string}): FilenameDetails {
     const originalFilename = file.name;
-    const validExtensionsForMediaType = MEDIA_TYPE_TO_EXTENSIONS[file.type];
+    const validExtensionsForMediaType = mediaTypeToExtensions(file.type);
 
     // If there's no filename, we don't need to do any parsing. However, set the displayType if a
     // media type is provided.
