@@ -61,14 +61,14 @@ $themes: (
     // Divider
     --ic-divider-background-color: -g($ic, divider-background-color),
     // ContactNavigationContext Button
-    --ic-contact-navigation-context-button-color: -g($ic, contact-navigation-context-button-color),
+    --ic-contact-navigation-context-button-color: -g($b, primary-background),
     --ic-contact-navigation-context-button-border-color--hover: -g($ic, contact-navigation-context-button-border-color--hover),
     --ic-contact-navigation-context-button-background-color--hover: -g($ic, contact-navigation-context-button-background-color--hover),
     --ic-contact-navigation-context-button-border-color--focus: -g($ic, contact-navigation-context-button-border-color--focus),
     --ic-contact-navigation-context-button-background-color--focus: -g($ic, contact-navigation-context-button-background-color--focus),
     --ic-contact-navigation-context-button-color--active: -g($ic, contact-navigation-context-button-color--active),
-    --ic-contact-navigation-context-button-border-color--active: -g($ic, contact-navigation-context-button-border-color--active),
-    --ic-contact-navigation-context-button-background-color--active: -g($ic, contact-navigation-context-button-background-color--active),
+    --ic-contact-navigation-context-button-border-color--active: -g($b, primary-background),
+    --ic-contact-navigation-context-button-background-color--active: -g($b, primary-background),
     --ic-contact-navigation-context-button-opacity--disabled: -g($ic, contact-navigation-context-button-opacity--disabled),
     // Swipe area
     --ic-swipe-area-main-size: 100%,

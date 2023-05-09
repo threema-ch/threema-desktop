@@ -34,14 +34,11 @@ $light: (
     // Divider
     divider-background-color: rgba(#000000, 12%),
     // ContactNavigationContext Button
-    contact-navigation-context-button-color: theme.$consumer-green-600,
     contact-navigation-context-button-border-color--hover: rgba(#000000, 4%),
     contact-navigation-context-button-background-color--hover: rgba(#000000, 4%),
     contact-navigation-context-button-border-color--focus: #000000,
     contact-navigation-context-button-background-color--focus: rgba(#000000, 4%),
     contact-navigation-context-button-color--active: theme.$primary-text-e1,
-    contact-navigation-context-button-border-color--active: theme.$consumer-green-600,
-    contact-navigation-context-button-background-color--active: theme.$consumer-green-600,
     contact-navigation-context-button-opacity--disabled: 26%,
   ),
   message-components: (
