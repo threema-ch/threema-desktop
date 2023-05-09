@@ -70,10 +70,11 @@
     }
 
     &.active {
-      outline-color: $consumer-green-600;
+      outline-color: var(--t-color-primary);
 
       .overlay {
-        background-color: rgba($consumer-green-600, 0.5);
+        background-color: var(--t-color-primary);
+        opacity: 0.5;
       }
     }
 
