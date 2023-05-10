@@ -107,7 +107,7 @@
       <div class="list">
         {#if activeTab === 'private-contacts'}
           {#await services.backend.viewModel.contactListItems() then contacts}
-            <ContactList {services} {contacts} workVerificationLevel={WorkVerificationLevel.NONE} />
+            <ContactList {services} {contacts} />
           {/await}
         {:else if activeTab === 'groups'}
           {#await services.backend.viewModel.groupListItems() then groups}
