@@ -28,6 +28,7 @@
   import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';
   import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
+  import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.contact-details');
 
@@ -161,18 +162,22 @@
     {#if $contactViewModel !== undefined && $profilePicture !== undefined}
       <div class="profile-picture">
         <span>
-          <ProfilePictureComponent
+          <RecipientProfilePicture
             on:click={() => (contactProfilePictureDialogVisible = true)}
-            img={transformProfilePicture($profilePicture.view.picture)}
+            profilePicture={$profilePicture.view}
             alt={$i18n.t('contacts.hint--profile-picture', 'Profile picture of {name}', {
               name: $contactViewModel.displayName,
             })}
             initials={$contactViewModel.initials}
-            color={$profilePicture.view.color}
-            shape="circle"
+            badge={$contactViewModel.badge}
           />
         </span>
       </div>
+      {#if $contactViewModel.badge === 'contact-work'}
+        <div class="badge" data-badge={$contactViewModel.badge}>
+          <span>{$i18n.t('contacts.label--badge-work', 'Threema Work Contact')}</span>
+        </div>
+      {/if}
       <div class="name">
         {$contactViewModel.displayName}
       </div>
@@ -274,25 +279,9 @@
 <style lang="scss">
   @use 'component' as *;
 
-  .aside-contact {
-    display: grid;
-    grid-template:
-      'header' #{rem(64px)}
-      'profile-picture' min-content
-      'name' #{rem(24px)}
-      'edit' #{rem(24px)}
-      'identity' min-content
-      'level' min-content
-      'nickname' min-content
-      'divider-1' min-content
-      'gallery' min-content
-      'group-members' min-content
-      'divider-2' min-content
-      'share-contact' min-content
-      'block-contact' min-content
-      'delete-contact' min-content
-      / 1fr;
+  $-temp-vars: (--cc-t-background-color);
 
+  .aside-contact {
     header {
       display: grid;
       padding: #{rem(12px)} #{rem(8px)} #{rem(12px)} #{rem(8px)};
@@ -305,13 +294,41 @@
     }
 
     .profile-picture {
+      @include def-var($-temp-vars, --cc-t-background-color, var(--t-main-background-color));
+      @include def-var(
+        $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
+      );
+
       display: grid;
       place-items: center;
       margin: rem(8px) 0;
       --c-profile-picture-size: #{rem(120px)};
+      --cc-profile-picture-overlay-badge-size: #{rem(32px)};
+      --cc-profile-picture-overlay-badge-icon-size: #{rem(16px)};
 
       span {
         cursor: pointer;
+      }
+    }
+
+    .badge {
+      @extend %font-meta-400;
+      text-align: center;
+      margin: rem(8px) 0;
+
+      > span {
+        padding: rem(2px) rem(4px);
+        border-radius: rem(4px);
+      }
+
+      &[data-badge='contact-consumer'] > span {
+        color: var(--cc-contact-details-badge-consumer-text-color);
+        background-color: var(--cc-contact-details-badge-consumer-background-color);
+      }
+
+      &[data-badge='contact-work'] > span {
+        color: var(--cc-contact-details-badge-work-text-color);
+        background-color: var(--cc-contact-details-badge-work-background-color);
       }
     }
 

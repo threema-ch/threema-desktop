@@ -60,6 +60,7 @@
   $-fade-width: rem(48px);
 
   .receiver {
+    --c-profile-picture-size: #{rem(48px)};
     padding: rem(14px) rem(16px) rem(14px) rem(8px);
     width: 100%;
     scroll-snap-align: end;

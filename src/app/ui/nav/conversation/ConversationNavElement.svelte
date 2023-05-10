@@ -230,7 +230,6 @@
   @use 'component' as *;
 
   $-temp-vars: (--cc-t-background-color);
-  $-profile-picture-size: rem(48px);
   $-fade-width: rem(48px);
 
   .container {

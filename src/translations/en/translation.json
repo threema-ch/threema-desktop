@@ -18,6 +18,8 @@
     "error--add-contact-threema-id-unable-to-validate": "Cannot check contact validity. Are you connected to the internet?",
     "error--delete-contact": "Could not delete contact \"{name}\"",
     "error--delete-group": "Could not delete group \"{name}\"",
+    "hint--badge-consumer": "This contact uses Threema's private version.",
+    "hint--badge-work": "This contact uses the business app \"Threema Work.\"",
     "hint--own-profile-picture": "My profile picture",
     "hint--profile-picture": "Profile picture of {name}",
     "hint--profile-picture-own": "My profile picture",

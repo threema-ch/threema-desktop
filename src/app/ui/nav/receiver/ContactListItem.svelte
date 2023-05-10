@@ -144,7 +144,6 @@
 
   $-temp-vars: (--cc-t-background-color);
   $-checkbox-size: rem(40px);
-  $-profile-picture-size: rem(68px);
   $-fade-width: rem(48px);
 
   .container {

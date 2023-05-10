@@ -84,6 +84,8 @@
       profile-picture-upload-background-color: rgba(#000000, 4%),
       // Profile picture overlay
       profile-picture-overlay-unread-text: theme.$primary-text-e1,
+      profile-picture-overlay-badge-size: rem(20px),
+      profile-picture-overlay-badge-icon-size: rem(12px),
       profile-picture-overlay-badge-icon: theme.$light-text-e2,
       profile-picture-overlay-badge-icon-consumer: theme.$consumer-green-600,
       profile-picture-overlay-badge-icon-work: theme.$work-blue-800,
@@ -106,6 +108,11 @@
       contact-preview-inactive-text: theme.$light-text-e1,
       contact-preview-creator-background: theme.$light-text-e1,
       contact-preview-creator-text: rgba(#ffffff, 88%),
+      // Contact details
+      contact-details-badge-consumer-text: rgba(#ffffff, 0.88),
+      contact-details-badge-consumer-background: theme.$consumer-green-600,
+      contact-details-badge-work-text: rgba(#ffffff, 0.88),
+      contact-details-badge-work-background: theme.$work-blue-800,
       // Search input
       search-input-background: rgba(#000000, 4%),
       search-input-background--hover: rgba(#000000, 8%),

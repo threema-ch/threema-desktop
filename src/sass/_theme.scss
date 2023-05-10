@@ -147,6 +147,10 @@ $brandings: (
     color-conforms(-g($b, primary-background), $alpha: false),
     --cc-profile-picture-overlay-unread-text-color:
     color-conforms(-g($cc, profile-picture-overlay-unread-text), $alpha: false),
+    --cc-profile-picture-overlay-badge-size:
+    -g($cc, profile-picture-overlay-badge-size),
+    --cc-profile-picture-overlay-badge-icon-size:
+    -g($cc, profile-picture-overlay-badge-icon-size),
     --cc-profile-picture-overlay-badge-icon-color:
     -g($cc, profile-picture-overlay-badge-icon),
     --cc-profile-picture-overlay-badge-icon-consumer-color:
@@ -204,6 +208,12 @@ $brandings: (
     -g($cc, contact-preview-creator-background),
     --cc-contact-preview-creator-text-color:
     -g($cc, contact-preview-creator-text),
+
+    // Contact details
+    --cc-contact-details-badge-consumer-text-color: -g($cc, contact-details-badge-consumer-text),
+    --cc-contact-details-badge-consumer-background-color: -g($cc, contact-details-badge-consumer-background),
+    --cc-contact-details-badge-work-text-color: -g($cc, contact-details-badge-work-text),
+    --cc-contact-details-badge-work-background-color: -g($cc, contact-details-badge-work-background),
 
     // Search input
     --cc-search-input-background-color: -g($cc, search-input-background),

@@ -18,6 +18,8 @@
     "error--add-contact-threema-id-unable-to-validate": "[d] Kontaktgültigkeit kann nicht überprüft werden. Sind Sie mit dem Internet verbunden?",
     "error--delete-contact": "[d] Kontakt \"{name}\" konnte nicht gelöscht werden",
     "error--delete-group": "[d] Gruppe \"{name}\" konnte nicht gelöscht werden",
+    "hint--badge-consumer": "[d] Dieser Kontakt nutzt die private Version von Threema.",
+    "hint--badge-work": "[d] Dieser Kontakt nutzt die Version von Threema für Unternehmen, \"Threema Work.\"",
     "hint--own-profile-picture": "[d] Mein Profilbild",
     "hint--profile-picture": "[d] Profilbild von {name}",
     "hint--profile-picture-own": "[d] Mein Profilbild",

@@ -111,6 +111,8 @@ $config: config-merge(components.$config, (
       --cc-profile-picture-overlay-background-color,
       --cc-profile-picture-overlay-unread-background-color,
       --cc-profile-picture-overlay-unread-text-color,
+      --cc-profile-picture-overlay-badge-size,
+      --cc-profile-picture-overlay-badge-icon-size,
       --cc-profile-picture-overlay-badge-icon-color,
       --cc-profile-picture-overlay-badge-icon-consumer-color,
       --cc-profile-picture-overlay-badge-icon-work-color,
@@ -139,6 +141,12 @@ $config: config-merge(components.$config, (
       --cc-contact-preview-inactive-text-color,
       --cc-contact-preview-creator-background-color,
       --cc-contact-preview-creator-text-color,
+
+      // Contact details
+      --cc-contact-details-badge-consumer-text-color,
+      --cc-contact-details-badge-consumer-background-color,
+      --cc-contact-details-badge-work-text-color,
+      --cc-contact-details-badge-work-background-color,
 
       // Search input
       --cc-search-input-background-color,

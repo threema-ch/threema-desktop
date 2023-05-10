@@ -1,7 +1,8 @@
 <script lang="ts">
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import ProfilePictureOverlay from '~/app/ui/generic/profile-picture/ProfilePictureOverlay.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -137,13 +138,20 @@
           </div>
         {/if}
         <div class="profile-picture" on:click={openAside}>
-          <ProfilePicture
-            img={transformProfilePicture(receiver.profilePicture.img)}
-            alt={$i18n.t('contacts.hint--profile-picture', {name: receiver.name})}
-            initials={receiver.profilePicture.initials}
-            color={receiver.profilePicture.color}
-            shape="circle"
-          />
+          <div class="inner">
+            <ProfilePictureComponent
+              img={transformProfilePicture(receiver.profilePicture.img)}
+              alt={$i18n.t('contacts.hint--profile-picture', {name: receiver.name})}
+              initials={receiver.profilePicture.initials}
+              color={receiver.profilePicture.color}
+              shape="circle"
+            />
+            <div class="overlay">
+              <ProfilePictureOverlay
+                badge={receiver.type === 'contact' ? receiver.badge : undefined}
+              />
+            </div>
+          </div>
         </div>
         <div class="title" class:group-inactive={isInactiveGroup}>
           <span on:click={openAside}>{receiver.name}</span>
@@ -248,9 +256,29 @@
       }
 
       .profile-picture {
+        @include def-var(
+          $--cc-profile-picture-overlay-background-color: var(--t-main-background-color)
+        );
+
         grid-area: profile-picture;
         user-select: none;
         cursor: pointer;
+
+        .inner {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1/1;
+          object-fit: contain;
+          margin: auto;
+
+          .overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+          }
+        }
       }
 
       .title {

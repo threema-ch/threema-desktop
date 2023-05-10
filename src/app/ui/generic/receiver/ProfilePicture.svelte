@@ -12,7 +12,7 @@
 
   export let initials: string;
 
-  export let unread: u53;
+  export let unread: u53 | undefined = undefined;
 
   export let badge: ReceiverBadgeType | undefined = undefined;
 </script>
@@ -27,9 +27,9 @@
         color={profilePicture.color}
         shape="circle"
       />
-    </div>
-    <div class="overlay">
-      <ProfilePictureOverlay {unread} {badge} />
+      <div class="overlay">
+        <ProfilePictureOverlay {unread} {badge} />
+      </div>
     </div>
   </div>
 </template>
@@ -38,24 +38,35 @@
   @use 'component' as *;
 
   .profile-picture {
+    container-type: size;
+    container-name: resize-box;
     grid-area: profile-picture;
-    height: rem(60px);
-    width: rem(68px);
-    position: relative;
     display: grid;
-    place-items: center;
+    width: var(--c-profile-picture-size, default);
+    height: var(--c-profile-picture-size, default);
+    place-self: center;
 
     .inner {
-      height: rem(48px);
-      width: rem(48px);
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: contain;
+      margin: auto;
+
+      .overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
     }
 
-    .overlay {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
+    @container resize-box (aspect-ratio > 1/1) {
+      .inner {
+        width: auto;
+        height: 100%;
+      }
     }
   }
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import {type u53} from '~/common/types';
   import {debounce} from '~/common/utils/timer';
   import {type ReceiverBadgeType} from '~/common/viewmodel/types';
@@ -31,17 +32,37 @@
     {/if}
 
     {#if badge !== undefined}
-      <div class="badge" data-badge={badge}>
-        {#if badge === 'contact-work'}
+      {#if badge === 'contact-work'}
+        <div
+          class="badge"
+          data-badge={badge}
+          title={$i18n.t(
+            'contacts.hint--badge-work',
+            'This contact uses the business app "Threema Work."',
+          )}
+        >
           <ThreemaIcon theme="Filled">threema_work_contact</ThreemaIcon>
-        {:else if badge === 'contact-consumer'}
+        </div>
+      {:else if badge === 'contact-consumer'}
+        <div
+          class="badge"
+          data-badge={badge}
+          title={$i18n.t(
+            'contacts.hint--badge-consumer',
+            "This contact uses Threema's private version.",
+          )}
+        >
           <ThreemaIcon theme="Filled">threema_consumer_contact</ThreemaIcon>
-        {:else if badge === 'group'}
+        </div>
+      {:else if badge === 'group'}
+        <div class="badge" data-badge={badge}>
           <MdIcon theme="Filled">group</MdIcon>
-        {:else if badge === 'distribution-list'}
+        </div>
+      {:else if badge === 'distribution-list'}
+        <div class="badge" data-badge={badge}>
           <MdIcon theme="Filled">campaign</MdIcon>
-        {/if}
-      </div>
+        </div>
+      {/if}
     {/if}
   </div>
 </template>
@@ -49,8 +70,6 @@
 <style lang="scss">
   @use 'component' as *;
 
-  $-height: rem(20px);
-  $-width: rem(20px);
   $-border-width: rem(2px);
   $-border-radius: rem(10px);
 
@@ -65,7 +84,7 @@
   }
 
   %bubble {
-    height: $-height;
+    height: var(--cc-profile-picture-overlay-badge-size);
     border: $-border-width solid var(--cc-profile-picture-overlay-background-color);
     display: grid;
     place-items: center;
@@ -74,25 +93,27 @@
   .unread {
     @extend %bubble;
     @extend %font-meta-400;
-    min-width: $-width;
+    min-width: var(--cc-profile-picture-overlay-badge-size);
     padding: 0 $-border-width * 2;
     border-radius: $-border-radius;
     color: var(--cc-profile-picture-overlay-unread-text-color);
     background-color: var(--cc-profile-picture-overlay-unread-background-color);
     grid-area: unread;
     place-self: start center;
+    transform: translate(rem(-5px), rem(-5px));
   }
 
   .badge {
     @extend %bubble;
-    font-size: rem(12px);
-    width: $-width;
-    height: $-height;
+    font-size: var(--cc-profile-picture-overlay-badge-icon-size);
+    width: var(--cc-profile-picture-overlay-badge-size);
+    height: var(--cc-profile-picture-overlay-badge-size);
     border-radius: 50%;
     color: var(--cc-profile-picture-overlay-badge-icon-color);
     background-color: var(--cc-profile-picture-overlay-background-color);
     grid-area: badge;
     place-self: end center;
+    transform: translate(rem(5px), rem(5px));
 
     &[data-badge='contact-consumer'] {
       color: var(--cc-profile-picture-overlay-badge-icon-consumer-color);
