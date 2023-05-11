@@ -79,6 +79,7 @@
     display: grid;
     place-items: center;
     justify-items: stretch;
+    gap: rem(4px);
     user-select: none;
     --c-icon-font-size: #{rem(24px)};
   }
