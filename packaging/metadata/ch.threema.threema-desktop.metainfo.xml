@@ -21,6 +21,26 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0-preview11" date="2023-05-11">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Don't send read receipts if globally disabled in iOS app (contact-specific overrides are not yet supported)</li>
+                </ul>
+                <p>Bugfixes:</p>
+                <ul>
+                    <li>Position context menus correctly on window resize</li>
+                    <li>Reduce size of click target in conversation header</li>
+                </ul>
+                <p>Other:</p>
+                <ul>
+                    <li>Preparations for new device linking flow</li>
+                    <li>Preparations for internationalization</li>
+                    <li>Preparations for Threema Work support</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0-preview10" date="2023-04-28">
             <description>
                 <p>Improvements:</p>
