@@ -262,6 +262,12 @@ export interface RendezvousProtocolSetup {
     };
 }
 
+/** Result retrieved after establishing a Rendezvous Connection. */
+export interface RendezvousConnectResult {
+    readonly rph: ReadonlyUint8Array;
+    readonly connection: RendezvousConnection;
+}
+
 const RENDEZVOUS_PROTOCOL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     RendezvousProtocolError,
     TransferTag.RENDEZVOUS_PROTOCOL_ERROR
@@ -357,19 +363,15 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
         }
     }
 
-    /**
-     * Start the Rendezvous Protocol and initiate a connection with the provided role. The resulting
-     * {@link RendezvousConnection} will be handed out once nomination occurred.
-     */
-    public static async connect(
+    public static async create(
         services: Pick<ServicesForBackend, 'logging'>,
         setup: RendezvousProtocolSetup,
-    ): Promise<{rph: ReadonlyUint8Array; connection: RendezvousConnection}> {
+    ): Promise<{readonly connect: () => Promise<RendezvousConnectResult>}> {
         const log = services.logging.logger(`rendezvous.${setup.role}`);
         setup.abort.subscribe(() => log.info('Closing protocol'));
 
         // Create and connect to all relevant (transport) paths simultaneously
-        const paths: SinglePath[] = [
+        const paths: readonly SinglePath[] = [
             await WebSocketPath.create(
                 setup.relayedWebSocket.pathId,
                 setup.relayedWebSocket.url,
@@ -377,6 +379,21 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
             ),
         ];
 
+        // Return function handle that establishes a connection.
+        return {
+            connect: async () => await RendezvousConnection._connect(setup, log, paths),
+        };
+    }
+
+    /**
+     * Start the Rendezvous Protocol and initiate a connection with the provided role. The resulting
+     * {@link RendezvousConnection} will be handed out once nomination occurred.
+     */
+    private static async _connect(
+        setup: RendezvousProtocolSetup,
+        log: Logger,
+        paths: readonly SinglePath[],
+    ): Promise<RendezvousConnectResult> {
         // Create protocol in libthreema
         let protocol;
         switch (setup.role) {
