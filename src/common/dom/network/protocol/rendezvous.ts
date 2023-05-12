@@ -24,7 +24,14 @@ import {type AbortRaiser} from '~/common/utils/signal';
 
 /** A Rendezvous Path is a bidirectional byte stream. */
 interface SinglePath extends BidirectionalStream<Uint8Array, ReadonlyUint8Array> {
+    /**
+     * Rendezvous Path ID.
+     */
     readonly pid: u32;
+
+    /**
+     * Close this path.
+     */
     readonly close: (reason?: Error) => void;
 }
 
@@ -35,7 +42,7 @@ type NominatedPath = SinglePath;
 class WebSocketPath implements SinglePath {
     public readonly readable: ReadableStream<Uint8Array>;
     public readonly writable: WritableStream<ReadonlyUint8Array>;
-    public readonly close;
+    public readonly close: SinglePath['close'];
 
     public constructor(
         public readonly pid: u32,
@@ -59,6 +66,11 @@ class WebSocketPath implements SinglePath {
 
     /**
      * Create a WebSocket for use as a Rendezvous Path.
+     *
+     * @param pid The Rendezvous Path ID to use for this path. The caller must ensure that all paths
+     *   have a unique PID.
+     * @param url WebSocket URL.
+     * @param abort An {@link AbortRaiser} that can be used to abort this path.
      */
     public static async create(pid: u32, url: string, abort: AbortRaiser): Promise<WebSocketPath> {
         const options: WebSocketEventWrapperStreamOptions = {
@@ -102,6 +114,7 @@ class MultiplexedPath
         private readonly _log: Logger,
         paths: readonly SinglePath[],
     ) {
+        // Queue for incoming messages
         const queue = new Queue<readonly [pid: u32, frame: Uint8Array]>();
 
         // Abort the queue when the protocol is aborted and vice versa.
@@ -304,7 +317,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
         {
             const transform = new TransformStream<ReadonlyUint8Array, ReadonlyUint8Array>({
                 transform: (outgoingUlpData, controller) => {
-                    // Create outgoing frame
+                    // Encrypt data, create outgoing frame
                     let result;
                     try {
                         result = protocol.createUlpFrame(outgoingUlpData as Uint8Array);
@@ -329,6 +342,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                 },
             });
             this.writable = transform.writable;
+            // Forward transformed messages to the nominated path
             void transform.readable.pipeTo(path.writable, {
                 signal: abort.attach(new AbortController()),
             });
@@ -412,8 +426,8 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                     case 'awaiting-nominate':
                         // Check if we should nominate the path
                         //
-                        // Note: A real implementation should wait a bit and then choose the _best_
-                        // path based on the measured RTT.
+                        // TODO(DESK-1046): A real implementation should wait a bit and then choose
+                        // the _best_ path based on the measured RTT.
                         log.debug('Path ready to nominate', {
                             measuredRttMs: update.measuredRttMs,
                         });
