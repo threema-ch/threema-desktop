@@ -121,7 +121,7 @@ class MultiplexedPath
         private readonly _log: Logger,
         paths: readonly SinglePath[],
     ) {
-        // Queue for incoming messages
+        // Queue for incoming frames
         const queue = new Queue<readonly [pid: PathId, frame: Uint8Array]>();
 
         // Abort the queue when the protocol is aborted and vice versa.
@@ -134,8 +134,8 @@ class MultiplexedPath
         // Forward read (poll's) to the queue
         this.readable = new ReadableStream({
             pull: async (controller) => {
-                const queueValue = await queue.get();
-                queueValue.consume((value) => controller.enqueue(value));
+                const result = await queue.get();
+                result.consume((incomingFrame) => controller.enqueue(incomingFrame));
             },
             cancel: (reason) => {
                 _log.debug('Multiplexed path reader cancelled, reason:', reason);
@@ -164,7 +164,7 @@ class MultiplexedPath
                 // Pipe data into the queue (unblocking read/poll's of the queue).
                 //
                 // Note: This retains the flow control because the queue only ever accepts one
-                // item at a time.
+                // incoming frame at a time.
                 path.readable
                     .pipeTo(
                         new WritableStream({
@@ -224,9 +224,9 @@ class MultiplexedPath
         // Return the nominated path.
         //
         // Note: It would be nice to return the actual single path itself here but this is hard to
-        // accomplish because its readable side has been piped to the multiplexer, so an item could
-        // linger in the queue. The streams API doesn't really have a suitable pattern for this
-        // challenge.
+        // accomplish because its readable side has been piped to the multiplexer, so an incoming
+        // frame could linger in the queue. The streams API doesn't really have a suitable pattern
+        // for this challenge.
         nominated.writer.releaseLock();
         return {
             pid: nominatedPid,
@@ -324,7 +324,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
         {
             const transform = new TransformStream<ReadonlyUint8Array, ReadonlyUint8Array>({
                 transform: (outgoingUlpData, controller) => {
-                    // Encrypt data, create outgoing frame
+                    // Create outgoing frame
                     let result;
                     try {
                         result = protocol.createUlpFrame(outgoingUlpData as Uint8Array);
@@ -349,7 +349,8 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                 },
             });
             this.writable = transform.writable;
-            // Forward transformed messages to the nominated path
+
+            // Forward outgoing frames to the nominated path
             void transform.readable.pipeTo(path.writable, {
                 signal: abort.attach(new AbortController()),
             });
