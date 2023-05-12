@@ -361,7 +361,7 @@ export interface DbMessageCommon<T extends MessageType> {
 /**
  * A database text message.
  */
-export type DbTextMessage = {
+export interface DbTextMessageUniqueProps {
     /**
      * The message text.
      */
@@ -370,7 +370,8 @@ export type DbTextMessage = {
      * The optional quoted message id.
      */
     readonly quotedMessageId?: MessageId;
-} & DbMessageCommon<MessageType.TEXT>;
+}
+export type DbTextMessage = DbTextMessageUniqueProps & DbMessageCommon<MessageType.TEXT>;
 
 export interface DbFileData {
     readonly fileId: FileId;
@@ -382,7 +383,7 @@ export interface DbFileData {
 /**
  * A database file message.
  */
-export type DbFileMessage = {
+export interface DbFileMessageUniqueProps {
     readonly blobId?: BlobId;
     readonly thumbnailBlobId?: BlobId;
     readonly blobDownloadState?: BlobDownloadState;
@@ -396,7 +397,8 @@ export type DbFileMessage = {
     readonly fileSize: u53;
     readonly caption?: string;
     readonly correlationId?: string;
-} & DbMessageCommon<MessageType.FILE>;
+}
+export type DbFileMessage = DbFileMessageUniqueProps & DbMessageCommon<MessageType.FILE>;
 
 /**
  * A file data UID.

@@ -20,6 +20,7 @@ import {
     type DbFileData,
     type DbFileDataUid,
     type DbFileMessage,
+    type DbFileMessageUniqueProps,
     type DbGet,
     type DbGlobalProperty,
     type DbGroup,
@@ -31,6 +32,7 @@ import {
     type DbReceiverLookup,
     type DbRemove,
     type DbTextMessage,
+    type DbTextMessageUniqueProps,
     type DbUnreadMessageCountMixin,
     type DbUpdate,
     type RawDatabaseKey,
@@ -50,7 +52,7 @@ import {type Settings, SETTINGS_CODEC} from '~/common/settings';
 import {type u53, type u64} from '~/common/types';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {hasProperty} from '~/common/utils/object';
+import {hasProperty, pick} from '~/common/utils/object';
 
 import {DBConnection} from './connection';
 import {MigrationHelper} from './migrations';
@@ -1286,16 +1288,32 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     sync(
                         this._db
                             .update(tMessageTextData)
-                            .set(message)
+                            .set(
+                                pick<DbTextMessageUniqueProps>(message, [
+                                    'text',
+                                    'quotedMessageId',
+                                ]),
+                            )
                             .where(tMessageTextData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
                     return {deletedFileIds: []};
                 case MessageType.FILE: {
                     // Prepare update
-                    const update: UpdateSets<typeof tMessageFileData, typeof tMessageFileData> = {
-                        ...message,
-                    };
+                    const update: UpdateSets<typeof tMessageFileData, typeof tMessageFileData> =
+                        pick<DbFileMessageUniqueProps>(message, [
+                            'blobId',
+                            'thumbnailBlobId',
+                            'blobDownloadState',
+                            'thumbnailBlobDownloadState',
+                            'encryptionKey',
+                            'mediaType',
+                            'thumbnailMediaType',
+                            'fileName',
+                            'fileSize',
+                            'caption',
+                            'correlationId',
+                        ]);
 
                     // To keep the file data table clean and remove entries that aren't referenced
                     // anymore, we first need to query the current UIDs.
@@ -1306,7 +1324,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                                 fileDataUid: tMessageFileData.fileDataUid,
                                 thumbnailFileDataUid: tMessageFileData.thumbnailFileDataUid,
                             })
-                            .where(tMessageFileData.uid.equals(message.uid))
+                            .where(tMessageFileData.messageUid.equals(message.uid))
                             .executeSelectNoneOrOne(),
                     );
 

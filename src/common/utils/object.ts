@@ -25,6 +25,19 @@ export function purgeUndefinedProperties<TObject extends Record<string | u53 | s
 }
 
 /**
+ * Returns a copy of the provided object but only with the subset of properties defined in the
+ * `props` parameter.
+ */
+export function pick<T, K extends keyof T = keyof T>(
+    object: Readonly<Partial<T>>,
+    props: K[],
+): Partial<Pick<T, K>> {
+    return Object.fromEntries(
+        props.filter((key) => key in object).map((key) => [key, object[key]]),
+    ) as Partial<Pick<T, K>>;
+}
+
+/**
  * Return whether an object is iterable.
  */
 export function isIterable(object: unknown): object is Iterable<unknown> {
@@ -35,6 +48,9 @@ export function isIterable(object: unknown): object is Iterable<unknown> {
     return typeof (object as any)[Symbol.iterator] === 'function';
 }
 
-export function keys<T>(obj: {[key in keyof T]: unknown}): (keyof T)[] {
-    return Object.keys(obj) as (keyof T)[];
+/**
+ * Returns all keys in the provided object.
+ */
+export function keys<T>(object: {[key in keyof T]: unknown}): (keyof T)[] {
+    return Object.keys(object) as (keyof T)[];
 }
