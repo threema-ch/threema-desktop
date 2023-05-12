@@ -41,4 +41,4 @@ export interface ServicesForBackend {
 export type ServicesForBackendController = Pick<
     ServicesForBackend,
     'config' | 'endpoint' | 'logging' | 'timer'
->;
+> & {crypto: Pick<CryptoBackend, 'randomBytes'>};

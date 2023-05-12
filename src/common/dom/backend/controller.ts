@@ -8,6 +8,10 @@ import {
 } from '~/common/dom/backend';
 import {type DebugBackend} from '~/common/dom/debug';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
+import {
+    RendezvousConnection,
+    type RendezvousProtocolSetup,
+} from '~/common/dom/network/protocol/rendezvous';
 import {isSafeBackupAvailable, type SafeCredentials} from '~/common/dom/safe';
 import {ActivityState, type D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage, SafeError} from '~/common/error';
@@ -17,15 +21,21 @@ import {type DisplayPacket} from '~/common/network/protocol/capture';
 import {type DirectoryBackend} from '~/common/network/protocol/directory';
 import {type ConnectionState} from '~/common/network/protocol/state';
 import {type IdentityString} from '~/common/network/types';
+import {randomRendezvousAuthenticationKey} from '~/common/network/types/keys';
 import {type NotificationCreator} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
+import {type ReadonlyUint8Array} from '~/common/types';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
+import {bytesToHex} from '~/common/utils/byte';
 import {
     type EndpointFor,
     RELEASE_PROXY,
     type Remote,
     type RemoteProxy,
 } from '~/common/utils/endpoint';
+import {eternalPromise} from '~/common/utils/promise';
+import {type QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';
+import {AbortRaiser} from '~/common/utils/signal';
 import {DeprecatedDerivedStore, type IQueryableStore, type RemoteStore} from '~/common/utils/store';
 import {type IViewModelRepository} from '~/common/viewmodel';
 
@@ -126,6 +136,11 @@ export class BackendController {
         },
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
+        showLinkingWizard: (
+            setup: RendezvousProtocolSetup,
+            connected: QueryablePromise<void>,
+            nominated: QueryablePromise<ReadonlyUint8Array>,
+        ) => Promise<void>,
         requestSafeCredentials: (
             isIdentityValid: (identity: IdentityString) => Promise<boolean>,
             isSafeBackupAvailable: (safeCredentials: SafeCredentials) => Promise<boolean>,
@@ -248,8 +263,65 @@ export class BackendController {
             // We need the directory backend to be able to validate the user's identity
             const directory = new FetchDirectoryBackend({config: services.config});
 
-            // Request safe backup credentials from user
-            log.debug('Requesting Safe credentials from user');
+            // No identity is found. Thus, start rendezvous / device join protocols.
+            log.debug('Starting device linking process');
+            {
+                const abort = new AbortRaiser();
+
+                // Generate rendezvous setup with all information needed to show the QR code
+                const rendezvousPath = bytesToHex(services.crypto.randomBytes(new Uint8Array(32)));
+                const setup: RendezvousProtocolSetup = {
+                    abort,
+                    role: 'initiator',
+                    ak: randomRendezvousAuthenticationKey(services.crypto),
+                    relayedWebSocket: {
+                        pathId: 1,
+                        // TODO(DESK-1037): Move URL to config
+                        url: `wss://rendezvous-${rendezvousPath.slice(
+                            0,
+                            1,
+                        )}.test.threema.ch/${rendezvousPath.slice(0, 2)}/${rendezvousPath}`,
+                    },
+                };
+
+                // This promise will be resolved as soon as the WebSocket connection is established.
+                // If the connection fails, this promise will be rejected.
+                const connected = new ResolvablePromise<void>();
+
+                // This promise will be resolved with the Rendezvous Path Hash (RPH) as soon as the
+                // connection is established (including path nomination).
+                const nominated = new ResolvablePromise<ReadonlyUint8Array>();
+
+                // Show linking screen with QR code
+                await showLinkingWizard(setup, connected, nominated);
+
+                // Create RendezvousConnection and open WebSocket connection
+                let rendezvous;
+                try {
+                    rendezvous = await RendezvousConnection.create({logging}, setup);
+                } catch (error) {
+                    log.warn(`Rendezvous connection failed: ${error}`);
+                    connected.reject(ensureError(error));
+                    return await eternalPromise(); // TODO(DESK-1037)
+                }
+                connected.resolve();
+
+                // Do the rendezvous handshake and wait for nomination of a path
+                let connectResult;
+                try {
+                    connectResult = await rendezvous.connect();
+                } catch (error) {
+                    log.warn(`Rendezvous handshake failed: ${error}`);
+                    nominated.reject(ensureError(error));
+                    return await eternalPromise(); // TODO(DESK-1037)
+                }
+                log.info('Rendezvous connection established');
+                nominated.resolve(connectResult.rph);
+
+                await eternalPromise();
+                // TODO(DESK-1037): connection.abort.raise();
+            }
+
             const credentialsAndDeviceIds = await requestSafeCredentials(
                 async (identity: IdentityString) => await isIdentityValid(directory, identity),
                 async (safeCredentials: SafeCredentials) =>

@@ -1,6 +1,7 @@
 import '../sass/app.scss';
 
 import {default as initComposeArea} from '@threema/compose-area/web';
+import initLibthreema, * as libthreema from 'libthreema';
 
 import {APP_CONFIG} from '~/app/config';
 import {globals} from '~/app/globals';
@@ -11,11 +12,14 @@ import Bootstrap from '~/app/ui/Bootstrap.svelte';
 import {type BootstrapParams} from '~/app/ui/bootstrap/process-step';
 import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
+import {type LinkingParams} from '~/app/ui/linking';
+import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {CONFIG} from '~/common/config';
 import {BackendController, type InitialBootstrapData} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
+import {type RendezvousProtocolSetup} from '~/common/dom/network/protocol/rendezvous';
 import {type SafeCredentials} from '~/common/dom/safe';
 import {LocalStorageController} from '~/common/dom/ui/local-storage';
 import {FrontendNotificationCreator} from '~/common/dom/ui/notification';
@@ -28,8 +32,9 @@ import {type ElectronIpc, type SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback, type SafeError} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type IdentityString} from '~/common/network/types';
-import {type u53} from '~/common/types';
+import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
+import {type QueryablePromise} from '~/common/utils/resolvable-promise';
 import {type ISubscribableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
@@ -50,6 +55,19 @@ export interface Elements {
     readonly splash: HTMLElement;
     readonly container: HTMLElement;
     readonly systemDialogs: HTMLElement;
+}
+
+/**
+ * Show linking wizard.
+ */
+function attachLinkingWizard(elements: Elements, params: LinkingParams): LinkingWizard {
+    elements.container.innerHTML = '';
+    return new LinkingWizard({
+        target: elements.container,
+        props: {
+            params,
+        },
+    });
 }
 
 /**
@@ -223,7 +241,8 @@ export async function main(appState: AppState): Promise<App> {
 
     // Initialise WASM packages
     log.info('Initialising WASM packages');
-    await initComposeArea();
+    await Promise.all([initComposeArea(), initLibthreema()]);
+    libthreema.initLogging();
 
     // Track the app visibility state
     function handleAppVisibilityChange(): void {
@@ -276,6 +295,22 @@ export async function main(appState: AppState): Promise<App> {
             self.onpopstate = handler;
         },
     });
+
+    // Define function that will show the linking wizard
+    async function showLinkingWizard(
+        setup: RendezvousProtocolSetup,
+        connected: QueryablePromise<void>,
+        nominated: QueryablePromise<ReadonlyUint8Array>,
+    ): Promise<void> {
+        await domContentLoaded;
+        log.debug('Showing linking wizard');
+        elements.splash.classList.add('hidden'); // Hide splash screen
+        attachLinkingWizard(elements, {
+            setup,
+            connected,
+            nominated,
+        });
+    }
 
     // Define function that will request user to enter Threema Safe credentials
     async function requestSafeCredentials(
@@ -345,11 +380,13 @@ export async function main(appState: AppState): Promise<App> {
         },
         {
             config: CONFIG,
+            crypto: {randomBytes},
             endpoint,
             logging,
             timer,
         },
         endpoint.wrap(worker, logging.logger('com.backend-creator')),
+        showLinkingWizard,
         requestSafeCredentials,
         requestUserPassword,
         showLinkingErrorDialog,

@@ -4,6 +4,7 @@ import {
     type RawKey,
     type ReadonlyRawKey,
     wrapRawKey,
+    CryptoBackend,
 } from '~/common/crypto';
 import {type SecureSharedBoxFactory, type SharedBoxFactory} from '~/common/crypto/box';
 import {type CspE2eBox, type CspPayloadBox} from '~/common/network/types';
@@ -114,3 +115,23 @@ export type RendezvousAuthenticationKey = WeakOpaque<
     ReadonlyRawKey<32>,
     {readonly RendezvousAuthenticationKey: unique symbol}
 >;
+
+/**
+ * Wrap a key into a {@link RendezvousAuthenticationKey}.
+ *
+ * @throws {CryptoError} in case the key is not 32 bytes long.
+ */
+export function wrapRendezvousAuthenticationKey(key: Uint8Array): RendezvousAuthenticationKey {
+    return wrapRawKey(key, NACL_CONSTANTS.KEY_LENGTH).asReadonly() as RendezvousAuthenticationKey;
+}
+
+/**
+ * Generate a random {@link RendezvousAuthenticationKey} using 32 cryptographically secure random
+ * bytes.
+ */
+export function randomRendezvousAuthenticationKey(
+    crypto: Pick<CryptoBackend, 'randomBytes'>,
+): RendezvousAuthenticationKey {
+    const keyBytes = crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH));
+    return wrapRendezvousAuthenticationKey(keyBytes);
+}

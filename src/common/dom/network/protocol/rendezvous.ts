@@ -64,6 +64,10 @@ class WebSocketPath implements SinglePath {
             }),
         );
         this.writable = connection.writable;
+        ws.closed.catch((error) => {
+            // Ignore, in order to prevent unhandled rejection error. The connection closing event
+            // is already handled via the stream closing.
+        });
         this.close = () => ws.close();
     }
 

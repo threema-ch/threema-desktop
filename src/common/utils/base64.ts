@@ -4,14 +4,24 @@ import {type ReadonlyUint8Array} from '~/common/types';
 declare function atob(data: string): string;
 declare function btoa(data: string): string;
 
+export interface Base64Options {
+    readonly urlSafe?: boolean;
+}
+
 /**
  * Encode a Uint8Array to a base 64 string.
  *
  * @param array Input byte array.
+ * @param urlSafe If set to true, output will be URL safe according to RFC 4648 (with `+` and `/`
+ *   replaced by `-` and `_`).
  * @returns A base64 string.
  */
-export function u8aToBase64(array: ReadonlyUint8Array): string {
-    return btoa(Array.from(array, (byte) => String.fromCharCode(byte)).join(''));
+export function u8aToBase64(array: ReadonlyUint8Array, options?: Base64Options): string {
+    const base64 = btoa(Array.from(array, (byte) => String.fromCharCode(byte)).join(''));
+    if (options?.urlSafe === true) {
+        return base64.replaceAll('+', '-').replaceAll('/', '_');
+    }
+    return base64;
 }
 
 /**
