@@ -1,4 +1,4 @@
-import * as libthreema from 'libthreema';
+import libthreemaInit, * as libthreema from 'libthreema';
 import Long from 'long';
 import * as $protobuf from 'protobufjs/minimal';
 
@@ -34,7 +34,7 @@ export async function main(config: Config, factories: FactoriesForBackend): Prom
     log.debug('Initialized protobufjs');
 
     // Initialize libthreema
-    await libthreema.default();
+    await libthreemaInit();
     libthreema.initLogging();
 
     const endpoint = createEndpointService({config, logging});
