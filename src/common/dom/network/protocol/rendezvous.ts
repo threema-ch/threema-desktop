@@ -44,7 +44,7 @@ class WebSocketPath implements SinglePath {
     public readonly writable: WritableStream<ReadonlyUint8Array>;
     public readonly close: SinglePath['close'];
 
-    public constructor(
+    private constructor(
         public readonly pid: u32,
         ws: WebSocketStream,
         connection: WebSocketConnection,
@@ -127,8 +127,8 @@ class MultiplexedPath
         // Forward read (poll's) to the queue
         this.readable = new ReadableStream({
             pull: async (controller) => {
-                const item = (await queue.get()).consume();
-                controller.enqueue(item);
+                const queueValue = await queue.get();
+                queueValue.consume((value) => controller.enqueue(value));
             },
             cancel: (reason) => {
                 _log.debug('Multiplexed path reader cancelled, reason:', reason);
@@ -203,7 +203,7 @@ class MultiplexedPath
         // Pop the nominated path
         const nominated = this._paths.get(nominatedPid);
         this._paths.delete(nominatedPid);
-        assert(nominated !== undefined, 'Expecting nominated path to exist');
+        assert(nominated !== undefined, 'Expected nominated path to exist');
         this._log.info(`Nominated path (pid=${nominatedPid})`);
 
         // Close all other paths
