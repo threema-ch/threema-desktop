@@ -22,12 +22,15 @@ import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endp
 import {Queue} from '~/common/utils/queue';
 import {type AbortRaiser} from '~/common/utils/signal';
 
+/** A Path ID uniquely identifies a rendezvous connection path. */
+export type PathId = u32;
+
 /** A Rendezvous Path is a bidirectional byte stream. */
 interface SinglePath extends BidirectionalStream<Uint8Array, ReadonlyUint8Array> {
     /**
      * Rendezvous Path ID.
      */
-    readonly pid: u32;
+    readonly pid: PathId;
 
     /**
      * Close this path.
@@ -45,7 +48,7 @@ class WebSocketPath implements SinglePath {
     public readonly close: SinglePath['close'];
 
     private constructor(
-        public readonly pid: u32,
+        public readonly pid: PathId,
         ws: WebSocketStream,
         connection: WebSocketConnection,
     ) {
@@ -72,7 +75,11 @@ class WebSocketPath implements SinglePath {
      * @param url WebSocket URL.
      * @param abort An {@link AbortRaiser} that can be used to abort this path.
      */
-    public static async create(pid: u32, url: string, abort: AbortRaiser): Promise<WebSocketPath> {
+    public static async create(
+        pid: PathId,
+        url: string,
+        abort: AbortRaiser,
+    ): Promise<WebSocketPath> {
         const options: WebSocketEventWrapperStreamOptions = {
             signal: abort.attach(new AbortController()),
             // The below configuration gives us a theoretical maximum throughput of ~100 MiB/s if
@@ -95,14 +102,14 @@ class WebSocketPath implements SinglePath {
 class MultiplexedPath
     implements
         BidirectionalStream<
-            readonly [pid: u32, frame: Uint8Array],
-            readonly [pid: u32, frame: ReadonlyUint8Array]
+            readonly [pid: PathId, frame: Uint8Array],
+            readonly [pid: PathId, frame: ReadonlyUint8Array]
         >
 {
-    public readonly readable: ReadableStream<readonly [pid: u32, frame: Uint8Array]>;
-    public readonly writable: WritableStream<readonly [pid: u32, frame: ReadonlyUint8Array]>;
+    public readonly readable: ReadableStream<readonly [pid: PathId, frame: Uint8Array]>;
+    public readonly writable: WritableStream<readonly [pid: PathId, frame: ReadonlyUint8Array]>;
     private _paths?: Map<
-        u32,
+        PathId,
         {
             readonly path: SinglePath;
             readonly writer: WritableStreamDefaultWriter<ReadonlyUint8Array>;
@@ -115,7 +122,7 @@ class MultiplexedPath
         paths: readonly SinglePath[],
     ) {
         // Queue for incoming messages
-        const queue = new Queue<readonly [pid: u32, frame: Uint8Array]>();
+        const queue = new Queue<readonly [pid: PathId, frame: Uint8Array]>();
 
         // Abort the queue when the protocol is aborted and vice versa.
         abort.subscribe(() => queue.error(new Error('Abort raised')));
@@ -196,7 +203,7 @@ class MultiplexedPath
     /**
      * Nominate the specified path and close all other paths.
      */
-    public nominate(nominatedPid: u32): NominatedPath {
+    public nominate(nominatedPid: PathId): NominatedPath {
         // Nomination can only happen once
         assert(this._paths !== undefined, 'Expected paths to exist when nominating');
 
@@ -225,7 +232,7 @@ class MultiplexedPath
             pid: nominatedPid,
             close: (reason) => nominated.path.close(reason),
             readable: this.readable.pipeThrough(
-                new TransformStream<readonly [pid: u32, frame: Uint8Array], Uint8Array>({
+                new TransformStream<readonly [pid: PathId, frame: Uint8Array], Uint8Array>({
                     transform: ([pid, frame], controller) => {
                         assert(pid === nominatedPid);
                         controller.enqueue(frame);
@@ -250,7 +257,7 @@ export interface RendezvousProtocolSetup {
 
     /** Relayed Web Socket to be used. */
     readonly relayedWebSocket: {
-        readonly pathId: u32;
+        readonly pathId: PathId;
         readonly url: string;
     };
 }
@@ -469,7 +476,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
     private static _processIncomingFrame(
         log: Logger,
         protocol: libthreema.RendezvousProtocol,
-        pid: u32,
+        pid: PathId,
         incomingFrame: Uint8Array,
     ): libthreema.PathProcessResult | undefined {
         const nominatedPid = protocol.nominatedPath();
