@@ -1238,6 +1238,11 @@ export interface ClientInfoLike {
      *     <os-name>;
      *     <os-architecture>
      *
+     * The `<rest>` looks like this for Bots (B):
+     *
+     *     <os-name>;
+     *     <os-architecture>
+     *
      * The fields may contain the following values:
      *
      * - `app-version`: Arbitrary version string, depending on the platform
@@ -1246,6 +1251,7 @@ export interface ClientInfoLike {
      *   * `I`: iOS
      *   * `Q`: Desktop/Web
      *   * `W`: Windows Phone
+     *   * `B`: Bot
      * - `lang`: ISO 639-1:2002-ish language code
      * - `country-code`: ISO 3166-1-ish country code
      * - `device-model`: Arbitrary smartphone model

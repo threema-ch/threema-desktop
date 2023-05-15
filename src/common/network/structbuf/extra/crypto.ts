@@ -4,6 +4,8 @@ import type * as types from '~/common/types';
 import * as utils from '../utils';
 
 /**
+ * ## Crypto
+ *
  * Contains an end-to-end encrypted box prefixed with a nonce.
  */
 export interface EncryptedDataWithNonceAheadLike {

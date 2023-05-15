@@ -397,6 +397,7 @@ async function runTask(
         body: new Uint8Array([0x42, 0x42, 0x42]), // Fake data is OK for testing
         senderIdentity,
         messageId: intoUnsignedLong(randomMessageId(services.crypto)),
+        nonce: undefined, // TODO(DESK-826)
     });
 
     // Run task

@@ -887,6 +887,34 @@ export const common = $root.common = (() => {
         return Resolution;
     })();
 
+    /**
+     * CspFeatureMaskFlag enum.
+     * @name common.CspFeatureMaskFlag
+     * @enum {number}
+     * @property {number} NONE=0 NONE value
+     * @property {number} VOICE_MESSAGE_SUPPORT=1 VOICE_MESSAGE_SUPPORT value
+     * @property {number} GROUP_SUPPORT=2 GROUP_SUPPORT value
+     * @property {number} POLL_SUPPORT=4 POLL_SUPPORT value
+     * @property {number} FILE_MESSAGE_SUPPORT=8 FILE_MESSAGE_SUPPORT value
+     * @property {number} O2O_AUDIO_CALL_SUPPORT=16 O2O_AUDIO_CALL_SUPPORT value
+     * @property {number} O2O_VIDEO_CALL_SUPPORT=32 O2O_VIDEO_CALL_SUPPORT value
+     * @property {number} FORWARD_SECURITY_SUPPORT=64 FORWARD_SECURITY_SUPPORT value
+     * @property {number} GROUP_CALL_SUPPORT=128 GROUP_CALL_SUPPORT value
+     */
+    common.CspFeatureMaskFlag = (function() {
+        const valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "NONE"] = 0;
+        values[valuesById[1] = "VOICE_MESSAGE_SUPPORT"] = 1;
+        values[valuesById[2] = "GROUP_SUPPORT"] = 2;
+        values[valuesById[4] = "POLL_SUPPORT"] = 4;
+        values[valuesById[8] = "FILE_MESSAGE_SUPPORT"] = 8;
+        values[valuesById[16] = "O2O_AUDIO_CALL_SUPPORT"] = 16;
+        values[valuesById[32] = "O2O_VIDEO_CALL_SUPPORT"] = 32;
+        values[valuesById[64] = "FORWARD_SECURITY_SUPPORT"] = 64;
+        values[valuesById[128] = "GROUP_CALL_SUPPORT"] = 128;
+        return values;
+    })();
+
     return common;
 })();
 
@@ -7307,25 +7335,25 @@ export const history = $root.history = (() => {
      */
     const history = {};
 
-    history.FromDestinationDeviceEnvelope = (function() {
+    history.DdToSd = (function() {
 
         /**
-         * Properties of a FromDestinationDeviceEnvelope.
+         * Properties of a DdToSd.
          * @memberof history
-         * @interface IFromDestinationDeviceEnvelope
-         * @property {history.GetSummary|null} [getSummary] FromDestinationDeviceEnvelope getSummary
-         * @property {history.BeginTransfer|null} [beginTransfer] FromDestinationDeviceEnvelope beginTransfer
+         * @interface IDdToSd
+         * @property {history.GetSummary|null} [getSummary] DdToSd getSummary
+         * @property {history.BeginTransfer|null} [beginTransfer] DdToSd beginTransfer
          */
 
         /**
-         * Constructs a new FromDestinationDeviceEnvelope.
+         * Constructs a new DdToSd.
          * @memberof history
-         * @classdesc Represents a FromDestinationDeviceEnvelope.
-         * @implements IFromDestinationDeviceEnvelope
+         * @classdesc Represents a DdToSd.
+         * @implements IDdToSd
          * @constructor
-         * @param {history.IFromDestinationDeviceEnvelope=} [properties] Properties to set
+         * @param {history.IDdToSd=} [properties] Properties to set
          */
-        function FromDestinationDeviceEnvelope(properties) {
+        function DdToSd(properties) {
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -7333,45 +7361,45 @@ export const history = $root.history = (() => {
         }
 
         /**
-         * FromDestinationDeviceEnvelope getSummary.
+         * DdToSd getSummary.
          * @member {history.GetSummary|null|undefined} getSummary
-         * @memberof history.FromDestinationDeviceEnvelope
+         * @memberof history.DdToSd
          * @instance
          */
-        FromDestinationDeviceEnvelope.prototype.getSummary = null;
+        DdToSd.prototype.getSummary = null;
 
         /**
-         * FromDestinationDeviceEnvelope beginTransfer.
+         * DdToSd beginTransfer.
          * @member {history.BeginTransfer|null|undefined} beginTransfer
-         * @memberof history.FromDestinationDeviceEnvelope
+         * @memberof history.DdToSd
          * @instance
          */
-        FromDestinationDeviceEnvelope.prototype.beginTransfer = null;
+        DdToSd.prototype.beginTransfer = null;
 
         // OneOf field names bound to virtual getters and setters
         let $oneOfFields;
 
         /**
-         * FromDestinationDeviceEnvelope content.
+         * DdToSd content.
          * @member {"getSummary"|"beginTransfer"|undefined} content
-         * @memberof history.FromDestinationDeviceEnvelope
+         * @memberof history.DdToSd
          * @instance
          */
-        Object.defineProperty(FromDestinationDeviceEnvelope.prototype, "content", {
+        Object.defineProperty(DdToSd.prototype, "content", {
             get: $util.oneOfGetter($oneOfFields = ["getSummary", "beginTransfer"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
         /**
-         * Encodes the specified FromDestinationDeviceEnvelope message. Does not implicitly {@link history.FromDestinationDeviceEnvelope.verify|verify} messages.
+         * Encodes the specified DdToSd message. Does not implicitly {@link history.DdToSd.verify|verify} messages.
          * @function encode
-         * @memberof history.FromDestinationDeviceEnvelope
+         * @memberof history.DdToSd
          * @static
-         * @param {history.FromDestinationDeviceEnvelope} message FromDestinationDeviceEnvelope message or plain object to encode
+         * @param {history.DdToSd} message DdToSd message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FromDestinationDeviceEnvelope.encode = function encode(message, writer) {
+        DdToSd.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
             if (message.getSummary != null && Object.hasOwnProperty.call(message, "getSummary"))
@@ -7382,20 +7410,20 @@ export const history = $root.history = (() => {
         };
 
         /**
-         * Decodes a FromDestinationDeviceEnvelope message from the specified reader or buffer.
+         * Decodes a DdToSd message from the specified reader or buffer.
          * @function decode
-         * @memberof history.FromDestinationDeviceEnvelope
+         * @memberof history.DdToSd
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {history.FromDestinationDeviceEnvelope} FromDestinationDeviceEnvelope
+         * @returns {history.DdToSd} DdToSd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FromDestinationDeviceEnvelope.decode = function decode(reader, length) {
+        DdToSd.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.history.FromDestinationDeviceEnvelope();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.history.DdToSd();
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
@@ -7413,29 +7441,29 @@ export const history = $root.history = (() => {
             return message;
         };
 
-        return FromDestinationDeviceEnvelope;
+        return DdToSd;
     })();
 
-    history.FromSourceDeviceEnvelope = (function() {
+    history.SdToDd = (function() {
 
         /**
-         * Properties of a FromSourceDeviceEnvelope.
+         * Properties of a SdToDd.
          * @memberof history
-         * @interface IFromSourceDeviceEnvelope
-         * @property {history.Summary|null} [summary] FromSourceDeviceEnvelope summary
-         * @property {common.BlobData|null} [blobData] FromSourceDeviceEnvelope blobData
-         * @property {history.Data|null} [data] FromSourceDeviceEnvelope data
+         * @interface ISdToDd
+         * @property {history.Summary|null} [summary] SdToDd summary
+         * @property {common.BlobData|null} [blobData] SdToDd blobData
+         * @property {history.Data|null} [data] SdToDd data
          */
 
         /**
-         * Constructs a new FromSourceDeviceEnvelope.
+         * Constructs a new SdToDd.
          * @memberof history
-         * @classdesc Represents a FromSourceDeviceEnvelope.
-         * @implements IFromSourceDeviceEnvelope
+         * @classdesc Represents a SdToDd.
+         * @implements ISdToDd
          * @constructor
-         * @param {history.IFromSourceDeviceEnvelope=} [properties] Properties to set
+         * @param {history.ISdToDd=} [properties] Properties to set
          */
-        function FromSourceDeviceEnvelope(properties) {
+        function SdToDd(properties) {
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -7443,53 +7471,53 @@ export const history = $root.history = (() => {
         }
 
         /**
-         * FromSourceDeviceEnvelope summary.
+         * SdToDd summary.
          * @member {history.Summary|null|undefined} summary
-         * @memberof history.FromSourceDeviceEnvelope
+         * @memberof history.SdToDd
          * @instance
          */
-        FromSourceDeviceEnvelope.prototype.summary = null;
+        SdToDd.prototype.summary = null;
 
         /**
-         * FromSourceDeviceEnvelope blobData.
+         * SdToDd blobData.
          * @member {common.BlobData|null|undefined} blobData
-         * @memberof history.FromSourceDeviceEnvelope
+         * @memberof history.SdToDd
          * @instance
          */
-        FromSourceDeviceEnvelope.prototype.blobData = null;
+        SdToDd.prototype.blobData = null;
 
         /**
-         * FromSourceDeviceEnvelope data.
+         * SdToDd data.
          * @member {history.Data|null|undefined} data
-         * @memberof history.FromSourceDeviceEnvelope
+         * @memberof history.SdToDd
          * @instance
          */
-        FromSourceDeviceEnvelope.prototype.data = null;
+        SdToDd.prototype.data = null;
 
         // OneOf field names bound to virtual getters and setters
         let $oneOfFields;
 
         /**
-         * FromSourceDeviceEnvelope content.
+         * SdToDd content.
          * @member {"summary"|"blobData"|"data"|undefined} content
-         * @memberof history.FromSourceDeviceEnvelope
+         * @memberof history.SdToDd
          * @instance
          */
-        Object.defineProperty(FromSourceDeviceEnvelope.prototype, "content", {
+        Object.defineProperty(SdToDd.prototype, "content", {
             get: $util.oneOfGetter($oneOfFields = ["summary", "blobData", "data"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
         /**
-         * Encodes the specified FromSourceDeviceEnvelope message. Does not implicitly {@link history.FromSourceDeviceEnvelope.verify|verify} messages.
+         * Encodes the specified SdToDd message. Does not implicitly {@link history.SdToDd.verify|verify} messages.
          * @function encode
-         * @memberof history.FromSourceDeviceEnvelope
+         * @memberof history.SdToDd
          * @static
-         * @param {history.FromSourceDeviceEnvelope} message FromSourceDeviceEnvelope message or plain object to encode
+         * @param {history.SdToDd} message SdToDd message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FromSourceDeviceEnvelope.encode = function encode(message, writer) {
+        SdToDd.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
             if (message.summary != null && Object.hasOwnProperty.call(message, "summary"))
@@ -7502,20 +7530,20 @@ export const history = $root.history = (() => {
         };
 
         /**
-         * Decodes a FromSourceDeviceEnvelope message from the specified reader or buffer.
+         * Decodes a SdToDd message from the specified reader or buffer.
          * @function decode
-         * @memberof history.FromSourceDeviceEnvelope
+         * @memberof history.SdToDd
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {history.FromSourceDeviceEnvelope} FromSourceDeviceEnvelope
+         * @returns {history.SdToDd} SdToDd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FromSourceDeviceEnvelope.decode = function decode(reader, length) {
+        SdToDd.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.history.FromSourceDeviceEnvelope();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.history.SdToDd();
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
@@ -7536,7 +7564,7 @@ export const history = $root.history = (() => {
             return message;
         };
 
-        return FromSourceDeviceEnvelope;
+        return SdToDd;
     })();
 
     /**
@@ -9268,6 +9296,7 @@ export const d2d = $root.d2d = (() => {
          * @property {Long|null} [createdAt] OutgoingMessage createdAt
          * @property {d2d.MessageType|null} [type] OutgoingMessage type
          * @property {Uint8Array|null} [body] OutgoingMessage body
+         * @property {Array.<Uint8Array>|null} [nonces] OutgoingMessage nonces
          */
 
         /**
@@ -9279,6 +9308,7 @@ export const d2d = $root.d2d = (() => {
          * @param {d2d.IOutgoingMessage=} [properties] Properties to set
          */
         function OutgoingMessage(properties) {
+            this.nonces = [];
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -9333,6 +9363,14 @@ export const d2d = $root.d2d = (() => {
          */
         OutgoingMessage.prototype.body = $util.newBuffer([]);
 
+        /**
+         * OutgoingMessage nonces.
+         * @member {Array.<Uint8Array>} nonces
+         * @memberof d2d.OutgoingMessage
+         * @instance
+         */
+        OutgoingMessage.prototype.nonces = $util.emptyArray;
+
         // OneOf field names bound to virtual getters and setters
         let $oneOfFields;
 
@@ -9371,6 +9409,9 @@ export const d2d = $root.d2d = (() => {
                 writer.uint32(/* id 5, wireType 2 =*/42).bytes(message.body);
             if (message.threadMessageId != null && Object.hasOwnProperty.call(message, "threadMessageId"))
                 writer.uint32(/* id 6, wireType 1 =*/49).fixed64(message.threadMessageId);
+            if (message.nonces != null && message.nonces.length)
+                for (let i = 0; i < message.nonces.length; ++i)
+                    writer.uint32(/* id 7, wireType 2 =*/58).bytes(message.nonces[i]);
             return writer;
         };
 
@@ -9409,6 +9450,11 @@ export const d2d = $root.d2d = (() => {
                     break;
                 case 5:
                     message.body = reader.bytes();
+                    break;
+                case 7:
+                    if (!(message.nonces && message.nonces.length))
+                        message.nonces = [];
+                    message.nonces.push(reader.bytes());
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -9707,6 +9753,7 @@ export const d2d = $root.d2d = (() => {
          * @property {Long|null} [createdAt] IncomingMessage createdAt
          * @property {d2d.MessageType|null} [type] IncomingMessage type
          * @property {Uint8Array|null} [body] IncomingMessage body
+         * @property {Uint8Array|null} [nonce] IncomingMessage nonce
          */
 
         /**
@@ -9765,6 +9812,14 @@ export const d2d = $root.d2d = (() => {
         IncomingMessage.prototype.body = $util.newBuffer([]);
 
         /**
+         * IncomingMessage nonce.
+         * @member {Uint8Array} nonce
+         * @memberof d2d.IncomingMessage
+         * @instance
+         */
+        IncomingMessage.prototype.nonce = $util.newBuffer([]);
+
+        /**
          * Encodes the specified IncomingMessage message. Does not implicitly {@link d2d.IncomingMessage.verify|verify} messages.
          * @function encode
          * @memberof d2d.IncomingMessage
@@ -9786,6 +9841,8 @@ export const d2d = $root.d2d = (() => {
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.type);
             if (message.body != null && Object.hasOwnProperty.call(message, "body"))
                 writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.body);
+            if (message.nonce != null && Object.hasOwnProperty.call(message, "nonce"))
+                writer.uint32(/* id 7, wireType 2 =*/58).bytes(message.nonce);
             return writer;
         };
 
@@ -9821,6 +9878,9 @@ export const d2d = $root.d2d = (() => {
                     break;
                 case 6:
                     message.body = reader.bytes();
+                    break;
+                case 7:
+                    message.nonce = reader.bytes();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -13443,7 +13503,7 @@ export const sync = $root.sync = (() => {
          * @property {sync.Contact.IdentityType|null} [identityType] Contact identityType
          * @property {sync.Contact.AcquaintanceLevel|null} [acquaintanceLevel] Contact acquaintanceLevel
          * @property {sync.Contact.ActivityState|null} [activityState] Contact activityState
-         * @property {number|null} [featureMask] Contact featureMask
+         * @property {Long|null} [featureMask] Contact featureMask
          * @property {sync.Contact.SyncState|null} [syncState] Contact syncState
          * @property {sync.Contact.ReadReceiptPolicyOverride|null} [readReceiptPolicyOverride] Contact readReceiptPolicyOverride
          * @property {sync.Contact.TypingIndicatorPolicyOverride|null} [typingIndicatorPolicyOverride] Contact typingIndicatorPolicyOverride
@@ -13560,7 +13620,7 @@ export const sync = $root.sync = (() => {
 
         /**
          * Contact featureMask.
-         * @member {number|null|undefined} featureMask
+         * @member {Long|null|undefined} featureMask
          * @memberof sync.Contact
          * @instance
          */
@@ -13842,7 +13902,7 @@ export const sync = $root.sync = (() => {
             if (message.typingIndicatorPolicyOverride != null && Object.hasOwnProperty.call(message, "typingIndicatorPolicyOverride"))
                 $root.sync.Contact.TypingIndicatorPolicyOverride.encode(message.typingIndicatorPolicyOverride, writer.uint32(/* id 17, wireType 2 =*/138).fork()).ldelim();
             if (message.featureMask != null && Object.hasOwnProperty.call(message, "featureMask"))
-                writer.uint32(/* id 18, wireType 0 =*/144).uint32(message.featureMask);
+                writer.uint32(/* id 18, wireType 0 =*/144).uint64(message.featureMask);
             if (message.notificationTriggerPolicyOverride != null && Object.hasOwnProperty.call(message, "notificationTriggerPolicyOverride"))
                 $root.sync.Contact.NotificationTriggerPolicyOverride.encode(message.notificationTriggerPolicyOverride, writer.uint32(/* id 19, wireType 2 =*/154).fork()).ldelim();
             if (message.notificationSoundPolicyOverride != null && Object.hasOwnProperty.call(message, "notificationSoundPolicyOverride"))
@@ -13904,7 +13964,7 @@ export const sync = $root.sync = (() => {
                     message.activityState = reader.int32();
                     break;
                 case 18:
-                    message.featureMask = reader.uint32();
+                    message.featureMask = reader.uint64();
                     break;
                 case 13:
                     message.syncState = reader.int32();
@@ -15422,7 +15482,7 @@ export const sync = $root.sync = (() => {
          * @property {sync.ReadReceiptPolicy|null} [readReceiptPolicy] Settings readReceiptPolicy
          * @property {sync.TypingIndicatorPolicy|null} [typingIndicatorPolicy] Settings typingIndicatorPolicy
          * @property {sync.Settings.CallPolicy|null} [callPolicy] Settings callPolicy
-         * @property {sync.Settings.CallConnectionPolicy|null} [callConnectionPolity] Settings callConnectionPolity
+         * @property {sync.Settings.CallConnectionPolicy|null} [callConnectionPolicy] Settings callConnectionPolicy
          * @property {sync.Settings.ScreenshotPolicy|null} [screenshotPolicy] Settings screenshotPolicy
          * @property {sync.Settings.KeyboardDataCollectionPolicy|null} [keyboardDataCollectionPolicy] Settings keyboardDataCollectionPolicy
          * @property {common.Identities|null} [blockedIdentities] Settings blockedIdentities
@@ -15485,12 +15545,12 @@ export const sync = $root.sync = (() => {
         Settings.prototype.callPolicy = null;
 
         /**
-         * Settings callConnectionPolity.
-         * @member {sync.Settings.CallConnectionPolicy|null|undefined} callConnectionPolity
+         * Settings callConnectionPolicy.
+         * @member {sync.Settings.CallConnectionPolicy|null|undefined} callConnectionPolicy
          * @memberof sync.Settings
          * @instance
          */
-        Settings.prototype.callConnectionPolity = null;
+        Settings.prototype.callConnectionPolicy = null;
 
         /**
          * Settings screenshotPolicy.
@@ -15583,13 +15643,13 @@ export const sync = $root.sync = (() => {
         });
 
         /**
-         * Settings _callConnectionPolity.
-         * @member {"callConnectionPolity"|undefined} _callConnectionPolity
+         * Settings _callConnectionPolicy.
+         * @member {"callConnectionPolicy"|undefined} _callConnectionPolicy
          * @memberof sync.Settings
          * @instance
          */
-        Object.defineProperty(Settings.prototype, "_callConnectionPolity", {
-            get: $util.oneOfGetter($oneOfFields = ["callConnectionPolity"]),
+        Object.defineProperty(Settings.prototype, "_callConnectionPolicy", {
+            get: $util.oneOfGetter($oneOfFields = ["callConnectionPolicy"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -15637,8 +15697,8 @@ export const sync = $root.sync = (() => {
                 writer.uint32(/* id 4, wireType 0 =*/32).int32(message.typingIndicatorPolicy);
             if (message.callPolicy != null && Object.hasOwnProperty.call(message, "callPolicy"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.callPolicy);
-            if (message.callConnectionPolity != null && Object.hasOwnProperty.call(message, "callConnectionPolity"))
-                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.callConnectionPolity);
+            if (message.callConnectionPolicy != null && Object.hasOwnProperty.call(message, "callConnectionPolicy"))
+                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.callConnectionPolicy);
             if (message.screenshotPolicy != null && Object.hasOwnProperty.call(message, "screenshotPolicy"))
                 writer.uint32(/* id 7, wireType 0 =*/56).int32(message.screenshotPolicy);
             if (message.keyboardDataCollectionPolicy != null && Object.hasOwnProperty.call(message, "keyboardDataCollectionPolicy"))
@@ -15684,7 +15744,7 @@ export const sync = $root.sync = (() => {
                     message.callPolicy = reader.int32();
                     break;
                 case 6:
-                    message.callConnectionPolity = reader.int32();
+                    message.callConnectionPolicy = reader.int32();
                     break;
                 case 7:
                     message.screenshotPolicy = reader.int32();
@@ -15805,25 +15865,24 @@ export const join = $root.join = (() => {
      */
     const join = {};
 
-    join.FromNewDeviceEnvelope = (function() {
+    join.NdToEd = (function() {
 
         /**
-         * Properties of a FromNewDeviceEnvelope.
+         * Properties of a NdToEd.
          * @memberof join
-         * @interface IFromNewDeviceEnvelope
-         * @property {join.Begin|null} [begin] FromNewDeviceEnvelope begin
-         * @property {join.Registered|null} [registered] FromNewDeviceEnvelope registered
+         * @interface INdToEd
+         * @property {join.Registered|null} [registered] NdToEd registered
          */
 
         /**
-         * Constructs a new FromNewDeviceEnvelope.
+         * Constructs a new NdToEd.
          * @memberof join
-         * @classdesc Represents a FromNewDeviceEnvelope.
-         * @implements IFromNewDeviceEnvelope
+         * @classdesc Represents a NdToEd.
+         * @implements INdToEd
          * @constructor
-         * @param {join.IFromNewDeviceEnvelope=} [properties] Properties to set
+         * @param {join.INdToEd=} [properties] Properties to set
          */
-        function FromNewDeviceEnvelope(properties) {
+        function NdToEd(properties) {
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -15831,76 +15890,63 @@ export const join = $root.join = (() => {
         }
 
         /**
-         * FromNewDeviceEnvelope begin.
-         * @member {join.Begin|null|undefined} begin
-         * @memberof join.FromNewDeviceEnvelope
-         * @instance
-         */
-        FromNewDeviceEnvelope.prototype.begin = null;
-
-        /**
-         * FromNewDeviceEnvelope registered.
+         * NdToEd registered.
          * @member {join.Registered|null|undefined} registered
-         * @memberof join.FromNewDeviceEnvelope
+         * @memberof join.NdToEd
          * @instance
          */
-        FromNewDeviceEnvelope.prototype.registered = null;
+        NdToEd.prototype.registered = null;
 
         // OneOf field names bound to virtual getters and setters
         let $oneOfFields;
 
         /**
-         * FromNewDeviceEnvelope content.
-         * @member {"begin"|"registered"|undefined} content
-         * @memberof join.FromNewDeviceEnvelope
+         * NdToEd content.
+         * @member {"registered"|undefined} content
+         * @memberof join.NdToEd
          * @instance
          */
-        Object.defineProperty(FromNewDeviceEnvelope.prototype, "content", {
-            get: $util.oneOfGetter($oneOfFields = ["begin", "registered"]),
+        Object.defineProperty(NdToEd.prototype, "content", {
+            get: $util.oneOfGetter($oneOfFields = ["registered"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
         /**
-         * Encodes the specified FromNewDeviceEnvelope message. Does not implicitly {@link join.FromNewDeviceEnvelope.verify|verify} messages.
+         * Encodes the specified NdToEd message. Does not implicitly {@link join.NdToEd.verify|verify} messages.
          * @function encode
-         * @memberof join.FromNewDeviceEnvelope
+         * @memberof join.NdToEd
          * @static
-         * @param {join.FromNewDeviceEnvelope} message FromNewDeviceEnvelope message or plain object to encode
+         * @param {join.NdToEd} message NdToEd message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FromNewDeviceEnvelope.encode = function encode(message, writer) {
+        NdToEd.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.begin != null && Object.hasOwnProperty.call(message, "begin"))
-                $root.join.Begin.encode(message.begin, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
             if (message.registered != null && Object.hasOwnProperty.call(message, "registered"))
-                $root.join.Registered.encode(message.registered, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.join.Registered.encode(message.registered, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
             return writer;
         };
 
         /**
-         * Decodes a FromNewDeviceEnvelope message from the specified reader or buffer.
+         * Decodes a NdToEd message from the specified reader or buffer.
          * @function decode
-         * @memberof join.FromNewDeviceEnvelope
+         * @memberof join.NdToEd
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {join.FromNewDeviceEnvelope} FromNewDeviceEnvelope
+         * @returns {join.NdToEd} NdToEd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FromNewDeviceEnvelope.decode = function decode(reader, length) {
+        NdToEd.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.FromNewDeviceEnvelope();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.NdToEd();
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.begin = $root.join.Begin.decode(reader, reader.uint32());
-                    break;
-                case 2:
                     message.registered = $root.join.Registered.decode(reader, reader.uint32());
                     break;
                 default:
@@ -15911,28 +15957,29 @@ export const join = $root.join = (() => {
             return message;
         };
 
-        return FromNewDeviceEnvelope;
+        return NdToEd;
     })();
 
-    join.FromExistingDeviceEnvelope = (function() {
+    join.EdToNd = (function() {
 
         /**
-         * Properties of a FromExistingDeviceEnvelope.
+         * Properties of an EdToNd.
          * @memberof join
-         * @interface IFromExistingDeviceEnvelope
-         * @property {common.BlobData|null} [blobData] FromExistingDeviceEnvelope blobData
-         * @property {join.EssentialData|null} [essentialData] FromExistingDeviceEnvelope essentialData
+         * @interface IEdToNd
+         * @property {join.Begin|null} [begin] EdToNd begin
+         * @property {common.BlobData|null} [blobData] EdToNd blobData
+         * @property {join.EssentialData|null} [essentialData] EdToNd essentialData
          */
 
         /**
-         * Constructs a new FromExistingDeviceEnvelope.
+         * Constructs a new EdToNd.
          * @memberof join
-         * @classdesc Represents a FromExistingDeviceEnvelope.
-         * @implements IFromExistingDeviceEnvelope
+         * @classdesc Represents an EdToNd.
+         * @implements IEdToNd
          * @constructor
-         * @param {join.IFromExistingDeviceEnvelope=} [properties] Properties to set
+         * @param {join.IEdToNd=} [properties] Properties to set
          */
-        function FromExistingDeviceEnvelope(properties) {
+        function EdToNd(properties) {
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -15940,76 +15987,89 @@ export const join = $root.join = (() => {
         }
 
         /**
-         * FromExistingDeviceEnvelope blobData.
-         * @member {common.BlobData|null|undefined} blobData
-         * @memberof join.FromExistingDeviceEnvelope
+         * EdToNd begin.
+         * @member {join.Begin|null|undefined} begin
+         * @memberof join.EdToNd
          * @instance
          */
-        FromExistingDeviceEnvelope.prototype.blobData = null;
+        EdToNd.prototype.begin = null;
 
         /**
-         * FromExistingDeviceEnvelope essentialData.
-         * @member {join.EssentialData|null|undefined} essentialData
-         * @memberof join.FromExistingDeviceEnvelope
+         * EdToNd blobData.
+         * @member {common.BlobData|null|undefined} blobData
+         * @memberof join.EdToNd
          * @instance
          */
-        FromExistingDeviceEnvelope.prototype.essentialData = null;
+        EdToNd.prototype.blobData = null;
+
+        /**
+         * EdToNd essentialData.
+         * @member {join.EssentialData|null|undefined} essentialData
+         * @memberof join.EdToNd
+         * @instance
+         */
+        EdToNd.prototype.essentialData = null;
 
         // OneOf field names bound to virtual getters and setters
         let $oneOfFields;
 
         /**
-         * FromExistingDeviceEnvelope content.
-         * @member {"blobData"|"essentialData"|undefined} content
-         * @memberof join.FromExistingDeviceEnvelope
+         * EdToNd content.
+         * @member {"begin"|"blobData"|"essentialData"|undefined} content
+         * @memberof join.EdToNd
          * @instance
          */
-        Object.defineProperty(FromExistingDeviceEnvelope.prototype, "content", {
-            get: $util.oneOfGetter($oneOfFields = ["blobData", "essentialData"]),
+        Object.defineProperty(EdToNd.prototype, "content", {
+            get: $util.oneOfGetter($oneOfFields = ["begin", "blobData", "essentialData"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
         /**
-         * Encodes the specified FromExistingDeviceEnvelope message. Does not implicitly {@link join.FromExistingDeviceEnvelope.verify|verify} messages.
+         * Encodes the specified EdToNd message. Does not implicitly {@link join.EdToNd.verify|verify} messages.
          * @function encode
-         * @memberof join.FromExistingDeviceEnvelope
+         * @memberof join.EdToNd
          * @static
-         * @param {join.FromExistingDeviceEnvelope} message FromExistingDeviceEnvelope message or plain object to encode
+         * @param {join.EdToNd} message EdToNd message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FromExistingDeviceEnvelope.encode = function encode(message, writer) {
+        EdToNd.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
+            if (message.begin != null && Object.hasOwnProperty.call(message, "begin"))
+                $root.join.Begin.encode(message.begin, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
             if (message.blobData != null && Object.hasOwnProperty.call(message, "blobData"))
-                $root.common.BlobData.encode(message.blobData, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.common.BlobData.encode(message.blobData, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
             if (message.essentialData != null && Object.hasOwnProperty.call(message, "essentialData"))
-                $root.join.EssentialData.encode(message.essentialData, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.join.EssentialData.encode(message.essentialData, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
             return writer;
         };
 
         /**
-         * Decodes a FromExistingDeviceEnvelope message from the specified reader or buffer.
+         * Decodes an EdToNd message from the specified reader or buffer.
          * @function decode
-         * @memberof join.FromExistingDeviceEnvelope
+         * @memberof join.EdToNd
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {join.FromExistingDeviceEnvelope} FromExistingDeviceEnvelope
+         * @returns {join.EdToNd} EdToNd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FromExistingDeviceEnvelope.decode = function decode(reader, length) {
+        EdToNd.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.FromExistingDeviceEnvelope();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.EdToNd();
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.blobData = $root.common.BlobData.decode(reader, reader.uint32());
+                    message.begin = $root.join.Begin.decode(reader, reader.uint32());
                     break;
                 case 2:
+                    message.blobData = $root.common.BlobData.decode(reader, reader.uint32());
+                    break;
+                case 3:
                     message.essentialData = $root.join.EssentialData.decode(reader, reader.uint32());
                     break;
                 default:
@@ -16020,7 +16080,7 @@ export const join = $root.join = (() => {
             return message;
         };
 
-        return FromExistingDeviceEnvelope;
+        return EdToNd;
     })();
 
     join.Begin = (function() {
@@ -16097,12 +16157,15 @@ export const join = $root.join = (() => {
          * @memberof join
          * @interface IEssentialData
          * @property {join.EssentialData.MediatorServer|null} [mediatorServer] EssentialData mediatorServer
-         * @property {Uint8Array|null} [clientKey] EssentialData clientKey
+         * @property {join.EssentialData.IdentityData|null} [identityData] EssentialData identityData
+         * @property {join.EssentialData.DeviceGroupData|null} [deviceGroupData] EssentialData deviceGroupData
          * @property {sync.UserProfile|null} [userProfile] EssentialData userProfile
          * @property {sync.Settings|null} [settings] EssentialData settings
-         * @property {Array.<sync.Contact>|null} [contacts] EssentialData contacts
-         * @property {Array.<sync.Group>|null} [groups] EssentialData groups
-         * @property {Array.<sync.DistributionList>|null} [distributionLists] EssentialData distributionLists
+         * @property {Array.<join.EssentialData.AugmentedContact>|null} [contacts] EssentialData contacts
+         * @property {Array.<join.EssentialData.AugmentedGroup>|null} [groups] EssentialData groups
+         * @property {Array.<join.EssentialData.AugmentedDistributionList>|null} [distributionLists] EssentialData distributionLists
+         * @property {Array.<Uint8Array>|null} [cspHashedNonces] EssentialData cspHashedNonces
+         * @property {Array.<Uint8Array>|null} [d2dHashedNonces] EssentialData d2dHashedNonces
          */
 
         /**
@@ -16117,6 +16180,8 @@ export const join = $root.join = (() => {
             this.contacts = [];
             this.groups = [];
             this.distributionLists = [];
+            this.cspHashedNonces = [];
+            this.d2dHashedNonces = [];
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -16132,12 +16197,20 @@ export const join = $root.join = (() => {
         EssentialData.prototype.mediatorServer = null;
 
         /**
-         * EssentialData clientKey.
-         * @member {Uint8Array} clientKey
+         * EssentialData identityData.
+         * @member {join.EssentialData.IdentityData|null|undefined} identityData
          * @memberof join.EssentialData
          * @instance
          */
-        EssentialData.prototype.clientKey = $util.newBuffer([]);
+        EssentialData.prototype.identityData = null;
+
+        /**
+         * EssentialData deviceGroupData.
+         * @member {join.EssentialData.DeviceGroupData|null|undefined} deviceGroupData
+         * @memberof join.EssentialData
+         * @instance
+         */
+        EssentialData.prototype.deviceGroupData = null;
 
         /**
          * EssentialData userProfile.
@@ -16157,7 +16230,7 @@ export const join = $root.join = (() => {
 
         /**
          * EssentialData contacts.
-         * @member {Array.<sync.Contact>} contacts
+         * @member {Array.<join.EssentialData.AugmentedContact>} contacts
          * @memberof join.EssentialData
          * @instance
          */
@@ -16165,7 +16238,7 @@ export const join = $root.join = (() => {
 
         /**
          * EssentialData groups.
-         * @member {Array.<sync.Group>} groups
+         * @member {Array.<join.EssentialData.AugmentedGroup>} groups
          * @memberof join.EssentialData
          * @instance
          */
@@ -16173,11 +16246,27 @@ export const join = $root.join = (() => {
 
         /**
          * EssentialData distributionLists.
-         * @member {Array.<sync.DistributionList>} distributionLists
+         * @member {Array.<join.EssentialData.AugmentedDistributionList>} distributionLists
          * @memberof join.EssentialData
          * @instance
          */
         EssentialData.prototype.distributionLists = $util.emptyArray;
+
+        /**
+         * EssentialData cspHashedNonces.
+         * @member {Array.<Uint8Array>} cspHashedNonces
+         * @memberof join.EssentialData
+         * @instance
+         */
+        EssentialData.prototype.cspHashedNonces = $util.emptyArray;
+
+        /**
+         * EssentialData d2dHashedNonces.
+         * @member {Array.<Uint8Array>} d2dHashedNonces
+         * @memberof join.EssentialData
+         * @instance
+         */
+        EssentialData.prototype.d2dHashedNonces = $util.emptyArray;
 
         /**
          * Encodes the specified EssentialData message. Does not implicitly {@link join.EssentialData.verify|verify} messages.
@@ -16193,21 +16282,29 @@ export const join = $root.join = (() => {
                 writer = $Writer.create();
             if (message.mediatorServer != null && Object.hasOwnProperty.call(message, "mediatorServer"))
                 $root.join.EssentialData.MediatorServer.encode(message.mediatorServer, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-            if (message.clientKey != null && Object.hasOwnProperty.call(message, "clientKey"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.clientKey);
+            if (message.identityData != null && Object.hasOwnProperty.call(message, "identityData"))
+                $root.join.EssentialData.IdentityData.encode(message.identityData, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.deviceGroupData != null && Object.hasOwnProperty.call(message, "deviceGroupData"))
+                $root.join.EssentialData.DeviceGroupData.encode(message.deviceGroupData, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
             if (message.userProfile != null && Object.hasOwnProperty.call(message, "userProfile"))
-                $root.sync.UserProfile.encode(message.userProfile, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.sync.UserProfile.encode(message.userProfile, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
-                $root.sync.Settings.encode(message.settings, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.sync.Settings.encode(message.settings, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
             if (message.contacts != null && message.contacts.length)
                 for (let i = 0; i < message.contacts.length; ++i)
-                    $root.sync.Contact.encode(message.contacts[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                    $root.join.EssentialData.AugmentedContact.encode(message.contacts[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             if (message.groups != null && message.groups.length)
                 for (let i = 0; i < message.groups.length; ++i)
-                    $root.sync.Group.encode(message.groups[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                    $root.join.EssentialData.AugmentedGroup.encode(message.groups[i], writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
             if (message.distributionLists != null && message.distributionLists.length)
                 for (let i = 0; i < message.distributionLists.length; ++i)
-                    $root.sync.DistributionList.encode(message.distributionLists[i], writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
+                    $root.join.EssentialData.AugmentedDistributionList.encode(message.distributionLists[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+            if (message.cspHashedNonces != null && message.cspHashedNonces.length)
+                for (let i = 0; i < message.cspHashedNonces.length; ++i)
+                    writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.cspHashedNonces[i]);
+            if (message.d2dHashedNonces != null && message.d2dHashedNonces.length)
+                for (let i = 0; i < message.d2dHashedNonces.length; ++i)
+                    writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.d2dHashedNonces[i]);
             return writer;
         };
 
@@ -16233,28 +16330,41 @@ export const join = $root.join = (() => {
                     message.mediatorServer = $root.join.EssentialData.MediatorServer.decode(reader, reader.uint32());
                     break;
                 case 2:
-                    message.clientKey = reader.bytes();
+                    message.identityData = $root.join.EssentialData.IdentityData.decode(reader, reader.uint32());
                     break;
                 case 3:
-                    message.userProfile = $root.sync.UserProfile.decode(reader, reader.uint32());
+                    message.deviceGroupData = $root.join.EssentialData.DeviceGroupData.decode(reader, reader.uint32());
                     break;
                 case 4:
-                    message.settings = $root.sync.Settings.decode(reader, reader.uint32());
+                    message.userProfile = $root.sync.UserProfile.decode(reader, reader.uint32());
                     break;
                 case 5:
-                    if (!(message.contacts && message.contacts.length))
-                        message.contacts = [];
-                    message.contacts.push($root.sync.Contact.decode(reader, reader.uint32()));
+                    message.settings = $root.sync.Settings.decode(reader, reader.uint32());
                     break;
                 case 6:
-                    if (!(message.groups && message.groups.length))
-                        message.groups = [];
-                    message.groups.push($root.sync.Group.decode(reader, reader.uint32()));
+                    if (!(message.contacts && message.contacts.length))
+                        message.contacts = [];
+                    message.contacts.push($root.join.EssentialData.AugmentedContact.decode(reader, reader.uint32()));
                     break;
                 case 7:
+                    if (!(message.groups && message.groups.length))
+                        message.groups = [];
+                    message.groups.push($root.join.EssentialData.AugmentedGroup.decode(reader, reader.uint32()));
+                    break;
+                case 8:
                     if (!(message.distributionLists && message.distributionLists.length))
                         message.distributionLists = [];
-                    message.distributionLists.push($root.sync.DistributionList.decode(reader, reader.uint32()));
+                    message.distributionLists.push($root.join.EssentialData.AugmentedDistributionList.decode(reader, reader.uint32()));
+                    break;
+                case 9:
+                    if (!(message.cspHashedNonces && message.cspHashedNonces.length))
+                        message.cspHashedNonces = [];
+                    message.cspHashedNonces.push(reader.bytes());
+                    break;
+                case 10:
+                    if (!(message.d2dHashedNonces && message.d2dHashedNonces.length))
+                        message.d2dHashedNonces = [];
+                    message.d2dHashedNonces.push(reader.bytes());
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -16373,6 +16483,495 @@ export const join = $root.join = (() => {
             return MediatorServer;
         })();
 
+        EssentialData.IdentityData = (function() {
+
+            /**
+             * Properties of an IdentityData.
+             * @memberof join.EssentialData
+             * @interface IIdentityData
+             * @property {string|null} [identity] IdentityData identity
+             * @property {Uint8Array|null} [ck] IdentityData ck
+             * @property {Uint8Array|null} [cspDeviceCookie] IdentityData cspDeviceCookie
+             * @property {string|null} [cspServerGroup] IdentityData cspServerGroup
+             */
+
+            /**
+             * Constructs a new IdentityData.
+             * @memberof join.EssentialData
+             * @classdesc Represents an IdentityData.
+             * @implements IIdentityData
+             * @constructor
+             * @param {join.EssentialData.IIdentityData=} [properties] Properties to set
+             */
+            function IdentityData(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * IdentityData identity.
+             * @member {string} identity
+             * @memberof join.EssentialData.IdentityData
+             * @instance
+             */
+            IdentityData.prototype.identity = "";
+
+            /**
+             * IdentityData ck.
+             * @member {Uint8Array} ck
+             * @memberof join.EssentialData.IdentityData
+             * @instance
+             */
+            IdentityData.prototype.ck = $util.newBuffer([]);
+
+            /**
+             * IdentityData cspDeviceCookie.
+             * @member {Uint8Array} cspDeviceCookie
+             * @memberof join.EssentialData.IdentityData
+             * @instance
+             */
+            IdentityData.prototype.cspDeviceCookie = $util.newBuffer([]);
+
+            /**
+             * IdentityData cspServerGroup.
+             * @member {string} cspServerGroup
+             * @memberof join.EssentialData.IdentityData
+             * @instance
+             */
+            IdentityData.prototype.cspServerGroup = "";
+
+            /**
+             * Encodes the specified IdentityData message. Does not implicitly {@link join.EssentialData.IdentityData.verify|verify} messages.
+             * @function encode
+             * @memberof join.EssentialData.IdentityData
+             * @static
+             * @param {join.EssentialData.IdentityData} message IdentityData message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            IdentityData.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.identity != null && Object.hasOwnProperty.call(message, "identity"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.identity);
+                if (message.ck != null && Object.hasOwnProperty.call(message, "ck"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.ck);
+                if (message.cspDeviceCookie != null && Object.hasOwnProperty.call(message, "cspDeviceCookie"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.cspDeviceCookie);
+                if (message.cspServerGroup != null && Object.hasOwnProperty.call(message, "cspServerGroup"))
+                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.cspServerGroup);
+                return writer;
+            };
+
+            /**
+             * Decodes an IdentityData message from the specified reader or buffer.
+             * @function decode
+             * @memberof join.EssentialData.IdentityData
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {join.EssentialData.IdentityData} IdentityData
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            IdentityData.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.EssentialData.IdentityData();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.identity = reader.string();
+                        break;
+                    case 2:
+                        message.ck = reader.bytes();
+                        break;
+                    case 3:
+                        message.cspDeviceCookie = reader.bytes();
+                        break;
+                    case 4:
+                        message.cspServerGroup = reader.string();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return IdentityData;
+        })();
+
+        EssentialData.DeviceGroupData = (function() {
+
+            /**
+             * Properties of a DeviceGroupData.
+             * @memberof join.EssentialData
+             * @interface IDeviceGroupData
+             * @property {Uint8Array|null} [dgk] DeviceGroupData dgk
+             */
+
+            /**
+             * Constructs a new DeviceGroupData.
+             * @memberof join.EssentialData
+             * @classdesc Represents a DeviceGroupData.
+             * @implements IDeviceGroupData
+             * @constructor
+             * @param {join.EssentialData.IDeviceGroupData=} [properties] Properties to set
+             */
+            function DeviceGroupData(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * DeviceGroupData dgk.
+             * @member {Uint8Array} dgk
+             * @memberof join.EssentialData.DeviceGroupData
+             * @instance
+             */
+            DeviceGroupData.prototype.dgk = $util.newBuffer([]);
+
+            /**
+             * Encodes the specified DeviceGroupData message. Does not implicitly {@link join.EssentialData.DeviceGroupData.verify|verify} messages.
+             * @function encode
+             * @memberof join.EssentialData.DeviceGroupData
+             * @static
+             * @param {join.EssentialData.DeviceGroupData} message DeviceGroupData message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            DeviceGroupData.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.dgk != null && Object.hasOwnProperty.call(message, "dgk"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.dgk);
+                return writer;
+            };
+
+            /**
+             * Decodes a DeviceGroupData message from the specified reader or buffer.
+             * @function decode
+             * @memberof join.EssentialData.DeviceGroupData
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {join.EssentialData.DeviceGroupData} DeviceGroupData
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            DeviceGroupData.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.EssentialData.DeviceGroupData();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.dgk = reader.bytes();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return DeviceGroupData;
+        })();
+
+        EssentialData.AugmentedContact = (function() {
+
+            /**
+             * Properties of an AugmentedContact.
+             * @memberof join.EssentialData
+             * @interface IAugmentedContact
+             * @property {sync.Contact|null} [contact] AugmentedContact contact
+             * @property {Long|null} [lastUpdateAt] AugmentedContact lastUpdateAt
+             */
+
+            /**
+             * Constructs a new AugmentedContact.
+             * @memberof join.EssentialData
+             * @classdesc Represents an AugmentedContact.
+             * @implements IAugmentedContact
+             * @constructor
+             * @param {join.EssentialData.IAugmentedContact=} [properties] Properties to set
+             */
+            function AugmentedContact(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * AugmentedContact contact.
+             * @member {sync.Contact|null|undefined} contact
+             * @memberof join.EssentialData.AugmentedContact
+             * @instance
+             */
+            AugmentedContact.prototype.contact = null;
+
+            /**
+             * AugmentedContact lastUpdateAt.
+             * @member {Long} lastUpdateAt
+             * @memberof join.EssentialData.AugmentedContact
+             * @instance
+             */
+            AugmentedContact.prototype.lastUpdateAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+            /**
+             * Encodes the specified AugmentedContact message. Does not implicitly {@link join.EssentialData.AugmentedContact.verify|verify} messages.
+             * @function encode
+             * @memberof join.EssentialData.AugmentedContact
+             * @static
+             * @param {join.EssentialData.AugmentedContact} message AugmentedContact message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            AugmentedContact.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.contact != null && Object.hasOwnProperty.call(message, "contact"))
+                    $root.sync.Contact.encode(message.contact, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                if (message.lastUpdateAt != null && Object.hasOwnProperty.call(message, "lastUpdateAt"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.lastUpdateAt);
+                return writer;
+            };
+
+            /**
+             * Decodes an AugmentedContact message from the specified reader or buffer.
+             * @function decode
+             * @memberof join.EssentialData.AugmentedContact
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {join.EssentialData.AugmentedContact} AugmentedContact
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            AugmentedContact.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.EssentialData.AugmentedContact();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.contact = $root.sync.Contact.decode(reader, reader.uint32());
+                        break;
+                    case 2:
+                        message.lastUpdateAt = reader.uint64();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return AugmentedContact;
+        })();
+
+        EssentialData.AugmentedGroup = (function() {
+
+            /**
+             * Properties of an AugmentedGroup.
+             * @memberof join.EssentialData
+             * @interface IAugmentedGroup
+             * @property {sync.Group|null} [group] AugmentedGroup group
+             * @property {Long|null} [lastUpdateAt] AugmentedGroup lastUpdateAt
+             */
+
+            /**
+             * Constructs a new AugmentedGroup.
+             * @memberof join.EssentialData
+             * @classdesc Represents an AugmentedGroup.
+             * @implements IAugmentedGroup
+             * @constructor
+             * @param {join.EssentialData.IAugmentedGroup=} [properties] Properties to set
+             */
+            function AugmentedGroup(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * AugmentedGroup group.
+             * @member {sync.Group|null|undefined} group
+             * @memberof join.EssentialData.AugmentedGroup
+             * @instance
+             */
+            AugmentedGroup.prototype.group = null;
+
+            /**
+             * AugmentedGroup lastUpdateAt.
+             * @member {Long} lastUpdateAt
+             * @memberof join.EssentialData.AugmentedGroup
+             * @instance
+             */
+            AugmentedGroup.prototype.lastUpdateAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+            /**
+             * Encodes the specified AugmentedGroup message. Does not implicitly {@link join.EssentialData.AugmentedGroup.verify|verify} messages.
+             * @function encode
+             * @memberof join.EssentialData.AugmentedGroup
+             * @static
+             * @param {join.EssentialData.AugmentedGroup} message AugmentedGroup message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            AugmentedGroup.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.group != null && Object.hasOwnProperty.call(message, "group"))
+                    $root.sync.Group.encode(message.group, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                if (message.lastUpdateAt != null && Object.hasOwnProperty.call(message, "lastUpdateAt"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.lastUpdateAt);
+                return writer;
+            };
+
+            /**
+             * Decodes an AugmentedGroup message from the specified reader or buffer.
+             * @function decode
+             * @memberof join.EssentialData.AugmentedGroup
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {join.EssentialData.AugmentedGroup} AugmentedGroup
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            AugmentedGroup.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.EssentialData.AugmentedGroup();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.group = $root.sync.Group.decode(reader, reader.uint32());
+                        break;
+                    case 2:
+                        message.lastUpdateAt = reader.uint64();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return AugmentedGroup;
+        })();
+
+        EssentialData.AugmentedDistributionList = (function() {
+
+            /**
+             * Properties of an AugmentedDistributionList.
+             * @memberof join.EssentialData
+             * @interface IAugmentedDistributionList
+             * @property {sync.DistributionList|null} [distributionList] AugmentedDistributionList distributionList
+             * @property {Long|null} [lastUpdateAt] AugmentedDistributionList lastUpdateAt
+             */
+
+            /**
+             * Constructs a new AugmentedDistributionList.
+             * @memberof join.EssentialData
+             * @classdesc Represents an AugmentedDistributionList.
+             * @implements IAugmentedDistributionList
+             * @constructor
+             * @param {join.EssentialData.IAugmentedDistributionList=} [properties] Properties to set
+             */
+            function AugmentedDistributionList(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * AugmentedDistributionList distributionList.
+             * @member {sync.DistributionList|null|undefined} distributionList
+             * @memberof join.EssentialData.AugmentedDistributionList
+             * @instance
+             */
+            AugmentedDistributionList.prototype.distributionList = null;
+
+            /**
+             * AugmentedDistributionList lastUpdateAt.
+             * @member {Long} lastUpdateAt
+             * @memberof join.EssentialData.AugmentedDistributionList
+             * @instance
+             */
+            AugmentedDistributionList.prototype.lastUpdateAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+            /**
+             * Encodes the specified AugmentedDistributionList message. Does not implicitly {@link join.EssentialData.AugmentedDistributionList.verify|verify} messages.
+             * @function encode
+             * @memberof join.EssentialData.AugmentedDistributionList
+             * @static
+             * @param {join.EssentialData.AugmentedDistributionList} message AugmentedDistributionList message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            AugmentedDistributionList.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.distributionList != null && Object.hasOwnProperty.call(message, "distributionList"))
+                    $root.sync.DistributionList.encode(message.distributionList, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                if (message.lastUpdateAt != null && Object.hasOwnProperty.call(message, "lastUpdateAt"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.lastUpdateAt);
+                return writer;
+            };
+
+            /**
+             * Decodes an AugmentedDistributionList message from the specified reader or buffer.
+             * @function decode
+             * @memberof join.EssentialData.AugmentedDistributionList
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {join.EssentialData.AugmentedDistributionList} AugmentedDistributionList
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            AugmentedDistributionList.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.EssentialData.AugmentedDistributionList();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.distributionList = $root.sync.DistributionList.decode(reader, reader.uint32());
+                        break;
+                    case 2:
+                        message.lastUpdateAt = reader.uint64();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return AugmentedDistributionList;
+        })();
+
         return EssentialData;
     })();
 
@@ -16455,29 +17054,14 @@ export const rendezvous = $root.rendezvous = (() => {
      */
     const rendezvous = {};
 
-    /**
-     * NetworkCost enum.
-     * @name rendezvous.NetworkCost
-     * @enum {number}
-     * @property {number} UNKNOWN=0 UNKNOWN value
-     * @property {number} UNMETERED=1 UNMETERED value
-     * @property {number} METERED=2 METERED value
-     */
-    rendezvous.NetworkCost = (function() {
-        const valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "UNKNOWN"] = 0;
-        values[valuesById[1] = "UNMETERED"] = 1;
-        values[valuesById[2] = "METERED"] = 2;
-        return values;
-    })();
-
     rendezvous.RendezvousInit = (function() {
 
         /**
          * Properties of a RendezvousInit.
          * @memberof rendezvous
          * @interface IRendezvousInit
-         * @property {Uint8Array|null} [key] RendezvousInit key
+         * @property {rendezvous.RendezvousInit.Version|null} [version] RendezvousInit version
+         * @property {Uint8Array|null} [ak] RendezvousInit ak
          * @property {rendezvous.RendezvousInit.RelayedWebSocket|null} [relayedWebSocket] RendezvousInit relayedWebSocket
          * @property {rendezvous.RendezvousInit.DirectTcpServer|null} [directTcpServer] RendezvousInit directTcpServer
          */
@@ -16498,12 +17082,20 @@ export const rendezvous = $root.rendezvous = (() => {
         }
 
         /**
-         * RendezvousInit key.
-         * @member {Uint8Array} key
+         * RendezvousInit version.
+         * @member {rendezvous.RendezvousInit.Version} version
          * @memberof rendezvous.RendezvousInit
          * @instance
          */
-        RendezvousInit.prototype.key = $util.newBuffer([]);
+        RendezvousInit.prototype.version = 0;
+
+        /**
+         * RendezvousInit ak.
+         * @member {Uint8Array} ak
+         * @memberof rendezvous.RendezvousInit
+         * @instance
+         */
+        RendezvousInit.prototype.ak = $util.newBuffer([]);
 
         /**
          * RendezvousInit relayedWebSocket.
@@ -16533,12 +17125,14 @@ export const rendezvous = $root.rendezvous = (() => {
         RendezvousInit.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
-                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.key);
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.version);
+            if (message.ak != null && Object.hasOwnProperty.call(message, "ak"))
+                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.ak);
             if (message.relayedWebSocket != null && Object.hasOwnProperty.call(message, "relayedWebSocket"))
-                $root.rendezvous.RendezvousInit.RelayedWebSocket.encode(message.relayedWebSocket, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.rendezvous.RendezvousInit.RelayedWebSocket.encode(message.relayedWebSocket, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
             if (message.directTcpServer != null && Object.hasOwnProperty.call(message, "directTcpServer"))
-                $root.rendezvous.RendezvousInit.DirectTcpServer.encode(message.directTcpServer, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.rendezvous.RendezvousInit.DirectTcpServer.encode(message.directTcpServer, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             return writer;
         };
 
@@ -16561,12 +17155,15 @@ export const rendezvous = $root.rendezvous = (() => {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.key = reader.bytes();
+                    message.version = reader.int32();
                     break;
                 case 2:
-                    message.relayedWebSocket = $root.rendezvous.RendezvousInit.RelayedWebSocket.decode(reader, reader.uint32());
+                    message.ak = reader.bytes();
                     break;
                 case 3:
+                    message.relayedWebSocket = $root.rendezvous.RendezvousInit.RelayedWebSocket.decode(reader, reader.uint32());
+                    break;
+                case 4:
                     message.directTcpServer = $root.rendezvous.RendezvousInit.DirectTcpServer.decode(reader, reader.uint32());
                     break;
                 default:
@@ -16577,6 +17174,34 @@ export const rendezvous = $root.rendezvous = (() => {
             return message;
         };
 
+        /**
+         * Version enum.
+         * @name rendezvous.RendezvousInit.Version
+         * @enum {number}
+         * @property {number} V1_0=0 V1_0 value
+         */
+        RendezvousInit.Version = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "V1_0"] = 0;
+            return values;
+        })();
+
+        /**
+         * NetworkCost enum.
+         * @name rendezvous.RendezvousInit.NetworkCost
+         * @enum {number}
+         * @property {number} UNKNOWN=0 UNKNOWN value
+         * @property {number} UNMETERED=1 UNMETERED value
+         * @property {number} METERED=2 METERED value
+         */
+        RendezvousInit.NetworkCost = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "UNKNOWN"] = 0;
+            values[valuesById[1] = "UNMETERED"] = 1;
+            values[valuesById[2] = "METERED"] = 2;
+            return values;
+        })();
+
         RendezvousInit.RelayedWebSocket = (function() {
 
             /**
@@ -16584,7 +17209,7 @@ export const rendezvous = $root.rendezvous = (() => {
              * @memberof rendezvous.RendezvousInit
              * @interface IRelayedWebSocket
              * @property {number|null} [pathId] RelayedWebSocket pathId
-             * @property {rendezvous.NetworkCost|null} [networkCost] RelayedWebSocket networkCost
+             * @property {rendezvous.RendezvousInit.NetworkCost|null} [networkCost] RelayedWebSocket networkCost
              * @property {string|null} [url] RelayedWebSocket url
              */
 
@@ -16613,7 +17238,7 @@ export const rendezvous = $root.rendezvous = (() => {
 
             /**
              * RelayedWebSocket networkCost.
-             * @member {rendezvous.NetworkCost} networkCost
+             * @member {rendezvous.RendezvousInit.NetworkCost} networkCost
              * @memberof rendezvous.RendezvousInit.RelayedWebSocket
              * @instance
              */
@@ -16789,7 +17414,7 @@ export const rendezvous = $root.rendezvous = (() => {
                  * @memberof rendezvous.RendezvousInit.DirectTcpServer
                  * @interface IIpAddress
                  * @property {number|null} [pathId] IpAddress pathId
-                 * @property {rendezvous.NetworkCost|null} [networkCost] IpAddress networkCost
+                 * @property {rendezvous.RendezvousInit.NetworkCost|null} [networkCost] IpAddress networkCost
                  * @property {string|null} [ip] IpAddress ip
                  */
 
@@ -16818,7 +17443,7 @@ export const rendezvous = $root.rendezvous = (() => {
 
                 /**
                  * IpAddress networkCost.
-                 * @member {rendezvous.NetworkCost} networkCost
+                 * @member {rendezvous.RendezvousInit.NetworkCost} networkCost
                  * @memberof rendezvous.RendezvousInit.DirectTcpServer.IpAddress
                  * @instance
                  */
@@ -16845,7 +17470,7 @@ export const rendezvous = $root.rendezvous = (() => {
                     if (!writer)
                         writer = $Writer.create();
                     if (message.pathId != null && Object.hasOwnProperty.call(message, "pathId"))
-                        writer.uint32(/* id 1, wireType 5 =*/13).fixed32(message.pathId);
+                        writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.pathId);
                     if (message.networkCost != null && Object.hasOwnProperty.call(message, "networkCost"))
                         writer.uint32(/* id 2, wireType 0 =*/16).int32(message.networkCost);
                     if (message.ip != null && Object.hasOwnProperty.call(message, "ip"))
@@ -16872,7 +17497,7 @@ export const rendezvous = $root.rendezvous = (() => {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
                         case 1:
-                            message.pathId = reader.fixed32();
+                            message.pathId = reader.uint32();
                             break;
                         case 2:
                             message.networkCost = reader.int32();
@@ -16897,6 +17522,559 @@ export const rendezvous = $root.rendezvous = (() => {
         return RendezvousInit;
     })();
 
+    rendezvous.Handshake = (function() {
+
+        /**
+         * Properties of a Handshake.
+         * @memberof rendezvous
+         * @interface IHandshake
+         */
+
+        /**
+         * Constructs a new Handshake.
+         * @memberof rendezvous
+         * @classdesc Represents a Handshake.
+         * @implements IHandshake
+         * @constructor
+         * @param {rendezvous.IHandshake=} [properties] Properties to set
+         */
+        function Handshake(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encodes the specified Handshake message. Does not implicitly {@link rendezvous.Handshake.verify|verify} messages.
+         * @function encode
+         * @memberof rendezvous.Handshake
+         * @static
+         * @param {rendezvous.Handshake} message Handshake message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Handshake.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            return writer;
+        };
+
+        /**
+         * Decodes a Handshake message from the specified reader or buffer.
+         * @function decode
+         * @memberof rendezvous.Handshake
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {rendezvous.Handshake} Handshake
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Handshake.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.rendezvous.Handshake();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        Handshake.RrdToRid = (function() {
+
+            /**
+             * Properties of a RrdToRid.
+             * @memberof rendezvous.Handshake
+             * @interface IRrdToRid
+             */
+
+            /**
+             * Constructs a new RrdToRid.
+             * @memberof rendezvous.Handshake
+             * @classdesc Represents a RrdToRid.
+             * @implements IRrdToRid
+             * @constructor
+             * @param {rendezvous.Handshake.IRrdToRid=} [properties] Properties to set
+             */
+            function RrdToRid(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Encodes the specified RrdToRid message. Does not implicitly {@link rendezvous.Handshake.RrdToRid.verify|verify} messages.
+             * @function encode
+             * @memberof rendezvous.Handshake.RrdToRid
+             * @static
+             * @param {rendezvous.Handshake.RrdToRid} message RrdToRid message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            RrdToRid.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                return writer;
+            };
+
+            /**
+             * Decodes a RrdToRid message from the specified reader or buffer.
+             * @function decode
+             * @memberof rendezvous.Handshake.RrdToRid
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {rendezvous.Handshake.RrdToRid} RrdToRid
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            RrdToRid.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.rendezvous.Handshake.RrdToRid();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            RrdToRid.Hello = (function() {
+
+                /**
+                 * Properties of a Hello.
+                 * @memberof rendezvous.Handshake.RrdToRid
+                 * @interface IHello
+                 * @property {Uint8Array|null} [challenge] Hello challenge
+                 * @property {Uint8Array|null} [etk] Hello etk
+                 */
+
+                /**
+                 * Constructs a new Hello.
+                 * @memberof rendezvous.Handshake.RrdToRid
+                 * @classdesc Represents a Hello.
+                 * @implements IHello
+                 * @constructor
+                 * @param {rendezvous.Handshake.RrdToRid.IHello=} [properties] Properties to set
+                 */
+                function Hello(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Hello challenge.
+                 * @member {Uint8Array} challenge
+                 * @memberof rendezvous.Handshake.RrdToRid.Hello
+                 * @instance
+                 */
+                Hello.prototype.challenge = $util.newBuffer([]);
+
+                /**
+                 * Hello etk.
+                 * @member {Uint8Array} etk
+                 * @memberof rendezvous.Handshake.RrdToRid.Hello
+                 * @instance
+                 */
+                Hello.prototype.etk = $util.newBuffer([]);
+
+                /**
+                 * Encodes the specified Hello message. Does not implicitly {@link rendezvous.Handshake.RrdToRid.Hello.verify|verify} messages.
+                 * @function encode
+                 * @memberof rendezvous.Handshake.RrdToRid.Hello
+                 * @static
+                 * @param {rendezvous.Handshake.RrdToRid.Hello} message Hello message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Hello.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.challenge != null && Object.hasOwnProperty.call(message, "challenge"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.challenge);
+                    if (message.etk != null && Object.hasOwnProperty.call(message, "etk"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.etk);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a Hello message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof rendezvous.Handshake.RrdToRid.Hello
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {rendezvous.Handshake.RrdToRid.Hello} Hello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Hello.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.rendezvous.Handshake.RrdToRid.Hello();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.challenge = reader.bytes();
+                            break;
+                        case 2:
+                            message.etk = reader.bytes();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Hello;
+            })();
+
+            RrdToRid.Auth = (function() {
+
+                /**
+                 * Properties of an Auth.
+                 * @memberof rendezvous.Handshake.RrdToRid
+                 * @interface IAuth
+                 * @property {Uint8Array|null} [response] Auth response
+                 */
+
+                /**
+                 * Constructs a new Auth.
+                 * @memberof rendezvous.Handshake.RrdToRid
+                 * @classdesc Represents an Auth.
+                 * @implements IAuth
+                 * @constructor
+                 * @param {rendezvous.Handshake.RrdToRid.IAuth=} [properties] Properties to set
+                 */
+                function Auth(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * Auth response.
+                 * @member {Uint8Array} response
+                 * @memberof rendezvous.Handshake.RrdToRid.Auth
+                 * @instance
+                 */
+                Auth.prototype.response = $util.newBuffer([]);
+
+                /**
+                 * Encodes the specified Auth message. Does not implicitly {@link rendezvous.Handshake.RrdToRid.Auth.verify|verify} messages.
+                 * @function encode
+                 * @memberof rendezvous.Handshake.RrdToRid.Auth
+                 * @static
+                 * @param {rendezvous.Handshake.RrdToRid.Auth} message Auth message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Auth.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.response != null && Object.hasOwnProperty.call(message, "response"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.response);
+                    return writer;
+                };
+
+                /**
+                 * Decodes an Auth message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof rendezvous.Handshake.RrdToRid.Auth
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {rendezvous.Handshake.RrdToRid.Auth} Auth
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Auth.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.rendezvous.Handshake.RrdToRid.Auth();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.response = reader.bytes();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return Auth;
+            })();
+
+            return RrdToRid;
+        })();
+
+        Handshake.RidToRrd = (function() {
+
+            /**
+             * Properties of a RidToRrd.
+             * @memberof rendezvous.Handshake
+             * @interface IRidToRrd
+             */
+
+            /**
+             * Constructs a new RidToRrd.
+             * @memberof rendezvous.Handshake
+             * @classdesc Represents a RidToRrd.
+             * @implements IRidToRrd
+             * @constructor
+             * @param {rendezvous.Handshake.IRidToRrd=} [properties] Properties to set
+             */
+            function RidToRrd(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Encodes the specified RidToRrd message. Does not implicitly {@link rendezvous.Handshake.RidToRrd.verify|verify} messages.
+             * @function encode
+             * @memberof rendezvous.Handshake.RidToRrd
+             * @static
+             * @param {rendezvous.Handshake.RidToRrd} message RidToRrd message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            RidToRrd.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                return writer;
+            };
+
+            /**
+             * Decodes a RidToRrd message from the specified reader or buffer.
+             * @function decode
+             * @memberof rendezvous.Handshake.RidToRrd
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {rendezvous.Handshake.RidToRrd} RidToRrd
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            RidToRrd.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.rendezvous.Handshake.RidToRrd();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            RidToRrd.AuthHello = (function() {
+
+                /**
+                 * Properties of an AuthHello.
+                 * @memberof rendezvous.Handshake.RidToRrd
+                 * @interface IAuthHello
+                 * @property {Uint8Array|null} [response] AuthHello response
+                 * @property {Uint8Array|null} [challenge] AuthHello challenge
+                 * @property {Uint8Array|null} [etk] AuthHello etk
+                 */
+
+                /**
+                 * Constructs a new AuthHello.
+                 * @memberof rendezvous.Handshake.RidToRrd
+                 * @classdesc Represents an AuthHello.
+                 * @implements IAuthHello
+                 * @constructor
+                 * @param {rendezvous.Handshake.RidToRrd.IAuthHello=} [properties] Properties to set
+                 */
+                function AuthHello(properties) {
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * AuthHello response.
+                 * @member {Uint8Array} response
+                 * @memberof rendezvous.Handshake.RidToRrd.AuthHello
+                 * @instance
+                 */
+                AuthHello.prototype.response = $util.newBuffer([]);
+
+                /**
+                 * AuthHello challenge.
+                 * @member {Uint8Array} challenge
+                 * @memberof rendezvous.Handshake.RidToRrd.AuthHello
+                 * @instance
+                 */
+                AuthHello.prototype.challenge = $util.newBuffer([]);
+
+                /**
+                 * AuthHello etk.
+                 * @member {Uint8Array} etk
+                 * @memberof rendezvous.Handshake.RidToRrd.AuthHello
+                 * @instance
+                 */
+                AuthHello.prototype.etk = $util.newBuffer([]);
+
+                /**
+                 * Encodes the specified AuthHello message. Does not implicitly {@link rendezvous.Handshake.RidToRrd.AuthHello.verify|verify} messages.
+                 * @function encode
+                 * @memberof rendezvous.Handshake.RidToRrd.AuthHello
+                 * @static
+                 * @param {rendezvous.Handshake.RidToRrd.AuthHello} message AuthHello message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                AuthHello.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.response != null && Object.hasOwnProperty.call(message, "response"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.response);
+                    if (message.challenge != null && Object.hasOwnProperty.call(message, "challenge"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.challenge);
+                    if (message.etk != null && Object.hasOwnProperty.call(message, "etk"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.etk);
+                    return writer;
+                };
+
+                /**
+                 * Decodes an AuthHello message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof rendezvous.Handshake.RidToRrd.AuthHello
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {rendezvous.Handshake.RidToRrd.AuthHello} AuthHello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                AuthHello.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.rendezvous.Handshake.RidToRrd.AuthHello();
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.response = reader.bytes();
+                            break;
+                        case 2:
+                            message.challenge = reader.bytes();
+                            break;
+                        case 3:
+                            message.etk = reader.bytes();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                return AuthHello;
+            })();
+
+            return RidToRrd;
+        })();
+
+        return Handshake;
+    })();
+
+    rendezvous.Nominate = (function() {
+
+        /**
+         * Properties of a Nominate.
+         * @memberof rendezvous
+         * @interface INominate
+         */
+
+        /**
+         * Constructs a new Nominate.
+         * @memberof rendezvous
+         * @classdesc Represents a Nominate.
+         * @implements INominate
+         * @constructor
+         * @param {rendezvous.INominate=} [properties] Properties to set
+         */
+        function Nominate(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encodes the specified Nominate message. Does not implicitly {@link rendezvous.Nominate.verify|verify} messages.
+         * @function encode
+         * @memberof rendezvous.Nominate
+         * @static
+         * @param {rendezvous.Nominate} message Nominate message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Nominate.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            return writer;
+        };
+
+        /**
+         * Decodes a Nominate message from the specified reader or buffer.
+         * @function decode
+         * @memberof rendezvous.Nominate
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {rendezvous.Nominate} Nominate
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Nominate.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.rendezvous.Nominate();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return Nominate;
+    })();
+
     return rendezvous;
 })();
 
@@ -16908,6 +18086,18 @@ export const d2m = $root.d2m = (() => {
      * @namespace
      */
     const d2m = {};
+
+    /**
+     * ProtocolVersion enum.
+     * @name d2m.ProtocolVersion
+     * @enum {number}
+     * @property {number} INITIAL=0 INITIAL value
+     */
+    d2m.ProtocolVersion = (function() {
+        const valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "INITIAL"] = 0;
+        return values;
+    })();
 
     d2m.ClientUrlInfo = (function() {
 
@@ -19148,26 +20338,27 @@ export const url = $root.url = (() => {
         return GroupInvite;
     })();
 
-    url.DeviceFamilyJoinRequestOrOffer = (function() {
+    url.DeviceGroupJoinRequestOrOffer = (function() {
 
         /**
-         * Properties of a DeviceFamilyJoinRequestOrOffer.
+         * Properties of a DeviceGroupJoinRequestOrOffer.
          * @memberof url
-         * @interface IDeviceFamilyJoinRequestOrOffer
-         * @property {url.DeviceFamilyJoinRequestOrOffer.Variant|null} [variant] DeviceFamilyJoinRequestOrOffer variant
-         * @property {Uint8Array|null} [pskSalt] DeviceFamilyJoinRequestOrOffer pskSalt
-         * @property {Uint8Array|null} [encryptedRendezvousData] DeviceFamilyJoinRequestOrOffer encryptedRendezvousData
+         * @interface IDeviceGroupJoinRequestOrOffer
+         * @property {url.DeviceGroupJoinRequestOrOffer.Version|null} [version] DeviceGroupJoinRequestOrOffer version
+         * @property {url.DeviceGroupJoinRequestOrOffer.Variant|null} [variant] DeviceGroupJoinRequestOrOffer variant
+         * @property {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters|null} [pskParameters] DeviceGroupJoinRequestOrOffer pskParameters
+         * @property {Uint8Array|null} [encryptedRendezvousData] DeviceGroupJoinRequestOrOffer encryptedRendezvousData
          */
 
         /**
-         * Constructs a new DeviceFamilyJoinRequestOrOffer.
+         * Constructs a new DeviceGroupJoinRequestOrOffer.
          * @memberof url
-         * @classdesc Represents a DeviceFamilyJoinRequestOrOffer.
-         * @implements IDeviceFamilyJoinRequestOrOffer
+         * @classdesc Represents a DeviceGroupJoinRequestOrOffer.
+         * @implements IDeviceGroupJoinRequestOrOffer
          * @constructor
-         * @param {url.IDeviceFamilyJoinRequestOrOffer=} [properties] Properties to set
+         * @param {url.IDeviceGroupJoinRequestOrOffer=} [properties] Properties to set
          */
-        function DeviceFamilyJoinRequestOrOffer(properties) {
+        function DeviceGroupJoinRequestOrOffer(properties) {
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -19175,75 +20366,88 @@ export const url = $root.url = (() => {
         }
 
         /**
-         * DeviceFamilyJoinRequestOrOffer variant.
-         * @member {url.DeviceFamilyJoinRequestOrOffer.Variant|null|undefined} variant
-         * @memberof url.DeviceFamilyJoinRequestOrOffer
+         * DeviceGroupJoinRequestOrOffer version.
+         * @member {url.DeviceGroupJoinRequestOrOffer.Version} version
+         * @memberof url.DeviceGroupJoinRequestOrOffer
          * @instance
          */
-        DeviceFamilyJoinRequestOrOffer.prototype.variant = null;
+        DeviceGroupJoinRequestOrOffer.prototype.version = 0;
 
         /**
-         * DeviceFamilyJoinRequestOrOffer pskSalt.
-         * @member {Uint8Array} pskSalt
-         * @memberof url.DeviceFamilyJoinRequestOrOffer
+         * DeviceGroupJoinRequestOrOffer variant.
+         * @member {url.DeviceGroupJoinRequestOrOffer.Variant|null|undefined} variant
+         * @memberof url.DeviceGroupJoinRequestOrOffer
          * @instance
          */
-        DeviceFamilyJoinRequestOrOffer.prototype.pskSalt = $util.newBuffer([]);
+        DeviceGroupJoinRequestOrOffer.prototype.variant = null;
 
         /**
-         * DeviceFamilyJoinRequestOrOffer encryptedRendezvousData.
+         * DeviceGroupJoinRequestOrOffer pskParameters.
+         * @member {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters|null|undefined} pskParameters
+         * @memberof url.DeviceGroupJoinRequestOrOffer
+         * @instance
+         */
+        DeviceGroupJoinRequestOrOffer.prototype.pskParameters = null;
+
+        /**
+         * DeviceGroupJoinRequestOrOffer encryptedRendezvousData.
          * @member {Uint8Array} encryptedRendezvousData
-         * @memberof url.DeviceFamilyJoinRequestOrOffer
+         * @memberof url.DeviceGroupJoinRequestOrOffer
          * @instance
          */
-        DeviceFamilyJoinRequestOrOffer.prototype.encryptedRendezvousData = $util.newBuffer([]);
+        DeviceGroupJoinRequestOrOffer.prototype.encryptedRendezvousData = $util.newBuffer([]);
 
         /**
-         * Encodes the specified DeviceFamilyJoinRequestOrOffer message. Does not implicitly {@link url.DeviceFamilyJoinRequestOrOffer.verify|verify} messages.
+         * Encodes the specified DeviceGroupJoinRequestOrOffer message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.verify|verify} messages.
          * @function encode
-         * @memberof url.DeviceFamilyJoinRequestOrOffer
+         * @memberof url.DeviceGroupJoinRequestOrOffer
          * @static
-         * @param {url.DeviceFamilyJoinRequestOrOffer} message DeviceFamilyJoinRequestOrOffer message or plain object to encode
+         * @param {url.DeviceGroupJoinRequestOrOffer} message DeviceGroupJoinRequestOrOffer message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DeviceFamilyJoinRequestOrOffer.encode = function encode(message, writer) {
+        DeviceGroupJoinRequestOrOffer.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.version);
             if (message.variant != null && Object.hasOwnProperty.call(message, "variant"))
-                $root.url.DeviceFamilyJoinRequestOrOffer.Variant.encode(message.variant, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-            if (message.pskSalt != null && Object.hasOwnProperty.call(message, "pskSalt"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.pskSalt);
+                $root.url.DeviceGroupJoinRequestOrOffer.Variant.encode(message.variant, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.pskParameters != null && Object.hasOwnProperty.call(message, "pskParameters"))
+                $root.url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.encode(message.pskParameters, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
             if (message.encryptedRendezvousData != null && Object.hasOwnProperty.call(message, "encryptedRendezvousData"))
-                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.encryptedRendezvousData);
+                writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.encryptedRendezvousData);
             return writer;
         };
 
         /**
-         * Decodes a DeviceFamilyJoinRequestOrOffer message from the specified reader or buffer.
+         * Decodes a DeviceGroupJoinRequestOrOffer message from the specified reader or buffer.
          * @function decode
-         * @memberof url.DeviceFamilyJoinRequestOrOffer
+         * @memberof url.DeviceGroupJoinRequestOrOffer
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {url.DeviceFamilyJoinRequestOrOffer} DeviceFamilyJoinRequestOrOffer
+         * @returns {url.DeviceGroupJoinRequestOrOffer} DeviceGroupJoinRequestOrOffer
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DeviceFamilyJoinRequestOrOffer.decode = function decode(reader, length) {
+        DeviceGroupJoinRequestOrOffer.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.url.DeviceFamilyJoinRequestOrOffer();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.url.DeviceGroupJoinRequestOrOffer();
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.variant = $root.url.DeviceFamilyJoinRequestOrOffer.Variant.decode(reader, reader.uint32());
+                    message.version = reader.int32();
                     break;
                 case 2:
-                    message.pskSalt = reader.bytes();
+                    message.variant = $root.url.DeviceGroupJoinRequestOrOffer.Variant.decode(reader, reader.uint32());
                     break;
                 case 3:
+                    message.pskParameters = $root.url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.decode(reader, reader.uint32());
+                    break;
+                case 4:
                     message.encryptedRendezvousData = reader.bytes();
                     break;
                 default:
@@ -19254,11 +20458,23 @@ export const url = $root.url = (() => {
             return message;
         };
 
-        DeviceFamilyJoinRequestOrOffer.Variant = (function() {
+        /**
+         * Version enum.
+         * @name url.DeviceGroupJoinRequestOrOffer.Version
+         * @enum {number}
+         * @property {number} V1_0=0 V1_0 value
+         */
+        DeviceGroupJoinRequestOrOffer.Version = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "V1_0"] = 0;
+            return values;
+        })();
+
+        DeviceGroupJoinRequestOrOffer.Variant = (function() {
 
             /**
              * Properties of a Variant.
-             * @memberof url.DeviceFamilyJoinRequestOrOffer
+             * @memberof url.DeviceGroupJoinRequestOrOffer
              * @interface IVariant
              * @property {common.Unit|null} [requestToJoin] Variant requestToJoin
              * @property {common.Unit|null} [offerToJoin] Variant offerToJoin
@@ -19266,11 +20482,11 @@ export const url = $root.url = (() => {
 
             /**
              * Constructs a new Variant.
-             * @memberof url.DeviceFamilyJoinRequestOrOffer
+             * @memberof url.DeviceGroupJoinRequestOrOffer
              * @classdesc Represents a Variant.
              * @implements IVariant
              * @constructor
-             * @param {url.DeviceFamilyJoinRequestOrOffer.IVariant=} [properties] Properties to set
+             * @param {url.DeviceGroupJoinRequestOrOffer.IVariant=} [properties] Properties to set
              */
             function Variant(properties) {
                 if (properties)
@@ -19282,7 +20498,7 @@ export const url = $root.url = (() => {
             /**
              * Variant requestToJoin.
              * @member {common.Unit|null|undefined} requestToJoin
-             * @memberof url.DeviceFamilyJoinRequestOrOffer.Variant
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Variant
              * @instance
              */
             Variant.prototype.requestToJoin = null;
@@ -19290,7 +20506,7 @@ export const url = $root.url = (() => {
             /**
              * Variant offerToJoin.
              * @member {common.Unit|null|undefined} offerToJoin
-             * @memberof url.DeviceFamilyJoinRequestOrOffer.Variant
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Variant
              * @instance
              */
             Variant.prototype.offerToJoin = null;
@@ -19301,7 +20517,7 @@ export const url = $root.url = (() => {
             /**
              * Variant type.
              * @member {"requestToJoin"|"offerToJoin"|undefined} type
-             * @memberof url.DeviceFamilyJoinRequestOrOffer.Variant
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Variant
              * @instance
              */
             Object.defineProperty(Variant.prototype, "type", {
@@ -19310,11 +20526,11 @@ export const url = $root.url = (() => {
             });
 
             /**
-             * Encodes the specified Variant message. Does not implicitly {@link url.DeviceFamilyJoinRequestOrOffer.Variant.verify|verify} messages.
+             * Encodes the specified Variant message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.Variant.verify|verify} messages.
              * @function encode
-             * @memberof url.DeviceFamilyJoinRequestOrOffer.Variant
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Variant
              * @static
-             * @param {url.DeviceFamilyJoinRequestOrOffer.Variant} message Variant message or plain object to encode
+             * @param {url.DeviceGroupJoinRequestOrOffer.Variant} message Variant message or plain object to encode
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
@@ -19331,18 +20547,18 @@ export const url = $root.url = (() => {
             /**
              * Decodes a Variant message from the specified reader or buffer.
              * @function decode
-             * @memberof url.DeviceFamilyJoinRequestOrOffer.Variant
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Variant
              * @static
              * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
              * @param {number} [length] Message length if known beforehand
-             * @returns {url.DeviceFamilyJoinRequestOrOffer.Variant} Variant
+             * @returns {url.DeviceGroupJoinRequestOrOffer.Variant} Variant
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             Variant.decode = function decode(reader, length) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.url.DeviceFamilyJoinRequestOrOffer.Variant();
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.url.DeviceGroupJoinRequestOrOffer.Variant();
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
@@ -19363,7 +20579,158 @@ export const url = $root.url = (() => {
             return Variant;
         })();
 
-        return DeviceFamilyJoinRequestOrOffer;
+        DeviceGroupJoinRequestOrOffer.Argon2idParameters = (function() {
+
+            /**
+             * Properties of an Argon2idParameters.
+             * @memberof url.DeviceGroupJoinRequestOrOffer
+             * @interface IArgon2idParameters
+             * @property {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version|null} [version] Argon2idParameters version
+             * @property {Uint8Array|null} [salt] Argon2idParameters salt
+             * @property {number|null} [memoryBytes] Argon2idParameters memoryBytes
+             * @property {number|null} [iterations] Argon2idParameters iterations
+             * @property {number|null} [parallelism] Argon2idParameters parallelism
+             */
+
+            /**
+             * Constructs a new Argon2idParameters.
+             * @memberof url.DeviceGroupJoinRequestOrOffer
+             * @classdesc Represents an Argon2idParameters.
+             * @implements IArgon2idParameters
+             * @constructor
+             * @param {url.DeviceGroupJoinRequestOrOffer.IArgon2idParameters=} [properties] Properties to set
+             */
+            function Argon2idParameters(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Argon2idParameters version.
+             * @member {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version} version
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
+             * @instance
+             */
+            Argon2idParameters.prototype.version = 0;
+
+            /**
+             * Argon2idParameters salt.
+             * @member {Uint8Array} salt
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
+             * @instance
+             */
+            Argon2idParameters.prototype.salt = $util.newBuffer([]);
+
+            /**
+             * Argon2idParameters memoryBytes.
+             * @member {number} memoryBytes
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
+             * @instance
+             */
+            Argon2idParameters.prototype.memoryBytes = 0;
+
+            /**
+             * Argon2idParameters iterations.
+             * @member {number} iterations
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
+             * @instance
+             */
+            Argon2idParameters.prototype.iterations = 0;
+
+            /**
+             * Argon2idParameters parallelism.
+             * @member {number} parallelism
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
+             * @instance
+             */
+            Argon2idParameters.prototype.parallelism = 0;
+
+            /**
+             * Encodes the specified Argon2idParameters message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.verify|verify} messages.
+             * @function encode
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
+             * @static
+             * @param {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters} message Argon2idParameters message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Argon2idParameters.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.version);
+                if (message.salt != null && Object.hasOwnProperty.call(message, "salt"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.salt);
+                if (message.memoryBytes != null && Object.hasOwnProperty.call(message, "memoryBytes"))
+                    writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.memoryBytes);
+                if (message.iterations != null && Object.hasOwnProperty.call(message, "iterations"))
+                    writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.iterations);
+                if (message.parallelism != null && Object.hasOwnProperty.call(message, "parallelism"))
+                    writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.parallelism);
+                return writer;
+            };
+
+            /**
+             * Decodes an Argon2idParameters message from the specified reader or buffer.
+             * @function decode
+             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters} Argon2idParameters
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Argon2idParameters.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.url.DeviceGroupJoinRequestOrOffer.Argon2idParameters();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.version = reader.int32();
+                        break;
+                    case 2:
+                        message.salt = reader.bytes();
+                        break;
+                    case 3:
+                        message.memoryBytes = reader.uint32();
+                        break;
+                    case 4:
+                        message.iterations = reader.uint32();
+                        break;
+                    case 5:
+                        message.parallelism = reader.uint32();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            /**
+             * Argon2Version enum.
+             * @name url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version
+             * @enum {number}
+             * @property {number} _=0 _ value
+             * @property {number} VERSION_1_3=19 VERSION_1_3 value
+             */
+            Argon2idParameters.Argon2Version = (function() {
+                const valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "_"] = 0;
+                values[valuesById[19] = "VERSION_1_3"] = 19;
+                return values;
+            })();
+
+            return Argon2idParameters;
+        })();
+
+        return DeviceGroupJoinRequestOrOffer;
     })();
 
     return url;

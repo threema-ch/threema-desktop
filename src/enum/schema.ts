@@ -439,26 +439,6 @@ export enum MessageQueryDirection {
 }
 
 /**
- * Features available for a contact (32 bit mask).
- */
-export enum FeatureMaskFlag {
-    /** No additional features available */
-    NONE = 0x00_00_00_00,
-    /** Can handle audio messages. */
-    AUDIO_MESSAGE_SUPPORT = 0x00_00_00_01,
-    /** Can handle groups. */
-    GROUP_SUPPORT = 0x00_00_00_02,
-    /** Can handle polls. */
-    POLL_SUPPORT = 0x00_00_00_04,
-    /** Can handle file messages. */
-    FILE_MESSAGE_SUPPORT = 0x00_00_00_08,
-    /** Can handle audio calls. */
-    AUDIO_CALL_SUPPORT = 0x00_00_00_10,
-    /** Can handle video calls. */
-    VIDEO_CALL_SUPPORT = 0x00_00_00_20,
-}
-
-/**
  * Global Property Keys of this client. Used as key for the globalProperties table.
  *
  * @generate convert name

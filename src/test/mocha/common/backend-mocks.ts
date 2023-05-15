@@ -32,7 +32,6 @@ import {
     ActivityState,
     ConversationCategory,
     ConversationVisibility,
-    FeatureMaskFlag,
     GroupUserState,
     IdentityType,
     MessageFilterInstruction,
@@ -119,6 +118,7 @@ import {
     ensureNickname,
     ensureServerGroup,
     type FeatureMask,
+    FeatureMaskFlag,
     type GroupId,
     type IdentityString,
     type MessageId,
@@ -996,7 +996,7 @@ export interface TestUser {
     acquaintanceLevel?: AcquaintanceLevel;
     // Default: ACTIVE
     activityState?: ActivityState;
-    // Default: 0xff
+    // Default: None
     featureMask?: FeatureMask;
     // Default: INITIAL
     syncState?: SyncState;

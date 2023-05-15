@@ -1,7 +1,7 @@
 import {type Cookie, type CryptoBox, type NonceGuard, type NonceUnguarded} from '~/common/crypto';
 import {ReceiverType} from '~/common/enum';
 import {type AnyReceiver} from '~/common/model';
-import {isU64, type u32, type u53, type u64, type WeakOpaque} from '~/common/types';
+import {isU64, type u32, type u64, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {type SequenceNumberU32, type SequenceNumberU64} from '~/common/utils/sequence-number';
 
@@ -264,7 +264,7 @@ export type DistributionListId = WeakOpaque<u64, {readonly DistributionListId: u
  * Type guard for {@link DistributionListId}
  */
 export function isDistributionListId(id: unknown): id is DistributionListId {
-    return typeof id === 'bigint' && id >= 0 && id < 2n ** 64n;
+    return isU64(id);
 }
 
 /**
@@ -278,24 +278,55 @@ export function ensureDistributionListId(id: u64): DistributionListId {
 }
 
 /**
- * Feature bitmask. It is ensured that this only contains OR-ed
- * {@link FeatureMaskFlag}s.
+ * CSP features supported by a device or available for a contact (64 bit mask).
+ *
+ * IMPORTANT: The flags determine what a device/contact is capable of, not whether the settings
+ * allow for it. For example, group calls may be supported but ignored if disabled in the settings.
+ *
+ * Must be compatible with {@link common.CspFeatureMaskFlag} (except for the number type).
  */
-export type FeatureMask = WeakOpaque<u32, {readonly FeatureMask: unique symbol}>;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const FeatureMaskFlag = {
+    // No features available
+    NONE: 0x00n,
+    // Can handle voice messages.
+    VOICE_MESSAGE_SUPPORT: 0x01n,
+    // Can handle groups.
+    GROUP_SUPPORT: 0x02n,
+    // Can handle polls.
+    POLL_SUPPORT: 0x04n,
+    // Can handle file messages.
+    FILE_MESSAGE_SUPPORT: 0x08n,
+    // Can handle 1:1 audio calls.
+    O2O_AUDIO_CALL_SUPPORT: 0x10n,
+    // Can handle 1:1 video calls.
+    O2O_VIDEO_CALL_SUPPORT: 0x20n,
+    // Can handle forward security.
+    FORWARD_SECURITY_SUPPORT: 0x40n,
+    // Can handle group calls.
+    GROUP_CALL_SUPPORT: 0x80n,
+} as const;
+
+/**
+ * Feature bitmask (64 bits).
+ *
+ * For valid bitmask values, see {@link FeatureMaskFlag}.
+ */
+export type FeatureMask = WeakOpaque<u64, {readonly FeatureMask: unique symbol}>;
 
 /**
  * Type guard for {@link FeatureMask}.
  */
 export function isFeatureMask(mask: unknown): mask is FeatureMask {
-    return typeof mask === 'number' && mask < 2 ** 32;
+    return isU64(mask);
 }
 
 /**
  * Ensure input is a valid {@link FeatureMask}.
  */
-export function ensureFeatureMask(mask: u53): FeatureMask {
+export function ensureFeatureMask(mask: unknown): FeatureMask {
     if (!isFeatureMask(mask)) {
-        throw new Error(`Expected feature mask to be a u32 but it's value is '${mask}''`);
+        throw new Error(`Expected feature mask to be a u64 but it's value is '${mask}''`);
     }
     return mask;
 }

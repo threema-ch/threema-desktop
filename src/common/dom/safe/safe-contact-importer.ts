@@ -6,7 +6,6 @@ import {
     ActivityState,
     ConversationCategory,
     ConversationVisibility,
-    FeatureMaskFlag,
     IdentityType,
     ReceiverType,
     SyncState,
@@ -20,7 +19,7 @@ import {
     type InvalidIdentityData,
     type ValidIdentityData,
 } from '~/common/network/protocol/directory';
-import {ensureFeatureMask, ensureIdentityString} from '~/common/network/types';
+import {ensureFeatureMask, ensureIdentityString, FeatureMaskFlag} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {idColorIndex} from '~/common/utils/id-color';

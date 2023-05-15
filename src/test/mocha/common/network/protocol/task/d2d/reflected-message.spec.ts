@@ -101,6 +101,7 @@ export function run(): void {
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eConversationType.TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
+                    nonce: new Uint8Array([]), // TODO(DESK-826)
                 };
                 const task = new ReflectedIncomingMessageTask(
                     services,
@@ -146,6 +147,7 @@ export function run(): void {
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eGroupConversationType.GROUP_TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
+                    nonce: new Uint8Array([]), // TODO(DESK-826)
                 };
                 const task = new ReflectedIncomingMessageTask(
                     services,
@@ -211,6 +213,7 @@ export function run(): void {
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
+                    nonces: [], // TODO(DESK-826)
                 };
                 return reflectedMessage;
             }

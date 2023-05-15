@@ -84,7 +84,7 @@ function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.ContactSync {
                 identityType: init.identityType,
                 acquaintanceLevel: init.acquaintanceLevel,
                 activityState: init.activityState,
-                featureMask: init.featureMask,
+                featureMask: intoUnsignedLong(init.featureMask),
                 syncState: init.syncState,
                 readReceiptPolicyOverride: DEFAULT_READ_RECEIPT_POLICY_OVERRIDE,
                 typingIndicatorPolicyOverride: DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE,
@@ -166,9 +166,10 @@ function getD2dContactSyncUpdateData(
             contact: protobuf.utils.creator(protobuf.sync.Contact, {
                 identity,
                 publicKey: undefined,
-                createdAt: contact.createdAt
-                    ? intoUnsignedLong(dateToUnixTimestampMs(contact.createdAt))
-                    : undefined,
+                createdAt:
+                    contact.createdAt !== undefined
+                        ? intoUnsignedLong(dateToUnixTimestampMs(contact.createdAt))
+                        : undefined,
                 firstName: contact.firstName,
                 lastName: contact.lastName,
                 nickname: contact.nickname,
@@ -177,7 +178,10 @@ function getD2dContactSyncUpdateData(
                 identityType: contact.identityType,
                 acquaintanceLevel: contact.acquaintanceLevel,
                 activityState: contact.activityState,
-                featureMask: contact.featureMask,
+                featureMask:
+                    contact.featureMask !== undefined
+                        ? intoUnsignedLong(contact.featureMask)
+                        : undefined,
                 syncState: contact.syncState,
                 readReceiptPolicyOverride,
                 typingIndicatorPolicyOverride,

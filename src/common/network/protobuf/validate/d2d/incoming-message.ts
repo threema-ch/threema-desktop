@@ -18,6 +18,7 @@ export const SCHEMA = validator(
             createdAt: instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
             type: MessageType.SCHEMA,
             body: instanceOf(Uint8Array),
+            nonce: instanceOf(Uint8Array), // TODO(DESK-826): Validate length and maybe map to nonce type
         })
         .rest(v.unknown()),
 );

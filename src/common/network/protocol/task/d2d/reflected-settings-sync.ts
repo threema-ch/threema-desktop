@@ -71,11 +71,11 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
     }
 
     private _processCallsSettings(settingsUpdate: validate.sync.Settings.Type): void {
-        const {callPolicy, callConnectionPolity} = settingsUpdate;
+        const {callPolicy, callConnectionPolicy} = settingsUpdate;
         this._services.model.user.callsSettings.get().controller.update(
             purgeUndefinedProperties({
                 callPolicy,
-                callConnectionPolicy: callConnectionPolity,
+                callConnectionPolicy,
             }),
         );
     }

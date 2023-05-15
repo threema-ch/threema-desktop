@@ -350,6 +350,18 @@ export namespace common {
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): common.Resolution;
     }
+    /** CspFeatureMaskFlag enum. */
+    enum CspFeatureMaskFlag {
+        NONE = 0,
+        VOICE_MESSAGE_SUPPORT = 1,
+        GROUP_SUPPORT = 2,
+        POLL_SUPPORT = 4,
+        FILE_MESSAGE_SUPPORT = 8,
+        O2O_AUDIO_CALL_SUPPORT = 16,
+        O2O_VIDEO_CALL_SUPPORT = 32,
+        FORWARD_SECURITY_SUPPORT = 64,
+        GROUP_CALL_SUPPORT = 128
+    }
 }
 /** Namespace csp_e2e_fs. */
 export namespace csp_e2e_fs {
@@ -2870,89 +2882,89 @@ export namespace groupcall {
 }
 /** Namespace history. */
 export namespace history {
-    /** Properties of a FromDestinationDeviceEnvelope. */
-    interface IFromDestinationDeviceEnvelope {
-        /** FromDestinationDeviceEnvelope getSummary */
+    /** Properties of a DdToSd. */
+    interface IDdToSd {
+        /** DdToSd getSummary */
         getSummary?: (history.GetSummary | null);
-        /** FromDestinationDeviceEnvelope beginTransfer */
+        /** DdToSd beginTransfer */
         beginTransfer?: (history.BeginTransfer | null);
     }
-    type FromDestinationDeviceEnvelopeEncodable = types.WeakOpaque<IFromDestinationDeviceEnvelope, {
-        readonly FromDestinationDeviceEnvelopeEncodable: unique symbol;
+    type DdToSdEncodable = types.WeakOpaque<IDdToSd, {
+        readonly DdToSdEncodable: unique symbol;
     } & tag.ProtobufMessage>;
-    /** Represents a FromDestinationDeviceEnvelope. */
-    class FromDestinationDeviceEnvelope implements IFromDestinationDeviceEnvelope {
+    /** Represents a DdToSd. */
+    class DdToSd implements IDdToSd {
         /**
-         * Constructs a new FromDestinationDeviceEnvelope.
+         * Constructs a new DdToSd.
          * @param [properties] Properties to set
          */
-        constructor(properties?: history.IFromDestinationDeviceEnvelope);
-        /** FromDestinationDeviceEnvelope getSummary. */
+        constructor(properties?: history.IDdToSd);
+        /** DdToSd getSummary. */
         public getSummary?: (history.GetSummary | null);
-        /** FromDestinationDeviceEnvelope beginTransfer. */
+        /** DdToSd beginTransfer. */
         public beginTransfer?: (history.BeginTransfer | null);
-        /** FromDestinationDeviceEnvelope content. */
+        /** DdToSd content. */
         public content?: ("getSummary" | "beginTransfer");
         /**
-         * Encodes the specified FromDestinationDeviceEnvelope message. Does not implicitly {@link history.FromDestinationDeviceEnvelope.verify|verify} messages.
-         * @param message FromDestinationDeviceEnvelope message or plain object to encode
+         * Encodes the specified DdToSd message. Does not implicitly {@link history.DdToSd.verify|verify} messages.
+         * @param message DdToSd message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
-        public static encode(message: history.FromDestinationDeviceEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static encode(message: history.DdToSdEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
         /**
-         * Decodes a FromDestinationDeviceEnvelope message from the specified reader or buffer.
+         * Decodes a DdToSd message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
-         * @returns FromDestinationDeviceEnvelope
+         * @returns DdToSd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): history.FromDestinationDeviceEnvelope;
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): history.DdToSd;
     }
-    /** Properties of a FromSourceDeviceEnvelope. */
-    interface IFromSourceDeviceEnvelope {
-        /** FromSourceDeviceEnvelope summary */
+    /** Properties of a SdToDd. */
+    interface ISdToDd {
+        /** SdToDd summary */
         summary?: (history.Summary | null);
-        /** FromSourceDeviceEnvelope blobData */
+        /** SdToDd blobData */
         blobData?: (common.BlobData | null);
-        /** FromSourceDeviceEnvelope data */
+        /** SdToDd data */
         data?: (history.Data | null);
     }
-    type FromSourceDeviceEnvelopeEncodable = types.WeakOpaque<IFromSourceDeviceEnvelope, {
-        readonly FromSourceDeviceEnvelopeEncodable: unique symbol;
+    type SdToDdEncodable = types.WeakOpaque<ISdToDd, {
+        readonly SdToDdEncodable: unique symbol;
     } & tag.ProtobufMessage>;
-    /** Represents a FromSourceDeviceEnvelope. */
-    class FromSourceDeviceEnvelope implements IFromSourceDeviceEnvelope {
+    /** Represents a SdToDd. */
+    class SdToDd implements ISdToDd {
         /**
-         * Constructs a new FromSourceDeviceEnvelope.
+         * Constructs a new SdToDd.
          * @param [properties] Properties to set
          */
-        constructor(properties?: history.IFromSourceDeviceEnvelope);
-        /** FromSourceDeviceEnvelope summary. */
+        constructor(properties?: history.ISdToDd);
+        /** SdToDd summary. */
         public summary?: (history.Summary | null);
-        /** FromSourceDeviceEnvelope blobData. */
+        /** SdToDd blobData. */
         public blobData?: (common.BlobData | null);
-        /** FromSourceDeviceEnvelope data. */
+        /** SdToDd data. */
         public data?: (history.Data | null);
-        /** FromSourceDeviceEnvelope content. */
+        /** SdToDd content. */
         public content?: ("summary" | "blobData" | "data");
         /**
-         * Encodes the specified FromSourceDeviceEnvelope message. Does not implicitly {@link history.FromSourceDeviceEnvelope.verify|verify} messages.
-         * @param message FromSourceDeviceEnvelope message or plain object to encode
+         * Encodes the specified SdToDd message. Does not implicitly {@link history.SdToDd.verify|verify} messages.
+         * @param message SdToDd message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
-        public static encode(message: history.FromSourceDeviceEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static encode(message: history.SdToDdEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
         /**
-         * Decodes a FromSourceDeviceEnvelope message from the specified reader or buffer.
+         * Decodes a SdToDd message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
-         * @returns FromSourceDeviceEnvelope
+         * @returns SdToDd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): history.FromSourceDeviceEnvelope;
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): history.SdToDd;
     }
     /** MediaType enum. */
     enum MediaType {
@@ -3612,6 +3624,8 @@ export namespace d2d {
         type?: (d2d.MessageType | null);
         /** OutgoingMessage body */
         body?: (Uint8Array | null);
+        /** OutgoingMessage nonces */
+        nonces?: (readonly Uint8Array[] | null);
     }
     type OutgoingMessageEncodable = types.WeakOpaque<IOutgoingMessage, {
         readonly OutgoingMessageEncodable: unique symbol;
@@ -3635,6 +3649,8 @@ export namespace d2d {
         public type: d2d.MessageType;
         /** OutgoingMessage body. */
         public body: Uint8Array;
+        /** OutgoingMessage nonces. */
+        public nonces: readonly Uint8Array[];
         /** OutgoingMessage _threadMessageId. */
         public _threadMessageId?: "threadMessageId";
         /**
@@ -3776,6 +3792,8 @@ export namespace d2d {
         type?: (d2d.MessageType | null);
         /** IncomingMessage body */
         body?: (Uint8Array | null);
+        /** IncomingMessage nonce */
+        nonce?: (Uint8Array | null);
     }
     type IncomingMessageEncodable = types.WeakOpaque<IIncomingMessage, {
         readonly IncomingMessageEncodable: unique symbol;
@@ -3797,6 +3815,8 @@ export namespace d2d {
         public type: d2d.MessageType;
         /** IncomingMessage body. */
         public body: Uint8Array;
+        /** IncomingMessage nonce. */
+        public nonce: Uint8Array;
         /**
          * Encodes the specified IncomingMessage message. Does not implicitly {@link d2d.IncomingMessage.verify|verify} messages.
          * @param message IncomingMessage message or plain object to encode
@@ -5105,7 +5125,7 @@ export namespace sync {
         /** Contact activityState */
         activityState?: (sync.Contact.ActivityState | null);
         /** Contact featureMask */
-        featureMask?: (number | null);
+        featureMask?: (Long | null);
         /** Contact syncState */
         syncState?: (sync.Contact.SyncState | null);
         /** Contact readReceiptPolicyOverride */
@@ -5158,7 +5178,7 @@ export namespace sync {
         /** Contact activityState. */
         public activityState?: (sync.Contact.ActivityState | null);
         /** Contact featureMask. */
-        public featureMask?: (number | null);
+        public featureMask?: (Long | null);
         /** Contact syncState. */
         public syncState?: (sync.Contact.SyncState | null);
         /** Contact readReceiptPolicyOverride. */
@@ -5756,8 +5776,8 @@ export namespace sync {
         typingIndicatorPolicy?: (sync.TypingIndicatorPolicy | null);
         /** Settings callPolicy */
         callPolicy?: (sync.Settings.CallPolicy | null);
-        /** Settings callConnectionPolity */
-        callConnectionPolity?: (sync.Settings.CallConnectionPolicy | null);
+        /** Settings callConnectionPolicy */
+        callConnectionPolicy?: (sync.Settings.CallConnectionPolicy | null);
         /** Settings screenshotPolicy */
         screenshotPolicy?: (sync.Settings.ScreenshotPolicy | null);
         /** Settings keyboardDataCollectionPolicy */
@@ -5787,8 +5807,8 @@ export namespace sync {
         public typingIndicatorPolicy?: (sync.TypingIndicatorPolicy | null);
         /** Settings callPolicy. */
         public callPolicy?: (sync.Settings.CallPolicy | null);
-        /** Settings callConnectionPolity. */
-        public callConnectionPolity?: (sync.Settings.CallConnectionPolicy | null);
+        /** Settings callConnectionPolicy. */
+        public callConnectionPolicy?: (sync.Settings.CallConnectionPolicy | null);
         /** Settings screenshotPolicy. */
         public screenshotPolicy?: (sync.Settings.ScreenshotPolicy | null);
         /** Settings keyboardDataCollectionPolicy. */
@@ -5807,8 +5827,8 @@ export namespace sync {
         public _typingIndicatorPolicy?: "typingIndicatorPolicy";
         /** Settings _callPolicy. */
         public _callPolicy?: "callPolicy";
-        /** Settings _callConnectionPolity. */
-        public _callConnectionPolity?: "callConnectionPolity";
+        /** Settings _callConnectionPolicy. */
+        public _callConnectionPolicy?: "callConnectionPolicy";
         /** Settings _screenshotPolicy. */
         public _screenshotPolicy?: "screenshotPolicy";
         /** Settings _keyboardDataCollectionPolicy. */
@@ -5865,85 +5885,85 @@ export namespace sync {
 }
 /** Namespace join. */
 export namespace join {
-    /** Properties of a FromNewDeviceEnvelope. */
-    interface IFromNewDeviceEnvelope {
-        /** FromNewDeviceEnvelope begin */
-        begin?: (join.Begin | null);
-        /** FromNewDeviceEnvelope registered */
+    /** Properties of a NdToEd. */
+    interface INdToEd {
+        /** NdToEd registered */
         registered?: (join.Registered | null);
     }
-    type FromNewDeviceEnvelopeEncodable = types.WeakOpaque<IFromNewDeviceEnvelope, {
-        readonly FromNewDeviceEnvelopeEncodable: unique symbol;
+    type NdToEdEncodable = types.WeakOpaque<INdToEd, {
+        readonly NdToEdEncodable: unique symbol;
     } & tag.ProtobufMessage>;
-    /** Represents a FromNewDeviceEnvelope. */
-    class FromNewDeviceEnvelope implements IFromNewDeviceEnvelope {
+    /** Represents a NdToEd. */
+    class NdToEd implements INdToEd {
         /**
-         * Constructs a new FromNewDeviceEnvelope.
+         * Constructs a new NdToEd.
          * @param [properties] Properties to set
          */
-        constructor(properties?: join.IFromNewDeviceEnvelope);
-        /** FromNewDeviceEnvelope begin. */
-        public begin?: (join.Begin | null);
-        /** FromNewDeviceEnvelope registered. */
+        constructor(properties?: join.INdToEd);
+        /** NdToEd registered. */
         public registered?: (join.Registered | null);
-        /** FromNewDeviceEnvelope content. */
-        public content?: ("begin" | "registered");
+        /** NdToEd content. */
+        public content?: "registered";
         /**
-         * Encodes the specified FromNewDeviceEnvelope message. Does not implicitly {@link join.FromNewDeviceEnvelope.verify|verify} messages.
-         * @param message FromNewDeviceEnvelope message or plain object to encode
+         * Encodes the specified NdToEd message. Does not implicitly {@link join.NdToEd.verify|verify} messages.
+         * @param message NdToEd message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
-        public static encode(message: join.FromNewDeviceEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static encode(message: join.NdToEdEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
         /**
-         * Decodes a FromNewDeviceEnvelope message from the specified reader or buffer.
+         * Decodes a NdToEd message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
-         * @returns FromNewDeviceEnvelope
+         * @returns NdToEd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.FromNewDeviceEnvelope;
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.NdToEd;
     }
-    /** Properties of a FromExistingDeviceEnvelope. */
-    interface IFromExistingDeviceEnvelope {
-        /** FromExistingDeviceEnvelope blobData */
+    /** Properties of an EdToNd. */
+    interface IEdToNd {
+        /** EdToNd begin */
+        begin?: (join.Begin | null);
+        /** EdToNd blobData */
         blobData?: (common.BlobData | null);
-        /** FromExistingDeviceEnvelope essentialData */
+        /** EdToNd essentialData */
         essentialData?: (join.EssentialData | null);
     }
-    type FromExistingDeviceEnvelopeEncodable = types.WeakOpaque<IFromExistingDeviceEnvelope, {
-        readonly FromExistingDeviceEnvelopeEncodable: unique symbol;
+    type EdToNdEncodable = types.WeakOpaque<IEdToNd, {
+        readonly EdToNdEncodable: unique symbol;
     } & tag.ProtobufMessage>;
-    /** Represents a FromExistingDeviceEnvelope. */
-    class FromExistingDeviceEnvelope implements IFromExistingDeviceEnvelope {
+    /** Represents an EdToNd. */
+    class EdToNd implements IEdToNd {
         /**
-         * Constructs a new FromExistingDeviceEnvelope.
+         * Constructs a new EdToNd.
          * @param [properties] Properties to set
          */
-        constructor(properties?: join.IFromExistingDeviceEnvelope);
-        /** FromExistingDeviceEnvelope blobData. */
+        constructor(properties?: join.IEdToNd);
+        /** EdToNd begin. */
+        public begin?: (join.Begin | null);
+        /** EdToNd blobData. */
         public blobData?: (common.BlobData | null);
-        /** FromExistingDeviceEnvelope essentialData. */
+        /** EdToNd essentialData. */
         public essentialData?: (join.EssentialData | null);
-        /** FromExistingDeviceEnvelope content. */
-        public content?: ("blobData" | "essentialData");
+        /** EdToNd content. */
+        public content?: ("begin" | "blobData" | "essentialData");
         /**
-         * Encodes the specified FromExistingDeviceEnvelope message. Does not implicitly {@link join.FromExistingDeviceEnvelope.verify|verify} messages.
-         * @param message FromExistingDeviceEnvelope message or plain object to encode
+         * Encodes the specified EdToNd message. Does not implicitly {@link join.EdToNd.verify|verify} messages.
+         * @param message EdToNd message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
-        public static encode(message: join.FromExistingDeviceEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static encode(message: join.EdToNdEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
         /**
-         * Decodes a FromExistingDeviceEnvelope message from the specified reader or buffer.
+         * Decodes an EdToNd message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
-         * @returns FromExistingDeviceEnvelope
+         * @returns EdToNd
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.FromExistingDeviceEnvelope;
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EdToNd;
     }
     /** Properties of a Begin. */
     interface IBegin {
@@ -5979,18 +5999,24 @@ export namespace join {
     interface IEssentialData {
         /** EssentialData mediatorServer */
         mediatorServer?: (join.EssentialData.MediatorServer | null);
-        /** EssentialData clientKey */
-        clientKey?: (Uint8Array | null);
+        /** EssentialData identityData */
+        identityData?: (join.EssentialData.IdentityData | null);
+        /** EssentialData deviceGroupData */
+        deviceGroupData?: (join.EssentialData.DeviceGroupData | null);
         /** EssentialData userProfile */
         userProfile?: (sync.UserProfile | null);
         /** EssentialData settings */
         settings?: (sync.Settings | null);
         /** EssentialData contacts */
-        contacts?: (readonly sync.Contact[] | null);
+        contacts?: (readonly join.EssentialData.AugmentedContact[] | null);
         /** EssentialData groups */
-        groups?: (readonly sync.Group[] | null);
+        groups?: (readonly join.EssentialData.AugmentedGroup[] | null);
         /** EssentialData distributionLists */
-        distributionLists?: (readonly sync.DistributionList[] | null);
+        distributionLists?: (readonly join.EssentialData.AugmentedDistributionList[] | null);
+        /** EssentialData cspHashedNonces */
+        cspHashedNonces?: (readonly Uint8Array[] | null);
+        /** EssentialData d2dHashedNonces */
+        d2dHashedNonces?: (readonly Uint8Array[] | null);
     }
     type EssentialDataEncodable = types.WeakOpaque<IEssentialData, {
         readonly EssentialDataEncodable: unique symbol;
@@ -6004,18 +6030,24 @@ export namespace join {
         constructor(properties?: join.IEssentialData);
         /** EssentialData mediatorServer. */
         public mediatorServer?: (join.EssentialData.MediatorServer | null);
-        /** EssentialData clientKey. */
-        public clientKey: Uint8Array;
+        /** EssentialData identityData. */
+        public identityData?: (join.EssentialData.IdentityData | null);
+        /** EssentialData deviceGroupData. */
+        public deviceGroupData?: (join.EssentialData.DeviceGroupData | null);
         /** EssentialData userProfile. */
         public userProfile?: (sync.UserProfile | null);
         /** EssentialData settings. */
         public settings?: (sync.Settings | null);
         /** EssentialData contacts. */
-        public contacts: readonly sync.Contact[];
+        public contacts: readonly join.EssentialData.AugmentedContact[];
         /** EssentialData groups. */
-        public groups: readonly sync.Group[];
+        public groups: readonly join.EssentialData.AugmentedGroup[];
         /** EssentialData distributionLists. */
-        public distributionLists: readonly sync.DistributionList[];
+        public distributionLists: readonly join.EssentialData.AugmentedDistributionList[];
+        /** EssentialData cspHashedNonces. */
+        public cspHashedNonces: readonly Uint8Array[];
+        /** EssentialData d2dHashedNonces. */
+        public d2dHashedNonces: readonly Uint8Array[];
         /**
          * Encodes the specified EssentialData message. Does not implicitly {@link join.EssentialData.verify|verify} messages.
          * @param message EssentialData message or plain object to encode
@@ -6074,6 +6106,200 @@ export namespace join {
              */
             public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData.MediatorServer;
         }
+        /** Properties of an IdentityData. */
+        interface IIdentityData {
+            /** IdentityData identity */
+            identity?: (string | null);
+            /** IdentityData ck */
+            ck?: (Uint8Array | null);
+            /** IdentityData cspDeviceCookie */
+            cspDeviceCookie?: (Uint8Array | null);
+            /** IdentityData cspServerGroup */
+            cspServerGroup?: (string | null);
+        }
+        type IdentityDataEncodable = types.WeakOpaque<IIdentityData, {
+            readonly IdentityDataEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an IdentityData. */
+        class IdentityData implements IIdentityData {
+            /**
+             * Constructs a new IdentityData.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: join.EssentialData.IIdentityData);
+            /** IdentityData identity. */
+            public identity: string;
+            /** IdentityData ck. */
+            public ck: Uint8Array;
+            /** IdentityData cspDeviceCookie. */
+            public cspDeviceCookie: Uint8Array;
+            /** IdentityData cspServerGroup. */
+            public cspServerGroup: string;
+            /**
+             * Encodes the specified IdentityData message. Does not implicitly {@link join.EssentialData.IdentityData.verify|verify} messages.
+             * @param message IdentityData message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: join.EssentialData.IdentityDataEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an IdentityData message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns IdentityData
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData.IdentityData;
+        }
+        /** Properties of a DeviceGroupData. */
+        interface IDeviceGroupData {
+            /** DeviceGroupData dgk */
+            dgk?: (Uint8Array | null);
+        }
+        type DeviceGroupDataEncodable = types.WeakOpaque<IDeviceGroupData, {
+            readonly DeviceGroupDataEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a DeviceGroupData. */
+        class DeviceGroupData implements IDeviceGroupData {
+            /**
+             * Constructs a new DeviceGroupData.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: join.EssentialData.IDeviceGroupData);
+            /** DeviceGroupData dgk. */
+            public dgk: Uint8Array;
+            /**
+             * Encodes the specified DeviceGroupData message. Does not implicitly {@link join.EssentialData.DeviceGroupData.verify|verify} messages.
+             * @param message DeviceGroupData message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: join.EssentialData.DeviceGroupDataEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a DeviceGroupData message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns DeviceGroupData
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData.DeviceGroupData;
+        }
+        /** Properties of an AugmentedContact. */
+        interface IAugmentedContact {
+            /** AugmentedContact contact */
+            contact?: (sync.Contact | null);
+            /** AugmentedContact lastUpdateAt */
+            lastUpdateAt?: (Long | null);
+        }
+        type AugmentedContactEncodable = types.WeakOpaque<IAugmentedContact, {
+            readonly AugmentedContactEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an AugmentedContact. */
+        class AugmentedContact implements IAugmentedContact {
+            /**
+             * Constructs a new AugmentedContact.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: join.EssentialData.IAugmentedContact);
+            /** AugmentedContact contact. */
+            public contact?: (sync.Contact | null);
+            /** AugmentedContact lastUpdateAt. */
+            public lastUpdateAt: Long;
+            /**
+             * Encodes the specified AugmentedContact message. Does not implicitly {@link join.EssentialData.AugmentedContact.verify|verify} messages.
+             * @param message AugmentedContact message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: join.EssentialData.AugmentedContactEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an AugmentedContact message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns AugmentedContact
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData.AugmentedContact;
+        }
+        /** Properties of an AugmentedGroup. */
+        interface IAugmentedGroup {
+            /** AugmentedGroup group */
+            group?: (sync.Group | null);
+            /** AugmentedGroup lastUpdateAt */
+            lastUpdateAt?: (Long | null);
+        }
+        type AugmentedGroupEncodable = types.WeakOpaque<IAugmentedGroup, {
+            readonly AugmentedGroupEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an AugmentedGroup. */
+        class AugmentedGroup implements IAugmentedGroup {
+            /**
+             * Constructs a new AugmentedGroup.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: join.EssentialData.IAugmentedGroup);
+            /** AugmentedGroup group. */
+            public group?: (sync.Group | null);
+            /** AugmentedGroup lastUpdateAt. */
+            public lastUpdateAt: Long;
+            /**
+             * Encodes the specified AugmentedGroup message. Does not implicitly {@link join.EssentialData.AugmentedGroup.verify|verify} messages.
+             * @param message AugmentedGroup message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: join.EssentialData.AugmentedGroupEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an AugmentedGroup message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns AugmentedGroup
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData.AugmentedGroup;
+        }
+        /** Properties of an AugmentedDistributionList. */
+        interface IAugmentedDistributionList {
+            /** AugmentedDistributionList distributionList */
+            distributionList?: (sync.DistributionList | null);
+            /** AugmentedDistributionList lastUpdateAt */
+            lastUpdateAt?: (Long | null);
+        }
+        type AugmentedDistributionListEncodable = types.WeakOpaque<IAugmentedDistributionList, {
+            readonly AugmentedDistributionListEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an AugmentedDistributionList. */
+        class AugmentedDistributionList implements IAugmentedDistributionList {
+            /**
+             * Constructs a new AugmentedDistributionList.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: join.EssentialData.IAugmentedDistributionList);
+            /** AugmentedDistributionList distributionList. */
+            public distributionList?: (sync.DistributionList | null);
+            /** AugmentedDistributionList lastUpdateAt. */
+            public lastUpdateAt: Long;
+            /**
+             * Encodes the specified AugmentedDistributionList message. Does not implicitly {@link join.EssentialData.AugmentedDistributionList.verify|verify} messages.
+             * @param message AugmentedDistributionList message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: join.EssentialData.AugmentedDistributionListEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an AugmentedDistributionList message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns AugmentedDistributionList
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData.AugmentedDistributionList;
+        }
     }
     /** Properties of a Registered. */
     interface IRegistered {
@@ -6108,16 +6334,12 @@ export namespace join {
 }
 /** Namespace rendezvous. */
 export namespace rendezvous {
-    /** NetworkCost enum. */
-    enum NetworkCost {
-        UNKNOWN = 0,
-        UNMETERED = 1,
-        METERED = 2
-    }
     /** Properties of a RendezvousInit. */
     interface IRendezvousInit {
-        /** RendezvousInit key */
-        key?: (Uint8Array | null);
+        /** RendezvousInit version */
+        version?: (rendezvous.RendezvousInit.Version | null);
+        /** RendezvousInit ak */
+        ak?: (Uint8Array | null);
         /** RendezvousInit relayedWebSocket */
         relayedWebSocket?: (rendezvous.RendezvousInit.RelayedWebSocket | null);
         /** RendezvousInit directTcpServer */
@@ -6133,8 +6355,10 @@ export namespace rendezvous {
          * @param [properties] Properties to set
          */
         constructor(properties?: rendezvous.IRendezvousInit);
-        /** RendezvousInit key. */
-        public key: Uint8Array;
+        /** RendezvousInit version. */
+        public version: rendezvous.RendezvousInit.Version;
+        /** RendezvousInit ak. */
+        public ak: Uint8Array;
         /** RendezvousInit relayedWebSocket. */
         public relayedWebSocket?: (rendezvous.RendezvousInit.RelayedWebSocket | null);
         /** RendezvousInit directTcpServer. */
@@ -6157,12 +6381,22 @@ export namespace rendezvous {
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.RendezvousInit;
     }
     namespace RendezvousInit {
+        /** Version enum. */
+        enum Version {
+            V1_0 = 0
+        }
+        /** NetworkCost enum. */
+        enum NetworkCost {
+            UNKNOWN = 0,
+            UNMETERED = 1,
+            METERED = 2
+        }
         /** Properties of a RelayedWebSocket. */
         interface IRelayedWebSocket {
             /** RelayedWebSocket pathId */
             pathId?: (number | null);
             /** RelayedWebSocket networkCost */
-            networkCost?: (rendezvous.NetworkCost | null);
+            networkCost?: (rendezvous.RendezvousInit.NetworkCost | null);
             /** RelayedWebSocket url */
             url?: (string | null);
         }
@@ -6179,7 +6413,7 @@ export namespace rendezvous {
             /** RelayedWebSocket pathId. */
             public pathId: number;
             /** RelayedWebSocket networkCost. */
-            public networkCost: rendezvous.NetworkCost;
+            public networkCost: rendezvous.RendezvousInit.NetworkCost;
             /** RelayedWebSocket url. */
             public url: string;
             /**
@@ -6243,7 +6477,7 @@ export namespace rendezvous {
                 /** IpAddress pathId */
                 pathId?: (number | null);
                 /** IpAddress networkCost */
-                networkCost?: (rendezvous.NetworkCost | null);
+                networkCost?: (rendezvous.RendezvousInit.NetworkCost | null);
                 /** IpAddress ip */
                 ip?: (string | null);
             }
@@ -6260,7 +6494,7 @@ export namespace rendezvous {
                 /** IpAddress pathId. */
                 public pathId: number;
                 /** IpAddress networkCost. */
-                public networkCost: rendezvous.NetworkCost;
+                public networkCost: rendezvous.RendezvousInit.NetworkCost;
                 /** IpAddress ip. */
                 public ip: string;
                 /**
@@ -6282,9 +6516,253 @@ export namespace rendezvous {
             }
         }
     }
+    /** Properties of a Handshake. */
+    interface IHandshake {
+    }
+    type HandshakeEncodable = types.WeakOpaque<IHandshake, {
+        readonly HandshakeEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a Handshake. */
+    class Handshake implements IHandshake {
+        /**
+         * Constructs a new Handshake.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: rendezvous.IHandshake);
+        /**
+         * Encodes the specified Handshake message. Does not implicitly {@link rendezvous.Handshake.verify|verify} messages.
+         * @param message Handshake message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: rendezvous.HandshakeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a Handshake message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Handshake
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.Handshake;
+    }
+    namespace Handshake {
+        /** Properties of a RrdToRid. */
+        interface IRrdToRid {
+        }
+        type RrdToRidEncodable = types.WeakOpaque<IRrdToRid, {
+            readonly RrdToRidEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a RrdToRid. */
+        class RrdToRid implements IRrdToRid {
+            /**
+             * Constructs a new RrdToRid.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: rendezvous.Handshake.IRrdToRid);
+            /**
+             * Encodes the specified RrdToRid message. Does not implicitly {@link rendezvous.Handshake.RrdToRid.verify|verify} messages.
+             * @param message RrdToRid message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: rendezvous.Handshake.RrdToRidEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a RrdToRid message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns RrdToRid
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.Handshake.RrdToRid;
+        }
+        namespace RrdToRid {
+            /** Properties of a Hello. */
+            interface IHello {
+                /** Hello challenge */
+                challenge?: (Uint8Array | null);
+                /** Hello etk */
+                etk?: (Uint8Array | null);
+            }
+            type HelloEncodable = types.WeakOpaque<IHello, {
+                readonly HelloEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents a Hello. */
+            class Hello implements IHello {
+                /**
+                 * Constructs a new Hello.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: rendezvous.Handshake.RrdToRid.IHello);
+                /** Hello challenge. */
+                public challenge: Uint8Array;
+                /** Hello etk. */
+                public etk: Uint8Array;
+                /**
+                 * Encodes the specified Hello message. Does not implicitly {@link rendezvous.Handshake.RrdToRid.Hello.verify|verify} messages.
+                 * @param message Hello message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: rendezvous.Handshake.RrdToRid.HelloEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes a Hello message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Hello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.Handshake.RrdToRid.Hello;
+            }
+            /** Properties of an Auth. */
+            interface IAuth {
+                /** Auth response */
+                response?: (Uint8Array | null);
+            }
+            type AuthEncodable = types.WeakOpaque<IAuth, {
+                readonly AuthEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an Auth. */
+            class Auth implements IAuth {
+                /**
+                 * Constructs a new Auth.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: rendezvous.Handshake.RrdToRid.IAuth);
+                /** Auth response. */
+                public response: Uint8Array;
+                /**
+                 * Encodes the specified Auth message. Does not implicitly {@link rendezvous.Handshake.RrdToRid.Auth.verify|verify} messages.
+                 * @param message Auth message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: rendezvous.Handshake.RrdToRid.AuthEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an Auth message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Auth
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.Handshake.RrdToRid.Auth;
+            }
+        }
+        /** Properties of a RidToRrd. */
+        interface IRidToRrd {
+        }
+        type RidToRrdEncodable = types.WeakOpaque<IRidToRrd, {
+            readonly RidToRrdEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a RidToRrd. */
+        class RidToRrd implements IRidToRrd {
+            /**
+             * Constructs a new RidToRrd.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: rendezvous.Handshake.IRidToRrd);
+            /**
+             * Encodes the specified RidToRrd message. Does not implicitly {@link rendezvous.Handshake.RidToRrd.verify|verify} messages.
+             * @param message RidToRrd message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: rendezvous.Handshake.RidToRrdEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a RidToRrd message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns RidToRrd
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.Handshake.RidToRrd;
+        }
+        namespace RidToRrd {
+            /** Properties of an AuthHello. */
+            interface IAuthHello {
+                /** AuthHello response */
+                response?: (Uint8Array | null);
+                /** AuthHello challenge */
+                challenge?: (Uint8Array | null);
+                /** AuthHello etk */
+                etk?: (Uint8Array | null);
+            }
+            type AuthHelloEncodable = types.WeakOpaque<IAuthHello, {
+                readonly AuthHelloEncodable: unique symbol;
+            } & tag.ProtobufMessage>;
+            /** Represents an AuthHello. */
+            class AuthHello implements IAuthHello {
+                /**
+                 * Constructs a new AuthHello.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: rendezvous.Handshake.RidToRrd.IAuthHello);
+                /** AuthHello response. */
+                public response: Uint8Array;
+                /** AuthHello challenge. */
+                public challenge: Uint8Array;
+                /** AuthHello etk. */
+                public etk: Uint8Array;
+                /**
+                 * Encodes the specified AuthHello message. Does not implicitly {@link rendezvous.Handshake.RidToRrd.AuthHello.verify|verify} messages.
+                 * @param message AuthHello message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: rendezvous.Handshake.RidToRrd.AuthHelloEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+                /**
+                 * Decodes an AuthHello message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns AuthHello
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.Handshake.RidToRrd.AuthHello;
+            }
+        }
+    }
+    /** Properties of a Nominate. */
+    interface INominate {
+    }
+    type NominateEncodable = types.WeakOpaque<INominate, {
+        readonly NominateEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a Nominate. */
+    class Nominate implements INominate {
+        /**
+         * Constructs a new Nominate.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: rendezvous.INominate);
+        /**
+         * Encodes the specified Nominate message. Does not implicitly {@link rendezvous.Nominate.verify|verify} messages.
+         * @param message Nominate message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: rendezvous.NominateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a Nominate message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Nominate
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): rendezvous.Nominate;
+    }
 }
 /** Namespace d2m. */
 export namespace d2m {
+    /** ProtocolVersion enum. */
+    enum ProtocolVersion {
+        INITIAL = 0
+    }
     /** Properties of a ClientUrlInfo. */
     interface IClientUrlInfo {
         /** ClientUrlInfo deviceGroupId */
@@ -7174,49 +7652,57 @@ export namespace url {
             MANUAL = 1
         }
     }
-    /** Properties of a DeviceFamilyJoinRequestOrOffer. */
-    interface IDeviceFamilyJoinRequestOrOffer {
-        /** DeviceFamilyJoinRequestOrOffer variant */
-        variant?: (url.DeviceFamilyJoinRequestOrOffer.Variant | null);
-        /** DeviceFamilyJoinRequestOrOffer pskSalt */
-        pskSalt?: (Uint8Array | null);
-        /** DeviceFamilyJoinRequestOrOffer encryptedRendezvousData */
+    /** Properties of a DeviceGroupJoinRequestOrOffer. */
+    interface IDeviceGroupJoinRequestOrOffer {
+        /** DeviceGroupJoinRequestOrOffer version */
+        version?: (url.DeviceGroupJoinRequestOrOffer.Version | null);
+        /** DeviceGroupJoinRequestOrOffer variant */
+        variant?: (url.DeviceGroupJoinRequestOrOffer.Variant | null);
+        /** DeviceGroupJoinRequestOrOffer pskParameters */
+        pskParameters?: (url.DeviceGroupJoinRequestOrOffer.Argon2idParameters | null);
+        /** DeviceGroupJoinRequestOrOffer encryptedRendezvousData */
         encryptedRendezvousData?: (Uint8Array | null);
     }
-    type DeviceFamilyJoinRequestOrOfferEncodable = types.WeakOpaque<IDeviceFamilyJoinRequestOrOffer, {
-        readonly DeviceFamilyJoinRequestOrOfferEncodable: unique symbol;
+    type DeviceGroupJoinRequestOrOfferEncodable = types.WeakOpaque<IDeviceGroupJoinRequestOrOffer, {
+        readonly DeviceGroupJoinRequestOrOfferEncodable: unique symbol;
     } & tag.ProtobufMessage>;
-    /** Represents a DeviceFamilyJoinRequestOrOffer. */
-    class DeviceFamilyJoinRequestOrOffer implements IDeviceFamilyJoinRequestOrOffer {
+    /** Represents a DeviceGroupJoinRequestOrOffer. */
+    class DeviceGroupJoinRequestOrOffer implements IDeviceGroupJoinRequestOrOffer {
         /**
-         * Constructs a new DeviceFamilyJoinRequestOrOffer.
+         * Constructs a new DeviceGroupJoinRequestOrOffer.
          * @param [properties] Properties to set
          */
-        constructor(properties?: url.IDeviceFamilyJoinRequestOrOffer);
-        /** DeviceFamilyJoinRequestOrOffer variant. */
-        public variant?: (url.DeviceFamilyJoinRequestOrOffer.Variant | null);
-        /** DeviceFamilyJoinRequestOrOffer pskSalt. */
-        public pskSalt: Uint8Array;
-        /** DeviceFamilyJoinRequestOrOffer encryptedRendezvousData. */
+        constructor(properties?: url.IDeviceGroupJoinRequestOrOffer);
+        /** DeviceGroupJoinRequestOrOffer version. */
+        public version: url.DeviceGroupJoinRequestOrOffer.Version;
+        /** DeviceGroupJoinRequestOrOffer variant. */
+        public variant?: (url.DeviceGroupJoinRequestOrOffer.Variant | null);
+        /** DeviceGroupJoinRequestOrOffer pskParameters. */
+        public pskParameters?: (url.DeviceGroupJoinRequestOrOffer.Argon2idParameters | null);
+        /** DeviceGroupJoinRequestOrOffer encryptedRendezvousData. */
         public encryptedRendezvousData: Uint8Array;
         /**
-         * Encodes the specified DeviceFamilyJoinRequestOrOffer message. Does not implicitly {@link url.DeviceFamilyJoinRequestOrOffer.verify|verify} messages.
-         * @param message DeviceFamilyJoinRequestOrOffer message or plain object to encode
+         * Encodes the specified DeviceGroupJoinRequestOrOffer message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.verify|verify} messages.
+         * @param message DeviceGroupJoinRequestOrOffer message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
-        public static encode(message: url.DeviceFamilyJoinRequestOrOfferEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static encode(message: url.DeviceGroupJoinRequestOrOfferEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
         /**
-         * Decodes a DeviceFamilyJoinRequestOrOffer message from the specified reader or buffer.
+         * Decodes a DeviceGroupJoinRequestOrOffer message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
-         * @returns DeviceFamilyJoinRequestOrOffer
+         * @returns DeviceGroupJoinRequestOrOffer
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): url.DeviceFamilyJoinRequestOrOffer;
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): url.DeviceGroupJoinRequestOrOffer;
     }
-    namespace DeviceFamilyJoinRequestOrOffer {
+    namespace DeviceGroupJoinRequestOrOffer {
+        /** Version enum. */
+        enum Version {
+            V1_0 = 0
+        }
         /** Properties of a Variant. */
         interface IVariant {
             /** Variant requestToJoin */
@@ -7233,7 +7719,7 @@ export namespace url {
              * Constructs a new Variant.
              * @param [properties] Properties to set
              */
-            constructor(properties?: url.DeviceFamilyJoinRequestOrOffer.IVariant);
+            constructor(properties?: url.DeviceGroupJoinRequestOrOffer.IVariant);
             /** Variant requestToJoin. */
             public requestToJoin?: (common.Unit | null);
             /** Variant offerToJoin. */
@@ -7241,12 +7727,12 @@ export namespace url {
             /** Variant type. */
             public type?: ("requestToJoin" | "offerToJoin");
             /**
-             * Encodes the specified Variant message. Does not implicitly {@link url.DeviceFamilyJoinRequestOrOffer.Variant.verify|verify} messages.
+             * Encodes the specified Variant message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.Variant.verify|verify} messages.
              * @param message Variant message or plain object to encode
              * @param [writer] Writer to encode to
              * @returns Writer
              */
-            public static encode(message: url.DeviceFamilyJoinRequestOrOffer.VariantEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            public static encode(message: url.DeviceGroupJoinRequestOrOffer.VariantEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
             /**
              * Decodes a Variant message from the specified reader or buffer.
              * @param reader Reader or buffer to decode from
@@ -7255,7 +7741,64 @@ export namespace url {
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): url.DeviceFamilyJoinRequestOrOffer.Variant;
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): url.DeviceGroupJoinRequestOrOffer.Variant;
+        }
+        /** Properties of an Argon2idParameters. */
+        interface IArgon2idParameters {
+            /** Argon2idParameters version */
+            version?: (url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version | null);
+            /** Argon2idParameters salt */
+            salt?: (Uint8Array | null);
+            /** Argon2idParameters memoryBytes */
+            memoryBytes?: (number | null);
+            /** Argon2idParameters iterations */
+            iterations?: (number | null);
+            /** Argon2idParameters parallelism */
+            parallelism?: (number | null);
+        }
+        type Argon2idParametersEncodable = types.WeakOpaque<IArgon2idParameters, {
+            readonly Argon2idParametersEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an Argon2idParameters. */
+        class Argon2idParameters implements IArgon2idParameters {
+            /**
+             * Constructs a new Argon2idParameters.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: url.DeviceGroupJoinRequestOrOffer.IArgon2idParameters);
+            /** Argon2idParameters version. */
+            public version: url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version;
+            /** Argon2idParameters salt. */
+            public salt: Uint8Array;
+            /** Argon2idParameters memoryBytes. */
+            public memoryBytes: number;
+            /** Argon2idParameters iterations. */
+            public iterations: number;
+            /** Argon2idParameters parallelism. */
+            public parallelism: number;
+            /**
+             * Encodes the specified Argon2idParameters message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.verify|verify} messages.
+             * @param message Argon2idParameters message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: url.DeviceGroupJoinRequestOrOffer.Argon2idParametersEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an Argon2idParameters message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Argon2idParameters
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): url.DeviceGroupJoinRequestOrOffer.Argon2idParameters;
+        }
+        namespace Argon2idParameters {
+            /** Argon2Version enum. */
+            enum Argon2Version {
+                _ = 0,
+                VERSION_1_3 = 19
+            }
         }
     }
 }

@@ -10,7 +10,6 @@ import {
     ActivityState,
     ConversationCategory,
     ConversationVisibility,
-    FeatureMaskFlag,
     GroupUserState,
     IdentityTypeUtils,
     MessageDirection,
@@ -27,6 +26,7 @@ import {
     ensureFeatureMask,
     ensureIdentityString,
     ensureMessageId,
+    FeatureMaskFlag,
     type GroupId,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
@@ -128,7 +128,7 @@ export async function generateFakeContactConversation(
         activityState: ActivityState.ACTIVE,
         featureMask: ensureFeatureMask(
             // eslint-disable-next-line no-bitwise
-            FeatureMaskFlag.AUDIO_MESSAGE_SUPPORT | FeatureMaskFlag.FILE_MESSAGE_SUPPORT,
+            FeatureMaskFlag.VOICE_MESSAGE_SUPPORT | FeatureMaskFlag.FILE_MESSAGE_SUPPORT,
         ),
         syncState: SyncState.INITIAL,
         category: ConversationCategory.DEFAULT,

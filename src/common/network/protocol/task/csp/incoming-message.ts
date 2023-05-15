@@ -218,6 +218,7 @@ function getD2dIncomingReflectFragment(
         createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
         type: d2dMessageType,
         body: cspMessageBody as Uint8Array,
+        nonce: new Uint8Array([]), // TODO(DESK-826): Include nonce
     };
 }
 

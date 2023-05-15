@@ -23,12 +23,12 @@ export const SCHEMA = validator(
             unknownContactPolicy: optionalEnum(UnknownContactPolicyUtils),
             readReceiptPolicy: optionalEnum(ReadReceiptPolicyUtils),
             typingIndicatorPolicy: optionalEnum(TypingIndicatorPolicyUtils),
+            callPolicy: optionalEnum(CallPolicyUtils),
+            callConnectionPolicy: optionalEnum(CallConnectionPolicyUtils),
             screenshotPolicy: optionalEnum(ScreenshotPolicyUtils),
             keyboardDataCollectionPolicy: optionalEnum(KeyboardDataCollectionPolicyUtils),
             blockedIdentities: nullOptional(Identities.SCHEMA),
             excludeFromSyncIdentities: nullOptional(Identities.SCHEMA),
-            callPolicy: optionalEnum(CallPolicyUtils),
-            callConnectionPolity: optionalEnum(CallConnectionPolicyUtils),
         })
         .rest(v.unknown()),
 );

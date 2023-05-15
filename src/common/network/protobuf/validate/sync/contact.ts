@@ -94,7 +94,7 @@ const BASE_SCHEMA = validator(sync.Contact, {
     identityType: v.number().map(IdentityTypeUtils.fromNumber),
     acquaintanceLevel: v.number().map(AcquaintanceLevelUtils.fromNumber),
     activityState: v.number().map(ActivityStateUtils.fromNumber),
-    featureMask: v.number().map(ensureFeatureMask),
+    featureMask: instanceOf(Long).map(intoU64).map(ensureFeatureMask),
     syncState: v.number().map(SyncStateUtils.fromNumber),
     readReceiptPolicyOverride: READ_RECEIPT_POLICY_OVERRIDE_SCHEMA,
     typingIndicatorPolicyOverride: TYPING_INDICATOR_POLICY_OVERRIDE_SCHEMA,

@@ -1084,33 +1084,6 @@ export namespace MessageQueryDirection {
  */
 export type MessageQueryDirection =
     (typeof MessageQueryDirection)[keyof typeof MessageQueryDirection];
-export namespace FeatureMaskFlag {
-    export const NONE = 0;
-    /** No additional features available */
-    export type NONE = typeof NONE;
-    export const AUDIO_MESSAGE_SUPPORT = 1;
-    /** Can handle audio messages. */
-    export type AUDIO_MESSAGE_SUPPORT = typeof AUDIO_MESSAGE_SUPPORT;
-    export const GROUP_SUPPORT = 2;
-    /** Can handle groups. */
-    export type GROUP_SUPPORT = typeof GROUP_SUPPORT;
-    export const POLL_SUPPORT = 4;
-    /** Can handle polls. */
-    export type POLL_SUPPORT = typeof POLL_SUPPORT;
-    export const FILE_MESSAGE_SUPPORT = 8;
-    /** Can handle file messages. */
-    export type FILE_MESSAGE_SUPPORT = typeof FILE_MESSAGE_SUPPORT;
-    export const AUDIO_CALL_SUPPORT = 16;
-    /** Can handle audio calls. */
-    export type AUDIO_CALL_SUPPORT = typeof AUDIO_CALL_SUPPORT;
-    export const VIDEO_CALL_SUPPORT = 32;
-    /** Can handle video calls. */
-    export type VIDEO_CALL_SUPPORT = typeof VIDEO_CALL_SUPPORT;
-}
-/**
- * Features available for a contact (32 bit mask).
- */
-export type FeatureMaskFlag = (typeof FeatureMaskFlag)[keyof typeof FeatureMaskFlag];
 export namespace GlobalPropertyKey {
     export const LAST_MEDIATOR_CONNECTION = 'lastMediatorConnection';
     /** Connection Metadata of the last successfull mediator connection */

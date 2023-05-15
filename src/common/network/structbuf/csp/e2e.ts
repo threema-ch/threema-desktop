@@ -204,10 +204,11 @@ import * as utils from '../utils';
  *       to the sender, discard the received message and abort these steps.
  *     2. Send a [`group-leave`](ref:e2e.group-leave) back to the sender,
  *       discard the received message and abort these steps.
- * 4. If the sender is not a member of the group and the user is the creator
- *    of the group, send a [`group-setup`](ref:e2e.group-setup) with an empty
- *    members list back to the sender, discard the received message and abort
- *    these steps.
+ * 4. If the sender is not a member of the group:
+ *    1. If the user is the creator of the group, send a
+ *       [`group-setup`](ref:e2e.group-setup) with an empty members list back
+ *       to the sender.
+ *    2. Discard the received message and abort these steps.
  *
  * This rule and any exceptions will be referenced/defined explicitly for
  * each message.
@@ -328,6 +329,17 @@ import * as utils from '../utils';
  * When the user changes the profile picture, remove the cached profile picture
  * (i.e. any associated blob ID and key).
  *
+ * #### Profile Picture Sharing Settings
+ *
+ * In the client settings, there are three profile picture sharing options that
+ * the user can choose from:
+ *
+ * - Share with nobody
+ * - Share with everybody you write to
+ * - Share with selected contacts only
+ *
+ * The default is to share the profile picture with everyone.
+ *
  * #### Contact Profile Picture Precedence
  *
  * There are three different sources of profile pictures, ordered by
@@ -352,7 +364,7 @@ import * as utils from '../utils';
  * 3. If `id` starts with a `*` (is a Threema Gateway ID) and the
  *    _gateway-defined_ picture is set for the contact, apply it and abort
  *    these steps.
- * 4. If `id` does not start with `_` and the _user-defined* picture is set
+ * 4. If `id` does not start with `*` and the _user-defined_ picture is set
  *    for the contact, apply it and abort these steps.
  * 5. Apply a fallback picture.
  *
@@ -377,7 +389,7 @@ import * as utils from '../utils';
  * the recommended transcoding settings are: Bitrate 128 kbit/s, 2 channels.
  *
  * When recording audio (i.e. a voice message), the recommended recording
- * settings are: Sample rate 22 kHz, bitrate 32 kbit/s, 1 channel.
+ * settings are: Sample rate 44.1 kHz, bitrate 32 kbit/s, 1 channel.
  *
  * ### Video
  *
@@ -3575,6 +3587,29 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  *
  * Note: When outgoing delivery receipts are turned off, reflect an
  * `IncomingMessageUpdate` instead.
+ *
+ * When receiving this message as a 1:1 conversation status update message
+ * (`0x80`):
+ *
+ * 1. For each message id of `message-ids`, look up the associated message
+ *    in the conversation and let `messages` be the result. Discard message
+ *    ids where an associated message could not be found.
+ * 2. For each `message` of `messages`, apply and replace the status or
+ *    reaction of the sender to `message` by following the replacement logic
+ *    outlied in the `status` field.
+ *
+ * When receiving this message as a group status update message (`0x81`,
+ * (wrapped by [`group-member-container`](ref:e2e.group-member-container)):
+ *
+ * 1. If `status` is not `0x03` or `0x04`, discard the message and abort
+ *    these steps.
+ * 2. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
+ *    delivery receipt message has been discarded, abort these steps.
+ * 3. For each message id of `message-ids`, look up the associated message
+ *    in the group conversation and let `messages` be the result. Discard
+ *    message ids where an associated message could not be found.
+ * 4. For each `message` of `messages`, apply and replace the reaction of the
+ *    sender to `message`.
  */
 export interface DeliveryReceiptLike {
     /**
@@ -4193,21 +4228,27 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
 /**
  * Request a contact's profile picture.
  *
- * **Flags:**
- *   - `0x01`: Send push notification.
+ * Note that this message does not result in the profile picture being sent
+ * immediately in reply to this message. Instead, it will be sent the next
+ * time that contact sends a message to the user (if one is set, and if the
+ * user is eligible for receiving the profile picture).
+ *
+ * **Flags:** None.
  *
  * **Delivery receipts:** Automatic: No. Manual: No.
  *
  * **User profile distribution:** No.
  *
- * **Reflect:** Incoming: No. Outgoing: No.
+ * **Reflect:** Incoming: Yes. Outgoing: No.
  *
  * Send this when restoring a contact from a backup.
  *
- * When receiving this message, evaluate whether the requesting contact is
- * eligible for reception of the profile picture. If so, send a
- * [`set-profile-picture`](ref:e2e.set-profile-picture) message back to the
- * contact who requested the profile picture.
+ * When receiving this message via CSP or reflection:
+ *
+ * 1. Look up the sender contact. If contact is not found, abort these steps.
+ * 2. If the sender is not eligible for reception of the profile picture,
+ *    abort these steps.
+ * 3. Clear the cached profile picture blob ID for the sender.
  */
 export interface ContactRequestProfilePictureLike {}
 
@@ -4365,15 +4406,18 @@ export class ContactRequestProfilePicture
  *        `chosen-call`.
  * 8.  If the action of the user triggering these steps was to disband or
  *     delete the group (and consequently `members-after-remove-and-add` is
- *     empty), mark the group as _left_ and abort these steps. Persist this
- *     mark even if the group and its history is being removed by the user.
- *     When disbanding but not deleting, the client should persist the
- *     previous member setup, ignoring the content of
- *     `members-after-remove-and-add` to give the user the possibility to
- *     view the message history and the member setup prior to the user being
- *     removed. The user must not be able to send any more messages to the
- *     group but may be allowed to _reopen_ the group with the previous
- *     member setup, when desired.
+ *     empty):
+ *     1. If the user is currently participating in a group call of this group,
+ *        trigger leaving the call.
+ *     2. Mark the group as _left_ and abort these steps. Persist this
+ *        mark even if the group and its history is being removed by the user.
+ *        When disbanding but not deleting, the client should persist the
+ *        previous member setup, ignoring the content of
+ *        `members-after-remove-and-add` to give the user the possibility to
+ *        view the message history and the member setup prior to the user being
+ *        removed. The user must not be able to send any more messages to the
+ *        group but may be allowed to _reopen_ the group with the previous
+ *        member setup, when desired.
  * 9.  Update the group with the given `members-after-remove-and-add`.
  * 10. If the group was previously marked as _left_, remove the _left_ mark.
  *
@@ -4389,21 +4433,28 @@ export class ContactRequestProfilePicture
  *    [`group-leave`](ref:e2e.group-leave) message to the sender and all
  *    provided `members` (including those who are
  *    [blocked](ref:e2e#blocking)) and abort these steps.
- * 4. If the group could be found:
- *    1. If `members` is empty or does not include the user, mark the group
- *    as _left_ and abort these steps. Persist this mark even if the group
- *    and its history is being removed by the user. The client should persist
- *    the previous member setup, ignoring the content of `members` to give
- *    the user the possibility to view the message history and the member
- *    setup prior to the user being removed. The user must not be able to
- *    send any more messages to the group but should be able to clone the
- *    group with the previous member setup, when desired.
+ * 4. If the group could be found and `members` is empty or does not include
+ *    the user:
+ *    1. If the user is currently participating in a group call of this
+ *       group, trigger leaving the call.
+ *    2. Mark the group as _left_ and abort these steps.
+ *       Persist this mark even if the group and its history is being removed
+ *       by the user. The client should persist the previous member setup,
+ *       ignoring the content of `members` to give the user the possibility
+ *       to view the message history and the member setup prior to the user
+ *       being removed. The user must not be able to send any more messages
+ *       to the group but should be able to clone the group with the previous
+ *       member setup, when desired.
  * 5. For each member of `members`, create a contact with acquaintance
  *    level _group_ if not already present in the contact list. (Do not add
  *    the user's own identity as a contact.)
  * 6. Create or update the group with the given `members` plus the sender
  *    (creator).
  * 7. If the group was previously marked as _left_, remove the _left_ mark.
+ * 8. If the user is currently participating in a group call of this group
+ *    and there are group call participants which are no longer members of
+ *    the group, remove these participants from the group call (handle them
+ *    as if they left the call).
  */
 export interface GroupSetupLike {
     /**
@@ -4687,13 +4738,17 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
- * When sending this message, mark the group as _left_. Persist this mark
- * even if the group and its history is being removed by the user. The
- * client should persist the previous member setup of the group to give the
- * user the possibility to view the message history and the member setup
- * prior to the user leaving the group. The user must not be able to send
- * any more messages to the group but should be able to clone the group
- * with the previous member setup, when desired.
+ * When sending this message:
+ *
+ * 1. If the user is participating in a group call of this group, trigger
+ *    leaving the call.
+ * 2. Mark the group as _left_. Persist this mark
+ *    even if the group and its history is being removed by the user. The
+ *    client should persist the previous member setup of the group to give
+ *    the user the possibility to view the message history and the member
+ *    setup prior to the user leaving the group. The user must not be able to
+ *    send any more messages to the group but should be able to clone the
+ *    group with the previous member setup, when desired.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
@@ -4705,6 +4760,9 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *     2. Send a [`group-sync-request`](ref:e2e.group-sync-request) to the
  *        group creator and abort these steps.
  * 4. Remove the member from the local group.
+ * 5. If the user and the sender are participating in a group call of this
+ *    group, remove the sender from the group call (handle it as if the
+ *    sender left the call).
  */
 export interface GroupLeaveLike {}
 

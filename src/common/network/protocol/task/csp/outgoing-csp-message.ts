@@ -255,6 +255,7 @@ export class OutgoingCspMessageTask<
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type,
                     body: messageBytes,
+                    nonces: [], // TODO(DESK-826)
                 }),
             },
         ]);

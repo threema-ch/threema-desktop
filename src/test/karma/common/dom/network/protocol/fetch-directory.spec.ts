@@ -185,7 +185,7 @@ export function run(): void {
                     ensureIdentityString(responseBody.identity),
                 );
                 expect(validIdentity.identity).to.equal(responseBody.identity);
-                expect(validIdentity.featureMask).to.equal(responseBody.featureMask);
+                expect(validIdentity.featureMask).to.equal(BigInt(responseBody.featureMask));
             });
 
             it('error response', async function () {

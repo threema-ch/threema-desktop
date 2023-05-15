@@ -283,7 +283,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.FILE_ID:
                 return isFileId(value) ? value : fail();
             case CUSTOM_TYPES.FEATURE_MASK:
-                return u64ToU53(value, isFeatureMask);
+                return isFeatureMask(value) ? value : fail();
             case CUSTOM_TYPES.IDENTITY:
                 return isIdentityString(value) ? value : fail();
             case CUSTOM_TYPES.PUBLIC_KEY:
