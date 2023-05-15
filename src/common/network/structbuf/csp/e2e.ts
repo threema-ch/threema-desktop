@@ -21,9 +21,9 @@ import * as utils from '../utils';
  * store for all end-to-end encrypted messages across different contacts is
  * sufficient.
  *
- * Note that it is still possible for the chat server to replay old
- * messages to a device whose database has been erased (e.g. when restoring
- * a backup).
+ * Note that it is still possible for the chat server to replay old messages to
+ * a device whose database has been erased (e.g. when restoring a backup).
+ * However, this is not applicable to forward security encrypted messages.
  *
  * ### Message ID
  *
@@ -79,10 +79,17 @@ import * as utils from '../utils';
  * The sender Threema ID may be blocked explicitly (i.e. blocking a specific
  * Threema ID) or implicitly (blocking all unknown Threema IDs). This does not
  * require special handling on the server but instead is done entirely by the
- * clients. Note that the protocol does not distinguish between implicitly and
+ * clients.
+ *
+ * Note that the protocol does not distinguish between implicitly and
  * explicitly blocked Threema IDs. An implicitly blocked Threema ID (i.e.
- * blocking unknown contacts) must be treated the same as an explicitly
- * blocked Threema ID (i.e. blocking specific contacts).
+ * blocking unknown contacts) must be treated the same as an explicitly blocked
+ * Threema ID (i.e. blocking specific contacts).
+ *
+ * The UI must prevent users from composing or submitting messages towards a
+ * blocked contact. In practise, this is only relevant for explicitly blocked
+ * contacts as implicitly blocked contacts are already part of the contact list
+ * when the conversation is being opened.
  *
  * In case a message is being received from a blocked sender, the message
  * should genereally be ignored. However, the following exceptions apply:
@@ -137,10 +144,10 @@ import * as utils from '../utils';
  *
  * ### Implicit Contact Creation
  *
- * When a client is added to a group, every unknown member of the group must
- * be added to the contact list with acquaintance level _group_. Messages
- * from a contact with any acquaintance level must not be implicitly blocked
- * by a _block unknown_ setting.
+ * When the user is added to a group, every unknown member of the group must be
+ * added to the contact list with acquaintance level _group_. Messages from a
+ * contact with any acquaintance level will not be implicitly blocked by a
+ * _block unknown_ setting.
  *
  * The contact remains at the acquaintance level _group_ until a 1:1
  * conversation with that contact is being started by either side in which
@@ -184,9 +191,6 @@ import * as utils from '../utils';
  * considered _sent_ once the server acknowledged reception of each individual
  * message.
  *
- * The (deprecated) group message marker flag (`0x10`) must be set for all
- * group messages.
- *
  * ### Receiving
  *
  * The following steps are defined as _Common Group Receive Steps_ and will
@@ -194,24 +198,29 @@ import * as utils from '../utils';
  *
  * 1. Look up the group.
  * 2. If the group could not be found:
- *     1. If the user is the creator of the group (as alleged by the received
- *        message), discard the received message and abort these steps.
+ *     1. If the user is the creator of the group (as alleged by the message),
+ *        discard the message and abort these steps.
  *     2. Send a [`group-sync-request`](ref:e2e.group-sync-request) to the
- *        group creator, discard the received message and abort these steps.
+ *        group creator, discard the message and abort these steps.
  * 3. If the group is marked as _left_:
  *     1. If the user is the creator of the group, send a
- *       [`group-setup`](ref:e2e.group-setup) with an empty members list back
- *       to the sender, discard the received message and abort these steps.
+ *        [`group-setup`](ref:e2e.group-setup) with an empty members list back
+ *        to the sender, discard the message and abort these steps.
  *     2. Send a [`group-leave`](ref:e2e.group-leave) back to the sender,
- *       discard the received message and abort these steps.
+ *        discard the message and abort these steps.
  * 4. If the sender is not a member of the group:
  *    1. If the user is the creator of the group, send a
  *       [`group-setup`](ref:e2e.group-setup) with an empty members list back
  *       to the sender.
- *    2. Discard the received message and abort these steps.
+ *    2. Discard the message and abort these steps.
  *
- * This rule and any exceptions will be referenced/defined explicitly for
- * each message.
+ * This rule and any exceptions will be referenced/defined explicitly for each
+ * message.
+ *
+ * Note that steps are not allowed to discard messages from blocked contacts
+ * prior to running these steps if the message alters group state (group
+ * control messages), or is stateful (i.e. introduces a poll, poll vote, or a
+ * group call).
  *
  * ### Periodic Sync
  *
@@ -241,6 +250,9 @@ import * as utils from '../utils';
  * Since messages have a strict maximum size limitation, large binary blobs
  * are uploaded to the blob server. Blobs currently have a maximum size of
  * 50 MiB.
+ *
+ * When Multi-Device is activated, all Blobs must be downloaded via the
+ * respective Blob Mirror unless explicitly stated otherwise.
  *
  * ### Image, Audio, Video vs. File
  *
@@ -354,9 +366,9 @@ import * as utils from '../utils';
  *    the address book. Applicable to all Threema IDs which are not Threema
  *    Gateway IDs.
  *
- * The following steps are defined as *Contact Profile Picture Selection
- * Steps* and will be applied to determine the contact's profile picture that
- * should be displayed:
+ * The following steps are defined as _Contact Profile Picture Selection Steps_
+ * and will be applied to determine the contact's profile picture that should
+ * be displayed:
  *
  * 1. Let `id` be the Threema ID of the contact.
  * 2. If the _contact-defined_ picture is set for the contact, apply it and
@@ -427,90 +439,13 @@ import * as utils from '../utils';
  */
 export interface ContainerLike {
     /**
-     * Type of the message.
-     *
-     * Conversation messages:
-     *   - `0x01`: [`text`](ref:e2e.text)
-     *   - `0x02`: [`deprecated-image`](ref:e2e.deprecated-image)
-     *   - `0x10`: [`location`](ref:e2e.location)
-     *   - `0x14`: [`deprecated-audio`](ref:e2e.deprecated-audio)
-     *   - `0x13`: [`deprecated-video`](ref:e2e.deprecated-video)
-     *   - `0x17`: [`file`](ref:e2e.file)
-     *   - `0x15`: [`poll-setup`](ref:e2e.poll-setup)
-     *   - `0x16`: [`poll-vote`](ref:e2e.poll-vote)
-     *   - `0x60`: [`call-offer`](ref:e2e.call-offer)
-     *   - `0x61`: [`call-answer`](ref:e2e.call-answer)
-     *   - `0x62`: [`call-ice-candidate`](ref:e2e.call-ice-candidate)
-     *   - `0x63`: [`call-hangup`](ref:e2e.call-hangup)
-     *   - `0x64`: [`call-ringing`](ref:e2e.call-ringing)
-     *
-     * Status updates:
-     *   - `0x80`: [`delivery-receipt`](ref:e2e.delivery-receipt)
-     *   - `0x90`: [`typing-indicator`](ref:e2e.typing-indicator)
-     *
-     * Contact control:
-     *   - `0x18`: [`set-profile-picture`](ref:e2e.set-profile-picture) of a contact
-     *   - `0x19`: [`delete-profile-picture`](ref:e2e.delete-profile-picture) of a contact
-     *   - `0x1a`: [`contact-request-profile-picture`](ref:e2e.contact-request-profile-picture)
-     *
-     * Group invitations:
-     *   - `0x4d`: `csp-e2e.GroupJoinRequest`
-     *   - `0x4e`: `csp-e2e.GroupJoinResponse`
-     *
-     * Group control:
-     *   - `0x4a`: [`group-setup`](ref:e2e.group-setup) wrapped by
-     *     [`group-creator-container`](ref:e2e.group-creator-container)
-     *   - `0x4b`: [`group-name`](ref:e2e.group-name) wrapped by
-     *     [`group-creator-container`](ref:e2e.group-creator-container)
-     *   - `0x4c`: [`group-leave`](ref:e2e.group-leave) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x50`: [`set-profile-picture`](ref:e2e.set-profile-picture)
-     *     wrapped by
-     *     [`group-creator-container`](ref:e2e.group-creator-container)
-     *   - `0x54`: [`delete-profile-picture`](ref:e2e.delete-profile-picture)
-     *     wrapped by
-     *     [`group-creator-container`](ref:e2e.group-creator-container)
-     *   - `0x51`: [`group-sync-request`](ref:e2e.group-sync-request)
-     *     wrapped by
-     *     [`group-creator-container`](ref:e2e.group-creator-container)
-     *   - `0x4f`: `csp-e2e.GroupCallStart` wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *
-     * Group conversation messages:
-     *   - `0x41`: [`text`](ref:e2e.text) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x42`: [`location`](ref:e2e.location) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x43`: [`deprecated-group-image`](ref:e2e.deprecated-group-image)
-     *     wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x45`: [`deprecated-audio`](ref:e2e.deprecated-audio) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x44`: [`deprecated-video`](ref:e2e.deprecated-video) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x46`: [`file`](ref:e2e.file) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x52`: [`poll-setup`](ref:e2e.poll-setup) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *   - `0x53`: [`poll-vote`](ref:e2e.poll-vote) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *
-     * Group status updates:
-     *   - `0x81`: [`delivery-receipt`](ref:e2e.delivery-receipt) wrapped by
-     *     [`group-member-container`](ref:e2e.group-member-container)
-     *
-     * Forward security:
-     *   - `0xa0`: `csp-e2e-fs.ForwardSecurityEnvelope`
-     *
-     * Must not use:
-     *   - `0xff`: (Legacy) Reserved for Directory Server authentication
-     *     tokens to prevent payload confusion.
+     * Type of the message (`common.CspE2eMessageType`).
      */
     readonly type: types.u8;
 
     /**
-     * Inner message struct. Needs to be parsed according to the `type`
-     * field. Padded with a random amount from 1 to 255 bytes in [PKCS#7
+     * Inner message. Needs to be parsed according to the `type` field.
+     * Padded with a random amount from 1 to 255 bytes in [PKCS#7
      * format](https://datatracker.ietf.org/doc/html/rfc5652#section-6.3).
      *
      * Additionally, for security reasons, the total size of `padded-data`
@@ -1012,9 +947,16 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
+ * When receiving this message as a 1:1 conversation message:
+ *
+ * 1. Add the message to the associated 1:1 conversation.
+ *
  * When receiving this message as a group message (wrapped by
- * [`group-member-container`](ref:e2e.group-member-container)), run the
- * [_Common Group Receive Steps_](ref:e2e#receiving).
+ * [`group-member-container`](ref:e2e.group-member-container)):
+ *
+ * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
+ *    message has been discarded, abort these steps.
+ * 2. Add the message to the associated group conversation.
  */
 export interface TextLike {
     /**
@@ -1153,11 +1095,16 @@ export class Text extends base.Struct implements TextLike {
  * The image must be in JPEG format, is uploaded to the blob server and
  * encrypted by:
  *
- *     Box(<sender.CK>.secret, <receiver.CK>.public)
- *       .encrypt(data=<image-data>, nonce=<deprecated-image.nonce>)
+ *     XSalsa20-Poly1305(
+ *       key=X25519HSalsa20(<sender.CK>.secret, <receiver.CK>.public),
+ *       nonce=<deprecated-image.nonce>,
+ *     )
  *
- * When receiving this message, download the image data from the blob
- * server and request the blob to be removed.
+ * When receiving this message:
+ *
+ * 1. If desired, download the image data from the blob server and request
+ *    the blob to be removed.
+ * 2. Add the message to the associated 1:1 conversation.
  */
 export interface DeprecatedImageLike {
     /**
@@ -1336,7 +1283,6 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  *
  * **Flags:**
  *   - `0x01`: Send push notification.
- *   - `0x10`: Group message marker (DEPRECATED).
  *
  * **Delivery receipts:** Automatic: No. Manual: Yes.
  *
@@ -1347,16 +1293,16 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  * The image must be in JPEG format, is uploaded to the blob server and
  * encrypted by:
  *
- *     Box(<deprecated-group-image.key>)
- *       .encrypt(data=<image-data>, nonce=00..01)
+ *     XSalsa20-Poly1305(key=<deprecated-group-image.key>, nonce=00..01)
  *
  * When receiving this message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
  *
  * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
- *    group image message has been discarded, abort these steps.
- * 2. Download file and thumbnail data from the blob server. Do not
- *    request the blobs to be removed.
+ *    message has been discarded, abort these steps.
+ * 2. Download thumbnail and file (if desired) data from the blob server. Do
+ *    not request the blobs to be removed.
+ * 3. Add the message to the associated group conversation.
  */
 export interface DeprecatedGroupImageLike {
     /**
@@ -1539,8 +1485,11 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
  * When receiving this message as a group message (wrapped by
- * [`group-member-container`](ref:e2e.group-member-container)), run the
- * [_Common Group Receive Steps_](ref:e2e#receiving).
+ * [`group-member-container`](ref:e2e.group-member-container)):
+ *
+ * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
+ *    message has been discarded, abort these steps.
+ * 2. Add the message to the associated group conversation.
  */
 export interface LocationLike {
     /**
@@ -1716,19 +1665,22 @@ export class Location extends base.Struct implements LocationLike {
  *
  * The audio is uploaded to the blob server and encrypted by:
  *
- *     Box(<deprecated-audio.key>)
- *       .encrypt(data=<audio-data>, nonce=00..01)
+ *     XSalsa20-Poly1305(key=<deprecated-audio.key>, nonce=00..01)
  *
- * When receiving this message as a 1:1 conversation message, download the
- * audio data from the blob server and request the blob to be removed.
+ * When receiving this message as a 1:1 conversation message:
+ *
+ * 1. If desired, download the audio data from the blob server and request
+ *    the blob to be removed.
+ * 2. Add the message to the associated 1:1 conversation.
  *
  * When receiving this message as a group message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
  *
  * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
- *    audio message has been discarded, abort these steps.
- * 2. Download the audio data from the blob server. Do not request the blob
- *    to be removed.
+ *    message has been discarded, abort these steps.
+ * 2. If desired, download the audio data from the blob server. Do not
+ *    request the blob to be removed.
+ * 3. Add the message to the associated group conversation.
  */
 export interface DeprecatedAudioLike {
     /**
@@ -1939,26 +1891,27 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  *
  * The video is uploaded to the blob server and encrypted by:
  *
- *     Box(<deprecated-video.key>)
- *       .encrypt(data=<video-data>, nonce=00..01)
+ *     XSalsa20-Poly1305(key=<deprecated-video.key>, nonce=00..01)
  *
  * The thumbnail must be in JPEG format, is uploaded to the blob server
  * and encrypted by:
  *
- *     Box(<deprecated-video.key>)
- *       .encrypt(data=<thumbnail-data>, nonce=00..02)
+ *     XSalsa20-Poly1305(key=<deprecated-video.key>, nonce=00..02)
  *
- * When receiving this message as a 1:1 conversation message, download
- * video and thumbnail data from the blob server and request the blobs to
- * be removed.
+ * When receiving this message as a 1:1 conversation message:
+ *
+ * 1. Download thumbnail and video (if desired) data from the blob server and
+ *    request the blobs to be removed.
+ * 2. Add the message to the associated 1:1 conversation.
  *
  * When receiving this message as a group message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
  *
  * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
- *    video message has been discarded, abort these steps.
- * 2. Download video and thumbnail data from the blob server. Do not
- *    request the blobs to be removed.
+ *    message has been discarded, abort these steps.
+ * 2. Download thumbnail and video (if desired) data from the blob server. Do
+ *    not request the blobs to be removed.
+ * 3. Add the message to the associated group conversation.
  */
 export interface DeprecatedVideoLike {
     /**
@@ -2212,25 +2165,26 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  *
  * The file is uploaded to the blob server and encrypted by:
  *
- *     Box(<file.key>)
- *       .encrypt(data=<file-data>, nonce=00..01)
+ *     XSalsa20-Poly1305(key=<file.key>, nonce=00..01)
  *
  * The thumbnail is uploaded to the blob server and encrypted by:
  *
- *     Box(<file.key>)
- *       .encrypt(data=<thumbnail-data>, nonce=00..02)
+ *     XSalsa20-Poly1305(key=<file.key>, nonce=00..02)
  *
- * When receiving this message as a 1:1 conversation message, download
- * file and thumbnail data from the blob server and request the blobs to
- * be removed.
+ * When receiving this message as a 1:1 conversation message:
+ *
+ * 1. Download thumbnail and file (if desired) data from the blob server and
+ *    request the blobs to be removed.
+ * 2. Add the message to the associated 1:1 conversation.
  *
  * When receiving this message as a group message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
  *
- * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the file
+ * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
  *    message has been discarded, abort these steps.
- * 2. Download file and thumbnail data from the blob server. Do not
- *    request the blobs to be removed.
+ * 2. Download thumbnail and file (if desired) data from the blob server. Do
+ *    not request the blobs to be removed.
+ * 3. Add the message to the associated group conversation.
  */
 export interface FileLike {
     /**
@@ -2408,7 +2362,10 @@ export class File extends base.Struct implements FileLike {
 /**
  * Creates a new poll or finalises an existing poll.
  *
- * **Flags:**
+ * During the lifecycle of a poll, this message will be used exactly twice:
+ * Once to create the poll, and once to close it.
+ *
+ * **Flags**:
  *   - `0x01`: Send push notification.
  *
  * **Delivery receipts:** Automatic: Yes. Manual: Yes.
@@ -2417,24 +2374,29 @@ export class File extends base.Struct implements FileLike {
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
- * During the lifecycle of a poll, this message will be used exactly twice:
- * Once to create the poll, and once to close it.
+ * When receiving this message as a 1:1 conversation message:
+ *
+ * 1. Run the _Common Poll Setup Receive Steps_.
  *
  * When receiving this message as a group message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
  *
- * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the poll
+ * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
  *    message has been discarded, abort these steps.
- * 2. Let `state` be the _State_ field of the message. Let `participants` be
+ * 2. Run the _Common Poll Setup Receive Steps_.
+ *
+ * The following steps are defined as the _Common Poll Setup Receive Steps_.
+ *
+ * 1. Let `state` be the _State_ field of the message. Let `participants` be
  *    the _Participants_ field of the message.
- * 3. Look up the poll with the given ID within the conversation.
- * 4. If no associated poll could be found:
+ * 2. Look up the poll with the given ID within the conversation.
+ * 3. If no associated poll could be found:
  *     1. If `state` is `1` (closed), discard the message and abort these steps.
- *     2. Create the poll with the provided fields of the message and abort
- *        these steps.
- * 5. If the associated poll is closed, discard the message and abort these steps.
- * 6. If `state` is `0` (open), discard the message and abort these steps.
- * 7. Close the poll with the given `participants`, ignore any other fields
+ *     2. Add the poll to the associated conversation with the provided
+ *        fields of the message and abort these steps.
+ * 4. If the associated poll is closed, discard the message and abort these steps.
+ * 5. If `state` is `0` (open), discard the message and abort these steps.
+ * 6. Close the poll with the given `participants`, ignore any other fields
  *    of the message.
  */
 export interface PollSetupLike {
@@ -2651,9 +2613,23 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  *
  * **Reflect:** Incoming: Yes. Outgoing: Yes.
  *
+ * When receiving this message as a 1:1 conversation message:
+ *
+ * 1. Run the _Common Poll Vote Receive Steps_.
+ *
  * When receiving this message as a group message (wrapped by
- * [`group-member-container`](ref:e2e.group-member-container)), run the
- * [_Common Group Receive Steps_](ref:e2e#receiving).
+ * [`group-member-container`](ref:e2e.group-member-container)):
+ *
+ * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
+ *    message has been discarded, abort these steps.
+ * 2. Run the _Common Poll Vote Receive Steps_.
+ *
+ * The following steps are defined as the _Common Poll Vote Receive Steps_.
+ *
+ * 1. Look up the poll with the given ID within the conversation.
+ * 2. If no associated poll could be found or if the associated poll is
+ *    closed, discard the message and abort these steps.
+ * 3. Update the poll with the provided choices of the sender.
  */
 export interface PollVoteLike {
     /**
@@ -2676,8 +2652,8 @@ export interface PollVoteLike {
      *   - `0`: The choice has not been selected.
      *   - `1`: The choice has been selected.
      *
-     * Note: For protocol simplicity, a vote must always include all
-     *       possible choices, whether or not they have been selected.
+     * Note: For protocol simplicity, a vote must always include all possible
+     * choices, whether or not they have been selected.
      */
     readonly choices: Uint8Array;
 }
@@ -3588,25 +3564,24 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  * Note: When outgoing delivery receipts are turned off, reflect an
  * `IncomingMessageUpdate` instead.
  *
- * When receiving this message as a 1:1 conversation status update message
- * (`0x80`):
+ * When receiving this message as a 1:1 conversation status update message:
  *
  * 1. For each message id of `message-ids`, look up the associated message
- *    in the conversation and let `messages` be the result. Discard message
+ *    in the conversation and let `messages` be the result. Ignore message
  *    ids where an associated message could not be found.
  * 2. For each `message` of `messages`, apply and replace the status or
  *    reaction of the sender to `message` by following the replacement logic
  *    outlied in the `status` field.
  *
- * When receiving this message as a group status update message (`0x81`,
- * (wrapped by [`group-member-container`](ref:e2e.group-member-container)):
+ * When receiving this message as a group status update message (wrapped by
+ * [`group-member-container`](ref:e2e.group-member-container):
  *
  * 1. If `status` is not `0x03` or `0x04`, discard the message and abort
  *    these steps.
  * 2. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
- *    delivery receipt message has been discarded, abort these steps.
+ *    message has been discarded, abort these steps.
  * 3. For each message id of `message-ids`, look up the associated message
- *    in the group conversation and let `messages` be the result. Discard
+ *    in the group conversation and let `messages` be the result. Ignore
  *    message ids where an associated message could not be found.
  * 4. For each `message` of `messages`, apply and replace the reaction of the
  *    sender to `message`.
@@ -3783,6 +3758,29 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  * **User profile distribution:** No.
  *
  * **Reflect:** Incoming: Yes, with ephemeral marker. Outgoing: No.
+ *
+ * When the user is currently typing in the compose area of an associated
+ * conversation:
+ *
+ * 1. Send this message with `is-typing` set to `1`.
+ * 2. Start a _user is typing_ timer in the conversation to rerun these
+ *    steps in 10s.
+ *
+ * When the user stopped typing in the compose area of an associated
+ * conversation (or left the conversation view):
+ *
+ * 1. If no _user is typing_ timer is running for the conversation, abort
+ *    these steps.
+ * 2. Stop the _user is typing_ timer of the conversation.
+ * 3. Send this message with `is-typing` set to `0`.
+ *
+ * When receiving this message:
+ *
+ * 1. If the sender is blocked, discard the message and abort these steps.
+ * 2. If `is-typing` is `1`, start a timer to display that the sender is
+ *    typing in the associated conversation for the next 15s.
+ * 3. If `is-typing` is `0`, cancel any running timer displaying that the
+ *    sender is typing in the associated conversation.
  */
 export interface TypingIndicatorLike {
     /**
@@ -3917,10 +3915,9 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * The profile picture must be in JPEG format, is uploaded to the blob
  * server and encrypted by:
  *
- *     Box(<set-profile-picture.key>)
- *       .encrypt(data=<image-data>, nonce=00..01)
+ *     XSalsa20-Poly1305(key=<set-profile-picture.key>, nonce=00..01)
  *
- * When reflected from another device as a contact control message:
+ * When reflected from another device as an outgoing contact control message:
  *
  * 1. Store the enclosed blob ID as the most recently used blob ID for that
  *    contact.
@@ -3936,10 +3933,10 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * [`group-creator-container`](ref:e2e.group-creator-container)):
  *
  * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
- *    profile picture message has been discarded, abort these steps.
+ *    message has been discarded, abort these steps.
  * 2. Download the picture from the blob server but do not request the blob
  *    to be removed.
- * 3. Store and apply the profile picture to the group
+ * 3. Store the profile picture and and apply it to the group.
  */
 export interface SetProfilePictureLike {
     /**
@@ -4122,15 +4119,16 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  *
  * **Reflect (groups):** Incoming: Yes. Outgoing: Yes.
  *
- * When receiving this message as a contact control message, remove the
- * _contact-defined_ profile picture and run the *Contact Profile Picture
- * Selection Steps*.
+ * When receiving this message as a contact control message:
+ *
+ * 1. Remove the _contact-defined_ profile picture and run the _Contact
+ *    Profile Picture Selection Steps_.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
  *
  * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
- *    received message has been discarded, abort these steps.
+ *    message has been discarded, abort these steps.
  * 2. Remove the profile picture of the group.
  */
 export interface DeleteProfilePictureLike {}
@@ -4245,7 +4243,8 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  *
  * When receiving this message via CSP or reflection:
  *
- * 1. Look up the sender contact. If contact is not found, abort these steps.
+ * 1. Look up the sender contact. If the contact could not be found, abort
+ *    these steps.
  * 2. If the sender is not eligible for reception of the profile picture,
  *    abort these steps.
  * 3. Clear the cached profile picture blob ID for the sender.
@@ -4374,52 +4373,47 @@ export class ContactRequestProfilePicture
  *
  * When sending this message to all group members:
  *
- * 1.  If the user is not the creator of the group, abort these steps.
- * 2.  Let `members-after-remove` be the member list of the group. Remove
- *     all members from this list that are to be removed from the group.
- * 3.  Create a `group-setup` message with the members present in
- *     `members-after-remove`. Send this message only to the group members
- *     that are to be removed from the group.
- * 4.  Let `members-after-remove-and-add` be a copy of
- *     `members-after-remove`. Add all members to this list that are to be
- *     added to the group (i.e. this represents the updated member set with
- *     all removed and added members).
- * 5.  For each member of `members-after-remove-and-add`, create a contact
- *     with acquaintance level _group_ if not already present in the contact
- *     list.
- * 6.  Create a `group-setup` message with the members present in
- *     `members-after-remove-and-add`. Send this message to all group
- *     members present in `members-after-remove-and-add`.
- * 7.  For each newly added `member` in `members-after-remove-and-add`,
- *     additionally:
- *     1. If the group has a profile picture, send a
- *        [`set-profile-picture`](ref:e2e.set-profile-picture) group control
- *        message to the newly added `member`.
- *     2. If the group has no profile picture, send a
- *        [`delete-profile-picture`](ref:e2e.delete-profile-picture) group
- *        control message to the newly added `member`.
- *     3. If a group call is currently considered running within this group,
- *        run the _Group Call Refresh Steps_ and let `chosen-call` be the
- *        result. If `chosen-call` is defined, repeat
- *        `csp-e2e.GroupCallStart` that is associated to `chosen-call` with
- *        the _created_ timestamp set to the `started_at` value associated to
- *        `chosen-call`.
- * 8.  If the action of the user triggering these steps was to disband or
- *     delete the group (and consequently `members-after-remove-and-add` is
- *     empty):
- *     1. If the user is currently participating in a group call of this group,
- *        trigger leaving the call.
- *     2. Mark the group as _left_ and abort these steps. Persist this
- *        mark even if the group and its history is being removed by the user.
- *        When disbanding but not deleting, the client should persist the
- *        previous member setup, ignoring the content of
- *        `members-after-remove-and-add` to give the user the possibility to
- *        view the message history and the member setup prior to the user being
- *        removed. The user must not be able to send any more messages to the
- *        group but may be allowed to _reopen_ the group with the previous
- *        member setup, when desired.
- * 9.  Update the group with the given `members-after-remove-and-add`.
- * 10. If the group was previously marked as _left_, remove the _left_ mark.
+ * 1. If the user is not the creator of the group, abort these steps.
+ * 2. Create a `group-setup` message with an empty members list and send it
+ *    to the group members that are to be removed from the group.
+ * 3. Let `members` be the current member list of the group. Remove all
+ *    members from this list that are to be removed from the group. Add all
+ *    members to this list that are to be added to the group. (i.e. this
+ *    list represents the updated member set with all removed and added
+ *    members.)
+ * 4. For each member of `members`, create a contact with acquaintance level
+ *    _group_ if not already present in the contact list.
+ * 5. Create a `group-setup` message with the members present in
+ *    `members`. Send this message to all group members present in
+ *    `members`.
+ * 6. For each newly added `member` in `members`,
+ *    additionally:
+ *    1. If the group has a profile picture, send a
+ *       [`set-profile-picture`](ref:e2e.set-profile-picture) group control
+ *       message to the newly added `member`.
+ *    2. If the group has no profile picture, send a
+ *       [`delete-profile-picture`](ref:e2e.delete-profile-picture) group
+ *       control message to the newly added `member`.
+ *    3. If a group call is currently considered running within this group,
+ *       run the _Group Call Refresh Steps_ and let `chosen-call` be the
+ *       result. If `chosen-call` is defined, repeat
+ *       `csp-e2e.GroupCallStart` that is associated to `chosen-call` with
+ *       the _created_ timestamp set to the `started_at` value associated to
+ *       `chosen-call`.
+ * 7. If the action of the user triggering these steps was to disband or
+ *    delete the group (and consequently `members` is empty):
+ *    1. If the user is currently participating in a group call of this
+ *       group, trigger leaving the call.
+ *    2. Mark the group as _left_ and abort these steps. Persist this
+ *       mark even if the group and its history is being removed by the
+ *       user. When disbanding but not deleting, the client should persist
+ *       the previous member setup, ignoring the content of `member` to give
+ *       the user the possibility to view the message history and the member
+ *       setup prior to the user being removed. The user must not be able to
+ *       send any more messages to the group but may be allowed to _reopen_
+ *       the group with the previous member setup, when desired.
+ * 8. Update the group with the given `members`.
+ * 9. If the group was previously marked as _left_, remove the _left_ mark.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -4597,7 +4591,7 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  * [`group-creator-container`](ref:e2e.group-creator-container)):
  *
  * 1. Run the [_Common Group Receive Steps_](ref:e2e#receiving). If the
- *    received message has been discarded, abort these steps.
+ *    message has been discarded, abort these steps.
  * 2. Update the group with the given name.
  */
 export interface GroupNameLike {
@@ -4728,7 +4722,7 @@ export class GroupName extends base.Struct implements GroupNameLike {
  * * in direct reply to a group message for a group that it has marked as
  *   left.
  *
- * The group creator is not allowed to leave the group.
+ * Note: The group creator is not allowed to leave the group.
  *
  * **Flags:** None.
  *
@@ -4753,12 +4747,14 @@ export class GroupName extends base.Struct implements GroupNameLike {
  * When receiving this message as a group control message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
  *
- * 1. If the sender is the creator of the group, abort these steps.
+ * 1. If the sender is the creator of the group, discard the message and
+ *    abort these steps.
  * 2. Look up the group.
  * 3. If the group could not be found or is marked as _left_:
- *     1. If the user is the creator of the group, abort these steps.
+ *     1. If the user is the creator of the group (as alleged by the
+ *        message), discard the message and abort these steps.
  *     2. Send a [`group-sync-request`](ref:e2e.group-sync-request) to the
- *        group creator and abort these steps.
+ *        group creator, discard the message and abort these steps.
  * 4. Remove the member from the local group.
  * 5. If the user and the sender are participating in a group call of this
  *    group, remove the sender from the group call (handle it as if the
@@ -4871,8 +4867,8 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
  *
- * 1. Look up the group. If the group could not be found, abort these
- *    steps.
+ * 1. Look up the group. If the group could not be found, discard the message
+ *    and abort these steps.
  * 2. If the group is marked as _left_ or the sender is not a member of the
  *    group, send a [`group-setup`](ref:e2e.group-setup) with an empty
  *    members list back to the sender and abort these steps.

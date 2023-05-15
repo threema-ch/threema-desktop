@@ -9,13 +9,12 @@ import * as utils from '../utils';
  * To perform authentication handshake, the following handshake structs have to
  * be exchanged in this order:
  *
- * - [`client-hello`](ref:handshake.client-hello)
- * - [`server-hello`](ref:handshake.server-hello)
- * - [`login`](ref:handshake.login)
- * - [`login-ack`](ref:handshake.login-ack)
+ *     C -- client-hello -> S
+ *     C <- server-hello -- S
+ *     C ---- login ---- -> S
+ *     C <-- login-ack ---- S
  *
- * Note that handshake structs have no framing container struct, so the
- * struct sizes are constant (with one exception).
+ * Note that handshake structs have no wrapping frame container struct.
  */
 
 /**
@@ -173,7 +172,9 @@ export class ClientHello extends base.Struct implements ClientHelloLike {
  *
  * Direction: Client <-- Server
  *
- * When creating this message, ensure that CCK and SCK are not equal.
+ * When creating this message:
+ *
+ * 1. Ensure that CCK and SCK are not equal.
  *
  * When receiving this message:
  *
@@ -192,8 +193,10 @@ export interface ServerHelloLike {
      * The server's challenge response (`server-challenge-response`),
      * encrypted by:
      *
-     *     Box(SK.secret, TCK.public)
-     *       .encrypt(data=<server-challenge-response>, nonce=<SCK><SSN+>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(SK.secret, TCK.public),
+     *       nonce=SCK || u64-le(SSN+),
+     *     )
      */
     readonly serverChallengeResponseBox: Uint8Array;
 }
@@ -475,25 +478,30 @@ export class ServerChallengeResponse extends base.Struct implements ServerChalle
 /**
  * Login request from the client.
  *
- * Note: `CSN` is used and increased for `box` and then for `extension-box`.
- *       It must follow this exact order.
+ * IMPORTANT: `CSN` is used and increased for `box` and then for
+ * `extension-box`. It must follow this exact order.
  *
  * Direction: Client --> Server
  */
 export interface LoginLike {
     /**
-     * The login data, encrypted by:
+     * The [`login-data`](ref:handshake.login-data), encrypted by:
      *
-     *     Box(TCK.secret, TSK.public)
-     *       .encrypt(data=<login-data>, nonce=<CCK><CSN+>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(TCK.secret, TSK.public),
+     *       nonce=CCK || u64-le(CSN+),
+     *     )
      */
     readonly box: Uint8Array;
 
     /**
-     * An optional arbitrary amount of extensions, encrypted by:
+     * An optional arbitrary amount of
+     * [`extension`](ref:handshake.extension)s, encrypted by:
      *
-     *     Box(TCK.secret, TSK.public)
-     *       .encrypt(data=<extension[]>, nonce=<CCK><CSN+>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(TCK.secret, TSK.public),
+     *       nonce=CCK || u64-le(CSN+),
+     *     )
      *
      * These fields are only present if the
      * [`extension-indicator`](ref:handshake.extension-indicator) of the
@@ -673,10 +681,14 @@ export interface LoginDataLike {
     /**
      * The vouch value, calculated as follows:
      *
-     *     SS1 = SharedSecret(CK.secret, SK.public)
-     *     SS2 = SharedSecret(CK.secret, TSK.public)
-     *     VouchKey = BLAKE2b(key=<SS1><SS2>, salt='v2', personal='3ma-csp')
-     *     vouch = BLAKE2b(out-length=32, key=VouchKey, input=<SCK><TCK.public>)
+     *     SS1 = X25519HSalsa20(CK.secret, SK.public)
+     *     SS2 = X25519HSalsa20(CK.secret, TSK.public)
+     *     VouchKey = BLAKE2b(key=SS1 || SS2, salt='v2', personal='3ma-csp')
+     *     vouch = BLAKE2b(
+     *       out-length=32,
+     *       key=VouchKey,
+     *       input=SCK || TCK.public,
+     *     )
      */
     readonly vouch: Uint8Array;
 
@@ -1639,7 +1651,7 @@ export class MessagePayloadVersion extends base.Struct implements MessagePayload
  *
  * Its purpose is to allow detection when a different (rogue) device has
  * connected to the chat server, e.g. because an attacker has obtained
- * the private key of a user.
+ * the secret key of a user.
  *
  * The server will store the device cookie of the last connection, and if a
  * different cookie is sent by the client, it will set a flag on the identity
@@ -1779,10 +1791,12 @@ export class DeviceCookie extends base.Struct implements DeviceCookieLike {
  */
 export interface LoginAckLike {
     /**
-     * Reserved, encrypted by:
+     * Reserved (16 zero bytes), encrypted by:
      *
-     *     Box(TSK.secret, TCK.public)
-     *       .encrypt(data=<16-zero-bytes>, nonce=<SCK+>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(TSK.secret, TCK.public),
+     *       nonce=SCK || u64-le(SSN+),
+     *     )
      */
     readonly reservedBox: Uint8Array;
 }

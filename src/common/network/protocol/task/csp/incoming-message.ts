@@ -1050,7 +1050,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     missingContactHandling: 'create',
                     deliveryReceipt: true,
                     initFragment: getLocationMessageInitFragment(clampedCreatedAt, cspMessageBody),
-                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.LOCATION),
+                    reflectFragment: reflectFragmentFor(protobuf.common.CspE2eMessageType.LOCATION),
                 };
                 return instructions;
             }
@@ -1073,7 +1073,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         clampedCreatedAt,
                         validatedContainer.innerData,
                     ),
-                    reflectFragment: reflectFragmentFor(protobuf.d2d.MessageType.GROUP_LOCATION),
+                    reflectFragment: reflectFragmentFor(
+                        protobuf.common.CspE2eMessageType.GROUP_LOCATION,
+                    ),
                 };
                 return instructions;
             }

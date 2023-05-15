@@ -12,7 +12,6 @@ import {
     MessageType,
     ReceiverType,
 } from '~/common/enum';
-import {d2d} from '~/common/network/protobuf';
 import * as protobuf from '~/common/network/protobuf';
 import {
     BLOB_FILE_NONCE,
@@ -280,7 +279,9 @@ export function run(): void {
                             expect(payload.incomingMessage).not.to.be.undefined;
                             const incomingMessage = unwrap(payload.incomingMessage);
                             expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
-                            expect(incomingMessage.type).to.equal(d2d.MessageType.TEXT);
+                            expect(incomingMessage.type).to.equal(
+                                protobuf.common.CspE2eMessageType.TEXT,
+                            );
                         }),
                         NetworkExpectationFactory.writeIncomingMessageAck(),
 
@@ -341,7 +342,9 @@ export function run(): void {
                         expect(payload.incomingMessage).not.to.be.undefined;
                         const incomingMessage = unwrap(payload.incomingMessage);
                         expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
-                        expect(incomingMessage.type).to.equal(d2d.MessageType.TEXT);
+                        expect(incomingMessage.type).to.equal(
+                            protobuf.common.CspE2eMessageType.TEXT,
+                        );
                     }),
                     NetworkExpectationFactory.writeIncomingMessageAck(),
 
@@ -449,7 +452,9 @@ export function run(): void {
                         expect(payload.incomingMessage).not.to.be.undefined;
                         const incomingMessage = unwrap(payload.incomingMessage);
                         expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
-                        expect(incomingMessage.type).to.equal(d2d.MessageType.FILE);
+                        expect(incomingMessage.type).to.equal(
+                            protobuf.common.CspE2eMessageType.FILE,
+                        );
                     }),
                     NetworkExpectationFactory.writeIncomingMessageAck(),
 

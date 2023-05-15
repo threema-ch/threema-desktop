@@ -14,7 +14,7 @@ export {payload};
  *
  * ## General Information
  *
- * Encryption format: 24 byte nonce prepended, followed by an NaCl box.
+ * Encryption cipher: XSalsa20-Poly1305, unless otherwise specified.
  *
  * All strings are UTF-8 encoded.
  *
@@ -104,4 +104,15 @@ export {payload};
  * When automatically reconnecting, linear backoff should be applied. In case
  * the connection fails repeatedly, user interaction should be required to
  * continue reconnecting.
+ *
+ * ## Security
+ *
+ * The client must pin the TLS certificate of the server, so that the server
+ * can be authenticated. The client authenticates itself during the handshake
+ * with the server that it is part of the device group by responding to a
+ * challenge.
+ *
+ * A malicious server can connect arbitrary devices with one another but this
+ * would be detected eventually because decrypting reflected messages would
+ * fail.
  */

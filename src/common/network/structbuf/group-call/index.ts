@@ -3,7 +3,7 @@ import * as e2e from './e2e';
 export {e2e};
 
 /**
- * # Group Calls (Supplementary)
+ * # Group Call Protocol (Supplementary)
  *
  * This is a supplementary section to the corresponding protobuf section with
  * messages that use structbuf instead of protobuf. All defined messages here

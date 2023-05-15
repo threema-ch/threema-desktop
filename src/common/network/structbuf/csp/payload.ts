@@ -28,17 +28,21 @@ export interface FrameLike {
     readonly length: types.u16;
 
     /**
-     * The payload.
+     * The encrypted [payload](ref:payload#payload).
      *
-     * For inbound messages, encrypted by:
+     * For messages from the server to the client, encrypted by:
      *
-     *     Box(TSK.secret, TCK.public)
-     *       .encrypt(data=<payload>, nonce=<SCK><SSN+>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(TSK.secret, TCK.public),
+     *       nonce=SCK || u64-le(SSN+),
+     *     )
      *
-     * For outbound messages, encrypted by:
+     * For messages from the  client to the server, encrypted by:
      *
-     *     Box(TCK.secret, TSK.public)
-     *       .encrypt(data=<payload>, nonce=<CCK><CSN+>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(TSK.secret, TCK.public),
+     *       nonce=CCK || u64-le(CSN+),
+     *     )
      */
     readonly box: Uint8Array;
 }
@@ -648,6 +652,9 @@ export class EchoResponse extends base.Struct implements EchoResponseLike {
  * - Copy `legacy-message.message-nonce` to
  *   `message-with-metadata-box.message-and-metadata-nonce`.
  *
+ * When sending or receiving this payload, convert it to a
+ * `message-with-metadata-box` and handle it as defined by that struct.
+ *
  * [//]: # "TODO(SE-128)"
  */
 export interface LegacyMessageLike {
@@ -702,17 +709,14 @@ export interface LegacyMessageLike {
      *   indicator. Will not be acknowledged by the chat server when sending.
      *   No acknowledgement should be sent by the receiver to the chat
      *   server.
-     * - `0x10`: Group message marker (DEPRECATED). Use this for all group
-     *   messages. In iOS clients, this will be used for notifications to
-     *   reflect that a group message has been received in case no connection
-     *   to the server could be established.
+     * - `0x10`: Reserved (formerly _group message marker_).
      * - `0x20`: Short-lived server queuing. Messages with this flag will
      *   only be queued for 60 seconds.
      * - `0x80`: No automatic delivery receipts. A receiver of a message with this
-     *   flag must not send automatic delivery receipt of any type. This does
-     *   **not** include manual delivery receipts. This may not be used by
-     *   the apps but can be used by Threema Gateway IDs which do not
-     *   necessarily want a delivery receipt for a message.
+     *   flag must not send automatic delivery receipt of type _received_
+     *   (`0x01`) or _read_ (`0x02`). This is not used by the apps but can be
+     *   used by Threema Gateway IDs which do not necessarily want a delivery
+     *   receipt for a message.
      */
     readonly flags: types.u8;
 
@@ -740,8 +744,10 @@ export interface LegacyMessageLike {
     /**
      * The message, end-to-end encrypted by:
      *
-     *     Box(<sender.CK>.secret, <receiver.CK>.public)
-     *       .encrypt(data=<e2e.container>, nonce=<message-nonce>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(<sender.CK>.secret, <receiver.CK>.public),
+     *       nonce=<message-nonce>,
+     *     )
      */
     readonly messageBox: Uint8Array;
 }
@@ -1104,17 +1110,14 @@ export interface MessageWithMetadataBoxLike {
      *   indicator. Will not be acknowledged by the chat server when sending.
      *   No acknowledgement should be sent by the receiver to the chat
      *   server.
-     * - `0x10`: Group message marker (DEPRECATED). Use this for all group
-     *   messages. In iOS clients, this will be used for notifications to
-     *   reflect that a group message has been received in case no connection
-     *   to the server could be established.
+     * - `0x10`: Reserved (formerly _group message marker_).
      * - `0x20`: Short-lived server queuing. Messages with this flag will
      *   only be queued for 60 seconds.
      * - `0x80`: No automatic delivery receipts. A receiver of a message with this
-     *   flag must not send automatic delivery receipt of any type. This does
-     *   **not** include manual delivery receipts. This may not be used by
-     *   the apps but can be used by Threema Gateway IDs which do not
-     *   necessarily want a delivery receipt for a message.
+     *   flag must not send automatic delivery receipt of type _received_
+     *   (`0x01`) or _read_ (`0x02`). This is not used by the apps but can be
+     *   used by Threema Gateway IDs which do not necessarily want a delivery
+     *   receipt for a message.
      */
     readonly flags: types.u8;
 
@@ -1151,14 +1154,15 @@ export interface MessageWithMetadataBoxLike {
      *
      * Message Metadata Key (`MMK`) derivation:
      *
-     *     S = SharedSecret(<sender.CK>.secret, <receiver.CK>.public)
+     *     S = X25519HSalsa20(<sender.CK>.secret, <receiver.CK>.public)
      *     MMK = BLAKE2b(key=S, salt='mm', personal='3ma-csp')
      *
-     * End-to-end encrypted by `MMK`:
+     * The encoded `csp-e2e.MessageMetadata` is then encrypted in the
+     * following way:
      *
-     *     Box(MMK).encrypt(
-     *       data=<csp-e2e.MessageMetadata>,
-     *       nonce=<message-with-metadata-box.message-and-metadata-nonce>
+     *     XSalsa20-Poly1305(
+     *       key=MMK,
+     *       nonce=<message-with-metadata-box.message-and-metadata-nonce>,
      *     )
      */
     readonly metadataContainer: Uint8Array;
@@ -1171,8 +1175,10 @@ export interface MessageWithMetadataBoxLike {
     /**
      * The message, end-to-end encrypted by:
      *
-     *     Box(<sender.CK>.secret, <receiver.CK>.public)
-     *       .encrypt(data=<e2e.container>, nonce=<message-nonce>)
+     *     XSalsa20-Poly1305(
+     *       key=X25519HSalsa20(<sender.CK>.secret, <receiver.CK>.public),
+     *       nonce=<message-nonce>,
+     *     )
      */
     readonly messageBox: Uint8Array;
 }

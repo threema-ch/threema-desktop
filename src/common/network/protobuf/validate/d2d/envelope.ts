@@ -17,6 +17,7 @@ const BASE_SCHEMA = {
     groupSync: NULL_OR_UNDEFINED_SCHEMA,
     distributionListSync: NULL_OR_UNDEFINED_SCHEMA,
     settingsSync: NULL_OR_UNDEFINED_SCHEMA,
+    mdmParameterSync: NULL_OR_UNDEFINED_SCHEMA,
 };
 
 /**
@@ -130,6 +131,20 @@ const SETTINGS_SYNC_SCHEMA = validator(
 );
 
 /**
+ * {@link d2d.Envelope} oneof schema instance with content = mdmParameterSync
+ */
+const MDM_PARAMETER_SYNC_SCHEMA = validator(
+    d2d.Envelope,
+    v
+        .object({
+            ...BASE_SCHEMA,
+            content: v.literal('mdmParameterSync'),
+            mdmParameterSync: instanceOf(d2d.MdmParameterSync),
+        })
+        .rest(v.unknown()),
+);
+
+/**
  * {@link d2d.Envelope} oneof schema instance with content = userProfileSync
  */
 const USER_PROFILE_SYNC_SCHEMA = validator(
@@ -155,6 +170,7 @@ export const SCHEMA = validator(
         GROUP_SYNC_SCHEMA,
         DISTRIBUTION_LIST_SYNC_SCHEMA,
         SETTINGS_SYNC_SCHEMA,
+        MDM_PARAMETER_SYNC_SCHEMA,
         USER_PROFILE_SYNC_SCHEMA,
     ),
 );

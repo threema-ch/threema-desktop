@@ -51,6 +51,7 @@ export function getTaskForIncomingD2dMessage(
             return new ReflectedUserProfileSyncTask(services, envelope.userProfileSync);
         case 'settingsSync':
             return new ReflectedSettingsSyncTask(services, envelope.settingsSync);
+        case 'mdmParameterSync':
         case 'distributionListSync':
             return new TechDebtTask(services, `Handle inbound D2D ${envelope.content}`);
         default:

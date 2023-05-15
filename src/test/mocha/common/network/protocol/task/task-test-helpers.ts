@@ -130,7 +130,7 @@ export function reflectAndSendDeliveryReceipt(
         NetworkExpectationFactory.reflectSingle((payload) => {
             expect(payload.content).to.equal('outgoingMessage');
             expect(payload.outgoingMessage?.type).to.equal(
-                protobuf.d2d.MessageType.DELIVERY_RECEIPT,
+                protobuf.common.CspE2eMessageType.DELIVERY_RECEIPT,
             );
         }),
 

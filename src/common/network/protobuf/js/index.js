@@ -915,6 +915,92 @@ export const common = $root.common = (() => {
         return values;
     })();
 
+    /**
+     * CspE2eMessageType enum.
+     * @name common.CspE2eMessageType
+     * @enum {number}
+     * @property {number} _=0 _ value
+     * @property {number} TEXT=1 TEXT value
+     * @property {number} DEPRECATED_IMAGE=2 DEPRECATED_IMAGE value
+     * @property {number} LOCATION=16 LOCATION value
+     * @property {number} DEPRECATED_AUDIO=20 DEPRECATED_AUDIO value
+     * @property {number} DEPRECATED_VIDEO=19 DEPRECATED_VIDEO value
+     * @property {number} FILE=23 FILE value
+     * @property {number} POLL_SETUP=21 POLL_SETUP value
+     * @property {number} POLL_VOTE=22 POLL_VOTE value
+     * @property {number} CALL_OFFER=96 CALL_OFFER value
+     * @property {number} CALL_ANSWER=97 CALL_ANSWER value
+     * @property {number} CALL_ICE_CANDIDATE=98 CALL_ICE_CANDIDATE value
+     * @property {number} CALL_HANGUP=99 CALL_HANGUP value
+     * @property {number} CALL_RINGING=100 CALL_RINGING value
+     * @property {number} DELIVERY_RECEIPT=128 DELIVERY_RECEIPT value
+     * @property {number} TYPING_INDICATOR=144 TYPING_INDICATOR value
+     * @property {number} CONTACT_SET_PROFILE_PICTURE=24 CONTACT_SET_PROFILE_PICTURE value
+     * @property {number} CONTACT_DELETE_PROFILE_PICTURE=25 CONTACT_DELETE_PROFILE_PICTURE value
+     * @property {number} CONTACT_REQUEST_PROFILE_PICTURE=26 CONTACT_REQUEST_PROFILE_PICTURE value
+     * @property {number} GROUP_JOIN_REQUEST=77 GROUP_JOIN_REQUEST value
+     * @property {number} GROUP_JOIN_RESPONSE=78 GROUP_JOIN_RESPONSE value
+     * @property {number} GROUP_SETUP=74 GROUP_SETUP value
+     * @property {number} GROUP_NAME=75 GROUP_NAME value
+     * @property {number} GROUP_LEAVE=76 GROUP_LEAVE value
+     * @property {number} GROUP_SET_PROFILE_PICTURE=80 GROUP_SET_PROFILE_PICTURE value
+     * @property {number} GROUP_DELETE_PROFILE_PICTURE=84 GROUP_DELETE_PROFILE_PICTURE value
+     * @property {number} GROUP_SYNC_REQUEST=81 GROUP_SYNC_REQUEST value
+     * @property {number} GROUP_CALL_START=79 GROUP_CALL_START value
+     * @property {number} GROUP_TEXT=65 GROUP_TEXT value
+     * @property {number} GROUP_LOCATION=66 GROUP_LOCATION value
+     * @property {number} GROUP_IMAGE=67 GROUP_IMAGE value
+     * @property {number} GROUP_AUDIO=69 GROUP_AUDIO value
+     * @property {number} GROUP_VIDEO=68 GROUP_VIDEO value
+     * @property {number} GROUP_FILE=70 GROUP_FILE value
+     * @property {number} GROUP_POLL_SETUP=82 GROUP_POLL_SETUP value
+     * @property {number} GROUP_POLL_VOTE=83 GROUP_POLL_VOTE value
+     * @property {number} GROUP_DELIVERY_RECEIPT=129 GROUP_DELIVERY_RECEIPT value
+     * @property {number} FORWARD_SECURITY_ENVELOPE=160 FORWARD_SECURITY_ENVELOPE value
+     */
+    common.CspE2eMessageType = (function() {
+        const valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "_"] = 0;
+        values[valuesById[1] = "TEXT"] = 1;
+        values[valuesById[2] = "DEPRECATED_IMAGE"] = 2;
+        values[valuesById[16] = "LOCATION"] = 16;
+        values[valuesById[20] = "DEPRECATED_AUDIO"] = 20;
+        values[valuesById[19] = "DEPRECATED_VIDEO"] = 19;
+        values[valuesById[23] = "FILE"] = 23;
+        values[valuesById[21] = "POLL_SETUP"] = 21;
+        values[valuesById[22] = "POLL_VOTE"] = 22;
+        values[valuesById[96] = "CALL_OFFER"] = 96;
+        values[valuesById[97] = "CALL_ANSWER"] = 97;
+        values[valuesById[98] = "CALL_ICE_CANDIDATE"] = 98;
+        values[valuesById[99] = "CALL_HANGUP"] = 99;
+        values[valuesById[100] = "CALL_RINGING"] = 100;
+        values[valuesById[128] = "DELIVERY_RECEIPT"] = 128;
+        values[valuesById[144] = "TYPING_INDICATOR"] = 144;
+        values[valuesById[24] = "CONTACT_SET_PROFILE_PICTURE"] = 24;
+        values[valuesById[25] = "CONTACT_DELETE_PROFILE_PICTURE"] = 25;
+        values[valuesById[26] = "CONTACT_REQUEST_PROFILE_PICTURE"] = 26;
+        values[valuesById[77] = "GROUP_JOIN_REQUEST"] = 77;
+        values[valuesById[78] = "GROUP_JOIN_RESPONSE"] = 78;
+        values[valuesById[74] = "GROUP_SETUP"] = 74;
+        values[valuesById[75] = "GROUP_NAME"] = 75;
+        values[valuesById[76] = "GROUP_LEAVE"] = 76;
+        values[valuesById[80] = "GROUP_SET_PROFILE_PICTURE"] = 80;
+        values[valuesById[84] = "GROUP_DELETE_PROFILE_PICTURE"] = 84;
+        values[valuesById[81] = "GROUP_SYNC_REQUEST"] = 81;
+        values[valuesById[79] = "GROUP_CALL_START"] = 79;
+        values[valuesById[65] = "GROUP_TEXT"] = 65;
+        values[valuesById[66] = "GROUP_LOCATION"] = 66;
+        values[valuesById[67] = "GROUP_IMAGE"] = 67;
+        values[valuesById[69] = "GROUP_AUDIO"] = 69;
+        values[valuesById[68] = "GROUP_VIDEO"] = 68;
+        values[valuesById[70] = "GROUP_FILE"] = 70;
+        values[valuesById[82] = "GROUP_POLL_SETUP"] = 82;
+        values[valuesById[83] = "GROUP_POLL_VOTE"] = 83;
+        values[valuesById[129] = "GROUP_DELIVERY_RECEIPT"] = 129;
+        values[valuesById[160] = "FORWARD_SECURITY_ENVELOPE"] = 160;
+        return values;
+    })();
+
     return common;
 })();
 
@@ -1095,7 +1181,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
              * Properties of an Init.
              * @memberof csp_e2e_fs.ForwardSecurityEnvelope
              * @interface IInit
-             * @property {Uint8Array|null} [ephemeralPublicKey] Init ephemeralPublicKey
+             * @property {Uint8Array|null} [fssk] Init fssk
              */
 
             /**
@@ -1114,12 +1200,12 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             }
 
             /**
-             * Init ephemeralPublicKey.
-             * @member {Uint8Array} ephemeralPublicKey
+             * Init fssk.
+             * @member {Uint8Array} fssk
              * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Init
              * @instance
              */
-            Init.prototype.ephemeralPublicKey = $util.newBuffer([]);
+            Init.prototype.fssk = $util.newBuffer([]);
 
             /**
              * Encodes the specified Init message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Init.verify|verify} messages.
@@ -1133,8 +1219,8 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             Init.encode = function encode(message, writer) {
                 if (!writer)
                     writer = $Writer.create();
-                if (message.ephemeralPublicKey != null && Object.hasOwnProperty.call(message, "ephemeralPublicKey"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.ephemeralPublicKey);
+                if (message.fssk != null && Object.hasOwnProperty.call(message, "fssk"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.fssk);
                 return writer;
             };
 
@@ -1157,7 +1243,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
                     case 1:
-                        message.ephemeralPublicKey = reader.bytes();
+                        message.fssk = reader.bytes();
                         break;
                     default:
                         reader.skipType(tag & 7);
@@ -1176,7 +1262,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
              * Properties of an Accept.
              * @memberof csp_e2e_fs.ForwardSecurityEnvelope
              * @interface IAccept
-             * @property {Uint8Array|null} [ephemeralPublicKey] Accept ephemeralPublicKey
+             * @property {Uint8Array|null} [fssk] Accept fssk
              */
 
             /**
@@ -1195,12 +1281,12 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             }
 
             /**
-             * Accept ephemeralPublicKey.
-             * @member {Uint8Array} ephemeralPublicKey
+             * Accept fssk.
+             * @member {Uint8Array} fssk
              * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Accept
              * @instance
              */
-            Accept.prototype.ephemeralPublicKey = $util.newBuffer([]);
+            Accept.prototype.fssk = $util.newBuffer([]);
 
             /**
              * Encodes the specified Accept message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Accept.verify|verify} messages.
@@ -1214,8 +1300,8 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             Accept.encode = function encode(message, writer) {
                 if (!writer)
                     writer = $Writer.create();
-                if (message.ephemeralPublicKey != null && Object.hasOwnProperty.call(message, "ephemeralPublicKey"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.ephemeralPublicKey);
+                if (message.fssk != null && Object.hasOwnProperty.call(message, "fssk"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.fssk);
                 return writer;
             };
 
@@ -1238,7 +1324,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
                     case 1:
-                        message.ephemeralPublicKey = reader.bytes();
+                        message.fssk = reader.bytes();
                         break;
                     default:
                         reader.skipType(tag & 7);
@@ -1349,13 +1435,11 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
              * @enum {number}
              * @property {number} STATE_MISMATCH=0 STATE_MISMATCH value
              * @property {number} UNKNOWN_SESSION=1 UNKNOWN_SESSION value
-             * @property {number} DISABLED=2 DISABLED value
              */
             Reject.Cause = (function() {
                 const valuesById = {}, values = Object.create(valuesById);
                 values[valuesById[0] = "STATE_MISMATCH"] = 0;
                 values[valuesById[1] = "UNKNOWN_SESSION"] = 1;
-                values[valuesById[2] = "DISABLED"] = 2;
                 return values;
             })();
 
@@ -1437,7 +1521,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
              * @interface IMessage
              * @property {csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType|null} [dhType] Message dhType
              * @property {Long|null} [counter] Message counter
-             * @property {Uint8Array|null} [message] Message message
+             * @property {Uint8Array|null} [encryptedMessage] Message encryptedMessage
              */
 
             /**
@@ -1472,12 +1556,12 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             Message.prototype.counter = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
 
             /**
-             * Message message.
-             * @member {Uint8Array} message
+             * Message encryptedMessage.
+             * @member {Uint8Array} encryptedMessage
              * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Message
              * @instance
              */
-            Message.prototype.message = $util.newBuffer([]);
+            Message.prototype.encryptedMessage = $util.newBuffer([]);
 
             /**
              * Encodes the specified Message message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Message.verify|verify} messages.
@@ -1495,8 +1579,8 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                     writer.uint32(/* id 1, wireType 0 =*/8).int32(message.dhType);
                 if (message.counter != null && Object.hasOwnProperty.call(message, "counter"))
                     writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.counter);
-                if (message.message != null && Object.hasOwnProperty.call(message, "message"))
-                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.message);
+                if (message.encryptedMessage != null && Object.hasOwnProperty.call(message, "encryptedMessage"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.encryptedMessage);
                 return writer;
             };
 
@@ -1525,7 +1609,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                         message.counter = reader.uint64();
                         break;
                     case 3:
-                        message.message = reader.bytes();
+                        message.encryptedMessage = reader.bytes();
                         break;
                     default:
                         reader.skipType(tag & 7);
@@ -2382,7 +2466,6 @@ export const groupcall = $root.groupcall = (() => {
              * Properties of a Participant.
              * @memberof groupcall.CallState
              * @interface IParticipant
-             * @property {number|null} [participantId] Participant participantId
              * @property {groupcall.CallState.Participant.Normal|null} [threema] Participant threema
              * @property {groupcall.CallState.Participant.Guest|null} [guest] Participant guest
              */
@@ -2401,14 +2484,6 @@ export const groupcall = $root.groupcall = (() => {
                         if (properties[keys[i]] != null)
                             this[keys[i]] = properties[keys[i]];
             }
-
-            /**
-             * Participant participantId.
-             * @member {number} participantId
-             * @memberof groupcall.CallState.Participant
-             * @instance
-             */
-            Participant.prototype.participantId = 0;
 
             /**
              * Participant threema.
@@ -2452,8 +2527,6 @@ export const groupcall = $root.groupcall = (() => {
             Participant.encode = function encode(message, writer) {
                 if (!writer)
                     writer = $Writer.create();
-                if (message.participantId != null && Object.hasOwnProperty.call(message, "participantId"))
-                    writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.participantId);
                 if (message.threema != null && Object.hasOwnProperty.call(message, "threema"))
                     $root.groupcall.CallState.Participant.Normal.encode(message.threema, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                 if (message.guest != null && Object.hasOwnProperty.call(message, "guest"))
@@ -2479,9 +2552,6 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.participantId = reader.uint32();
-                        break;
                     case 2:
                         message.threema = $root.groupcall.CallState.Participant.Normal.decode(reader, reader.uint32());
                         break;
@@ -8501,7 +8571,6 @@ export const d2d = $root.d2d = (() => {
          * @interface ISharedDeviceData
          * @property {Uint8Array|null} [padding] SharedDeviceData padding
          * @property {number|null} [version] SharedDeviceData version
-         * @property {sync.MdmParameters|null} [mdmParameters] SharedDeviceData mdmParameters
          */
 
         /**
@@ -8536,14 +8605,6 @@ export const d2d = $root.d2d = (() => {
         SharedDeviceData.prototype.version = 0;
 
         /**
-         * SharedDeviceData mdmParameters.
-         * @member {sync.MdmParameters|null|undefined} mdmParameters
-         * @memberof d2d.SharedDeviceData
-         * @instance
-         */
-        SharedDeviceData.prototype.mdmParameters = null;
-
-        /**
          * Encodes the specified SharedDeviceData message. Does not implicitly {@link d2d.SharedDeviceData.verify|verify} messages.
          * @function encode
          * @memberof d2d.SharedDeviceData
@@ -8559,8 +8620,6 @@ export const d2d = $root.d2d = (() => {
                 writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.padding);
             if (message.version != null && Object.hasOwnProperty.call(message, "version"))
                 writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.version);
-            if (message.mdmParameters != null && Object.hasOwnProperty.call(message, "mdmParameters"))
-                $root.sync.MdmParameters.encode(message.mdmParameters, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
             return writer;
         };
 
@@ -8587,9 +8646,6 @@ export const d2d = $root.d2d = (() => {
                     break;
                 case 2:
                     message.version = reader.uint32();
-                    break;
-                case 3:
-                    message.mdmParameters = $root.sync.MdmParameters.decode(reader, reader.uint32());
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -8846,7 +8902,8 @@ export const d2d = $root.d2d = (() => {
          * @property {number} GROUP_SYNC=2 GROUP_SYNC value
          * @property {number} DISTRIBUTION_LIST_SYNC=3 DISTRIBUTION_LIST_SYNC value
          * @property {number} SETTINGS_SYNC=4 SETTINGS_SYNC value
-         * @property {number} NEW_DEVICE_SYNC=5 NEW_DEVICE_SYNC value
+         * @property {number} MDM_PARAMETER_SYNC=5 MDM_PARAMETER_SYNC value
+         * @property {number} NEW_DEVICE_SYNC=6 NEW_DEVICE_SYNC value
          */
         TransactionScope.Scope = (function() {
             const valuesById = {}, values = Object.create(valuesById);
@@ -8855,7 +8912,8 @@ export const d2d = $root.d2d = (() => {
             values[valuesById[2] = "GROUP_SYNC"] = 2;
             values[valuesById[3] = "DISTRIBUTION_LIST_SYNC"] = 3;
             values[valuesById[4] = "SETTINGS_SYNC"] = 4;
-            values[valuesById[5] = "NEW_DEVICE_SYNC"] = 5;
+            values[valuesById[5] = "MDM_PARAMETER_SYNC"] = 5;
+            values[valuesById[6] = "NEW_DEVICE_SYNC"] = 6;
             return values;
         })();
 
@@ -8878,6 +8936,7 @@ export const d2d = $root.d2d = (() => {
          * @property {d2d.GroupSync|null} [groupSync] Envelope groupSync
          * @property {d2d.DistributionListSync|null} [distributionListSync] Envelope distributionListSync
          * @property {d2d.SettingsSync|null} [settingsSync] Envelope settingsSync
+         * @property {d2d.MdmParameterSync|null} [mdmParameterSync] Envelope mdmParameterSync
          */
 
         /**
@@ -8975,17 +9034,25 @@ export const d2d = $root.d2d = (() => {
          */
         Envelope.prototype.settingsSync = null;
 
+        /**
+         * Envelope mdmParameterSync.
+         * @member {d2d.MdmParameterSync|null|undefined} mdmParameterSync
+         * @memberof d2d.Envelope
+         * @instance
+         */
+        Envelope.prototype.mdmParameterSync = null;
+
         // OneOf field names bound to virtual getters and setters
         let $oneOfFields;
 
         /**
          * Envelope content.
-         * @member {"outgoingMessage"|"outgoingMessageUpdate"|"incomingMessage"|"incomingMessageUpdate"|"userProfileSync"|"contactSync"|"groupSync"|"distributionListSync"|"settingsSync"|undefined} content
+         * @member {"outgoingMessage"|"outgoingMessageUpdate"|"incomingMessage"|"incomingMessageUpdate"|"userProfileSync"|"contactSync"|"groupSync"|"distributionListSync"|"settingsSync"|"mdmParameterSync"|undefined} content
          * @memberof d2d.Envelope
          * @instance
          */
         Object.defineProperty(Envelope.prototype, "content", {
-            get: $util.oneOfGetter($oneOfFields = ["outgoingMessage", "outgoingMessageUpdate", "incomingMessage", "incomingMessageUpdate", "userProfileSync", "contactSync", "groupSync", "distributionListSync", "settingsSync"]),
+            get: $util.oneOfGetter($oneOfFields = ["outgoingMessage", "outgoingMessageUpdate", "incomingMessage", "incomingMessageUpdate", "userProfileSync", "contactSync", "groupSync", "distributionListSync", "settingsSync", "mdmParameterSync"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -9021,6 +9088,8 @@ export const d2d = $root.d2d = (() => {
                 $root.d2d.OutgoingMessageUpdate.encode(message.outgoingMessageUpdate, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
             if (message.incomingMessageUpdate != null && Object.hasOwnProperty.call(message, "incomingMessageUpdate"))
                 $root.d2d.IncomingMessageUpdate.encode(message.incomingMessageUpdate, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
+            if (message.mdmParameterSync != null && Object.hasOwnProperty.call(message, "mdmParameterSync"))
+                $root.d2d.MdmParameterSync.encode(message.mdmParameterSync, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
             return writer;
         };
 
@@ -9072,6 +9141,9 @@ export const d2d = $root.d2d = (() => {
                 case 9:
                     message.settingsSync = $root.d2d.SettingsSync.decode(reader, reader.uint32());
                     break;
+                case 12:
+                    message.mdmParameterSync = $root.d2d.MdmParameterSync.decode(reader, reader.uint32());
+                    break;
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -9081,84 +9153,6 @@ export const d2d = $root.d2d = (() => {
         };
 
         return Envelope;
-    })();
-
-    /**
-     * MessageType enum.
-     * @name d2d.MessageType
-     * @enum {number}
-     * @property {number} INVALID=0 INVALID value
-     * @property {number} TEXT=1 TEXT value
-     * @property {number} DEPRECATED_IMAGE=2 DEPRECATED_IMAGE value
-     * @property {number} LOCATION=16 LOCATION value
-     * @property {number} DEPRECATED_AUDIO=20 DEPRECATED_AUDIO value
-     * @property {number} DEPRECATED_VIDEO=19 DEPRECATED_VIDEO value
-     * @property {number} FILE=23 FILE value
-     * @property {number} POLL_SETUP=21 POLL_SETUP value
-     * @property {number} POLL_VOTE=22 POLL_VOTE value
-     * @property {number} CALL_OFFER=96 CALL_OFFER value
-     * @property {number} CALL_ANSWER=97 CALL_ANSWER value
-     * @property {number} CALL_ICE_CANDIDATE=98 CALL_ICE_CANDIDATE value
-     * @property {number} CALL_HANGUP=99 CALL_HANGUP value
-     * @property {number} CALL_RINGING=100 CALL_RINGING value
-     * @property {number} DELIVERY_RECEIPT=128 DELIVERY_RECEIPT value
-     * @property {number} TYPING_INDICATOR=144 TYPING_INDICATOR value
-     * @property {number} CONTACT_SET_PROFILE_PICTURE=24 CONTACT_SET_PROFILE_PICTURE value
-     * @property {number} CONTACT_DELETE_PROFILE_PICTURE=25 CONTACT_DELETE_PROFILE_PICTURE value
-     * @property {number} CONTACT_REQUEST_PROFILE_PICTURE=26 CONTACT_REQUEST_PROFILE_PICTURE value
-     * @property {number} GROUP_SETUP=74 GROUP_SETUP value
-     * @property {number} GROUP_NAME=75 GROUP_NAME value
-     * @property {number} GROUP_LEAVE=76 GROUP_LEAVE value
-     * @property {number} GROUP_SET_PROFILE_PICTURE=80 GROUP_SET_PROFILE_PICTURE value
-     * @property {number} GROUP_DELETE_PROFILE_PICTURE=84 GROUP_DELETE_PROFILE_PICTURE value
-     * @property {number} GROUP_REQUEST_SYNC=81 GROUP_REQUEST_SYNC value
-     * @property {number} GROUP_TEXT=65 GROUP_TEXT value
-     * @property {number} GROUP_LOCATION=66 GROUP_LOCATION value
-     * @property {number} GROUP_IMAGE=67 GROUP_IMAGE value
-     * @property {number} GROUP_AUDIO=69 GROUP_AUDIO value
-     * @property {number} GROUP_VIDEO=68 GROUP_VIDEO value
-     * @property {number} GROUP_FILE=70 GROUP_FILE value
-     * @property {number} GROUP_POLL_SETUP=82 GROUP_POLL_SETUP value
-     * @property {number} GROUP_POLL_VOTE=83 GROUP_POLL_VOTE value
-     * @property {number} GROUP_DELIVERY_RECEIPT=129 GROUP_DELIVERY_RECEIPT value
-     */
-    d2d.MessageType = (function() {
-        const valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "INVALID"] = 0;
-        values[valuesById[1] = "TEXT"] = 1;
-        values[valuesById[2] = "DEPRECATED_IMAGE"] = 2;
-        values[valuesById[16] = "LOCATION"] = 16;
-        values[valuesById[20] = "DEPRECATED_AUDIO"] = 20;
-        values[valuesById[19] = "DEPRECATED_VIDEO"] = 19;
-        values[valuesById[23] = "FILE"] = 23;
-        values[valuesById[21] = "POLL_SETUP"] = 21;
-        values[valuesById[22] = "POLL_VOTE"] = 22;
-        values[valuesById[96] = "CALL_OFFER"] = 96;
-        values[valuesById[97] = "CALL_ANSWER"] = 97;
-        values[valuesById[98] = "CALL_ICE_CANDIDATE"] = 98;
-        values[valuesById[99] = "CALL_HANGUP"] = 99;
-        values[valuesById[100] = "CALL_RINGING"] = 100;
-        values[valuesById[128] = "DELIVERY_RECEIPT"] = 128;
-        values[valuesById[144] = "TYPING_INDICATOR"] = 144;
-        values[valuesById[24] = "CONTACT_SET_PROFILE_PICTURE"] = 24;
-        values[valuesById[25] = "CONTACT_DELETE_PROFILE_PICTURE"] = 25;
-        values[valuesById[26] = "CONTACT_REQUEST_PROFILE_PICTURE"] = 26;
-        values[valuesById[74] = "GROUP_SETUP"] = 74;
-        values[valuesById[75] = "GROUP_NAME"] = 75;
-        values[valuesById[76] = "GROUP_LEAVE"] = 76;
-        values[valuesById[80] = "GROUP_SET_PROFILE_PICTURE"] = 80;
-        values[valuesById[84] = "GROUP_DELETE_PROFILE_PICTURE"] = 84;
-        values[valuesById[81] = "GROUP_REQUEST_SYNC"] = 81;
-        values[valuesById[65] = "GROUP_TEXT"] = 65;
-        values[valuesById[66] = "GROUP_LOCATION"] = 66;
-        values[valuesById[67] = "GROUP_IMAGE"] = 67;
-        values[valuesById[69] = "GROUP_AUDIO"] = 69;
-        values[valuesById[68] = "GROUP_VIDEO"] = 68;
-        values[valuesById[70] = "GROUP_FILE"] = 70;
-        values[valuesById[82] = "GROUP_POLL_SETUP"] = 82;
-        values[valuesById[83] = "GROUP_POLL_VOTE"] = 83;
-        values[valuesById[129] = "GROUP_DELIVERY_RECEIPT"] = 129;
-        return values;
     })();
 
     d2d.ConversationId = (function() {
@@ -9294,7 +9288,7 @@ export const d2d = $root.d2d = (() => {
          * @property {Long|null} [messageId] OutgoingMessage messageId
          * @property {Long|null} [threadMessageId] OutgoingMessage threadMessageId
          * @property {Long|null} [createdAt] OutgoingMessage createdAt
-         * @property {d2d.MessageType|null} [type] OutgoingMessage type
+         * @property {common.CspE2eMessageType|null} [type] OutgoingMessage type
          * @property {Uint8Array|null} [body] OutgoingMessage body
          * @property {Array.<Uint8Array>|null} [nonces] OutgoingMessage nonces
          */
@@ -9349,7 +9343,7 @@ export const d2d = $root.d2d = (() => {
 
         /**
          * OutgoingMessage type.
-         * @member {d2d.MessageType} type
+         * @member {common.CspE2eMessageType} type
          * @memberof d2d.OutgoingMessage
          * @instance
          */
@@ -9751,7 +9745,7 @@ export const d2d = $root.d2d = (() => {
          * @property {string|null} [senderIdentity] IncomingMessage senderIdentity
          * @property {Long|null} [messageId] IncomingMessage messageId
          * @property {Long|null} [createdAt] IncomingMessage createdAt
-         * @property {d2d.MessageType|null} [type] IncomingMessage type
+         * @property {common.CspE2eMessageType|null} [type] IncomingMessage type
          * @property {Uint8Array|null} [body] IncomingMessage body
          * @property {Uint8Array|null} [nonce] IncomingMessage nonce
          */
@@ -9797,7 +9791,7 @@ export const d2d = $root.d2d = (() => {
 
         /**
          * IncomingMessage type.
-         * @member {d2d.MessageType} type
+         * @member {common.CspE2eMessageType} type
          * @memberof d2d.IncomingMessage
          * @instance
          */
@@ -11632,6 +11626,182 @@ export const d2d = $root.d2d = (() => {
         return SettingsSync;
     })();
 
+    d2d.MdmParameterSync = (function() {
+
+        /**
+         * Properties of a MdmParameterSync.
+         * @memberof d2d
+         * @interface IMdmParameterSync
+         * @property {d2d.MdmParameterSync.Update|null} [update] MdmParameterSync update
+         */
+
+        /**
+         * Constructs a new MdmParameterSync.
+         * @memberof d2d
+         * @classdesc Represents a MdmParameterSync.
+         * @implements IMdmParameterSync
+         * @constructor
+         * @param {d2d.IMdmParameterSync=} [properties] Properties to set
+         */
+        function MdmParameterSync(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MdmParameterSync update.
+         * @member {d2d.MdmParameterSync.Update|null|undefined} update
+         * @memberof d2d.MdmParameterSync
+         * @instance
+         */
+        MdmParameterSync.prototype.update = null;
+
+        // OneOf field names bound to virtual getters and setters
+        let $oneOfFields;
+
+        /**
+         * MdmParameterSync action.
+         * @member {"update"|undefined} action
+         * @memberof d2d.MdmParameterSync
+         * @instance
+         */
+        Object.defineProperty(MdmParameterSync.prototype, "action", {
+            get: $util.oneOfGetter($oneOfFields = ["update"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Encodes the specified MdmParameterSync message. Does not implicitly {@link d2d.MdmParameterSync.verify|verify} messages.
+         * @function encode
+         * @memberof d2d.MdmParameterSync
+         * @static
+         * @param {d2d.MdmParameterSync} message MdmParameterSync message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MdmParameterSync.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.update != null && Object.hasOwnProperty.call(message, "update"))
+                $root.d2d.MdmParameterSync.Update.encode(message.update, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Decodes a MdmParameterSync message from the specified reader or buffer.
+         * @function decode
+         * @memberof d2d.MdmParameterSync
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {d2d.MdmParameterSync} MdmParameterSync
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MdmParameterSync.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.d2d.MdmParameterSync();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.update = $root.d2d.MdmParameterSync.Update.decode(reader, reader.uint32());
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        MdmParameterSync.Update = (function() {
+
+            /**
+             * Properties of an Update.
+             * @memberof d2d.MdmParameterSync
+             * @interface IUpdate
+             * @property {sync.MdmParameters|null} [parameters] Update parameters
+             */
+
+            /**
+             * Constructs a new Update.
+             * @memberof d2d.MdmParameterSync
+             * @classdesc Represents an Update.
+             * @implements IUpdate
+             * @constructor
+             * @param {d2d.MdmParameterSync.IUpdate=} [properties] Properties to set
+             */
+            function Update(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Update parameters.
+             * @member {sync.MdmParameters|null|undefined} parameters
+             * @memberof d2d.MdmParameterSync.Update
+             * @instance
+             */
+            Update.prototype.parameters = null;
+
+            /**
+             * Encodes the specified Update message. Does not implicitly {@link d2d.MdmParameterSync.Update.verify|verify} messages.
+             * @function encode
+             * @memberof d2d.MdmParameterSync.Update
+             * @static
+             * @param {d2d.MdmParameterSync.Update} message Update message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Update.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.parameters != null && Object.hasOwnProperty.call(message, "parameters"))
+                    $root.sync.MdmParameters.encode(message.parameters, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                return writer;
+            };
+
+            /**
+             * Decodes an Update message from the specified reader or buffer.
+             * @function decode
+             * @memberof d2d.MdmParameterSync.Update
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {d2d.MdmParameterSync.Update} Update
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Update.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.d2d.MdmParameterSync.Update();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.parameters = $root.sync.MdmParameters.decode(reader, reader.uint32());
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Update;
+        })();
+
+        return MdmParameterSync;
+    })();
+
     return d2d;
 })();
 
@@ -11720,44 +11890,6 @@ export const sync = $root.sync = (() => {
          * Properties of a MdmParameters.
          * @memberof sync
          * @interface IMdmParameters
-         * @property {string|null} [licenseUsername] MdmParameters licenseUsername
-         * @property {string|null} [licensePassword] MdmParameters licensePassword
-         * @property {string|null} [nickname] MdmParameters nickname
-         * @property {string|null} [firstName] MdmParameters firstName
-         * @property {string|null} [lastName] MdmParameters lastName
-         * @property {string|null} [customerSpecificId] MdmParameters customerSpecificId
-         * @property {string|null} [category] MdmParameters category
-         * @property {string|null} [linkedEmail] MdmParameters linkedEmail
-         * @property {string|null} [linkedPhone] MdmParameters linkedPhone
-         * @property {string|null} [identityRestore] MdmParameters identityRestore
-         * @property {string|null} [identityRestorePassword] MdmParameters identityRestorePassword
-         * @property {sync.MdmParameters.ThreemaSafePolicy|null} [threemaSafePolicy] MdmParameters threemaSafePolicy
-         * @property {string|null} [threemaSafePassword] MdmParameters threemaSafePassword
-         * @property {string|null} [threemaSafePasswordPattern] MdmParameters threemaSafePasswordPattern
-         * @property {string|null} [threemaSafePasswordPatternErrorMessage] MdmParameters threemaSafePasswordPatternErrorMessage
-         * @property {string|null} [threemaSafeServerUrl] MdmParameters threemaSafeServerUrl
-         * @property {string|null} [threemaSafeServerUsername] MdmParameters threemaSafeServerUsername
-         * @property {string|null} [threemaSafeServerPassword] MdmParameters threemaSafeServerPassword
-         * @property {sync.MdmParameters.ThreemaSafeRestorePolicy|null} [threemaSafeRestorePolicy] MdmParameters threemaSafeRestorePolicy
-         * @property {string|null} [threemaSafeRestoreIdentity] MdmParameters threemaSafeRestoreIdentity
-         * @property {sync.MdmParameters.OverridePolicy|null} [overridePolicy] MdmParameters overridePolicy
-         * @property {sync.MdmParameters.ContactSyncPolicy|null} [contactSyncPolicy] MdmParameters contactSyncPolicy
-         * @property {sync.MdmParameters.InactiveIdentityDisplayPolicy|null} [inactiveIdentityDisplayPolicy] MdmParameters inactiveIdentityDisplayPolicy
-         * @property {sync.MdmParameters.UnknownContactPolicy|null} [unknownContactPolicy] MdmParameters unknownContactPolicy
-         * @property {sync.MdmParameters.AutoSaveMediaPolicy|null} [autoSaveMediaPolicy] MdmParameters autoSaveMediaPolicy
-         * @property {sync.MdmParameters.ScreenshotPolicy|null} [screenshotPolicy] MdmParameters screenshotPolicy
-         * @property {sync.MdmParameters.AddContactPolicy|null} [addContactPolicy] MdmParameters addContactPolicy
-         * @property {sync.MdmParameters.ChatExportPolicy|null} [chatExportPolicy] MdmParameters chatExportPolicy
-         * @property {sync.MdmParameters.BackupPolicy|null} [backupPolicy] MdmParameters backupPolicy
-         * @property {sync.MdmParameters.IdentityExportPolicy|null} [identityExportPolicy] MdmParameters identityExportPolicy
-         * @property {sync.MdmParameters.DataBackupPolicy|null} [dataBackupPolicy] MdmParameters dataBackupPolicy
-         * @property {sync.MdmParameters.SystemBackupPolicy|null} [systemBackupPolicy] MdmParameters systemBackupPolicy
-         * @property {sync.MdmParameters.MessagePreviewPolicy|null} [messagePreviewPolicy] MdmParameters messagePreviewPolicy
-         * @property {sync.MdmParameters.ProfilePictureSharePolicy|null} [profilePictureSharePolicy] MdmParameters profilePictureSharePolicy
-         * @property {sync.MdmParameters.CallPolicy|null} [callPolicy] MdmParameters callPolicy
-         * @property {sync.MdmParameters.SetupWizardPolicy|null} [setupWizardPolicy] MdmParameters setupWizardPolicy
-         * @property {sync.MdmParameters.CreateGroupPolicy|null} [createGroupPolicy] MdmParameters createGroupPolicy
-         * @property {sync.MdmParameters.ShareMediaPolicy|null} [shareMediaPolicy] MdmParameters shareMediaPolicy
          */
 
         /**
@@ -11776,731 +11908,6 @@ export const sync = $root.sync = (() => {
         }
 
         /**
-         * MdmParameters licenseUsername.
-         * @member {string|null|undefined} licenseUsername
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.licenseUsername = null;
-
-        /**
-         * MdmParameters licensePassword.
-         * @member {string|null|undefined} licensePassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.licensePassword = null;
-
-        /**
-         * MdmParameters nickname.
-         * @member {string|null|undefined} nickname
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.nickname = null;
-
-        /**
-         * MdmParameters firstName.
-         * @member {string|null|undefined} firstName
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.firstName = null;
-
-        /**
-         * MdmParameters lastName.
-         * @member {string|null|undefined} lastName
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.lastName = null;
-
-        /**
-         * MdmParameters customerSpecificId.
-         * @member {string|null|undefined} customerSpecificId
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.customerSpecificId = null;
-
-        /**
-         * MdmParameters category.
-         * @member {string|null|undefined} category
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.category = null;
-
-        /**
-         * MdmParameters linkedEmail.
-         * @member {string|null|undefined} linkedEmail
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.linkedEmail = null;
-
-        /**
-         * MdmParameters linkedPhone.
-         * @member {string|null|undefined} linkedPhone
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.linkedPhone = null;
-
-        /**
-         * MdmParameters identityRestore.
-         * @member {string|null|undefined} identityRestore
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.identityRestore = null;
-
-        /**
-         * MdmParameters identityRestorePassword.
-         * @member {string|null|undefined} identityRestorePassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.identityRestorePassword = null;
-
-        /**
-         * MdmParameters threemaSafePolicy.
-         * @member {sync.MdmParameters.ThreemaSafePolicy|null|undefined} threemaSafePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafePolicy = null;
-
-        /**
-         * MdmParameters threemaSafePassword.
-         * @member {string|null|undefined} threemaSafePassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafePassword = null;
-
-        /**
-         * MdmParameters threemaSafePasswordPattern.
-         * @member {string|null|undefined} threemaSafePasswordPattern
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafePasswordPattern = null;
-
-        /**
-         * MdmParameters threemaSafePasswordPatternErrorMessage.
-         * @member {string|null|undefined} threemaSafePasswordPatternErrorMessage
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafePasswordPatternErrorMessage = null;
-
-        /**
-         * MdmParameters threemaSafeServerUrl.
-         * @member {string|null|undefined} threemaSafeServerUrl
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafeServerUrl = null;
-
-        /**
-         * MdmParameters threemaSafeServerUsername.
-         * @member {string|null|undefined} threemaSafeServerUsername
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafeServerUsername = null;
-
-        /**
-         * MdmParameters threemaSafeServerPassword.
-         * @member {string|null|undefined} threemaSafeServerPassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafeServerPassword = null;
-
-        /**
-         * MdmParameters threemaSafeRestorePolicy.
-         * @member {sync.MdmParameters.ThreemaSafeRestorePolicy|null|undefined} threemaSafeRestorePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafeRestorePolicy = null;
-
-        /**
-         * MdmParameters threemaSafeRestoreIdentity.
-         * @member {string|null|undefined} threemaSafeRestoreIdentity
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.threemaSafeRestoreIdentity = null;
-
-        /**
-         * MdmParameters overridePolicy.
-         * @member {sync.MdmParameters.OverridePolicy|null|undefined} overridePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.overridePolicy = null;
-
-        /**
-         * MdmParameters contactSyncPolicy.
-         * @member {sync.MdmParameters.ContactSyncPolicy|null|undefined} contactSyncPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.contactSyncPolicy = null;
-
-        /**
-         * MdmParameters inactiveIdentityDisplayPolicy.
-         * @member {sync.MdmParameters.InactiveIdentityDisplayPolicy|null|undefined} inactiveIdentityDisplayPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.inactiveIdentityDisplayPolicy = null;
-
-        /**
-         * MdmParameters unknownContactPolicy.
-         * @member {sync.MdmParameters.UnknownContactPolicy|null|undefined} unknownContactPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.unknownContactPolicy = null;
-
-        /**
-         * MdmParameters autoSaveMediaPolicy.
-         * @member {sync.MdmParameters.AutoSaveMediaPolicy|null|undefined} autoSaveMediaPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.autoSaveMediaPolicy = null;
-
-        /**
-         * MdmParameters screenshotPolicy.
-         * @member {sync.MdmParameters.ScreenshotPolicy|null|undefined} screenshotPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.screenshotPolicy = null;
-
-        /**
-         * MdmParameters addContactPolicy.
-         * @member {sync.MdmParameters.AddContactPolicy|null|undefined} addContactPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.addContactPolicy = null;
-
-        /**
-         * MdmParameters chatExportPolicy.
-         * @member {sync.MdmParameters.ChatExportPolicy|null|undefined} chatExportPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.chatExportPolicy = null;
-
-        /**
-         * MdmParameters backupPolicy.
-         * @member {sync.MdmParameters.BackupPolicy|null|undefined} backupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.backupPolicy = null;
-
-        /**
-         * MdmParameters identityExportPolicy.
-         * @member {sync.MdmParameters.IdentityExportPolicy|null|undefined} identityExportPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.identityExportPolicy = null;
-
-        /**
-         * MdmParameters dataBackupPolicy.
-         * @member {sync.MdmParameters.DataBackupPolicy|null|undefined} dataBackupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.dataBackupPolicy = null;
-
-        /**
-         * MdmParameters systemBackupPolicy.
-         * @member {sync.MdmParameters.SystemBackupPolicy|null|undefined} systemBackupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.systemBackupPolicy = null;
-
-        /**
-         * MdmParameters messagePreviewPolicy.
-         * @member {sync.MdmParameters.MessagePreviewPolicy|null|undefined} messagePreviewPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.messagePreviewPolicy = null;
-
-        /**
-         * MdmParameters profilePictureSharePolicy.
-         * @member {sync.MdmParameters.ProfilePictureSharePolicy|null|undefined} profilePictureSharePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.profilePictureSharePolicy = null;
-
-        /**
-         * MdmParameters callPolicy.
-         * @member {sync.MdmParameters.CallPolicy|null|undefined} callPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.callPolicy = null;
-
-        /**
-         * MdmParameters setupWizardPolicy.
-         * @member {sync.MdmParameters.SetupWizardPolicy|null|undefined} setupWizardPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.setupWizardPolicy = null;
-
-        /**
-         * MdmParameters createGroupPolicy.
-         * @member {sync.MdmParameters.CreateGroupPolicy|null|undefined} createGroupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.createGroupPolicy = null;
-
-        /**
-         * MdmParameters shareMediaPolicy.
-         * @member {sync.MdmParameters.ShareMediaPolicy|null|undefined} shareMediaPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        MdmParameters.prototype.shareMediaPolicy = null;
-
-        // OneOf field names bound to virtual getters and setters
-        let $oneOfFields;
-
-        /**
-         * MdmParameters _licenseUsername.
-         * @member {"licenseUsername"|undefined} _licenseUsername
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_licenseUsername", {
-            get: $util.oneOfGetter($oneOfFields = ["licenseUsername"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _licensePassword.
-         * @member {"licensePassword"|undefined} _licensePassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_licensePassword", {
-            get: $util.oneOfGetter($oneOfFields = ["licensePassword"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _nickname.
-         * @member {"nickname"|undefined} _nickname
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_nickname", {
-            get: $util.oneOfGetter($oneOfFields = ["nickname"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _firstName.
-         * @member {"firstName"|undefined} _firstName
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_firstName", {
-            get: $util.oneOfGetter($oneOfFields = ["firstName"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _lastName.
-         * @member {"lastName"|undefined} _lastName
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_lastName", {
-            get: $util.oneOfGetter($oneOfFields = ["lastName"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _customerSpecificId.
-         * @member {"customerSpecificId"|undefined} _customerSpecificId
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_customerSpecificId", {
-            get: $util.oneOfGetter($oneOfFields = ["customerSpecificId"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _category.
-         * @member {"category"|undefined} _category
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_category", {
-            get: $util.oneOfGetter($oneOfFields = ["category"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _linkedEmail.
-         * @member {"linkedEmail"|undefined} _linkedEmail
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_linkedEmail", {
-            get: $util.oneOfGetter($oneOfFields = ["linkedEmail"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _linkedPhone.
-         * @member {"linkedPhone"|undefined} _linkedPhone
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_linkedPhone", {
-            get: $util.oneOfGetter($oneOfFields = ["linkedPhone"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _identityRestore.
-         * @member {"identityRestore"|undefined} _identityRestore
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_identityRestore", {
-            get: $util.oneOfGetter($oneOfFields = ["identityRestore"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _identityRestorePassword.
-         * @member {"identityRestorePassword"|undefined} _identityRestorePassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_identityRestorePassword", {
-            get: $util.oneOfGetter($oneOfFields = ["identityRestorePassword"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafePolicy.
-         * @member {"threemaSafePolicy"|undefined} _threemaSafePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafePolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafePolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafePassword.
-         * @member {"threemaSafePassword"|undefined} _threemaSafePassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafePassword", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafePassword"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafePasswordPattern.
-         * @member {"threemaSafePasswordPattern"|undefined} _threemaSafePasswordPattern
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafePasswordPattern", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafePasswordPattern"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafePasswordPatternErrorMessage.
-         * @member {"threemaSafePasswordPatternErrorMessage"|undefined} _threemaSafePasswordPatternErrorMessage
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafePasswordPatternErrorMessage", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafePasswordPatternErrorMessage"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafeServerUrl.
-         * @member {"threemaSafeServerUrl"|undefined} _threemaSafeServerUrl
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafeServerUrl", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafeServerUrl"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafeServerUsername.
-         * @member {"threemaSafeServerUsername"|undefined} _threemaSafeServerUsername
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafeServerUsername", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafeServerUsername"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafeServerPassword.
-         * @member {"threemaSafeServerPassword"|undefined} _threemaSafeServerPassword
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafeServerPassword", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafeServerPassword"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafeRestorePolicy.
-         * @member {"threemaSafeRestorePolicy"|undefined} _threemaSafeRestorePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafeRestorePolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafeRestorePolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _threemaSafeRestoreIdentity.
-         * @member {"threemaSafeRestoreIdentity"|undefined} _threemaSafeRestoreIdentity
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_threemaSafeRestoreIdentity", {
-            get: $util.oneOfGetter($oneOfFields = ["threemaSafeRestoreIdentity"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _overridePolicy.
-         * @member {"overridePolicy"|undefined} _overridePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_overridePolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["overridePolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _contactSyncPolicy.
-         * @member {"contactSyncPolicy"|undefined} _contactSyncPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_contactSyncPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["contactSyncPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _inactiveIdentityDisplayPolicy.
-         * @member {"inactiveIdentityDisplayPolicy"|undefined} _inactiveIdentityDisplayPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_inactiveIdentityDisplayPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["inactiveIdentityDisplayPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _unknownContactPolicy.
-         * @member {"unknownContactPolicy"|undefined} _unknownContactPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_unknownContactPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["unknownContactPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _autoSaveMediaPolicy.
-         * @member {"autoSaveMediaPolicy"|undefined} _autoSaveMediaPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_autoSaveMediaPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["autoSaveMediaPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _screenshotPolicy.
-         * @member {"screenshotPolicy"|undefined} _screenshotPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_screenshotPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["screenshotPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _addContactPolicy.
-         * @member {"addContactPolicy"|undefined} _addContactPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_addContactPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["addContactPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _chatExportPolicy.
-         * @member {"chatExportPolicy"|undefined} _chatExportPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_chatExportPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["chatExportPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _backupPolicy.
-         * @member {"backupPolicy"|undefined} _backupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_backupPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["backupPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _identityExportPolicy.
-         * @member {"identityExportPolicy"|undefined} _identityExportPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_identityExportPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["identityExportPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _dataBackupPolicy.
-         * @member {"dataBackupPolicy"|undefined} _dataBackupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_dataBackupPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["dataBackupPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _systemBackupPolicy.
-         * @member {"systemBackupPolicy"|undefined} _systemBackupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_systemBackupPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["systemBackupPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _messagePreviewPolicy.
-         * @member {"messagePreviewPolicy"|undefined} _messagePreviewPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_messagePreviewPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["messagePreviewPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _profilePictureSharePolicy.
-         * @member {"profilePictureSharePolicy"|undefined} _profilePictureSharePolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_profilePictureSharePolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["profilePictureSharePolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _callPolicy.
-         * @member {"callPolicy"|undefined} _callPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_callPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["callPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _setupWizardPolicy.
-         * @member {"setupWizardPolicy"|undefined} _setupWizardPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_setupWizardPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["setupWizardPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _createGroupPolicy.
-         * @member {"createGroupPolicy"|undefined} _createGroupPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_createGroupPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["createGroupPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * MdmParameters _shareMediaPolicy.
-         * @member {"shareMediaPolicy"|undefined} _shareMediaPolicy
-         * @memberof sync.MdmParameters
-         * @instance
-         */
-        Object.defineProperty(MdmParameters.prototype, "_shareMediaPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["shareMediaPolicy"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
          * Encodes the specified MdmParameters message. Does not implicitly {@link sync.MdmParameters.verify|verify} messages.
          * @function encode
          * @memberof sync.MdmParameters
@@ -12512,82 +11919,6 @@ export const sync = $root.sync = (() => {
         MdmParameters.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.licenseUsername != null && Object.hasOwnProperty.call(message, "licenseUsername"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.licenseUsername);
-            if (message.licensePassword != null && Object.hasOwnProperty.call(message, "licensePassword"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.licensePassword);
-            if (message.nickname != null && Object.hasOwnProperty.call(message, "nickname"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.nickname);
-            if (message.firstName != null && Object.hasOwnProperty.call(message, "firstName"))
-                writer.uint32(/* id 4, wireType 2 =*/34).string(message.firstName);
-            if (message.lastName != null && Object.hasOwnProperty.call(message, "lastName"))
-                writer.uint32(/* id 5, wireType 2 =*/42).string(message.lastName);
-            if (message.customerSpecificId != null && Object.hasOwnProperty.call(message, "customerSpecificId"))
-                writer.uint32(/* id 6, wireType 2 =*/50).string(message.customerSpecificId);
-            if (message.category != null && Object.hasOwnProperty.call(message, "category"))
-                writer.uint32(/* id 7, wireType 2 =*/58).string(message.category);
-            if (message.linkedEmail != null && Object.hasOwnProperty.call(message, "linkedEmail"))
-                writer.uint32(/* id 8, wireType 2 =*/66).string(message.linkedEmail);
-            if (message.linkedPhone != null && Object.hasOwnProperty.call(message, "linkedPhone"))
-                writer.uint32(/* id 9, wireType 2 =*/74).string(message.linkedPhone);
-            if (message.identityRestore != null && Object.hasOwnProperty.call(message, "identityRestore"))
-                writer.uint32(/* id 10, wireType 2 =*/82).string(message.identityRestore);
-            if (message.identityRestorePassword != null && Object.hasOwnProperty.call(message, "identityRestorePassword"))
-                writer.uint32(/* id 11, wireType 2 =*/90).string(message.identityRestorePassword);
-            if (message.threemaSafePolicy != null && Object.hasOwnProperty.call(message, "threemaSafePolicy"))
-                writer.uint32(/* id 12, wireType 0 =*/96).int32(message.threemaSafePolicy);
-            if (message.threemaSafePassword != null && Object.hasOwnProperty.call(message, "threemaSafePassword"))
-                writer.uint32(/* id 13, wireType 2 =*/106).string(message.threemaSafePassword);
-            if (message.threemaSafePasswordPattern != null && Object.hasOwnProperty.call(message, "threemaSafePasswordPattern"))
-                writer.uint32(/* id 14, wireType 2 =*/114).string(message.threemaSafePasswordPattern);
-            if (message.threemaSafePasswordPatternErrorMessage != null && Object.hasOwnProperty.call(message, "threemaSafePasswordPatternErrorMessage"))
-                writer.uint32(/* id 15, wireType 2 =*/122).string(message.threemaSafePasswordPatternErrorMessage);
-            if (message.threemaSafeServerUrl != null && Object.hasOwnProperty.call(message, "threemaSafeServerUrl"))
-                writer.uint32(/* id 16, wireType 2 =*/130).string(message.threemaSafeServerUrl);
-            if (message.threemaSafeServerUsername != null && Object.hasOwnProperty.call(message, "threemaSafeServerUsername"))
-                writer.uint32(/* id 17, wireType 2 =*/138).string(message.threemaSafeServerUsername);
-            if (message.threemaSafeServerPassword != null && Object.hasOwnProperty.call(message, "threemaSafeServerPassword"))
-                writer.uint32(/* id 18, wireType 2 =*/146).string(message.threemaSafeServerPassword);
-            if (message.threemaSafeRestorePolicy != null && Object.hasOwnProperty.call(message, "threemaSafeRestorePolicy"))
-                writer.uint32(/* id 19, wireType 0 =*/152).int32(message.threemaSafeRestorePolicy);
-            if (message.threemaSafeRestoreIdentity != null && Object.hasOwnProperty.call(message, "threemaSafeRestoreIdentity"))
-                writer.uint32(/* id 20, wireType 2 =*/162).string(message.threemaSafeRestoreIdentity);
-            if (message.overridePolicy != null && Object.hasOwnProperty.call(message, "overridePolicy"))
-                writer.uint32(/* id 21, wireType 0 =*/168).int32(message.overridePolicy);
-            if (message.contactSyncPolicy != null && Object.hasOwnProperty.call(message, "contactSyncPolicy"))
-                writer.uint32(/* id 22, wireType 0 =*/176).int32(message.contactSyncPolicy);
-            if (message.inactiveIdentityDisplayPolicy != null && Object.hasOwnProperty.call(message, "inactiveIdentityDisplayPolicy"))
-                writer.uint32(/* id 23, wireType 0 =*/184).int32(message.inactiveIdentityDisplayPolicy);
-            if (message.unknownContactPolicy != null && Object.hasOwnProperty.call(message, "unknownContactPolicy"))
-                writer.uint32(/* id 24, wireType 0 =*/192).int32(message.unknownContactPolicy);
-            if (message.autoSaveMediaPolicy != null && Object.hasOwnProperty.call(message, "autoSaveMediaPolicy"))
-                writer.uint32(/* id 25, wireType 0 =*/200).int32(message.autoSaveMediaPolicy);
-            if (message.screenshotPolicy != null && Object.hasOwnProperty.call(message, "screenshotPolicy"))
-                writer.uint32(/* id 26, wireType 0 =*/208).int32(message.screenshotPolicy);
-            if (message.addContactPolicy != null && Object.hasOwnProperty.call(message, "addContactPolicy"))
-                writer.uint32(/* id 27, wireType 0 =*/216).int32(message.addContactPolicy);
-            if (message.chatExportPolicy != null && Object.hasOwnProperty.call(message, "chatExportPolicy"))
-                writer.uint32(/* id 28, wireType 0 =*/224).int32(message.chatExportPolicy);
-            if (message.backupPolicy != null && Object.hasOwnProperty.call(message, "backupPolicy"))
-                writer.uint32(/* id 29, wireType 0 =*/232).int32(message.backupPolicy);
-            if (message.identityExportPolicy != null && Object.hasOwnProperty.call(message, "identityExportPolicy"))
-                writer.uint32(/* id 30, wireType 0 =*/240).int32(message.identityExportPolicy);
-            if (message.dataBackupPolicy != null && Object.hasOwnProperty.call(message, "dataBackupPolicy"))
-                writer.uint32(/* id 31, wireType 0 =*/248).int32(message.dataBackupPolicy);
-            if (message.systemBackupPolicy != null && Object.hasOwnProperty.call(message, "systemBackupPolicy"))
-                writer.uint32(/* id 32, wireType 0 =*/256).int32(message.systemBackupPolicy);
-            if (message.messagePreviewPolicy != null && Object.hasOwnProperty.call(message, "messagePreviewPolicy"))
-                writer.uint32(/* id 33, wireType 0 =*/264).int32(message.messagePreviewPolicy);
-            if (message.profilePictureSharePolicy != null && Object.hasOwnProperty.call(message, "profilePictureSharePolicy"))
-                writer.uint32(/* id 34, wireType 0 =*/272).int32(message.profilePictureSharePolicy);
-            if (message.callPolicy != null && Object.hasOwnProperty.call(message, "callPolicy"))
-                writer.uint32(/* id 35, wireType 0 =*/280).int32(message.callPolicy);
-            if (message.setupWizardPolicy != null && Object.hasOwnProperty.call(message, "setupWizardPolicy"))
-                writer.uint32(/* id 36, wireType 0 =*/288).int32(message.setupWizardPolicy);
-            if (message.createGroupPolicy != null && Object.hasOwnProperty.call(message, "createGroupPolicy"))
-                writer.uint32(/* id 37, wireType 0 =*/296).int32(message.createGroupPolicy);
-            if (message.shareMediaPolicy != null && Object.hasOwnProperty.call(message, "shareMediaPolicy"))
-                writer.uint32(/* id 38, wireType 0 =*/304).int32(message.shareMediaPolicy);
             return writer;
         };
 
@@ -12609,120 +11940,6 @@ export const sync = $root.sync = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.licenseUsername = reader.string();
-                    break;
-                case 2:
-                    message.licensePassword = reader.string();
-                    break;
-                case 3:
-                    message.nickname = reader.string();
-                    break;
-                case 4:
-                    message.firstName = reader.string();
-                    break;
-                case 5:
-                    message.lastName = reader.string();
-                    break;
-                case 6:
-                    message.customerSpecificId = reader.string();
-                    break;
-                case 7:
-                    message.category = reader.string();
-                    break;
-                case 8:
-                    message.linkedEmail = reader.string();
-                    break;
-                case 9:
-                    message.linkedPhone = reader.string();
-                    break;
-                case 10:
-                    message.identityRestore = reader.string();
-                    break;
-                case 11:
-                    message.identityRestorePassword = reader.string();
-                    break;
-                case 12:
-                    message.threemaSafePolicy = reader.int32();
-                    break;
-                case 13:
-                    message.threemaSafePassword = reader.string();
-                    break;
-                case 14:
-                    message.threemaSafePasswordPattern = reader.string();
-                    break;
-                case 15:
-                    message.threemaSafePasswordPatternErrorMessage = reader.string();
-                    break;
-                case 16:
-                    message.threemaSafeServerUrl = reader.string();
-                    break;
-                case 17:
-                    message.threemaSafeServerUsername = reader.string();
-                    break;
-                case 18:
-                    message.threemaSafeServerPassword = reader.string();
-                    break;
-                case 19:
-                    message.threemaSafeRestorePolicy = reader.int32();
-                    break;
-                case 20:
-                    message.threemaSafeRestoreIdentity = reader.string();
-                    break;
-                case 21:
-                    message.overridePolicy = reader.int32();
-                    break;
-                case 22:
-                    message.contactSyncPolicy = reader.int32();
-                    break;
-                case 23:
-                    message.inactiveIdentityDisplayPolicy = reader.int32();
-                    break;
-                case 24:
-                    message.unknownContactPolicy = reader.int32();
-                    break;
-                case 25:
-                    message.autoSaveMediaPolicy = reader.int32();
-                    break;
-                case 26:
-                    message.screenshotPolicy = reader.int32();
-                    break;
-                case 27:
-                    message.addContactPolicy = reader.int32();
-                    break;
-                case 28:
-                    message.chatExportPolicy = reader.int32();
-                    break;
-                case 29:
-                    message.backupPolicy = reader.int32();
-                    break;
-                case 30:
-                    message.identityExportPolicy = reader.int32();
-                    break;
-                case 31:
-                    message.dataBackupPolicy = reader.int32();
-                    break;
-                case 32:
-                    message.systemBackupPolicy = reader.int32();
-                    break;
-                case 33:
-                    message.messagePreviewPolicy = reader.int32();
-                    break;
-                case 34:
-                    message.profilePictureSharePolicy = reader.int32();
-                    break;
-                case 35:
-                    message.callPolicy = reader.int32();
-                    break;
-                case 36:
-                    message.setupWizardPolicy = reader.int32();
-                    break;
-                case 37:
-                    message.createGroupPolicy = reader.int32();
-                    break;
-                case 38:
-                    message.shareMediaPolicy = reader.int32();
-                    break;
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -12730,290 +11947,6 @@ export const sync = $root.sync = (() => {
             }
             return message;
         };
-
-        /**
-         * ThreemaSafePolicy enum.
-         * @name sync.MdmParameters.ThreemaSafePolicy
-         * @enum {number}
-         * @property {number} SAFE_OPTIONAL=0 SAFE_OPTIONAL value
-         * @property {number} SAFE_MANDATORY=1 SAFE_MANDATORY value
-         * @property {number} SAFE_DISABLED=2 SAFE_DISABLED value
-         */
-        MdmParameters.ThreemaSafePolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "SAFE_OPTIONAL"] = 0;
-            values[valuesById[1] = "SAFE_MANDATORY"] = 1;
-            values[valuesById[2] = "SAFE_DISABLED"] = 2;
-            return values;
-        })();
-
-        /**
-         * ThreemaSafeRestorePolicy enum.
-         * @name sync.MdmParameters.ThreemaSafeRestorePolicy
-         * @enum {number}
-         * @property {number} SAFE_RESTORE_OPTIONAL=0 SAFE_RESTORE_OPTIONAL value
-         * @property {number} SAFE_RESTORE_MANDATORY=1 SAFE_RESTORE_MANDATORY value
-         * @property {number} SAFE_RESTORE_DISABLED=2 SAFE_RESTORE_DISABLED value
-         */
-        MdmParameters.ThreemaSafeRestorePolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "SAFE_RESTORE_OPTIONAL"] = 0;
-            values[valuesById[1] = "SAFE_RESTORE_MANDATORY"] = 1;
-            values[valuesById[2] = "SAFE_RESTORE_DISABLED"] = 2;
-            return values;
-        })();
-
-        /**
-         * OverridePolicy enum.
-         * @name sync.MdmParameters.OverridePolicy
-         * @enum {number}
-         * @property {number} LOOSE=0 LOOSE value
-         * @property {number} STRICT=1 STRICT value
-         */
-        MdmParameters.OverridePolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "LOOSE"] = 0;
-            values[valuesById[1] = "STRICT"] = 1;
-            return values;
-        })();
-
-        /**
-         * ContactSyncPolicy enum.
-         * @name sync.MdmParameters.ContactSyncPolicy
-         * @enum {number}
-         * @property {number} NOT_SYNCED=0 NOT_SYNCED value
-         * @property {number} SYNC=1 SYNC value
-         */
-        MdmParameters.ContactSyncPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "NOT_SYNCED"] = 0;
-            values[valuesById[1] = "SYNC"] = 1;
-            return values;
-        })();
-
-        /**
-         * InactiveIdentityDisplayPolicy enum.
-         * @name sync.MdmParameters.InactiveIdentityDisplayPolicy
-         * @enum {number}
-         * @property {number} SHOW_INACTIVE=0 SHOW_INACTIVE value
-         * @property {number} HIDE_INACTIVE=1 HIDE_INACTIVE value
-         */
-        MdmParameters.InactiveIdentityDisplayPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "SHOW_INACTIVE"] = 0;
-            values[valuesById[1] = "HIDE_INACTIVE"] = 1;
-            return values;
-        })();
-
-        /**
-         * UnknownContactPolicy enum.
-         * @name sync.MdmParameters.UnknownContactPolicy
-         * @enum {number}
-         * @property {number} ALLOW_UNKNOWN=0 ALLOW_UNKNOWN value
-         * @property {number} BLOCK_UNKNOWN=1 BLOCK_UNKNOWN value
-         */
-        MdmParameters.UnknownContactPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_UNKNOWN"] = 0;
-            values[valuesById[1] = "BLOCK_UNKNOWN"] = 1;
-            return values;
-        })();
-
-        /**
-         * AutoSaveMediaPolicy enum.
-         * @name sync.MdmParameters.AutoSaveMediaPolicy
-         * @enum {number}
-         * @property {number} ALLOW_AUTO_SAVE=0 ALLOW_AUTO_SAVE value
-         * @property {number} DENY_AUTO_SAVE=1 DENY_AUTO_SAVE value
-         */
-        MdmParameters.AutoSaveMediaPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_AUTO_SAVE"] = 0;
-            values[valuesById[1] = "DENY_AUTO_SAVE"] = 1;
-            return values;
-        })();
-
-        /**
-         * ScreenshotPolicy enum.
-         * @name sync.MdmParameters.ScreenshotPolicy
-         * @enum {number}
-         * @property {number} ALLOW_SCREENSHOT=0 ALLOW_SCREENSHOT value
-         * @property {number} DENY_SCREENSHOT=1 DENY_SCREENSHOT value
-         */
-        MdmParameters.ScreenshotPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_SCREENSHOT"] = 0;
-            values[valuesById[1] = "DENY_SCREENSHOT"] = 1;
-            return values;
-        })();
-
-        /**
-         * AddContactPolicy enum.
-         * @name sync.MdmParameters.AddContactPolicy
-         * @enum {number}
-         * @property {number} ALLOW_ADD_CONTACT=0 ALLOW_ADD_CONTACT value
-         * @property {number} DENY_ADD_CONTACT=1 DENY_ADD_CONTACT value
-         */
-        MdmParameters.AddContactPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_ADD_CONTACT"] = 0;
-            values[valuesById[1] = "DENY_ADD_CONTACT"] = 1;
-            return values;
-        })();
-
-        /**
-         * ChatExportPolicy enum.
-         * @name sync.MdmParameters.ChatExportPolicy
-         * @enum {number}
-         * @property {number} ALLOW_CHAT_EXPORT=0 ALLOW_CHAT_EXPORT value
-         * @property {number} DENY_CHAT_EXPORT=1 DENY_CHAT_EXPORT value
-         */
-        MdmParameters.ChatExportPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_CHAT_EXPORT"] = 0;
-            values[valuesById[1] = "DENY_CHAT_EXPORT"] = 1;
-            return values;
-        })();
-
-        /**
-         * BackupPolicy enum.
-         * @name sync.MdmParameters.BackupPolicy
-         * @enum {number}
-         * @property {number} ALLOW_BACKUP=0 ALLOW_BACKUP value
-         * @property {number} DENY_BACKUP=1 DENY_BACKUP value
-         */
-        MdmParameters.BackupPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_BACKUP"] = 0;
-            values[valuesById[1] = "DENY_BACKUP"] = 1;
-            return values;
-        })();
-
-        /**
-         * IdentityExportPolicy enum.
-         * @name sync.MdmParameters.IdentityExportPolicy
-         * @enum {number}
-         * @property {number} ALLOW_IDENTITY_EXPORT=0 ALLOW_IDENTITY_EXPORT value
-         * @property {number} DENY_IDENTITY_EXPORT=1 DENY_IDENTITY_EXPORT value
-         */
-        MdmParameters.IdentityExportPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_IDENTITY_EXPORT"] = 0;
-            values[valuesById[1] = "DENY_IDENTITY_EXPORT"] = 1;
-            return values;
-        })();
-
-        /**
-         * DataBackupPolicy enum.
-         * @name sync.MdmParameters.DataBackupPolicy
-         * @enum {number}
-         * @property {number} ALLOW_DATA_BACKUP=0 ALLOW_DATA_BACKUP value
-         * @property {number} DENY_DATA_BACKUP=1 DENY_DATA_BACKUP value
-         */
-        MdmParameters.DataBackupPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_DATA_BACKUP"] = 0;
-            values[valuesById[1] = "DENY_DATA_BACKUP"] = 1;
-            return values;
-        })();
-
-        /**
-         * SystemBackupPolicy enum.
-         * @name sync.MdmParameters.SystemBackupPolicy
-         * @enum {number}
-         * @property {number} ALLOW_SYSTEM_BACKUP=0 ALLOW_SYSTEM_BACKUP value
-         * @property {number} DENY_SYSTEM_BACKUP=1 DENY_SYSTEM_BACKUP value
-         */
-        MdmParameters.SystemBackupPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_SYSTEM_BACKUP"] = 0;
-            values[valuesById[1] = "DENY_SYSTEM_BACKUP"] = 1;
-            return values;
-        })();
-
-        /**
-         * MessagePreviewPolicy enum.
-         * @name sync.MdmParameters.MessagePreviewPolicy
-         * @enum {number}
-         * @property {number} ALLOW_PREVIEW=0 ALLOW_PREVIEW value
-         * @property {number} DENY_PREVIEW=1 DENY_PREVIEW value
-         */
-        MdmParameters.MessagePreviewPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_PREVIEW"] = 0;
-            values[valuesById[1] = "DENY_PREVIEW"] = 1;
-            return values;
-        })();
-
-        /**
-         * ProfilePictureSharePolicy enum.
-         * @name sync.MdmParameters.ProfilePictureSharePolicy
-         * @enum {number}
-         * @property {number} ALLOW_SHARE=0 ALLOW_SHARE value
-         * @property {number} DENY_SHARE=1 DENY_SHARE value
-         */
-        MdmParameters.ProfilePictureSharePolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_SHARE"] = 0;
-            values[valuesById[1] = "DENY_SHARE"] = 1;
-            return values;
-        })();
-
-        /**
-         * CallPolicy enum.
-         * @name sync.MdmParameters.CallPolicy
-         * @enum {number}
-         * @property {number} ALLOW_CALL=0 ALLOW_CALL value
-         * @property {number} DENY_CALL=1 DENY_CALL value
-         */
-        MdmParameters.CallPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_CALL"] = 0;
-            values[valuesById[1] = "DENY_CALL"] = 1;
-            return values;
-        })();
-
-        /**
-         * SetupWizardPolicy enum.
-         * @name sync.MdmParameters.SetupWizardPolicy
-         * @enum {number}
-         * @property {number} SHOW_WIZARD=0 SHOW_WIZARD value
-         * @property {number} SKIP_WIZARD=1 SKIP_WIZARD value
-         */
-        MdmParameters.SetupWizardPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "SHOW_WIZARD"] = 0;
-            values[valuesById[1] = "SKIP_WIZARD"] = 1;
-            return values;
-        })();
-
-        /**
-         * CreateGroupPolicy enum.
-         * @name sync.MdmParameters.CreateGroupPolicy
-         * @enum {number}
-         * @property {number} ALLOW_CREATE_GROUP=0 ALLOW_CREATE_GROUP value
-         * @property {number} DENY_CREATE_GROUP=1 DENY_CREATE_GROUP value
-         */
-        MdmParameters.CreateGroupPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_CREATE_GROUP"] = 0;
-            values[valuesById[1] = "DENY_CREATE_GROUP"] = 1;
-            return values;
-        })();
-
-        /**
-         * ShareMediaPolicy enum.
-         * @name sync.MdmParameters.ShareMediaPolicy
-         * @enum {number}
-         * @property {number} ALLOW_SHARE_MEDIA=0 ALLOW_SHARE_MEDIA value
-         * @property {number} DENY_OUTSIDE_APP=1 DENY_OUTSIDE_APP value
-         */
-        MdmParameters.ShareMediaPolicy = (function() {
-            const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_SHARE_MEDIA"] = 0;
-            values[valuesById[1] = "DENY_OUTSIDE_APP"] = 1;
-            return values;
-        })();
 
         return MdmParameters;
     })();
@@ -16161,6 +15094,7 @@ export const join = $root.join = (() => {
          * @property {join.EssentialData.DeviceGroupData|null} [deviceGroupData] EssentialData deviceGroupData
          * @property {sync.UserProfile|null} [userProfile] EssentialData userProfile
          * @property {sync.Settings|null} [settings] EssentialData settings
+         * @property {sync.MdmParameters|null} [mdmParameters] EssentialData mdmParameters
          * @property {Array.<join.EssentialData.AugmentedContact>|null} [contacts] EssentialData contacts
          * @property {Array.<join.EssentialData.AugmentedGroup>|null} [groups] EssentialData groups
          * @property {Array.<join.EssentialData.AugmentedDistributionList>|null} [distributionLists] EssentialData distributionLists
@@ -16229,6 +15163,14 @@ export const join = $root.join = (() => {
         EssentialData.prototype.settings = null;
 
         /**
+         * EssentialData mdmParameters.
+         * @member {sync.MdmParameters|null|undefined} mdmParameters
+         * @memberof join.EssentialData
+         * @instance
+         */
+        EssentialData.prototype.mdmParameters = null;
+
+        /**
          * EssentialData contacts.
          * @member {Array.<join.EssentialData.AugmentedContact>} contacts
          * @memberof join.EssentialData
@@ -16290,21 +15232,23 @@ export const join = $root.join = (() => {
                 $root.sync.UserProfile.encode(message.userProfile, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
                 $root.sync.Settings.encode(message.settings, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+            if (message.mdmParameters != null && Object.hasOwnProperty.call(message, "mdmParameters"))
+                $root.sync.MdmParameters.encode(message.mdmParameters, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             if (message.contacts != null && message.contacts.length)
                 for (let i = 0; i < message.contacts.length; ++i)
-                    $root.join.EssentialData.AugmentedContact.encode(message.contacts[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                    $root.join.EssentialData.AugmentedContact.encode(message.contacts[i], writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
             if (message.groups != null && message.groups.length)
                 for (let i = 0; i < message.groups.length; ++i)
-                    $root.join.EssentialData.AugmentedGroup.encode(message.groups[i], writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
+                    $root.join.EssentialData.AugmentedGroup.encode(message.groups[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
             if (message.distributionLists != null && message.distributionLists.length)
                 for (let i = 0; i < message.distributionLists.length; ++i)
-                    $root.join.EssentialData.AugmentedDistributionList.encode(message.distributionLists[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                    $root.join.EssentialData.AugmentedDistributionList.encode(message.distributionLists[i], writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
             if (message.cspHashedNonces != null && message.cspHashedNonces.length)
                 for (let i = 0; i < message.cspHashedNonces.length; ++i)
-                    writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.cspHashedNonces[i]);
+                    writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.cspHashedNonces[i]);
             if (message.d2dHashedNonces != null && message.d2dHashedNonces.length)
                 for (let i = 0; i < message.d2dHashedNonces.length; ++i)
-                    writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.d2dHashedNonces[i]);
+                    writer.uint32(/* id 11, wireType 2 =*/90).bytes(message.d2dHashedNonces[i]);
             return writer;
         };
 
@@ -16342,26 +15286,29 @@ export const join = $root.join = (() => {
                     message.settings = $root.sync.Settings.decode(reader, reader.uint32());
                     break;
                 case 6:
+                    message.mdmParameters = $root.sync.MdmParameters.decode(reader, reader.uint32());
+                    break;
+                case 7:
                     if (!(message.contacts && message.contacts.length))
                         message.contacts = [];
                     message.contacts.push($root.join.EssentialData.AugmentedContact.decode(reader, reader.uint32()));
                     break;
-                case 7:
+                case 8:
                     if (!(message.groups && message.groups.length))
                         message.groups = [];
                     message.groups.push($root.join.EssentialData.AugmentedGroup.decode(reader, reader.uint32()));
                     break;
-                case 8:
+                case 9:
                     if (!(message.distributionLists && message.distributionLists.length))
                         message.distributionLists = [];
                     message.distributionLists.push($root.join.EssentialData.AugmentedDistributionList.decode(reader, reader.uint32()));
                     break;
-                case 9:
+                case 10:
                     if (!(message.cspHashedNonces && message.cspHashedNonces.length))
                         message.cspHashedNonces = [];
                     message.cspHashedNonces.push(reader.bytes());
                     break;
-                case 10:
+                case 11:
                     if (!(message.d2dHashedNonces && message.d2dHashedNonces.length))
                         message.d2dHashedNonces = [];
                     message.d2dHashedNonces.push(reader.bytes());
@@ -16722,11 +15669,25 @@ export const join = $root.join = (() => {
 
             /**
              * AugmentedContact lastUpdateAt.
-             * @member {Long} lastUpdateAt
+             * @member {Long|null|undefined} lastUpdateAt
              * @memberof join.EssentialData.AugmentedContact
              * @instance
              */
-            AugmentedContact.prototype.lastUpdateAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+            AugmentedContact.prototype.lastUpdateAt = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * AugmentedContact _lastUpdateAt.
+             * @member {"lastUpdateAt"|undefined} _lastUpdateAt
+             * @memberof join.EssentialData.AugmentedContact
+             * @instance
+             */
+            Object.defineProperty(AugmentedContact.prototype, "_lastUpdateAt", {
+                get: $util.oneOfGetter($oneOfFields = ["lastUpdateAt"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
 
             /**
              * Encodes the specified AugmentedContact message. Does not implicitly {@link join.EssentialData.AugmentedContact.verify|verify} messages.
@@ -20346,8 +19307,7 @@ export const url = $root.url = (() => {
          * @interface IDeviceGroupJoinRequestOrOffer
          * @property {url.DeviceGroupJoinRequestOrOffer.Version|null} [version] DeviceGroupJoinRequestOrOffer version
          * @property {url.DeviceGroupJoinRequestOrOffer.Variant|null} [variant] DeviceGroupJoinRequestOrOffer variant
-         * @property {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters|null} [pskParameters] DeviceGroupJoinRequestOrOffer pskParameters
-         * @property {Uint8Array|null} [encryptedRendezvousData] DeviceGroupJoinRequestOrOffer encryptedRendezvousData
+         * @property {rendezvous.RendezvousInit|null} [rendezvousInit] DeviceGroupJoinRequestOrOffer rendezvousInit
          */
 
         /**
@@ -20382,20 +19342,12 @@ export const url = $root.url = (() => {
         DeviceGroupJoinRequestOrOffer.prototype.variant = null;
 
         /**
-         * DeviceGroupJoinRequestOrOffer pskParameters.
-         * @member {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters|null|undefined} pskParameters
+         * DeviceGroupJoinRequestOrOffer rendezvousInit.
+         * @member {rendezvous.RendezvousInit|null|undefined} rendezvousInit
          * @memberof url.DeviceGroupJoinRequestOrOffer
          * @instance
          */
-        DeviceGroupJoinRequestOrOffer.prototype.pskParameters = null;
-
-        /**
-         * DeviceGroupJoinRequestOrOffer encryptedRendezvousData.
-         * @member {Uint8Array} encryptedRendezvousData
-         * @memberof url.DeviceGroupJoinRequestOrOffer
-         * @instance
-         */
-        DeviceGroupJoinRequestOrOffer.prototype.encryptedRendezvousData = $util.newBuffer([]);
+        DeviceGroupJoinRequestOrOffer.prototype.rendezvousInit = null;
 
         /**
          * Encodes the specified DeviceGroupJoinRequestOrOffer message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.verify|verify} messages.
@@ -20413,10 +19365,8 @@ export const url = $root.url = (() => {
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.version);
             if (message.variant != null && Object.hasOwnProperty.call(message, "variant"))
                 $root.url.DeviceGroupJoinRequestOrOffer.Variant.encode(message.variant, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-            if (message.pskParameters != null && Object.hasOwnProperty.call(message, "pskParameters"))
-                $root.url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.encode(message.pskParameters, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-            if (message.encryptedRendezvousData != null && Object.hasOwnProperty.call(message, "encryptedRendezvousData"))
-                writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.encryptedRendezvousData);
+            if (message.rendezvousInit != null && Object.hasOwnProperty.call(message, "rendezvousInit"))
+                $root.rendezvous.RendezvousInit.encode(message.rendezvousInit, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
             return writer;
         };
 
@@ -20445,10 +19395,7 @@ export const url = $root.url = (() => {
                     message.variant = $root.url.DeviceGroupJoinRequestOrOffer.Variant.decode(reader, reader.uint32());
                     break;
                 case 3:
-                    message.pskParameters = $root.url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.encryptedRendezvousData = reader.bytes();
+                    message.rendezvousInit = $root.rendezvous.RendezvousInit.decode(reader, reader.uint32());
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -20577,157 +19524,6 @@ export const url = $root.url = (() => {
             };
 
             return Variant;
-        })();
-
-        DeviceGroupJoinRequestOrOffer.Argon2idParameters = (function() {
-
-            /**
-             * Properties of an Argon2idParameters.
-             * @memberof url.DeviceGroupJoinRequestOrOffer
-             * @interface IArgon2idParameters
-             * @property {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version|null} [version] Argon2idParameters version
-             * @property {Uint8Array|null} [salt] Argon2idParameters salt
-             * @property {number|null} [memoryBytes] Argon2idParameters memoryBytes
-             * @property {number|null} [iterations] Argon2idParameters iterations
-             * @property {number|null} [parallelism] Argon2idParameters parallelism
-             */
-
-            /**
-             * Constructs a new Argon2idParameters.
-             * @memberof url.DeviceGroupJoinRequestOrOffer
-             * @classdesc Represents an Argon2idParameters.
-             * @implements IArgon2idParameters
-             * @constructor
-             * @param {url.DeviceGroupJoinRequestOrOffer.IArgon2idParameters=} [properties] Properties to set
-             */
-            function Argon2idParameters(properties) {
-                if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * Argon2idParameters version.
-             * @member {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version} version
-             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
-             * @instance
-             */
-            Argon2idParameters.prototype.version = 0;
-
-            /**
-             * Argon2idParameters salt.
-             * @member {Uint8Array} salt
-             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
-             * @instance
-             */
-            Argon2idParameters.prototype.salt = $util.newBuffer([]);
-
-            /**
-             * Argon2idParameters memoryBytes.
-             * @member {number} memoryBytes
-             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
-             * @instance
-             */
-            Argon2idParameters.prototype.memoryBytes = 0;
-
-            /**
-             * Argon2idParameters iterations.
-             * @member {number} iterations
-             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
-             * @instance
-             */
-            Argon2idParameters.prototype.iterations = 0;
-
-            /**
-             * Argon2idParameters parallelism.
-             * @member {number} parallelism
-             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
-             * @instance
-             */
-            Argon2idParameters.prototype.parallelism = 0;
-
-            /**
-             * Encodes the specified Argon2idParameters message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.verify|verify} messages.
-             * @function encode
-             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
-             * @static
-             * @param {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters} message Argon2idParameters message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Argon2idParameters.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.version != null && Object.hasOwnProperty.call(message, "version"))
-                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.version);
-                if (message.salt != null && Object.hasOwnProperty.call(message, "salt"))
-                    writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.salt);
-                if (message.memoryBytes != null && Object.hasOwnProperty.call(message, "memoryBytes"))
-                    writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.memoryBytes);
-                if (message.iterations != null && Object.hasOwnProperty.call(message, "iterations"))
-                    writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.iterations);
-                if (message.parallelism != null && Object.hasOwnProperty.call(message, "parallelism"))
-                    writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.parallelism);
-                return writer;
-            };
-
-            /**
-             * Decodes an Argon2idParameters message from the specified reader or buffer.
-             * @function decode
-             * @memberof url.DeviceGroupJoinRequestOrOffer.Argon2idParameters
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {url.DeviceGroupJoinRequestOrOffer.Argon2idParameters} Argon2idParameters
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Argon2idParameters.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.url.DeviceGroupJoinRequestOrOffer.Argon2idParameters();
-                while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1:
-                        message.version = reader.int32();
-                        break;
-                    case 2:
-                        message.salt = reader.bytes();
-                        break;
-                    case 3:
-                        message.memoryBytes = reader.uint32();
-                        break;
-                    case 4:
-                        message.iterations = reader.uint32();
-                        break;
-                    case 5:
-                        message.parallelism = reader.uint32();
-                        break;
-                    default:
-                        reader.skipType(tag & 7);
-                        break;
-                    }
-                }
-                return message;
-            };
-
-            /**
-             * Argon2Version enum.
-             * @name url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version
-             * @enum {number}
-             * @property {number} _=0 _ value
-             * @property {number} VERSION_1_3=19 VERSION_1_3 value
-             */
-            Argon2idParameters.Argon2Version = (function() {
-                const valuesById = {}, values = Object.create(valuesById);
-                values[valuesById[0] = "_"] = 0;
-                values[valuesById[19] = "VERSION_1_3"] = 19;
-                return values;
-            })();
-
-            return Argon2idParameters;
         })();
 
         return DeviceGroupJoinRequestOrOffer;

@@ -6,16 +6,19 @@ import * as utils from '../utils';
 /**
  * ## Crypto
  *
- * Contains an end-to-end encrypted box prefixed with a nonce.
+ * Contains encrypted data, prefixed with a 24 byte nonce.
+ *
+ * Note: This can be used for all ciphers using a 24 byte nonce, e.g.
+ * XSalsa20-Poly1305 and ChaCha20-Poly1305.
  */
 export interface EncryptedDataWithNonceAheadLike {
     /**
-     * Nonce used for the box.
+     * Nonce used for encrypting the data.
      */
     readonly nonce: Uint8Array;
 
     /**
-     * The end-to-end encrypted data.
+     * The encrypted data.
      */
     readonly data: Uint8Array;
 }

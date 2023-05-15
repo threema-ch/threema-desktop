@@ -32,13 +32,12 @@ export {e2e, handshake, payload};
  * - `CSN`: Client Sequence Number
  * - `SSN`: Server Sequence Number
  * - `ID`: The client's Threema ID
- * - `Box(A, B)`: A NaCl box encrypted with key A and key B
  *
  * ## General Information
  *
  * Endianness: All integers use little-endian encoding.
  *
- * Encryption format: An NaCl box with a 24 byte nonce.
+ * Encryption cipher: XSalsa20-Poly1305, unless otherwise specified.
  *
  * Nonce format:
  *
@@ -50,27 +49,6 @@ export {e2e, handshake, payload};
  * the client and one for the server). We will use `CSN+` and `SSN+` in this
  * document to denote that the counter should be increased **after** the value
  * has been inserted (i.e. semantically equivalent to `x++` in many languages).
- *
- * ## Box
- *
- * When we use the term _box_, we refer to a sequence of bytes encrypted by
- * NaCl, symmetrically with a single secret key or asymmetrically with a
- * secret key and a public key.
- *
- * We will denote such an encryption operation with pseudo-code:
- *
- *     Box(SK.secret, TCK.public)
- *       .encrypt(data=<server-hello>, nonce=<SCK><SSN+>)
- *
- * The above code sample describes an asymmetric box encryption operation
- * with the secret portion of `SK` and the public portion of `TCK`. The data
- * to be encrypted refers to the byte representation of the struct
- * `server-hello`. The nonce used is the server connection cookie `SCK`
- * concatenated with the current server sequence number.
- *
- * While data may be of arbitrary length, the nonce is always exactly 24
- * bytes. The resulting encrypted data has an overhead of 16 bytes which
- * is the NaCl message authentication code.
  *
  * ## Size Limitations
  *

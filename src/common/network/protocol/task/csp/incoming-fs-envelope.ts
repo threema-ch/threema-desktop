@@ -78,7 +78,7 @@ export class IncomingForwardSecurityEnvelopeTask
             accept: undefined,
             reject: protobuf.utils.creator(protobuf.csp_e2e_fs.ForwardSecurityEnvelope.Reject, {
                 rejectedMessageId: intoUnsignedLong(this._messageId),
-                cause: protobuf.csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause.DISABLED,
+                cause: protobuf.csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause.UNKNOWN_SESSION, // TODO(DESK-1050): Switch to UNSUPPORTED_BY_LOCAL
             }),
             terminate: undefined,
             message: undefined,

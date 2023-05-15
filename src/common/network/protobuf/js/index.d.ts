@@ -362,6 +362,47 @@ export namespace common {
         FORWARD_SECURITY_SUPPORT = 64,
         GROUP_CALL_SUPPORT = 128
     }
+    /** CspE2eMessageType enum. */
+    enum CspE2eMessageType {
+        _ = 0,
+        TEXT = 1,
+        DEPRECATED_IMAGE = 2,
+        LOCATION = 16,
+        DEPRECATED_AUDIO = 20,
+        DEPRECATED_VIDEO = 19,
+        FILE = 23,
+        POLL_SETUP = 21,
+        POLL_VOTE = 22,
+        CALL_OFFER = 96,
+        CALL_ANSWER = 97,
+        CALL_ICE_CANDIDATE = 98,
+        CALL_HANGUP = 99,
+        CALL_RINGING = 100,
+        DELIVERY_RECEIPT = 128,
+        TYPING_INDICATOR = 144,
+        CONTACT_SET_PROFILE_PICTURE = 24,
+        CONTACT_DELETE_PROFILE_PICTURE = 25,
+        CONTACT_REQUEST_PROFILE_PICTURE = 26,
+        GROUP_JOIN_REQUEST = 77,
+        GROUP_JOIN_RESPONSE = 78,
+        GROUP_SETUP = 74,
+        GROUP_NAME = 75,
+        GROUP_LEAVE = 76,
+        GROUP_SET_PROFILE_PICTURE = 80,
+        GROUP_DELETE_PROFILE_PICTURE = 84,
+        GROUP_SYNC_REQUEST = 81,
+        GROUP_CALL_START = 79,
+        GROUP_TEXT = 65,
+        GROUP_LOCATION = 66,
+        GROUP_IMAGE = 67,
+        GROUP_AUDIO = 69,
+        GROUP_VIDEO = 68,
+        GROUP_FILE = 70,
+        GROUP_POLL_SETUP = 82,
+        GROUP_POLL_VOTE = 83,
+        GROUP_DELIVERY_RECEIPT = 129,
+        FORWARD_SECURITY_ENVELOPE = 160
+    }
 }
 /** Namespace csp_e2e_fs. */
 export namespace csp_e2e_fs {
@@ -424,8 +465,8 @@ export namespace csp_e2e_fs {
     namespace ForwardSecurityEnvelope {
         /** Properties of an Init. */
         interface IInit {
-            /** Init ephemeralPublicKey */
-            ephemeralPublicKey?: (Uint8Array | null);
+            /** Init fssk */
+            fssk?: (Uint8Array | null);
         }
         type InitEncodable = types.WeakOpaque<IInit, {
             readonly InitEncodable: unique symbol;
@@ -437,8 +478,8 @@ export namespace csp_e2e_fs {
              * @param [properties] Properties to set
              */
             constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.IInit);
-            /** Init ephemeralPublicKey. */
-            public ephemeralPublicKey: Uint8Array;
+            /** Init fssk. */
+            public fssk: Uint8Array;
             /**
              * Encodes the specified Init message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Init.verify|verify} messages.
              * @param message Init message or plain object to encode
@@ -458,8 +499,8 @@ export namespace csp_e2e_fs {
         }
         /** Properties of an Accept. */
         interface IAccept {
-            /** Accept ephemeralPublicKey */
-            ephemeralPublicKey?: (Uint8Array | null);
+            /** Accept fssk */
+            fssk?: (Uint8Array | null);
         }
         type AcceptEncodable = types.WeakOpaque<IAccept, {
             readonly AcceptEncodable: unique symbol;
@@ -471,8 +512,8 @@ export namespace csp_e2e_fs {
              * @param [properties] Properties to set
              */
             constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.IAccept);
-            /** Accept ephemeralPublicKey. */
-            public ephemeralPublicKey: Uint8Array;
+            /** Accept fssk. */
+            public fssk: Uint8Array;
             /**
              * Encodes the specified Accept message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Accept.verify|verify} messages.
              * @param message Accept message or plain object to encode
@@ -532,8 +573,7 @@ export namespace csp_e2e_fs {
             /** Cause enum. */
             enum Cause {
                 STATE_MISMATCH = 0,
-                UNKNOWN_SESSION = 1,
-                DISABLED = 2
+                UNKNOWN_SESSION = 1
             }
         }
         /** Properties of a Terminate. */
@@ -572,8 +612,8 @@ export namespace csp_e2e_fs {
             dhType?: (csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType | null);
             /** Message counter */
             counter?: (Long | null);
-            /** Message message */
-            message?: (Uint8Array | null);
+            /** Message encryptedMessage */
+            encryptedMessage?: (Uint8Array | null);
         }
         type MessageEncodable = types.WeakOpaque<IMessage, {
             readonly MessageEncodable: unique symbol;
@@ -589,8 +629,8 @@ export namespace csp_e2e_fs {
             public dhType: csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType;
             /** Message counter. */
             public counter: Long;
-            /** Message message. */
-            public message: Uint8Array;
+            /** Message encryptedMessage. */
+            public encryptedMessage: Uint8Array;
             /**
              * Encodes the specified Message message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Message.verify|verify} messages.
              * @param message Message message or plain object to encode
@@ -929,8 +969,6 @@ export namespace groupcall {
     namespace CallState {
         /** Properties of a Participant. */
         interface IParticipant {
-            /** Participant participantId */
-            participantId?: (number | null);
             /** Participant threema */
             threema?: (groupcall.CallState.Participant.Normal | null);
             /** Participant guest */
@@ -946,8 +984,6 @@ export namespace groupcall {
              * @param [properties] Properties to set
              */
             constructor(properties?: groupcall.CallState.IParticipant);
-            /** Participant participantId. */
-            public participantId: number;
             /** Participant threema. */
             public threema?: (groupcall.CallState.Participant.Normal | null);
             /** Participant guest. */
@@ -3316,8 +3352,6 @@ export namespace d2d {
         padding?: (Uint8Array | null);
         /** SharedDeviceData version */
         version?: (number | null);
-        /** SharedDeviceData mdmParameters */
-        mdmParameters?: (sync.MdmParameters | null);
     }
     type SharedDeviceDataEncodable = types.WeakOpaque<ISharedDeviceData, {
         readonly SharedDeviceDataEncodable: unique symbol;
@@ -3333,8 +3367,6 @@ export namespace d2d {
         public padding: Uint8Array;
         /** SharedDeviceData version. */
         public version: number;
-        /** SharedDeviceData mdmParameters. */
-        public mdmParameters?: (sync.MdmParameters | null);
         /**
          * Encodes the specified SharedDeviceData message. Does not implicitly {@link d2d.SharedDeviceData.verify|verify} messages.
          * @param message SharedDeviceData message or plain object to encode
@@ -3454,7 +3486,8 @@ export namespace d2d {
             GROUP_SYNC = 2,
             DISTRIBUTION_LIST_SYNC = 3,
             SETTINGS_SYNC = 4,
-            NEW_DEVICE_SYNC = 5
+            MDM_PARAMETER_SYNC = 5,
+            NEW_DEVICE_SYNC = 6
         }
     }
     /** Properties of an Envelope. */
@@ -3479,6 +3512,8 @@ export namespace d2d {
         distributionListSync?: (d2d.DistributionListSync | null);
         /** Envelope settingsSync */
         settingsSync?: (d2d.SettingsSync | null);
+        /** Envelope mdmParameterSync */
+        mdmParameterSync?: (d2d.MdmParameterSync | null);
     }
     type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
         readonly EnvelopeEncodable: unique symbol;
@@ -3510,8 +3545,10 @@ export namespace d2d {
         public distributionListSync?: (d2d.DistributionListSync | null);
         /** Envelope settingsSync. */
         public settingsSync?: (d2d.SettingsSync | null);
+        /** Envelope mdmParameterSync. */
+        public mdmParameterSync?: (d2d.MdmParameterSync | null);
         /** Envelope content. */
-        public content?: ("outgoingMessage" | "outgoingMessageUpdate" | "incomingMessage" | "incomingMessageUpdate" | "userProfileSync" | "contactSync" | "groupSync" | "distributionListSync" | "settingsSync");
+        public content?: ("outgoingMessage" | "outgoingMessageUpdate" | "incomingMessage" | "incomingMessageUpdate" | "userProfileSync" | "contactSync" | "groupSync" | "distributionListSync" | "settingsSync" | "mdmParameterSync");
         /**
          * Encodes the specified Envelope message. Does not implicitly {@link d2d.Envelope.verify|verify} messages.
          * @param message Envelope message or plain object to encode
@@ -3528,43 +3565,6 @@ export namespace d2d {
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): d2d.Envelope;
-    }
-    /** MessageType enum. */
-    enum MessageType {
-        INVALID = 0,
-        TEXT = 1,
-        DEPRECATED_IMAGE = 2,
-        LOCATION = 16,
-        DEPRECATED_AUDIO = 20,
-        DEPRECATED_VIDEO = 19,
-        FILE = 23,
-        POLL_SETUP = 21,
-        POLL_VOTE = 22,
-        CALL_OFFER = 96,
-        CALL_ANSWER = 97,
-        CALL_ICE_CANDIDATE = 98,
-        CALL_HANGUP = 99,
-        CALL_RINGING = 100,
-        DELIVERY_RECEIPT = 128,
-        TYPING_INDICATOR = 144,
-        CONTACT_SET_PROFILE_PICTURE = 24,
-        CONTACT_DELETE_PROFILE_PICTURE = 25,
-        CONTACT_REQUEST_PROFILE_PICTURE = 26,
-        GROUP_SETUP = 74,
-        GROUP_NAME = 75,
-        GROUP_LEAVE = 76,
-        GROUP_SET_PROFILE_PICTURE = 80,
-        GROUP_DELETE_PROFILE_PICTURE = 84,
-        GROUP_REQUEST_SYNC = 81,
-        GROUP_TEXT = 65,
-        GROUP_LOCATION = 66,
-        GROUP_IMAGE = 67,
-        GROUP_AUDIO = 69,
-        GROUP_VIDEO = 68,
-        GROUP_FILE = 70,
-        GROUP_POLL_SETUP = 82,
-        GROUP_POLL_VOTE = 83,
-        GROUP_DELIVERY_RECEIPT = 129
     }
     /** Properties of a ConversationId. */
     interface IConversationId {
@@ -3621,7 +3621,7 @@ export namespace d2d {
         /** OutgoingMessage createdAt */
         createdAt?: (Long | null);
         /** OutgoingMessage type */
-        type?: (d2d.MessageType | null);
+        type?: (common.CspE2eMessageType | null);
         /** OutgoingMessage body */
         body?: (Uint8Array | null);
         /** OutgoingMessage nonces */
@@ -3646,7 +3646,7 @@ export namespace d2d {
         /** OutgoingMessage createdAt. */
         public createdAt: Long;
         /** OutgoingMessage type. */
-        public type: d2d.MessageType;
+        public type: common.CspE2eMessageType;
         /** OutgoingMessage body. */
         public body: Uint8Array;
         /** OutgoingMessage nonces. */
@@ -3789,7 +3789,7 @@ export namespace d2d {
         /** IncomingMessage createdAt */
         createdAt?: (Long | null);
         /** IncomingMessage type */
-        type?: (d2d.MessageType | null);
+        type?: (common.CspE2eMessageType | null);
         /** IncomingMessage body */
         body?: (Uint8Array | null);
         /** IncomingMessage nonce */
@@ -3812,7 +3812,7 @@ export namespace d2d {
         /** IncomingMessage createdAt. */
         public createdAt: Long;
         /** IncomingMessage type. */
-        public type: d2d.MessageType;
+        public type: common.CspE2eMessageType;
         /** IncomingMessage body. */
         public body: Uint8Array;
         /** IncomingMessage nonce. */
@@ -4536,6 +4536,78 @@ export namespace d2d {
             public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): d2d.SettingsSync.Update;
         }
     }
+    /** Properties of a MdmParameterSync. */
+    interface IMdmParameterSync {
+        /** MdmParameterSync update */
+        update?: (d2d.MdmParameterSync.Update | null);
+    }
+    type MdmParameterSyncEncodable = types.WeakOpaque<IMdmParameterSync, {
+        readonly MdmParameterSyncEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a MdmParameterSync. */
+    class MdmParameterSync implements IMdmParameterSync {
+        /**
+         * Constructs a new MdmParameterSync.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: d2d.IMdmParameterSync);
+        /** MdmParameterSync update. */
+        public update?: (d2d.MdmParameterSync.Update | null);
+        /** MdmParameterSync action. */
+        public action?: "update";
+        /**
+         * Encodes the specified MdmParameterSync message. Does not implicitly {@link d2d.MdmParameterSync.verify|verify} messages.
+         * @param message MdmParameterSync message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: d2d.MdmParameterSyncEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a MdmParameterSync message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns MdmParameterSync
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): d2d.MdmParameterSync;
+    }
+    namespace MdmParameterSync {
+        /** Properties of an Update. */
+        interface IUpdate {
+            /** Update parameters */
+            parameters?: (sync.MdmParameters | null);
+        }
+        type UpdateEncodable = types.WeakOpaque<IUpdate, {
+            readonly UpdateEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents an Update. */
+        class Update implements IUpdate {
+            /**
+             * Constructs a new Update.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: d2d.MdmParameterSync.IUpdate);
+            /** Update parameters. */
+            public parameters?: (sync.MdmParameters | null);
+            /**
+             * Encodes the specified Update message. Does not implicitly {@link d2d.MdmParameterSync.Update.verify|verify} messages.
+             * @param message Update message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: d2d.MdmParameterSync.UpdateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes an Update message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Update
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): d2d.MdmParameterSync.Update;
+        }
+    }
 }
 /** Namespace sync. */
 export namespace sync {
@@ -4566,82 +4638,6 @@ export namespace sync {
     }
     /** Properties of a MdmParameters. */
     interface IMdmParameters {
-        /** MdmParameters licenseUsername */
-        licenseUsername?: (string | null);
-        /** MdmParameters licensePassword */
-        licensePassword?: (string | null);
-        /** MdmParameters nickname */
-        nickname?: (string | null);
-        /** MdmParameters firstName */
-        firstName?: (string | null);
-        /** MdmParameters lastName */
-        lastName?: (string | null);
-        /** MdmParameters customerSpecificId */
-        customerSpecificId?: (string | null);
-        /** MdmParameters category */
-        category?: (string | null);
-        /** MdmParameters linkedEmail */
-        linkedEmail?: (string | null);
-        /** MdmParameters linkedPhone */
-        linkedPhone?: (string | null);
-        /** MdmParameters identityRestore */
-        identityRestore?: (string | null);
-        /** MdmParameters identityRestorePassword */
-        identityRestorePassword?: (string | null);
-        /** MdmParameters threemaSafePolicy */
-        threemaSafePolicy?: (sync.MdmParameters.ThreemaSafePolicy | null);
-        /** MdmParameters threemaSafePassword */
-        threemaSafePassword?: (string | null);
-        /** MdmParameters threemaSafePasswordPattern */
-        threemaSafePasswordPattern?: (string | null);
-        /** MdmParameters threemaSafePasswordPatternErrorMessage */
-        threemaSafePasswordPatternErrorMessage?: (string | null);
-        /** MdmParameters threemaSafeServerUrl */
-        threemaSafeServerUrl?: (string | null);
-        /** MdmParameters threemaSafeServerUsername */
-        threemaSafeServerUsername?: (string | null);
-        /** MdmParameters threemaSafeServerPassword */
-        threemaSafeServerPassword?: (string | null);
-        /** MdmParameters threemaSafeRestorePolicy */
-        threemaSafeRestorePolicy?: (sync.MdmParameters.ThreemaSafeRestorePolicy | null);
-        /** MdmParameters threemaSafeRestoreIdentity */
-        threemaSafeRestoreIdentity?: (string | null);
-        /** MdmParameters overridePolicy */
-        overridePolicy?: (sync.MdmParameters.OverridePolicy | null);
-        /** MdmParameters contactSyncPolicy */
-        contactSyncPolicy?: (sync.MdmParameters.ContactSyncPolicy | null);
-        /** MdmParameters inactiveIdentityDisplayPolicy */
-        inactiveIdentityDisplayPolicy?: (sync.MdmParameters.InactiveIdentityDisplayPolicy | null);
-        /** MdmParameters unknownContactPolicy */
-        unknownContactPolicy?: (sync.MdmParameters.UnknownContactPolicy | null);
-        /** MdmParameters autoSaveMediaPolicy */
-        autoSaveMediaPolicy?: (sync.MdmParameters.AutoSaveMediaPolicy | null);
-        /** MdmParameters screenshotPolicy */
-        screenshotPolicy?: (sync.MdmParameters.ScreenshotPolicy | null);
-        /** MdmParameters addContactPolicy */
-        addContactPolicy?: (sync.MdmParameters.AddContactPolicy | null);
-        /** MdmParameters chatExportPolicy */
-        chatExportPolicy?: (sync.MdmParameters.ChatExportPolicy | null);
-        /** MdmParameters backupPolicy */
-        backupPolicy?: (sync.MdmParameters.BackupPolicy | null);
-        /** MdmParameters identityExportPolicy */
-        identityExportPolicy?: (sync.MdmParameters.IdentityExportPolicy | null);
-        /** MdmParameters dataBackupPolicy */
-        dataBackupPolicy?: (sync.MdmParameters.DataBackupPolicy | null);
-        /** MdmParameters systemBackupPolicy */
-        systemBackupPolicy?: (sync.MdmParameters.SystemBackupPolicy | null);
-        /** MdmParameters messagePreviewPolicy */
-        messagePreviewPolicy?: (sync.MdmParameters.MessagePreviewPolicy | null);
-        /** MdmParameters profilePictureSharePolicy */
-        profilePictureSharePolicy?: (sync.MdmParameters.ProfilePictureSharePolicy | null);
-        /** MdmParameters callPolicy */
-        callPolicy?: (sync.MdmParameters.CallPolicy | null);
-        /** MdmParameters setupWizardPolicy */
-        setupWizardPolicy?: (sync.MdmParameters.SetupWizardPolicy | null);
-        /** MdmParameters createGroupPolicy */
-        createGroupPolicy?: (sync.MdmParameters.CreateGroupPolicy | null);
-        /** MdmParameters shareMediaPolicy */
-        shareMediaPolicy?: (sync.MdmParameters.ShareMediaPolicy | null);
     }
     type MdmParametersEncodable = types.WeakOpaque<IMdmParameters, {
         readonly MdmParametersEncodable: unique symbol;
@@ -4653,158 +4649,6 @@ export namespace sync {
          * @param [properties] Properties to set
          */
         constructor(properties?: sync.IMdmParameters);
-        /** MdmParameters licenseUsername. */
-        public licenseUsername?: (string | null);
-        /** MdmParameters licensePassword. */
-        public licensePassword?: (string | null);
-        /** MdmParameters nickname. */
-        public nickname?: (string | null);
-        /** MdmParameters firstName. */
-        public firstName?: (string | null);
-        /** MdmParameters lastName. */
-        public lastName?: (string | null);
-        /** MdmParameters customerSpecificId. */
-        public customerSpecificId?: (string | null);
-        /** MdmParameters category. */
-        public category?: (string | null);
-        /** MdmParameters linkedEmail. */
-        public linkedEmail?: (string | null);
-        /** MdmParameters linkedPhone. */
-        public linkedPhone?: (string | null);
-        /** MdmParameters identityRestore. */
-        public identityRestore?: (string | null);
-        /** MdmParameters identityRestorePassword. */
-        public identityRestorePassword?: (string | null);
-        /** MdmParameters threemaSafePolicy. */
-        public threemaSafePolicy?: (sync.MdmParameters.ThreemaSafePolicy | null);
-        /** MdmParameters threemaSafePassword. */
-        public threemaSafePassword?: (string | null);
-        /** MdmParameters threemaSafePasswordPattern. */
-        public threemaSafePasswordPattern?: (string | null);
-        /** MdmParameters threemaSafePasswordPatternErrorMessage. */
-        public threemaSafePasswordPatternErrorMessage?: (string | null);
-        /** MdmParameters threemaSafeServerUrl. */
-        public threemaSafeServerUrl?: (string | null);
-        /** MdmParameters threemaSafeServerUsername. */
-        public threemaSafeServerUsername?: (string | null);
-        /** MdmParameters threemaSafeServerPassword. */
-        public threemaSafeServerPassword?: (string | null);
-        /** MdmParameters threemaSafeRestorePolicy. */
-        public threemaSafeRestorePolicy?: (sync.MdmParameters.ThreemaSafeRestorePolicy | null);
-        /** MdmParameters threemaSafeRestoreIdentity. */
-        public threemaSafeRestoreIdentity?: (string | null);
-        /** MdmParameters overridePolicy. */
-        public overridePolicy?: (sync.MdmParameters.OverridePolicy | null);
-        /** MdmParameters contactSyncPolicy. */
-        public contactSyncPolicy?: (sync.MdmParameters.ContactSyncPolicy | null);
-        /** MdmParameters inactiveIdentityDisplayPolicy. */
-        public inactiveIdentityDisplayPolicy?: (sync.MdmParameters.InactiveIdentityDisplayPolicy | null);
-        /** MdmParameters unknownContactPolicy. */
-        public unknownContactPolicy?: (sync.MdmParameters.UnknownContactPolicy | null);
-        /** MdmParameters autoSaveMediaPolicy. */
-        public autoSaveMediaPolicy?: (sync.MdmParameters.AutoSaveMediaPolicy | null);
-        /** MdmParameters screenshotPolicy. */
-        public screenshotPolicy?: (sync.MdmParameters.ScreenshotPolicy | null);
-        /** MdmParameters addContactPolicy. */
-        public addContactPolicy?: (sync.MdmParameters.AddContactPolicy | null);
-        /** MdmParameters chatExportPolicy. */
-        public chatExportPolicy?: (sync.MdmParameters.ChatExportPolicy | null);
-        /** MdmParameters backupPolicy. */
-        public backupPolicy?: (sync.MdmParameters.BackupPolicy | null);
-        /** MdmParameters identityExportPolicy. */
-        public identityExportPolicy?: (sync.MdmParameters.IdentityExportPolicy | null);
-        /** MdmParameters dataBackupPolicy. */
-        public dataBackupPolicy?: (sync.MdmParameters.DataBackupPolicy | null);
-        /** MdmParameters systemBackupPolicy. */
-        public systemBackupPolicy?: (sync.MdmParameters.SystemBackupPolicy | null);
-        /** MdmParameters messagePreviewPolicy. */
-        public messagePreviewPolicy?: (sync.MdmParameters.MessagePreviewPolicy | null);
-        /** MdmParameters profilePictureSharePolicy. */
-        public profilePictureSharePolicy?: (sync.MdmParameters.ProfilePictureSharePolicy | null);
-        /** MdmParameters callPolicy. */
-        public callPolicy?: (sync.MdmParameters.CallPolicy | null);
-        /** MdmParameters setupWizardPolicy. */
-        public setupWizardPolicy?: (sync.MdmParameters.SetupWizardPolicy | null);
-        /** MdmParameters createGroupPolicy. */
-        public createGroupPolicy?: (sync.MdmParameters.CreateGroupPolicy | null);
-        /** MdmParameters shareMediaPolicy. */
-        public shareMediaPolicy?: (sync.MdmParameters.ShareMediaPolicy | null);
-        /** MdmParameters _licenseUsername. */
-        public _licenseUsername?: "licenseUsername";
-        /** MdmParameters _licensePassword. */
-        public _licensePassword?: "licensePassword";
-        /** MdmParameters _nickname. */
-        public _nickname?: "nickname";
-        /** MdmParameters _firstName. */
-        public _firstName?: "firstName";
-        /** MdmParameters _lastName. */
-        public _lastName?: "lastName";
-        /** MdmParameters _customerSpecificId. */
-        public _customerSpecificId?: "customerSpecificId";
-        /** MdmParameters _category. */
-        public _category?: "category";
-        /** MdmParameters _linkedEmail. */
-        public _linkedEmail?: "linkedEmail";
-        /** MdmParameters _linkedPhone. */
-        public _linkedPhone?: "linkedPhone";
-        /** MdmParameters _identityRestore. */
-        public _identityRestore?: "identityRestore";
-        /** MdmParameters _identityRestorePassword. */
-        public _identityRestorePassword?: "identityRestorePassword";
-        /** MdmParameters _threemaSafePolicy. */
-        public _threemaSafePolicy?: "threemaSafePolicy";
-        /** MdmParameters _threemaSafePassword. */
-        public _threemaSafePassword?: "threemaSafePassword";
-        /** MdmParameters _threemaSafePasswordPattern. */
-        public _threemaSafePasswordPattern?: "threemaSafePasswordPattern";
-        /** MdmParameters _threemaSafePasswordPatternErrorMessage. */
-        public _threemaSafePasswordPatternErrorMessage?: "threemaSafePasswordPatternErrorMessage";
-        /** MdmParameters _threemaSafeServerUrl. */
-        public _threemaSafeServerUrl?: "threemaSafeServerUrl";
-        /** MdmParameters _threemaSafeServerUsername. */
-        public _threemaSafeServerUsername?: "threemaSafeServerUsername";
-        /** MdmParameters _threemaSafeServerPassword. */
-        public _threemaSafeServerPassword?: "threemaSafeServerPassword";
-        /** MdmParameters _threemaSafeRestorePolicy. */
-        public _threemaSafeRestorePolicy?: "threemaSafeRestorePolicy";
-        /** MdmParameters _threemaSafeRestoreIdentity. */
-        public _threemaSafeRestoreIdentity?: "threemaSafeRestoreIdentity";
-        /** MdmParameters _overridePolicy. */
-        public _overridePolicy?: "overridePolicy";
-        /** MdmParameters _contactSyncPolicy. */
-        public _contactSyncPolicy?: "contactSyncPolicy";
-        /** MdmParameters _inactiveIdentityDisplayPolicy. */
-        public _inactiveIdentityDisplayPolicy?: "inactiveIdentityDisplayPolicy";
-        /** MdmParameters _unknownContactPolicy. */
-        public _unknownContactPolicy?: "unknownContactPolicy";
-        /** MdmParameters _autoSaveMediaPolicy. */
-        public _autoSaveMediaPolicy?: "autoSaveMediaPolicy";
-        /** MdmParameters _screenshotPolicy. */
-        public _screenshotPolicy?: "screenshotPolicy";
-        /** MdmParameters _addContactPolicy. */
-        public _addContactPolicy?: "addContactPolicy";
-        /** MdmParameters _chatExportPolicy. */
-        public _chatExportPolicy?: "chatExportPolicy";
-        /** MdmParameters _backupPolicy. */
-        public _backupPolicy?: "backupPolicy";
-        /** MdmParameters _identityExportPolicy. */
-        public _identityExportPolicy?: "identityExportPolicy";
-        /** MdmParameters _dataBackupPolicy. */
-        public _dataBackupPolicy?: "dataBackupPolicy";
-        /** MdmParameters _systemBackupPolicy. */
-        public _systemBackupPolicy?: "systemBackupPolicy";
-        /** MdmParameters _messagePreviewPolicy. */
-        public _messagePreviewPolicy?: "messagePreviewPolicy";
-        /** MdmParameters _profilePictureSharePolicy. */
-        public _profilePictureSharePolicy?: "profilePictureSharePolicy";
-        /** MdmParameters _callPolicy. */
-        public _callPolicy?: "callPolicy";
-        /** MdmParameters _setupWizardPolicy. */
-        public _setupWizardPolicy?: "setupWizardPolicy";
-        /** MdmParameters _createGroupPolicy. */
-        public _createGroupPolicy?: "createGroupPolicy";
-        /** MdmParameters _shareMediaPolicy. */
-        public _shareMediaPolicy?: "shareMediaPolicy";
         /**
          * Encodes the specified MdmParameters message. Does not implicitly {@link sync.MdmParameters.verify|verify} messages.
          * @param message MdmParameters message or plain object to encode
@@ -4821,110 +4665,6 @@ export namespace sync {
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): sync.MdmParameters;
-    }
-    namespace MdmParameters {
-        /** ThreemaSafePolicy enum. */
-        enum ThreemaSafePolicy {
-            SAFE_OPTIONAL = 0,
-            SAFE_MANDATORY = 1,
-            SAFE_DISABLED = 2
-        }
-        /** ThreemaSafeRestorePolicy enum. */
-        enum ThreemaSafeRestorePolicy {
-            SAFE_RESTORE_OPTIONAL = 0,
-            SAFE_RESTORE_MANDATORY = 1,
-            SAFE_RESTORE_DISABLED = 2
-        }
-        /** OverridePolicy enum. */
-        enum OverridePolicy {
-            LOOSE = 0,
-            STRICT = 1
-        }
-        /** ContactSyncPolicy enum. */
-        enum ContactSyncPolicy {
-            NOT_SYNCED = 0,
-            SYNC = 1
-        }
-        /** InactiveIdentityDisplayPolicy enum. */
-        enum InactiveIdentityDisplayPolicy {
-            SHOW_INACTIVE = 0,
-            HIDE_INACTIVE = 1
-        }
-        /** UnknownContactPolicy enum. */
-        enum UnknownContactPolicy {
-            ALLOW_UNKNOWN = 0,
-            BLOCK_UNKNOWN = 1
-        }
-        /** AutoSaveMediaPolicy enum. */
-        enum AutoSaveMediaPolicy {
-            ALLOW_AUTO_SAVE = 0,
-            DENY_AUTO_SAVE = 1
-        }
-        /** ScreenshotPolicy enum. */
-        enum ScreenshotPolicy {
-            ALLOW_SCREENSHOT = 0,
-            DENY_SCREENSHOT = 1
-        }
-        /** AddContactPolicy enum. */
-        enum AddContactPolicy {
-            ALLOW_ADD_CONTACT = 0,
-            DENY_ADD_CONTACT = 1
-        }
-        /** ChatExportPolicy enum. */
-        enum ChatExportPolicy {
-            ALLOW_CHAT_EXPORT = 0,
-            DENY_CHAT_EXPORT = 1
-        }
-        /** BackupPolicy enum. */
-        enum BackupPolicy {
-            ALLOW_BACKUP = 0,
-            DENY_BACKUP = 1
-        }
-        /** IdentityExportPolicy enum. */
-        enum IdentityExportPolicy {
-            ALLOW_IDENTITY_EXPORT = 0,
-            DENY_IDENTITY_EXPORT = 1
-        }
-        /** DataBackupPolicy enum. */
-        enum DataBackupPolicy {
-            ALLOW_DATA_BACKUP = 0,
-            DENY_DATA_BACKUP = 1
-        }
-        /** SystemBackupPolicy enum. */
-        enum SystemBackupPolicy {
-            ALLOW_SYSTEM_BACKUP = 0,
-            DENY_SYSTEM_BACKUP = 1
-        }
-        /** MessagePreviewPolicy enum. */
-        enum MessagePreviewPolicy {
-            ALLOW_PREVIEW = 0,
-            DENY_PREVIEW = 1
-        }
-        /** ProfilePictureSharePolicy enum. */
-        enum ProfilePictureSharePolicy {
-            ALLOW_SHARE = 0,
-            DENY_SHARE = 1
-        }
-        /** CallPolicy enum. */
-        enum CallPolicy {
-            ALLOW_CALL = 0,
-            DENY_CALL = 1
-        }
-        /** SetupWizardPolicy enum. */
-        enum SetupWizardPolicy {
-            SHOW_WIZARD = 0,
-            SKIP_WIZARD = 1
-        }
-        /** CreateGroupPolicy enum. */
-        enum CreateGroupPolicy {
-            ALLOW_CREATE_GROUP = 0,
-            DENY_CREATE_GROUP = 1
-        }
-        /** ShareMediaPolicy enum. */
-        enum ShareMediaPolicy {
-            ALLOW_SHARE_MEDIA = 0,
-            DENY_OUTSIDE_APP = 1
-        }
     }
     /** Properties of a UserProfile. */
     interface IUserProfile {
@@ -6007,6 +5747,8 @@ export namespace join {
         userProfile?: (sync.UserProfile | null);
         /** EssentialData settings */
         settings?: (sync.Settings | null);
+        /** EssentialData mdmParameters */
+        mdmParameters?: (sync.MdmParameters | null);
         /** EssentialData contacts */
         contacts?: (readonly join.EssentialData.AugmentedContact[] | null);
         /** EssentialData groups */
@@ -6038,6 +5780,8 @@ export namespace join {
         public userProfile?: (sync.UserProfile | null);
         /** EssentialData settings. */
         public settings?: (sync.Settings | null);
+        /** EssentialData mdmParameters. */
+        public mdmParameters?: (sync.MdmParameters | null);
         /** EssentialData contacts. */
         public contacts: readonly join.EssentialData.AugmentedContact[];
         /** EssentialData groups. */
@@ -6206,7 +5950,9 @@ export namespace join {
             /** AugmentedContact contact. */
             public contact?: (sync.Contact | null);
             /** AugmentedContact lastUpdateAt. */
-            public lastUpdateAt: Long;
+            public lastUpdateAt?: (Long | null);
+            /** AugmentedContact _lastUpdateAt. */
+            public _lastUpdateAt?: "lastUpdateAt";
             /**
              * Encodes the specified AugmentedContact message. Does not implicitly {@link join.EssentialData.AugmentedContact.verify|verify} messages.
              * @param message AugmentedContact message or plain object to encode
@@ -7658,10 +7404,8 @@ export namespace url {
         version?: (url.DeviceGroupJoinRequestOrOffer.Version | null);
         /** DeviceGroupJoinRequestOrOffer variant */
         variant?: (url.DeviceGroupJoinRequestOrOffer.Variant | null);
-        /** DeviceGroupJoinRequestOrOffer pskParameters */
-        pskParameters?: (url.DeviceGroupJoinRequestOrOffer.Argon2idParameters | null);
-        /** DeviceGroupJoinRequestOrOffer encryptedRendezvousData */
-        encryptedRendezvousData?: (Uint8Array | null);
+        /** DeviceGroupJoinRequestOrOffer rendezvousInit */
+        rendezvousInit?: (rendezvous.RendezvousInit | null);
     }
     type DeviceGroupJoinRequestOrOfferEncodable = types.WeakOpaque<IDeviceGroupJoinRequestOrOffer, {
         readonly DeviceGroupJoinRequestOrOfferEncodable: unique symbol;
@@ -7677,10 +7421,8 @@ export namespace url {
         public version: url.DeviceGroupJoinRequestOrOffer.Version;
         /** DeviceGroupJoinRequestOrOffer variant. */
         public variant?: (url.DeviceGroupJoinRequestOrOffer.Variant | null);
-        /** DeviceGroupJoinRequestOrOffer pskParameters. */
-        public pskParameters?: (url.DeviceGroupJoinRequestOrOffer.Argon2idParameters | null);
-        /** DeviceGroupJoinRequestOrOffer encryptedRendezvousData. */
-        public encryptedRendezvousData: Uint8Array;
+        /** DeviceGroupJoinRequestOrOffer rendezvousInit. */
+        public rendezvousInit?: (rendezvous.RendezvousInit | null);
         /**
          * Encodes the specified DeviceGroupJoinRequestOrOffer message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.verify|verify} messages.
          * @param message DeviceGroupJoinRequestOrOffer message or plain object to encode
@@ -7742,63 +7484,6 @@ export namespace url {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): url.DeviceGroupJoinRequestOrOffer.Variant;
-        }
-        /** Properties of an Argon2idParameters. */
-        interface IArgon2idParameters {
-            /** Argon2idParameters version */
-            version?: (url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version | null);
-            /** Argon2idParameters salt */
-            salt?: (Uint8Array | null);
-            /** Argon2idParameters memoryBytes */
-            memoryBytes?: (number | null);
-            /** Argon2idParameters iterations */
-            iterations?: (number | null);
-            /** Argon2idParameters parallelism */
-            parallelism?: (number | null);
-        }
-        type Argon2idParametersEncodable = types.WeakOpaque<IArgon2idParameters, {
-            readonly Argon2idParametersEncodable: unique symbol;
-        } & tag.ProtobufMessage>;
-        /** Represents an Argon2idParameters. */
-        class Argon2idParameters implements IArgon2idParameters {
-            /**
-             * Constructs a new Argon2idParameters.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: url.DeviceGroupJoinRequestOrOffer.IArgon2idParameters);
-            /** Argon2idParameters version. */
-            public version: url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.Argon2Version;
-            /** Argon2idParameters salt. */
-            public salt: Uint8Array;
-            /** Argon2idParameters memoryBytes. */
-            public memoryBytes: number;
-            /** Argon2idParameters iterations. */
-            public iterations: number;
-            /** Argon2idParameters parallelism. */
-            public parallelism: number;
-            /**
-             * Encodes the specified Argon2idParameters message. Does not implicitly {@link url.DeviceGroupJoinRequestOrOffer.Argon2idParameters.verify|verify} messages.
-             * @param message Argon2idParameters message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: url.DeviceGroupJoinRequestOrOffer.Argon2idParametersEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-            /**
-             * Decodes an Argon2idParameters message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Argon2idParameters
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): url.DeviceGroupJoinRequestOrOffer.Argon2idParameters;
-        }
-        namespace Argon2idParameters {
-            /** Argon2Version enum. */
-            enum Argon2Version {
-                _ = 0,
-                VERSION_1_3 = 19
-            }
         }
     }
 }
