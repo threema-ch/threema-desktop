@@ -111,11 +111,14 @@ export function matchesContactSearchFilter(
 export function filterContacts(
     set: ReadonlySet<RemoteModelStore<Contact>>,
     filter: string,
+    workVerificationLevel?: WorkVerificationLevel,
 ): IQueryableStore<readonly RemoteModelStore<Contact>[]> {
     return new DeprecatedDerivedStore([...set.values()], (item) =>
         [...item]
             .filter(
                 ([, {view}]) =>
+                    (workVerificationLevel === undefined ||
+                        view.workVerificationLevel === workVerificationLevel) &&
                     view.acquaintanceLevel !== AcquaintanceLevel.GROUP &&
                     deprecatedMatchesSearchFilter(filter, view),
             )

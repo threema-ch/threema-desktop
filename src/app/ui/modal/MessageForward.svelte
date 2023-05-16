@@ -18,6 +18,7 @@
   } from '~/app/ui/nav/receiver';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import {type DbReceiverLookup} from '~/common/db';
+  import {WorkVerificationLevel} from '~/common/enum';
   import {type MessageId} from '~/common/network/types';
   import {unreachable} from '~/common/utils/assert';
 
@@ -117,7 +118,7 @@
         </div>
         <div class="recipients">
           {#await services.backend.model.contacts.getAll() then contacts}
-            {#await filterContacts(contacts.get(), filter) then filtered}
+            {#await filterContacts(contacts.get(), filter, activeTab === 'work-contacts' ? WorkVerificationLevel.WORK_SUBSCRIPTION_VERIFIED : undefined) then filtered}
               {#each filtered.get() as contact (contact.id)}
                 {#await transformContact(backend.model.settings, contact.get()) then transformedContact}
                   {#await getStores(contact.get()) then stores}
