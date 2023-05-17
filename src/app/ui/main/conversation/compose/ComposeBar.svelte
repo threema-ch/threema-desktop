@@ -40,7 +40,8 @@
   let composeAreaTextByteLength: u53;
 
   // Emoji picker
-  let emojiPickerWrapper: Popover;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let emojiPickerWrapper: Popover | null;
 
   /**
    * Insert more text content into the compose area
@@ -85,7 +86,7 @@
 
     dispatch('sendTextMessage', composeArea.getText());
     composeArea.clearText();
-    emojiPickerWrapper.close();
+    emojiPickerWrapper?.close();
   }
 
   function handleTextChange(event: CustomEvent<u53>): void {
@@ -115,7 +116,7 @@
       on:submit={sendTextMessage}
       on:filePaste
       on:heightDidChange={() => {
-        emojiPickerWrapper.forceReposition();
+        emojiPickerWrapper?.forceReposition();
       }}
       placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
     />

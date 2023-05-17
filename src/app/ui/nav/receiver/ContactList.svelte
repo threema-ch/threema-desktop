@@ -47,7 +47,8 @@
   const swipeGroup = new SwipeAreaGroup();
 
   // Context menu
-  let contextMenuPopover: Popover;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let contextMenuPopover: Popover | null;
   let contextGroup: HTMLElement;
   let contextMenuPosition: VirtualRect | undefined;
   let currentContact: SetValue<IQueryableStoreValue<typeof contacts>> | undefined;
@@ -82,11 +83,11 @@
   );
 
   onDestroy((): void => {
-    contextMenuPopover.close();
+    contextMenuPopover?.close();
   });
 
   function handleClickedOnEditContact(): void {
-    contextMenuPopover.close();
+    contextMenuPopover?.close();
     if (currentContact === undefined) {
       return;
     }
@@ -99,7 +100,7 @@
   }
 
   async function handleClickedOnDeleteContact(): Promise<void> {
-    contextMenuPopover.close();
+    contextMenuPopover?.close();
     if (currentContact === undefined) {
       return;
     }
@@ -190,7 +191,7 @@
             width: 0,
             height: 0,
           };
-          contextMenuPopover.open(event);
+          contextMenuPopover?.open(event);
         }}
         use:scrollIntoViewIfConversationDisplayed={contact.contactUid}
       >

@@ -89,7 +89,8 @@
   $: messageBody = $viewModelStore.body;
 
   // Context menu
-  let contextMenuPopover: Popover;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let contextMenuPopover: Popover | null;
   let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
   let isContextMenuVisible = false;
 
@@ -150,7 +151,7 @@
       contextMenuVirtualTrigger = undefined;
     }
 
-    contextMenuPopover.open();
+    contextMenuPopover?.open();
   }
 
   function handleContextMenuTriggerClicked(): void {
@@ -163,7 +164,7 @@
   }
 
   function handleContextMenuEvent(type: ConversationMessageContextMenuEvent): void {
-    contextMenuPopover.close();
+    contextMenuPopover?.close();
 
     switch (type) {
       case 'thumbup':
