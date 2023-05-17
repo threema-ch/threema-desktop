@@ -2,12 +2,11 @@
   import {type SvelteComponentDev} from 'svelte/internal';
 
   import {globals} from '~/app/globals';
-  import ConfirmEmoji from '~/app/ui/linking/ConfirmEmoji.svelte';
-  import Error from '~/app/ui/linking/Error.svelte';
-  import Scan from '~/app/ui/linking/Scan.svelte';
-  import SuccessLinked from '~/app/ui/linking/SuccessLinked.svelte';
-
-  import {type LinkingParams, type LinkingState, type ProcessStep} from '.';
+  import {type LinkingParams, type LinkingState, type ProcessStep} from '~/app/ui/linking';
+  import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
+  import Error from '~/app/ui/linking/steps/Error.svelte';
+  import Scan from '~/app/ui/linking/steps/Scan.svelte';
+  import SuccessLinked from '~/app/ui/linking/steps/SuccessLinked.svelte';
   import {bytesToHex} from '~/common/utils/byte';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking-wizard`);
@@ -18,11 +17,16 @@
   export let params: LinkingParams;
 
   /**
+   * The function to run when the `LinkingWizard` has been successfully completed.
+   */
+  export let onComplete: () => void;
+
+  /**
    * The current connection state.
    */
   let linkingState: LinkingState = {
-    currentStep: 'scan',
     connectionState: 'connecting',
+    currentStep: 'scan',
   };
 
   /**
@@ -82,20 +86,9 @@
 </script>
 
 <template>
-  <div class="wrapper">
-    <svelte:component this={wizardStepComponent} {params} {linkingState} />
-  </div>
+  <svelte:component this={wizardStepComponent} {params} {linkingState} on:confirm={onComplete} />
 </template>
 
 <style lang="scss">
   @use 'component' as *;
-
-  .wrapper {
-    height: 100vh;
-    display: grid;
-    grid-template: 'app' min-content;
-    place-content: center;
-    color: var(--t-text-e1-color);
-    background-color: var(--t-pairing-background-color);
-  }
 </style>

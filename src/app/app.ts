@@ -60,12 +60,17 @@ export interface Elements {
 /**
  * Show linking wizard.
  */
-function attachLinkingWizard(elements: Elements, params: LinkingParams): LinkingWizard {
+function attachLinkingWizard(
+    elements: Elements,
+    params: LinkingParams,
+    onComplete: () => void,
+): LinkingWizard {
     elements.container.innerHTML = '';
     return new LinkingWizard({
         target: elements.container,
         props: {
             params,
+            onComplete,
         },
     });
 }
@@ -301,15 +306,20 @@ export async function main(appState: AppState): Promise<App> {
         setup: RendezvousProtocolSetup,
         connected: QueryablePromise<void>,
         nominated: QueryablePromise<ReadonlyUint8Array>,
+        onComplete: () => void,
     ): Promise<void> {
         await domContentLoaded;
         log.debug('Showing linking wizard');
         elements.splash.classList.add('hidden'); // Hide splash screen
-        attachLinkingWizard(elements, {
-            setup,
-            connected,
-            nominated,
-        });
+        attachLinkingWizard(
+            elements,
+            {
+                setup,
+                connected,
+                nominated,
+            },
+            onComplete,
+        );
     }
 
     // Define function that will request user to enter Threema Safe credentials

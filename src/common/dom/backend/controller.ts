@@ -140,6 +140,7 @@ export class BackendController {
             setup: RendezvousProtocolSetup,
             connected: QueryablePromise<void>,
             nominated: QueryablePromise<ReadonlyUint8Array>,
+            onComplete: () => void,
         ) => Promise<void>,
         requestSafeCredentials: (
             isIdentityValid: (identity: IdentityString) => Promise<boolean>,
@@ -293,7 +294,9 @@ export class BackendController {
                 const nominated = new ResolvablePromise<ReadonlyUint8Array>();
 
                 // Show linking screen with QR code
-                await showLinkingWizard(setup, connected, nominated);
+                await showLinkingWizard(setup, connected, nominated, () => {
+                    // TODO(DESK-1037): What to do when the process is done?
+                });
 
                 // Create RendezvousConnection and open WebSocket connection
                 let rendezvous;

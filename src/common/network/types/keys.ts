@@ -1,10 +1,10 @@
 import {
+    type CryptoBackend,
     NACL_CONSTANTS,
     type PublicKey,
     type RawKey,
     type ReadonlyRawKey,
     wrapRawKey,
-    CryptoBackend,
 } from '~/common/crypto';
 import {type SecureSharedBoxFactory, type SharedBoxFactory} from '~/common/crypto/box';
 import {type CspE2eBox, type CspPayloadBox} from '~/common/network/types';

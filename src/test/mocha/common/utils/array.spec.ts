@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 
 import {type u8} from '~/common/types';
-import {groupArray} from '~/common/utils/array';
+import {groupArray, joinConstArray} from '~/common/utils/array';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 
 const {expect} = chai.use(chaiByteEqual);
@@ -51,6 +51,18 @@ export function run(): void {
                     expect(grouped).to.deep.equal(expected);
                 });
             }
+        });
+
+        describe('joinArray', function () {
+            it(`joins three strings`, function () {
+                const joined: 'a,bee,c' = joinConstArray(['a', 'bee', 'c'] as const);
+                expect(joined).to.equal('a,bee,c');
+            });
+
+            it(`joins an empty array`, function () {
+                const joined: '' = joinConstArray([] as const);
+                expect(joined).to.equal('');
+            });
         });
     });
 }

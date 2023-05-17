@@ -158,6 +158,30 @@
     "prose--description-p3": "Reported error: {error}",
     "prose--description-p4": "Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback)."
   },
+  "dialog--linking-confirm-emoji": {
+    "action--need-help": "Need help?",
+    "label--title": "Confirm emojis on your mobile device"
+  },
+  "dialog--linking-error": {
+    "action--confirm": "Retry",
+    "label--title": "Linking Error",
+    "prose--description": "An error occurred during linking. Please try again."
+  },
+  "dialog--linking-scan": {
+    "action--need-help": "Need help?",
+    "label--connecting": "Connecting",
+    "label--step-1": "Step 1:",
+    "label--step-2": "Step 2:",
+    "label--title": "Link Your iOS Device",
+    "markup--intro": "This beta works together with Threema for iOS. Please note that some features are not yet available. <1>Learn more</1>",
+    "markup--step-1": "Open Threema on your mobile device, navigate to <1>Settings</1>, <2>Linked Device</2> and tap <3>Add Device</3>",
+    "markup--step-2": "Scan this QR Code with your mobile app"
+  },
+  "dialog--linking-success": {
+    "action--confirm": "Start using Threema",
+    "label--title": "Device Linked Successfully",
+    "markup--description": "You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off)."
+  },
   "dialog--message-details": {
     "label--created-date": "Created",
     "label--delivered-date": "Delivered",
