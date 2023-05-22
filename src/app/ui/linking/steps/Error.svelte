@@ -41,7 +41,8 @@
 <style lang="scss">
   @use 'component' as *;
 
-  h1 {
+  h1,
+  p {
     padding: 0;
     margin: 0;
   }
@@ -52,6 +53,7 @@
       'title'
       '.' rem(16px)
       'description'
+      '.' rem(8px)
       'technical-details'
       '.' rem(40px)
       'button';
@@ -72,8 +74,7 @@
 
     .technical-details {
       grid-area: technical-details;
-      @extend %font-small-400;
-      color: grey;
+      color: var(--t-text-e2-color);
       text-align: center;
       user-select: text;
     }

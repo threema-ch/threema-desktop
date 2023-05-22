@@ -25,8 +25,10 @@
       background-color: var(--c-modal-dialog-background-color, default);
       display: grid;
       width: rem(480px) + 2 * $padding;
+      max-width: calc(100vw - calc(2 * rem(20px)));
       max-height: calc(100vh - calc(2 * rem(20px)));
       padding: $padding;
+      overflow-y: auto;
     }
   }
 </style>

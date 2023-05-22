@@ -35,4 +35,3 @@ export type LinkingWizardState =
     | {readonly currentStep: 'syncing'}
     | {readonly currentStep: 'success-linked'}
     | LinkingWizardStateError;
-

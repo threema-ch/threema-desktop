@@ -26,14 +26,25 @@
         {$i18n.t('dialog--linking-success.label--title', 'Device Linked Successfully')}
       </h1>
       <p class="description">
-        <SubstitutableText
-          text={$i18n.t(
-            'dialog--linking-success.markup--description',
-            'You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).',
-          )}
-        >
-          <br slot="1" />
-        </SubstitutableText>
+        {#if import.meta.env.BUILD_VARIANT === 'work'}
+          <SubstitutableText
+            text={$i18n.t(
+              'dialog--linking-success.markup--description-work',
+              'You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off).',
+            )}
+          >
+            <br slot="1" />
+          </SubstitutableText>
+        {:else if import.meta.env.BUILD_VARIANT === 'consumer'}
+          <SubstitutableText
+            text={$i18n.t(
+              'dialog--linking-success.markup--description-consumer',
+              'You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).',
+            )}
+          >
+            <br slot="1" />
+          </SubstitutableText>
+        {/if}
       </p>
       <div class="button">
         <Button flavor="filled" on:click={() => dispatchEvent('confirm')}
@@ -47,7 +58,8 @@
 <style lang="scss">
   @use 'component' as *;
 
-  h1 {
+  h1,
+  p {
     padding: 0;
     margin: 0;
   }

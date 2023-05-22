@@ -6,7 +6,9 @@
   import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
   import Error from '~/app/ui/linking/steps/Error.svelte';
   import Scan from '~/app/ui/linking/steps/Scan.svelte';
+  import SetPassword from '~/app/ui/linking/steps/SetPassword.svelte';
   import SuccessLinked from '~/app/ui/linking/steps/SuccessLinked.svelte';
+  import Sync from '~/app/ui/linking/steps/Sync.svelte';
   import {LinkingState} from '~/common/dom/backend';
   import {unreachable} from '~/common/utils/assert';
 
@@ -31,8 +33,8 @@
   const PROCESS_STEPS: {[Key in LinkingWizardState['currentStep']]: typeof SvelteComponentDev} = {
     'scan': Scan,
     'confirm-emoji': ConfirmEmoji,
-    'set-password': Error, // TODO(DESK-1038)
-    'syncing': Error, // TODO(DESK-1038)
+    'set-password': SetPassword,
+    'syncing': Sync,
     'success-linked': SuccessLinked,
     'error': Error,
   };
@@ -82,7 +84,13 @@
 </script>
 
 <template>
-  <svelte:component this={wizardStepComponent} {linkingWizardState} />
+  <svelte:component
+    this={wizardStepComponent}
+    {linkingWizardState}
+    on:newpassword={({detail: password}) => {
+      // TODO(DESK-1038): Pass password to backend
+    }}
+  />
 </template>
 
 <style lang="scss">

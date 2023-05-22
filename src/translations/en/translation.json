@@ -178,10 +178,25 @@
     "markup--step-1": "Open Threema on your mobile device, navigate to <1>Settings</1>, <2>Linked Device</2> and tap <3>Add Device</3>",
     "markup--step-2": "Scan this QR Code with your mobile app"
   },
+  "dialog--linking-set-password": {
+    "action--confirm": "Next",
+    "action--need-help": "Need help?",
+    "error--password-equality": "Passwords do not match",
+    "error--password-length": "Please enter at least {n, plural, =1 {1 character} other {# characters}}",
+    "label--password": "Password",
+    "label--repeat-password": "Repeat Password",
+    "label--title": "Set Password",
+    "prose--intro": "The password will protect your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop."
+  },
   "dialog--linking-success": {
     "action--confirm": "Start using Threema",
     "label--title": "Device Linked Successfully",
-    "markup--description": "You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off)."
+    "markup--description-work": "You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off).",
+    "markup--description-consumer": "You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off)."
+  },
+  "dialog--linking-sync": {
+    "action--need-help": "Need help?",
+    "label--title": "Receiving Data"
   },
   "dialog--message-details": {
     "label--created-date": "Created",
