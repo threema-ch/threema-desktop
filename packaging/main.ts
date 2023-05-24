@@ -230,7 +230,7 @@ function printUsage(errormsg?: string): void {
     console.info(`Possible targets: ${TARGETS}`);
     console.info(`\nTarget args:`);
     console.info(`  source: [VERSION]`);
-    console.info(`  flatpak: [FLAVORS]`);
+    console.info(`  flatpak: [FLAVORS] [--generate-deps-only]`);
     console.info(`  dmg: [FLAVORS]`);
     console.info(`  dmgSigned: [FLAVORS]`);
     console.info(`  msix: [FLAVORS]`);
@@ -924,11 +924,17 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     for (const flavor of flavors) {
         appIds.push(determineAppRdn(flavor));
     }
-    log.minor(`Building apps: ${appIds.join(', ')}`);
+    const generateDepsOnly = args.includes('--generate-deps-only');
+    if (generateDepsOnly) {
+        args = args.filter((a) => a !== '--generate-deps-only');
+    }
+    log.minor(`Building apps: ${appIds.join(', ')} (generateDepsOnly=${generateDepsOnly})`);
 
     requireCommand('bash');
-    requireCommand('flatpak');
-    requireCommand('flatpak-builder');
+    if (!generateDepsOnly) {
+        requireCommand('flatpak');
+        requireCommand('flatpak-builder');
+    }
     requireCommand('python3');
 
     // Layer dependencies
@@ -951,6 +957,25 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     log.minor('Generating manifest files');
     execFileSync('bash', ['generate-manifest.sh'], options);
 
+    // Run flatpak-node-generator
+    log.minor('Generate source JSON');
+    execFileSync(
+        'python3',
+        [
+            '-m',
+            'flatpak_node_generator',
+            'npm',
+            '--electron-node-headers',
+            '../../package-lock.json',
+        ],
+        options,
+    );
+
+    if (generateDepsOnly) {
+        log.major('Done (generateDepsOnly=true)');
+        return;
+    }
+
     // Install dependencies
     let arch;
     switch (process.arch) {
@@ -968,20 +993,6 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
             options,
         );
     }
-
-    // Run flatpak-node-generator
-    log.minor('Generate source JSON');
-    execFileSync(
-        'python3',
-        [
-            '-m',
-            'flatpak_node_generator',
-            'npm',
-            '--electron-node-headers',
-            '../../package-lock.json',
-        ],
-        options,
-    );
 
     // Build
     log.minor('Build Flatpak into local repo');
