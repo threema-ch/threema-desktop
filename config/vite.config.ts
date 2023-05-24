@@ -78,6 +78,7 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.threema.ch/{prefix8}',
                 DIRECTORY_SERVER_URL: 'https://ds-apip.threema.ch',
                 BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}',
+                RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.threema.ch/{prefix8}',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
             };
         case 'sandbox':
@@ -92,6 +93,7 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.test.threema.ch/{prefix8}',
                 DIRECTORY_SERVER_URL: 'https://ds-apip.test.threema.ch',
                 BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.test.threema.ch/{prefix8}',
+                RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.test.threema.ch/{prefix8}',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
             };
         default:

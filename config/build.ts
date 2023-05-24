@@ -49,5 +49,6 @@ export interface BuildConfig {
     readonly MEDIATOR_SERVER_URL: string;
     readonly DIRECTORY_SERVER_URL: string;
     readonly BLOB_SERVER_URL: string;
+    readonly RENDEZVOUS_SERVER_URL: string;
     readonly UPDATE_SERVER_URL: string;
 }

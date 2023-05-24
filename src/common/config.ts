@@ -41,6 +41,11 @@ export interface Config {
     readonly BLOB_SERVER_URL: string;
 
     /**
+     * Rendezvous server URL.
+     */
+    readonly RENDEZVOUS_SERVER_URL: string;
+
+    /**
      * Update server URL.
      */
     readonly UPDATE_SERVER_URL: string;
@@ -98,6 +103,7 @@ export const CONFIG: Config = {
     MEDIATOR_RECONNECTION_DELAY_S: 5,
     DIRECTORY_SERVER_URL: import.meta.env.DIRECTORY_SERVER_URL,
     BLOB_SERVER_URL: import.meta.env.BLOB_SERVER_URL,
+    RENDEZVOUS_SERVER_URL: import.meta.env.RENDEZVOUS_SERVER_URL,
     UPDATE_SERVER_URL: import.meta.env.UPDATE_SERVER_URL,
     DEBUG_PACKET_CAPTURE_HISTORY_LENGTH: 100,
     KEY_STORAGE_PATH: import.meta.env.KEY_STORAGE_PATH,

@@ -199,6 +199,7 @@ export class TestConfig implements Config {
     public readonly MEDIATOR_RECONNECTION_DELAY_S = 1;
     public readonly DIRECTORY_SERVER_URL = UNCONNECTABLE_URL;
     public readonly BLOB_SERVER_URL = UNCONNECTABLE_URL;
+    public readonly RENDEZVOUS_SERVER_URL = UNCONNECTABLE_URL;
     public readonly UPDATE_SERVER_URL = UNCONNECTABLE_URL;
     public readonly DEBUG_PACKET_CAPTURE_HISTORY_LENGTH = 100;
     public readonly KEY_STORAGE_PATH = ['/tmp/desktop-mocha-tests'];

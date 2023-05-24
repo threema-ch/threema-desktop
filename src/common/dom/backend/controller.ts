@@ -154,7 +154,7 @@ export class BackendController {
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
         showLinkingErrorDialog: (error: SafeError) => Promise<void>,
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
-        const {endpoint, logging} = services;
+        const {config, endpoint, logging} = services;
         const log = logging.logger('backend-controller');
 
         function assembleBackendInit(keyStoragePassword: string | undefined): BackendInit {
@@ -271,17 +271,17 @@ export class BackendController {
 
                 // Generate rendezvous setup with all information needed to show the QR code
                 const rendezvousPath = bytesToHex(services.crypto.randomBytes(new Uint8Array(32)));
+                const url = config.RENDEZVOUS_SERVER_URL.replaceAll(
+                    '{prefix4}',
+                    rendezvousPath.slice(0, 1),
+                ).replaceAll('{prefix8}', rendezvousPath.slice(0, 2));
                 const setup: RendezvousProtocolSetup = {
                     abort,
                     role: 'initiator',
                     ak: randomRendezvousAuthenticationKey(services.crypto),
                     relayedWebSocket: {
                         pathId: 1,
-                        // TODO(DESK-1037): Move URL to config
-                        url: `wss://rendezvous-${rendezvousPath.slice(
-                            0,
-                            1,
-                        )}.test.threema.ch/${rendezvousPath.slice(0, 2)}/${rendezvousPath}`,
+                        url: `${url}/${rendezvousPath}`,
                     },
                 };
 
