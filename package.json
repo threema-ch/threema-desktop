@@ -40,7 +40,7 @@
     "lint:prettier": "prettier -c \"**/*.{css,html,js,json,md,scss,svelte,ts,yml}\"",
     "lint:prettier:fix": "prettier --write \"**/*.{css,html,js,json,md,scss,svelte,ts,yml}\"",
     "lint:svelte": "svelte-check --fail-on-warnings --ignore \"libs\" --compiler-warnings \"a11y-click-events-have-key-events:ignore\"",
-    "package": "npm run package --prefix ./packaging",
+    "package": "npm run package --prefix ./packaging --",
     "protobuf:generate": "tools/generate-protobuf.sh",
     "safe-enums:generate": "npm run safe-enums:generate:module && npm run safe-enums:generate:prettify",
     "safe-enums:generate:module": "tools/generate-safe-enums.cjs < src/enum/schema.ts > src/common/enum.ts",

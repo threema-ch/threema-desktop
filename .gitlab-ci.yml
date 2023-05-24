@@ -62,6 +62,26 @@ dist:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     - npm run "dist:consumer-sandbox"
 
+flatpak-node-generator:
+  stage: build
+  needs: []
+  before_script:
+    # Base dependencies
+    - apt-get update && apt-get install -y python3-aiohttp
+  script:
+    # Install build script deps
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci
+    # Run flatpak-node-generator
+    - npm run package -- flatpak work-sandbox --generate-deps-only
+  cache:
+    # npm cache
+    - key:
+        files:
+          - package-lock.json
+      paths:
+        - .npm/
+        - node_modules/
+
 lint:
   stage: test
   needs: []
