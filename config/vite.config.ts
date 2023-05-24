@@ -75,9 +75,9 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                     0x51, 0xc6, 0x61, 0xe4, 0xc0, 0xd8, 0xc9, 0x09,
                 ],
                 // TODO(DESK-821): Implement support for alternative server key
-                MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.threema.ch/{prefix8}', // TODO(DESK-763): Production server
+                MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.threema.ch/{prefix8}',
                 DIRECTORY_SERVER_URL: 'https://ds-apip.threema.ch',
-                BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}', // TODO(DESK-763): Production server
+                BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
             };
         case 'sandbox':
@@ -89,9 +89,9 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                     0x81, 0x1d, 0xa1, 0x16, 0xa5, 0x43, 0xce, 0x43,
                     0xaa, 0x26, 0x87, 0xd1, 0x9f, 0x20, 0xaf, 0x3c,
                 ],
-                MEDIATOR_SERVER_URL: 'wss://mediator-test.threema.ch',
+                MEDIATOR_SERVER_URL: 'wss://mediator-{prefix4}.test.threema.ch/{prefix8}',
                 DIRECTORY_SERVER_URL: 'https://ds-apip.test.threema.ch',
-                BLOB_SERVER_URL: 'https://blob-mirror-test.threema.ch',
+                BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.test.threema.ch/{prefix8}',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
             };
         default:
