@@ -9,6 +9,7 @@ import {type AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
 import Bootstrap from '~/app/ui/Bootstrap.svelte';
 import {type BootstrapParams} from '~/app/ui/bootstrap/process-step';
+import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
@@ -134,21 +135,6 @@ async function updateCheck(
 }
 
 export async function main(appState: AppState): Promise<App> {
-    // Set up logging
-    let logging = TagLogger.styled(CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
-    if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-        const fileLogger = new RemoteFileLogger(window.app.logToFile);
-        logging = TeeLogger.factory([logging, TagLogger.unstyled(fileLogger, 'app')]);
-    }
-    const log = logging.logger('main');
-
-    // Initialize globals
-    globals.set({
-        // Note: It is important that this logger is initialized before we initialize the backend,
-        // because the logger is used in components that are part of the linking process.
-        uiLogging: logging,
-    });
-
     // Promise that resolves when the 'DOMContentLoaded' event happens
     const domContentLoaded = new Promise<void>((resolve) => {
         document.addEventListener('DOMContentLoaded', () => {
@@ -157,7 +143,31 @@ export async function main(appState: AppState): Promise<App> {
         });
     });
 
+    // Set up logging
+    let logging = TagLogger.styled(CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
+    if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
+        const fileLogger = new RemoteFileLogger(window.app.logToFile);
+        logging = TeeLogger.factory([logging, TagLogger.unstyled(fileLogger, 'app')]);
+    }
+    const log = logging.logger('main');
+
+    // Get system info
     const systemInfo = await window.app.getSystemInfo();
+
+    // Instantiate global hotkeys manager
+    const hotkeyManager = new GlobalHotkeyManager(logging.logger('hotkey-manager'), systemInfo, {
+        setOnKeyDownHandler: (handler: (event: KeyboardEvent) => void) => {
+            window.addEventListener('keydown', handler);
+        },
+    });
+
+    // Initialize globals
+    globals.set({
+        // Note: It is important that this logger is initialized before we initialize the backend,
+        // because the logger is used in components that are part of the linking process.
+        uiLogging: logging,
+        hotkeyManager,
+    });
 
     const elements: Elements = {
         splash: unwrap(document.body.querySelector<HTMLElement>('#splash')),

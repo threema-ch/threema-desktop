@@ -1,3 +1,4 @@
+import {type GlobalHotkeyManager} from '~/app/ui/hotkey';
 import {type LoggerFactory} from '~/common/logging';
 import {Delayed} from '~/common/utils/delayed';
 
@@ -13,6 +14,7 @@ export interface Globals {
      * easily accessible from UI components.
      */
     readonly uiLogging: LoggerFactory<Lowercase<`ui.component.${string}`>>;
+    readonly hotkeyManager: GlobalHotkeyManager;
 }
 
 export const globals: Delayed<Globals> = Delayed.simple(
