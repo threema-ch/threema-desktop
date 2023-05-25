@@ -1,5 +1,8 @@
 <script lang="ts">
+  import {onDestroy, onMount} from 'svelte';
+
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
@@ -14,6 +17,8 @@
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import {WorkVerificationLevel} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
+
+  const hotkeyManager = globals.unwrap().hotkeyManager;
 
   export let services: AppServices;
   const {router, backend} = services;
@@ -85,6 +90,18 @@
         unreachable(activeTab);
     }
   }
+
+  function handleHotkeyControlF(): void {
+    searchInput.select();
+  }
+
+  onMount(() => {
+    hotkeyManager.registerHotkey({control: true, code: 'KeyF'}, handleHotkeyControlF);
+  });
+
+  onDestroy(() => {
+    hotkeyManager.unregisterHotkey(handleHotkeyControlF);
+  });
 </script>
 
 <template>

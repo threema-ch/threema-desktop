@@ -82,7 +82,7 @@
 
 <template>
   {#if $group !== undefined && profilePicture !== undefined}
-    <ModalWrapper>
+    <ModalWrapper visible={true}>
       <ModalDialog
         visible={true}
         on:confirm={saveGroupDetails}

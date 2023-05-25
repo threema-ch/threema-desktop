@@ -1,15 +1,18 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
+  import {createEventDispatcher, onDestroy, onMount} from 'svelte';
   import {type Readable} from 'svelte/store';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {globals} from '~/app/globals';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
   import {type u53} from '~/common/types';
+
+  const hotkeyManager = globals.unwrap().hotkeyManager;
 
   /**
    * The maximum allowed byte length of the message text.
@@ -41,7 +44,8 @@
 
   // Emoji picker
   // eslint-disable-next-line @typescript-eslint/ban-types
-  let emojiPickerWrapper: Popover | null;
+  let emojiPickerPopover: Popover | null;
+  let emojiPicker: EmojiPicker | undefined;
 
   /**
    * Insert more text content into the compose area
@@ -86,7 +90,7 @@
 
     dispatch('sendTextMessage', composeArea.getText());
     composeArea.clearText();
-    emojiPickerWrapper?.close();
+    emojiPickerPopover?.close();
   }
 
   function handleTextChange(event: CustomEvent<u53>): void {
@@ -95,6 +99,18 @@
 
   $: isTextByteLengthVisible = composeAreaTextByteLength >= MAX_TEXT_BYTE_LENGTH - 200;
   $: isMaxTextByteLengthExceeded = composeAreaTextByteLength > MAX_TEXT_BYTE_LENGTH;
+
+  function handleHotkeyControlE(): void {
+    emojiPickerPopover?.toggle();
+  }
+
+  onMount(() => {
+    hotkeyManager.registerHotkey({control: true, code: 'KeyE'}, handleHotkeyControlE);
+  });
+
+  onDestroy(() => {
+    hotkeyManager.unregisterHotkey(handleHotkeyControlE);
+  });
 </script>
 
 <template>
@@ -116,7 +132,7 @@
       on:submit={sendTextMessage}
       on:filePaste
       on:heightDidChange={() => {
-        emojiPickerWrapper?.forceReposition();
+        emojiPickerPopover?.forceReposition();
       }}
       placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
     />
@@ -127,7 +143,7 @@
         </div>
       {/if}
       <Popover
-        bind:this={emojiPickerWrapper}
+        bind:this={emojiPickerPopover}
         reference={composeBar}
         anchorPoints={{
           reference: {
@@ -145,6 +161,7 @@
         </IconButton>
 
         <EmojiPicker
+          bind:this={emojiPicker}
           slot="popover"
           on:insertEmoji={(event) => composeArea.insertText(event.detail)}
         />

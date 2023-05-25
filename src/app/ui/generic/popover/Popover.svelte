@@ -1,6 +1,6 @@
 <!--
   @component
-  An element that sticks to another element (the _reference_), 
+  An element that sticks to another element (the _reference_),
   while ensuring that it doesn't overflow a _container_ (or the window). It handles:
 
   - Opening and closing.
@@ -132,6 +132,17 @@
   }
 
   /**
+   * Open or close the `popover`, depending on its previous state.
+   */
+  export function toggle(): void {
+    if (isVisible) {
+      close();
+    } else {
+      open();
+    }
+  }
+
+  /**
    * Force recalculation of the popup's positioning, and update.
    */
   export function forceReposition(): void {
@@ -167,14 +178,11 @@
   function handleTriggerClick(event: MouseEvent): void {
     dispatch('clicktrigger', event);
 
-    if (!isVisible) {
-      open();
+    if (triggerBehavior === 'open' && isVisible) {
       return;
     }
 
-    if (triggerBehavior === 'toggle') {
-      close();
-    }
+    toggle();
   }
 
   function handleOutsideClick(event: MouseEvent): void {

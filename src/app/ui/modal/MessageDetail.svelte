@@ -27,7 +27,7 @@
 </script>
 
 <template>
-  <ModalWrapper>
+  <ModalWrapper {visible}>
     <ModalDialog
       bind:visible
       on:confirm

@@ -3,14 +3,16 @@
   The modal window used for sending files, images and other media.
 -->
 <script lang="ts">
-  import {createEventDispatcher, onMount} from 'svelte';
+  import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {globals} from '~/app/globals';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {MAX_CAPTION_BYTE_LENGTH, type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
@@ -24,7 +26,8 @@
   import {WritableStore} from '~/common/utils/store';
   import {getUtf8ByteLength} from '~/common/utils/string';
   import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
-  import Popover from '~/app/ui/generic/popover/Popover.svelte';
+
+  const hotkeyManager = globals.unwrap().hotkeyManager;
 
   export let title: string;
   export let mediaFiles: MediaFile[];
@@ -35,6 +38,7 @@
    */
   export let moreFilesAttachable = true;
 
+  let emojiPickerPopover: Popover | undefined;
   let confirmCloseDialogVisible = false;
   let captionComposeArea: Caption;
   let activeMediaFile: MediaFile | undefined = mediaFiles[0];
@@ -192,8 +196,17 @@
     currentCaptionTextByteLength > MAX_CAPTION_BYTE_LENGTH;
   $: isSendingDisabled = isMaxTextByteLengthExceeded || isAnyCaptionTooLong === true;
 
+  function handleHotkeyControlE(): void {
+    emojiPickerPopover?.toggle();
+  }
+
   onMount(() => {
     captionComposeArea.focus();
+    hotkeyManager.registerHotkey({control: true, code: 'KeyE'}, handleHotkeyControlE);
+  });
+
+  onDestroy(() => {
+    hotkeyManager.unregisterHotkey(handleHotkeyControlE);
   });
 </script>
 
@@ -207,7 +220,7 @@
 />
 
 <template>
-  <ModalWrapper>
+  <ModalWrapper {visible} suspendHotkeysWhenVisible={false}>
     <DropZone
       bind:zoneHover
       on:fileDrop={(event) => {
@@ -243,6 +256,7 @@
               {/if}
             </div>
             <Popover
+              bind:this={emojiPickerPopover}
               anchorPoints={{
                 reference: {
                   horizontal: 'right',

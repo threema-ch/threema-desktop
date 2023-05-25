@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {onDestroy, onMount} from 'svelte';
+
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
@@ -11,6 +13,7 @@
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-nav');
+  const hotkeyManager = globals.unwrap().hotkeyManager;
 
   export let services: AppServices;
   const {
@@ -27,6 +30,20 @@
     .catch((error) => {
       log.error('Loading profile view model failed', error);
     });
+
+  let searchInput: SearchInput;
+
+  function handleHotkeyControlF(): void {
+    searchInput.select();
+  }
+
+  onMount(() => {
+    hotkeyManager.registerHotkey({control: true, code: 'KeyF'}, handleHotkeyControlF);
+  });
+
+  onDestroy(() => {
+    hotkeyManager.unregisterHotkey(handleHotkeyControlF);
+  });
 </script>
 
 <template>
@@ -50,6 +67,7 @@
     </div>
     <div class="search">
       <SearchInput
+        bind:this={searchInput}
         placeholder={$i18n.t('messaging.label--search-conversation', 'Find Chat')}
         bind:value={$conversationPreviewListFilter}
       />
