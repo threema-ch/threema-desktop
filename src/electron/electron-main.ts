@@ -20,6 +20,7 @@ import {
 } from '~/common/logging';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
+import {createTlsCertificateVerifier} from '~/common/tls-cert-verifier';
 import {type u53} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 
@@ -587,6 +588,11 @@ function main(
         const session = parameters['persist-profile']
             ? electron.session.defaultSession
             : electron.session.fromPartition(`volatile-${parameters.profile}`);
+
+        session.setCertificateVerifyProc(
+            createTlsCertificateVerifier(import.meta.env.TLS_CERTIFICATE_PINS, log),
+        );
+
         window = new electron.BrowserWindow({
             title: import.meta.env.APP_NAME,
             icon: process.platform === 'linux' ? ABOUT_PANEL_OPTIONS.iconPath : undefined,

@@ -328,3 +328,28 @@ export type StrictPartial<TPartial, T extends TPartial> = TPartial extends objec
               : never;
       }
     : TPartial;
+
+/**
+ * The components of a string split by a delimiter, as a tuple. This corresponds to what the
+ * `String.prototype.split()` function would return.
+ *
+ * @param Str - The string to split
+ * @param Delimiter - The delimiter to split with
+ */
+export type Split<Str extends string, Delimiter extends string> = string extends Str
+    ? string[]
+    : Str extends ''
+    ? // eslint-disable-next-line no-restricted-syntax
+      ['']
+    : Str extends `${infer T}${Delimiter}${infer U}`
+    ? // eslint-disable-next-line no-restricted-syntax
+      [head: T, ...substr: Split<U, Delimiter>]
+    : // eslint-disable-next-line no-restricted-syntax
+      [Str];
+
+/**
+ * The length of a tuple.
+ *
+ * @param T - The tuple to extract the length from
+ */
+export type Length<T extends readonly unknown[]> = T['length'];

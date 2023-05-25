@@ -152,6 +152,38 @@ function makeConfig(
         DATABASE_PATH: ['data', 'threema.sqlite'],
         ARGON2_MIN_MEMORY_BYTES: env.entry === 'mocha-tests' ? 100 * KiB : 128 * MiB,
 
+        // Public-key pins (HPKP)
+        TLS_CERTIFICATE_PINS: [
+            {
+                domain: '*.threema.ch',
+                fingerprints: [
+                    '8kTK9HP1KHIP0sn6T2AFH3Bq+qq3wn2i/OJSMjewpFw=',
+                    'KKBJHJn1PQSdNTmoAfhxqWTO61r8O8bPi/JeGtP/6gg=',
+                    'h2gHawxPZyMCiZSkJN0dQ4RsDxowVuTmuiNQyjeU+Sk=',
+                    'HXqz8rMr6nBDdUX3CdyIwln8ym3qFUBwv4QGyMN2uEg=',
+                    '2Vpy8qUQCqc2+Lg6BgRO8G6e6vh7NmvVHTljfwP/Pfk=',
+                    'vGQZ8hm2h+km+q7rnJ7kF9S17BwSY0rbhwjz6nIupf0=',
+                    'jsQHAHKQ2oOf3rvMn9GJVIKslkhLpODGOMPSxgLeIyo=',
+                ],
+            },
+            {
+                domain: '*.test.threema.ch',
+                fingerprints: [
+                    'Dvvb0s1E8Y2tG67GoyzIkmJNAebvOqQjz4TnPMq3yhI=',
+                    'bmsGGaIGEs1HWAUIE082NSPYTURvChScDmE7PjL+5RQ=',
+                ],
+            },
+            {
+                domain: '*.sfu.threema.ch',
+                fingerprints: [
+                    'useMPV2qPBEgxVucMPuqexG27L64zFAksHh9BehZpY0=',
+                    '88JttF0tDWrGT6g8H9uEZ0T8xosvZtZwWlsZuD4NvHA=',
+                    'F82gDLif130AsVx454ZsMxPGl9EpzB5LqY39CzVKWDQ=',
+                    'Jo4Re5X+mksn/Ankgrnov07caZwkkT8NezJMQf1i8cI=',
+                ],
+            },
+        ],
+
         // Verbose debug logging
         VERBOSE_LOGGING: {
             DB: false,

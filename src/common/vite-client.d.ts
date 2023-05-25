@@ -203,6 +203,11 @@ interface ImportMetaEnv extends BuildConfig {
     readonly DATABASE_PATH: readonly string[] | ':memory:';
     readonly ARGON2_MIN_MEMORY_BYTES: import('./types').u53;
 
+    // Public-key pins (HPKP)
+    readonly TLS_CERTIFICATE_PINS: import('./tls-cert-verifier').DomainCertificatePin<
+        '*.threema.ch' | '*.test.threema.ch' | '*.sfu.threema.ch'
+    >[];
+
     // Verbose debug logging
     readonly VERBOSE_LOGGING: {
         readonly DB: boolean;
