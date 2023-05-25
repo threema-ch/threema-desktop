@@ -1,4 +1,3 @@
-import libthreemaInit, * as libthreema from 'libthreema';
 import Long from 'long';
 import * as $protobuf from 'protobufjs/minimal';
 
@@ -21,7 +20,7 @@ export {};
  * This is the common entrypoint for the backend worker, invoked by the app
  * via the specific 'electron' loader entrypoint.
  */
-export async function main(config: Config, factories: FactoriesForBackend): Promise<void> {
+export function main(config: Config, factories: FactoriesForBackend): void {
     const logging = factories.logging('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);
     const log = logging.logger('main');
 
@@ -32,10 +31,6 @@ export async function main(config: Config, factories: FactoriesForBackend): Prom
     $protobuf.util.Long = Long;
     $protobuf.configure();
     log.debug('Initialized protobufjs');
-
-    // Initialize libthreema
-    await libthreemaInit();
-    libthreema.initLogging();
 
     const endpoint = createEndpointService({config, logging});
     const create = Object.assign(
