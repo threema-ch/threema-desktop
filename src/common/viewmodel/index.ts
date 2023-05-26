@@ -50,11 +50,14 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly conversationMessageSet: (
         conversation: ConversationModelStore,
     ) => ConversationMessageSetStore;
-    readonly conversationMessage: <THint extends AnyMessageModelStore | undefined>(
+    readonly conversationMessage: (
+        conversation: ConversationModelStore,
+        messageStore: AnyMessageModelStore,
+    ) => ConversationMessage;
+    readonly conversationMessageById: (
         conversation: ConversationModelStore,
         messageId: MessageId,
-        messageStoreHint: THint,
-    ) => THint extends undefined ? ConversationMessage | undefined : ConversationMessage;
+    ) => ConversationMessage | undefined;
 
     readonly debugPanel: () => DebugPanelViewModel;
     readonly contactListItems: () => ContactListItemSetStore;
@@ -75,7 +78,7 @@ export class ViewModelRepository implements IViewModelRepository {
 
     public conversationPreviews(): ConversationPreviewSetStore {
         return this._cache.conversationPreview.derefOrCreate(() =>
-            getConversationPreviewSetStore(this._services),
+            getConversationPreviewSetStore(this._services, this),
         );
     }
 
@@ -97,19 +100,10 @@ export class ViewModelRepository implements IViewModelRepository {
         );
     }
 
-    public conversationMessage<THint extends AnyMessageModelStore | undefined>(
+    public conversationMessage(
         conversation: ConversationModelStore,
-        messageId: MessageId,
-        messageStoreHint: THint,
-    ): THint extends undefined ? ConversationMessage | undefined : ConversationMessage {
-        const messageStore =
-            messageStoreHint ?? conversation.get().controller.getMessage(messageId);
-        if (messageStore === undefined) {
-            return undefined as THint extends undefined
-                ? ConversationMessage | undefined
-                : ConversationMessage;
-        }
-
+        messageStore: AnyMessageModelStore,
+    ): ConversationMessage {
         return this._cache.conversationMessage
             .getOrCreate(
                 conversation,
@@ -118,6 +112,17 @@ export class ViewModelRepository implements IViewModelRepository {
             .getOrCreate(messageStore, () =>
                 getConversationMessage(this._services, messageStore, conversation),
             );
+    }
+
+    public conversationMessageById(
+        conversation: ConversationModelStore,
+        messageId: MessageId,
+    ): ConversationMessage | undefined {
+        const messageStore = conversation.get().controller.getMessage(messageId);
+        if (messageStore === undefined) {
+            return undefined;
+        }
+        return this.conversationMessage(conversation, messageStore);
     }
 
     public contactListItems(): ContactListItemSetStore {

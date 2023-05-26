@@ -5,7 +5,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
-  import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
+  import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
@@ -147,9 +147,11 @@
                           title: showFullNameAndNickname(transformedContact)
                             ? transformedContact.fullName
                             : transformedContact.displayName,
-                          subtitle: showFullNameAndNickname(transformedContact)
-                            ? transformedContact.nickname
-                            : undefined,
+                          subtitle: {
+                            text: showFullNameAndNickname(transformedContact)
+                              ? transformedContact.nickname
+                              : undefined,
+                          },
                           isInactive: transformedContact.activityState === 'inactive',
                         }}
                       >
@@ -160,10 +162,7 @@
                           />
                         </div>
                         <div class="identity" slot="additional-bottom">
-                          <HighlightableText
-                            text={transformedContact.identity}
-                            substringToHighlight={filter}
-                          />
+                          <ProcessedText text={transformedContact.identity} highlights={filter} />
                         </div>
                       </DeprecatedReceiver>
                     </div>

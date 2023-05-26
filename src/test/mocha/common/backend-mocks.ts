@@ -165,7 +165,10 @@ import {
     getContactListItemStore,
 } from '~/common/viewmodel/contact-list-item';
 import {type ConversationViewModel} from '~/common/viewmodel/conversation';
-import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
+import {
+    type ConversationMessage,
+    getConversationMessage,
+} from '~/common/viewmodel/conversation-message';
 import {
     type ConversationMessageSetStore,
     getConversationMessageSetStore,
@@ -455,7 +458,7 @@ export class TestViewModel implements IViewModelRepository {
     public constructor(private readonly _services: Omit<ServicesForBackend, 'viewModel'>) {}
 
     public conversationPreviews(): ConversationPreviewSetStore {
-        return getConversationPreviewSetStore(this._services);
+        return getConversationPreviewSetStore(this._services, this);
     }
 
     public conversation(receiver: DbReceiverLookup): ConversationViewModel | undefined {
@@ -468,14 +471,18 @@ export class TestViewModel implements IViewModelRepository {
         return getConversationMessageSetStore(this, conversation);
     }
 
-    public conversationMessage<THint extends AnyMessageModelStore | undefined>(
+    public conversationMessage(
+        conversation: ConversationModelStore,
+        messageStore: AnyMessageModelStore,
+    ): ConversationMessage {
+        return getConversationMessage(this._services, messageStore, conversation);
+    }
+
+    public conversationMessageById(
         conversation: ConversationModelStore,
         messageId: MessageId,
-        messageStoreHint: THint,
-    ): THint extends undefined ? ConversationMessage | undefined : ConversationMessage {
-        return undefined as THint extends undefined
-            ? ConversationMessage | undefined
-            : ConversationMessage;
+    ): ConversationMessage | undefined {
+        return undefined;
     }
 
     public contactListItems(): ContactListItemSetStore {

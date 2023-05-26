@@ -20,6 +20,6 @@ export function getConversationMessageSetStore(
     const messageSetStore = conversationModel.controller.getAllMessages();
 
     return new LocalDerivedSetStore(messageSetStore, (store) =>
-        viewModelRepository.conversationMessage(conversation, store.get().view.id, store),
+        viewModelRepository.conversationMessage(conversation, store),
     );
 }

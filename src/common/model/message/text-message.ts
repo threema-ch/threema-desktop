@@ -7,16 +7,13 @@ import {
     type ConversationControllerHandle,
     type DirectedMessageFor,
     type IInboundTextMessageModelStore,
-    type InboundConversationPreviewMessageView,
     type InboundTextMessage,
     type InboundTextMessageController,
     type InboundTextMessageModel,
     type IOutboundTextMessageModelStore,
-    type OutboundConversationPreviewMessageView,
     type OutboundTextMessage,
     type OutboundTextMessageController,
     type OutboundTextMessageModel,
-    PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type TextMessageViewFragment,
     type UidOf,
@@ -83,29 +80,13 @@ export function getTextMessageModelStore<TModelStore extends AnyTextMessageModel
     }
 }
 
-function getPreviewText({text}: InboundTextMessage['view'] | OutboundTextMessage['view']): string {
-    return text.slice(0, PREVIEW_MESSAGE_MAX_TEXT_LENGTH);
-}
-
 export class InboundTextMessageModelController
     extends InboundBaseMessageModelController<InboundTextMessage['view']>
-    implements InboundTextMessageController
-{
-    /** @inheritdoc */
-    protected _preview(): InboundConversationPreviewMessageView['text'] {
-        return this.meta.run((handle) => getPreviewText(handle.view()));
-    }
-}
+    implements InboundTextMessageController {}
 
 export class OutboundTextMessageModelController
     extends OutboundBaseMessageModelController<OutboundTextMessage['view']>
-    implements OutboundTextMessageController
-{
-    /** @inheritdoc */
-    protected _preview(): OutboundConversationPreviewMessageView['text'] {
-        return this.meta.run((handle) => getPreviewText(handle.view()));
-    }
-}
+    implements OutboundTextMessageController {}
 
 export class InboundTextMessageModelStore
     extends LocalModelStore<InboundTextMessageModel>

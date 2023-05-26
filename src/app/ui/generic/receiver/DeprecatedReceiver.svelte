@@ -18,15 +18,15 @@
    */
   export let selected = false;
   /**
-   * Currently filtered value, which will be highlighted
+   * Currently filtered value, which will be highlighted.
    */
   export let filter: string | undefined = undefined;
   /**
-   * Profile picture data bag
+   * Profile picture data bag.
    */
   export let profilePicture: ReceiverProfilePicture;
   /**
-   * Title data bag
+   * Title data bag.
    */
   export let title: ReceiverTitle;
 </script>
@@ -102,6 +102,24 @@
         'checkbox profile-picture name  additional-top     ' rem(20px)
         'checkbox profile-picture name  additional-bottom  ' rem(20px)
         / #{$-checkbox-size} #{$-profile-picture-size} 1fr auto;
+    }
+
+    :global(.md-bold) {
+      @extend %markup-bold;
+    }
+
+    :global(.md-italic) {
+      @extend %markup-italic;
+    }
+
+    :global(.md-strike) {
+      @extend %markup-strike;
+    }
+
+    :global(.mention) {
+      text-decoration: none;
+      color: inherit;
+      pointer-events: none;
     }
   }
 </style>

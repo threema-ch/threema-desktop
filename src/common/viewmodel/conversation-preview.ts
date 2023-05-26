@@ -1,7 +1,6 @@
 import {type DbReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {
-    type AnyConversationPreviewMessageView,
     type AnyReceiverStore,
     type Contact,
     type Conversation,
@@ -16,7 +15,8 @@ import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
-import {type ServicesForViewModel} from '~/common/viewmodel';
+import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
+import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
 
 export type ConversationPreviewSetStore = LocalDerivedSetStore<
     LocalSetStore<LocalModelStore<Conversation>>,
@@ -28,12 +28,13 @@ export type ConversationPreviewSetStore = LocalDerivedSetStore<
  */
 export function getConversationPreviewSetStore(
     services: ServicesForViewModel,
+    viewModelRepository: IViewModelRepository,
 ): ConversationPreviewSetStore {
     const {model} = services;
     const conversationSetStore = model.conversations.getAll();
 
     return new LocalDerivedSetStore(conversationSetStore, (conversationStore) =>
-        getConversationPreview(services, conversationStore),
+        getConversationPreview(services, viewModelRepository, conversationStore),
     );
 }
 
@@ -48,6 +49,7 @@ export type ConversationPreview = {
  */
 function getConversationPreview(
     services: ServicesForViewModel,
+    viewModelRepository: IViewModelRepository,
     conversationStore: LocalModelStore<Conversation>,
 ): ConversationPreview {
     const {endpoint} = services;
@@ -59,7 +61,7 @@ function getConversationPreview(
         conversationStore,
         receiver,
         profilePicture,
-        viewModel: getViewModel(services, conversationStore),
+        viewModel: getViewModel(services, viewModelRepository, conversationStore),
     });
 }
 
@@ -67,26 +69,35 @@ export type ConversationPreviewViewModel = LocalStore<ConversationPreviewItem>;
 
 export type ConversationPreviewItem = {
     readonly receiver: ContactListItem | GroupListItem;
-    readonly lastMessage: LocalStore<AnyConversationPreviewMessageView | undefined>;
     readonly receiverLookup: DbReceiverLookup;
+    readonly lastMessage: ConversationMessage | undefined;
 } & ConversationView &
     PropertiesMarked;
 
 function getViewModel(
-    {endpoint}: ServicesForViewModel,
+    {endpoint, model}: ServicesForViewModel,
+    viewModelRepository: IViewModelRepository,
     conversationStore: LocalModelStore<Conversation>,
 ): ConversationPreviewViewModel {
-    return derive(conversationStore, (conversation, unwrapAndSubscribe) => {
+    return derive(conversationStore, (conversation, getAndSubscribe) => {
         const receiver = conversation.controller.receiver();
+        const lastMessageStore = getAndSubscribe(conversation.controller.lastMessageStore());
+        let lastMessage = undefined;
+        if (lastMessageStore !== undefined) {
+            lastMessage = viewModelRepository.conversationMessage(
+                conversationStore,
+                lastMessageStore,
+            );
+        }
         const commonProperties = {
-            lastMessage: conversation.controller.preview(),
             ...conversation.view,
+            lastMessage,
         };
 
         let item;
         switch (receiver.type) {
             case ReceiverType.CONTACT: {
-                const contact = unwrapAndSubscribe(receiver);
+                const contact = getAndSubscribe(receiver);
                 item = {
                     ...commonProperties,
                     receiver: deriveContactListItem(contact),
@@ -95,7 +106,7 @@ function getViewModel(
                 break;
             }
             case ReceiverType.GROUP: {
-                const group = unwrapAndSubscribe(receiver);
+                const group = getAndSubscribe(receiver);
                 item = {
                     ...commonProperties,
                     receiver: deriveGroupListItem(group),

@@ -1,10 +1,11 @@
 <script lang="ts">
-  import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
+  import {type ReceiverTitle} from '~/app/ui/generic/receiver';
+  import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import {i18n} from '~/app/ui/i18n';
 
   export let title: string;
   export let titleLineThrough = false;
-  export let subtitle: string | undefined = undefined;
+  export let subtitle: ReceiverTitle['subtitle'] = {text: undefined};
   export let filter: string | undefined = undefined;
 
   export let isInactive = false;
@@ -19,7 +20,7 @@
   <div class="name">
     {#if subtitle !== undefined || hasBadge}
       <div class="title" class:line-through={titleLineThrough}>
-        <HighlightableText text={title} substringToHighlight={filter} />
+        <ProcessedText text={title} highlights={filter} />
       </div>
       <div class="subtitle">
         {#if isInactive}
@@ -35,12 +36,17 @@
           <span class="draft">{$i18n.t('messaging.label--prefix-draft')}</span>
         {/if}
         {#if subtitle !== undefined}
-          <HighlightableText text={subtitle} substringToHighlight={filter} />
+          <ProcessedText
+            text={subtitle instanceof Object ? subtitle.text ?? '' : subtitle}
+            mentions={subtitle instanceof Object ? subtitle.mentions ?? [] : []}
+            highlights={filter}
+            shouldParseMarkup={true}
+          />
         {/if}
       </div>
     {:else}
       <div class="display-title" class:line-through={titleLineThrough}>
-        <HighlightableText text={title} substringToHighlight={filter} />
+        <ProcessedText text={title} highlights={filter} />
       </div>
     {/if}
   </div>

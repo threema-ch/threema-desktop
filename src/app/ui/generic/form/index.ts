@@ -6,6 +6,7 @@ import {type Conversation, type RemoteModelFor} from '~/common/model';
 import {type Mutable, type u53} from '~/common/types';
 import {type Remote} from '~/common/utils/endpoint';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
+import {escapeRegExp} from '~/common/utils/regex';
 import {type IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
@@ -256,6 +257,12 @@ export function getTimeIsoString(date: Date): string {
     return getDateTimeIsoString(date).split(' ')[1];
 }
 
+/**
+ * Returns an HTML tag (as a string) that can be used to render a {@link Mention}.
+ *
+ * @param mention The mention to generate HTML code for.
+ * @returns A string containing a HTML tag which represents the supplied `Mention`.
+ */
 export function getMentionHtml(mention: Mention): string {
     if (mention.type === 'all') {
         return `<span class="mention all">@All</span>`;
@@ -271,25 +278,76 @@ export function getMentionHtml(mention: Mention): string {
     return `<a href="${href}" draggable="false" class="mention">${mentionDisplay}</a>`;
 }
 
+export function getHighlightHtml(highlight: string): string {
+    return `<span class="parsed-text-highlight">${highlight}</span>`;
+}
+
 /**
- * Default Textprocessor for text in messages
+ * Parses some text and replaces predefined markup indicators with HTML tags:
+ * - `*some words*` to `<span class="md-bold">some words</span>`.
+ * - `_some words_` to `<span class="md-italic">some words</span>`.
+ * - `~some words~` to `<span class="md-strike">some words</span>`.
+ *
+ * @param text The text to parse.
+ * @returns The text containing the markup replaced with HTML.
  */
-export function textProcessor(text: string | undefined, mentions: Mention[]): string {
-    if (text === undefined || text === '') {
-        return '';
-    }
-
-    // Replace mentions
-    for (const mention of mentions) {
-        text = text.replaceAll(`@[${mention.identityString}]`, getMentionHtml(mention));
-    }
-
-    text = markify(text, {
+function parseMarkup(text: string): string {
+    return markify(text, {
         [TokenType.Asterisk]: 'md-bold',
         [TokenType.Underscore]: 'md-italic',
         [TokenType.Tilde]: 'md-strike',
     });
+}
 
+/**
+ * Parses some text and replaces `@[<IdentityString>]` {@link Mention}s with HTML tags. The
+ * replacement will be `@All` or `@<mention.name>`, wrapped in an appropriate tag:
+ * - `span` for mentions of type "all" or "self".
+ * - `a` for mentions of type "other" (linking to the corresponding conversation).
+ *
+ * @param text The text to parse.
+ * @param mentions An array of mentions to search for and replace in the text.
+ * @returns The text containing the mentions replaced with HTML.
+ */
+function parseMentions(text: string, mentions: Mention | Mention[]): string {
+    let parsedText = text;
+    for (const mention of mentions instanceof Array ? mentions : [mentions]) {
+        parsedText = parsedText.replaceAll(`@[${mention.identityString}]`, getMentionHtml(mention));
+    }
+
+    return parsedText;
+}
+
+/**
+ * Parses some text and replaces highlights with HTML tags.
+ *
+ * @param text The text to parse.
+ * @param highlights An array of highlights to search for and replace in the text.
+ * @returns The text containing the highlights replaced with HTML.
+ */
+function parseHighlights(text: string, highlights: string | string[]): string {
+    let parsedText = text;
+    for (const highlight of highlights instanceof Array ? highlights : [highlights]) {
+        if (highlight.trim() !== '') {
+            parsedText = parsedText
+                // Split text at the locations where it matches the highlight string.
+                .split(new RegExp(`(${escapeRegExp(highlight)})`, 'ui'))
+                // Replace chunks to highlight with HTML.
+                .map((chunk, index) => (index % 2 === 0 ? chunk : getHighlightHtml(chunk)))
+                .join('');
+        }
+    }
+
+    return parsedText;
+}
+
+/**
+ * Parses some text and replaces urls with acutal `a` tags.
+ *
+ * @param text The text to parse.
+ * @returns The text containing the urls replaced with HTML.
+ */
+function parseLinks(text: string): string {
     return autolinker.link(text, {
         phone: false,
         stripPrefix: false,
@@ -308,4 +366,46 @@ export function textProcessor(text: string | undefined, mentions: Mention[]): st
             return true;
         },
     });
+}
+
+/**
+ * Parses some text and replaces various tokens with HTML. This is useful to render messages and
+ * message previews with formatting.
+ *
+ * @param text The text to parse.
+ * @param mentions The {@link Mention}s to search for and replace in the text.
+ * @param highlights The highlights to search for and replace in the text.
+ * @param shouldParseMarkup If simple markup tokens (bold, italic, strikethrough) should be
+ * replaced.
+ * @param shouldParseLinks If links should be detected and replaced.
+ * @returns The text containing the specified tokens replaced with HTML.
+ */
+export function parseText(
+    text: string | undefined,
+    mentions?: Mention | Mention[],
+    highlights?: string | string[],
+    shouldParseMarkup = false,
+    shouldParseLinks = false,
+): string {
+    if (text === undefined || text === '') {
+        return '';
+    }
+
+    if (shouldParseMarkup) {
+        text = parseMarkup(text);
+    }
+
+    if (mentions !== undefined) {
+        text = parseMentions(text, mentions);
+    }
+
+    if (highlights !== undefined) {
+        text = parseHighlights(text, highlights);
+    }
+
+    if (shouldParseLinks) {
+        text = parseLinks(text);
+    }
+
+    return text;
 }

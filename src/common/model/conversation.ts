@@ -26,12 +26,11 @@ import {
     type Exact,
     OPTIONAL,
 } from '~/common/utils/property-validator';
-import {DeprecatedDerivedStore, type LocalStore} from '~/common/utils/store';
+import {type LocalStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 
 import {
-    type AnyConversationPreviewMessageView,
     type AnyInboundMessageModelStore,
     type AnyMessageModelStore,
     type AnyOutboundMessageModelStore,
@@ -238,7 +237,7 @@ export class ConversationModelController implements ConversationController {
             }
 
             messageToRemove.get().controller.remove();
-            this._updateLastMessagePreview();
+            this._updateLastMessage();
         },
     };
 
@@ -249,17 +248,15 @@ export class ConversationModelController implements ConversationController {
         fromLocal: async () => {
             this.meta.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
-                this._updateLastMessagePreview();
+                this._updateLastMessage();
                 return {};
             });
         },
     };
 
     private readonly _handle: ConversationControllerHandle;
-    private readonly _lastMessagePreview: DeprecatedDerivedStore<
-        [lastMessage: AnyMessageModelStore] | [],
-        AnyConversationPreviewMessageView | undefined
-    >;
+
+    private readonly _lastMessageStore: WritableStore<AnyMessageModelStore | undefined>;
 
     private readonly _log: Logger;
 
@@ -279,18 +276,8 @@ export class ConversationModelController implements ConversationController {
             decrementUnreadMessageCount: this.decrementUnreadMessageCount.bind(this),
         };
 
-        // Get the current last message and prepare the derived store to transform each last message
-        // into a preview.
-        const lastMessage = message.getLastMessage(_services, this._handle, MESSAGE_FACTORY);
-        this._lastMessagePreview = new DeprecatedDerivedStore(
-            lastMessage !== undefined ? [lastMessage] : [],
-            ([stores]) => {
-                if (stores === undefined) {
-                    return undefined;
-                }
-                const [, model] = stores;
-                return model.controller.preview();
-            },
+        this._lastMessageStore = new WritableStore(
+            message.getLastMessage(_services, this._handle, MESSAGE_FACTORY),
         );
     }
 
@@ -334,8 +321,8 @@ export class ConversationModelController implements ConversationController {
         });
     }
 
-    public preview(): LocalStore<AnyConversationPreviewMessageView | undefined> {
-        return this._lastMessagePreview;
+    public lastMessageStore(): LocalStore<AnyMessageModelStore | undefined> {
+        return this._lastMessageStore;
     }
 
     /** @inheritdoc */
@@ -548,7 +535,7 @@ export class ConversationModelController implements ConversationController {
         // Update 'last message', if applicable
         // TODO(DESK-296): This needs to depend on whether the message appears as the last message
         //                  (i.e. the sort order)!
-        this._updateLastMessagePreview();
+        this._updateLastMessage();
 
         // Ensure that the contracts stated by the overload variants of this function are fulfilled
         switch (init.direction) {
@@ -573,9 +560,10 @@ export class ConversationModelController implements ConversationController {
         return store;
     }
 
-    private _updateLastMessagePreview(): void {
-        const lastMessage = message.getLastMessage(this._services, this._handle, MESSAGE_FACTORY);
-        this._lastMessagePreview.replace(lastMessage === undefined ? [] : [lastMessage]);
+    private _updateLastMessage(): void {
+        this._lastMessageStore.set(
+            message.getLastMessage(this._services, this._handle, MESSAGE_FACTORY),
+        );
     }
 }
 

@@ -64,20 +64,36 @@
           return lastUpdate !== undefined;
         })
         .filter((conversationPreviewModel) => {
-          const filterText = getAndSubscribe(conversationPreviewListFilter);
+          const filterText = getAndSubscribe(conversationPreviewListFilter).trim().toLowerCase();
 
           if (filterText === '') {
             return true;
           }
 
           const viewModel = getAndSubscribe(conversationPreviewModel.viewModel);
-          const lastMessage = getAndSubscribe(viewModel.lastMessage);
           const receiver = viewModel.receiver;
 
-          return [receiver.displayName, lastMessage?.text ?? '']
-            .join(' ')
-            .toLowerCase()
-            .includes(filterText.trim().toLowerCase());
+          // Get text/caption of last conversation message (if there is any)
+          let lastMessageText = '';
+          if (viewModel.lastMessage !== undefined) {
+            const lastMessageModel = getAndSubscribe(viewModel.lastMessage.messageStore);
+            switch (lastMessageModel.type) {
+              case 'text':
+                lastMessageText = lastMessageModel.view.text;
+                break;
+
+              case 'file':
+                lastMessageText = lastMessageModel.view.caption ?? '';
+                break;
+
+              default:
+                unreachable(lastMessageModel);
+            }
+          }
+
+          return [receiver.displayName, lastMessageText].some((text) =>
+            text.toLowerCase().includes(filterText),
+          );
         })
         .sort((a, b) => {
           // Unwrap is okay as we filter out entries without lastUpdate

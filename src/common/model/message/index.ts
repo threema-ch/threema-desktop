@@ -24,10 +24,8 @@ import {
     type GuardedStoreHandle,
     type InboundBaseMessageController,
     type InboundBaseMessageView,
-    type InboundConversationPreviewMessageView,
     type OutboundBaseMessageController,
     type OutboundBaseMessageView,
-    type OutboundConversationPreviewMessageView,
     type ServicesForModel,
     type SetOfAnyLocalMessageModelStore,
     type UidOf,
@@ -527,23 +525,6 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     }
 
     /** @inheritdoc */
-    public preview(): InboundConversationPreviewMessageView {
-        return this.meta.run((handle) => {
-            const view = handle.view();
-            return {
-                direction: MessageDirection.INBOUND,
-                type: this._type,
-                text: this._preview(),
-                draft: false, // TODO(DESK-306): Add support for this
-                updatedAt: view.createdAt,
-                // TODO(DESK-776): Add proper support for other statuses
-                status: 'delivered',
-                reaction: view.lastReaction?.type,
-            };
-        });
-    }
-
-    /** @inheritdoc */
     public sender(): LocalModelStore<Contact> {
         return this._sender;
     }
@@ -604,11 +585,6 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             }
         });
     }
-
-    /**
-     * Combine the common part with the concrete message part to create a preview.
-     */
-    protected abstract _preview(): InboundConversationPreviewMessageView['text'];
 }
 
 /** @inheritdoc */
@@ -654,24 +630,6 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         conversation: ConversationControllerHandle,
     ) {
         super(services, uid, type, conversation);
-    }
-
-    /** @inheritdoc */
-    public preview(): OutboundConversationPreviewMessageView {
-        return this.meta.run((handle) => {
-            const view = handle.view();
-            const [status, updatedAt] = statusFromView(view);
-            return {
-                direction: MessageDirection.OUTBOUND,
-                type: this._type,
-                text: this._preview(),
-                draft: false, // TODO(DESK-306): Add support for this
-                updatedAt,
-                // TODO(DESK-776): Add proper support for other statuses (error?)
-                status,
-                reaction: view.lastReaction?.type,
-            };
-        });
     }
 
     /** @inheritdoc */
@@ -750,11 +708,6 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             this._reaction(handle, view, type, reactedAt);
         });
     }
-
-    /**
-     * Combine the common part with the concrete message part to create a preview.
-     */
-    protected abstract _preview(): OutboundConversationPreviewMessageView['text'];
 }
 
 /**

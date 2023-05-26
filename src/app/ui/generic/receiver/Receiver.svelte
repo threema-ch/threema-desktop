@@ -1,7 +1,7 @@
 <script lang="ts">
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import HighlightableText from '~/app/ui/generic/receiver/HighlightableText.svelte';
+  import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
 
@@ -74,7 +74,7 @@
     <div class="name">
       {#if subTitle !== undefined || hasBadge}
         <div class="title" class:line-through={titleLineThrough}>
-          <HighlightableText text={title} substringToHighlight={filter} />
+          <ProcessedText text={title} highlights={filter} />
         </div>
         {#if receiver.type === 'group'}
           {@const membersCount = receiver.membersCount}
@@ -107,12 +107,12 @@
             <span class="draft">{$i18n.t('messaging.label--prefix-draft', 'Draft:')}</span>
           {/if}
           {#if subTitle !== undefined}
-            <HighlightableText text={subTitle} substringToHighlight={filter} />
+            <ProcessedText text={subTitle} highlights={filter} />
           {/if}
         </div>
       {:else}
         <div class="display-title" class:line-through={titleLineThrough}>
-          <HighlightableText text={title} substringToHighlight={filter} />
+          <ProcessedText text={title} highlights={filter} />
         </div>
       {/if}
     </div>
@@ -125,7 +125,7 @@
         />
       </div>
       <div class="identity">
-        <HighlightableText text={receiver.identity} substringToHighlight={filter} />
+        <ProcessedText text={receiver.identity} highlights={filter} />
       </div>
     {/if}
   </div>

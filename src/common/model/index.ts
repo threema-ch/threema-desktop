@@ -82,7 +82,6 @@ import {type IdColor} from '~/common/utils/id-color';
 import {type SequenceNumberU53} from '~/common/utils/sequence-number';
 import {type LocalStore} from '~/common/utils/store';
 import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
-import {type MessageStatus} from '~/common/viewmodel/types';
 
 /**
  * Services required by the model backend.
@@ -751,60 +750,6 @@ export type AnyReceiverStore =
     | LocalModelStore<DistributionList>
     | LocalModelStore<Group>;
 
-/**
- * Maximum text length to be applied to message previews.
- */
-export const PREVIEW_MESSAGE_MAX_TEXT_LENGTH = 64;
-interface CommonConversationPreviewMessageView<TDirection extends MessageDirection> {
-    /**
-     * Message direction.
-     */
-    readonly direction: TDirection;
-    /**
-     * Message type.
-     */
-    readonly type: MessageType;
-    /**
-     * Message preview text. Should be shortened for performance.
-     */
-    readonly text?: string;
-    /**
-     * When the message was last updated in a relevant manner, concretely...
-     *
-     * For outbound messages:
-     *
-     * - When the message was created.
-     * - When the message has been reflected to other devices / by another device / delivered to the
-     *   server.
-     * - When the message was read by the recipient.
-     *
-     * For inbound messages:
-     *
-     * - When the message was created.
-     */
-    readonly updatedAt: Date;
-    /**
-     * Current status of the message.
-     */
-    readonly status: MessageStatus;
-    /**
-     * Reaction towards the message.
-     */
-    readonly reaction?: MessageReaction;
-}
-export type InboundConversationPreviewMessageView =
-    CommonConversationPreviewMessageView<MessageDirection.INBOUND>;
-export type OutboundConversationPreviewMessageView =
-    CommonConversationPreviewMessageView<MessageDirection.OUTBOUND> & {
-        /**
-         * Whether the message is a draft.
-         */
-        readonly draft: boolean;
-    };
-export type AnyConversationPreviewMessageView =
-    | InboundConversationPreviewMessageView
-    | OutboundConversationPreviewMessageView;
-
 export interface ConversationView {
     // TODO(DESK-611): Remove type from ConversationView and get it from the new ConversationViewModel
     readonly type: ReceiverType;
@@ -823,7 +768,7 @@ export type ConversationController = {
     readonly uid: UidOf<DbConversation>;
     readonly meta: ModelLifetimeGuard<ConversationView>;
     readonly receiver: () => AnyReceiverStore;
-    readonly preview: () => LocalStore<AnyConversationPreviewMessageView | undefined>;
+    readonly lastMessageStore: () => LocalStore<AnyMessageModelStore | undefined>;
     /**
      * Update a conversation.
      *
@@ -1060,11 +1005,6 @@ export type CommonBaseMessageController<TView extends CommonBaseMessageView> = {
 export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
     CommonBaseMessageController<TView> & {
         /**
-         * Convert this message into a preview.
-         */
-        readonly preview: () => InboundConversationPreviewMessageView;
-
-        /**
          * Contact that sent this message.
          */
         readonly sender: () => LocalModelStore<Contact>;
@@ -1088,11 +1028,6 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
     };
 export type OutboundBaseMessageController<TView extends OutboundBaseMessageView> =
     CommonBaseMessageController<TView> & {
-        /**
-         * Convert this message into a preview.
-         */
-        readonly preview: () => OutboundConversationPreviewMessageView;
-
         /**
          * The message has been delivered to and acknowledged by the chat server.
          */

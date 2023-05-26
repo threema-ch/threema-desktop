@@ -18,6 +18,7 @@
     MessageDirection,
     ReceiverType,
   } from '~/common/enum';
+  import {statusFromView} from '~/common/model/message';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationPreview} from '~/common/viewmodel/conversation-preview';
 
@@ -49,18 +50,25 @@
   const viewModel = conversationPreview.viewModel;
 
   /**
-   * Last Message in Conversation
+   * Store containing the conversation's last message
    */
-  const lastMessage = $viewModel.lastMessage;
+  let lastMessageStore = $viewModel.lastMessage?.messageStore;
+  let lastMessageViewModelStore = $viewModel.lastMessage?.viewModel;
+  $: {
+    lastMessageStore = $viewModel.lastMessage?.messageStore;
+    lastMessageViewModelStore = $viewModel.lastMessage?.viewModel;
+  }
 
   /**
    * Router
    */
   export let router: Router;
+
   /**
    * Swipe area group of the associated list.
    */
   export let group: SwipeAreaGroup;
+
   /**
    * Whether the conversation is currently being displayed.
    */
@@ -109,6 +117,21 @@
     }
   }
 
+  let draftOrLastMessageText = '';
+  $: {
+    if (conversation$.category === ConversationCategory.PROTECTED) {
+      draftOrLastMessageText = $i18n.t('messaging.label--protected-conversation', 'Private');
+    } else if (conversationDraft !== undefined) {
+      draftOrLastMessageText = conversationDraft;
+    } else if ($lastMessageStore?.type === 'text') {
+      draftOrLastMessageText = $lastMessageStore.view.text;
+    } else if ($lastMessageStore?.type === 'file') {
+      draftOrLastMessageText = $lastMessageStore?.view.caption ?? '';
+    } else {
+      draftOrLastMessageText = '';
+    }
+  }
+
   const conversationType = $conversation.view.type;
   const isGroupConversation = conversationType === ReceiverType.GROUP;
 </script>
@@ -134,15 +157,13 @@
             title={{
               title: receiver$.name,
               titleLineThrough: isInactiveGroup($receiver),
-              subtitle:
-                conversation$.category === ConversationCategory.PROTECTED
-                  ? $i18n.t('messaging.label--protected-conversation', 'Private')
-                  : conversationDraft ?? $lastMessage?.text,
+              subtitle: {
+                text: draftOrLastMessageText,
+                mentions: $lastMessageViewModelStore?.mentions,
+              },
               isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
               // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
-              isDraft:
-                conversationDraft !== undefined ||
-                ($lastMessage?.direction === MessageDirection.OUTBOUND && $lastMessage?.draft),
+              isDraft: conversationDraft !== undefined,
             }}
             filter={$conversationPreviewListFilter}
           >
@@ -179,16 +200,18 @@
             </div>
 
             <div class="status" slot="additional-bottom">
-              {#if $lastMessage !== undefined && receiver !== undefined}
-                <Time date={$lastMessage.updatedAt} />
+              {#if $lastMessageStore !== undefined && receiver !== undefined}
+                <Time date={$lastMessageStore?.view.createdAt} />
                 <span class="icon">
                   {#if isGroupConversation}
                     <MdIcon theme="Filled">group</MdIcon>
-                  {:else}
+                  {:else if $lastMessageStore !== undefined}
                     <MessageStatus
-                      direction={$lastMessage.direction}
-                      status={$lastMessage.status}
-                      reaction={$lastMessage.reaction}
+                      direction={$lastMessageStore.view.direction}
+                      status={$lastMessageStore.view.direction === MessageDirection.OUTBOUND
+                        ? statusFromView($lastMessageStore.view)[0]
+                        : 'delivered'}
+                      reaction={$lastMessageStore.view.lastReaction?.type}
                       outgoingReactionDisplay="arrow"
                       receiverType={receiver.type}
                     />

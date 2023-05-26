@@ -71,11 +71,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
     }
 
     public getConversationMessage(messageId: MessageId): ConversationMessage | undefined {
-        return this._viewModelRepository.conversationMessage(
-            this._conversation,
-            messageId,
-            undefined,
-        );
+        return this._viewModelRepository.conversationMessageById(this._conversation, messageId);
     }
 
     public async sendMessage(messageEventDetail: Remote<SendMessageEventDetail>): Promise<void> {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {escapeHtmlUnsafeChars, textProcessor} from '~/app/ui/generic/form';
+  import {escapeHtmlUnsafeChars, parseText} from '~/app/ui/generic/form';
   import {type Mention} from '~/common/viewmodel/utils/mentions';
 
   /**
@@ -9,15 +9,11 @@
   export let text: string;
 
   /**
-   * Parsed Mentions in the text
+   * Parsed Mentions in the text.
    */
-  export let mentions: Mention[] = [];
+  export let mentions: Mention | Mention[] | undefined = undefined;
 
-  let processedText = escapeHtmlUnsafeChars(text);
-
-  if (textProcessor !== undefined) {
-    processedText = textProcessor(processedText, mentions);
-  }
+  $: processedText = parseText(escapeHtmlUnsafeChars(text), mentions, undefined, true, true);
 </script>
 
 <template>

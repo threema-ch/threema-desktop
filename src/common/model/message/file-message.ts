@@ -25,15 +25,12 @@ import {
     type FileData,
     type FileMessageDataState,
     type FileMessageViewFragment,
-    type InboundConversationPreviewMessageView,
     type InboundFileMessage,
     type InboundFileMessageController,
     type InboundFileMessageView,
-    type OutboundConversationPreviewMessageView,
     type OutboundFileMessage,
     type OutboundFileMessageController,
     type OutboundFileMessageView,
-    PREVIEW_MESSAGE_MAX_TEXT_LENGTH,
     type ServicesForModel,
     type UidOf,
 } from '~/common/model';
@@ -176,13 +173,6 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
         default:
             return unreachable(common);
     }
-}
-
-function getPreviewText({
-    caption,
-    fileName,
-}: InboundFileMessage['view'] | OutboundFileMessage['view']): string | undefined {
-    return (caption ?? fileName)?.slice(0, PREVIEW_MESSAGE_MAX_TEXT_LENGTH);
 }
 
 type BlobType = 'main' | 'thumbnail';
@@ -439,11 +429,6 @@ export class InboundFileMessageModelController
             this._log,
         );
     }
-
-    /** @inheritdoc */
-    protected _preview(): InboundConversationPreviewMessageView['text'] {
-        return this.meta.run((handle) => getPreviewText(handle.view()));
-    }
 }
 
 export class OutboundFileMessageModelController
@@ -557,11 +542,6 @@ export class OutboundFileMessageModelController
 
             return {...change, state: 'synced'};
         });
-    }
-
-    /** @inheritdoc */
-    protected _preview(): OutboundConversationPreviewMessageView['text'] {
-        return this.meta.run((handle) => getPreviewText(handle.view()));
     }
 
     private async _uploadFileAsBlob(
