@@ -204,9 +204,7 @@ interface ImportMetaEnv extends BuildConfig {
     readonly ARGON2_MIN_MEMORY_BYTES: import('./types').u53;
 
     // Public-key pins (HPKP)
-    readonly TLS_CERTIFICATE_PINS: import('./tls-cert-verifier').DomainCertificatePin<
-        '*.threema.ch' | '*.test.threema.ch' | '*.sfu.threema.ch'
-    >[];
+    readonly TLS_CERTIFICATE_PINS: import('./types').DomainCertificatePin[];
 
     // Verbose debug logging
     readonly VERBOSE_LOGGING: {

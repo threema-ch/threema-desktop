@@ -20,9 +20,10 @@ import {
 } from '~/common/logging';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
-import {createTlsCertificateVerifier} from '~/common/tls-cert-verifier';
 import {type u53} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
+
+import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
 const EXIT_CODE_UNCAUGHT_ERROR = 7;
 const EXIT_CODE_RESTART = 8;

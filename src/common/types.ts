@@ -329,27 +329,13 @@ export type StrictPartial<TPartial, T extends TPartial> = TPartial extends objec
       }
     : TPartial;
 
-/**
- * The components of a string split by a delimiter, as a tuple. This corresponds to what the
- * `String.prototype.split()` function would return.
- *
- * @param Str - The string to split
- * @param Delimiter - The delimiter to split with
- */
-export type Split<Str extends string, Delimiter extends string> = string extends Str
-    ? string[]
-    : Str extends ''
-    ? // eslint-disable-next-line no-restricted-syntax
-      ['']
-    : Str extends `${infer T}${Delimiter}${infer U}`
-    ? // eslint-disable-next-line no-restricted-syntax
-      [head: T, ...substr: Split<U, Delimiter>]
-    : // eslint-disable-next-line no-restricted-syntax
-      [Str];
+export interface DomainCertificatePin {
+    /** The domain the certificates belong to (e.g. `*.example.com`). */
+    readonly domain: string;
 
-/**
- * The length of a tuple.
- *
- * @param T - The tuple to extract the length from
- */
-export type Length<T extends readonly unknown[]> = T['length'];
+    /**
+     * The SPKI fingerprints (SHA-256-hashed and Base64-encoded public keys) of the certificates
+     * that are whitelisted for the specified `domain`.
+     */
+    readonly fingerprints: string[];
+}
