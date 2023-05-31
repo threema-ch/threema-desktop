@@ -4,6 +4,7 @@ import {type Request} from 'electron';
 
 import {type Logger} from '~/common/logging';
 import {type DomainCertificatePin} from '~/common/types';
+import {base64ToU8a} from '~/common/utils/base64';
 
 /**
  * The verification results as returned by electron.
@@ -39,6 +40,25 @@ export function createTlsCertificateVerifier(
     certificatePins: DomainCertificatePin[],
     log: Logger,
 ): CertificateVerifier {
+    // Sanity-checking of certificate pins
+    for (const pin of certificatePins) {
+        for (const fingerprint of pin.fingerprints) {
+            let fingerprintBytes;
+            try {
+                fingerprintBytes = base64ToU8a(fingerprint);
+            } catch (error) {
+                throw new Error(
+                    `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint}" could not be base64-decoded: ${error}`,
+                );
+            }
+            if (fingerprintBytes.byteLength !== 32) {
+                throw new Error(
+                    `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint}" is not 32 bytes`,
+                );
+            }
+        }
+    }
+
     // eslint-disable-next-line no-restricted-syntax
     return (request: Request, callback: (verificationResult: number) => void) => {
         function valid(): void {
@@ -84,7 +104,9 @@ export function createTlsCertificateVerifier(
             if (pin.fingerprints.includes(fingerprint)) {
                 return valid();
             }
-            return invalid(`Fingerprint ${fingerprint} not found in certificate pins`);
+            return invalid(
+                `Fingerprint ${fingerprint} not found in certificate pins for domain ${pin.domain}`,
+            );
         }
 
         return invalid('No matching pin config found');
