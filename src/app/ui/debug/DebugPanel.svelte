@@ -2,12 +2,12 @@
   import {type SvelteComponentDev} from 'svelte/internal';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {type AppServices} from '~/app/types';
   import DebugBackend from '~/app/ui/debug/DebugBackend.svelte';
   import DebugNetwork from '~/app/ui/debug/DebugNetwork.svelte';
   import DebugRedis from '~/app/ui/debug/DebugRedis.svelte';
   import DebugStorage from '~/app/ui/debug/DebugStorage.svelte';
   import Threema from '~/app/ui/debug/Threema.svelte';
-  import {type AppServices} from '~/app/types';
   import {MouseEventButtons} from '~/common/enum';
 
   /* eslint-disable @typescript-eslint/naming-convention */
@@ -90,6 +90,7 @@
       'content' minmax(0, 1fr)
       / auto;
     color: var(--t-text-e1-color);
+    user-select: text;
   }
 
   nav {

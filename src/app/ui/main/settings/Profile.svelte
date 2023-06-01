@@ -54,6 +54,10 @@
         @extend %font-small-400;
         color: var(--t-text-e2-color);
       }
+
+      .value {
+        user-select: all;
+      }
     }
 
     .qr-code {

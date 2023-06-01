@@ -129,7 +129,7 @@
 />
 
 <template>
-  <div class="wrapper" data-connection-state={$connectionState}>
+  <div class="wrapper" data-connection-state={$connectionState} on:dragstart|preventDefault>
     <!-- App -->
 
     {#if $connectionState !== ConnectionState.CONNECTED}

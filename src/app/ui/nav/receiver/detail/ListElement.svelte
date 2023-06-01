@@ -1,4 +1,6 @@
 <script lang="ts">
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+
   /**
    * The label.
    */
@@ -8,15 +10,21 @@
    * Temporary wip flag for unfinished features
    */
   export let wip = false;
+
+  export let isInfoModalVisible: boolean | undefined = undefined;
+
+  $: hasInfoModal = isInfoModalVisible !== undefined;
 </script>
 
 <template>
-  <div on:click class="list-element" class:has-icon={$$slots.icon} class:wip>
+  <div class="list-element" class:wip>
     <div class="label">{label}</div>
     <div class="value"><slot /></div>
-    <div class="icon">
-      <slot name="icon" />
-    </div>
+    {#if hasInfoModal}
+      <div class="icon" on:click={() => (isInfoModalVisible = true)}>
+        <MdIcon theme="Outlined">info</MdIcon>
+      </div>
+    {/if}
   </div>
 </template>
 
@@ -41,6 +49,7 @@
     .value {
       grid-area: value;
       margin-top: rem(-1px);
+      user-select: all;
     }
 
     .icon {
@@ -49,13 +58,9 @@
       place-items: center;
       user-select: none;
       color: var(--ic-list-element-color);
-    }
-
-    &.has-icon {
       cursor: pointer;
-      &:hover {
-        background-color: var(--ic-list-element-background-color--hover);
-      }
+      padding: 0 rem(5px);
+      margin: 0 rem(-5px);
     }
   }
 </style>

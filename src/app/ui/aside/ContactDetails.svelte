@@ -7,9 +7,10 @@
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
-  import IdenitityInformationDialog from '~/app/ui/modal/ContactIdenitityInformation.svelte';
+  import IdentityInformationDialog from '~/app/ui/modal/ContactIdentityInformation.svelte';
   import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
   import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
   import VerificationLevelsDialog from '~/app/ui/modal/ContactVerificationLevels.svelte';
@@ -28,7 +29,6 @@
   import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';
   import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
-  import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.contact-details');
 
@@ -185,22 +185,20 @@
         <span on:click={openContactEditDialog}>{$i18n.t('contacts.action--edit', 'Edit')}</span>
       </div>
       <ListElement
-        on:click={() => (identityInformationDialogVisible = true)}
+        bind:isInfoModalVisible={identityInformationDialogVisible}
         label={$i18n.t('contacts.label--threema-id', 'Threema ID')}
       >
         {$contactViewModel.identity}
-        <MdIcon slot="icon" theme="Outlined">info</MdIcon>
       </ListElement>
       <div class="level">
         <ListElement
-          on:click={() => (verificationLevelsDialogVisible = true)}
+          bind:isInfoModalVisible={verificationLevelsDialogVisible}
           label={$i18n.t('contacts.label--verification-level', 'Verification Level')}
         >
           <VerificationDots
             colors={$contactViewModel.verificationLevelColors}
             verificationLevel={$contactViewModel.verificationLevel}
           />
-          <MdIcon slot="icon" theme="Outlined">info</MdIcon>
         </ListElement>
       </div>
       <ListElement label={$i18n.t('contacts.label--nickname', 'Nickname')}
@@ -269,7 +267,7 @@
       verificationLevelColors={$contactViewModel.verificationLevelColors}
     />
 
-    <IdenitityInformationDialog
+    <IdentityInformationDialog
       publicKey={$contactViewModel.publicKey}
       bind:visible={identityInformationDialogVisible}
     />

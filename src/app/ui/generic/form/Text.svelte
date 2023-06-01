@@ -31,5 +31,6 @@
     overflow: hidden;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
+    user-select: text;
   }
 </style>
