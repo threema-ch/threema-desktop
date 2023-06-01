@@ -509,6 +509,7 @@ function main(
         electron.app.exit(EXIT_CODE_RESTART);
     }
 
+    // Main app window.
     let window: electron.BrowserWindow | undefined;
 
     function start(): void {
@@ -517,6 +518,7 @@ function main(
             log.debug('Already started, ignoring request to start');
             return;
         }
+
         log.info('Starting');
 
         // Set Electron menu
@@ -833,6 +835,30 @@ function main(
         }
     });
 
+    electron.app.on('second-instance', () => {
+        log.debug(
+            'A second instance was requested, but will be handled by the existing instance instead',
+        );
+
+        if (window !== undefined) {
+            if (window.isMinimized()) {
+                log.debug('Restoring the original main window');
+                window.restore();
+            }
+
+            // `alwaysOnTop` ensures that the window doesn't appear behind other windows in Windows
+            window.setAlwaysOnTop(true);
+            if (window.isVisible()) {
+                log.debug('Focusing on the visible main window');
+                window.focus();
+            } else {
+                log.debug('Showing and focusing on the main window');
+                window.show();
+            }
+            window.setAlwaysOnTop(false);
+        }
+    });
+
     // On macOS it is common to re-create a window even after all windows have been closed
     electron.app.on('activate', () => start());
 
@@ -848,6 +874,13 @@ function main(
 // Initialise and run main app
 void (async () => {
     const signal = {start: false};
+
+    // Acquire lock that can be used for ensuring a single instance
+    const singleInstanceLock = electron.app.requestSingleInstanceLock();
+    if (!singleInstanceLock) {
+        log.error('Application is already open, refusing to start a second instance');
+        electron.app.exit(0);
+    }
 
     // Quit application when all windows are closed
     electron.app.on('window-all-closed', () => electron.app.quit());
