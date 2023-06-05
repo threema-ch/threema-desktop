@@ -9,6 +9,7 @@ import {
     CspE2eConversationTypeUtils,
     CspE2eForwardSecurityType,
     type CspE2eGroupControlType,
+    CspE2eGroupControlTypeUtils,
     type CspE2eGroupConversationType,
     CspE2eGroupConversationTypeUtils,
     CspE2eStatusUpdateType,
@@ -88,6 +89,9 @@ type ValidContactMessages =
     | CspE2eContactControlType
     | CspE2eGroupControlType
     | CspE2eForwardSecurityType;
+
+// Set of E2EE message types that may not be blocked under any circumstance
+const BLOCK_EXEMPTION_TYPES: ReadonlySet<u53> = CspE2eGroupControlTypeUtils.ALL;
 
 /**
  * All valid {@link CspE2eType} types that may be sent for a specific receiver.
@@ -210,7 +214,7 @@ export class OutgoingCspMessageTask<
         // Send message to receivers
         if (receivers.length !== 0) {
             this._log.info(`Sending ${messageTypeDebug} message`);
-            await this._encryptAndSendMessages(handle, receivers, messageBytes);
+            await this._encryptAndSendMessages(handle, receivers, messageBytes, type);
         } else {
             this._log.info(`Skip sending ${messageTypeDebug} message as it has no receivers`);
         }
@@ -270,6 +274,7 @@ export class OutgoingCspMessageTask<
         handle: InternalActiveTaskCodecHandle,
         receivers: Contact[],
         messageBytes: Uint8Array,
+        messageType: ValidGroupMessages | ValidContactMessages,
     ): Promise<void> {
         const {device, crypto, model} = this._services;
         const {createdAt, messageId, type} = this._messageProperties;
@@ -289,6 +294,13 @@ export class OutgoingCspMessageTask<
 
         // TODO(DESK-573): Bundle sending of group messages
         for (const receiver of receivers) {
+            if (!BLOCK_EXEMPTION_TYPES.has(messageType) && receiver.controller.isBlocked.get()) {
+                this._log.info(
+                    `Discarding sending message to blocked contact ${receiver.view.identity}`,
+                );
+                continue;
+            }
+
             const receiverIdentity = UTF8.encode(receiver.view.identity);
 
             // Encrypt metadata
