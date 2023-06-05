@@ -26,6 +26,7 @@
   import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore, WritableStore} from '~/common/utils/store';
+  import {derive} from '~/common/utils/store/derived-store';
   import {
     type ConversationViewModel,
     type InnerConversationViewModelStore,
@@ -62,6 +63,11 @@
 
   let receiver: Remote<AnyReceiverStore> = conversationViewModel.receiver;
   $: receiver = conversationViewModel.receiver;
+
+  $: isReceiverBlockedStore = derive(
+    conversationViewModel.viewModel,
+    (viewModel) => viewModel.receiver.type === 'contact' && viewModel.receiver.isBlocked,
+  );
 
   let innerConversationViewModel: Remote<InnerConversationViewModelStore> =
     conversationViewModel.viewModel;
@@ -366,6 +372,7 @@
         {conversation}
         {receiverLookup}
         {services}
+        isReceiverBlocked={$isReceiverBlockedStore}
       >
         <span class="top-title" slot="title">Conversation title</span>
       </ConversationTopBar>
@@ -397,6 +404,7 @@
             {receiver}
             {conversation}
             {services}
+            isReceiverBlocked={$isReceiverBlockedStore}
             container={messagesContainer}
             on:quoteMessage={quoteMessage}
             on:deleteMessage={deleteMessage}
@@ -408,6 +416,13 @@
         {#if isInactiveGroup($receiver)}
           <div class="deleted-group-message">
             {$i18n.t('messaging.error--group-membership', 'You are no longer part of this group.')}
+          </div>
+        {:else if $isReceiverBlockedStore}
+          <div class="blocked-contact-message">
+            {$i18n.t(
+              'messaging.error--blocked-contact',
+              'You cannot send a message to this contact because it is blocked.',
+            )}
           </div>
         {:else if $composeData.mode === 'text' || $composeData.mode === 'quote'}
           {#if $composeData.mode === 'quote'}
@@ -533,6 +548,8 @@
 
     .bottom-bar {
       grid-area: bottom-bar;
+
+      .blocked-contact-message,
       .deleted-group-message {
         text-align: center;
         margin: 1.5rem;

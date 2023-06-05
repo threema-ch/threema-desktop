@@ -19,14 +19,19 @@ import {
     type ContactView,
     type ProfilePicture,
     type RemoteModelFor,
-    type Settings,
 } from '~/common/model';
 import {getFullName} from '~/common/model/contact';
 import {type RemoteModelStore} from '~/common/model/utils/model-store';
 import {isNickname, type Nickname} from '~/common/network/types';
+import {type StrictOmit} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
-import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
+import {
+    DeprecatedDerivedStore,
+    type IQueryableStore,
+    type ReadableStore,
+    WritableStore,
+} from '~/common/utils/store';
 import {localeSort} from '~/common/utils/string';
 import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
 import {type ContactData} from '~/common/viewmodel/types';
@@ -35,7 +40,7 @@ import {getContactBadge} from '~/common/viewmodel/utils/contact';
 /**
  * Transformed data necessary to display a contact in several places in the UI.
  */
-export type TransformedContact = ContactData & {
+export type TransformedContact = StrictOmit<Remote<ContactData>, 'isBlocked'> & {
     readonly lookup: DbReceiverLookup;
     readonly isNew: boolean;
     readonly identity: string;
@@ -50,6 +55,7 @@ export type TransformedContact = ContactData & {
     readonly verificationLevelColors: VerificationLevelColors;
     readonly notifications: ReceiverNotificationPolicy;
     readonly activityState: 'active' | 'inactive' | 'invalid';
+    readonly isBlocked: ReadableStore<boolean>;
 };
 
 /**
@@ -175,7 +181,6 @@ export function transformContactVerificationLevel(
 }
 
 export async function transformContact(
-    settings: Remote<Settings>,
     contact: RemoteModelFor<Contact>,
 ): Promise<TransformedContact> {
     // Determine activity state
@@ -215,7 +220,7 @@ export async function transformContact(
         fullName: getFullName(contact.view),
         displayName: contact.view.displayName,
         initials: contact.view.initials,
-        blocked: await settings.contactIsBlocked(contact.view.identity),
+        isBlocked: await contact.controller.isBlocked,
         notifications: transformNotificationPolicyFromContact(contact.view),
         verificationLevel,
         verificationLevelColors,

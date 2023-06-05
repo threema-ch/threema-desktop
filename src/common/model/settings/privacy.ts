@@ -1,3 +1,4 @@
+import {UnknownContactPolicy} from '~/common/enum';
 import {
     type PrivacySettings,
     type PrivacySettingsController,
@@ -7,6 +8,7 @@ import {
 } from '~/common/model';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {type IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
 export class PrivacySettingsModelController implements PrivacySettingsController {
@@ -22,6 +24,39 @@ export class PrivacySettingsModelController implements PrivacySettingsController
                 ...change,
             }),
         );
+    }
+
+    public isIdentityExplicitlyBlocked(identity: IdentityString): boolean {
+        return this.meta.run(
+            (handle) => handle.view().blockedIdentities?.identities.includes(identity) ?? false,
+        );
+    }
+
+    public isContactBlocked(identity: IdentityString): boolean {
+        if (this.isIdentityExplicitlyBlocked(identity)) {
+            // The contact is explicitly blocked in the privacy settings.
+            return true;
+        }
+
+        const contact = this._services.model.contacts.getByIdentity(identity);
+
+        if (contact !== undefined) {
+            // The contact is known and not explicitly blocked in the privacy settings.
+            return false;
+        }
+
+        const isBlockUnknownPolicySet = this.meta.run(
+            (handle) => handle.view().unknownContactPolicy === UnknownContactPolicy.BLOCK_UNKNOWN,
+        );
+
+        if (isBlockUnknownPolicySet) {
+            // The contact is unknown and implicitly blocked by the privacy settings because
+            // UnknownContactPolicy is set to BLOCK_UNKNOWN.
+            return true;
+        }
+
+        // The contact is unknown and not implicitly blocked by the privacy settings.
+        return false;
     }
 }
 

@@ -65,7 +65,7 @@
   }
 
   function transformReceiver(viewModel: Remote<ContactListItemViewModel>): ContactReceiver {
-    // Determinetitle and subtitle
+    // Determine title and subtitle
     let title = viewModel.displayName;
     let subtitle = undefined;
     if (showFullNameAndNickname(viewModel)) {
@@ -97,6 +97,7 @@
         level: viewModel.verificationLevel,
       },
       identity: viewModel.identity,
+      isBlocked: viewModel.isBlocked,
     };
   }
 

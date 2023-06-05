@@ -61,7 +61,6 @@ import {
     type ProfileSettings,
     type Repositories,
     type ServicesForModel,
-    type Settings,
     type User,
 } from '~/common/model';
 import {ContactModelRepository} from '~/common/model/contact';
@@ -415,15 +414,6 @@ class UserRepository implements User {
     }
 }
 
-export class TestSettings implements Settings {
-    public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
-
-    public blockUnknown = false;
-    public contactIsBlocked(identity: IdentityString): boolean {
-        return false;
-    }
-}
-
 export class TestModelRepositories implements Repositories {
     public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
 
@@ -432,7 +422,6 @@ export class TestModelRepositories implements Repositories {
     public groups: GroupRepository;
     public conversations: ConversationRepository;
     public profilePictures: IProfilePictureRepository;
-    public settings: Settings;
     public globalProperties: IGlobalPropertyRepository;
     public db: DatabaseBackend;
 
@@ -447,7 +436,6 @@ export class TestModelRepositories implements Repositories {
         this.groups = new GroupModelRepository(servicesForModel);
         this.conversations = new ConversationModelRepository(servicesForModel);
         this.profilePictures = new ProfilePictureModelRepository(servicesForModel);
-        this.settings = new TestSettings();
         this.globalProperties = new GlobalPropertyRepository(servicesForModel);
     }
 }

@@ -329,6 +329,16 @@ export type StrictPartial<TPartial, T extends TPartial> = TPartial extends objec
       }
     : TPartial;
 
+/**
+ * Like {@link Extract} but ensures that all types provided in the union type U exist in type T.
+ */
+export type StrictExtract<T, U extends T> = Extract<T, U>;
+
+/**
+ * Like {@link Omit} but ensures that all keys provided in the union type U are keys of T.
+ */
+export type StrictOmit<T, U extends keyof T> = Omit<T, U>;
+
 export interface DomainCertificatePin {
     /** The domain the certificates belong to (e.g. `*.example.com`). */
     readonly domain: string;

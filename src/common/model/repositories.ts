@@ -3,7 +3,6 @@ import {
     type IProfilePictureRepository,
     type Repositories,
     type ServicesForModel,
-    type Settings,
 } from '~/common/model';
 import {ContactModelRepository} from '~/common/model/contact';
 import {ConversationModelRepository} from '~/common/model/conversation';
@@ -20,12 +19,6 @@ export class ModelRepositories implements Repositories {
     public readonly groups: GroupModelRepository;
     public readonly conversations: ConversationModelRepository;
     public readonly profilePictures: IProfilePictureRepository;
-    public readonly settings: Settings = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
-        // TODO(DESK-783)
-        blockUnknown: false,
-        contactIsBlocked: (identity) => false,
-    };
     public readonly globalProperties: IGlobalPropertyRepository;
 
     public constructor(services: Omit<ServicesForModel, 'model'>) {

@@ -6,7 +6,6 @@ import {
     type Conversation,
     type FileMessageViewFragment,
     type Repositories,
-    type Settings,
     type User,
 } from '~/common/model';
 import {type ConversationModelStore} from '~/common/model/conversation';
@@ -204,7 +203,6 @@ function getConversationMessageBody(
 ): ConversationMessageViewModel['body'] {
     const baseMessage = getConversationMessageBodyBaseMessage(
         messageModel,
-        model.settings,
         model.user,
         getAndSubscribe,
     );
@@ -278,7 +276,6 @@ function getConversationMessageBody(
 
 function getConversationMessageBodyBaseMessage(
     messageModel: AnyMessageModel,
-    settings: Settings,
     user: User,
     getAndSubscribe: GetAndSubscribeFunction,
 ): Omit<Message<AnyMessageBody>, BaseMessageOmittedFields> {
@@ -301,7 +298,7 @@ function getConversationMessageBodyBaseMessage(
         case MessageDirection.INBOUND: {
             const sender = getAndSubscribe(messageModel.controller.sender());
             const profilePicture = getAndSubscribe(sender.controller.profilePicture);
-            const contact = transformContact(sender, profilePicture, settings);
+            const contact = transformContact(sender, profilePicture, getAndSubscribe);
             assert(contact.type === 'contact');
 
             const incomingBaseMessage: Omit<

@@ -37,7 +37,7 @@ export interface InitializingDerivedStoreState<TSourceStore extends IQueryableSt
     readonly unwrappedStoreSubscriptions: Map<IQueryableStore<unknown>, StoreUnsubscriber>;
 
     /**
-     * Wether the store is currently deriving a value
+     * Whether the store is currently deriving a value
      */
     deriving: boolean;
 }
@@ -67,7 +67,7 @@ export interface EnabledDerivedStoreState<
     readonly unwrappedStoreSubscriptions: Map<IQueryableStore<unknown>, StoreUnsubscriber>;
 
     /**
-     * Wether the store is currently deriving a value
+     * Whether the store is currently deriving a value
      */
     deriving: boolean;
 }
@@ -93,7 +93,7 @@ function assertStateEnabled<
     assert(state.symbol === LAZY_STORE_ENABLED_STATE, `Expected store state to be enabled`);
 }
 /**
- * Unwrap/get the value of a store and implicitely subscribe to updates.
+ * Unwrap/get the value of a store and implicitly subscribe to updates.
  */
 export type GetAndSubscribeFunction = <TStore extends IQueryableStore<unknown>>(
     store: TStore,
@@ -209,7 +209,7 @@ export class DerivedStore<
     /**
      * Replace the {@link _sourceStore} of the derived store.
      *
-     * This implicitely triggers an immediate update to the subscribers.
+     * This implicitly triggers an immediate update to the subscribers.
      *
      * @param sourceStore the new source stores
      */

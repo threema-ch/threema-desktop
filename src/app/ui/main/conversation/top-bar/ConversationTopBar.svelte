@@ -2,12 +2,13 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
-  import ProfilePictureOverlay from '~/app/ui/generic/profile-picture/ProfilePictureOverlay.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import ProfilePictureOverlay from '~/app/ui/generic/profile-picture/ProfilePictureOverlay.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {type ConversationData} from '~/app/ui/main/conversation';
   import {type ConversationTopBarMode} from '~/app/ui/main/conversation/top-bar';
@@ -61,8 +62,15 @@
   export let services: AppServices;
   const {router} = services;
 
-  // Determine if this is an inactive group
+  /**
+   * Determine if this is an inactive group
+   */
   export let isInactiveGroup: boolean;
+
+  /**
+   * Determine if this is a blocked contact
+   */
+  export let isReceiverBlocked: boolean;
 
   /**
    * Reset the top bar state.
@@ -170,6 +178,11 @@
             TODO
           {/if}
         </div>
+        {#if isReceiverBlocked}
+          <div class="blocked-icon">
+            <BlockedIcon />
+          </div>
+        {/if}
         <div class="actions">
           {#if receiver.type === 'contact'}
             <!-- <IconButton flavor="naked" class="wip">
@@ -236,16 +249,16 @@
     .detail {
       display: grid;
       grid-template:
-        'profile-picture title   spacer actions' #{rem(24px)}
-        'profile-picture details spacer actions' #{rem(16px)}
+        'profile-picture title   spacer blocked-icon actions' #{rem(24px)}
+        'profile-picture details spacer blocked-icon actions' #{rem(16px)}
         / #{rem(40px)} auto 1fr auto;
       column-gap: rem(8px);
       padding: #{rem(12px)} #{rem(8px)} #{rem(12px)} #{rem(16px)};
 
       &[data-display='small'] {
         grid-template:
-          'back profile-picture title   spacer actions' #{rem(24px)}
-          'back profile-picture details spacer actions' #{rem(16px)}
+          'back profile-picture title   spacer blocked-icon actions' #{rem(24px)}
+          'back profile-picture details spacer blocked-icon actions' #{rem(16px)}
           / #{rem(40px)} #{rem(40px)} auto 1fr auto;
       }
 
@@ -302,6 +315,15 @@
         @extend %text-overflow-ellipsis;
         color: var(--t-text-e2-color);
         grid-area: details;
+      }
+
+      .blocked-icon {
+        grid-area: blocked-icon;
+        display: grid;
+        grid-auto-flow: column;
+        font-size: rem(24px);
+        top: rem(8px);
+        position: relative;
       }
 
       .actions {

@@ -69,10 +69,6 @@ export interface ConversationPreviewData {
          */
         readonly name: string;
         /**
-         * Whether the conversation (contact) is being blocked.
-         */
-        readonly blocked: boolean;
-        /**
          * Notification policy for this conversation.
          */
         readonly notifications: ReceiverNotificationPolicy;
@@ -134,7 +130,6 @@ function transformContact(contact: RemoteModelFor<Contact>): ConversationPreview
         },
         badge: getContactBadge(contact.view),
         name: contact.view.displayName,
-        blocked: false, // TODO(DESK-419): await settings.contactIsBlocked(contact.view.identity),
         notifications: transformNotificationPolicyFromContact(contact.view),
     };
 }
@@ -146,7 +141,6 @@ function transformGroup(group: RemoteModelFor<Group>): ConversationPreviewData['
             uid: group.ctx,
         },
         name: group.view.displayName,
-        blocked: false,
         notifications: transformNotificationPolicyFromGroup(group.view),
     };
 }

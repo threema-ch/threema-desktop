@@ -1,21 +1,14 @@
 <script lang="ts">
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
-  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
-  import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import ForwardRecipient from '~/app/ui/modal/message-forward/ForwardRecipient.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type ContactTab} from '~/app/ui/nav/index';
-  import {
-    filterContacts,
-    getStores,
-    showFullNameAndNickname,
-    transformContact,
-  } from '~/app/ui/nav/receiver';
+  import {filterContacts} from '~/app/ui/nav/receiver';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import {type DbReceiverLookup} from '~/common/db';
   import {WorkVerificationLevel} from '~/common/enum';
@@ -117,57 +110,18 @@
           />
         </div>
         <div class="recipients">
-          {#await services.backend.model.contacts.getAll() then contacts}
+          {#await backend.model.contacts.getAll() then contacts}
             {#await filterContacts(contacts.get(), filter, activeTab === 'work-contacts' ? WorkVerificationLevel.WORK_SUBSCRIPTION_VERIFIED : undefined) then filtered}
               {#each filtered.get() as contact (contact.id)}
-                {#await transformContact(backend.model.settings, contact.get()) then transformedContact}
-                  {#await getStores(contact.get()) then stores}
-                    <div class="recipient">
-                      <DeprecatedReceiver
-                        on:click={() =>
-                          forwardMessage({
-                            type: contact.type,
-                            uid: contact.ctx,
-                          })}
-                        {filter}
-                        profilePicture={{
-                          alt: $i18n.t(
-                            'dialog--forward-message.hint--profile-picture',
-                            'Profile picture of {name}',
-                            {
-                              name: transformedContact.displayName,
-                            },
-                          ),
-                          profilePicture: stores.profilePicture.get().view,
-                          initials: transformedContact.initials,
-                          unread: 0,
-                          badge: transformedContact.badge,
-                        }}
-                        title={{
-                          title: showFullNameAndNickname(transformedContact)
-                            ? transformedContact.fullName
-                            : transformedContact.displayName,
-                          subtitle: {
-                            text: showFullNameAndNickname(transformedContact)
-                              ? transformedContact.nickname
-                              : undefined,
-                          },
-                          isInactive: transformedContact.activityState === 'inactive',
-                        }}
-                      >
-                        <div class="verification-dots" slot="additional-top">
-                          <VerificationDots
-                            colors={transformedContact.verificationLevelColors}
-                            verificationLevel={transformedContact.verificationLevel}
-                          />
-                        </div>
-                        <div class="identity" slot="additional-bottom">
-                          <ProcessedText text={transformedContact.identity} highlights={filter} />
-                        </div>
-                      </DeprecatedReceiver>
-                    </div>
-                  {/await}
-                {/await}
+                <ForwardRecipient
+                  {contact}
+                  {filter}
+                  on:click={() =>
+                    forwardMessage({
+                      type: contact.type,
+                      uid: contact.ctx,
+                    })}
+                />
               {/each}
             {/await}
           {/await}
@@ -179,8 +133,6 @@
 
 <style lang="scss">
   @use 'component' as *;
-
-  $-temp-vars: (--cc-t-background-color);
 
   .body {
     padding-top: rem(10px);
@@ -208,31 +160,6 @@
       display: grid;
       overflow-y: auto;
       align-content: start;
-
-      .recipient {
-        @include def-var($-temp-vars, --cc-t-background-color, var(--t-main-background-color));
-        @include def-var(
-          $--cc-profile-picture-overlay-background-color: var($-temp-vars, --cc-t-background-color)
-        );
-        background-color: var($-temp-vars, --cc-t-background-color);
-
-        .verification-dots {
-          @include def-var(--c-verification-dots-size, rem(6px));
-        }
-
-        .identity {
-          @extend %font-small-400;
-          color: var(--t-text-e2-color);
-        }
-
-        &:hover {
-          @include def-var(
-            $-temp-vars,
-            --cc-t-background-color,
-            var(--cc-conversation-preview-background-color--hover)
-          );
-        }
-      }
     }
   }
 </style>

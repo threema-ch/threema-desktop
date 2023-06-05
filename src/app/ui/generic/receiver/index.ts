@@ -99,6 +99,7 @@ export interface ContactReceiver extends BaseReceiver {
         readonly level: VerificationLevel;
     };
     readonly identity: IdentityString;
+    readonly isBlocked: boolean;
 }
 interface ConversationPreviewReceiver extends BaseReceiver {
     readonly type: 'conversation-preview';

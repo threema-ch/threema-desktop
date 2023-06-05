@@ -16,7 +16,7 @@ import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
 import {type IdentityString} from '~/common/network/types';
 import {getNotificationTagForContact, type NotificationTag} from '~/common/notification';
-import {type u53} from '~/common/types';
+import {type StrictOmit, type u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
@@ -28,6 +28,7 @@ import {
     REQUIRED,
 } from '~/common/utils/property-validator';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
+import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 
@@ -39,6 +40,7 @@ import {
     type ContactRepository,
     type ContactUpdate,
     type ContactView,
+    type ContactViewDerivedProperties,
     type Conversation,
     type ProfilePicture,
     type ServicesForModel,
@@ -84,7 +86,9 @@ const ensureExactContactUpdate = createExactPropertyValidator<ContactUpdate>('Co
     notificationSoundPolicyOverride: OPTIONAL,
 });
 
-function addDerivedData(contact: Omit<ContactView, 'displayName' | 'initials'>): ContactView {
+function addDerivedData(
+    contact: StrictOmit<ContactView, ContactViewDerivedProperties>,
+): ContactView {
     return {
         ...contact,
         displayName: getDisplayName(contact),
@@ -255,6 +259,7 @@ export class ContactModelController implements ContactController {
     public readonly meta = new ModelLifetimeGuard<ContactView>();
 
     public readonly profilePicture: LocalModelStore<ProfilePicture>;
+    public readonly isBlocked;
 
     public readonly update: ContactController['update'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
@@ -343,6 +348,10 @@ export class ContactModelController implements ContactController {
             this.uid,
             this._identity,
             initialProfilePictureData,
+        );
+
+        this.isBlocked = derive(this._services.model.user.privacySettings, ({controller}) =>
+            controller.isIdentityExplicitlyBlocked(this._identity),
         );
     }
 

@@ -52,7 +52,7 @@ export interface ContactData {
     /**
      * Whether this contact is being blocked.
      */
-    readonly blocked: boolean;
+    readonly isBlocked: boolean;
 }
 
 /**

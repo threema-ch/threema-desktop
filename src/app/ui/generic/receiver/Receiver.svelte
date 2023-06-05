@@ -1,11 +1,11 @@
 <script lang="ts">
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
+  import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
+  import {type Receiver} from '~/app/ui/generic/receiver';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
-
-  import {type Receiver} from '.';
 
   /**
    * Determine whether the receiver is clickable.
@@ -36,6 +36,7 @@
   let isCreator = false;
   let isArchived = false;
   let isDraft = false;
+  let isBlocked = false;
   let hasBadge = false;
 
   function extractDetails(receiverParam: Receiver): void {
@@ -49,9 +50,14 @@
         isCreator = receiverParam.subtitle?.badges?.isCreator ?? false;
         isArchived = receiverParam.subtitle?.badges?.isArchived ?? false;
         isDraft = receiverParam.subtitle?.badges?.isDraft ?? false;
+        isBlocked = receiverParam.isBlocked;
         break;
       default:
-        // No-op
+        isInactive = false;
+        isCreator = false;
+        isArchived = false;
+        isDraft = false;
+        isBlocked = false;
         break;
     }
 
@@ -125,6 +131,11 @@
         />
       </div>
       <div class="identity">
+        {#if isBlocked}
+          <span class="property" data-property="blocked">
+            <BlockedIcon />
+          </span>
+        {/if}
         <ProcessedText text={receiver.identity} highlights={filter} />
       </div>
     {/if}
@@ -299,6 +310,11 @@
       .draft {
         color: var(--cc-conversation-preview-draft-text-color);
       }
+    }
+
+    [data-property='blocked'] {
+      position: relative;
+      top: rem(2px);
     }
   }
 </style>

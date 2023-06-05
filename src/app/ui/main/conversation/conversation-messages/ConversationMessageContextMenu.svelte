@@ -11,7 +11,9 @@
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
   interface OpenOptions {
+    readonly showReactions: boolean;
     readonly showAction: {
+      readonly quote: boolean;
       readonly copyLink: boolean;
       readonly copyMessage: boolean;
       readonly forward: boolean;
@@ -23,7 +25,9 @@
   export let isGroupConversation: boolean;
 
   export let options: OpenOptions = {
+    showReactions: true,
     showAction: {
+      quote: true,
       copyLink: false,
       copyMessage: true,
       forward: true,
@@ -46,7 +50,7 @@
         </MenuItem>
         <MenuItemDivider />
       {/if}
-      {#if message.direction === MessageDirection.INBOUND && !isGroupConversation}
+      {#if options.showReactions && message.direction === MessageDirection.INBOUND && !isGroupConversation}
         <MenuItem on:click={() => dispatchEvent('thumbup')}>
           <span class="icon thumb-up" slot="icon">
             <MdIcon
@@ -68,12 +72,14 @@
         </MenuItem>
         <MenuItemDivider />
       {/if}
-      <MenuItem on:click={() => dispatchEvent('quote')}>
-        <span class="icon" slot="icon">
-          <MdIcon theme="Outlined">format_quote</MdIcon>
-        </span>
-        <span>{$i18n.t('messaging.action--message-option-quote', 'Quote')}</span>
-      </MenuItem>
+      {#if options.showAction.quote}
+        <MenuItem on:click={() => dispatchEvent('quote')}>
+          <span class="icon" slot="icon">
+            <MdIcon theme="Outlined">format_quote</MdIcon>
+          </span>
+          <span>{$i18n.t('messaging.action--message-option-quote', 'Quote')}</span>
+        </MenuItem>
+      {/if}
       {#if options.showAction.forward}
         <MenuItem on:click={() => dispatchEvent('forward')}>
           <span class="icon" slot="icon">

@@ -4,6 +4,7 @@
   import {getFragmentForRoute, type Router} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Time from '~/app/ui/generic/form/Time.svelte';
+  import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
@@ -20,6 +21,7 @@
   } from '~/common/enum';
   import {statusFromView} from '~/common/model/message';
   import {type Remote} from '~/common/utils/endpoint';
+  import {derive} from '~/common/utils/store/derived-store';
   import {type ConversationPreview} from '~/common/viewmodel/conversation-preview';
 
   import {type ConversationPreviewData, transformConversation, transformReceiver} from '.';
@@ -38,6 +40,10 @@
    * Receiver
    */
   const receiver = conversationPreview.receiver;
+  $: isReceiverBlockedStore = derive(
+    conversationPreview.viewModel,
+    (viewModel) => viewModel.receiver.type === 'contact' && viewModel.receiver.isBlocked,
+  );
 
   /**
    * Profile Picture
@@ -168,9 +174,9 @@
             filter={$conversationPreviewListFilter}
           >
             <div class="properties" slot="additional-top">
-              {#if receiver$.blocked}
+              {#if $isReceiverBlockedStore}
                 <span class="property" data-property="blocked">
-                  <MdIcon theme="Filled">block</MdIcon>
+                  <BlockedIcon />
                 </span>
               {/if}
 

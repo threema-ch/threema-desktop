@@ -13,7 +13,7 @@ import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
-import {derive} from '~/common/utils/store/derived-store';
+import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
 import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
@@ -100,7 +100,7 @@ function getViewModel(
                 const contact = getAndSubscribe(receiver);
                 item = {
                     ...commonProperties,
-                    receiver: deriveContactListItem(contact),
+                    receiver: deriveContactListItem(contact, getAndSubscribe),
                     receiverLookup: {type: receiver.type, uid: receiver.ctx},
                 };
                 break;
@@ -125,22 +125,31 @@ function getViewModel(
 }
 
 interface ContactListItem {
+    type: 'contact';
     displayName: string;
     initials: string;
+    isBlocked: boolean;
 }
-function deriveContactListItem(contact: Contact): ContactListItem {
+function deriveContactListItem(
+    contact: Contact,
+    getAndSubscribe: GetAndSubscribeFunction,
+): ContactListItem {
     return {
+        type: 'contact',
         displayName: getDisplayName(contact.view),
         initials: contact.view.initials,
+        isBlocked: getAndSubscribe(contact.controller.isBlocked),
     };
 }
 
 interface GroupListItem {
+    type: 'group';
     displayName: string;
     initials: string;
 }
 function deriveGroupListItem(group: Group): GroupListItem {
     return {
+        type: 'group',
         displayName: group.view.displayName,
         initials: group.view.displayName.slice(0, 2),
     };

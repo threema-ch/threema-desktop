@@ -10,11 +10,10 @@
   import {type DbContactUid} from '~/common/db';
   import {type BackendController} from '~/common/dom/backend/controller';
   import {ReceiverType} from '~/common/enum';
-  import {type Contact, type Settings} from '~/common/model';
+  import {type Contact} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type IdentityString} from '~/common/network/types';
   import {type u53} from '~/common/types';
-  import {type Remote} from '~/common/utils/endpoint';
   import {type IQueryableStore} from '~/common/utils/store';
 
   export let router: Router;
@@ -36,8 +35,6 @@
    * or the current user.
    */
   const VISIBLE_PARTICIPANTS_LIMIT_WHEN_COLLAPSED = 4;
-
-  const settings: Remote<Settings> = backend.model.settings;
 
   let isCurrentUserGroupCreator: boolean;
   let numberOfParticipants: u53;
@@ -119,7 +116,6 @@
       {#each getVisibleMembers(sortedMembersExcludingCurrentContact, isParticipantsListExpanded) as member (member.id)}
         <GroupMember
           {member}
-          {settings}
           {creator}
           on:click={() => navigateToContactConversation(member.ctx)}
         />

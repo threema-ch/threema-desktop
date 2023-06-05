@@ -101,7 +101,7 @@ export interface ContactListItemViewModel extends PropertiesMarked {
     readonly verificationLevelColors: VerificationLevelColors;
     readonly showInContactList: boolean;
     readonly activityState: ActivityState;
-    readonly blocked: boolean;
+    readonly isBlocked: boolean;
 }
 
 /**
@@ -111,7 +111,7 @@ function getViewModelStore(
     services: ServicesForViewModel,
     contactStore: LocalModelStore<Contact>,
 ): ContactListItemViewModelStore {
-    const {endpoint, model} = services;
+    const {endpoint} = services;
     return derive(contactStore, (contact, getAndSubscribe) =>
         endpoint.exposeProperties({
             uid: contact.ctx,
@@ -130,7 +130,7 @@ function getViewModelStore(
             ...transformContactVerificationLevel(contact.view),
             showInContactList: contact.view.acquaintanceLevel !== AcquaintanceLevel.GROUP,
             activityState: contact.view.activityState,
-            blocked: model.settings.contactIsBlocked(contact.view.identity),
+            isBlocked: getAndSubscribe(contact.controller.isBlocked),
         } as const),
     );
 }

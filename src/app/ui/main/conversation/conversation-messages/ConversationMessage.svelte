@@ -3,7 +3,7 @@
   Message row as shown in a conversation list.
 -->
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
+  import {afterUpdate, createEventDispatcher} from 'svelte';
 
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
@@ -50,6 +50,11 @@
    * The Conversation's receiver
    */
   export let receiver: Remote<AnyReceiverStore>;
+
+  /**
+   * Determine whether the receiver is blocked
+   */
+  export let isReceiverBlocked: boolean;
 
   /**
    * Current receiver lookup
@@ -347,6 +352,10 @@
     readonly quoteMessage: RemoteStore<Remote<ConversationMessageViewModel>>;
     readonly deleteMessage: MessageId;
   }>();
+
+  afterUpdate(() => {
+    contextMenuPopover?.forceReposition();
+  });
 </script>
 
 <template>
@@ -440,7 +449,9 @@
             message={messageBody}
             isGroupConversation={receiver.type === ReceiverType.GROUP}
             options={{
+              showReactions: !isReceiverBlocked,
               showAction: {
+                quote: !isReceiverBlocked,
                 copyLink: hrefToCopy !== undefined,
                 copyMessage: messageContentToCopy !== undefined,
                 forward: messageBody.type === 'text',

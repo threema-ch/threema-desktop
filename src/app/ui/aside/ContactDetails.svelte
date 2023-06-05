@@ -7,6 +7,7 @@
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
@@ -188,6 +189,11 @@
         bind:isInfoModalVisible={identityInformationDialogVisible}
         label={$i18n.t('contacts.label--threema-id', 'Threema ID')}
       >
+        {#if $contactViewModel.isBlocked}
+          <span class="blocked-icon">
+            <BlockedIcon />
+          </span>
+        {/if}
         {$contactViewModel.identity}
       </ListElement>
       <div class="level">
@@ -354,6 +360,11 @@
 
     .level {
       --c-verification-dots-size: #{rem(6px)};
+    }
+
+    .blocked-icon {
+      position: relative;
+      top: rem(2px);
     }
 
     // .gallery {

@@ -177,7 +177,7 @@ function getInnerConversationViewModelStore(
         const receiver = getAndSubscribe(conversationModel.controller.receiver());
         const profilePicture = getAndSubscribe(receiver.controller.profilePicture);
         return endpoint.exposeProperties({
-            receiver: transformReceiver(receiver, profilePicture, model),
+            receiver: transformReceiver(receiver, profilePicture, model, getAndSubscribe),
         });
     });
 }

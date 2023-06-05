@@ -32,6 +32,11 @@
   export let services: AppServices;
 
   /**
+   * Determine whether this is a blocked contact
+   */
+  export let isReceiverBlocked: boolean;
+
+  /**
    * Conversation Messages
    */
   export let conversationMessagesSet: Remote<ConversationMessageSetStore>;
@@ -153,6 +158,7 @@
       {messageStore}
       {viewModelStore}
       {receiver}
+      {isReceiverBlocked}
       {receiverLookup}
       selectable={false}
       {services}

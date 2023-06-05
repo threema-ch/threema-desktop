@@ -21,10 +21,10 @@ import {
     type GroupView,
     type ProfilePicture,
     type Repositories,
-    type Settings,
 } from '~/common/model';
 import {type Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
+import {type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {getMemberNames} from '~/common/viewmodel/group-list-item';
 import {type AnyReceiverData, type ContactData} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
@@ -41,7 +41,7 @@ export type ReceiverNotificationPolicy = 'default' | 'muted' | 'mentioned' | 'ne
 export function transformContact(
     contact: Contact,
     profilePicture: ProfilePicture,
-    settings: Settings,
+    getAndSubscribe: GetAndSubscribeFunction,
 ): TransformedReceiverData {
     // Determine verification level
     const {verificationLevel, verificationLevelColors} = transformContactVerificationLevel(contact);
@@ -58,7 +58,7 @@ export function transformContact(
         badge: getContactBadge(contact.view),
         verificationLevel,
         verificationLevelColors,
-        blocked: settings.contactIsBlocked(contact.view.identity),
+        isBlocked: getAndSubscribe(contact.controller.isBlocked),
         notifications: transformNotificationPolicyFromContact(contact.view),
     };
 }
@@ -88,10 +88,11 @@ export function transformReceiver(
     receiver: AnyReceiver,
     profilePicture: ProfilePicture,
     model: Repositories,
+    getAndSubscribe: GetAndSubscribeFunction,
 ): TransformedReceiverData {
     switch (receiver.type) {
         case ReceiverType.CONTACT:
-            return transformContact(receiver, profilePicture, model.settings);
+            return transformContact(receiver, profilePicture, getAndSubscribe);
         case ReceiverType.DISTRIBUTION_LIST:
             throw new Error('TODO(DESK-236): Implement distribution list');
         case ReceiverType.GROUP:

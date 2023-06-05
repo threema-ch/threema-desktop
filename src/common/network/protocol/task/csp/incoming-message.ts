@@ -467,12 +467,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Check if the message should be discarded due to the contact being
         // implicitly or explicitly blocked.
-        //
-        // TODO(DESK-560): Full-featured contact blocking logic
-        if (
-            this._isBlocked(sender.string, senderContactOrInitFragment) &&
-            !BLOCK_EXEMPTION_TYPES.has(type)
-        ) {
+        if (this._isBlocked(sender.string) && !BLOCK_EXEMPTION_TYPES.has(type)) {
             this._log.info(`Discarding message from blocked contact ${sender.string}`);
             return await this._discard(handle);
         }
@@ -849,16 +844,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         );
     }
 
-    private _isBlocked(
-        sender: IdentityString,
-        senderContactOrInitFragment: ContactOrInitFragment,
-    ): boolean {
-        const {model} = this._services;
-        return (
-            (!(senderContactOrInitFragment instanceof LocalModelStore) &&
-                model.settings.blockUnknown) ||
-            model.settings.contactIsBlocked(sender)
-        );
+    private _isBlocked(sender: IdentityString): boolean {
+        return this._services.model.user.privacySettings.get().controller.isContactBlocked(sender);
     }
 
     private _getContactOrInit(

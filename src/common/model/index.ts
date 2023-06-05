@@ -74,6 +74,8 @@ import {
     type i53,
     type PickKeysForType,
     type ReadonlyUint8Array,
+    type StrictExtract,
+    type StrictOmit,
     type u8,
     type u53,
 } from '~/common/types';
@@ -368,6 +370,18 @@ export type PrivacySettingsUpdate = Partial<PrivacySettingsView>;
 export type PrivacySettingsController = {
     readonly meta: ModelLifetimeGuard<PrivacySettingsView>;
     readonly update: (change: PrivacySettingsUpdate) => void;
+
+    /**
+     * Returns whether an identity string is explicitly blocked, i.e. whether it is present in the
+     * `blockedIdentities` list in the privacy settings.
+     */
+    readonly isIdentityExplicitlyBlocked: (identityString: IdentityString) => boolean;
+
+    /**
+     * Returns whether a contact is explicitly or implicitly blocked as per the the privacy
+     * settings.
+     */
+    readonly isContactBlocked: (identityString: IdentityString) => boolean;
 } & ProxyMarked;
 export type PrivacySettings = LocalModel<PrivacySettingsView, PrivacySettingsController>;
 
@@ -515,9 +529,15 @@ export interface ContactView {
     };
     readonly notificationSoundPolicyOverride?: NotificationSoundPolicy;
 }
-export type ContactInit = Omit<ContactView, 'displayName' | 'initials'> & ConversationInitMixin;
+
+export type ContactViewDerivedProperties = StrictExtract<
+    keyof ContactView,
+    'displayName' | 'initials'
+>;
+export type ContactInit = StrictOmit<ContactView, ContactViewDerivedProperties> &
+    ConversationInitMixin;
 export type ContactUpdate = Partial<
-    Omit<ContactView, 'identity' | 'publicKey' | 'displayName' | 'initials' | 'colorIndex'>
+    StrictOmit<ContactView, ContactViewDerivedProperties | 'identity' | 'publicKey' | 'colorIndex'>
 >;
 
 /**
@@ -538,6 +558,12 @@ export type ContactController = ReceiverController & {
      * Remove the contact and the corresponding conversation, and deactivate the controller.
      */
     readonly remove: Omit<ControllerUpdateFromSource, 'fromRemote'>;
+
+    // TODO(DESK-1062): Refactor `ContactController.isBlocked` property into the corresponding viewModel
+    /**
+     * Returns a store informing whether a contact is explicitly blocked.
+     */
+    readonly isBlocked: LocalStore<boolean>;
 
     /**
      * Informs whether a contact can be deleted. Currently a user is only deletable if it does not
@@ -1287,18 +1313,11 @@ export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<InboundFileMessage['model']>
     | RemoteModelStore<OutboundFileMessage['model']>
 >;
-
-export type Settings = {
-    readonly blockUnknown: boolean;
-    readonly contactIsBlocked: (identity: IdentityString) => boolean;
-} & ProxyMarked;
-
 export type Repositories = {
     readonly user: User;
     readonly contacts: ContactRepository;
     readonly groups: GroupRepository;
     readonly conversations: ConversationRepository;
     readonly profilePictures: IProfilePictureRepository;
-    readonly settings: Settings;
     readonly globalProperties: IGlobalPropertyRepository;
 } & ProxyMarked;
