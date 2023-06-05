@@ -345,6 +345,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     public readonly transaction = undefined;
     private readonly _log: Logger;
     private readonly _id: MessageId;
+    private _isContactBlocked: (identityString: IdentityString) => boolean;
 
     public constructor(
         private readonly _services: ServicesForTasks,
@@ -353,6 +354,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         const messageIdHex = u64ToHexLe(_message.messageId);
         this._log = _services.logging.logger(`network.protocol.task.in-message.${messageIdHex}`);
         this._id = ensureMessageId(this._message.messageId);
+
+        const privacySettings = _services.model.user.privacySettings;
+        this._isContactBlocked = (i) => privacySettings.get().controller.isContactBlocked(i);
+        privacySettings.subscribe((ps) => {
+            this._isContactBlocked = (i) => ps.controller.isContactBlocked(i);
+        });
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
@@ -467,7 +474,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Check if the message should be discarded due to the contact being
         // implicitly or explicitly blocked.
-        if (this._isBlocked(sender.string) && !BLOCK_EXEMPTION_TYPES.has(type)) {
+        if (!BLOCK_EXEMPTION_TYPES.has(type) && this._isContactBlocked(sender.string)) {
             this._log.info(`Discarding message from blocked contact ${sender.string}`);
             return await this._discard(handle);
         }
@@ -842,10 +849,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 )
                 .decrypt(),
         );
-    }
-
-    private _isBlocked(sender: IdentityString): boolean {
-        return this._services.model.user.privacySettings.get().controller.isContactBlocked(sender);
     }
 
     private _getContactOrInit(
