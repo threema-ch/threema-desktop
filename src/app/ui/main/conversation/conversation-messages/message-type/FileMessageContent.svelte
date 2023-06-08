@@ -11,8 +11,14 @@
   import {type FilenameDetails, getSanitizedFileNameDetails} from '~/common/utils/file';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
   import {type MessageBodyFor} from '~/common/viewmodel/types';
+  import {type Mention} from '~/common/viewmodel/utils/mentions';
 
   export let body: MessageBodyFor<'file'>;
+
+  /**
+   * Mentions parsed from the message
+   */
+  export let mentions: Mention[];
 
   const dispatch = createEventDispatcher<{saveFile: undefined}>();
 
@@ -43,7 +49,7 @@
   </div>
   {#if body.caption !== undefined}
     <div class="caption">
-      <Text text={body.caption} />
+      <Text text={body.caption} {mentions} />
     </div>
   {/if}
 </template>

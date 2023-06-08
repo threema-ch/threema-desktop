@@ -33,7 +33,7 @@
       </div>
     {:else if message.type === 'file'}
       <div class="file">
-        <FileMessageContent body={message.body} on:saveFile />
+        <FileMessageContent body={message.body} {mentions} on:saveFile />
       </div>
     {:else}
       <div class="unsupported-message">
