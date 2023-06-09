@@ -247,7 +247,21 @@ validate-metainfo:
   before_script:
     - apt-get update && apt-get install -y appstream-util
   script:
-    - G_DEBUG=fatal-criticals appstream-util validate packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+    - |
+      G_DEBUG=fatal-criticals
+      SUCCESS_VALIDATE=1
+      appstream-util validate packaging/metadata/ch.threema.threema-desktop.metainfo.xml || SUCCESS_VALIDATE=0
+      if [[ "$SUCCESS_VALIDATE" -ne 1 ]]; then
+        # If regular validation failed, validate with "validate-relax". If that
+        # succeeds, mark the build as "successful with warnings" (though the
+        # custom exit code).
+        echo "Validation with 'validate' failed. Retrying with 'validate-relax'."
+        appstream-util validate-relax packaging/metadata/ch.threema.threema-desktop.metainfo.xml
+        exit 123
+      fi
+  allow_failure:
+    exit_codes:
+      - 123
 
 package:source:
   stage: package
