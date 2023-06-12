@@ -7,7 +7,7 @@ import {unreachable} from '~/common/utils/assert';
 
 import * as ConversationId from './conversation-id';
 
-const SENT_SCHEMA = validator(d2d.OutgoingMessageUpdate.Sent, v.object({}));
+const SENT_SCHEMA = validator(d2d.OutgoingMessageUpdate.Sent, v.object({}).rest(v.unknown()));
 
 export const SCHEMA = validator(
     d2d.OutgoingMessageUpdate,
