@@ -302,6 +302,11 @@ export class BackendController {
                     // TODO(DESK-1037): What to do when the process is done?
                 });
 
+                // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
+                // for connecting to the rendezvous server. Note that the timer is started here, but
+                // not yet awaited until after the connection has been established.
+                const minimalConnectTimer = services.timer.sleep(1000);
+
                 // Create RendezvousConnection and open WebSocket connection
                 let rendezvous;
                 try {
@@ -311,6 +316,7 @@ export class BackendController {
                     connected.reject(ensureError(error));
                     return await eternalPromise(); // TODO(DESK-1037)
                 }
+                await minimalConnectTimer;
                 connected.resolve();
 
                 // Do the rendezvous handshake and wait for nomination of a path
