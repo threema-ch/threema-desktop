@@ -1060,6 +1060,16 @@ export function addTestUserAsContact(
     return repositories.contacts.add.fromSync(makeContactInit(user));
 }
 
+export function addTestUserToFakeDirectory(directory: TestDirectoryBackend, user: TestUser): void {
+    directory.registerUser(user.identity.string, {
+        featureMask: FeatureMaskFlag.GROUP_SUPPORT as FeatureMask,
+        identity: user.identity.string,
+        publicKey: user.ck.public,
+        state: ActivityState.ACTIVE,
+        type: IdentityType.REGULAR,
+    });
+}
+
 /**
  * A test group. Simplified version of a full group view.
  */

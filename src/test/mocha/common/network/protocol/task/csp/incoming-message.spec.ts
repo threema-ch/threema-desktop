@@ -11,6 +11,7 @@ import {
     CspE2eGroupConversationType,
     MessageType,
     ReceiverType,
+    TransactionScope,
 } from '~/common/enum';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -39,6 +40,7 @@ import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampMs, dateToUnixTimestampS, intoUnsignedLong} from '~/common/utils/number';
 import {
     addTestUserAsContact,
+    addTestUserToFakeDirectory,
     createClientKey,
     makeTestServices,
     type NetworkExpectation,
@@ -117,6 +119,31 @@ function createMessage(
         messageAndMetadataNonce,
         messageBox,
     };
+}
+
+/**
+ * Get a incoming text message task from a specific user.
+ *
+ * @returns a task for an incomming message
+ */
+function createNewIncomingTextMessageTask(
+    services: TestServices,
+    user: TestUser,
+    me: IdentityString,
+    messageText = 'this is the secret message',
+): IncomingMessageTask {
+    const textMessage = createMessage(
+        services,
+        user,
+        me,
+        CspE2eConversationType.TEXT,
+        structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+            text: UTF8.encode(messageText),
+        }),
+        CspMessageFlags.fromPartial({sendPushNotification: true}),
+    );
+
+    return new IncomingMessageTask(services, textMessage);
 }
 
 /**
@@ -304,6 +331,57 @@ export function run(): void {
                 await processMessageWithNickname(newNickname, true);
                 expect(user1Contact.get().view.nickname).to.equal(newNickname);
             });
+
+            it("creates a new contact for an unknown contact's text message", async function () {
+                const {model, directory} = services;
+
+                addTestUserToFakeDirectory(directory, user1);
+
+                // Verify contact absence
+                const user1ContactBefore = model.contacts.getByIdentity(user1.identity.string);
+                expect(
+                    user1ContactBefore,
+                    'Contact user1 should not exist before textmessage was sent.',
+                ).to.be.undefined;
+
+                // Create incoming text message
+                const task = createNewIncomingTextMessageTask(services, user1, me);
+                const expectations = [
+                    NetworkExpectationFactory.startTransaction(42, TransactionScope.CONTACT_SYNC),
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.contactSync).not.to.be.undefined;
+                        expect(payload.contactSync?.create).not.to.be.undefined;
+                        expect(payload.contactSync?.create?.contact).not.to.be.undefined;
+                        const newContact = unwrap(payload.contactSync?.create?.contact);
+                        expect(newContact.identity).to.equal(user1.identity.string);
+                    }),
+
+                    // Reflect and ack incoming text message
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.incomingMessage).not.to.be.undefined;
+                        const incomingMessage = unwrap(payload.incomingMessage);
+                        expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                    // Reflect and send delivery receipt
+                    ...reflectAndSendDeliveryReceipt(
+                        services,
+                        user1,
+                        CspE2eDeliveryReceiptStatus.RECEIVED,
+                    ),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                // Get newly created contact
+                const user1Contact = model.contacts.getByIdentity(user1.identity.string);
+                expect(user1Contact, 'Contact user1 shoult exist after the textmessage was sent.')
+                    .not.to.be.undefined;
+
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+            });
         });
 
         describe('text messages', function () {
@@ -322,20 +400,10 @@ export function run(): void {
                 expect(conversation.get().controller.getAllMessages().get().size).to.equal(0);
 
                 // Create incoming text message
-                const messageText = 'this is the secret message';
-                const textMessage = createMessage(
-                    services,
-                    user1,
-                    me,
-                    CspE2eConversationType.TEXT,
-                    structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                        text: UTF8.encode(messageText),
-                    }),
-                    CspMessageFlags.fromPartial({sendPushNotification: true}),
-                );
+                const messageText = 'this is the secret! message';
+                const task = createNewIncomingTextMessageTask(services, user1, me, messageText);
 
                 // Run task
-                const task = new IncomingMessageTask(services, textMessage);
                 const handle = new TestHandle(services, [
                     // Reflect and ack incoming text message
                     NetworkExpectationFactory.reflectSingle((payload) => {
@@ -367,6 +435,69 @@ export function run(): void {
                     `Expected message type to be text, but was ${message.type}`,
                 );
                 expect(message.get().view.text).to.equal(messageText);
+            });
+
+            it('stores a text message from an unknown contact', async function () {
+                const {model, directory} = services;
+
+                addTestUserToFakeDirectory(directory, user1);
+
+                // Create incoming text message
+                const task = createNewIncomingTextMessageTask(services, user1, me);
+                const handle = new TestHandle(services, [
+                    // Contact creation
+                    NetworkExpectationFactory.startTransaction(42, TransactionScope.CONTACT_SYNC),
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        const newContact = unwrap(payload.contactSync?.create?.contact);
+                        expect(newContact.identity).to.equal(user1.identity.string);
+                    }),
+
+                    // Reflect and ack incoming text message
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.incomingMessage).not.to.be.undefined;
+                        const incomingMessage = unwrap(payload.incomingMessage);
+                        expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                        expect(incomingMessage.type).to.equal(
+                            protobuf.common.CspE2eMessageType.TEXT,
+                        );
+                    }),
+                    NetworkExpectationFactory.writeIncomingMessageAck(),
+
+                    // Reflect and send delivery receipt
+                    ...reflectAndSendDeliveryReceipt(
+                        services,
+                        user1,
+                        CspE2eDeliveryReceiptStatus.RECEIVED,
+                    ),
+                ]);
+                await task.run(handle);
+                handle.finish();
+
+                // Get newly created contact
+                const user1Contact = model.contacts.getByIdentity(user1.identity.string);
+                expect(user1Contact, 'Contact user1 shoult exist after the textmessage was sent.')
+                    .not.to.be.undefined;
+                assert(user1Contact !== undefined);
+
+                // Get user conversation
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+                assert(conversation !== undefined, 'Conversation with user 1 not found');
+                expect(
+                    conversation.get().controller.getAllMessages().get().size,
+                    'stored message set size',
+                ).to.equal(1);
+
+                // Text message should be part of the 1:1 conversation
+                const messages = [...conversation.get().controller.getAllMessages().get()];
+                expect(messages.length).to.equal(1);
+                const message = messages[0];
+                assert(
+                    message.type === MessageType.TEXT,
+                    `Expected message type to be text, but was ${message.type}`,
+                );
             });
         });
 
