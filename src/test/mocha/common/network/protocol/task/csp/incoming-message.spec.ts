@@ -740,6 +740,37 @@ export function run(): void {
 
                 expect(expectations, 'Not all expectations consumed').to.be.empty;
             });
+
+            it('discards 1:1 conversation text message if contact is blocked', async function () {
+                const {model} = services;
+
+                // Add contact and get conversation
+                const user1Contact = addTestUserAsContact(model, user1);
+                const conversation = model.conversations.getForReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: user1Contact.ctx,
+                });
+                assert(conversation !== undefined, 'Conversation with user 1 not found');
+                expect(conversation.get().controller.getAllMessages().get().size).to.equal(0);
+
+                // Block contact
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [user1.identity.string]},
+                });
+
+                // Create incoming text message
+                const task = createNewIncomingTextMessageTask(services, user1, me);
+                const expectations = [NetworkExpectationFactory.writeIncomingMessageAck()];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                // Text message should *not* be part of the 1:1 conversation
+                const messages = [...conversation.get().controller.getAllMessages().get()];
+                expect(messages.length).to.equal(0);
+
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
+            });
         });
     });
 }
