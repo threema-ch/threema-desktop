@@ -13,7 +13,13 @@
    */
   export let mentions: Mention | Mention[] | undefined = undefined;
 
-  $: processedText = parseText(escapeHtmlUnsafeChars(text), mentions, undefined, true, true);
+  $: processedText = parseText({
+    text: escapeHtmlUnsafeChars(text),
+    mentions,
+    highlights: undefined,
+    shouldParseMarkup: true,
+    shouldParseLinks: true,
+  });
 </script>
 
 <template>

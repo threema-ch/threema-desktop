@@ -8,13 +8,13 @@
   export let shouldParseMarkup = false;
   export let shouldParseLinks = false;
 
-  $: processedText = parseText(
-    escapeHtmlUnsafeChars(text),
+  $: processedText = parseText({
+    text: escapeHtmlUnsafeChars(text),
     mentions,
     highlights,
     shouldParseMarkup,
     shouldParseLinks,
-  );
+  });
 </script>
 
 <template>

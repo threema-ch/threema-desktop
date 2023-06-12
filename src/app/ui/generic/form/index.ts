@@ -260,10 +260,11 @@ export function getTimeIsoString(date: Date): string {
 /**
  * Returns an HTML tag (as a string) that can be used to render a {@link Mention}.
  *
+ * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param mention The mention to generate HTML code for.
  * @returns A string containing a HTML tag which represents the supplied `Mention`.
  */
-export function getMentionHtml(mention: Mention): string {
+function getMentionHtml(mention: Mention): string {
     if (mention.type === 'all') {
         return `<span class="mention all">@All</span>`;
     }
@@ -278,7 +279,7 @@ export function getMentionHtml(mention: Mention): string {
     return `<a href="${href}" draggable="false" class="mention">${mentionDisplay}</a>`;
 }
 
-export function getHighlightHtml(highlight: string): string {
+function getHighlightHtml(highlight: string): string {
     return `<span class="parsed-text-highlight">${highlight}</span>`;
 }
 
@@ -291,7 +292,7 @@ export function getHighlightHtml(highlight: string): string {
  * @param text The text to parse.
  * @returns The text containing the markup replaced with HTML.
  */
-function parseMarkup(text: string): string {
+export function parseMarkup(text: string): string {
     return markify(text, {
         [TokenType.Asterisk]: 'md-bold',
         [TokenType.Underscore]: 'md-italic',
@@ -305,11 +306,12 @@ function parseMarkup(text: string): string {
  * - `span` for mentions of type "all" or "self".
  * - `a` for mentions of type "other" (linking to the corresponding conversation).
  *
+ * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param text The text to parse.
  * @param mentions An array of mentions to search for and replace in the text.
  * @returns The text containing the mentions replaced with HTML.
  */
-function parseMentions(text: string, mentions: Mention | Mention[]): string {
+export function parseMentions(text: string, mentions: Mention | Mention[]): string {
     let parsedText = text;
     for (const mention of mentions instanceof Array ? mentions : [mentions]) {
         parsedText = parsedText.replaceAll(`@[${mention.identityString}]`, getMentionHtml(mention));
@@ -325,7 +327,7 @@ function parseMentions(text: string, mentions: Mention | Mention[]): string {
  * @param highlights An array of highlights to search for and replace in the text.
  * @returns The text containing the highlights replaced with HTML.
  */
-function parseHighlights(text: string, highlights: string | string[]): string {
+export function parseHighlights(text: string, highlights: string | string[]): string {
     let parsedText = text;
     for (const highlight of highlights instanceof Array ? highlights : [highlights]) {
         if (highlight.trim() !== '') {
@@ -347,7 +349,7 @@ function parseHighlights(text: string, highlights: string | string[]): string {
  * @param text The text to parse.
  * @returns The text containing the urls replaced with HTML.
  */
-function parseLinks(text: string): string {
+export function parseLinks(text: string): string {
     return autolinker.link(text, {
         phone: false,
         stripPrefix: false,
@@ -383,13 +385,24 @@ function parseLinks(text: string): string {
  * @param shouldParseLinks If links should be detected and replaced.
  * @returns The text containing the specified tokens replaced with HTML.
  */
-export function parseText(
-    text: string | undefined,
-    mentions?: Mention | Mention[],
-    highlights?: string | string[],
+export function parseText({
+    text,
+    mentions,
+    highlights,
     shouldParseMarkup = false,
     shouldParseLinks = false,
-): string {
+}: {
+    /** The text to parse. */
+    text: string | undefined;
+    /** The {@link Mention}s to search for and replace in the text. */
+    mentions?: Mention | Mention[];
+    /** The highlights to search for and replace in the text. */
+    highlights?: string | string[];
+    /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
+    shouldParseMarkup?: boolean;
+    /** If links should be detected and replaced. */
+    shouldParseLinks?: boolean;
+}): string {
     if (text === undefined || text === '') {
         return '';
     }
