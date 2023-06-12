@@ -12,6 +12,7 @@ import {
     MessageType,
     ReceiverType,
     TransactionScope,
+    UnknownContactPolicy,
 } from '~/common/enum';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -702,6 +703,42 @@ export function run(): void {
                     const messages = groupConversation.get().controller.getAllMessages().get();
                     expect(messages.size).to.equal(1);
                 }
+            });
+        });
+
+        describe('contact blocking', function () {
+            it('creates no new contact and discards message if block unknown is active', async function () {
+                const {model, directory} = services;
+
+                addTestUserToFakeDirectory(directory, user1);
+
+                // Set privacy to block unknown
+                model.user.privacySettings.get().controller.update({
+                    unknownContactPolicy: UnknownContactPolicy.BLOCK_UNKNOWN,
+                });
+
+                // Verify contact absence
+                const user1ContactBefore = model.contacts.getByIdentity(user1.identity.string);
+                expect(
+                    user1ContactBefore,
+                    'Contact user1 should not exist before textmessage was sent.',
+                ).to.be.undefined;
+
+                // Create incoming text message
+                const task = createNewIncomingTextMessageTask(services, user1, me);
+                const expectations = [NetworkExpectationFactory.writeIncomingMessageAck()];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+
+                // Verify contact absence
+                const user1ContactAfter = model.contacts.getByIdentity(user1.identity.string);
+                expect(
+                    user1ContactAfter,
+                    'Contact user1 should not exist after textmessage was sent.',
+                ).to.be.undefined;
+
+                expect(expectations, 'Not all expectations consumed').to.be.empty;
             });
         });
     });
