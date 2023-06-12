@@ -142,15 +142,15 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         const reflectDate = await outCspMessageTask.run(handle);
 
         // Mark message as sent, using the reflection date as timestamp
-        assert(
-            reflectDate !== undefined,
-            `OutgoingCspMessageTask did not reflect the message of type ${messageProperties.type}`,
-        );
-        this._markMessageAsSent(reflectDate);
+        if (reflectDate !== undefined) {
+            this._markMessageAsSent(reflectDate);
+        } else {
+            this._log.warn(`Message of type ${messageProperties.type} was not sent.`);
+        }
 
         // Done
         this._log.info(
-            `Reflected and sent ${ReceiverTypeUtils.nameOf(
+            `Reflected ${reflectDate !== undefined ? 'and sent ' : ''}${ReceiverTypeUtils.nameOf(
                 this._receiverModel.type,
             )?.toLowerCase()} ${messageType} message`,
         );

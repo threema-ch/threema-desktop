@@ -336,5 +336,33 @@ export function run(): void {
             await task.run(handle);
             expect(messageStore.get().view.sentAt).to.equal(reflectionDate);
         });
+
+        it('should not mark the message as sent when no reflection date was returned', async function () {
+            const {model, crypto} = services;
+            const receiver = addTestUserAsContact(model, user1).get();
+            const {messageStore} = addOutgoingTestMessageForReceiver(receiver, crypto);
+            expect(messageStore.get().view.sentAt).to.be.undefined;
+
+            const outgoingCspMessageTaskConstructor: IOutgoingCspMessageTaskConstructor =
+                class extends TestOutgoingCspMessageBaseMock<
+                    unknown,
+                    AnyReceiver,
+                    CspE2eConversationType.TEXT
+                > {
+                    // eslint-disable-next-line @typescript-eslint/require-await
+                    public async run(): Promise<Date | undefined> {
+                        return undefined;
+                    }
+                } as IOutgoingCspMessageTaskConstructor;
+
+            const task = new OutgoingConversationMessageTask(
+                services,
+                receiver,
+                messageStore,
+                outgoingCspMessageTaskConstructor,
+            );
+            await task.run(handle);
+            expect(messageStore.get().view.sentAt).to.equal(undefined);
+        });
     });
 }

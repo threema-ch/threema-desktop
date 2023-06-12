@@ -465,5 +465,180 @@ export function run(): void {
                 handle.finish();
             });
         });
+
+        describe('contact blocking', function () {
+            it('should not send 1:1 conversation messages to blocked contacts', async function () {
+                const {crypto, model} = services;
+
+                const user1store = addTestUserAsContact(model, user1);
+
+                // Block user2
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [user1.identity.string]},
+                });
+
+                const cspMessageFlags = CspMessageFlags.forMessageType('text');
+
+                // Create new OutgoingMessageTask
+                const messageProperties = {
+                    type: CspE2eConversationType.TEXT,
+                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                        text: UTF8.encode('Hello World!'),
+                    }),
+                    cspMessageFlags,
+                    messageId: randomMessageId(crypto),
+                    createdAt: new Date(),
+                    allowUserProfileDistribution: true,
+                } as const;
+                const task = new OutgoingCspMessageTask(
+                    services,
+                    user1store.get(),
+                    messageProperties,
+                );
+
+                // Run task
+                const expectations: NetworkExpectation[] = [
+                    // First, the outgoing message must be reflected
+                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+
+                    // No outgoing messages were sent
+                    // No OutgoingMessageUpdate.Sent is reflected, since no message was sent
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+            });
+
+            it('should not send group conversation messages to blocked contacts', async function () {
+                const {crypto, model} = services;
+
+                const user1store = addTestUserAsContact(model, user1);
+                const user2store = addTestUserAsContact(model, user2);
+
+                // Block user2
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [user2.identity.string]},
+                });
+
+                const groupId = randomGroupId(crypto);
+                const group = model.groups.add.fromSync(
+                    {
+                        groupId,
+                        creatorIdentity: me,
+                        createdAt: new Date(),
+                        name: 'Chüngelizüchter Pfäffikon',
+                        userState: GroupUserState.MEMBER,
+                        category: ConversationCategory.DEFAULT,
+                        visibility: ConversationVisibility.SHOW,
+                        colorIndex: 0,
+                    },
+                    [user1store.ctx, user2store.ctx],
+                );
+
+                const cspMessageFlags = CspMessageFlags.forMessageType('text');
+
+                // Create new OutgoingMessageTask
+                const messageProperties = {
+                    type: CspE2eGroupConversationType.GROUP_TEXT,
+                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                        text: UTF8.encode('Hello World!'),
+                    }),
+                    cspMessageFlags,
+                    messageId: randomMessageId(crypto),
+                    createdAt: new Date(),
+                    allowUserProfileDistribution: true,
+                } as const;
+                const task = new OutgoingCspMessageTask(services, group.get(), messageProperties);
+
+                // Run task
+                const expectations: NetworkExpectation[] = [
+                    // First, the outgoing message must be reflected
+                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+
+                    // Reflect a message to every member and wait for the ack.
+                    //
+                    // Note: This expects that the messages are sent in the same order as the group
+                    //       members in the database
+                    ...getExpectedCspMessagesForGroupMember(
+                        user1,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
+
+                    // Finally, an OutgoingMessageUpdate.Sent is reflected
+                    getExpectedD2dOutgoingReflectedMessageUpdate(me, groupId),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+            });
+
+            it('should send group control messages to blocked contacts', async function () {
+                const {crypto, model} = services;
+
+                const user1store = addTestUserAsContact(model, user1);
+                const user2store = addTestUserAsContact(model, user2);
+
+                // Block user2
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [user2.identity.string]},
+                });
+
+                const groupId = randomGroupId(crypto);
+                const group = model.groups.add.fromSync(
+                    {
+                        groupId,
+                        creatorIdentity: me,
+                        createdAt: new Date(),
+                        name: 'Chüngelizüchter Pfäffikon 🐇',
+                        userState: GroupUserState.MEMBER,
+                        category: ConversationCategory.DEFAULT,
+                        visibility: ConversationVisibility.SHOW,
+                        colorIndex: 0,
+                    },
+                    [user1store.ctx, user2store.ctx],
+                );
+
+                // Create new OutgoingMessageTask
+                const messageProperties = {
+                    type: CspE2eGroupControlType.GROUP_NAME,
+                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                        groupId,
+                        innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupName, {
+                            name: UTF8.encode('Chüngel- und Hoppelhasenzüchter Pfäffikon'),
+                        }),
+                    }),
+                    cspMessageFlags: CspMessageFlags.none(),
+                    messageId: randomMessageId(crypto),
+                    createdAt: new Date(),
+                    allowUserProfileDistribution: true,
+                } as const;
+                const task = new OutgoingCspMessageTask(services, group.get(), messageProperties);
+
+                // Run task
+                const expectations: NetworkExpectation[] = [
+                    // First, the outgoing message must be reflected
+                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+
+                    // Reflect a message to every member and wait for the ack.
+                    //
+                    // Note: This expects that the messages are sent in the same order as the group
+                    //       members in the database
+                    ...getExpectedCspMessagesForGroupMember(
+                        user1,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
+                    ...getExpectedCspMessagesForGroupMember(
+                        user2,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
+                ];
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+            });
+        });
     });
 }
