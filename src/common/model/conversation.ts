@@ -1,6 +1,7 @@
 import {type DatabaseBackend, type DbConversationUid, type DbReceiverLookup} from '~/common/db';
 import {
     AcquaintanceLevel,
+    ConversationVisibility,
     CspE2eDeliveryReceiptStatus,
     Existence,
     MessageDirection,
@@ -16,11 +17,14 @@ import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type InternalActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
+import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
+import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
 import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import {type ConversationId, type MessageId} from '~/common/network/types';
 import {type i53, type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {AsyncLock} from '~/common/utils/lock';
 import {
     createExactPropertyValidator,
     type Exact,
@@ -41,6 +45,7 @@ import {
     type ConversationControllerHandle,
     type ConversationRepository,
     type ConversationUpdate,
+    type ConversationUpdateFromToSync,
     type ConversationView,
     type DirectedMessageFor,
     type ServicesForModel,
@@ -183,6 +188,8 @@ export class ConversationModelController implements ConversationController {
                 receiver,
             );
 
+            await this._ensureConversationIsUnarchived({source: TriggerSource.LOCAL});
+
             const messageStore = this._addMessage(init);
 
             // Trigger task if this message was created locally
@@ -206,6 +213,11 @@ export class ConversationModelController implements ConversationController {
                 {source: TriggerSource.REMOTE, handle: activeTaskHandle},
                 receiver.get(),
             );
+
+            await this._ensureConversationIsUnarchived({
+                source: TriggerSource.REMOTE,
+                handle: activeTaskHandle,
+            });
 
             const store = this._addMessage(init);
 
@@ -257,6 +269,8 @@ export class ConversationModelController implements ConversationController {
     private readonly _handle: ConversationControllerHandle;
 
     private readonly _lastMessageStore: WritableStore<AnyMessageModelStore | undefined>;
+
+    private readonly _lock = new AsyncLock();
 
     private readonly _log: Logger;
 
@@ -505,6 +519,83 @@ export class ConversationModelController implements ConversationController {
             default:
                 unreachable(scope);
         }
+    }
+
+    private async _ensureConversationIsUnarchived(
+        scope:
+            | {source: TriggerSource.LOCAL}
+            | {source: TriggerSource.REMOTE; handle: InternalActiveTaskCodecHandle},
+    ): Promise<void> {
+        await this.meta.run(async (conversation) => {
+            if (conversation.view().visibility !== ConversationVisibility.ARCHIVED) {
+                return;
+            }
+
+            this._log.info('Unarchiving conversation');
+
+            const conversationChange: ConversationUpdateFromToSync = {
+                visibility: ConversationVisibility.SHOW,
+            };
+
+            // Precondition: The conversation is archived
+            const precondition = (): boolean =>
+                this.meta.active &&
+                conversation.view().visibility === ConversationVisibility.ARCHIVED;
+
+            let syncTask: ReflectContactSyncTransactionTask | ReflectGroupSyncTransactionTask;
+
+            const conversationId = this.conversationId();
+            switch (conversationId.type) {
+                case ReceiverType.CONTACT:
+                    syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {
+                        type: 'update-conversation-data',
+                        identity: conversationId.identity,
+                        conversation: conversationChange,
+                    });
+                    break;
+                case ReceiverType.DISTRIBUTION_LIST:
+                    // TODO(DESK-236): Implement distribution list
+                    throw new Error('TODO(DESK-236): Implement distribution list');
+                case ReceiverType.GROUP:
+                    syncTask = new ReflectGroupSyncTransactionTask(this._services, precondition, {
+                        type: 'update',
+                        groupId: conversationId.groupId,
+                        creatorIdentity: conversationId.creatorIdentity,
+                        group: {},
+                        conversation: conversationChange,
+                    });
+                    break;
+                default:
+                    unreachable(conversationId);
+            }
+
+            await this._lock.with(async () => {
+                let result;
+                switch (scope.source) {
+                    case TriggerSource.LOCAL:
+                        result = await this._services.taskManager.schedule(syncTask);
+                        break;
+                    case TriggerSource.REMOTE:
+                        result = await syncTask.run(scope.handle);
+                        break;
+                    default:
+                        unreachable(scope);
+                }
+
+                // Commit update, if possible
+                switch (result) {
+                    case 'success':
+                        // Update locally
+                        this.update(conversationChange);
+                        break;
+                    case 'aborted':
+                        // Synchronization conflict
+                        throw new Error('Failed to update contact due to synchronization conflict');
+                    default:
+                        unreachable(result);
+                }
+            });
+        });
     }
 
     private _addMessage(

@@ -1,6 +1,10 @@
 import {type TransactionScope, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type ContactInit, type ContactUpdate} from '~/common/model';
+import {
+    type ContactInit,
+    type ContactUpdate,
+    type ConversationUpdateFromToSync,
+} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
 import {type BlobId, encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
@@ -233,6 +237,41 @@ function getD2dContactSyncUpdateData(
     });
 }
 
+function getD2dContactConversationSyncUpdateData(
+    identity: IdentityString,
+    conversation: ConversationUpdateFromToSync,
+): protobuf.d2d.ContactSync {
+    return protobuf.utils.creator(protobuf.d2d.ContactSync, {
+        create: undefined,
+        update: protobuf.utils.creator(protobuf.d2d.ContactSync.Update, {
+            contact: protobuf.utils.creator(protobuf.sync.Contact, {
+                identity,
+                publicKey: undefined,
+                createdAt: undefined,
+                firstName: undefined,
+                lastName: undefined,
+                nickname: undefined,
+                verificationLevel: undefined,
+                workVerificationLevel: undefined,
+                identityType: undefined,
+                acquaintanceLevel: undefined,
+                activityState: undefined,
+                featureMask: undefined,
+                syncState: undefined,
+                readReceiptPolicyOverride: undefined,
+                typingIndicatorPolicyOverride: undefined,
+                notificationTriggerPolicyOverride: undefined,
+                notificationSoundPolicyOverride: undefined,
+                conversationCategory: conversation.category,
+                conversationVisibility: conversation.visibility,
+                contactDefinedProfilePicture: undefined,
+                userDefinedProfilePicture: undefined,
+            }),
+        }),
+        delete: undefined,
+    });
+}
+
 async function getD2dContactSyncUpdateProfilePicture(
     identity: IdentityString,
     profilePicture: ProfilePictureUpdate,
@@ -353,6 +392,11 @@ export interface ContactSyncUpdateData {
     readonly identity: IdentityString;
     readonly contact: ContactUpdate;
 }
+export interface ContactConversationSyncUpdateData {
+    readonly type: 'update-conversation-data';
+    readonly identity: IdentityString;
+    readonly conversation: ConversationUpdateFromToSync;
+}
 export interface ContactSyncUpdateProfilePicture {
     readonly type: 'update-profile-picture';
     readonly identity: IdentityString;
@@ -365,6 +409,7 @@ export interface ContactSyncDelete {
 export type ContactSyncVariant =
     | ContactSyncCreate
     | ContactSyncUpdateData
+    | ContactConversationSyncUpdateData
     | ContactSyncUpdateProfilePicture
     | ContactSyncDelete;
 
@@ -400,6 +445,12 @@ export class ReflectContactSyncTask
                 break;
             case 'update-contact-data':
                 contactSync = getD2dContactSyncUpdateData(variant.identity, variant.contact);
+                break;
+            case 'update-conversation-data':
+                contactSync = getD2dContactConversationSyncUpdateData(
+                    variant.identity,
+                    variant.conversation,
+                );
                 break;
             case 'update-profile-picture':
                 contactSync = await getD2dContactSyncUpdateProfilePicture(
