@@ -331,7 +331,15 @@ export class BackendController {
                     connectResult.connection,
                     logging.logger('backend-controller.join'),
                 );
-                await joinProtocol.run(); // TODO(DESK-1037): Error handling
+                try {
+                    await joinProtocol.run(); // TODO(DESK-1037): Error handling
+                } catch (error) {
+                    log.warn(
+                        `Device join failed: ${extractErrorMessage(ensureError(error), 'long')}`,
+                    );
+                    // TODO(DESK-1037): Propagate error to UI
+                    return await eternalPromise(); // TODO(DESK-1037)
+                }
 
                 await eternalPromise();
                 // TODO(DESK-1037): connection.abort.raise();

@@ -274,8 +274,9 @@ export class SafeError extends BaseError {
  *
  * - encoding: Bytes could not be decompressed or decoded.
  * - validation: The backup JSON does not pass validation.
+ * - protocol: Aborted due to device join protocol violation.
  */
-export type DeviceJoinErrorType = 'encoding' | 'validation';
+export type DeviceJoinErrorType = 'encoding' | 'validation' | 'protocol';
 
 const DEVICE_JOIN_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     DeviceJoinError,
