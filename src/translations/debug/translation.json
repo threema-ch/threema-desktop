@@ -165,7 +165,8 @@
   "dialog--linking-error": {
     "action--confirm": "[d] Retry",
     "label--title": "[d] Linking Error",
-    "prose--description": "[d] An error occurred during linking. Please try again."
+    "prose--description-connection-error": "[d] A connection error occurred during linking. Please check your internet connection and try again.",
+    "prose--description-generic-error": "[d] An error occurred during linking. Please try again."
   },
   "dialog--linking-scan": {
     "action--need-help": "[d] Need help?",

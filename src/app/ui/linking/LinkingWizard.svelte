@@ -58,7 +58,7 @@
       log.error(`Connection error: ${error}`);
       linkingState = {
         ...linkingState,
-        connectionState: 'failed',
+        connectionState: 'connection-error',
         currentStep: 'error',
       };
     });
@@ -79,7 +79,7 @@
       log.error(`Nomination failed: ${error}`);
       linkingState = {
         ...linkingState,
-        connectionState: 'failed',
+        connectionState: 'generic-error',
         currentStep: 'error',
       };
     });

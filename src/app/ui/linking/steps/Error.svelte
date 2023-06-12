@@ -7,7 +7,7 @@
 
   export let params: LinkingParams;
   export let linkingState: LinkingState;
-  unusedProp(params, linkingState);
+  unusedProp(params);
 </script>
 
 <template>
@@ -15,10 +15,17 @@
     <div class="body">
       <h1 class="title">{$i18n.t('dialog--linking-error.label--title', 'Linking Error')}</h1>
       <p class="description">
-        {$i18n.t(
-          'dialog--linking-error.prose--description',
-          'An error occurred during linking. Please try again.',
-        )}
+        {#if linkingState.connectionState === 'connection-error'}
+          {$i18n.t(
+            'dialog--linking-error.prose--description-connection-error',
+            'A connection error occurred during linking. Please check your internet connection and try again.',
+          )}
+        {:else}
+          {$i18n.t(
+            'dialog--linking-error.prose--description-generic-error',
+            'An error occurred during linking. Please try again.',
+          )}
+        {/if}
       </p>
       <div class="button">
         <Button flavor="filled" on:click={() => window.location.reload()}

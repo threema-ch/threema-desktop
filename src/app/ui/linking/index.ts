@@ -26,7 +26,12 @@ export interface LinkingParams {
 
 export type ProcessStep = 'scan' | 'confirmEmoji' | 'successLinked' | 'error';
 
-export type ConnectionState = 'connecting' | 'waiting-for-handshake' | 'nominated' | 'failed';
+export type ConnectionState =
+    | 'connecting'
+    | 'waiting-for-handshake'
+    | 'nominated'
+    | 'connection-error'
+    | 'generic-error';
 
 export interface LinkingState {
     readonly currentStep: ProcessStep;
