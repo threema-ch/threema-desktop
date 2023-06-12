@@ -21,8 +21,9 @@ import {
     MESSAGE_DATA_PADDING_LENGTH_MIN,
 } from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
+import {IncomingGroupNameTask} from '~/common/network/protocol/task/csp/incoming-group-name';
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';
-import {randomMessageId} from '~/common/network/protocol/utils';
+import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {
     ensureIdentityString,
@@ -40,6 +41,7 @@ import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
 import {dateToUnixTimestampMs, dateToUnixTimestampS, intoUnsignedLong} from '~/common/utils/number';
 import {
+    addTestGroup,
     addTestUserAsContact,
     addTestUserToFakeDirectory,
     createClientKey,
@@ -739,6 +741,147 @@ export function run(): void {
                 ).to.be.undefined;
 
                 expect(expectations, 'Not all expectations consumed').to.be.empty;
+            });
+
+            it('discards group text message if member contact is blocked', async function () {
+                const {model} = services;
+
+                // Add contacts
+                const contact1 = addTestUserAsContact(model, user1);
+                const contact2 = addTestUserAsContact(model, user2);
+
+                // Block user2
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [user2.identity.string]},
+                });
+
+                // Group created by user1
+                const groupUid = makeGroup(model.db, {creatorIdentity: user1.identity.string}, [
+                    contact2.ctx,
+                ]);
+                const group = unwrap(model.groups.getByUid(groupUid));
+                const groupConversation = group.get().controller.conversation();
+                group.get().controller.members.set.fromSync([contact1.ctx]);
+
+                function makeGroupMessage(
+                    sender: TestUser,
+                    messageText: string,
+                ): structbuf.csp.payload.MessageWithMetadataBoxLike {
+                    return createMessage(
+                        services,
+                        sender,
+                        me,
+                        CspE2eGroupConversationType.GROUP_TEXT,
+                        structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                            creatorIdentity: UTF8.encode(group.get().view.creatorIdentity),
+                            groupId: group.get().view.groupId,
+                            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                                text: UTF8.encode(messageText),
+                            }),
+                        }),
+                        CspMessageFlags.none(),
+                    );
+                }
+
+                // Conversation is empty
+                {
+                    const messages = groupConversation.get().controller.getAllMessages().get();
+                    expect(messages.size).to.equal(0);
+                }
+
+                // Process group message from user1 (member)
+                {
+                    const message = makeGroupMessage(user1, 'hello from user1');
+                    const task = new IncomingMessageTask(services, message);
+                    const expectations: NetworkExpectation[] = [
+                        // We expect the message to be reflected
+                        NetworkExpectationFactory.reflectSingle((payload) => {
+                            expect(payload.incomingMessage).not.to.be.undefined;
+                            const incomingMessage = unwrap(payload.incomingMessage);
+                            expect(incomingMessage.senderIdentity).to.equal(user1.identity.string);
+                        }),
+                        // Message is acked after processing
+                        NetworkExpectationFactory.writeIncomingMessageAck(),
+                    ];
+                    const handle = new TestHandle(services, expectations);
+                    await task.run(handle);
+                    expect(expectations, 'Not all expectations consumed').to.be.empty;
+                }
+
+                // Text message should have been created
+                {
+                    const messages = groupConversation.get().controller.getAllMessages().get();
+                    expect(messages.size).to.equal(1);
+                }
+
+                // Process group message from user2 (blocked)
+                {
+                    const message = makeGroupMessage(user2, 'hello from user2');
+                    const task = new IncomingMessageTask(services, message);
+                    const expectations: NetworkExpectation[] = [
+                        // Message is acked and dropped, since it comes from user2
+                        NetworkExpectationFactory.writeIncomingMessageAck(),
+                    ];
+                    const handle = new TestHandle(services, expectations);
+                    await task.run(handle);
+                    expect(expectations, 'Not all expectations consumed').to.be.empty;
+                }
+
+                // Ensure that no additional text message was created
+                {
+                    const messages = groupConversation.get().controller.getAllMessages().get();
+                    expect(messages.size).to.equal(1);
+                }
+            });
+
+            it('processes group control messages if contact is blocked', async function () {
+                const {crypto, model} = services;
+
+                // Add creator contact
+                const creator = user1;
+                const creatorContact = addTestUserAsContact(model, creator);
+
+                // Add group
+                const groupId = randomGroupId(crypto);
+                const group = addTestGroup(model, {
+                    groupId,
+                    creatorIdentity: user1.identity.string,
+                    name: 'AAA',
+                    members: [creatorContact.ctx],
+                });
+
+                // Ensure that group name is AAA
+                expect(model.groups.getByUid(group.ctx)?.get()?.view.name).to.equal('AAA');
+
+                // Block creator contact
+                model.user.privacySettings.get().controller.update({
+                    blockedIdentities: {identities: [creator.identity.string]},
+                });
+
+                // Prepare payload
+                const container = {
+                    groupId,
+                    creatorIdentity: creator.identity.string,
+                    innerData: new Uint8Array(0),
+                };
+                const name = {
+                    name: 'BBB',
+                };
+
+                // Run task
+                const task = new IncomingGroupNameTask(
+                    services,
+                    randomMessageId(crypto),
+                    creatorContact,
+                    container,
+                    name,
+                );
+                const handle = new TestHandle(services, []);
+                await task.run(handle);
+                handle.finish();
+
+                // Ensure that group name was updated
+                expect(model.groups.getByUid(group.ctx)?.get()?.view.name).to.equal('BBB');
             });
 
             it('discards 1:1 conversation text message if contact is blocked', async function () {
