@@ -268,3 +268,36 @@ export class SafeError extends BaseError {
         super(message, options);
     }
 }
+
+/**
+ * Error types that can happen in connection with the Device Join Protocol.
+ *
+ * - encoding: Bytes could not be decompressed or decoded.
+ * - validation: The backup JSON does not pass validation.
+ */
+export type DeviceJoinErrorType = 'encoding' | 'validation';
+
+const DEVICE_JOIN_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
+    DeviceJoinError,
+    TransferTag.DEVICE_JOIN_PROTOCOL_ERROR,
+    [type: DeviceJoinErrorType]
+>({
+    tag: TransferTag.DEVICE_JOIN_PROTOCOL_ERROR,
+    serialize: (error) => [error.type],
+    deserialize: (message, cause, [type]) => new DeviceJoinError(type, message, {from: cause}),
+});
+
+/**
+ * Errors types that can happen in connection with the Threema Safe restore process.
+ */
+export class DeviceJoinError extends BaseError {
+    public [TRANSFER_MARKER] = DEVICE_JOIN_ERROR_TRANSFER_HANDLER;
+
+    public constructor(
+        public readonly type: DeviceJoinErrorType,
+        message: string,
+        options?: BaseErrorOptions,
+    ) {
+        super(message, options);
+    }
+}

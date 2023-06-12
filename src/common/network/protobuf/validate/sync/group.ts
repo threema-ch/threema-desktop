@@ -34,19 +34,33 @@ const BASE_SCHEMA = validator(sync.Group, {
     conversationVisibility: v.number().map(ConversationVisibilityUtils.fromNumber),
 });
 
+const BASE_SCHEMA_CREATE = {
+    ...BASE_SCHEMA,
+    profilePicture: nullOptional(BASE_SCHEMA.profilePicture),
+};
+
 /**
  * Validates properties of {@link sync.Group} in the context of a {@link d2d.GroupSync.Create}
  */
 export const SCHEMA_CREATE = validator(
     sync.Group,
+    v.object({...BASE_SCHEMA_CREATE}).rest(v.unknown()),
+);
+export type TypeCreate = v.Infer<typeof SCHEMA_CREATE>;
+
+/**
+ * Validates properties of {@link sync.Group} in the context of {@link join.EssentialData}
+ */
+export const SCHEMA_DEVICE_JOIN = validator(
+    sync.Group,
     v
         .object({
-            ...BASE_SCHEMA,
-            profilePicture: nullOptional(BASE_SCHEMA.profilePicture),
+            ...BASE_SCHEMA_CREATE,
+            profilePicture: nullOptional(DeltaImage.SCHEMA_UPDATED_BLOB_KEY_OPTIONAL),
         })
         .rest(v.unknown()),
 );
-export type CreateType = v.Infer<typeof SCHEMA_CREATE>;
+export type TypeDeviceJoin = v.Infer<typeof SCHEMA_DEVICE_JOIN>;
 
 /**
  * Validates properties of {@link sync.Group} in the context of a {@link d2d.GroupSync.Update}
@@ -72,5 +86,4 @@ export const SCHEMA_UPDATE = validator(
         })
         .rest(v.unknown()),
 );
-export type UpdateType = v.Infer<typeof SCHEMA_UPDATE>;
-export type Type = CreateType | UpdateType;
+export type TypeUpdate = v.Infer<typeof SCHEMA_UPDATE>;

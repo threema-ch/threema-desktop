@@ -66,23 +66,38 @@ const BASE_SCHEMA = validator(sync.Contact, {
     conversationVisibility: v.number().map(ConversationVisibilityUtils.fromNumber),
 });
 
+const BASE_SCHEMA_CREATE = {
+    ...BASE_SCHEMA,
+    firstName: nullOptional(BASE_SCHEMA.firstName),
+    lastName: nullOptional(BASE_SCHEMA.lastName),
+    nickname: nullOptional(BASE_SCHEMA.nickname),
+    contactDefinedProfilePicture: nullOptional(BASE_SCHEMA.contactDefinedProfilePicture),
+    userDefinedProfilePicture: nullOptional(BASE_SCHEMA.userDefinedProfilePicture),
+};
+
 /**
  * Validates properties of {@link sync.Contact} in the context of a {@link d2d.ContactSync.Create}
  */
 export const SCHEMA_CREATE = validator(
     sync.Contact,
+    v.object({...BASE_SCHEMA_CREATE}).rest(v.unknown()),
+);
+export type TypeCreate = v.Infer<typeof SCHEMA_CREATE>;
+
+/**
+ * Validates properties of {@link sync.Contact} in the context of {@link join.EssentialData}
+ */
+export const SCHEMA_DEVICE_JOIN = validator(
+    sync.Contact,
     v
         .object({
-            ...BASE_SCHEMA,
-            firstName: nullOptional(BASE_SCHEMA.firstName),
-            lastName: nullOptional(BASE_SCHEMA.lastName),
-            nickname: nullOptional(BASE_SCHEMA.nickname),
-            contactDefinedProfilePicture: nullOptional(BASE_SCHEMA.contactDefinedProfilePicture),
-            userDefinedProfilePicture: nullOptional(BASE_SCHEMA.userDefinedProfilePicture),
+            ...BASE_SCHEMA_CREATE,
+            contactDefinedProfilePicture: nullOptional(DeltaImage.SCHEMA_UPDATED_BLOB_KEY_OPTIONAL),
+            userDefinedProfilePicture: nullOptional(DeltaImage.SCHEMA_UPDATED_BLOB_KEY_OPTIONAL),
         })
         .rest(v.unknown()),
 );
-export type CreateType = v.Infer<typeof SCHEMA_CREATE>;
+export type TypeDeviceJoin = v.Infer<typeof SCHEMA_DEVICE_JOIN>;
 
 /**
  * Validates properties of {@link sync.Contact} in the context of a {@link d2d.ContactSync.Update}
@@ -119,5 +134,4 @@ export const SCHEMA_UPDATE = validator(
         })
         .rest(v.unknown()),
 );
-export type UpdateType = v.Infer<typeof SCHEMA_UPDATE>;
-export type Type = CreateType | UpdateType;
+export type TypeUpdate = v.Infer<typeof SCHEMA_UPDATE>;

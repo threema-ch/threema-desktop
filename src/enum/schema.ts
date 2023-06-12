@@ -52,6 +52,7 @@ export const enum TransferTag {
     BACKEND_CREATION_ERROR = 20,
     TASK_ERROR = 21,
     RENDEZVOUS_PROTOCOL_ERROR = 22,
+    DEVICE_JOIN_PROTOCOL_ERROR = 23,
 }
 
 /**

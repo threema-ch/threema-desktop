@@ -38,7 +38,7 @@ const PROFILE_PICTURE_SHARE_WITH_SCHEMA_ALLOW_LIST = v
     })
     .rest(v.unknown());
 
-const PROFILE_PICTURE_SHARE_WITH_SCHEMA = validator(
+export const PROFILE_PICTURE_SHARE_WITH_SCHEMA = validator(
     sync.UserProfile.ProfilePictureShareWith,
     v.union(
         PROFILE_PICTURE_SHARE_WITH_SCHEMA_NOBODY,
@@ -72,28 +72,14 @@ const IDENTITY_LINK_EMAIL_SCHEMA = v
 
 const IDENTITY_LINK_SCHEMA = v.union(IDENTITY_LINK_PHONE_NUMBER_SCHEMA, IDENTITY_LINK_EMAIL_SCHEMA);
 
-const IDENTITY_LINKS_SCHEMA = v
+export const IDENTITY_LINKS_SCHEMA = v
     .object({
         links: v.array(IDENTITY_LINK_SCHEMA),
     })
     .rest(v.unknown());
 
-/** Validates {@link sync.UserProfile} in the context of a new device ({@link join.EssentialData}) */
-export const SCHEMA_CREATE = validator(
-    sync.UserProfile,
-    v
-        .object({
-            nickname: v.string(),
-            profilePicture: nullOptional(DeltaImage.SCHEMA),
-            profilePictureShareWith: PROFILE_PICTURE_SHARE_WITH_SCHEMA,
-            identityLinks: IDENTITY_LINKS_SCHEMA,
-        })
-        .rest(v.unknown()),
-);
-export type CreateType = v.Infer<typeof SCHEMA_CREATE>;
-
 /** Validates {@link sync.UserProfile} in the context of a profile update */
-export const SCHEMA_UPDATE = validator(
+export const SCHEMA = validator(
     sync.UserProfile,
     v
         .object({
@@ -104,4 +90,4 @@ export const SCHEMA_UPDATE = validator(
         })
         .rest(v.unknown()),
 );
-export type UpdateType = v.Infer<typeof SCHEMA_UPDATE>;
+export type Type = v.Infer<typeof SCHEMA>;

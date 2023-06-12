@@ -6,6 +6,7 @@ import {
     type BackendInit,
     type SafeCredentialsAndDeviceIds,
 } from '~/common/dom/backend';
+import {DeviceJoinProtocol} from '~/common/dom/backend/join';
 import {type DebugBackend} from '~/common/dom/debug';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
 import {
@@ -157,6 +158,9 @@ export class BackendController {
         const {config, endpoint, logging} = services;
         const log = logging.logger('backend-controller');
 
+        /**
+         * Helper function to assemble a {@link BackendInit} object.
+         */
         function assembleBackendInit(keyStoragePassword: string | undefined): BackendInit {
             // Notifications
             const {local: localNotificationEndpoint, remote: notificationEndpoint} =
@@ -192,7 +196,7 @@ export class BackendController {
         log.debug('Waiting for remote backend to be created');
         let backendEndpoint;
         {
-            const LEGACY_DEFAULT_PASSWORD = 'please-change-me-i-am-so-insecure';
+            const LEGACY_DEFAULT_PASSWORD = 'please-change-me-i-am-so-insecure'; // TODO(DESK-731)
             let passwordForExistingKeyStorage: string | undefined = undefined;
             // eslint-disable-next-line no-labels
             loopToCreateBackendWithKeyStorage: for (;;) {
@@ -320,6 +324,14 @@ export class BackendController {
                 }
                 log.info('Rendezvous connection established');
                 nominated.resolve(connectResult.rph);
+
+                // Now that we established the connection and showed the RPH, we can wait for ED to
+                // start sending essential data and then run the join protocol.
+                const joinProtocol = new DeviceJoinProtocol(
+                    connectResult.connection,
+                    logging.logger('backend-controller.join'),
+                );
+                await joinProtocol.run(); // TODO(DESK-1037): Error handling
 
                 await eternalPromise();
                 // TODO(DESK-1037): connection.abort.raise();

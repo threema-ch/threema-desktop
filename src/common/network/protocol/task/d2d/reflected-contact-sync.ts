@@ -21,7 +21,7 @@ import {purgeUndefinedProperties} from '~/common/utils/object';
 import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 type ProfilePictures = Pick<
-    protobuf.validate.sync.Contact.CreateType,
+    protobuf.validate.sync.Contact.TypeCreate,
     'contactDefinedProfilePicture' | 'userDefinedProfilePicture'
 >;
 
@@ -188,7 +188,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     }
 
     private async _createContactFromD2dSync(
-        create: protobuf.validate.sync.Contact.CreateType,
+        create: protobuf.validate.sync.Contact.TypeCreate,
     ): Promise<void> {
         // Create contact
         const contact = this._services.model.contacts.add.fromSync(
@@ -225,7 +225,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
 
     private async _updateContactFromD2dSync(
         contact: LocalModelStore<Contact>,
-        update: protobuf.validate.sync.Contact.UpdateType,
+        update: protobuf.validate.sync.Contact.TypeUpdate,
     ): Promise<void> {
         const controller = contact.get().controller;
 

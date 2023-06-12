@@ -21,18 +21,25 @@ const BASE_SCHEMA = {
     nonce: instanceOf(Uint8Array)
         .map((bytes) => (bytes.byteLength === 0 ? undefined : ensureNonce(bytes)))
         .optional(),
-    key: instanceOf(Uint8Array)
-        .map((bytes) => (bytes.byteLength === 0 ? undefined : wrapRawBlobKey(bytes)))
-        .optional(),
     uploadedAt: unsignedLongAsU64()
         .map((val) => (val === 0n ? undefined : unixTimestampToDateMs(val)))
         .optional(),
 };
 
-/** Validates {@link common.Blob} */
-export const SCHEMA_KEY_OPTIONAL = validator(common.Blob, v.object(BASE_SCHEMA).rest(v.unknown()));
+/** Validates {@link common.Blob} with the key optional. */
+export const SCHEMA_KEY_OPTIONAL = validator(
+    common.Blob,
+    v
+        .object({
+            ...BASE_SCHEMA,
+            key: instanceOf(Uint8Array)
+                .map((bytes) => (bytes.byteLength === 0 ? undefined : wrapRawBlobKey(bytes)))
+                .optional(),
+        })
+        .rest(v.unknown()),
+);
 
-/** Validates {@link common.Blob}, but makes the `key` required. */
+/** Validates {@link common.Blob} with the key required. */
 export const SCHEMA_KEY_REQUIRED = validator(
     common.Blob,
     v

@@ -93,7 +93,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
      */
     private _updateGroupFromD2dSync(
         group: LocalModelStore<Group>,
-        update: protobuf.validate.sync.Group.UpdateType,
+        update: protobuf.validate.sync.Group.TypeUpdate,
     ): void {
         const controller = group.get().controller;
 

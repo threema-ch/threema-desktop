@@ -21,16 +21,30 @@ const SCHEMA_REMOVED = v
     })
     .rest(v.unknown());
 
-const SCHEMA_UPDATED = v
+export const SCHEMA_UPDATED_BLOB_KEY_OPTIONAL = v
     .object({
         ...BASE_SCHEMA,
         image: v.literal('updated'),
-        updated: Image.SCHEMA,
+        updated: Image.SCHEMA_BLOB_KEY_OPTIONAL,
     })
     .rest(v.unknown());
 
-/** Validates {@link common.DeltaImage} */
-export const SCHEMA = validator(common.DeltaImage, v.union(SCHEMA_REMOVED, SCHEMA_UPDATED));
+const SCHEMA_UPDATED_BLOB_KEY_REQUIRED = v
+    .object({
+        ...BASE_SCHEMA,
+        image: v.literal('updated'),
+        updated: Image.SCHEMA_BLOB_KEY_REQUIRED,
+    })
+    .rest(v.unknown());
+
+/**
+ * Validates {@link common.DeltaImage} in the context of an image update (e.g. user profile picture
+ * sync). The contained blob key is required.
+ **/
+export const SCHEMA = validator(
+    common.DeltaImage,
+    v.union(SCHEMA_REMOVED, SCHEMA_UPDATED_BLOB_KEY_REQUIRED),
+);
 
 export function serializeRemoved(): ProtobufInstanceOf<typeof common.DeltaImage> {
     return creator(common.DeltaImage, {
@@ -39,7 +53,9 @@ export function serializeRemoved(): ProtobufInstanceOf<typeof common.DeltaImage>
     });
 }
 
-export function serializeUpdated(image: Image.Type): ProtobufInstanceOf<typeof common.DeltaImage> {
+export function serializeUpdated(
+    image: Image.TypeBlobKeyRequired,
+): ProtobufInstanceOf<typeof common.DeltaImage> {
     return creator(common.DeltaImage, {
         removed: undefined,
         updated: Image.serialize(image),
