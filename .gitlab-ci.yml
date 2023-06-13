@@ -1,6 +1,7 @@
 # Clone git repository recursively
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  NODE_VERSION: 18.15.0
 
 # Workflow: Run for tags and commits to branches
 workflow:
@@ -9,7 +10,7 @@ workflow:
     - if: $CI_COMMIT_BRANCH
 
 # Default base image
-image: docker.io/node:18.12-bullseye
+image: docker.io/node:${NODE_VERSION}-bullseye
 
 # CI stages
 stages:
@@ -110,7 +111,7 @@ audit:
   allow_failure: true
 
 test:karma:
-  image: $CI_REGISTRY/operations/dockerfiles/node-browsers:18
+  image: $CI_REGISTRY/operations/dockerfiles/node-browsers:${NODE_VERSION}
   stage: test
   needs: []
   cache:

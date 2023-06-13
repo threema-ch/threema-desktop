@@ -51,8 +51,8 @@
     "i18n:parse": "i18next 'src/app/**/*.{ts,svelte}' -o 'src/translations/$LOCALE/$NAMESPACE.json' -c config/i18next-parser.config.js"
   },
   "engines": {
-    "node": "18.12.1",
-    "npm": "8.19.2"
+    "node": "18.15.0",
+    "npm": "9.5.0"
   },
   "dependencies": {
     "@badrap/valita": "0.1.9",
@@ -103,7 +103,7 @@
   "devDependencies": {
     "@electron/notarize": "1.2.3",
     "@electron/osx-sign": "1.0.4",
-    "@electron/rebuild": "3.2.10",
+    "@electron/rebuild": "3.2.13",
     "@prettier/plugin-xml": "2.2.0",
     "@sveltejs/vite-plugin-svelte": "1.0.0-next.49",
     "@types/chai": "~4.3.0",
@@ -121,7 +121,7 @@
     "@typescript-eslint/utils": "~5.51.0",
     "chai": "~4.3.4",
     "debug": "~4.3.3",
-    "electron": "23.1.4",
+    "electron": "25.2.0",
     "electron-installer-dmg": "~4.0.0",
     "electron-packager": "~17.1.1",
     "es-module-lexer": "~1.1.0",
