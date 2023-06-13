@@ -4,6 +4,7 @@ import {
     ConversationCategory,
     ConversationVisibility,
     CspE2eConversationType,
+    CspE2eGroupControlType,
     CspE2eGroupConversationType,
     CspPayloadType,
     D2mPayloadType,
@@ -40,6 +41,7 @@ import {
     NetworkExpectationFactory,
     TestHandle,
     type TestServices,
+    type TestUser,
 } from '~/test/mocha/common/backend-mocks';
 import {
     decodeMessageEncodable,
@@ -92,6 +94,88 @@ export function run(): void {
                 );
                 expect(message.updates).to.have.length(1);
                 expect(message.updates[0].sent).not.to.be.undefined;
+            });
+        }
+
+        function getExpectedCspMessagesForGroupMember(
+            member: TestUser,
+            messageId: MessageId,
+            type: CspE2eType,
+        ): NetworkExpectation[] {
+            const messageIdDelayed = Delayed.simple<MessageId>(
+                'Message ID not yet ready',
+                'Message ID already set',
+                messageId,
+            );
+            return [
+                NetworkExpectationFactory.write((m) => {
+                    assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
+                    assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
+                    const message = decodeMessageEncodable(m.payload.payload);
+                    expect(message.senderIdentity).to.eql(UTF8.encode(me));
+
+                    const receiverIdentityString = ensureIdentityString(
+                        UTF8.decode(message.receiverIdentity),
+                    );
+                    expect(
+                        receiverIdentityString,
+                        'Receiver identity was not the intended receiver',
+                    ).to.equal(member.identity.string);
+
+                    const messageContainer = decryptContainer(
+                        message,
+                        services.device.csp.ck.public,
+                        member.ck,
+                    );
+                    expect(messageContainer.type).to.equal(type);
+                    expect(ensureMessageId(message.messageId)).to.equal(messageId);
+                }),
+
+                NetworkExpectationFactory.readIncomingMessageAck(
+                    member.identity.string,
+                    messageIdDelayed,
+                ),
+            ];
+        }
+
+        function getExpectedD2dOutgoingReflectedMessage(messageProperties: {
+            type: CspE2eType;
+            messageId: MessageId;
+            createdAt: Date;
+        }): NetworkExpectation {
+            return NetworkExpectationFactory.reflectSingle((payload) => {
+                expect(payload.content).to.equal('outgoingMessage');
+                const message = payload.outgoingMessage;
+                assert(
+                    message !== null && message !== undefined,
+                    'payload.outgoingMessage is null or undefined',
+                );
+                const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
+                expect(createdAt).to.eql(messageProperties.createdAt);
+                expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
+                expect(message.type).to.equal(messageProperties.type);
+            });
+        }
+
+        function getExpectedD2dOutgoingReflectedMessageUpdate(
+            creatorIdentity: IdentityString,
+            groupId: GroupId,
+        ): NetworkExpectation {
+            return NetworkExpectationFactory.reflectSingle((payload) => {
+                expect(payload.content).to.equal('outgoingMessageUpdate');
+                const message = payload.outgoingMessageUpdate;
+                assert(
+                    message !== null && message !== undefined,
+                    'payload.outgoingMessageUpdate is null or undefined',
+                );
+                expect(message.updates).to.have.length(1);
+                expect(message.updates[0].conversation?.group).not.to.be.undefined;
+                expect(message.updates[0].conversation?.group?.creatorIdentity).to.equal(
+                    creatorIdentity,
+                );
+                expect(message.updates[0].conversation?.group?.groupId).to.eql(
+                    intoUnsignedLong(groupId),
+                );
             });
         }
 
@@ -195,90 +279,66 @@ export function run(): void {
             });
         });
 
-        describe('group messaging', function () {
-            function getExpectedCspMessagesForGroupMember(
-                member: typeof user1,
-                messageId: MessageId,
-            ): NetworkExpectation[] {
-                const messageIdDelayed = Delayed.simple<MessageId>(
-                    'Message ID not yet ready',
-                    'Message ID already set',
-                    messageId,
-                );
-                return [
-                    NetworkExpectationFactory.write((m) => {
-                        assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
-                        assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
-                        const message = decodeMessageEncodable(m.payload.payload);
-                        expect(message.senderIdentity).to.eql(UTF8.encode(me));
+        describe('1:1 contact messaging', function () {
+            it('should correctly send and reflect text messages', async function () {
+                const {crypto, model} = services;
 
-                        const receiverIdentityString = ensureIdentityString(
-                            UTF8.decode(message.receiverIdentity),
-                        );
-                        expect(
-                            receiverIdentityString,
-                            'Receiver identity was not the intended receiver',
-                        ).to.equal(member.identity.string);
+                const user1store = addTestUserAsContact(model, user1);
 
-                        const messageContainer = decryptContainer(
-                            message,
-                            services.device.csp.ck.public,
-                            member.ck,
-                        );
-                        expect(messageContainer.type).to.equal(
-                            CspE2eGroupConversationType.GROUP_TEXT,
-                        );
-                        expect(ensureMessageId(message.messageId)).to.equal(messageId);
+                const cspMessageFlags = CspMessageFlags.forMessageType('text');
+
+                // Create new OutgoingMessageTask
+                const messageProperties = {
+                    type: CspE2eConversationType.TEXT,
+                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                        text: UTF8.encode('Hello World!'),
                     }),
+                    cspMessageFlags,
+                    messageId: randomMessageId(crypto),
+                    createdAt: new Date(),
+                    allowUserProfileDistribution: true,
+                } as const;
+                const task = new OutgoingCspMessageTask(
+                    services,
+                    user1store.get(),
+                    messageProperties,
+                );
 
-                    NetworkExpectationFactory.readIncomingMessageAck(
-                        member.identity.string,
-                        messageIdDelayed,
+                // Run task
+                const expectations: NetworkExpectation[] = [
+                    // First, the outgoing message must be reflected
+                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+
+                    ...getExpectedCspMessagesForGroupMember(
+                        user1,
+                        messageProperties.messageId,
+                        messageProperties.type,
                     ),
+
+                    // Finally, an OutgoingMessageUpdate.Sent is reflected
+                    NetworkExpectationFactory.reflectSingle((payload) => {
+                        expect(payload.content).to.equal('outgoingMessageUpdate');
+                        const message = payload.outgoingMessageUpdate;
+                        assert(
+                            message !== null && message !== undefined,
+                            'payload.outgoingMessageUpdate is null or undefined',
+                        );
+                        expect(message.updates).to.have.length(1);
+                        expect(message.updates[0].conversation?.contact).to.equal(
+                            user1.identity.string,
+                        );
+                        expect(ensureMessageId(intoU64(message.updates[0].messageId))).to.equal(
+                            messageProperties.messageId,
+                        );
+                    }),
                 ];
-            }
+                const handle = new TestHandle(services, expectations);
+                await task.run(handle);
+                handle.finish();
+            });
+        });
 
-            function getExpectedD2dOutgoingReflectedMessage(messageProperties: {
-                type: CspE2eType;
-                messageId: MessageId;
-                createdAt: Date;
-            }): NetworkExpectation {
-                return NetworkExpectationFactory.reflectSingle((payload) => {
-                    expect(payload.content).to.equal('outgoingMessage');
-                    const message = payload.outgoingMessage;
-                    assert(
-                        message !== null && message !== undefined,
-                        'payload.outgoingMessage is null or undefined',
-                    );
-                    const createdAt = unixTimestampToDateMs(intoU64(message.createdAt));
-                    expect(createdAt).to.eql(messageProperties.createdAt);
-                    expect(intoU64(message.messageId)).to.equal(messageProperties.messageId);
-                    expect(message.type).to.equal(messageProperties.type);
-                });
-            }
-
-            function getExpectedD2dOutgoingReflectedMessageUpdate(
-                creatorIdentity: IdentityString,
-                groupId: GroupId,
-            ): NetworkExpectation {
-                return NetworkExpectationFactory.reflectSingle((payload) => {
-                    expect(payload.content).to.equal('outgoingMessageUpdate');
-                    const message = payload.outgoingMessageUpdate;
-                    assert(
-                        message !== null && message !== undefined,
-                        'payload.outgoingMessageUpdate is null or undefined',
-                    );
-                    expect(message.updates).to.have.length(1);
-                    expect(message.updates[0].conversation?.group).not.to.be.undefined;
-                    expect(message.updates[0].conversation?.group?.creatorIdentity).to.equal(
-                        creatorIdentity,
-                    );
-                    expect(message.updates[0].conversation?.group?.groupId).to.eql(
-                        intoUnsignedLong(groupId),
-                    );
-                });
-            }
-
+        describe('group messaging', function () {
             it('should send a message to all group members', async function () {
                 const {crypto, model} = services;
 
@@ -324,8 +384,16 @@ export function run(): void {
                     //
                     // Note: This expects that the messages are sent in the same order as the group
                     //       members in the database
-                    ...getExpectedCspMessagesForGroupMember(user1, messageProperties.messageId),
-                    ...getExpectedCspMessagesForGroupMember(user2, messageProperties.messageId),
+                    ...getExpectedCspMessagesForGroupMember(
+                        user1,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
+                    ...getExpectedCspMessagesForGroupMember(
+                        user2,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
 
                     // Finally, an OutgoingMessageUpdate.Sent is reflected
                     getExpectedD2dOutgoingReflectedMessageUpdate(me, groupId),
@@ -378,8 +446,16 @@ export function run(): void {
 
                     // Note: This expects that the were sent in a synchronous manner in the order of
                     // the users in the database.
-                    ...getExpectedCspMessagesForGroupMember(user1, messageProperties.messageId),
-                    ...getExpectedCspMessagesForGroupMember(user2, messageProperties.messageId),
+                    ...getExpectedCspMessagesForGroupMember(
+                        user1,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
+                    ...getExpectedCspMessagesForGroupMember(
+                        user2,
+                        messageProperties.messageId,
+                        messageProperties.type,
+                    ),
 
                     // Finally, an OutgoingMessageUpdate.Sent is reflected
                     getExpectedD2dOutgoingReflectedMessageUpdate(user1.identity.string, groupId),
