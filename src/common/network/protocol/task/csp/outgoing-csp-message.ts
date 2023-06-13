@@ -212,19 +212,26 @@ export class OutgoingCspMessageTask<
         const receivers = this._getReceiverContacts();
 
         // Send message to receivers
+        let sentMessagesCount = 0;
         if (receivers.length !== 0) {
             this._log.info(`Sending ${messageTypeDebug} message`);
-            await this._encryptAndSendMessages(handle, receivers, messageBytes, type);
+            sentMessagesCount = await this._encryptAndSendMessages(
+                handle,
+                receivers,
+                messageBytes,
+                type,
+            );
+            this._log.info(`Sent ${sentMessagesCount} outgoing CSP messages`);
         } else {
             this._log.info(`Skip sending ${messageTypeDebug} message as it has no receivers`);
         }
 
         // Reflect the sent state of the message
+        let reflectDate;
         const isConversationMessage =
             CspE2eConversationTypeUtils.containsNumber(type) ||
             CspE2eGroupConversationTypeUtils.containsNumber(type);
-        let reflectDate;
-        if (this._reflect && isConversationMessage) {
+        if (this._reflect && isConversationMessage && sentMessagesCount > 0) {
             // TODO(DESK-323): Do this asynchronously?
             const conversationId = conversationIdForReceiver(this._receiver);
             const task = new ReflectOutgoingMessageUpdateTask(this._services, [
@@ -234,6 +241,8 @@ export class OutgoingCspMessageTask<
                 },
             ]);
             reflectDate = await task.run(handle);
+        } else {
+            this._log.debug(`Skip reflecting ${messageTypeDebug} message.`);
         }
 
         // Done
@@ -268,14 +277,15 @@ export class OutgoingCspMessageTask<
     /**
      * Encrypt, serialize and send message to CSP for all recipients.
      *
-     * @returns Promise that resolves whether all messages have been queued on the chat server.
+     * @returns Promise that resolves whether all messages have been queued on the chat server with
+     * a count of how many messages were sent.
      */
     private async _encryptAndSendMessages(
         handle: InternalActiveTaskCodecHandle,
         receivers: Contact[],
         messageBytes: Uint8Array,
         messageType: ValidGroupMessages | ValidContactMessages,
-    ): Promise<void> {
+    ): Promise<u53> {
         const {device, crypto, model} = this._services;
         const {createdAt, messageId, type} = this._messageProperties;
 
@@ -291,6 +301,8 @@ export class OutgoingCspMessageTask<
             nickname = model.user.profileSettings.get().view.nickname ?? '';
             encodedLegacyNickname = UTF8.encodeFullyInto(nickname, new Uint8Array(32));
         }
+
+        let sentMessagesCount: u53 = 0;
 
         // TODO(DESK-573): Bundle sending of group messages
         for (const receiver of receivers) {
@@ -391,7 +403,10 @@ export class OutgoingCspMessageTask<
 
                 return MessageFilterInstruction.ACCEPT;
             });
+            sentMessagesCount++;
         }
+
+        return sentMessagesCount;
     }
 
     /**
