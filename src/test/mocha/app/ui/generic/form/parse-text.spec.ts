@@ -7,6 +7,10 @@ import {ensureIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {type Mention} from '~/common/viewmodel/utils/mentions';
 
+function mockedT(key: string, defaultValue: string): string {
+    return defaultValue;
+}
+
 export function run(): void {
     describe('Formatted message text parsing', function () {
         const testContactId = 'ECHOECHO' as const;
@@ -49,15 +53,17 @@ export function run(): void {
 
         function mentionHtmlTemplate(
             props:
-                | {type: 'self'}
                 | {type: 'all'}
+                | {type: 'self'; name: string; identityString: string}
                 | {type: 'other'; name: string; lookup: Pick<DbContact, 'type' | 'uid'>},
         ): string {
             switch (props.type) {
-                case 'self':
-                    return `<span class="mention me">@Me</span>`;
                 case 'all':
                     return `<span class="mention all">@All</span>`;
+                case 'self':
+                    return `<span class="mention me">@${
+                        props.name === props.identityString ? 'Me' : props.name
+                    }</span>`;
                 case 'other':
                     return `<a href="#/conversation/${props.lookup.type}/${props.lookup.uid}/" draggable="false" class="mention">@${props.name}</a>`;
                 default:
@@ -74,24 +80,49 @@ export function run(): void {
         }
 
         describe('parseMentions', function () {
-            it('should replace mentions of type "self" in text with HTML', function () {
-                const parsedText = parseMentions(`Hello, @[${testContactId}]!`, testMentions.self);
-                const expected = `Hello, ${mentionHtmlTemplate({
-                    type: 'self',
-                })}!`;
+            it('should replace mentions of type "self" in text with HTML (using nickname if set)', function () {
+                const parsedText = parseMentions(
+                    mockedT,
+                    `Hello, @[${testContactId}]!`,
+                    testMentions.self,
+                );
+                const expected = `Hello, ${mentionHtmlTemplate(testMentions.self)}!`;
+
+                expect(parsedText).to.equal(expected);
+            });
+
+            it('should replace mentions of type "self" in text with HTML (using id if nickname is missing)', function () {
+                const testMentionWithoutName = {
+                    ...testMentions.self,
+                    name: testMentions.self.identityString,
+                };
+                const parsedText = parseMentions(
+                    mockedT,
+                    `Hello, @[${testContactId}]!`,
+                    testMentionWithoutName,
+                );
+                const expected = `Hello, ${mentionHtmlTemplate(testMentionWithoutName)}!`;
 
                 expect(parsedText).to.equal(expected);
             });
 
             it('should replace mentions of type "all" in text with HTML', function () {
-                const parsedText = parseMentions(`Hello, @[${testAllId}]!`, testMentions.all);
+                const parsedText = parseMentions(
+                    mockedT,
+                    `Hello, @[${testAllId}]!`,
+                    testMentions.all,
+                );
                 const expected = `Hello, ${mentionHtmlTemplate({type: 'all'})}!`;
 
                 expect(parsedText).to.equal(expected);
             });
 
             it('should replace mentions of type "other" in text with HTML', function () {
-                const parsedText = parseMentions(`Hello, @[${testContactId}]!`, testMentions.other);
+                const parsedText = parseMentions(
+                    mockedT,
+                    `Hello, @[${testContactId}]!`,
+                    testMentions.other,
+                );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentions.other)}!`;
 
                 expect(parsedText).to.equal(expected);
@@ -99,6 +130,7 @@ export function run(): void {
 
             it('should replace multiple, differing mentions', function () {
                 const parsedText = parseMentions(
+                    mockedT,
                     `Hello, @[${testAllId}] and @[${testContactId}]!`,
                     [testMentions.all, testMentions.other],
                 );
@@ -327,22 +359,22 @@ export function run(): void {
                 features: {markup, mentions, highlights, links},
                 expected,
             } of testCases) {
-                const extraArgs = [
-                    mentions === false ? undefined : mentions,
-                    highlights === false ? undefined : highlights,
-                    markup,
-                    links,
-                ] as const;
+                const extraArgs = {
+                    mentions: mentions === false ? undefined : mentions,
+                    highlights: highlights === false ? undefined : highlights,
+                    shouldParseMarkup: markup,
+                    shouldParseLinks: links,
+                } as const;
 
                 if (skipped === true) {
                     it.skip(description, function () {
-                        const parsedText = parseText(input, ...extraArgs);
+                        const parsedText = parseText(mockedT, {text: input, ...extraArgs});
 
                         expect(parsedText).to.equal(expected);
                     });
                 } else {
                     it(description, function () {
-                        const parsedText = parseText(input, ...extraArgs);
+                        const parsedText = parseText(mockedT, {text: input, ...extraArgs});
 
                         expect(parsedText).to.equal(expected);
                     });

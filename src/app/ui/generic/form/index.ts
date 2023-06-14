@@ -14,10 +14,9 @@ import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-
 import {type Mention} from '~/common/viewmodel/utils/mentions';
 
 /**
- * A function that takes a (possibly undefined) string and returns a processed
- * string. If the input is undefined an empty string must be returned.
+ * A function similar to `i18n.t`, because that can't be imported here.
  */
-export type TextProcessor = (text: string | undefined) => string;
+type I18nTLikeFunction = (key: string, defaultValue: string) => string;
 
 /**
  * Escape HTML-unsafe characters in the given input string. If the input is
@@ -264,19 +263,25 @@ export function getTimeIsoString(date: Date): string {
  * @param mention The mention to generate HTML code for.
  * @returns A string containing a HTML tag which represents the supplied `Mention`.
  */
-function getMentionHtml(mention: Mention): string {
+function getMentionHtml(t: I18nTLikeFunction, mention: Mention): string {
     if (mention.type === 'all') {
-        return `<span class="mention all">@All</span>`;
+        const text = t('messaging.label--mention-all', 'All');
+
+        return `<span class="mention all">@${text}</span>`;
     }
 
-    const mentionDisplay = `@${escapeHtmlUnsafeChars(mention.name)}`;
-
+    const mentionDisplay = escapeHtmlUnsafeChars(mention.name);
     if (mention.type === 'self') {
-        return `<span class="mention me">${mentionDisplay}</span>`;
+        const text =
+            mentionDisplay === mention.identityString
+                ? t('messaging.label--mention-me', 'Me')
+                : mentionDisplay;
+
+        return `<span class="mention me">@${text}</span>`;
     }
 
     const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
-    return `<a href="${href}" draggable="false" class="mention">${mentionDisplay}</a>`;
+    return `<a href="${href}" draggable="false" class="mention">@${mentionDisplay}</a>`;
 }
 
 function getHighlightHtml(highlight: string): string {
@@ -311,10 +316,17 @@ export function parseMarkup(text: string): string {
  * @param mentions An array of mentions to search for and replace in the text.
  * @returns The text containing the mentions replaced with HTML.
  */
-export function parseMentions(text: string, mentions: Mention | Mention[]): string {
+export function parseMentions(
+    t: I18nTLikeFunction,
+    text: string,
+    mentions: Mention | Mention[],
+): string {
     let parsedText = text;
     for (const mention of mentions instanceof Array ? mentions : [mentions]) {
-        parsedText = parsedText.replaceAll(`@[${mention.identityString}]`, getMentionHtml(mention));
+        parsedText = parsedText.replaceAll(
+            `@[${mention.identityString}]`,
+            getMentionHtml(t, mention),
+        );
     }
 
     return parsedText;
@@ -377,6 +389,7 @@ export function parseLinks(text: string): string {
  * Warning: If you render the output in a web UI, you must absolutely make sure that the input
  *          `text` is sanitized (e.g. with {@link escapeHtmlUnsafeChars})!
  *
+ * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param text The text to parse.
  * @param mentions The {@link Mention}s to search for and replace in the text.
  * @param highlights The highlights to search for and replace in the text.
@@ -385,24 +398,27 @@ export function parseLinks(text: string): string {
  * @param shouldParseLinks If links should be detected and replaced.
  * @returns The text containing the specified tokens replaced with HTML.
  */
-export function parseText({
-    text,
-    mentions,
-    highlights,
-    shouldParseMarkup = false,
-    shouldParseLinks = false,
-}: {
-    /** The text to parse. */
-    text: string | undefined;
-    /** The {@link Mention}s to search for and replace in the text. */
-    mentions?: Mention | Mention[];
-    /** The highlights to search for and replace in the text. */
-    highlights?: string | string[];
-    /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
-    shouldParseMarkup?: boolean;
-    /** If links should be detected and replaced. */
-    shouldParseLinks?: boolean;
-}): string {
+export function parseText(
+    t: I18nTLikeFunction,
+    {
+        text,
+        mentions,
+        highlights,
+        shouldParseMarkup = false,
+        shouldParseLinks = false,
+    }: {
+        /** The text to parse. */
+        text: string | undefined;
+        /** The {@link Mention}s to search for and replace in the text. */
+        mentions?: Mention | Mention[];
+        /** The highlights to search for and replace in the text. */
+        highlights?: string | string[];
+        /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
+        shouldParseMarkup?: boolean;
+        /** If links should be detected and replaced. */
+        shouldParseLinks?: boolean;
+    },
+): string {
     if (text === undefined || text === '') {
         return '';
     }
@@ -412,7 +428,7 @@ export function parseText({
     }
 
     if (mentions !== undefined) {
-        text = parseMentions(text, mentions);
+        text = parseMentions(t, text, mentions);
     }
 
     if (highlights !== undefined) {

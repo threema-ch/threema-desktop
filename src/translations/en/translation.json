@@ -279,6 +279,8 @@
     "hint--drop-files-to-send": "Drop files here to send",
     "label--compose-area": "Write a message...",
     "label--default-filename": "(no name)",
+    "label--mention-all": "All",
+    "label--mention-me": "Me",
     "label--prefix-draft": "Draft:",
     "label--protected-conversation": "Private",
     "label--search-conversation": "Find Chat",

@@ -1,5 +1,6 @@
 <script lang="ts">
   import {escapeHtmlUnsafeChars, parseText} from '~/app/ui/generic/form';
+  import {i18n} from '~/app/ui/i18n';
   import {type Mention} from '~/common/viewmodel/utils/mentions';
 
   /**
@@ -13,7 +14,7 @@
    */
   export let mentions: Mention | Mention[] | undefined = undefined;
 
-  $: processedText = parseText({
+  $: processedText = parseText($i18n.t, {
     text: escapeHtmlUnsafeChars(text),
     mentions,
     highlights: undefined,
