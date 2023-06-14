@@ -4,14 +4,14 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingParams, type LinkingState} from '~/app/ui/linking';
+  import {type LinkingParams, type LinkingWizardState} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
   export let params: LinkingParams;
-  export let linkingState: LinkingState;
-  unusedProp(params, linkingState);
+  export let linkingWizardState: LinkingWizardState;
+  unusedProp(params, linkingWizardState);
 
   const dispatchEvent = createEventDispatcher();
 </script>

@@ -1,26 +1,35 @@
 <script lang="ts">
-  import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
+  import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import QrCode from '#3sc/components/generic/QrCode/QrCode.svelte';
   import {globals} from '~/app/globals';
   import {i18n} from '~/app/ui/i18n';
-  import {getLinkingQrCodePayload, type LinkingParams, type LinkingState} from '~/app/ui/linking';
+  import {type LinkingWizardStateScan} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
+  import {GlobalTimer} from '~/common/utils/timer';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking.scan`);
 
-  export let params: LinkingParams;
-  export let linkingState: LinkingState;
+  export let linkingWizardState: LinkingWizardStateScan;
+
+  // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
+  // for connecting to the rendezvous server. Note that the timer is started here, but
+  // not yet awaited until after the connection has been established.
+  let minimalConnectTimerElapsed = false;
+  new GlobalTimer()
+    .sleep(1000)
+    .then(() => (minimalConnectTimerElapsed = true))
+    .catch((e) => log.error('Sleep timer failed'));
 
   /**
    * Copy linking code to clipboard. Note: this is only supposed to be used in development.
    */
-  function copyLinkingUrl(): void {
-    if (linkingUrl !== undefined) {
+  function copyLinkingUri(): void {
+    if (linkingWizardState.joinUri !== undefined) {
       navigator.clipboard
-        .writeText(linkingUrl)
+        .writeText(linkingWizardState.joinUri)
         .then(() => log.info('Linking code copied to clipboard'))
         .catch((error) => {
           log.error('Could not copy linking code to clipboard', error);
@@ -29,8 +38,6 @@
       log.warn('Attempting to copy undefined linking code');
     }
   }
-
-  $: linkingUrl = getLinkingQrCodePayload(params.setup);
 </script>
 
 <template>
@@ -89,18 +96,18 @@
         </li>
       </ol>
       <div class="linking">
-        {#if linkingState.connectionState === 'connecting'}
+        {#if linkingWizardState.joinUri === undefined || !minimalConnectTimerElapsed}
           <div class="qr-code">
             <div class="progress">
               <CircularProgress variant="indeterminate" />
             </div>
             <span>{$i18n.t('dialog--linking-scan.label--connecting', 'Connecting')}</span>
           </div>
-        {:else if linkingState.connectionState === 'waiting-for-handshake'}
+        {:else}
           <!-- TODO(DESK-1067): Get rid of forced border and invert QR code -->
           <div class="qr-code">
             <QrCode
-              data={linkingUrl}
+              data={linkingWizardState.joinUri}
               options={{
                 width: 240,
               }}
@@ -108,7 +115,7 @@
           </div>
         {/if}
         {#if import.meta.env.DEBUG}
-          <IconButton flavor="naked" on:click={copyLinkingUrl}>
+          <IconButton flavor="naked" on:click={copyLinkingUri}>
             <MdIcon theme="Filled">content_copy</MdIcon>
           </IconButton>
         {/if}

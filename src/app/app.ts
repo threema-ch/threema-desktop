@@ -1,15 +1,12 @@
 import '../sass/app.scss';
 
 import {default as initComposeArea} from '@threema/compose-area/web';
-import initLibthreema, * as libthreema from 'libthreema';
 
 import {APP_CONFIG} from '~/app/config';
 import {globals} from '~/app/globals';
 import {Router, type RouterState} from '~/app/routing/router';
 import {type AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
-import Bootstrap from '~/app/ui/Bootstrap.svelte';
-import {type BootstrapParams} from '~/app/ui/bootstrap/process-step';
 import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
 import {type LinkingParams} from '~/app/ui/linking';
@@ -17,10 +14,9 @@ import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {CONFIG} from '~/common/config';
-import {BackendController, type InitialBootstrapData} from '~/common/dom/backend/controller';
+import {type LinkingState} from '~/common/dom/backend';
+import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
-import {type RendezvousProtocolSetup} from '~/common/dom/network/protocol/rendezvous';
-import {type SafeCredentials} from '~/common/dom/safe';
 import {LocalStorageController} from '~/common/dom/ui/local-storage';
 import {FrontendNotificationCreator} from '~/common/dom/ui/notification';
 import {appVisibility, getAppVisibility} from '~/common/dom/ui/state';
@@ -29,13 +25,11 @@ import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {checkForUpdate} from '~/common/dom/update-check';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
 import {type ElectronIpc, type SystemInfo} from '~/common/electron-ipc';
-import {extractErrorTraceback, type SafeError} from '~/common/error';
+import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
-import {type IdentityString} from '~/common/network/types';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import {type u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
-import {type QueryablePromise} from '~/common/utils/resolvable-promise';
-import {type ISubscribableStore} from '~/common/utils/store';
+import {type ISubscribableStore, type ReadableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
 // Extend global APIs
@@ -60,37 +54,18 @@ export interface Elements {
 /**
  * Show linking wizard.
  */
-function attachLinkingWizard(
-    elements: Elements,
-    params: LinkingParams,
-    onComplete: () => void,
-): LinkingWizard {
+function attachLinkingWizard(elements: Elements, params: LinkingParams): LinkingWizard {
     elements.container.innerHTML = '';
     return new LinkingWizard({
         target: elements.container,
         props: {
             params,
-            onComplete,
         },
     });
 }
 
 /**
- * Show bootstrapping page.
- */
-function attachBootstrapForLinking(elements: Elements, params: BootstrapParams): Bootstrap {
-    // Show bootstrapping page
-    elements.container.innerHTML = '';
-    return new Bootstrap({
-        target: elements.container,
-        props: {
-            params,
-        },
-    });
-}
-
-/**
- * Show bootstrapping page for password.
+ * Show password input component.
  */
 function attachPasswordInput(
     elements: Elements,
@@ -245,9 +220,8 @@ export async function main(appState: AppState): Promise<App> {
     applyThemeBranding(import.meta.env.BUILD_VARIANT, elements.systemDialogs);
 
     // Initialise WASM packages
-    log.info('Initialising WASM packages');
-    await Promise.all([initComposeArea(), initLibthreema()]);
-    libthreema.initLogging();
+    log.info('Initializing WASM packages');
+    await Promise.all([initComposeArea()]);
 
     // Track the app visibility state
     function handleAppVisibilityChange(): void {
@@ -302,48 +276,13 @@ export async function main(appState: AppState): Promise<App> {
     });
 
     // Define function that will show the linking wizard
-    async function showLinkingWizard(
-        setup: RendezvousProtocolSetup,
-        connected: QueryablePromise<void>,
-        nominated: QueryablePromise<ReadonlyUint8Array>,
-        onComplete: () => void,
-    ): Promise<void> {
+    async function showLinkingWizard(linkingEvents: ReadableStore<LinkingState>): Promise<void> {
         await domContentLoaded;
         log.debug('Showing linking wizard');
         elements.splash.classList.add('hidden'); // Hide splash screen
-        attachLinkingWizard(
-            elements,
-            {
-                setup,
-                connected,
-                nominated,
-            },
-            onComplete,
-        );
-    }
-
-    // Define function that will request user to enter Threema Safe credentials
-    async function requestSafeCredentials(
-        isIdentityValid: (identity: IdentityString) => Promise<boolean>,
-        isSafeBackupAvailable: (safeCredentials: SafeCredentials) => Promise<boolean>,
-        currentIdentity?: IdentityString,
-        error?: {
-            message: string;
-            details: string;
-        },
-    ): Promise<InitialBootstrapData> {
-        await domContentLoaded;
-        log.debug('Showing bootstrapping page');
-        elements.splash.classList.add('hidden'); // Hide splash screen
-        const bootstrap = attachBootstrapForLinking(elements, {
-            isIdentityValid,
-            isSafeBackupAvailable,
-            error,
-            currentIdentity,
+        attachLinkingWizard(elements, {
+            linkingEvents,
         });
-        const credentials = await bootstrap.initialBootstrapData;
-        elements.splash.classList.remove('hidden'); // Show splash screen
-        return credentials;
     }
 
     // Define function that will request user to enter the password for the key storage
@@ -351,28 +290,10 @@ export async function main(appState: AppState): Promise<App> {
         await domContentLoaded;
         log.debug('Showing page to request password');
         elements.splash.classList.add('hidden'); // Hide splash screen
-        const bootstrap = attachPasswordInput(elements, previouslyAttemptedPassword);
-        const password = await bootstrap.passwordPromise;
+        const passwordInput = attachPasswordInput(elements, previouslyAttemptedPassword);
+        const password = await passwordInput.passwordPromise;
         elements.splash.classList.remove('hidden'); // Show splash screen
         return password;
-    }
-
-    /**
-     * Show linking error dialog.
-     *
-     * When the dialog is confirmed the user profile will be deleted and the app will be restarted.
-     */
-    async function showLinkingErrorDialog(error: SafeError): Promise<void> {
-        await domContentLoaded;
-        log.debug('Showing linking error dialog');
-        elements.splash.classList.add('hidden'); // Hide splash screen
-        const dialog = systemDialog.open({
-            type: 'safe-restore',
-            context: {
-                error,
-            },
-        });
-        await dialog.closed;
     }
 
     // Initialize global dialog component
@@ -397,9 +318,7 @@ export async function main(appState: AppState): Promise<App> {
         },
         endpoint.wrap(worker, logging.logger('com.backend-creator')),
         showLinkingWizard,
-        requestSafeCredentials,
         requestUserPassword,
-        showLinkingErrorDialog,
     );
     const services: AppServices = {
         config: CONFIG,

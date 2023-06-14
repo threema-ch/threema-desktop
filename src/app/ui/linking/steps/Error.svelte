@@ -1,13 +1,10 @@
 <script lang="ts">
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingParams, type LinkingState} from '~/app/ui/linking';
+  import {type LinkingWizardStateError} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
 
-  export let params: LinkingParams;
-  export let linkingState: LinkingState;
-  unusedProp(params);
+  export let linkingWizardState: LinkingWizardStateError;
 </script>
 
 <template>
@@ -15,7 +12,7 @@
     <div class="body">
       <h1 class="title">{$i18n.t('dialog--linking-error.label--title', 'Linking Error')}</h1>
       <p class="description">
-        {#if linkingState.connectionState === 'connection-error'}
+        {#if linkingWizardState.errorType === 'connection-error'}
           {$i18n.t(
             'dialog--linking-error.prose--description-connection-error',
             'A connection error occurred during linking. Please check your internet connection and try again.',
@@ -27,6 +24,11 @@
           )}
         {/if}
       </p>
+
+      <p class="technical-details">
+        Technical details: {linkingWizardState.errorMessage}
+      </p>
+
       <div class="button">
         <Button flavor="filled" on:click={() => window.location.reload()}
           >{$i18n.t('dialog--linking-error.action--confirm', 'Retry')}</Button
@@ -47,11 +49,10 @@
   .body {
     display: grid;
     grid-template:
-      'party'
-      '.' rem(16px)
       'title'
       '.' rem(16px)
       'description'
+      'technical-details'
       '.' rem(40px)
       'button';
     justify-items: center;
@@ -64,8 +65,17 @@
 
     .description {
       grid-area: description;
-      @extend %font-large-400;
+      @extend %font-normal-400;
       text-align: center;
+      user-select: text;
+    }
+
+    .technical-details {
+      grid-area: technical-details;
+      @extend %font-small-400;
+      color: grey;
+      text-align: center;
+      user-select: text;
     }
 
     .button {

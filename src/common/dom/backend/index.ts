@@ -4,21 +4,24 @@ import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
-    DATABASE_KEY_LENGTH,
     type DatabaseBackend,
     type RawDatabaseKey,
     type ServicesForDatabaseFactory,
-    wrapRawDatabaseKey,
 } from '~/common/db';
 import {DeviceBackend, type DeviceIds} from '~/common/device';
+import {DeviceJoinProtocol} from '~/common/dom/backend/join';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {FetchBlobBackend} from '~/common/dom/network/protocol/fetch-blob';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
 import {applyMediatorStreamPipeline} from '~/common/dom/network/protocol/pipeline';
+import {
+    RendezvousConnection,
+    type RendezvousProtocolSetup,
+} from '~/common/dom/network/protocol/rendezvous';
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
 import {type WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
-import {downloadSafeBackup, type SafeBackupData, type SafeCredentials} from '~/common/dom/safe';
+import {type SafeBackupData, type SafeCredentials} from '~/common/dom/safe';
 import {SafeContactImporter} from '~/common/dom/safe/safe-contact-importer';
 import {SafeGroupImporter} from '~/common/dom/safe/safe-group-importer';
 import {type BrowserInfo, getBrowserInfo} from '~/common/dom/utils/browser';
@@ -32,7 +35,12 @@ import {
     GroupUserState,
     TransferTag,
 } from '~/common/enum';
-import {BaseError, type BaseErrorOptions, extractErrorMessage, SafeError} from '~/common/error';
+import {
+    BaseError,
+    type BaseErrorOptions,
+    extractErrorMessage,
+    extractErrorTraceback,
+} from '~/common/error';
 import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
     type KeyStorage,
@@ -65,7 +73,6 @@ import {OutgoingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/o
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/manager';
 import {
-    ensureIdentityString,
     ensureNickname,
     type IdentityString,
     isNickname,
@@ -73,17 +80,21 @@ import {
 } from '~/common/network/types';
 import {
     type ClientKey,
+    randomRendezvousAuthenticationKey,
     type RawDeviceGroupKey,
     type TemporaryClientKey,
-    wrapRawClientKey,
-    wrapRawDeviceGroupKey,
 } from '~/common/network/types/keys';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
-import {type Mutable} from '~/common/types';
-import {assert, assertError, assertUnreachable, unreachable} from '~/common/utils/assert';
-import {base64ToU8a} from '~/common/utils/base64';
-import {byteToHex} from '~/common/utils/byte';
+import {type Mutable, type ReadonlyUint8Array} from '~/common/types';
+import {
+    assert,
+    assertError,
+    assertUnreachable,
+    ensureError,
+    unreachable,
+} from '~/common/utils/assert';
+import {bytesToHex, byteToHex} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
 import {
     type EndpointFor,
@@ -110,12 +121,13 @@ import {ViewModelCache} from '~/common/viewmodel/cache';
  * Type of the {@link BackendCreationError}.
  *
  * - no-identity: Identity cannot be found.
- * - restore-failed: Backup restore from Threema Safe failed.
+ * - handled-linking-error: An error happened during linking. The error was already propagated to
+ *   the UI through the linking state, no further actions are needed.
  * - key-storage-error: An error related to the key storage occurred.
  */
 export type BackendCreationErrorType =
     | 'no-identity'
-    | 'restore-failed'
+    | 'handled-linking-error'
     | 'key-storage-error'
     | 'key-storage-error-missing-password'
     | 'key-storage-error-wrong-password';
@@ -193,6 +205,68 @@ export interface SafeCredentialsAndDeviceIds {
 }
 
 /**
+ * Linking state error sub-types.
+ *
+ * - connection-error: Failed to connect to the rendezvous server (or the connection aborted).
+ * - rendezvous-error: The rendezvous protocol did not succeed.
+ * - join-error: The device join protocol did not succeed.
+ * - generic-error: Some other error during linking.
+ */
+export type LinkingStateErrorType =
+    | 'connection-error'
+    | 'rendezvous-error'
+    | 'join-error'
+    | 'generic-error';
+
+/**
+ * The backend's linking state.
+ */
+export type LinkingState =
+    /**
+     * Initial state.
+     */
+    | {state: 'initializing'}
+    /**
+     * Rendezvous WebSocket connection is established.
+     */
+    | {state: 'waiting-for-handshake'; joinUri: string}
+    /**
+     * Rendezvous protocol is complete. The rendezvous path hash is included.
+     */
+    | {state: 'nominated'; rph: ReadonlyUint8Array}
+    /**
+     * The "Begin" join message was received, blobs and essential data are being processed.
+     */
+    | {state: 'syncing'}
+    /**
+     * Essential data is fully processed, we are waiting for the user's password in order to write
+     * the key storage.
+     */
+    | {state: 'waiting-for-password'}
+    /**
+     * We are registered at the Mediator server and the device join protocol is complete.
+     */
+    | {state: 'registered'}
+    /**
+     * An error occurred, device join did not succeed.
+     */
+    | {
+          state: 'error';
+          type: LinkingStateErrorType;
+          message: string;
+      };
+
+export interface DeviceLinkingSetup extends ProxyMarked {
+    /**
+     * State updates sent from the backend to the frontend.
+     */
+    readonly linkingState: {
+        readonly store: WritableStore<LinkingState>;
+        readonly updateState: (state: LinkingState) => void;
+    } & ProxyMarked;
+}
+
+/**
  * The backend combines all required services and contains the core logic of our application.
  *
  * The backend lives in the worker thread. It is exposed via its {@link BackendHandle} to the UI
@@ -242,7 +316,7 @@ export class Backend implements ProxyMarked {
         }: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
-        safeCredentialsAndDeviceIds?: SafeCredentialsAndDeviceIds,
+        deviceLinkingSetup?: EndpointFor<DeviceLinkingSetup>,
     ): Promise<EndpointFor<BackendHandle>> {
         const log = logging.logger('backend.create');
 
@@ -257,91 +331,83 @@ export class Backend implements ProxyMarked {
             | undefined;
         let dgk: RawDeviceGroupKey | undefined;
         let deviceIds: DeviceIds | undefined;
-        let backupData: SafeBackupData | undefined = undefined;
 
-        /**
-         * Temporary helper function to extract DGK from Safe Backup until the pairing process is implemented.
-         *
-         * TODO(DESK-201): TODO(DESK-442): Do not extract DGK from Safe Backup
-         **/
-        function extractDgkFromSafeBackupAsWorkaroundForNow(
-            safeBackupData: SafeBackupData,
-        ): RawDeviceGroupKey {
-            log.warn('TODO(DESK-201): TODO(DESK-442): Do not extract DGK from Safe Backup');
+        // If the required setup information is passed in, start the device linking flow
+        if (deviceLinkingSetup !== undefined) {
+            log.info('Starting device linking flow');
 
-            if (safeBackupData.user.temporaryDeviceGroupKeyTodoRemove === undefined) {
-                throw new BackendCreationError(
-                    'restore-failed',
-                    'There is no DGK (as temporaryDeviceGroupKeyTodoRemove) in safe backup data.',
-                );
-            }
-
-            const restoredDgk = wrapRawDeviceGroupKey(
-                base64ToU8a(safeBackupData.user.temporaryDeviceGroupKeyTodoRemove),
+            // Get access to linking setup information
+            const wrappedDeviceLinkingSetup = endpoint.wrap<DeviceLinkingSetup>(
+                deviceLinkingSetup,
+                logging.logger('com.device-linking'),
             );
+            const {linkingState} = wrappedDeviceLinkingSetup;
 
-            safeBackupData.user.temporaryDeviceGroupKeyTodoRemove = '<purged>';
-            return restoredDgk;
-        }
-
-        // Restore from Threema Safe if credentials are passed in
-        if (safeCredentialsAndDeviceIds !== undefined) {
-            log.info(`Restoring from Threema Safe`);
-
-            // Set device IDs
-            deviceIds = safeCredentialsAndDeviceIds.deviceIds;
-
-            // Validate identity string
-            let identity: IdentityString;
-            try {
-                identity = ensureIdentityString(safeCredentialsAndDeviceIds.credentials.identity);
-            } catch (error) {
-                throw new BackendCreationError(
-                    'restore-failed',
-                    `Invalid Threema ID: ${safeCredentialsAndDeviceIds.credentials.identity}`,
-                    {from: error},
-                );
+            // Generate rendezvous setup with all information needed to show the QR code
+            let setup: RendezvousProtocolSetup;
+            {
+                const rendezvousPath = bytesToHex(crypto.randomBytes(new Uint8Array(32)));
+                const url = config.RENDEZVOUS_SERVER_URL.replaceAll(
+                    '{prefix4}',
+                    rendezvousPath.slice(0, 1),
+                ).replaceAll('{prefix8}', rendezvousPath.slice(0, 2));
+                setup = {
+                    role: 'initiator',
+                    ak: randomRendezvousAuthenticationKey(crypto),
+                    relayedWebSocket: {
+                        pathId: 1,
+                        url: `${url}/${rendezvousPath}`,
+                    },
+                };
             }
 
-            // Download and validate backup
+            // Create RendezvousConnection and open WebSocket connection
+            let rendezvous;
             try {
-                backupData = await downloadSafeBackup(safeCredentialsAndDeviceIds.credentials, {
-                    compressor,
-                    config,
-                    crypto,
-                    logging,
-                });
+                rendezvous = await RendezvousConnection.create({logging}, setup);
             } catch (error) {
-                log.error(`Backup download failed: ${error}`);
-                assertError(error, SafeError);
-                throw new BackendCreationError(
-                    'restore-failed',
-                    `Backup download failed: ${error.message}`,
-                    {from: error},
-                );
+                const message = `Rendezvous connection failed: ${error}`;
+                log.warn(message);
+                await linkingState.updateState({state: 'error', type: 'connection-error', message});
+                throw new BackendCreationError('handled-linking-error', message, {from: error});
+            }
+            await linkingState.updateState({
+                state: 'waiting-for-handshake',
+                joinUri: rendezvous.joinUri,
+            });
+
+            // Do the rendezvous handshake and wait for nomination of a path
+            let connectResult;
+            try {
+                connectResult = await rendezvous.connect();
+            } catch (error) {
+                const message = `Rendezvous handshake failed: ${error}`;
+                log.warn(`${message}\n\n${extractErrorTraceback(ensureError(error))}`);
+                await linkingState.updateState({state: 'error', type: 'rendezvous-error', message});
+                throw new BackendCreationError('handled-linking-error', message, {from: error});
+            }
+            log.info('Rendezvous connection established');
+            await linkingState.updateState({
+                state: 'nominated',
+                rph: connectResult.rph,
+            });
+
+            // Now that we established the connection and showed the RPH, we can wait for ED to
+            // start sending essential data and then run the join protocol.
+            const joinProtocol = new DeviceJoinProtocol(
+                connectResult.connection,
+                logging.logger('backend-controller.join'),
+            );
+            try {
+                await joinProtocol.run(); // TODO(DESK-1037): Error handling
+            } catch (error) {
+                const message = `Device join protocol failed: ${error}`;
+                log.warn(`${message}\n\n${extractErrorTraceback(ensureError(error))}`);
+                await linkingState.updateState({state: 'error', type: 'join-error', message});
+                throw new BackendCreationError('handled-linking-error', message, {from: error});
             }
 
-            // Extract client key from backup data
-            const rawCk = wrapRawClientKey(base64ToU8a(backupData.user.privatekey));
-            const rawCkForKeystore = wrapRawClientKey(rawCk.unwrap().slice());
-            const ck = SecureSharedBoxFactory.consume(crypto, rawCk) as ClientKey;
-
-            // TODO(DESK-201): TODO(DESK-442): Do not extract DGK from Safe Backup
-            dgk = extractDgkFromSafeBackupAsWorkaroundForNow(backupData);
-
-            // Look up server group on directory server
-            let privateData;
-            try {
-                privateData = await directory.privateData(identity, ck);
-            } catch (error) {
-                log.error(`Fetching information about identity failed: ${error}`);
-                throw new BackendCreationError(
-                    'restore-failed',
-                    `Fetching information about identity failed: ${error}`,
-                    {from: error},
-                );
-            }
-            const serverGroup = privateData.serverGroup;
+            /*
 
             // Prepare identity data
             identityData = {
@@ -387,30 +453,28 @@ export class Backend implements ProxyMarked {
             // Purge sensitive data
             rawCkForKeystore.purge();
             backupData.user.privatekey = '<purged>';
+
+            */
         }
 
-        // Instantiate database backend
-
-        // Try to read the credentials from the key storage.
+        // Initialize key storage
         const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
         if (!keyStorage.isPresent()) {
-            // No key storage was found. Signal this to the caller, so that the backup
-            // restore flow can be triggered.
-            assert(
-                safeCredentialsAndDeviceIds === undefined,
-                'Safe credentials were provided, but no keystore exists',
-            );
+            // No key storage was found. Signal this to the caller, so that the device linking flow
+            // can be triggered.
             throw new BackendCreationError('no-identity', 'No identity was found');
         }
 
+        // Ensure that we have a password
         if (keyStoragePassword === undefined) {
+            // Key storage is present, but cannot be decrypted without a password
             throw new BackendCreationError(
                 'key-storage-error-missing-password',
                 'Key storage cannot be decrypted, missing password?',
             );
         }
 
-        // Read from key storage
+        // Try to read the credentials from the key storage.
         //
         // TODO(DESK-383): We might need to move this whole section into a pre-step
         //     before the backend is actually attempted to be created.
@@ -468,6 +532,7 @@ export class Backend implements ProxyMarked {
             }
         }
 
+        // Extract identity data from key storage
         identityData = {
             identity: keyStorageContents.identityData.identity,
             ck: SecureSharedBoxFactory.consume(
@@ -476,7 +541,6 @@ export class Backend implements ProxyMarked {
             ) as ClientKey,
             serverGroup: keyStorageContents.identityData.serverGroup,
         };
-
         dgk = keyStorageContents.dgk;
         deviceIds = keyStorageContents.deviceIds;
 
@@ -492,12 +556,13 @@ export class Backend implements ProxyMarked {
         const device = new DeviceBackend({crypto, db, logging}, identityData, deviceIds, dgk);
         const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
         const blob = new FetchBlobBackend({config, device});
+        const notificationCreatorEndpoint = endpoint.wrap<NotificationCreator>(
+            notificationCreator,
+            logging.logger('com.notification'),
+        );
         const notification = new NotificationService(
             logging.logger('bw.backend.notification'),
-            endpoint.wrap<NotificationCreator>(
-                notificationCreator,
-                logging.logger('com.notification'),
-            ),
+            notificationCreatorEndpoint,
         );
         const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
             systemDialogEndpoint,
@@ -543,6 +608,8 @@ export class Backend implements ProxyMarked {
             timer,
         });
 
+        /* TODO(DESK-1038)
+
         if (backupData !== undefined) {
             try {
                 await bootstrapFromBackup(backend._services, identityData.identity, backupData);
@@ -560,6 +627,7 @@ export class Backend implements ProxyMarked {
             requestContactProfilePictures(backend._services);
             requestGroupSync(backend._services);
         }
+        */
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();

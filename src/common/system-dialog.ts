@@ -1,5 +1,4 @@
 import {type SystemInfo} from '~/common/electron-ipc';
-import {type SafeError} from '~/common/error';
 import {type ProxyMarked} from '~/common/utils/endpoint';
 
 /**
@@ -67,16 +66,6 @@ export interface InvalidStateDialog extends SystemDialogBase {
 }
 
 /**
- * Dialog which is shown on fatal safe restore errors.
- */
-export interface SafeRestoreStateDialog extends SystemDialogBase {
-    readonly type: 'safe-restore';
-    readonly context: {
-        readonly error: SafeError;
-    };
-}
-
-/**
  * All possible system dialogs.
  * Note: All Properties must be structurally clonable.
  */
@@ -84,8 +73,7 @@ export type SystemDialog =
     | AppUpdateDialog
     | ConnectionErrorDialog
     | ServerAlertDialog
-    | InvalidStateDialog
-    | SafeRestoreStateDialog;
+    | InvalidStateDialog;
 
 export type DialogAction = 'confirmed' | 'cancelled';
 

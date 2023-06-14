@@ -1,11 +1,19 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import initLibthreema, * as libthreema from 'libthreema';
+
 import {CONFIG} from '~/common/config';
 import {type RawDatabaseKey, type ServicesForDatabaseFactory} from '~/common/db';
 import {type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {type ServicesForKeyStorageFactory} from '~/common/key-storage';
-import {CONSOLE_LOGGER, type Logger, TagLogger, TeeLogger} from '~/common/logging';
+import {
+    CONSOLE_LOGGER,
+    type Logger,
+    type LoggerFactory,
+    TagLogger,
+    TeeLogger,
+} from '~/common/logging';
 import {ZlibCompressor} from '~/common/node/compressor';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {FileSystemFileStorage} from '~/common/node/file-storage/system-file-storage';
@@ -14,6 +22,7 @@ import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {FileLogger} from '~/common/node/logging';
 import {assert} from '~/common/utils/assert';
 import {main} from '~/worker/backend/backend-worker';
+import {BACKEND_WORKER_CONFIG} from '~/worker/backend/config';
 
 export default async function run(): Promise<void> {
     // We need the app path before we can do anything.
@@ -43,16 +52,26 @@ export default async function run(): Promise<void> {
         }
     }
 
+    function loggerFactory(rootTag: string, defaultStyle: string): LoggerFactory {
+        const tagLogging = TagLogger.styled(CONSOLE_LOGGER, rootTag, defaultStyle);
+        if (fileLogger === undefined) {
+            return tagLogging;
+        }
+        return TeeLogger.factory([tagLogging, TagLogger.unstyled(fileLogger, rootTag)]);
+    }
+
+    // Local logger for initialization code
+    const logging = loggerFactory('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);
+    const initLog = logging.logger('init');
+
+    // Initialize WASM packages
+    initLog.info('Initializing WASM packages');
+    await initLibthreema();
+    libthreema.initLogging();
+
     // Start backend worker for Electron
     main(CONFIG, {
-        logging: (rootTag, defaultStyle) => {
-            const tagLogging = TagLogger.styled(CONSOLE_LOGGER, rootTag, defaultStyle);
-            if (fileLogger === undefined) {
-                return tagLogging;
-            }
-            return TeeLogger.factory([tagLogging, TagLogger.unstyled(fileLogger, rootTag)]);
-        },
-
+        logging: loggerFactory,
         keyStorage: (services: ServicesForKeyStorageFactory, log: Logger) => {
             const {config} = services;
             const keyStoragePath = path.join(appPath, ...config.KEY_STORAGE_PATH);

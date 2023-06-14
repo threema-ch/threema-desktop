@@ -15,12 +15,15 @@ import {
 import {TransferTag} from '~/common/enum';
 import {BaseError} from '~/common/error';
 import {type Logger} from '~/common/logging';
+import * as protobuf from '~/common/network/protobuf';
+import {UNIT_MESSAGE} from '~/common/network/protobuf';
 import {type RendezvousAuthenticationKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u32} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
+import {u8aToBase64} from '~/common/utils/base64';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
 import {Queue} from '~/common/utils/queue';
-import {type AbortRaiser} from '~/common/utils/signal';
+import {AbortRaiser} from '~/common/utils/signal';
 
 /** A Path ID uniquely identifies a rendezvous connection path. */
 export type PathId = u32;
@@ -250,10 +253,6 @@ class MultiplexedPath
 
 /** Setup configuration for the Rendezvous Protocol. */
 export interface RendezvousProtocolSetup {
-    /**
-     * Abort raiser to abort the protocol. Is also raised by the protocol in case the protocol errors or aborts.
-     */
-    readonly abort: AbortRaiser;
     /** Role used in the Rendezvous Protocol. */
     readonly role: 'initiator';
     /** Rendezvous Authentication Key to be used. */
@@ -370,22 +369,28 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
     public static async create(
         services: Pick<ServicesForBackend, 'logging'>,
         setup: RendezvousProtocolSetup,
-    ): Promise<{readonly connect: () => Promise<RendezvousConnectResult>}> {
+    ): Promise<{
+        readonly connect: () => Promise<RendezvousConnectResult>;
+        readonly abort: () => void;
+        readonly joinUri: string;
+    }> {
         const log = services.logging.logger(`rendezvous.${setup.role}`);
-        setup.abort.subscribe(() => log.info('Closing protocol'));
+        const abort = new AbortRaiser();
 
         // Create and connect to all relevant (transport) paths simultaneously
         const paths: readonly SinglePath[] = [
             await WebSocketPath.create(
                 setup.relayedWebSocket.pathId,
                 setup.relayedWebSocket.url,
-                setup.abort,
+                abort,
             ),
         ];
 
         // Return function handle that establishes a connection.
         return {
-            connect: async () => await RendezvousConnection._connect(setup, log, paths),
+            connect: async () => await RendezvousConnection._connect(setup, abort, log, paths),
+            abort: () => abort.raise(),
+            joinUri: getJoinUri(setup),
         };
     }
 
@@ -395,6 +400,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
      */
     private static async _connect(
         setup: RendezvousProtocolSetup,
+        abort: AbortRaiser,
         log: Logger,
         paths: readonly SinglePath[],
     ): Promise<RendezvousConnectResult> {
@@ -415,7 +421,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
             default:
                 unreachable(setup.role);
         }
-        const path = new MultiplexedPath(setup.abort, log, paths);
+        const path = new MultiplexedPath(abort, log, paths);
         const reader = path.readable.getReader();
         const writer = path.writable.getWriter();
 
@@ -480,12 +486,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                         log.info('Nomination complete, rendezvous connection established');
                         return {
                             rph: update.rph,
-                            connection: new RendezvousConnection(
-                                log,
-                                setup.abort,
-                                protocol,
-                                nominated,
-                            ),
+                            connection: new RendezvousConnection(log, abort, protocol, nominated),
                         };
                     }
                     default:
@@ -526,4 +527,40 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
             });
         }
     }
+}
+
+/**
+ * Return device Join URI.
+ */
+function getJoinUri(setup: RendezvousProtocolSetup): string {
+    // Construct a Protobuf DeviceGroupJoinRequestOrOffer
+    const version = protobuf.url.DeviceGroupJoinRequestOrOffer.Version.V1_0;
+    const variant = protobuf.utils.creator(protobuf.url.DeviceGroupJoinRequestOrOffer.Variant, {
+        requestToJoin: UNIT_MESSAGE,
+        offerToJoin: undefined,
+    });
+    const relayedWebSocket = protobuf.utils.creator(
+        protobuf.rendezvous.RendezvousInit.RelayedWebSocket,
+        {
+            pathId: setup.relayedWebSocket.pathId,
+            networkCost: protobuf.rendezvous.RendezvousInit.NetworkCost.UNKNOWN,
+            url: setup.relayedWebSocket.url,
+        },
+    );
+    const rendezvousInit = protobuf.utils.creator(protobuf.rendezvous.RendezvousInit, {
+        version: protobuf.rendezvous.RendezvousInit.Version.V1_0,
+        ak: setup.ak.unwrap() as Uint8Array,
+        relayedWebSocket,
+        directTcpServer: undefined,
+    });
+    const joinRequest = protobuf.utils.creator(protobuf.url.DeviceGroupJoinRequestOrOffer, {
+        version,
+        variant,
+        rendezvousInit,
+    });
+
+    // Encode request into base64 bytes
+    const bytes = protobuf.url.DeviceGroupJoinRequestOrOffer.encode(joinRequest).finish();
+    const urlSafeBase64 = u8aToBase64(bytes, {urlSafe: true});
+    return `threema://device-group/join#${urlSafeBase64}`;
 }

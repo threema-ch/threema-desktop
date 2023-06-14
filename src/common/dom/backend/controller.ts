@@ -4,40 +4,38 @@ import {
     BackendCreationError,
     type BackendHandle,
     type BackendInit,
-    type SafeCredentialsAndDeviceIds,
+    type DeviceLinkingSetup,
+    type LinkingState,
 } from '~/common/dom/backend';
-import {DeviceJoinProtocol} from '~/common/dom/backend/join';
 import {type DebugBackend} from '~/common/dom/debug';
-import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
-import {
-    RendezvousConnection,
-    type RendezvousProtocolSetup,
-} from '~/common/dom/network/protocol/rendezvous';
-import {isSafeBackupAvailable, type SafeCredentials} from '~/common/dom/safe';
-import {ActivityState, type D2mLeaderState} from '~/common/enum';
-import {extractErrorMessage, SafeError} from '~/common/error';
+import {type SafeCredentials} from '~/common/dom/safe';
+import {type D2mLeaderState} from '~/common/enum';
+import {extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {type ProfilePictureView, type Repositories} from '~/common/model';
 import {type DisplayPacket} from '~/common/network/protocol/capture';
 import {type DirectoryBackend} from '~/common/network/protocol/directory';
 import {type ConnectionState} from '~/common/network/protocol/state';
 import {type IdentityString} from '~/common/network/types';
-import {randomRendezvousAuthenticationKey} from '~/common/network/types/keys';
 import {type NotificationCreator} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
-import {type ReadonlyUint8Array} from '~/common/types';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
-import {bytesToHex} from '~/common/utils/byte';
 import {
     type EndpointFor,
+    PROXY_HANDLER,
     RELEASE_PROXY,
     type Remote,
     type RemoteProxy,
+    TRANSFER_MARKER,
 } from '~/common/utils/endpoint';
 import {eternalPromise} from '~/common/utils/promise';
-import {type QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {AbortRaiser} from '~/common/utils/signal';
-import {DeprecatedDerivedStore, type IQueryableStore, type RemoteStore} from '~/common/utils/store';
+import {
+    DeprecatedDerivedStore,
+    type IQueryableStore,
+    type ReadableStore,
+    type RemoteStore,
+    WritableStore,
+} from '~/common/utils/store';
 import {type IViewModelRepository} from '~/common/viewmodel';
 
 export interface UserData {
@@ -56,39 +54,17 @@ interface EssentialStartupData {
 }
 
 /**
- * Test whether the {@link identity} is a valid identity (i.e. exists in the directory and is
- * not revoked).
- *
- * @throws {DirectoryError} if something went wrong during fetching of the data.
- */
-async function isIdentityValid(
-    directory: DirectoryBackend,
-    identity: IdentityString,
-): Promise<boolean> {
-    const identityData = await directory.identity(identity);
-    switch (identityData.state) {
-        case ActivityState.ACTIVE:
-        case ActivityState.INACTIVE:
-            return true;
-        case ActivityState.INVALID:
-            return false;
-        default:
-            return unreachable(identityData);
-    }
-}
-
-/**
  * Create an instance of the backend worker.
  *
  * @param init Data required for initialization
- * @param safeCredentialsAndDeviceIds If specified, this Safe backup will be restored before the
- *   backend is initialized. Note that any pre-existing database will be deleted.
+ * @param deviceLinkingSetup If specified, device rendezvous and join protocols will be run before
+ *   the backend is initialized. Note that any pre-existing database will be deleted.
  * @returns An endpoint if the backend could be instantiated.
  * @throws {BackendCreationError} if something goes wrong (e.g. if no key)
  */
 type BackendCreator = (
     init: BackendInit,
-    safeCredentialsAndDeviceIds?: SafeCredentialsAndDeviceIds,
+    deviceLinkingSetup?: EndpointFor<DeviceLinkingSetup>,
 ) => Promise<EndpointFor<BackendHandle>>;
 
 export type InitialBootstrapData = SafeCredentials & DeviceIds & {newPassword: string};
@@ -137,25 +113,10 @@ export class BackendController {
         },
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
-        showLinkingWizard: (
-            setup: RendezvousProtocolSetup,
-            connected: QueryablePromise<void>,
-            nominated: QueryablePromise<ReadonlyUint8Array>,
-            onComplete: () => void,
-        ) => Promise<void>,
-        requestSafeCredentials: (
-            isIdentityValid: (identity: IdentityString) => Promise<boolean>,
-            isSafeBackupAvailable: (safeCredentials: SafeCredentials) => Promise<boolean>,
-            currentIdentity?: IdentityString,
-            error?: {
-                message: string;
-                details: string;
-            },
-        ) => Promise<InitialBootstrapData>,
+        showLinkingWizard: (linkingEvents: ReadableStore<LinkingState>) => Promise<void>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
-        showLinkingErrorDialog: (error: SafeError) => Promise<void>,
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
-        const {config, endpoint, logging} = services;
+        const {endpoint, logging} = services;
         const log = logging.logger('backend-controller');
 
         /**
@@ -192,7 +153,31 @@ export class BackendController {
             ]);
         }
 
-        // Create backend
+        function assembleDeviceLinkingSetup(
+            linkingStateStore: WritableStore<LinkingState>,
+        ): EndpointFor<DeviceLinkingSetup> {
+            const {local, remote} = endpoint.createEndpointPair<DeviceLinkingSetup>();
+
+            // Add transfer markers
+            const deviceLinkingSetup: DeviceLinkingSetup = {
+                linkingState: {
+                    store: linkingStateStore,
+                    updateState: (state: LinkingState) => {
+                        linkingStateStore.set(state);
+                    },
+                    [TRANSFER_MARKER]: PROXY_HANDLER,
+                },
+                [TRANSFER_MARKER]: PROXY_HANDLER,
+            };
+
+            // Expose
+            endpoint.exposeProxy(deviceLinkingSetup, local, logging.logger('com.device-linking'));
+
+            // Transfer
+            return endpoint.transfer(remote, [remote]);
+        }
+
+        // Create backend (initial attempt, assuming that an ID is already set up)
         log.debug('Waiting for remote backend to be created');
         let backendEndpoint;
         {
@@ -200,7 +185,7 @@ export class BackendController {
             let passwordForExistingKeyStorage: string | undefined = undefined;
             // eslint-disable-next-line no-labels
             loopToCreateBackendWithKeyStorage: for (;;) {
-                log.debug('Loop to create backend with key storage');
+                log.debug('Loop to create backend with existing key storage');
                 try {
                     backendEndpoint = await creator(
                         // TODO(DESK-731): Remove the transitional logic involving LEGACY_DEFAULT_PASSWORD
@@ -218,7 +203,7 @@ export class BackendController {
                     switch (error.type) {
                         case 'no-identity':
                             // Backend cannot be created because no identity was found.
-                            // Carry on, the bootstrapping logic will happen below.
+                            // Carry on, the device linking logic will happen below.
                             log.debug('Backend could not be created, no identity found');
                             // eslint-disable-next-line no-labels
                             break loopToCreateBackendWithKeyStorage;
@@ -242,7 +227,7 @@ export class BackendController {
                                 passwordForExistingKeyStorage,
                             );
                             continue;
-                        case 'restore-failed':
+                        case 'handled-linking-error':
                             throw new Error(
                                 `Unexpected error type: ${error.type} (${errorMessage})`,
                             );
@@ -259,124 +244,29 @@ export class BackendController {
         // first launching Threema Desktop.
         const isNewIdentity = backendEndpoint === undefined;
 
-        // If backend could not be created, that means that no identity was found.
-        let bootstrapError;
-        let currentIdentity: IdentityString | undefined;
+        // If backend could not be created, that means that no identity was found. Initiate device
+        // linking flow.
         let newKeyStoragePassword: string | undefined;
-
+        // TODO(DESK-1038): Can we get rid of the loop?
         while (backendEndpoint === undefined) {
-            // We need the directory backend to be able to validate the user's identity
-            const directory = new FetchDirectoryBackend({config: services.config});
-
-            // No identity is found. Thus, start rendezvous / device join protocols.
+            // No identity is found
             log.debug('Starting device linking process');
-            {
-                const abort = new AbortRaiser();
 
-                // Generate rendezvous setup with all information needed to show the QR code
-                const rendezvousPath = bytesToHex(services.crypto.randomBytes(new Uint8Array(32)));
-                const url = config.RENDEZVOUS_SERVER_URL.replaceAll(
-                    '{prefix4}',
-                    rendezvousPath.slice(0, 1),
-                ).replaceAll('{prefix8}', rendezvousPath.slice(0, 2));
-                const setup: RendezvousProtocolSetup = {
-                    abort,
-                    role: 'initiator',
-                    ak: randomRendezvousAuthenticationKey(services.crypto),
-                    relayedWebSocket: {
-                        pathId: 1,
-                        url: `${url}/${rendezvousPath}`,
-                    },
-                };
+            // Store containing the backend's linking state
+            const linkingStateStore = new WritableStore<LinkingState>({
+                state: 'initializing',
+            });
 
-                // This promise will be resolved as soon as the WebSocket connection is established.
-                // If the connection fails, this promise will be rejected.
-                const connected = new ResolvablePromise<void>();
+            // Show linking screen with QR code
+            await showLinkingWizard(linkingStateStore);
 
-                // This promise will be resolved with the Rendezvous Path Hash (RPH) as soon as the
-                // connection is established (including path nomination).
-                const nominated = new ResolvablePromise<ReadonlyUint8Array>();
-
-                // Show linking screen with QR code
-                await showLinkingWizard(setup, connected, nominated, () => {
-                    // TODO(DESK-1037): What to do when the process is done?
-                });
-
-                // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
-                // for connecting to the rendezvous server. Note that the timer is started here, but
-                // not yet awaited until after the connection has been established.
-                const minimalConnectTimer = services.timer.sleep(1000);
-
-                // Create RendezvousConnection and open WebSocket connection
-                let rendezvous;
-                try {
-                    rendezvous = await RendezvousConnection.create({logging}, setup);
-                } catch (error) {
-                    log.warn(`Rendezvous connection failed: ${error}`);
-                    connected.reject(ensureError(error));
-                    return await eternalPromise(); // TODO(DESK-1037)
-                }
-                await minimalConnectTimer;
-                connected.resolve();
-
-                // Do the rendezvous handshake and wait for nomination of a path
-                let connectResult;
-                try {
-                    connectResult = await rendezvous.connect();
-                } catch (error) {
-                    log.warn(`Rendezvous handshake failed: ${error}`);
-                    nominated.reject(ensureError(error));
-                    return await eternalPromise(); // TODO(DESK-1037)
-                }
-                log.info('Rendezvous connection established');
-                nominated.resolve(connectResult.rph);
-
-                // Now that we established the connection and showed the RPH, we can wait for ED to
-                // start sending essential data and then run the join protocol.
-                const joinProtocol = new DeviceJoinProtocol(
-                    connectResult.connection,
-                    logging.logger('backend-controller.join'),
-                );
-                try {
-                    await joinProtocol.run(); // TODO(DESK-1037): Error handling
-                } catch (error) {
-                    log.warn(
-                        `Device join failed: ${extractErrorMessage(ensureError(error), 'long')}`,
-                    );
-                    // TODO(DESK-1037): Propagate error to UI
-                    return await eternalPromise(); // TODO(DESK-1037)
-                }
-
-                await eternalPromise();
-                // TODO(DESK-1037): connection.abort.raise();
-            }
-
-            const credentialsAndDeviceIds = await requestSafeCredentials(
-                async (identity: IdentityString) => await isIdentityValid(directory, identity),
-                async (safeCredentials: SafeCredentials) =>
-                    await isSafeBackupAvailable(services, safeCredentials),
-                currentIdentity,
-                bootstrapError,
-            );
-            currentIdentity = credentialsAndDeviceIds.identity;
-            const credentials: SafeCredentialsAndDeviceIds = {
-                credentials: {
-                    identity: credentialsAndDeviceIds.identity,
-                    password: credentialsAndDeviceIds.password,
-                    customSafeServer: credentialsAndDeviceIds.customSafeServer,
-                },
-                deviceIds: {
-                    d2mDeviceId: credentialsAndDeviceIds.d2mDeviceId,
-                    cspDeviceId: credentialsAndDeviceIds.cspDeviceId,
-                },
-            };
-            newKeyStoragePassword = credentialsAndDeviceIds.newPassword;
+            newKeyStoragePassword = 'asdf'; // TODO(DESK-1038)
 
             // Retry backend creation
             try {
                 backendEndpoint = await creator(
                     assembleBackendInit(newKeyStoragePassword),
-                    credentials,
+                    assembleDeviceLinkingSetup(linkingStateStore),
                 );
             } catch (error) {
                 assertError(
@@ -385,17 +275,11 @@ export class BackendController {
                     'Backend creator threw an unexpected error',
                 );
                 switch (error.type) {
-                    case 'restore-failed':
-                        if (error.cause instanceof SafeError) {
-                            await showLinkingErrorDialog(error.cause);
-                        } else {
-                            log.warn(extractErrorMessage(error, 'long'));
-                            bootstrapError = {
-                                message:
-                                    'Linking failed. Are the identity and linking code correct?',
-                                details: `${error.message}`,
-                            };
-                        }
+                    case 'handled-linking-error':
+                        log.warn(
+                            'Encountered a linking error that is handled by the UI. Waiting for application restart.',
+                        );
+                        await eternalPromise();
                         break;
                     case 'no-identity':
                         throw new Error(

@@ -2,12 +2,13 @@
   import {type SvelteComponentDev} from 'svelte/internal';
 
   import {globals} from '~/app/globals';
-  import {type LinkingParams, type LinkingState, type ProcessStep} from '~/app/ui/linking';
+  import {LinkingWizardState, type LinkingParams} from '~/app/ui/linking';
   import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
   import Error from '~/app/ui/linking/steps/Error.svelte';
   import Scan from '~/app/ui/linking/steps/Scan.svelte';
   import SuccessLinked from '~/app/ui/linking/steps/SuccessLinked.svelte';
-  import {bytesToHex} from '~/common/utils/byte';
+  import {LinkingState} from '~/common/dom/backend';
+  import {unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking-wizard`);
 
@@ -17,76 +18,71 @@
   export let params: LinkingParams;
 
   /**
-   * The function to run when the `LinkingWizard` has been successfully completed.
-   */
-  export let onComplete: () => void;
-
-  /**
    * The current connection state.
    */
-  let linkingState: LinkingState = {
-    connectionState: 'connecting',
+  let linkingWizardState: LinkingWizardState = {
     currentStep: 'scan',
+    joinUri: undefined,
   };
 
   /**
-   * Mapping of process steps to the corresponding component.
+   * Mapping of state steps to the corresponding component.
    */
-  const PROCESS_STEPS: {[Key in ProcessStep]: typeof SvelteComponentDev} = {
-    scan: Scan,
-    confirmEmoji: ConfirmEmoji,
-    successLinked: SuccessLinked,
-    error: Error,
+  const PROCESS_STEPS: {[Key in LinkingWizardState['currentStep']]: typeof SvelteComponentDev} = {
+    'scan': Scan,
+    'confirm-emoji': ConfirmEmoji,
+    'set-password': Error, // TODO(DESK-1038)
+    'syncing': Error, // TODO(DESK-1038)
+    'success-linked': SuccessLinked,
+    'error': Error,
   };
 
   let wizardStepComponent: typeof SvelteComponentDev;
-  $: wizardStepComponent = PROCESS_STEPS[linkingState.currentStep];
+  $: wizardStepComponent = PROCESS_STEPS[linkingWizardState.currentStep];
 
-  // Handle connection events
-  params.connected
-    .then(() => {
-      if (linkingState.connectionState !== 'nominated') {
-        log.info('Connected, waiting for handshake');
-        linkingState = {
-          ...linkingState,
-          connectionState: 'waiting-for-handshake',
+  // Handle backend linking state changes
+  params.linkingEvents.subscribe((state: LinkingState) => {
+    log.info(`Backend linking state changed to ${state.state}`);
+    switch (state.state) {
+      case 'initializing':
+        // Initial state
+        break;
+      case 'waiting-for-handshake':
+        linkingWizardState = {
           currentStep: 'scan',
+          joinUri: state.joinUri,
         };
-      }
-    })
-    .catch((error) => {
-      log.error(`Connection error: ${error}`);
-      linkingState = {
-        ...linkingState,
-        connectionState: 'connection-error',
-        currentStep: 'error',
-      };
-    });
-
-  // Handle nomination events
-  params.nominated
-    .then((rendzevousPathHash) => {
-      log.info('Nominated, waiting for confirmation');
-      log.info(`Rendezvous path hash: ${bytesToHex(rendzevousPathHash)}`);
-      linkingState = {
-        ...linkingState,
-        connectionState: 'nominated',
-        currentStep: 'confirmEmoji',
-        rendzevousPathHash,
-      };
-    })
-    .catch((error) => {
-      log.error(`Nomination failed: ${error}`);
-      linkingState = {
-        ...linkingState,
-        connectionState: 'generic-error',
-        currentStep: 'error',
-      };
-    });
+        break;
+      case 'nominated':
+        linkingWizardState = {
+          currentStep: 'confirm-emoji',
+          rph: state.rph,
+        };
+        break;
+      case 'waiting-for-password':
+        linkingWizardState = {currentStep: 'set-password'};
+        break;
+      case 'syncing':
+        linkingWizardState = {currentStep: 'syncing'};
+        break;
+      case 'registered':
+        linkingWizardState = {currentStep: 'success-linked'};
+        break;
+      case 'error':
+        linkingWizardState = {
+          currentStep: 'error',
+          errorType: state.type,
+          errorMessage: state.message,
+        };
+        break;
+      default:
+        unreachable(state);
+    }
+  });
 </script>
 
 <template>
-  <svelte:component this={wizardStepComponent} {params} {linkingState} on:confirm={onComplete} />
+  <svelte:component this={wizardStepComponent} {linkingWizardState} />
 </template>
 
 <style lang="scss">

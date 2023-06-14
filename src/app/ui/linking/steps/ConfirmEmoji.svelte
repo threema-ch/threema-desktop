@@ -1,24 +1,16 @@
 <script lang="ts">
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingParams, type LinkingState} from '~/app/ui/linking';
+  import {type LinkingWizardStateConfirmEmoji} from '~/app/ui/linking';
   import LinkingEmojiLoader from '~/app/ui/linking/LinkingEmojiLoader.svelte';
   import Step from '~/app/ui/linking/Step.svelte';
-  import {unwrap} from '~/common/utils/assert';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
 
-  export let params: LinkingParams;
-  export let linkingState: LinkingState;
-  unusedProp(params, linkingState);
+  export let linkingWizardState: LinkingWizardStateConfirmEmoji;
 
-  // Get emoji indices based on RPH
-  const rendezvousPathHash = unwrap(
-    linkingState.rendzevousPathHash,
-    'Initialized ConfirmEmoji component without rendezvousPathHash',
-  );
+  // Get emoji indices based on Rendezvous Path Hash (RPH)
   const emoji = [
-    rendezvousPathHash[0] % 128,
-    rendezvousPathHash[1] % 128,
-    rendezvousPathHash[2] % 128,
+    linkingWizardState.rph[0] % 128,
+    linkingWizardState.rph[1] % 128,
+    linkingWizardState.rph[2] % 128,
   ] as const;
 </script>
 

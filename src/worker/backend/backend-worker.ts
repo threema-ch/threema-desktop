@@ -5,11 +5,11 @@ import {type Config} from '~/common/config';
 import {
     Backend,
     type BackendInit,
+    type DeviceLinkingSetup,
     type FactoriesForBackend,
-    type SafeCredentialsAndDeviceIds,
 } from '~/common/dom/backend';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {type EndpointFor, PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
 import {BACKEND_WORKER_CONFIG} from './config';
 
@@ -34,7 +34,7 @@ export function main(config: Config, factories: FactoriesForBackend): void {
 
     const endpoint = createEndpointService({config, logging});
     const create = Object.assign(
-        async (init: BackendInit, safeCredentialsAndDeviceIds?: SafeCredentialsAndDeviceIds) => {
+        async (init: BackendInit, deviceLinkingSetup?: EndpointFor<DeviceLinkingSetup>) => {
             log.info('Creating backend');
             return await Backend.create(
                 init,
@@ -44,7 +44,7 @@ export function main(config: Config, factories: FactoriesForBackend): void {
                     logging,
                     endpoint,
                 },
-                safeCredentialsAndDeviceIds,
+                deviceLinkingSetup,
             );
         },
         {
