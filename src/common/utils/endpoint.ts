@@ -669,14 +669,14 @@ export class EndpointService {
     /**
      * Wraps an endpoint to proxy a remote interface.
      *
+     * Warning: This is an inherently unsafe method. You must make sure that the `TTarget` type
+     *          actually matches the `endpoint` passed in.
+     *
      * @param endpoint The endpoint.
      * @param log Optional logger.
      * @returns The remote interface.
      */
-    public wrap<TTarget>(
-        endpoint: Endpoint | DomEndpoint,
-        log?: Logger,
-    ): TTarget extends ProxyMarked ? never : RemoteProxy<TTarget> {
+    public wrap<TTarget>(endpoint: Endpoint | DomEndpoint, log?: Logger): RemoteProxy<TTarget> {
         let releaser: AbortRaiser | undefined = undefined;
         if (this._debug !== undefined) {
             releaser = this.debug?.(
@@ -687,10 +687,7 @@ export class EndpointService {
                     ),
             );
         }
-        return this._createProxy<TTarget>(
-            endpoint as Endpoint,
-            releaser,
-        ) as TTarget extends ProxyMarked ? never : RemoteProxy<TTarget>;
+        return this._createProxy<TTarget>(endpoint as Endpoint, releaser);
     }
 
     /**
