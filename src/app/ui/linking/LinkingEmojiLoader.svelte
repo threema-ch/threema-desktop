@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import {EMOJI_LIST} from '~/app/ui/linking';
+  import {EMOJI_LIST} from '~/app/ui/linking/emoji-list';
   import {type u53} from '~/common/types';
   import {joinConstArray} from '~/common/utils/array';
 
