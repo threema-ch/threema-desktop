@@ -286,7 +286,7 @@ export class RemoteModelStore<
             }
         });
         assert(initial !== NO_STORE_VALUE, 'Store value must be available after subscription');
-        service.expose((initial as TModel).controller, controller.endpoint, controller.log);
+        service.exposeProxy((initial as TModel).controller, controller.endpoint, controller.log);
 
         // Unsubscribe from store and close endpoint on any inbound message
         view.endpoint.addEventListener(

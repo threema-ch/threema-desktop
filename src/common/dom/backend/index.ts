@@ -563,7 +563,7 @@ export class Backend implements ProxyMarked {
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
-        endpoint.expose(backend, local, logging.logger('com.backend'));
+        endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
         return endpoint.transfer(remote, [remote]);
     }
 

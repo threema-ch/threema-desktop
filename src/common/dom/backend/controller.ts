@@ -145,7 +145,7 @@ export class BackendController {
             // Notifications
             const {local: localNotificationEndpoint, remote: notificationEndpoint} =
                 endpoint.createEndpointPair<NotificationCreator>();
-            endpoint.expose(
+            endpoint.exposeProxy(
                 init.notification,
                 localNotificationEndpoint,
                 logging.logger('com.notification'),
@@ -154,7 +154,7 @@ export class BackendController {
             // System Dialog
             const {local: localSystemDialogEndpoint, remote: systemDialogEndpoint} =
                 endpoint.createEndpointPair<SystemDialogService>();
-            endpoint.expose(
+            endpoint.exposeProxy(
                 init.systemDialog,
                 localSystemDialogEndpoint,
                 logging.logger('com.system-dialog'),

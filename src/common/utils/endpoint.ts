@@ -699,7 +699,7 @@ export class EndpointService {
      * @param target The target object to expose.
      * @param endpoint The endpoint to attach to.
      */
-    public expose<TTarget extends ProxyMarked>(
+    public exposeProxy<TTarget extends ProxyMarked>(
         target: TTarget,
         endpoint: Endpoint | DomEndpoint,
         log?: Logger,
@@ -1109,7 +1109,7 @@ export const PROXY_HANDLER: RegisteredTransferHandler<
         service,
     ): [value: CreatedEndpoint, transfers: [endpoint: CreatedEndpoint]] => {
         const {local, remote} = service.createEndpointPair();
-        service.expose(object, local as DomEndpoint);
+        service.exposeProxy(object, local as DomEndpoint);
         return [remote, [remote]];
     },
 

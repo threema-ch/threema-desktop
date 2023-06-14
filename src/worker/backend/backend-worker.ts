@@ -51,5 +51,5 @@ export function main(config: Config, factories: FactoriesForBackend): void {
             [TRANSFER_MARKER]: PROXY_HANDLER,
         },
     );
-    endpoint.expose(create, self, logging.logger('com.backend-creator'));
+    endpoint.exposeProxy(create, self, logging.logger('com.backend-creator'));
 }
