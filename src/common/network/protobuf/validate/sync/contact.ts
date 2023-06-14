@@ -17,66 +17,17 @@ import {
 } from '~/common/enum';
 import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
-import {DeltaImage, Unit} from '~/common/network/protobuf/validate/common';
-import {ensureFeatureMask, ensureIdentityString} from '~/common/network/types';
+import {DeltaImage} from '~/common/network/protobuf/validate/common';
+import {ensureFeatureMask, ensureIdentityString, type Nickname} from '~/common/network/types';
 import {unixTimestampToDateMs} from '~/common/utils/number';
-import {instanceOf, nullOptional, unsignedLongAsU64} from '~/common/utils/valita-helpers';
-
-/** Validates {@link sync.Contact.ReadReceiptPolicyOverride}. */
-const READ_RECEIPT_POLICY_OVERRIDE_SCHEMA = validator(
-    sync.Contact.ReadReceiptPolicyOverride,
-    v
-        .object({
-            default: nullOptional(Unit.SCHEMA),
-            policy: nullOptional(v.number().map(ReadReceiptPolicyUtils.fromNumber)),
-        })
-        .rest(v.unknown()),
-);
-
-/** Validates {@link sync.Contact.TypingIndicatorPolicyOverride}. */
-const TYPING_INDICATOR_POLICY_OVERRIDE_SCHEMA = validator(
-    sync.Contact.TypingIndicatorPolicyOverride,
-    v
-        .object({
-            default: nullOptional(Unit.SCHEMA),
-            policy: nullOptional(v.number().map(TypingIndicatorPolicyUtils.fromNumber)),
-        })
-        .rest(v.unknown()),
-);
-
-/** Validates {@link sync.Contact.NotificationTriggerPolicyOverride}. */
-const NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA = validator(
-    sync.Contact.NotificationTriggerPolicyOverride,
-    v
-        .object({
-            default: nullOptional(Unit.SCHEMA),
-            policy: nullOptional(
-                validator(
-                    sync.Contact.NotificationTriggerPolicyOverride.Policy,
-                    v
-                        .object({
-                            policy: v
-                                .number()
-                                .map(ContactNotificationTriggerPolicyUtils.fromNumber),
-                            expiresAt: nullOptional(unsignedLongAsU64().map(unixTimestampToDateMs)),
-                        })
-                        .rest(v.unknown()),
-                ),
-            ),
-        })
-        .rest(v.unknown()),
-);
-
-/** Validates {@link sync.Contact.NotificationSoundPolicyOverride}. */
-const NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA = validator(
-    sync.Contact.NotificationSoundPolicyOverride,
-    v
-        .object({
-            default: nullOptional(Unit.SCHEMA),
-            policy: nullOptional(v.number().map(NotificationSoundPolicyUtils.fromNumber)),
-        })
-        .rest(v.unknown()),
-);
+import {
+    instanceOf,
+    nonEmptyStringOrDefault,
+    nullOptional,
+    policyOverrideOrDefault,
+    policyOverrideWithOptionalExpirationDateOrDefault,
+    unsignedLongAsU64,
+} from '~/common/utils/valita-helpers';
 
 /** Validates generic properties of {@link sync.Contact}. */
 const BASE_SCHEMA = validator(sync.Contact, {
@@ -85,7 +36,7 @@ const BASE_SCHEMA = validator(sync.Contact, {
     createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
     firstName: v.string(),
     lastName: v.string(),
-    nickname: v.string(),
+    nickname: nonEmptyStringOrDefault<Nickname>(),
     verificationLevel: v.number().map(VerificationLevelUtils.fromNumber),
     workVerificationLevel: v.number().map(WorkVerificationLevelUtils.fromNumber),
     identityType: v.number().map(IdentityTypeUtils.fromNumber),
@@ -93,10 +44,12 @@ const BASE_SCHEMA = validator(sync.Contact, {
     activityState: v.number().map(ActivityStateUtils.fromNumber),
     featureMask: unsignedLongAsU64().map(ensureFeatureMask),
     syncState: v.number().map(SyncStateUtils.fromNumber),
-    readReceiptPolicyOverride: READ_RECEIPT_POLICY_OVERRIDE_SCHEMA,
-    typingIndicatorPolicyOverride: TYPING_INDICATOR_POLICY_OVERRIDE_SCHEMA,
-    notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA,
-    notificationSoundPolicyOverride: NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA,
+    readReceiptPolicyOverride: policyOverrideOrDefault(ReadReceiptPolicyUtils),
+    typingIndicatorPolicyOverride: policyOverrideOrDefault(TypingIndicatorPolicyUtils),
+    notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrDefault(
+        ContactNotificationTriggerPolicyUtils,
+    ),
+    notificationSoundPolicyOverride: policyOverrideOrDefault(NotificationSoundPolicyUtils),
     contactDefinedProfilePicture: DeltaImage.SCHEMA,
     userDefinedProfilePicture: DeltaImage.SCHEMA,
     conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),

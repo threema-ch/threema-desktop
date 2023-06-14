@@ -1,11 +1,6 @@
 import {ReceiverType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {
-    type Contact,
-    type ContactView,
-    type ProfilePicture,
-    type ProfilePictureSource,
-} from '~/common/model';
+import {type Contact, type ProfilePicture, type ProfilePictureSource} from '~/common/model';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {common} from '~/common/network/protobuf/js';
@@ -20,10 +15,10 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {isIdentityString, isNickname} from '~/common/network/types';
-import {type Mutable} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {purgeUndefinedProperties} from '~/common/utils/object';
+import {setDefaultsToUndefined, VALITA_DEFAULT} from '~/common/utils/valita-helpers';
 
 type ProfilePictures = Pick<
     protobuf.validate.sync.Contact.CreateType,
@@ -209,13 +204,13 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             featureMask: create.featureMask,
             syncState: create.syncState,
             notificationTriggerPolicyOverride:
-                create.notificationTriggerPolicyOverride.default !== undefined
+                create.notificationTriggerPolicyOverride === VALITA_DEFAULT
                     ? undefined
-                    : create.notificationTriggerPolicyOverride.policy,
+                    : create.notificationTriggerPolicyOverride,
             notificationSoundPolicyOverride:
-                create.notificationSoundPolicyOverride.default !== undefined
+                create.notificationSoundPolicyOverride === VALITA_DEFAULT
                     ? undefined
-                    : create.notificationSoundPolicyOverride.policy,
+                    : create.notificationSoundPolicyOverride,
             category: create.conversationCategory,
             visibility: create.conversationVisibility,
         });
@@ -229,31 +224,25 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     ): Promise<void> {
         const controller = contact.get().controller;
 
-        const purgedPropertiesToUpdate = purgeUndefinedProperties({
-            createdAt: update.createdAt,
-            firstName: update.firstName,
-            lastName: update.lastName,
-            verificationLevel: update.verificationLevel,
-            workVerificationLevel: update.workVerificationLevel,
-            identityType: update.identityType,
-            acquaintanceLevel: update.acquaintanceLevel,
-            activityState: update.activityState,
-            featureMask: update.featureMask,
-            syncState: update.syncState,
-            notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride?.policy,
-            notificationSoundPolicyOverride: update.notificationSoundPolicyOverride?.policy,
-        }) as Mutable<Partial<ContactView>>;
+        const propertiesToUpdate = setDefaultsToUndefined(
+            purgeUndefinedProperties({
+                createdAt: update.createdAt,
+                firstName: update.firstName,
+                lastName: update.lastName,
+                verificationLevel: update.verificationLevel,
+                workVerificationLevel: update.workVerificationLevel,
+                identityType: update.identityType,
+                acquaintanceLevel: update.acquaintanceLevel,
+                activityState: update.activityState,
+                featureMask: update.featureMask,
+                syncState: update.syncState,
+                notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride,
+                notificationSoundPolicyOverride: update.notificationSoundPolicyOverride,
+                nickname: update.nickname,
+            } as const),
+        );
 
-        if (update.nickname !== undefined) {
-            // The nickname may not be validated inside the `purgeUndefinedProperties` call above
-            // because it would convert the default value (i.e. empty string) to undefined and then
-            // the key would be removed.
-            purgedPropertiesToUpdate.nickname = isNickname(update.nickname)
-                ? update.nickname
-                : undefined;
-        }
-
-        controller.update.fromSync(purgedPropertiesToUpdate);
+        controller.update.fromSync(propertiesToUpdate);
 
         if (update.conversationCategory !== undefined) {
             controller.conversation().get().controller.update({

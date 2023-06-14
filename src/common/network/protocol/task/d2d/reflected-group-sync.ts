@@ -11,6 +11,7 @@ import {
 } from '~/common/network/protocol/task';
 import {unreachable} from '~/common/utils/assert';
 import {purgeUndefinedProperties} from '~/common/utils/object';
+import {setDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 export class ReflectedGroupSyncTask implements PassiveTask<void> {
     public readonly type: PassiveTaskSymbol = PASSIVE_TASK;
@@ -96,20 +97,14 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
     ): void {
         const controller = group.get().controller;
 
-        // Update group properties
-        const notificationTriggerPolicyOverride = update.notificationTriggerPolicyOverride?.policy;
-        const notificationSoundPolicyOverride = update.notificationSoundPolicyOverride?.policy;
-        if (
-            notificationTriggerPolicyOverride !== undefined ||
-            notificationSoundPolicyOverride !== undefined
-        ) {
-            controller.update.fromSync(
-                purgeUndefinedProperties({
-                    notificationTriggerPolicyOverride,
-                    notificationSoundPolicyOverride,
-                }),
-            );
-        }
+        const propertiesToUpdate = setDefaultsToUndefined(
+            purgeUndefinedProperties({
+                notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride,
+                notificationSoundPolicyOverride: update.notificationSoundPolicyOverride,
+            } as const),
+        );
+
+        controller.update.fromSync(propertiesToUpdate);
 
         if (update.conversationCategory !== undefined) {
             controller.conversation().get().controller.update({

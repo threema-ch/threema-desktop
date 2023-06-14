@@ -9,46 +9,14 @@ import {
 } from '~/common/enum';
 import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
-import {
-    DeltaImage,
-    GroupIdentity,
-    Identities,
-    Unit,
-} from '~/common/network/protobuf/validate/common';
+import {DeltaImage, GroupIdentity, Identities} from '~/common/network/protobuf/validate/common';
 import {unixTimestampToDateMs} from '~/common/utils/number';
-import {nullOptional, unsignedLongAsU64} from '~/common/utils/valita-helpers';
-
-/** Validates {@link sync.Group.NotificationTriggerPolicyOverride}. */
-const NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA = validator(
-    sync.Group.NotificationTriggerPolicyOverride,
-    v
-        .object({
-            default: nullOptional(Unit.SCHEMA),
-            policy: nullOptional(
-                validator(
-                    sync.Group.NotificationTriggerPolicyOverride.Policy,
-                    v
-                        .object({
-                            policy: v.number().map(GroupNotificationTriggerPolicyUtils.fromNumber),
-                            expiresAt: nullOptional(unsignedLongAsU64().map(unixTimestampToDateMs)),
-                        })
-                        .rest(v.unknown()),
-                ),
-            ),
-        })
-        .rest(v.unknown()),
-);
-
-/** Validates {@link sync.Group.NotificationSoundPolicyOverride}. */
-const NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA = validator(
-    sync.Group.NotificationSoundPolicyOverride,
-    v
-        .object({
-            default: nullOptional(Unit.SCHEMA),
-            policy: nullOptional(v.number().map(NotificationSoundPolicyUtils.fromNumber)),
-        })
-        .rest(v.unknown()),
-);
+import {
+    nullOptional,
+    policyOverrideOrDefault,
+    policyOverrideWithOptionalExpirationDateOrDefault,
+    unsignedLongAsU64,
+} from '~/common/utils/valita-helpers';
 
 /** Validates generic properties of {@link sync.Group}. */
 const BASE_SCHEMA = validator(sync.Group, {
@@ -56,8 +24,10 @@ const BASE_SCHEMA = validator(sync.Group, {
     name: v.string(),
     createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
     userState: v.number().map(GroupUserStateUtils.fromNumber),
-    notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA,
-    notificationSoundPolicyOverride: NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA,
+    notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrDefault(
+        GroupNotificationTriggerPolicyUtils,
+    ),
+    notificationSoundPolicyOverride: policyOverrideOrDefault(NotificationSoundPolicyUtils),
     profilePicture: DeltaImage.SCHEMA,
     memberIdentities: Identities.SCHEMA,
     conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),
