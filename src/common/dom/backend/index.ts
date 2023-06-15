@@ -4,9 +4,11 @@ import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
+    DATABASE_KEY_LENGTH,
     type DatabaseBackend,
     type RawDatabaseKey,
     type ServicesForDatabaseFactory,
+    wrapRawDatabaseKey,
 } from '~/common/db';
 import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device';
 import {DeviceJoinProtocol} from '~/common/dom/backend/join';
@@ -78,6 +80,7 @@ import {
     randomRendezvousAuthenticationKey,
     type RawDeviceGroupKey,
     type TemporaryClientKey,
+    wrapRawClientKey,
 } from '~/common/network/types/keys';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
@@ -510,22 +513,25 @@ export class Backend implements ProxyMarked {
                 throw new BackendCreationError('handled-linking-error', message, {from: error});
             }
 
-            // Send "Registered" message and close the connection.
-            // TODO(DESK-1038): Do this later, once registration is actually complete!
-            await joinProtocol.joinComplete();
+            // Wrap the client key (but keep a copy for the key storage)
+            const rawCkForKeystore = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
+            const ck = SecureSharedBoxFactory.consume(
+                services.crypto,
+                joinResult.rawCk,
+            ) as ClientKey;
 
-            /*
-
-            // Prepare identity data
+            // Set identity data
             identityData = {
-                identity,
+                identity: joinResult.identity,
                 ck,
-                serverGroup,
+                serverGroup: joinResult.serverGroup,
             };
+            deviceIds = joinResult.deviceIds;
+            dgk = joinResult.dgk;
 
             // Generate new random database key
             const databaseKey = wrapRawDatabaseKey(
-                crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
+                services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
             );
 
             // Write to key storage
@@ -534,16 +540,16 @@ export class Backend implements ProxyMarked {
                 "Expect keyStoragePassword to be provided for build target 'electron'",
             );
             const keyStorage = factories.keyStorage(
-                {config, crypto},
+                {config, crypto: services.crypto},
                 logging.logger('key-storage'),
             );
             try {
                 await keyStorage.write(keyStoragePassword, {
                     schemaVersion: 2,
                     identityData: {
-                        identity,
+                        identity: identityData.identity,
                         ck: rawCkForKeystore,
-                        serverGroup,
+                        serverGroup: identityData.serverGroup,
                     },
                     dgk,
                     databaseKey,
@@ -559,9 +565,11 @@ export class Backend implements ProxyMarked {
 
             // Purge sensitive data
             rawCkForKeystore.purge();
-            backupData.user.privatekey = '<purged>';
+            joinResult.rawCk.purge();
 
-            */
+            // Send "Registered" message and close the connection.
+            // TODO(DESK-1038): Do this later, once registration is actually complete!
+            await joinProtocol.joinComplete();
         }
 
         // Initialize key storage

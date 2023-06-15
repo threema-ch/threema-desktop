@@ -3,9 +3,8 @@
  */
 
 import {type ServicesForBackend} from '~/common/backend';
-import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {randomU64} from '~/common/crypto/random';
-import {type DeviceIds, type IdentityData} from '~/common/device';
+import {type DeviceIds} from '~/common/device';
 import {type RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
 import {DeviceJoinError} from '~/common/error';
 import {type StoredFileHandle} from '~/common/file-storage';
@@ -14,9 +13,14 @@ import * as protobuf from '~/common/network/protobuf';
 import {validate} from '~/common/network/protobuf';
 import {join} from '~/common/network/protobuf/js';
 import {type BlobId} from '~/common/network/protocol/blob';
-import {ensureCspDeviceId, ensureD2mDeviceId} from '~/common/network/types';
-import {type ClientKey, type RawDeviceGroupKey} from '~/common/network/types/keys';
-import {ReadonlyUint8Array} from '~/common/types';
+import {
+    ensureCspDeviceId,
+    ensureD2mDeviceId,
+    type IdentityString,
+    type ServerGroup,
+} from '~/common/network/types';
+import {type RawClientKey, type RawDeviceGroupKey} from '~/common/network/types/keys';
+import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 
 type JoinState = 'wait-for-begin' | 'sync-blob-data' | 'sync-essential-data';
@@ -27,7 +31,9 @@ type ServicesForDeviceJoinProtocol = Pick<ServicesForBackend, 'crypto' | 'file'>
  * Data obtained as part of the device join protocol, which is needed to initialize the backend.
  */
 interface DeviceJoinResult {
-    readonly identityData: IdentityData;
+    readonly identity: IdentityString;
+    readonly rawCk: RawClientKey;
+    readonly serverGroup: ServerGroup;
     readonly deviceIds: DeviceIds;
     readonly dgk: RawDeviceGroupKey;
 }
@@ -167,14 +173,9 @@ export class DeviceJoinProtocol {
         this._setState('sync-essential-data');
 
         // Extract data required to initialize the backend
-        const identityData = {
-            identity: essentialData.identityData.identity,
-            ck: SecureSharedBoxFactory.consume(
-                this._services.crypto,
-                essentialData.identityData.ck,
-            ) as ClientKey,
-            serverGroup: essentialData.identityData.cspServerGroup,
-        };
+        const identity = essentialData.identityData.identity;
+        const rawCk = essentialData.identityData.ck;
+        const serverGroup = essentialData.identityData.cspServerGroup;
         const dgk = essentialData.deviceGroupData.dgk;
 
         // Generate random device IDs
@@ -183,6 +184,6 @@ export class DeviceJoinProtocol {
             cspDeviceId: ensureCspDeviceId(randomU64(this._services.crypto)),
         };
 
-        return {identityData, deviceIds, dgk};
+        return {identity, rawCk, serverGroup, deviceIds, dgk};
     }
 }
