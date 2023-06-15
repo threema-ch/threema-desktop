@@ -276,12 +276,12 @@ export async function main(appState: AppState): Promise<App> {
     });
 
     // Define function that will show the linking wizard
-    async function showLinkingWizard(linkingEvents: ReadableStore<LinkingState>): Promise<void> {
+    async function showLinkingWizard(linkingState: ReadableStore<LinkingState>): Promise<void> {
         await domContentLoaded;
         log.debug('Showing linking wizard');
         elements.splash.classList.add('hidden'); // Hide splash screen
         attachLinkingWizard(elements, {
-            linkingEvents,
+            linkingState,
         });
     }
 

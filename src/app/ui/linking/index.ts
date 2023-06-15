@@ -4,9 +4,9 @@ import {type ReadableStore} from '~/common/utils/store';
 
 export interface LinkingParams {
     /**
-     * Linking-related events from the backend.
+     * Linking-related state from the backend.
      */
-    readonly linkingEvents: ReadableStore<LinkingState>;
+    readonly linkingState: ReadableStore<LinkingState>;
 }
 
 export interface LinkingWizardStateScan {

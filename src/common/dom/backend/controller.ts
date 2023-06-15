@@ -113,7 +113,7 @@ export class BackendController {
         },
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
-        showLinkingWizard: (linkingEvents: ReadableStore<LinkingState>) => Promise<void>,
+        showLinkingWizard: (linkingState: ReadableStore<LinkingState>) => Promise<void>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
         const {endpoint, logging} = services;
@@ -249,7 +249,6 @@ export class BackendController {
         let newKeyStoragePassword: string | undefined;
         // TODO(DESK-1038): Can we get rid of the loop?
         while (backendEndpoint === undefined) {
-            // No identity is found
             log.debug('Starting device linking process');
 
             // Store containing the backend's linking state

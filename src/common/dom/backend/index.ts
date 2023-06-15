@@ -517,6 +517,7 @@ export class Backend implements ProxyMarked {
             // start sending essential data and then run the join protocol.
             const joinProtocol = new DeviceJoinProtocol(
                 connectResult.connection,
+                linkingState.updateState,
                 logging.logger('backend-controller.join'),
                 {crypto: services.crypto, file: services.file},
             );

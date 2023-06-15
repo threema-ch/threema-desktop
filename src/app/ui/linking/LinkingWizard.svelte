@@ -43,7 +43,7 @@
   $: wizardStepComponent = PROCESS_STEPS[linkingWizardState.currentStep];
 
   // Handle backend linking state changes
-  params.linkingEvents.subscribe((state: LinkingState) => {
+  params.linkingState.subscribe((state: LinkingState) => {
     log.info(`Backend linking state changed to ${state.state}`);
     switch (state.state) {
       case 'initializing':
