@@ -43,6 +43,19 @@ export interface Device {
     readonly d2d: D2dData;
 }
 
+/**
+ * The core data tied to a Threema Id: The identity, the client key and the directory-assigned
+ * server group.
+ */
+export interface IdentityData {
+    readonly identity: IdentityString;
+    readonly ck: ClientKey;
+    readonly serverGroup: ServerGroup;
+}
+
+/**
+ * IDs to identify a device towards the Mediator Server and the Chat Server.
+ */
 export interface DeviceIds {
     readonly d2mDeviceId: D2mDeviceId;
     readonly cspDeviceId: CspDeviceId;
@@ -57,7 +70,7 @@ export class DeviceBackend implements Device {
 
     public constructor(
         services: ServicesForDevice,
-        identityData: {identity: IdentityString; ck: ClientKey; serverGroup: ServerGroup},
+        identityData: IdentityData,
         deviceIds: DeviceIds,
         dgk: RawDeviceGroupKey,
     ) {

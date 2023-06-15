@@ -1,4 +1,4 @@
-import {type ServicesForBackend} from '~/common/backend';
+import {type ServicesForBackend, type ServicesThatRequireIdentity} from '~/common/backend';
 import {type Compressor} from '~/common/compressor';
 import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
@@ -8,7 +8,7 @@ import {
     type RawDatabaseKey,
     type ServicesForDatabaseFactory,
 } from '~/common/db';
-import {DeviceBackend, type DeviceIds} from '~/common/device';
+import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device';
 import {DeviceJoinProtocol} from '~/common/dom/backend/join';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
@@ -72,12 +72,7 @@ import {OutgoingContactRequestProfilePictureTask} from '~/common/network/protoco
 import {OutgoingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/outgoing-group-sync-request';
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/manager';
-import {
-    ensureNickname,
-    type IdentityString,
-    isNickname,
-    type ServerGroup,
-} from '~/common/network/types';
+import {ensureNickname, type IdentityString, isNickname} from '~/common/network/types';
 import {
     type ClientKey,
     randomRendezvousAuthenticationKey,
@@ -98,6 +93,7 @@ import {bytesToHex, byteToHex} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
 import {
     type EndpointFor,
+    type EndpointService,
     PROXY_HANDLER,
     type ProxyMarked,
     registerErrorTransferHandler,
@@ -267,6 +263,114 @@ export interface DeviceLinkingSetup extends ProxyMarked {
 }
 
 /**
+ * Create an instance of the NotificationService, wrapping a remote endpoint.
+ */
+function createNotificationService(
+    endpoint: EndpointService,
+    notificationCreator: EndpointFor<NotificationCreator>,
+    logging: LoggerFactory,
+): NotificationService {
+    const notificationCreatorEndpoint = endpoint.wrap<NotificationCreator>(
+        notificationCreator,
+        logging.logger('com.notification'),
+    );
+    return new NotificationService(
+        logging.logger('bw.backend.notification'),
+        notificationCreatorEndpoint,
+    );
+}
+
+/**
+ * Initialize the backend services that don't require an active identity for being intialized.
+ */
+function initBackendServicesWithoutIdentity(
+    factories: FactoriesForBackend,
+    {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
+    notificationEndpoint: EndpointFor<NotificationCreator>,
+    systemDialogEndpoint: EndpointFor<SystemDialogService>,
+): Omit<ServicesForBackend, ServicesThatRequireIdentity> {
+    const crypto = new TweetNaClBackend(randomBytes);
+
+    const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
+    const compressor = factories.compressor();
+    const directory = new FetchDirectoryBackend({config});
+    const timer = new GlobalTimer();
+    const notification = createNotificationService(endpoint, notificationEndpoint, logging);
+    const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
+        systemDialogEndpoint,
+        logging.logger('com.system-dialog'),
+    );
+    const taskManager = new TaskManager({logging});
+
+    return {
+        compressor,
+        config,
+        crypto,
+        directory,
+        endpoint,
+        file,
+        logging,
+        notification,
+        systemDialog,
+        taskManager,
+        timer,
+    };
+}
+
+/**
+ * Init the full backend services.
+ */
+function initBackendServices(
+    simpleServices: Omit<ServicesForBackend, ServicesThatRequireIdentity>,
+    db: DatabaseBackend,
+    identityData: IdentityData,
+    deviceIds: DeviceIds,
+    dgk: RawDeviceGroupKey,
+): ServicesForBackend {
+    const {
+        config,
+        crypto,
+        directory,
+        endpoint,
+        file,
+        logging,
+        notification,
+        taskManager,
+        systemDialog,
+        timer,
+    } = simpleServices;
+
+    const device = new DeviceBackend({crypto, db, logging}, identityData, deviceIds, dgk);
+    const blob = new FetchBlobBackend({config, device});
+    const model = new ModelRepositories({
+        blob,
+        config,
+        crypto,
+        db,
+        device,
+        directory,
+        endpoint,
+        file,
+        logging,
+        notification,
+        taskManager,
+        systemDialog,
+        timer,
+    });
+    const viewModel = new ViewModelRepository(
+        {model, config, crypto, endpoint, file, logging, device},
+        new ViewModelCache(),
+    );
+    return {
+        ...simpleServices,
+        device,
+        blob,
+        model,
+        viewModel,
+    };
+}
+
+/**
  * The backend combines all required services and contains the core logic of our application.
  *
  * The backend lives in the worker thread. It is exposed via its {@link BackendHandle} to the UI
@@ -309,11 +413,7 @@ export class Backend implements ProxyMarked {
      *   worker.
      */
     public static async create(
-        {
-            notificationEndpoint: notificationCreator,
-            systemDialogEndpoint,
-            keyStoragePassword,
-        }: BackendInit,
+        {notificationEndpoint, systemDialogEndpoint, keyStoragePassword}: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         deviceLinkingSetup?: EndpointFor<DeviceLinkingSetup>,
@@ -321,15 +421,15 @@ export class Backend implements ProxyMarked {
         const log = logging.logger('backend.create');
 
         // Initialize services that are needed early
-        const compressor = factories.compressor();
-        const crypto = new TweetNaClBackend(randomBytes);
-        const directory = new FetchDirectoryBackend({config});
-        const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
+        const services = initBackendServicesWithoutIdentity(
+            factories,
+            {config, endpoint, logging},
+            notificationEndpoint,
+            systemDialogEndpoint,
+        );
 
         // Fields required to instantiate the backend
-        let identityData:
-            | {identity: IdentityString; ck: ClientKey; serverGroup: ServerGroup}
-            | undefined;
+        let identityData: IdentityData | undefined;
         let dgk: RawDeviceGroupKey | undefined;
         let deviceIds: DeviceIds | undefined;
 
@@ -347,14 +447,14 @@ export class Backend implements ProxyMarked {
             // Generate rendezvous setup with all information needed to show the QR code
             let setup: RendezvousProtocolSetup;
             {
-                const rendezvousPath = bytesToHex(crypto.randomBytes(new Uint8Array(32)));
+                const rendezvousPath = bytesToHex(services.crypto.randomBytes(new Uint8Array(32)));
                 const url = config.RENDEZVOUS_SERVER_URL.replaceAll(
                     '{prefix4}',
                     rendezvousPath.slice(0, 1),
                 ).replaceAll('{prefix8}', rendezvousPath.slice(0, 2));
                 setup = {
                     role: 'initiator',
-                    ak: randomRendezvousAuthenticationKey(crypto),
+                    ak: randomRendezvousAuthenticationKey(services.crypto),
                     relayedWebSocket: {
                         pathId: 1,
                         url: `${url}/${rendezvousPath}`,
@@ -398,7 +498,7 @@ export class Backend implements ProxyMarked {
             const joinProtocol = new DeviceJoinProtocol(
                 connectResult.connection,
                 logging.logger('backend-controller.join'),
-                {file},
+                {file: services.file},
             );
             try {
                 await joinProtocol.run(); // TODO(DESK-1037): Error handling
@@ -460,7 +560,10 @@ export class Backend implements ProxyMarked {
         }
 
         // Initialize key storage
-        const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
+        const keyStorage = factories.keyStorage(
+            {config, crypto: services.crypto},
+            logging.logger('key-storage'),
+        );
         if (!keyStorage.isPresent()) {
             // No key storage was found. Signal this to the caller, so that the device linking flow
             // can be triggered.
@@ -538,7 +641,7 @@ export class Backend implements ProxyMarked {
         identityData = {
             identity: keyStorageContents.identityData.identity,
             ck: SecureSharedBoxFactory.consume(
-                crypto,
+                services.crypto,
                 keyStorageContents.identityData.ck,
             ) as ClientKey,
             serverGroup: keyStorageContents.identityData.serverGroup,
@@ -553,61 +656,9 @@ export class Backend implements ProxyMarked {
         //     gracefully return to the UI, etc.
         const db = factories.db({config}, logging.logger('db'), keyStorageContents.databaseKey);
 
-        // Create other service instances
-        const timer = new GlobalTimer();
-        const device = new DeviceBackend({crypto, db, logging}, identityData, deviceIds, dgk);
-        const blob = new FetchBlobBackend({config, device});
-        const notificationCreatorEndpoint = endpoint.wrap<NotificationCreator>(
-            notificationCreator,
-            logging.logger('com.notification'),
-        );
-        const notification = new NotificationService(
-            logging.logger('bw.backend.notification'),
-            notificationCreatorEndpoint,
-        );
-        const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
-            systemDialogEndpoint,
-            logging.logger('com.system-dialog'),
-        );
-        const taskManager = new TaskManager({logging});
-        const model = new ModelRepositories({
-            blob,
-            config,
-            crypto,
-            db,
-            device,
-            directory,
-            endpoint,
-            file,
-            logging,
-            notification,
-            taskManager,
-            systemDialog,
-            timer,
-        });
-        const viewModel = new ViewModelRepository(
-            {model, config, crypto, endpoint, file, logging, device},
-            new ViewModelCache(),
-        );
-
         // Create backend
-        const backend = new Backend({
-            blob,
-            compressor,
-            config,
-            crypto,
-            device,
-            directory,
-            endpoint,
-            file,
-            logging,
-            model,
-            viewModel,
-            notification,
-            systemDialog,
-            taskManager,
-            timer,
-        });
+        const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
+        const backend = new Backend(backendServices);
 
         /* TODO(DESK-1038)
 

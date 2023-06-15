@@ -36,6 +36,11 @@ export interface ServicesForBackend {
 }
 
 /**
+ * List of services that require an initialized identity before they can be instantiated.
+ */
+export type ServicesThatRequireIdentity = 'device' | 'blob' | 'model' | 'viewModel';
+
+/**
  * Services available in the backend controller.
  */
 export type ServicesForBackendController = Pick<
