@@ -498,16 +498,21 @@ export class Backend implements ProxyMarked {
             const joinProtocol = new DeviceJoinProtocol(
                 connectResult.connection,
                 logging.logger('backend-controller.join'),
-                {file: services.file},
+                {crypto: services.crypto, file: services.file},
             );
+            let joinResult;
             try {
-                await joinProtocol.run(); // TODO(DESK-1037): Error handling
+                joinResult = await joinProtocol.run(); // TODO(DESK-1037): Error handling
             } catch (error) {
                 const message = `Device join protocol failed: ${error}`;
                 log.warn(`${message}\n\n${extractErrorTraceback(ensureError(error))}`);
                 await linkingState.updateState({state: 'error', type: 'join-error', message});
                 throw new BackendCreationError('handled-linking-error', message, {from: error});
             }
+
+            // Send "Registered" message and close the connection.
+            // TODO(DESK-1038): Do this later, once registration is actually complete!
+            await joinProtocol.joinComplete();
 
             /*
 
