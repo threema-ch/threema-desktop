@@ -447,6 +447,21 @@ export class Backend implements ProxyMarked {
             );
             const {linkingState} = wrappedDeviceLinkingSetup;
 
+            // Helper function for error handling
+            // eslint-disable-next-line no-inner-declarations
+            async function throwError(
+                message: string,
+                type: LinkingStateErrorType,
+                error?: Error,
+            ): Promise<never> {
+                await linkingState.updateState({state: 'error', type, message});
+                if (error !== undefined) {
+                    message += `\n\n${extractErrorTraceback(error)}`;
+                }
+                log.error(message);
+                throw new BackendCreationError('handled-linking-error', message, {from: error});
+            }
+
             // Generate rendezvous setup with all information needed to show the QR code
             let setup: RendezvousProtocolSetup;
             {
@@ -470,10 +485,11 @@ export class Backend implements ProxyMarked {
             try {
                 rendezvous = await RendezvousConnection.create({logging}, setup);
             } catch (error) {
-                const message = `Rendezvous connection failed: ${error}`;
-                log.warn(message);
-                await linkingState.updateState({state: 'error', type: 'connection-error', message});
-                throw new BackendCreationError('handled-linking-error', message, {from: error});
+                return await throwError(
+                    `Rendezvous connection failed: ${error}`,
+                    'connection-error',
+                    ensureError(error),
+                );
             }
             await linkingState.updateState({
                 state: 'waiting-for-handshake',
@@ -485,10 +501,11 @@ export class Backend implements ProxyMarked {
             try {
                 connectResult = await rendezvous.connect();
             } catch (error) {
-                const message = `Rendezvous handshake failed: ${error}`;
-                log.warn(`${message}\n\n${extractErrorTraceback(ensureError(error))}`);
-                await linkingState.updateState({state: 'error', type: 'rendezvous-error', message});
-                throw new BackendCreationError('handled-linking-error', message, {from: error});
+                return await throwError(
+                    `Rendezvous handshake failed: ${error}`,
+                    'rendezvous-error',
+                    ensureError(error),
+                );
             }
             log.info('Rendezvous connection established');
             await linkingState.updateState({
@@ -505,12 +522,13 @@ export class Backend implements ProxyMarked {
             );
             let joinResult;
             try {
-                joinResult = await joinProtocol.run(); // TODO(DESK-1037): Error handling
+                joinResult = await joinProtocol.run();
             } catch (error) {
-                const message = `Device join protocol failed: ${error}`;
-                log.warn(`${message}\n\n${extractErrorTraceback(ensureError(error))}`);
-                await linkingState.updateState({state: 'error', type: 'join-error', message});
-                throw new BackendCreationError('handled-linking-error', message, {from: error});
+                return await throwError(
+                    `Device join protocol failed: ${error}`,
+                    'join-error',
+                    ensureError(error),
+                );
             }
 
             // Wrap the client key (but keep a copy for the key storage)
@@ -519,6 +537,24 @@ export class Backend implements ProxyMarked {
                 services.crypto,
                 joinResult.rawCk,
             ) as ClientKey;
+
+            // Look up identity information and server group on directory server
+            let privateData;
+            try {
+                privateData = await services.directory.privateData(joinResult.identity, ck);
+            } catch (error) {
+                return await throwError(
+                    `Fetching information about identity failed: ${error}`,
+                    'generic-error',
+                    ensureError(error),
+                );
+            }
+            if (privateData.serverGroup !== joinResult.serverGroup) {
+                return await throwError(
+                    `Server group reported by server (${privateData.serverGroup}) does not match server group received from join protocol (${joinResult.serverGroup})`,
+                    'generic-error',
+                );
+            }
 
             // Set identity data
             identityData = {
