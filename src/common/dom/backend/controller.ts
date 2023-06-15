@@ -29,6 +29,7 @@ import {
     TRANSFER_MARKER,
 } from '~/common/utils/endpoint';
 import {eternalPromise} from '~/common/utils/promise';
+import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {
     DeprecatedDerivedStore,
     type IQueryableStore,
@@ -113,7 +114,10 @@ export class BackendController {
         },
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
-        showLinkingWizard: (linkingState: ReadableStore<LinkingState>) => Promise<void>,
+        showLinkingWizard: (
+            linkingState: ReadableStore<LinkingState>,
+            userPassword: ResolvablePromise<string>,
+        ) => Promise<void>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
         const {endpoint, logging} = services;
@@ -155,6 +159,7 @@ export class BackendController {
 
         function assembleDeviceLinkingSetup(
             linkingStateStore: WritableStore<LinkingState>,
+            userPassword: Promise<string>,
         ): EndpointFor<DeviceLinkingSetup> {
             const {local, remote} = endpoint.createEndpointPair<DeviceLinkingSetup>();
 
@@ -167,6 +172,7 @@ export class BackendController {
                     },
                     [TRANSFER_MARKER]: PROXY_HANDLER,
                 },
+                userPassword,
                 [TRANSFER_MARKER]: PROXY_HANDLER,
             };
 
@@ -257,7 +263,8 @@ export class BackendController {
             });
 
             // Show linking screen with QR code
-            await showLinkingWizard(linkingStateStore);
+            const userPassword = new ResolvablePromise<string>();
+            await showLinkingWizard(linkingStateStore, userPassword);
 
             newKeyStoragePassword = 'asdf'; // TODO(DESK-1038)
 
@@ -265,7 +272,7 @@ export class BackendController {
             try {
                 backendEndpoint = await creator(
                     assembleBackendInit(newKeyStoragePassword),
-                    assembleDeviceLinkingSetup(linkingStateStore),
+                    assembleDeviceLinkingSetup(linkingStateStore, userPassword),
                 );
             } catch (error) {
                 assertError(

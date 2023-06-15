@@ -1,5 +1,6 @@
 import {type LinkingState, type LinkingStateErrorType} from '~/common/dom/backend';
 import {type ReadonlyUint8Array} from '~/common/types';
+import {type ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type ReadableStore} from '~/common/utils/store';
 
 export interface LinkingParams {
@@ -7,6 +8,11 @@ export interface LinkingParams {
      * Linking-related state from the backend.
      */
     readonly linkingState: ReadableStore<LinkingState>;
+
+    /**
+     * A promise that should be fulfilled when the user has chosen a password.
+     */
+    readonly userPassword: ResolvablePromise<string>;
 }
 
 export interface LinkingWizardStateScan {
@@ -17,6 +23,11 @@ export interface LinkingWizardStateScan {
 export interface LinkingWizardStateConfirmEmoji {
     readonly currentStep: 'confirm-emoji';
     readonly rph: ReadonlyUint8Array;
+}
+
+export interface LinkingWizardStateSetPassword {
+    readonly currentStep: 'set-password';
+    readonly userPassword: ResolvablePromise<string>;
 }
 
 export interface LinkingWizardStateError {
@@ -31,7 +42,7 @@ export interface LinkingWizardStateError {
 export type LinkingWizardState =
     | LinkingWizardStateScan
     | LinkingWizardStateConfirmEmoji
-    | {readonly currentStep: 'set-password'}
+    | LinkingWizardStateSetPassword
     | {readonly currentStep: 'syncing'}
     | {readonly currentStep: 'success-linked'}
     | LinkingWizardStateError;

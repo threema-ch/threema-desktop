@@ -2,14 +2,14 @@
   import {type SvelteComponentDev} from 'svelte/internal';
 
   import {globals} from '~/app/globals';
-  import {LinkingWizardState, type LinkingParams} from '~/app/ui/linking';
+  import {type LinkingParams, type LinkingWizardState} from '~/app/ui/linking';
   import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
   import Error from '~/app/ui/linking/steps/Error.svelte';
   import Scan from '~/app/ui/linking/steps/Scan.svelte';
   import SetPassword from '~/app/ui/linking/steps/SetPassword.svelte';
   import SuccessLinked from '~/app/ui/linking/steps/SuccessLinked.svelte';
   import Sync from '~/app/ui/linking/steps/Sync.svelte';
-  import {LinkingState} from '~/common/dom/backend';
+  import {type LinkingState} from '~/common/dom/backend';
   import {unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking-wizard`);
@@ -31,12 +31,14 @@
    * Mapping of state steps to the corresponding component.
    */
   const PROCESS_STEPS: {[Key in LinkingWizardState['currentStep']]: typeof SvelteComponentDev} = {
+    /* eslint-disable @typescript-eslint/naming-convention */
     'scan': Scan,
     'confirm-emoji': ConfirmEmoji,
     'set-password': SetPassword,
     'syncing': Sync,
     'success-linked': SuccessLinked,
     'error': Error,
+    /* eslint-enable @typescript-eslint/naming-convention */
   };
 
   let wizardStepComponent: typeof SvelteComponentDev;
@@ -62,7 +64,7 @@
         };
         break;
       case 'waiting-for-password':
-        linkingWizardState = {currentStep: 'set-password'};
+        linkingWizardState = {currentStep: 'set-password', userPassword: params.userPassword};
         break;
       case 'syncing':
         linkingWizardState = {currentStep: 'syncing'};
@@ -84,13 +86,7 @@
 </script>
 
 <template>
-  <svelte:component
-    this={wizardStepComponent}
-    {linkingWizardState}
-    on:newpassword={({detail: password}) => {
-      // TODO(DESK-1038): Pass password to backend
-    }}
-  />
+  <svelte:component this={wizardStepComponent} {linkingWizardState} />
 </template>
 
 <style lang="scss">

@@ -1,15 +1,11 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import Password from '#3sc/components/blocks/Input/Password.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingWizardState} from '~/app/ui/linking';
+  import {type LinkingWizardStateSetPassword} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
 
-  export let linkingWizardState: LinkingWizardState;
-  unusedProp(linkingWizardState);
+  export let linkingWizardState: LinkingWizardStateSetPassword;
 
   const minPasswordLength = import.meta.env.DEBUG ? 1 : 8;
 
@@ -28,12 +24,10 @@
     const hasAnyError = Object.values(errors).some((v) => v !== undefined);
     if (!hasAnyError) {
       showErrors = false;
-      dispatchEvent('newpassword', password);
+      linkingWizardState.userPassword.resolve(password);
       return;
     }
   }
-
-  const dispatchEvent = createEventDispatcher();
 
   $: errors = {
     minPasswordLength:

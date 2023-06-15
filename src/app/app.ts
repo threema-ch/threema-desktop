@@ -29,6 +29,7 @@ import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
+import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type ISubscribableStore, type ReadableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
@@ -276,12 +277,16 @@ export async function main(appState: AppState): Promise<App> {
     });
 
     // Define function that will show the linking wizard
-    async function showLinkingWizard(linkingState: ReadableStore<LinkingState>): Promise<void> {
+    async function showLinkingWizard(
+        linkingState: ReadableStore<LinkingState>,
+        userPassword: ResolvablePromise<string>,
+    ): Promise<void> {
         await domContentLoaded;
         log.debug('Showing linking wizard');
         elements.splash.classList.add('hidden'); // Hide splash screen
         attachLinkingWizard(elements, {
             linkingState,
+            userPassword,
         });
     }
 

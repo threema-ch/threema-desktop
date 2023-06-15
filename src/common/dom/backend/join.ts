@@ -53,7 +53,7 @@ export class DeviceJoinProtocol {
 
     public constructor(
         private readonly _rendezvousConnection: RendezvousConnection,
-        private readonly _updateLinkingState: RemoteProxy<(state: LinkingState) => void>,
+        private readonly _onBegin: () => Promise<void>,
         private readonly _log: Logger,
         private readonly _services: ServicesForDeviceJoinProtocol,
     ) {
@@ -147,7 +147,7 @@ export class DeviceJoinProtocol {
         if (this._state !== 'wait-for-begin') {
             throw new DeviceJoinError('protocol', `Received Begin message in state ${this._state}`);
         }
-        await this._updateLinkingState({state: 'waiting-for-password'});
+        await this._onBegin();
         this._setState('sync-blob-data');
     }
 

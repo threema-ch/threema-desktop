@@ -263,6 +263,11 @@ export interface DeviceLinkingSetup extends ProxyMarked {
         readonly store: WritableStore<LinkingState>;
         readonly updateState: (state: LinkingState) => void;
     } & ProxyMarked;
+
+    /**
+     * A promise that will be fulfilled by the frontend when the user has chosen a password.
+     */
+    readonly userPassword: Promise<string>;
 }
 
 /**
@@ -515,9 +520,25 @@ export class Backend implements ProxyMarked {
 
             // Now that we established the connection and showed the RPH, we can wait for ED to
             // start sending essential data and then run the join protocol.
+            const userPasswordPromise = new ResolvablePromise<string>();
+            // eslint-disable-next-line func-style
+            const onBegin = async (): Promise<void> => {
+                // Update state and wait for password
+                await linkingState.updateState({state: 'waiting-for-password'});
+
+                // Once the password is entered, show "syncing" screen
+                wrappedDeviceLinkingSetup.userPassword
+                    .then(async (password) => {
+                        await linkingState.updateState({state: 'syncing'});
+                        userPasswordPromise.resolve(password);
+                    })
+                    .catch((error) =>
+                        log.error(`Waiting for userPassword promise failed: ${error}`),
+                    );
+            };
             const joinProtocol = new DeviceJoinProtocol(
                 connectResult.connection,
-                linkingState.updateState,
+                onBegin,
                 logging.logger('backend-controller.join'),
                 {crypto: services.crypto, file: services.file},
             );
@@ -571,11 +592,15 @@ export class Backend implements ProxyMarked {
                 services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
             );
 
+            // Wait for user password
+            log.debug('Waiting for user password');
+            const userPassword = await userPasswordPromise;
+            if (userPassword.length === 0) {
+                return await throwError(`Received empty user password`, 'generic-error');
+            }
+            keyStoragePassword = userPassword;
+
             // Write to key storage
-            assert(
-                keyStoragePassword !== undefined,
-                "Expect keyStoragePassword to be provided for build target 'electron'",
-            );
             const keyStorage = factories.keyStorage(
                 {config, crypto: services.crypto},
                 logging.logger('key-storage'),
@@ -607,6 +632,7 @@ export class Backend implements ProxyMarked {
             // Send "Registered" message and close the connection.
             // TODO(DESK-1038): Do this later, once registration is actually complete!
             await joinProtocol.joinComplete();
+            await linkingState.updateState({state: 'registered'});
         }
 
         // Initialize key storage
