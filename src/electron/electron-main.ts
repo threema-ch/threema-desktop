@@ -876,10 +876,12 @@ void (async () => {
     const signal = {start: false};
 
     // Acquire lock that can be used for ensuring a single instance
-    const singleInstanceLock = electron.app.requestSingleInstanceLock();
-    if (!singleInstanceLock) {
-        log.error('Application is already open, refusing to start a second instance');
-        electron.app.exit(0);
+    if (!import.meta.env.DEBUG) {
+        const singleInstanceLock = electron.app.requestSingleInstanceLock();
+        if (!singleInstanceLock) {
+            log.error('Application is already open, refusing to start a second instance');
+            electron.app.exit(0);
+        }
     }
 
     // Quit application when all windows are closed
