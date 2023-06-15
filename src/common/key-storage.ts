@@ -1,5 +1,4 @@
 import * as v from '@badrap/valita';
-import Long from 'long';
 
 import {type ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
@@ -17,8 +16,7 @@ import {EncryptedKeyStorage_Argon2idParameters_Argon2Version} from '~/common/nod
 import {KiB, MiB, type u8, type u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
-import {intoU64} from '~/common/utils/number';
-import {instanceOf} from '~/common/utils/valita-helpers';
+import {instanceOf, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /**
  * Specify the target runtime for the KDF, as well as upper and
@@ -242,8 +240,8 @@ export const KEY_STORAGE_CONTENTS_SCHEMA = v
         databaseKey: instanceOf(Uint8Array).map(wrapRawDatabaseKey),
         deviceIds: v
             .object({
-                d2mDeviceId: instanceOf(Long).map(intoU64).map(ensureD2mDeviceId),
-                cspDeviceId: instanceOf(Long).map(intoU64).map(ensureCspDeviceId),
+                d2mDeviceId: unsignedLongAsU64().map(ensureD2mDeviceId),
+                cspDeviceId: unsignedLongAsU64().map(ensureCspDeviceId),
             })
             .rest(v.unknown()),
     })

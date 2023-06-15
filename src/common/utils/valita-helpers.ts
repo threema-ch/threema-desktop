@@ -3,8 +3,11 @@
  */
 
 import * as v from '@badrap/valita';
+import Long from 'long';
 
-import {type u53} from '~/common/types';
+import {type u53, type u64} from '~/common/types';
+
+import {intoU64} from './number';
 
 /**
  * Ensure that a value is an instance of a certain type.
@@ -27,6 +30,23 @@ export function instanceOf<T>(t: abstract new (...args: any) => T): v.Type<T> {
             (value) => value instanceof t,
             `expected an instance of ${t.name !== '' ? t.name : 'an anonymous type'}`,
         );
+}
+
+/**
+ * Expect a `Long` value (validated through `Long.isLong`), then convert it into an u64.
+ */
+export function unsignedLongAsU64(): v.Type<u64> {
+    return v
+        .unknown()
+        .chain((value: unknown) => {
+            if (Long.isLong(value)) {
+                return v.ok(value);
+            }
+            return v.err(
+                `Expected a Long value, but "Long.isLong" returns false for value "${value}" with type "${typeof value}"`,
+            );
+        })
+        .map(intoU64);
 }
 
 /**

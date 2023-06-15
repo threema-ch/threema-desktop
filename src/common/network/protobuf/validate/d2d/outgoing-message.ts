@@ -5,7 +5,12 @@ import {d2d} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
-import {instanceOf, nullOptional, optionalInstanceOf} from '~/common/utils/valita-helpers';
+import {
+    instanceOf,
+    nullOptional,
+    optionalInstanceOf,
+    unsignedLongAsU64,
+} from '~/common/utils/valita-helpers';
 
 import * as ConversationId from './conversation-id';
 import * as MessageType from './message-type';
@@ -21,7 +26,7 @@ export const SCHEMA = validator(
                 value === undefined ? undefined : intoU64(value),
             ),
             body: instanceOf(Uint8Array),
-            createdAt: instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
+            createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
             type: MessageType.SCHEMA,
             nonces: v.array(instanceOf(Uint8Array)), // TODO(DESK-826): Validate length and maybe map to nonce type
         })

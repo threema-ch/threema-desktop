@@ -1,4 +1,4 @@
-import long from 'long';
+import Long from 'long';
 
 import {type ibig, type u32, type u53, type u64} from '~/common/types';
 
@@ -11,8 +11,8 @@ import {bytesToHex, byteView, hexToBytes} from './byte';
  * @param value Unsigned 64-bit integer to be converted.
  * @returns the value as a Long instance.
  */
-export function intoUnsignedLong(value: u64): long {
-    return long.fromBits(
+export function intoUnsignedLong(value: u64): Long {
+    return Long.fromBits(
         Number(BigInt.asUintN(32, value)),
         // eslint-disable-next-line no-bitwise
         Number(BigInt.asUintN(32, value >> 32n)),
@@ -25,7 +25,7 @@ export function intoUnsignedLong(value: u64): long {
  *
  * @throws {Error} if value is not unsigned
  */
-export function intoU64(value: long): u64 {
+export function intoU64(value: Long): u64 {
     if (!value.unsigned) {
         throw new Error(`Long value is not unsigned`);
     }

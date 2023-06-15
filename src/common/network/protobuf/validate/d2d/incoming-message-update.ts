@@ -1,5 +1,4 @@
 import * as v from '@badrap/valita';
-import Long from 'long';
 
 import {d2d} from '~/common/network/protobuf/js';
 import {creator, validator} from '~/common/network/protobuf/utils';
@@ -7,18 +6,17 @@ import {MESSAGE_ID_SCHEMA, serializeMessageId} from '~/common/network/protobuf/v
 import {unreachable} from '~/common/utils/assert';
 import {
     dateToUnixTimestampMs,
-    intoU64,
     intoUnsignedLong,
     unixTimestampToDateMs,
 } from '~/common/utils/number';
-import {instanceOf} from '~/common/utils/valita-helpers';
+import {unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 import * as ConversationId from './conversation-id';
 
 const READ_SCHEMA = validator(
     d2d.IncomingMessageUpdate.Read,
     v.object({
-        at: instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
+        at: unsignedLongAsU64().map(unixTimestampToDateMs),
     }),
 );
 

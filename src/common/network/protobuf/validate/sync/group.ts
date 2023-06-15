@@ -1,5 +1,4 @@
 import * as v from '@badrap/valita';
-import Long from 'long';
 
 import {
     ConversationCategoryUtils,
@@ -16,8 +15,8 @@ import {
     Identities,
     Unit,
 } from '~/common/network/protobuf/validate/common';
-import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
-import {instanceOf, nullOptional} from '~/common/utils/valita-helpers';
+import {unixTimestampToDateMs} from '~/common/utils/number';
+import {nullOptional, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /** Validates {@link sync.Group.NotificationTriggerPolicyOverride}. */
 const NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA = validator(
@@ -31,9 +30,7 @@ const NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA = validator(
                     v
                         .object({
                             policy: v.number().map(GroupNotificationTriggerPolicyUtils.fromNumber),
-                            expiresAt: nullOptional(
-                                instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
-                            ),
+                            expiresAt: nullOptional(unsignedLongAsU64().map(unixTimestampToDateMs)),
                         })
                         .rest(v.unknown()),
                 ),
@@ -57,7 +54,7 @@ const NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA = validator(
 const BASE_SCHEMA = validator(sync.Group, {
     groupIdentity: GroupIdentity.SCHEMA,
     name: v.string(),
-    createdAt: instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
+    createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
     userState: v.number().map(GroupUserStateUtils.fromNumber),
     notificationTriggerPolicyOverride: NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA,
     notificationSoundPolicyOverride: NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA,

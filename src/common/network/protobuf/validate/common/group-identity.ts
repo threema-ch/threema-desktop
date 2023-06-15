@@ -1,18 +1,17 @@
 import * as v from '@badrap/valita';
-import Long from 'long';
 
 import {common} from '~/common/network/protobuf/js';
 import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {ensureGroupId, ensureIdentityString} from '~/common/network/types';
-import {intoU64, intoUnsignedLong} from '~/common/utils/number';
-import {instanceOf} from '~/common/utils/valita-helpers';
+import {intoUnsignedLong} from '~/common/utils/number';
+import {unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /** Validates {@link common.GroupIdentity} */
 export const SCHEMA = validator(
     common.GroupIdentity,
     v
         .object({
-            groupId: instanceOf(Long).map(intoU64).map(ensureGroupId),
+            groupId: unsignedLongAsU64().map(ensureGroupId),
             creatorIdentity: v.string().map(ensureIdentityString),
         })
         .rest(v.unknown()),

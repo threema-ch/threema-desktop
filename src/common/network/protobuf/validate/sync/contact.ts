@@ -1,5 +1,4 @@
 import * as v from '@badrap/valita';
-import Long from 'long';
 
 import {ensurePublicKey} from '~/common/crypto';
 import {
@@ -20,8 +19,8 @@ import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import {DeltaImage, Unit} from '~/common/network/protobuf/validate/common';
 import {ensureFeatureMask, ensureIdentityString} from '~/common/network/types';
-import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
-import {instanceOf, nullOptional} from '~/common/utils/valita-helpers';
+import {unixTimestampToDateMs} from '~/common/utils/number';
+import {instanceOf, nullOptional, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /** Validates {@link sync.Contact.ReadReceiptPolicyOverride}. */
 const READ_RECEIPT_POLICY_OVERRIDE_SCHEMA = validator(
@@ -59,9 +58,7 @@ const NOTIFICATION_TRIGGER_POLICY_OVERRIDE_SCHEMA = validator(
                             policy: v
                                 .number()
                                 .map(ContactNotificationTriggerPolicyUtils.fromNumber),
-                            expiresAt: nullOptional(
-                                instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
-                            ),
+                            expiresAt: nullOptional(unsignedLongAsU64().map(unixTimestampToDateMs)),
                         })
                         .rest(v.unknown()),
                 ),
@@ -85,7 +82,7 @@ const NOTIFICATION_SOUND_POLICY_OVERRIDE_SCHEMA = validator(
 const BASE_SCHEMA = validator(sync.Contact, {
     identity: v.string().map(ensureIdentityString),
     publicKey: instanceOf(Uint8Array).map(ensurePublicKey),
-    createdAt: instanceOf(Long).map(intoU64).map(unixTimestampToDateMs),
+    createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
     firstName: v.string(),
     lastName: v.string(),
     nickname: v.string(),
@@ -94,7 +91,7 @@ const BASE_SCHEMA = validator(sync.Contact, {
     identityType: v.number().map(IdentityTypeUtils.fromNumber),
     acquaintanceLevel: v.number().map(AcquaintanceLevelUtils.fromNumber),
     activityState: v.number().map(ActivityStateUtils.fromNumber),
-    featureMask: instanceOf(Long).map(intoU64).map(ensureFeatureMask),
+    featureMask: unsignedLongAsU64().map(ensureFeatureMask),
     syncState: v.number().map(SyncStateUtils.fromNumber),
     readReceiptPolicyOverride: READ_RECEIPT_POLICY_OVERRIDE_SCHEMA,
     typingIndicatorPolicyOverride: TYPING_INDICATOR_POLICY_OVERRIDE_SCHEMA,
