@@ -220,7 +220,7 @@ export async function main(appState: AppState): Promise<App> {
     applyThemeBranding(import.meta.env.BUILD_VARIANT, elements.systemDialogs);
 
     // Initialise WASM packages
-    log.info('Initializing WASM packages');
+    log.debug('Initializing WASM packages');
     await Promise.all([initComposeArea()]);
 
     // Track the app visibility state

@@ -2,21 +2,32 @@
  * Device join protocol.
  */
 
+import {type ServicesForBackend} from '~/common/backend';
 import {type RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
 import {DeviceJoinError} from '~/common/error';
+import {type StoredFileHandle} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {validate} from '~/common/network/protobuf';
 import {join} from '~/common/network/protobuf/js';
+import {type BlobId} from '~/common/network/protocol/blob';
 import {unreachable} from '~/common/utils/assert';
 
 type JoinState = 'wait-for-begin' | 'sync-blob-data' | 'sync-essential-data';
 
+type ServicesForDeviceJoinProtocol = Pick<ServicesForBackend, 'file'>;
+
 export class DeviceJoinProtocol {
     private _state: JoinState = 'wait-for-begin';
+
+    /**
+     * Mapping from {@link BlobId} to the {@link StoredFileHandle} as returned by the file storage.
+     */
+    private readonly _blobIdToFileId: Map<BlobId, StoredFileHandle> = new Map();
 
     public constructor(
         private readonly _rendezvousConnection: RendezvousConnection,
         private readonly _log: Logger,
+        private readonly _services: ServicesForDeviceJoinProtocol,
     ) {}
 
     /**
@@ -66,7 +77,7 @@ export class DeviceJoinProtocol {
                     this._handleBegin();
                     break;
                 case 'blobData':
-                    this._handleBlobData(validated.blobData);
+                    await this._handleBlobData(validated.blobData);
                     break;
                 case 'essentialData':
                     this._handleEssentialData(validated.essentialData);
@@ -90,7 +101,7 @@ export class DeviceJoinProtocol {
         this._setState('sync-blob-data');
     }
 
-    private _handleBlobData(blobData: validate.common.BlobData.Type): void {
+    private async _handleBlobData(blobData: validate.common.BlobData.Type): Promise<void> {
         this._log.debug(`Received BlobData message`);
         if (this._state !== 'sync-blob-data') {
             throw new DeviceJoinError(
@@ -98,6 +109,9 @@ export class DeviceJoinProtocol {
                 `Received BlobData message in state ${this._state}`,
             );
         }
+
+        const fileHandle = await this._services.file.store(blobData.data);
+        this._blobIdToFileId.set(blobData.id, fileHandle);
     }
 
     private _handleEssentialData(essentialData: validate.join.EssentialData.Type): void {

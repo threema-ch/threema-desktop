@@ -65,7 +65,7 @@ export default async function run(): Promise<void> {
     const initLog = logging.logger('init');
 
     // Initialize WASM packages
-    initLog.info('Initializing WASM packages');
+    initLog.debug('Initializing WASM packages');
     await initLibthreema();
     libthreema.initLogging();
 

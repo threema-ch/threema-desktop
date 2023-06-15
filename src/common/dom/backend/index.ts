@@ -324,6 +324,7 @@ export class Backend implements ProxyMarked {
         const compressor = factories.compressor();
         const crypto = new TweetNaClBackend(randomBytes);
         const directory = new FetchDirectoryBackend({config});
+        const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
 
         // Fields required to instantiate the backend
         let identityData:
@@ -397,6 +398,7 @@ export class Backend implements ProxyMarked {
             const joinProtocol = new DeviceJoinProtocol(
                 connectResult.connection,
                 logging.logger('backend-controller.join'),
+                {file},
             );
             try {
                 await joinProtocol.run(); // TODO(DESK-1037): Error handling
@@ -554,7 +556,6 @@ export class Backend implements ProxyMarked {
         // Create other service instances
         const timer = new GlobalTimer();
         const device = new DeviceBackend({crypto, db, logging}, identityData, deviceIds, dgk);
-        const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
         const blob = new FetchBlobBackend({config, device});
         const notificationCreatorEndpoint = endpoint.wrap<NotificationCreator>(
             notificationCreator,
