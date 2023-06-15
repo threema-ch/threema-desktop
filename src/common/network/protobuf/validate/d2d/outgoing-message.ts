@@ -1,16 +1,10 @@
 import * as v from '@badrap/valita';
-import Long from 'long';
 
 import {d2d} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
-import {
-    instanceOf,
-    nullOptional,
-    optionalInstanceOf,
-    unsignedLongAsU64,
-} from '~/common/utils/valita-helpers';
+import {unixTimestampToDateMs} from '~/common/utils/number';
+import {instanceOf, nullOptional, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 import * as ConversationId from './conversation-id';
 import * as MessageType from './message-type';
@@ -22,9 +16,7 @@ export const SCHEMA = validator(
         .object({
             conversation: ConversationId.SCHEMA,
             messageId: MESSAGE_ID_SCHEMA,
-            threadMessageId: nullOptional(optionalInstanceOf(Long)).map((value) =>
-                value === undefined ? undefined : intoU64(value),
-            ),
+            threadMessageId: nullOptional(unsignedLongAsU64()),
             body: instanceOf(Uint8Array),
             createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
             type: MessageType.SCHEMA,

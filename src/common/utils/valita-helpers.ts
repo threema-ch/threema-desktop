@@ -12,8 +12,6 @@ import {intoU64} from './number';
 /**
  * Ensure that a value is an instance of a certain type.
  *
- * Note that the return type can _not_ be chained with `.optional()`!
- *
  * Example:
  *
  *     const t = v.object({
@@ -47,28 +45,6 @@ export function unsignedLongAsU64(): v.Type<u64> {
             );
         })
         .map(intoU64);
-}
-
-/**
- * Ensure that a value is an instance of a certain type, or undefined.
- *
- * Example:
- *
- *     const t = v.object({
- *       fourBytes: optionalInstanceOf(Uint8Array).assert((a) => a.length === 4),
- *       timestamp: optionalInstanceOf(Date),
- *     });
- */
-export function optionalInstanceOf<T>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    t: abstract new (...args: any) => T,
-): v.Type<T | undefined> {
-    return v
-        .unknown()
-        .assert<T | undefined>(
-            (value) => value instanceof t || value === undefined,
-            `expected an optional instance of ${t.name !== '' ? t.name : 'an anonymous type'}`,
-        );
 }
 
 /**
