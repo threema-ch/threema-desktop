@@ -7,21 +7,25 @@ import {randomU64} from '~/common/crypto/random';
 import {type DeviceIds} from '~/common/device';
 import {type RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
 import {DeviceJoinError} from '~/common/error';
-import {type StoredFileHandle} from '~/common/file-storage';
+import {FileStorageError, type StoredFileHandle} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
+import {type ProfileSettingsUpdate, type Repositories} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
 import {validate} from '~/common/network/protobuf';
 import {join} from '~/common/network/protobuf/js';
-import {type BlobId} from '~/common/network/protocol/blob';
+import {type EssentialData} from '~/common/network/protobuf/validate/join';
+import {type BlobIdString, blobIdToString} from '~/common/network/protocol/blob';
 import {
     ensureCspDeviceId,
     ensureD2mDeviceId,
     type IdentityString,
+    isNickname,
     type ServerGroup,
 } from '~/common/network/types';
 import {type RawClientKey, type RawDeviceGroupKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
+import {Delayed} from '~/common/utils/delayed';
 
 type JoinState = 'wait-for-begin' | 'sync-blob-data' | 'sync-essential-data';
 
@@ -38,16 +42,40 @@ interface DeviceJoinResult {
     readonly dgk: RawDeviceGroupKey;
 }
 
+/**
+ * Device Join Protocol
+ *
+ * This class has the following responsibilities:
+ *
+ * - Run the device join protocol over an existing rendezvous connection
+ * - Restore essential data into the database
+ *
+ * Use it as follows:
+ *
+ * 1. Create instance using rendezvous connection
+ * 2. Call {@link join()}, store join result
+ * 3. Instantiate key storage and backend using information in join result
+ * 4. Call {@link restoreEssentialData()} to initialize database with data from the `EssentialData`
+ *    message (i.e. contacts, settings, etc)
+ * 5. Establish connection with and register at Mediator server
+ * 6. Call {@link complete()} to send the `Registered` message to the existing device, and to close
+ *    the message
+ */
 export class DeviceJoinProtocol {
     private _state: JoinState = 'wait-for-begin';
 
     private readonly _reader: ReadableStreamDefaultReader<Uint8Array>;
     private readonly _writer: WritableStreamDefaultWriter<ReadonlyUint8Array>;
+    private readonly _essentialData: Delayed<EssentialData.Type> = new Delayed(
+        () => new DeviceJoinError('internal', 'Delayed essential data was read before it was set'),
+        () => new DeviceJoinError('internal', 'Delayed essential data was set twice'),
+    );
 
     /**
-     * Mapping from {@link BlobId} to the {@link StoredFileHandle} as returned by the file storage.
+     * Mapping from {@link BlobIdString} to the {@link StoredFileHandle} as returned by the file
+     * storage.
      */
-    private readonly _blobIdToFileId: Map<BlobId, StoredFileHandle> = new Map();
+    private readonly _blobIdToFileId: Map<BlobIdString, StoredFileHandle> = new Map();
 
     public constructor(
         private readonly _rendezvousConnection: RendezvousConnection,
@@ -60,14 +88,11 @@ export class DeviceJoinProtocol {
     }
 
     /**
-     * Run the device join protocol to completion.
-     *
-     * Note that after this function returns, the `Registered` message has not yet been sent back.
-     * Send it using the {@link joinComplete} method once registration is complete.
+     * Run the device join protocol until we received essential data.
      *
      * @throws {@link DeviceJoinError} if something goes wrong
      */
-    public async run(): Promise<DeviceJoinResult> {
+    public async join(): Promise<DeviceJoinResult> {
         this._log.info('Starting device join protocol, waiting for ULP messages');
         for (;;) {
             // Read next message from stream
@@ -120,10 +145,59 @@ export class DeviceJoinProtocol {
     }
 
     /**
+     * Initialize database with data from the `EssentialData` message (i.e. user profile, contacts,
+     * settings, etc).
+     */
+    public async restoreEssentialData(repositories: Repositories): Promise<void> {
+        const essentialData = this._essentialData.unwrap();
+
+        // Load profile picture bytes from temporary file
+        let profilePicture: ReadonlyUint8Array | undefined;
+        const profilePictureBlobId = essentialData.userProfile.profilePicture?.updated.blob.id;
+        if (profilePictureBlobId !== undefined) {
+            const fileHandle = this._blobIdToFileId.get(blobIdToString(profilePictureBlobId));
+            if (fileHandle === undefined) {
+                throw new DeviceJoinError(
+                    'protocol',
+                    'No blob data found for user profile picture',
+                );
+            }
+            try {
+                profilePicture = await this._services.file.load(fileHandle);
+            } catch (error) {
+                let msg = 'Could not load profile picture from file service';
+                if (error instanceof FileStorageError) {
+                    msg += `: ${error.type}`;
+                }
+                throw new DeviceJoinError('internal', msg, {from: error});
+            }
+            await this._services.file.delete(fileHandle.fileId);
+        }
+
+        // Profile settings: Nickname and profile picture
+        const profile: ProfileSettingsUpdate = {
+            nickname: isNickname(essentialData.userProfile.nickname)
+                ? essentialData.userProfile.nickname
+                : undefined,
+            profilePicture,
+            profilePictureShareWith: essentialData.userProfile.profilePictureShareWith,
+        };
+        repositories.user.profileSettings.get().controller.update(profile);
+
+        // TODO(DESK-1038): Contacts
+        //const contactImporter = new SafeContactImporter(services);
+        //await contactImporter.importFrom(backupData);
+
+        // TODO(DESK-1038): Groups
+        //const groupImporter = new SafeGroupImporter(services);
+        //groupImporter.importFrom(backupData);
+    }
+
+    /**
      * Send the `Registered` message through the Rendezvous connection and then close the
      * connection.
      */
-    public async joinComplete(): Promise<void> {
+    public async complete(): Promise<void> {
         // Send `Registered` message
         const encoder = protobuf.utils.encoder(protobuf.join.NdToEd, {
             content: 'registered',
@@ -159,7 +233,7 @@ export class DeviceJoinProtocol {
         }
 
         const fileHandle = await this._services.file.store(blobData.data);
-        this._blobIdToFileId.set(blobData.id, fileHandle);
+        this._blobIdToFileId.set(blobIdToString(blobData.id), fileHandle);
     }
 
     private _handleEssentialData(
@@ -185,6 +259,9 @@ export class DeviceJoinProtocol {
             d2mDeviceId: ensureD2mDeviceId(randomU64(this._services.crypto)),
             cspDeviceId: ensureCspDeviceId(randomU64(this._services.crypto)),
         };
+
+        // Cache essential data
+        this._essentialData.set(essentialData);
 
         return {identity, rawCk, serverGroup, deviceIds, dgk};
     }

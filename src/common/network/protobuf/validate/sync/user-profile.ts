@@ -1,11 +1,13 @@
 import * as v from '@badrap/valita';
 
+import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import * as DeltaImage from '~/common/network/protobuf/validate/common/delta-image';
 import * as Identities from '~/common/network/protobuf/validate/common/identities';
 import * as Unit from '~/common/network/protobuf/validate/common/unit';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
+import {unreachable} from '~/common/utils/assert';
 import {nullOptional} from '~/common/utils/valita-helpers';
 
 const PROFILE_PICTURE_SHARE_WITH_BASE_SCHEMA = {
@@ -78,6 +80,25 @@ export const IDENTITY_LINKS_SCHEMA = v
     })
     .rest(v.unknown());
 
+/**
+ * Convert a value as validated by {@link PROFILE_PICTURE_SHARE_WITH_SCHEMA} into a
+ * {@link ProfilePictureShareWith} type.
+ */
+export function profilePictureShareWithFromSchema(
+    shareWith: v.Infer<typeof PROFILE_PICTURE_SHARE_WITH_SCHEMA>,
+): ProfilePictureShareWith {
+    switch (shareWith.policy) {
+        case 'nobody':
+            return {group: 'nobody'};
+        case 'everyone':
+            return {group: 'everyone'};
+        case 'allowList':
+            return {group: 'allowList', allowList: shareWith.allowList.identities};
+        default:
+            return unreachable(shareWith);
+    }
+}
+
 /** Validates {@link sync.UserProfile} in the context of a profile update */
 export const SCHEMA = validator(
     sync.UserProfile,
@@ -85,7 +106,9 @@ export const SCHEMA = validator(
         .object({
             nickname: nullOptional(v.string()),
             profilePicture: nullOptional(DeltaImage.SCHEMA),
-            profilePictureShareWith: nullOptional(PROFILE_PICTURE_SHARE_WITH_SCHEMA),
+            profilePictureShareWith: nullOptional(
+                PROFILE_PICTURE_SHARE_WITH_SCHEMA.map(profilePictureShareWithFromSchema),
+            ),
             identityLinks: nullOptional(IDENTITY_LINKS_SCHEMA),
         })
         .rest(v.unknown()),

@@ -13,6 +13,7 @@ import {type ServicesForTasks} from '~/common/network/protocol/task';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
+import {bytesToHex} from '~/common/utils/byte';
 import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
 
 /**
@@ -42,6 +43,18 @@ export function ensureBlobId(id: Uint8Array): BlobId {
         );
     }
     return id;
+}
+
+/**
+ * A blob ID (16 bytes) as hex string.
+ */
+export type BlobIdString = WeakOpaque<string, {readonly BlobIdString: unique symbol}>;
+
+/**
+ * Convert a bytes-based {@link BlobId} to a string-based {@link BlobIdString}3
+ */
+export function blobIdToString(blobId: BlobId): BlobIdString {
+    return bytesToHex(blobId) as BlobIdString;
 }
 
 /**

@@ -7,6 +7,7 @@ import * as Contact from '~/common/network/protobuf/validate/sync/contact';
 import * as Group from '~/common/network/protobuf/validate/sync/group';
 import * as Settings from '~/common/network/protobuf/validate/sync/settings';
 import * as UserProfile from '~/common/network/protobuf/validate/sync/user-profile';
+import {profilePictureShareWithFromSchema} from '~/common/network/protobuf/validate/sync/user-profile';
 import {ensureIdentityString, ensureServerGroup} from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
@@ -81,7 +82,9 @@ export const SCHEMA_USER_PROFILE = validator(
             profilePicture: nullOptional(
                 validator(common.DeltaImage, DeltaImage.SCHEMA_UPDATED_BLOB_KEY_OPTIONAL),
             ),
-            profilePictureShareWith: UserProfile.PROFILE_PICTURE_SHARE_WITH_SCHEMA,
+            profilePictureShareWith: UserProfile.PROFILE_PICTURE_SHARE_WITH_SCHEMA.map(
+                profilePictureShareWithFromSchema,
+            ),
             identityLinks: UserProfile.IDENTITY_LINKS_SCHEMA,
         })
         .rest(v.unknown()),

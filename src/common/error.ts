@@ -275,8 +275,9 @@ export class SafeError extends BaseError {
  * - encoding: Bytes could not be decompressed or decoded.
  * - validation: The backup JSON does not pass validation.
  * - protocol: Aborted due to device join protocol violation.
+ * - internal: An internal implementation error occurred.
  */
-export type DeviceJoinErrorType = 'encoding' | 'validation' | 'protocol';
+export type DeviceJoinErrorType = 'encoding' | 'validation' | 'protocol' | 'internal';
 
 const DEVICE_JOIN_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     DeviceJoinError,

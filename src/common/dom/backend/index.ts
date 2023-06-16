@@ -23,9 +23,7 @@ import {
 } from '~/common/dom/network/protocol/rendezvous';
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
 import {type WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
-import {type SafeBackupData, type SafeCredentials} from '~/common/dom/safe';
-import {SafeContactImporter} from '~/common/dom/safe/safe-contact-importer';
-import {SafeGroupImporter} from '~/common/dom/safe/safe-group-importer';
+import {type SafeCredentials} from '~/common/dom/safe';
 import {type BrowserInfo, getBrowserInfo} from '~/common/dom/utils/browser';
 import {
     CloseCode,
@@ -34,7 +32,6 @@ import {
     D2mAuthStateUtils,
     D2mLeaderState,
     D2mLeaderStateUtils,
-    GroupUserState,
     TransferTag,
 } from '~/common/enum';
 import {BaseError, type BaseErrorOptions, extractErrorTraceback} from '~/common/error';
@@ -46,7 +43,7 @@ import {
     type ServicesForKeyStorageFactory,
 } from '~/common/key-storage';
 import {type Logger, type LoggerFactory} from '~/common/logging';
-import {type ProfileSettingsView, type Repositories} from '~/common/model';
+import {type Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
 import {type CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
@@ -65,11 +62,8 @@ import {
     CspAuthState,
     D2mAuthState,
 } from '~/common/network/protocol/state';
-import {OutgoingContactRequestProfilePictureTask} from '~/common/network/protocol/task/csp/outgoing-contact-request-profile-picture';
-import {OutgoingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/outgoing-group-sync-request';
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/manager';
-import {ensureNickname, type IdentityString, isNickname} from '~/common/network/types';
 import {
     type ClientKey,
     randomRendezvousAuthenticationKey,
@@ -79,7 +73,7 @@ import {
 } from '~/common/network/types/keys';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
-import {type Mutable, type ReadonlyUint8Array} from '~/common/types';
+import {type ReadonlyUint8Array} from '~/common/types';
 import {
     assert,
     assertError,
@@ -217,12 +211,14 @@ export interface SafeCredentialsAndDeviceIds {
  * - connection-error: Failed to connect to the rendezvous server (or the connection aborted).
  * - rendezvous-error: The rendezvous protocol did not succeed.
  * - join-error: The device join protocol did not succeed.
+ * - restore-error: Restoring essential data did not succeed.
  * - generic-error: Some other error during linking.
  */
 export type LinkingStateErrorType =
     | 'connection-error'
     | 'rendezvous-error'
     | 'join-error'
+    | 'restore-error'
     | 'generic-error';
 
 /**
@@ -660,7 +656,7 @@ export class Backend implements ProxyMarked {
         );
         let joinResult;
         try {
-            joinResult = await joinProtocol.run();
+            joinResult = await joinProtocol.join();
         } catch (error) {
             return await throwError(
                 `Device join protocol failed: ${error}`,
@@ -751,29 +747,22 @@ export class Backend implements ProxyMarked {
         const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
         const backend = new Backend(backendServices);
 
-        /* TODO(DESK-1038)
-        if (backupData !== undefined) {
-            try {
-                await bootstrapFromBackup(backend._services, identityData.identity, backupData);
-            } catch (error) {
-                assertError(error, SafeError);
-                log.error('Safe Backup could not be imported with a fatal error', error);
+        // TODO(DESK-1038): Disallow connection until data is restored
 
-                throw new BackendCreationError(
-                    'restore-failed',
-                    `Safe data restore failed: ${error.message}`,
-                    {from: error},
-                );
-            }
-
-            requestContactProfilePictures(backend._services);
-            requestGroupSync(backend._services);
+        // Initialize database with essential data
+        try {
+            await joinProtocol.restoreEssentialData(backend.model);
+        } catch (error) {
+            return await throwError(
+                `Failed to restore essential data: ${error}`,
+                'restore-error',
+                ensureError(error),
+            );
         }
-        */
 
         // Send "Registered" message and close the connection.
         // TODO(DESK-1038): Do this later, once registration is actually complete!
-        await joinProtocol.joinComplete();
+        await joinProtocol.complete();
         await linkingState.updateState({state: 'registered'});
 
         // Expose the backend on a new channel
@@ -1088,77 +1077,6 @@ class ConnectionManager {
         this._connection = undefined;
         return state;
     }
-}
-
-/**
- * Bootstrap the user's profile from backup data.
- */
-async function bootstrapFromBackup(
-    services: ServicesForBackend,
-    identity: IdentityString,
-    backupData: SafeBackupData,
-): Promise<void> {
-    // Profile settings: Nickname and profile picture
-    const profile: Mutable<ProfileSettingsView> = {
-        nickname: ensureNickname(identity as string),
-        profilePictureShareWith: {group: 'everyone'},
-    };
-    if (isNickname(backupData.user.nickname)) {
-        profile.nickname = backupData.user.nickname;
-    }
-    profile.profilePicture = backupData.user.profilePic;
-    if (backupData.user.profilePicRelease !== undefined) {
-        profile.profilePictureShareWith = backupData.user.profilePicRelease;
-    }
-    services.model.user.profileSettings.get().controller.update(profile);
-
-    // Contacts
-    const contactImporter = new SafeContactImporter(services);
-    await contactImporter.importFrom(backupData);
-
-    // Groups
-    const groupImporter = new SafeGroupImporter(services);
-    groupImporter.importFrom(backupData);
-}
-
-function requestContactProfilePictures(services: ServicesForBackend): void {
-    const {model, taskManager} = services;
-
-    // Gather all non-gateway contacts
-    const contacts = [];
-    for (const contact of model.contacts.getAll().get()) {
-        const identity = contact.get().view.identity;
-        if (identity === 'ECHOECHO' || identity.startsWith('*')) {
-            continue;
-        }
-        contacts.push(contact);
-    }
-
-    // Launch task
-    const task = new OutgoingContactRequestProfilePictureTask(services, contacts);
-    void taskManager.schedule(task);
-}
-
-function requestGroupSync(services: ServicesForBackend): void {
-    const {model, taskManager} = services;
-
-    // Gather all groups where we're an active member and not the creator
-    const groups = [];
-    const ownIdentity = model.user.identity;
-    for (const group of model.groups.getAll().get()) {
-        const view = group.get().view;
-        if (view.creatorIdentity === ownIdentity) {
-            continue;
-        }
-        if (view.userState !== GroupUserState.MEMBER) {
-            continue;
-        }
-        groups.push(group);
-    }
-
-    // Launch task
-    const task = new OutgoingGroupSyncRequestTask(services, groups);
-    void taskManager.schedule(task);
 }
 
 interface NavigatorUAData {

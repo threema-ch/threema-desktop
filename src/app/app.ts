@@ -29,7 +29,7 @@ import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
-import {ResolvablePromise} from '~/common/utils/resolvable-promise';
+import {type ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type ISubscribableStore, type ReadableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
