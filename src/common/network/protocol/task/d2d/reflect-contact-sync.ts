@@ -110,10 +110,39 @@ function getD2dContactSyncUpdateData(
     identity: IdentityString,
     update: ContactUpdate,
 ): protobuf.d2d.ContactSync {
-    // TODO(DESK-612): Prepare read receipt policy override
-    const readReceiptPolicyOverride = DEFAULT_READ_RECEIPT_POLICY_OVERRIDE;
-    // TODO(DESK-780): Prepare typing indicator policy override
-    const typingIndicatorPolicyOverride = DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE;
+    // Prepare read receipt policy override
+    let readReceiptPolicyOverride;
+    if (hasProperty(update, 'readReceiptPolicyOverride')) {
+        if (update.readReceiptPolicyOverride === undefined) {
+            // Reset to undefined -> Default
+            readReceiptPolicyOverride = DEFAULT_READ_RECEIPT_POLICY_OVERRIDE;
+        } else {
+            readReceiptPolicyOverride = protobuf.utils.creator(
+                protobuf.sync.Contact.ReadReceiptPolicyOverride,
+                {
+                    default: undefined,
+                    policy: update.readReceiptPolicyOverride,
+                },
+            );
+        }
+    }
+
+    // Prepare typing indicator policy override
+    let typingIndicatorPolicyOverride;
+    if (hasProperty(update, 'typingIndicatorPolicyOverride')) {
+        if (update.typingIndicatorPolicyOverride === undefined) {
+            // Reset to undefined -> Default
+            typingIndicatorPolicyOverride = DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE;
+        } else {
+            typingIndicatorPolicyOverride = protobuf.utils.creator(
+                protobuf.sync.Contact.TypingIndicatorPolicyOverride,
+                {
+                    default: undefined,
+                    policy: update.typingIndicatorPolicyOverride,
+                },
+            );
+        }
+    }
 
     // Prepare notification trigger policy override
     let notificationTriggerPolicyOverride;
