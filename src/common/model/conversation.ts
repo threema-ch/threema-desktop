@@ -396,7 +396,11 @@ export class ConversationModelController implements ConversationController {
 
                 if (readMessageIds.length > 0) {
                     this._markMessagesAsRead(readMessageIds, readAt);
-                    this._sendAndReflectReadReceipts(readMessageIds, readAt);
+                    if (this._shouldSendReadReceipt()) {
+                        this._sendReadReceiptsToContact(readMessageIds, readAt);
+                    } else {
+                        this._reflectMarkMessagesAsRead(readMessageIds, readAt);
+                    }
                 }
 
                 return {unreadMessageCount: 0};
@@ -413,33 +417,33 @@ export class ConversationModelController implements ConversationController {
     }
 
     /**
-     * If delivery receipts are enabled and the conversation is a contact conversation, send and
-     * reflect a delivery receipt. Otherwise, reflect an {@link IncomingMessageUpdate}.
+     * Delivery receipts have to be sent and reflected only for contact conversations following the
+     * read receipt policy override for the contact if defined, or following the global read receipt
+     * policy otherwise. Note that if no delivery receipt is sent, an {@link IncomingMessageUpdate}
+     * has to be sent instead.
      */
-    private _sendAndReflectReadReceipts(readMessageIds: MessageId[], readAt: Date): void {
-        const {readReceiptPolicy} = this._services.model.user.privacySettings.get().view;
+    private _shouldSendReadReceipt(): boolean {
+        if (this._receiverLookup.type !== ReceiverType.CONTACT) {
+            return false;
+        }
 
+        const contactReceiver = this.receiver();
+        assert(contactReceiver.type === ReceiverType.CONTACT);
+
+        const {readReceiptPolicyOverride} = contactReceiver.get().view;
+        if (readReceiptPolicyOverride !== undefined) {
+            return readReceiptPolicyOverride === ReadReceiptPolicy.SEND_READ_RECEIPT;
+        }
+
+        const {readReceiptPolicy} = this._services.model.user.privacySettings.get().view;
         if (readReceiptPolicy === ReadReceiptPolicy.DONT_SEND_READ_RECEIPT) {
             this._log.info(
                 'Skip sending read receipts as global ReadReceiptPolicy is set to DONT_SEND_READ_RECEIPT',
             );
-            this._reflectMarkMessagesAsRead(readMessageIds, readAt);
-            return;
+            return false;
         }
 
-        switch (this._receiverLookup.type) {
-            case ReceiverType.CONTACT:
-                this._sendReadReceiptsToContact(readMessageIds, readAt);
-                break;
-
-            case ReceiverType.GROUP:
-            case ReceiverType.DISTRIBUTION_LIST:
-                this._reflectMarkMessagesAsRead(readMessageIds, readAt);
-                break;
-
-            default:
-                unreachable(this._receiverLookup);
-        }
+        return true;
     }
 
     /**
