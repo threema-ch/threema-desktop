@@ -53,6 +53,8 @@ const DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE = protobuf.utils.creator(
     },
 );
 
+const DEFAULT_UNSET_NICKNAME = '';
+
 export type ProfilePictureUpdate =
     | {
           readonly source: TriggerSource.LOCAL;
@@ -106,7 +108,7 @@ function getD2dContactSyncCreate(init: ContactInit): protobuf.d2d.ContactSync {
 
 function getD2dContactSyncUpdateData(
     identity: IdentityString,
-    contact: ContactUpdate,
+    update: ContactUpdate,
 ): protobuf.d2d.ContactSync {
     // TODO(DESK-612): Prepare read receipt policy override
     const readReceiptPolicyOverride = DEFAULT_READ_RECEIPT_POLICY_OVERRIDE;
@@ -115,16 +117,16 @@ function getD2dContactSyncUpdateData(
 
     // Prepare notification trigger policy override
     let notificationTriggerPolicyOverride;
-    if (hasProperty(contact, 'notificationTriggerPolicyOverride')) {
-        if (contact.notificationTriggerPolicyOverride === undefined) {
+    if (hasProperty(update, 'notificationTriggerPolicyOverride')) {
+        if (update.notificationTriggerPolicyOverride === undefined) {
             // Reset to undefined -> Default
             notificationTriggerPolicyOverride = DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE;
         } else {
             // Specific policy
             let expiresAt;
-            if (contact.notificationTriggerPolicyOverride.expiresAt !== undefined) {
+            if (update.notificationTriggerPolicyOverride.expiresAt !== undefined) {
                 expiresAt = intoUnsignedLong(
-                    dateToUnixTimestampMs(contact.notificationTriggerPolicyOverride.expiresAt),
+                    dateToUnixTimestampMs(update.notificationTriggerPolicyOverride.expiresAt),
                 );
             }
             notificationTriggerPolicyOverride = protobuf.utils.creator(
@@ -134,7 +136,7 @@ function getD2dContactSyncUpdateData(
                     policy: protobuf.utils.creator(
                         protobuf.sync.Contact.NotificationTriggerPolicyOverride.Policy,
                         {
-                            policy: contact.notificationTriggerPolicyOverride.policy,
+                            policy: update.notificationTriggerPolicyOverride.policy,
                             expiresAt,
                         },
                     ),
@@ -145,8 +147,8 @@ function getD2dContactSyncUpdateData(
 
     // Prepare notification sound policy override
     let notificationSoundPolicyOverride;
-    if (hasProperty(contact, 'notificationSoundPolicyOverride')) {
-        if (contact.notificationSoundPolicyOverride === undefined) {
+    if (hasProperty(update, 'notificationSoundPolicyOverride')) {
+        if (update.notificationSoundPolicyOverride === undefined) {
             // Reset to undefined -> Default
             notificationSoundPolicyOverride = DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE;
         } else {
@@ -154,9 +156,19 @@ function getD2dContactSyncUpdateData(
                 protobuf.sync.Contact.NotificationSoundPolicyOverride,
                 {
                     default: undefined,
-                    policy: contact.notificationSoundPolicyOverride,
+                    policy: update.notificationSoundPolicyOverride,
                 },
             );
+        }
+    }
+
+    // Prepare nickname
+    let nickname: string | undefined = undefined;
+    if (hasProperty(update, 'nickname')) {
+        if (update.nickname === undefined) {
+            nickname = DEFAULT_UNSET_NICKNAME;
+        } else {
+            nickname = update.nickname;
         }
     }
 
@@ -167,22 +179,22 @@ function getD2dContactSyncUpdateData(
                 identity,
                 publicKey: undefined,
                 createdAt:
-                    contact.createdAt !== undefined
-                        ? intoUnsignedLong(dateToUnixTimestampMs(contact.createdAt))
+                    update.createdAt !== undefined
+                        ? intoUnsignedLong(dateToUnixTimestampMs(update.createdAt))
                         : undefined,
-                firstName: contact.firstName,
-                lastName: contact.lastName,
-                nickname: contact.nickname,
-                verificationLevel: contact.verificationLevel,
-                workVerificationLevel: contact.workVerificationLevel,
-                identityType: contact.identityType,
-                acquaintanceLevel: contact.acquaintanceLevel,
-                activityState: contact.activityState,
+                firstName: update.firstName,
+                lastName: update.lastName,
+                nickname,
+                verificationLevel: update.verificationLevel,
+                workVerificationLevel: update.workVerificationLevel,
+                identityType: update.identityType,
+                acquaintanceLevel: update.acquaintanceLevel,
+                activityState: update.activityState,
                 featureMask:
-                    contact.featureMask !== undefined
-                        ? intoUnsignedLong(contact.featureMask)
+                    update.featureMask !== undefined
+                        ? intoUnsignedLong(update.featureMask)
                         : undefined,
-                syncState: contact.syncState,
+                syncState: update.syncState,
                 readReceiptPolicyOverride,
                 typingIndicatorPolicyOverride,
                 notificationTriggerPolicyOverride,
