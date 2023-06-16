@@ -211,6 +211,7 @@ module.exports = {
         ecmaFeatures: {
             impliedStrict: true,
         },
+        extraFileExtensions: ['.svelte'],
     },
 
     settings: {
@@ -665,7 +666,6 @@ module.exports = {
             parserOptions: {
                 parser: '@typescript-eslint/parser',
                 project: './src/app/tsconfig.json',
-                extraFileExtensions: ['.svelte'],
             },
             rules: {
                 'no-labels': 'off',
