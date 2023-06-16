@@ -97,7 +97,6 @@ lint:
           - tsc:parallel
           - eslint
           - prettier
-          - svelte
 
 audit:
   stage: test

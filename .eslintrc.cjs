@@ -177,6 +177,9 @@ function getTypeScriptOnlyRules(extension) {
             },
         ],
 
+        // Svelte rules
+        'svelte/valid-compile': 'warn', // Until https://github.com/sveltejs/svelte/issues/8558 is added
+
         // Our custom extensions
         'threema/ban-stateful-regex-flags': 'error',
         'threema/ban-typed-array-length': 'error',
@@ -191,11 +194,13 @@ module.exports = {
     // https://eslint.org/docs/2.0.0/user-guide/configuring#configuration-cascading-and-hierarchy
     root: true,
 
-    plugins: ['svelte3', '@typescript-eslint', 'jsdoc', 'simple-import-sort', 'threema'],
+    plugins: ['@typescript-eslint', 'jsdoc', 'simple-import-sort', 'threema'],
 
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
+        'plugin:svelte/recommended',
+        'plugin:svelte/prettier',
         'plugin:jsdoc/recommended',
         'prettier',
     ],
@@ -209,10 +214,6 @@ module.exports = {
     },
 
     settings: {
-        'svelte3/typescript': true,
-        // TODO(DESK-305): Wait for preprocessor feature
-        //       (https://github.com/sveltejs/eslint-plugin-svelte3/pull/62)
-        'svelte3/ignore-styles': (attributes) => attributes.lang === 'scss',
         'jsdoc': {},
     },
 
@@ -660,9 +661,10 @@ module.exports = {
         // General Svelte rules
         {
             files: '*.svelte',
-            processor: 'svelte3/svelte3',
+            parser: 'svelte-eslint-parser',
             parserOptions: {
-                project: './src/tsconfig.base.json',
+                parser: '@typescript-eslint/parser',
+                project: './src/app/tsconfig.json',
                 extraFileExtensions: ['.svelte'],
             },
             rules: {
