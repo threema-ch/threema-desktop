@@ -32,7 +32,9 @@ import {
     MessageReactionUtils,
     MessageTypeUtils,
     NotificationSoundPolicyUtils,
+    ReadReceiptPolicyUtils,
     SyncStateUtils,
+    TypingIndicatorPolicyUtils,
     VerificationLevelUtils,
     WorkVerificationLevelUtils,
 } from '~/common/enum';
@@ -85,7 +87,9 @@ export const CUSTOM_TYPES = {
     MESSAGE_REACTION: 'MessageReaction',
     MESSAGE_TYPE: 'MessageType',
     NOTIFICATION_SOUND_POLICY: 'NotificationSoundPolicy',
+    READ_RECEIPT_POLICY: 'ReadReceiptPolicy',
     SYNC_STATE: 'SyncState',
+    TYPING_INDICATOR_POLICY: 'TypingIndicatorPolicy',
     VERIFICATION_LEVEL: 'VerificationLevel',
     WORK_VERIFICATION_LEVEL: 'WorkVerificationLevel',
 
@@ -270,8 +274,12 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return u64ToU53(value, GroupUserStateUtils.contains);
             case CUSTOM_TYPES.NOTIFICATION_SOUND_POLICY:
                 return u64ToU53(value, NotificationSoundPolicyUtils.contains);
+            case CUSTOM_TYPES.READ_RECEIPT_POLICY:
+                return u64ToU53(value, ReadReceiptPolicyUtils.contains);
             case CUSTOM_TYPES.SYNC_STATE:
                 return u64ToU53(value, SyncStateUtils.contains);
+            case CUSTOM_TYPES.TYPING_INDICATOR_POLICY:
+                return u64ToU53(value, TypingIndicatorPolicyUtils.contains);
             case CUSTOM_TYPES.VERIFICATION_LEVEL:
                 return u64ToU53(value, VerificationLevelUtils.contains);
             case CUSTOM_TYPES.WORK_VERIFICATION_LEVEL:
@@ -385,7 +393,9 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.MESSAGE_TYPE:
             case CUSTOM_TYPES.MESSAGE_REACTION:
             case CUSTOM_TYPES.NOTIFICATION_SOUND_POLICY:
+            case CUSTOM_TYPES.READ_RECEIPT_POLICY:
             case CUSTOM_TYPES.SYNC_STATE:
+            case CUSTOM_TYPES.TYPING_INDICATOR_POLICY:
             case CUSTOM_TYPES.VERIFICATION_LEVEL:
             case CUSTOM_TYPES.WORK_VERIFICATION_LEVEL:
                 // No transformation

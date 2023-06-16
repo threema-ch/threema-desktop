@@ -329,6 +329,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     activityState: tContact.activityState,
                     featureMask: tContact.featureMask,
                     syncState: tContact.syncState,
+                    typingIndicatorPolicyOverride: tContact.typingIndicatorPolicyOverride,
+                    readReceiptPolicyOverride: tContact.readReceiptPolicyOverride,
                     notificationTriggerPolicyOverrideValue:
                         tContact.notificationTriggerPolicyOverride,
                     notificationTriggerPolicyOverrideExpiresAt:

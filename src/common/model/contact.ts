@@ -62,6 +62,8 @@ const ensureExactContactInit = createExactPropertyValidator<ContactInit>('Contac
     activityState: REQUIRED,
     featureMask: REQUIRED,
     syncState: REQUIRED,
+    typingIndicatorPolicyOverride: OPTIONAL,
+    readReceiptPolicyOverride: OPTIONAL,
     notificationTriggerPolicyOverride: OPTIONAL,
     notificationSoundPolicyOverride: OPTIONAL,
     lastUpdate: OPTIONAL,
@@ -81,6 +83,8 @@ const ensureExactContactUpdate = createExactPropertyValidator<ContactUpdate>('Co
     activityState: OPTIONAL,
     featureMask: OPTIONAL,
     syncState: OPTIONAL,
+    typingIndicatorPolicyOverride: OPTIONAL,
+    readReceiptPolicyOverride: OPTIONAL,
     notificationTriggerPolicyOverride: OPTIONAL,
     notificationSoundPolicyOverride: OPTIONAL,
 });

@@ -521,8 +521,8 @@ export interface ContactView {
     readonly activityState: ActivityState;
     readonly featureMask: FeatureMask;
     readonly syncState: SyncState;
-    // TODO(DESK-687): Read receipt policy override
-    // TODO(DESK-687): Typing indicator policy override
+    readonly typingIndicatorPolicyOverride?: TypingIndicatorPolicy;
+    readonly readReceiptPolicyOverride?: ReadReceiptPolicy;
     readonly notificationTriggerPolicyOverride?: {
         readonly policy: ContactNotificationTriggerPolicy;
         readonly expiresAt?: Date;

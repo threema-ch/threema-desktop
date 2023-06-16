@@ -189,7 +189,7 @@ function customPolicyOverrideOrDefault<T>(schema: v.Type<T>): v.Type<ValitaDefau
  * Set all properties from an object whose value is VALITA_DEFAULT to undefined. In order to
  * properly return the expected types, probably `as const` has to be used in the `object` parameter.
  */
-export function setDefaultsToUndefined<
+export function setValitaDefaultsToUndefined<
     TObjectIn extends object,
     TObjectOut extends {
         [K in keyof TObjectIn]: Extract<TObjectIn[K], ValitaDefault> extends never

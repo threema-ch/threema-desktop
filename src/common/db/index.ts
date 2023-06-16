@@ -15,8 +15,10 @@ import {
     type MessageReaction,
     type MessageType,
     type NotificationSoundPolicy,
+    type ReadReceiptPolicy,
     type ReceiverType,
     type SyncState,
+    type TypingIndicatorPolicy,
     type VerificationLevel,
     type WorkVerificationLevel,
 } from '~/common/enum';
@@ -147,8 +149,8 @@ export type DbContact = {
     activityState: ActivityState;
     featureMask: FeatureMask;
     syncState: SyncState;
-    // TODO(DESK-687): Read receipt policy override
-    // TODO(DESK-687): Typing indicator policy override
+    typingIndicatorPolicyOverride?: TypingIndicatorPolicy;
+    readReceiptPolicyOverride?: ReadReceiptPolicy;
     notificationTriggerPolicyOverride?: {
         readonly policy: ContactNotificationTriggerPolicy;
         readonly expiresAt?: Date;

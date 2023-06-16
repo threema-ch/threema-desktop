@@ -14,11 +14,11 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {isIdentityString, isNickname} from '~/common/network/types';
+import {isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {purgeUndefinedProperties} from '~/common/utils/object';
-import {setDefaultsToUndefined, VALITA_DEFAULT} from '~/common/utils/valita-helpers';
+import {setValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 type ProfilePictures = Pick<
     protobuf.validate.sync.Contact.CreateType,
@@ -188,32 +188,30 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         create: protobuf.validate.sync.Contact.CreateType,
     ): Promise<void> {
         // Create contact
-        const contact = this._services.model.contacts.add.fromSync({
-            identity: create.identity,
-            publicKey: create.publicKey,
-            createdAt: create.createdAt,
-            firstName: create.firstName ?? '',
-            lastName: create.lastName ?? '',
-            nickname: isNickname(create.nickname) ? create.nickname : undefined,
-            colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: create.identity}),
-            verificationLevel: create.verificationLevel,
-            workVerificationLevel: create.workVerificationLevel,
-            identityType: create.identityType,
-            acquaintanceLevel: create.acquaintanceLevel,
-            activityState: create.activityState,
-            featureMask: create.featureMask,
-            syncState: create.syncState,
-            notificationTriggerPolicyOverride:
-                create.notificationTriggerPolicyOverride === VALITA_DEFAULT
-                    ? undefined
-                    : create.notificationTriggerPolicyOverride,
-            notificationSoundPolicyOverride:
-                create.notificationSoundPolicyOverride === VALITA_DEFAULT
-                    ? undefined
-                    : create.notificationSoundPolicyOverride,
-            category: create.conversationCategory,
-            visibility: create.conversationVisibility,
-        });
+        const contact = this._services.model.contacts.add.fromSync(
+            setValitaDefaultsToUndefined({
+                identity: create.identity,
+                publicKey: create.publicKey,
+                createdAt: create.createdAt,
+                firstName: create.firstName ?? '',
+                lastName: create.lastName ?? '',
+                nickname: create.nickname,
+                colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity: create.identity}),
+                verificationLevel: create.verificationLevel,
+                workVerificationLevel: create.workVerificationLevel,
+                identityType: create.identityType,
+                acquaintanceLevel: create.acquaintanceLevel,
+                activityState: create.activityState,
+                featureMask: create.featureMask,
+                syncState: create.syncState,
+                notificationTriggerPolicyOverride: create.notificationTriggerPolicyOverride,
+                notificationSoundPolicyOverride: create.notificationSoundPolicyOverride,
+                typingIndicatorPolicyOverride: create.typingIndicatorPolicyOverride,
+                readReceiptPolicyOverride: create.readReceiptPolicyOverride,
+                category: create.conversationCategory,
+                visibility: create.conversationVisibility,
+            } as const),
+        );
 
         await this._processProfilePictures(create, contact.get().controller.profilePicture);
     }
@@ -224,7 +222,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     ): Promise<void> {
         const controller = contact.get().controller;
 
-        const propertiesToUpdate = setDefaultsToUndefined(
+        const propertiesToUpdate = setValitaDefaultsToUndefined(
             purgeUndefinedProperties({
                 createdAt: update.createdAt,
                 firstName: update.firstName,
@@ -236,6 +234,8 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                 activityState: update.activityState,
                 featureMask: update.featureMask,
                 syncState: update.syncState,
+                typingIndicatorPolicyOverride: update.typingIndicatorPolicyOverride,
+                readReceiptPolicyOverride: update.readReceiptPolicyOverride,
                 notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride,
                 notificationSoundPolicyOverride: update.notificationSoundPolicyOverride,
                 nickname: update.nickname,

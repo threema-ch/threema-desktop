@@ -26,7 +26,9 @@ import {
     type MessageReaction,
     type MessageType,
     type NotificationSoundPolicy,
+    type ReadReceiptPolicy,
     type SyncState,
+    type TypingIndicatorPolicy,
     type VerificationLevel,
     type WorkVerificationLevel,
 } from '~/common/enum';
@@ -144,9 +146,27 @@ export const tContact = new (class TContact extends Table<DBConnection, 'TContac
     );
 
     /**
-     * Contact synchronisation state.
+     * Contact synchronization state.
      */
     public syncState = this.column<SyncState>('syncState', 'custom', CUSTOM_TYPES.SYNC_STATE);
+
+    /**
+     * Typing indicator policy override for the contact.
+     */
+    public typingIndicatorPolicyOverride = this.optionalColumn<TypingIndicatorPolicy>(
+        'typingIndicatorPolicyOverride',
+        'custom',
+        CUSTOM_TYPES.READ_RECEIPT_POLICY,
+    );
+
+    /**
+     * Read receipt policy override for the contact.
+     */
+    public readReceiptPolicyOverride = this.optionalColumn<ReadReceiptPolicy>(
+        'readReceiptPolicyOverride',
+        'custom',
+        CUSTOM_TYPES.TYPING_INDICATOR_POLICY,
+    );
 
     /**
      * Notification trigger policy override for the contact.

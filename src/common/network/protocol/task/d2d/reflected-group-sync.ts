@@ -11,7 +11,7 @@ import {
 } from '~/common/network/protocol/task';
 import {unreachable} from '~/common/utils/assert';
 import {purgeUndefinedProperties} from '~/common/utils/object';
-import {setDefaultsToUndefined} from '~/common/utils/valita-helpers';
+import {setValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 export class ReflectedGroupSyncTask implements PassiveTask<void> {
     public readonly type: PassiveTaskSymbol = PASSIVE_TASK;
@@ -97,7 +97,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
     ): void {
         const controller = group.get().controller;
 
-        const propertiesToUpdate = setDefaultsToUndefined(
+        const propertiesToUpdate = setValitaDefaultsToUndefined(
             purgeUndefinedProperties({
                 notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride,
                 notificationSoundPolicyOverride: update.notificationSoundPolicyOverride,
