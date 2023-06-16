@@ -5,7 +5,6 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {randomU64} from '~/common/crypto/random';
 import {type DeviceIds} from '~/common/device';
-import {LinkingState} from '~/common/dom/backend';
 import {type RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
 import {DeviceJoinError} from '~/common/error';
 import {type StoredFileHandle} from '~/common/file-storage';
@@ -23,7 +22,6 @@ import {
 import {type RawClientKey, type RawDeviceGroupKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {type RemoteProxy} from '~/common/utils/endpoint';
 
 type JoinState = 'wait-for-begin' | 'sync-blob-data' | 'sync-essential-data';
 

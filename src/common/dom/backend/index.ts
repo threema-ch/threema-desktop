@@ -37,12 +37,7 @@ import {
     GroupUserState,
     TransferTag,
 } from '~/common/enum';
-import {
-    BaseError,
-    type BaseErrorOptions,
-    extractErrorMessage,
-    extractErrorTraceback,
-} from '~/common/error';
+import {BaseError, type BaseErrorOptions, extractErrorTraceback} from '~/common/error';
 import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
     type KeyStorage,
@@ -128,7 +123,6 @@ export type BackendCreationErrorType =
     | 'no-identity'
     | 'handled-linking-error'
     | 'key-storage-error'
-    | 'key-storage-error-missing-password'
     | 'key-storage-error-wrong-password';
 
 const BACKEND_CREATION_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
@@ -162,7 +156,21 @@ export class BackendCreationError extends BaseError {
 export interface BackendInit {
     readonly notificationEndpoint: EndpointFor<NotificationCreator>;
     readonly systemDialogEndpoint: EndpointFor<SystemDialogService>;
-    readonly keyStoragePassword?: string;
+}
+
+/**
+ * Interface exposed by the worker towards the backend controller. It is used to instantiate the
+ * backend in the context of the worker.
+ */
+export interface BackendCreator {
+    readonly fromKeyStorage: (
+        init: BackendInit,
+        userPassword: string,
+    ) => Promise<EndpointFor<BackendHandle>>;
+    readonly fromDeviceJoin: (
+        init: BackendInit,
+        deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
+    ) => Promise<EndpointFor<BackendHandle>>;
 }
 
 /**
@@ -409,24 +417,25 @@ export class Backend implements ProxyMarked {
     }
 
     /**
-     * Create an instance of the backend worker.
+     * Create an instance of the backend worker for an existing identity. The identity information
+     * is loaded from the key storage.
      *
      * @param init {BackendInit} Data required to be supplied to a backend worker for
-     *   initialisation.
+     *   initialization.
      * @param factories {FactoriesForBackend} The factories needed in the backend.
      * @param services The services needed in the backend.
-     * @param safeCredentialsAndDeviceIds If specified, this Safe backup will be restored before the
-     *   backend is initialized. Note that any pre-existing database will be deleted.
-     * @returns A remote BackendHandle that can be used by the main thread to access the backend
-     *   worker.
+     * @param keyStoragePassword The password used to unlock the key storage.
+     * @returns A remote BackendHandle that can be used by the backend controller to access the
+     *   backend worker.
      */
-    public static async create(
-        {notificationEndpoint, systemDialogEndpoint, keyStoragePassword}: BackendInit,
+    public static async createFromKeyStorage(
+        {notificationEndpoint, systemDialogEndpoint}: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
-        deviceLinkingSetup?: EndpointFor<DeviceLinkingSetup>,
+        keyStoragePassword: string,
     ): Promise<EndpointFor<BackendHandle>> {
-        const log = logging.logger('backend.create');
+        const log = logging.logger('backend.create.keystorage');
+        log.info('Creating backend from existing key storage');
 
         // Initialize services that are needed early
         const services = initBackendServicesWithoutIdentity(
@@ -436,229 +445,16 @@ export class Backend implements ProxyMarked {
             systemDialogEndpoint,
         );
 
-        // Fields required to instantiate the backend
-        let identityData: IdentityData | undefined;
-        let dgk: RawDeviceGroupKey | undefined;
-        let deviceIds: DeviceIds | undefined;
-
-        // If the required setup information is passed in, start the device linking flow
-        if (deviceLinkingSetup !== undefined) {
-            log.info('Starting device linking flow');
-
-            // Get access to linking setup information
-            const wrappedDeviceLinkingSetup = endpoint.wrap<DeviceLinkingSetup>(
-                deviceLinkingSetup,
-                logging.logger('com.device-linking'),
-            );
-            const {linkingState} = wrappedDeviceLinkingSetup;
-
-            // Helper function for error handling
-            // eslint-disable-next-line no-inner-declarations
-            async function throwError(
-                message: string,
-                type: LinkingStateErrorType,
-                error?: Error,
-            ): Promise<never> {
-                await linkingState.updateState({state: 'error', type, message});
-                if (error !== undefined) {
-                    message += `\n\n${extractErrorTraceback(error)}`;
-                }
-                log.error(message);
-                throw new BackendCreationError('handled-linking-error', message, {from: error});
-            }
-
-            // Generate rendezvous setup with all information needed to show the QR code
-            let setup: RendezvousProtocolSetup;
-            {
-                const rendezvousPath = bytesToHex(services.crypto.randomBytes(new Uint8Array(32)));
-                const url = config.RENDEZVOUS_SERVER_URL.replaceAll(
-                    '{prefix4}',
-                    rendezvousPath.slice(0, 1),
-                ).replaceAll('{prefix8}', rendezvousPath.slice(0, 2));
-                setup = {
-                    role: 'initiator',
-                    ak: randomRendezvousAuthenticationKey(services.crypto),
-                    relayedWebSocket: {
-                        pathId: 1,
-                        url: `${url}/${rendezvousPath}`,
-                    },
-                };
-            }
-
-            // Create RendezvousConnection and open WebSocket connection
-            let rendezvous;
-            try {
-                rendezvous = await RendezvousConnection.create({logging}, setup);
-            } catch (error) {
-                return await throwError(
-                    `Rendezvous connection failed: ${error}`,
-                    'connection-error',
-                    ensureError(error),
-                );
-            }
-            await linkingState.updateState({
-                state: 'waiting-for-handshake',
-                joinUri: rendezvous.joinUri,
-            });
-
-            // Do the rendezvous handshake and wait for nomination of a path
-            let connectResult;
-            try {
-                connectResult = await rendezvous.connect();
-            } catch (error) {
-                return await throwError(
-                    `Rendezvous handshake failed: ${error}`,
-                    'rendezvous-error',
-                    ensureError(error),
-                );
-            }
-            log.info('Rendezvous connection established');
-            await linkingState.updateState({
-                state: 'nominated',
-                rph: connectResult.rph,
-            });
-
-            // Now that we established the connection and showed the RPH, we can wait for ED to
-            // start sending essential data and then run the join protocol.
-            const userPasswordPromise = new ResolvablePromise<string>();
-            // eslint-disable-next-line func-style
-            const onBegin = async (): Promise<void> => {
-                // Update state and wait for password
-                await linkingState.updateState({state: 'waiting-for-password'});
-
-                // Once the password is entered, show "syncing" screen
-                wrappedDeviceLinkingSetup.userPassword
-                    .then(async (password) => {
-                        await linkingState.updateState({state: 'syncing'});
-                        userPasswordPromise.resolve(password);
-                    })
-                    .catch((error) =>
-                        log.error(`Waiting for userPassword promise failed: ${error}`),
-                    );
-            };
-            const joinProtocol = new DeviceJoinProtocol(
-                connectResult.connection,
-                onBegin,
-                logging.logger('backend-controller.join'),
-                {crypto: services.crypto, file: services.file},
-            );
-            let joinResult;
-            try {
-                joinResult = await joinProtocol.run();
-            } catch (error) {
-                return await throwError(
-                    `Device join protocol failed: ${error}`,
-                    'join-error',
-                    ensureError(error),
-                );
-            }
-
-            // Wrap the client key (but keep a copy for the key storage)
-            const rawCkForKeystore = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
-            const ck = SecureSharedBoxFactory.consume(
-                services.crypto,
-                joinResult.rawCk,
-            ) as ClientKey;
-
-            // Look up identity information and server group on directory server
-            let privateData;
-            try {
-                privateData = await services.directory.privateData(joinResult.identity, ck);
-            } catch (error) {
-                return await throwError(
-                    `Fetching information about identity failed: ${error}`,
-                    'generic-error',
-                    ensureError(error),
-                );
-            }
-            if (privateData.serverGroup !== joinResult.serverGroup) {
-                return await throwError(
-                    `Server group reported by server (${privateData.serverGroup}) does not match server group received from join protocol (${joinResult.serverGroup})`,
-                    'generic-error',
-                );
-            }
-
-            // Set identity data
-            identityData = {
-                identity: joinResult.identity,
-                ck,
-                serverGroup: joinResult.serverGroup,
-            };
-            deviceIds = joinResult.deviceIds;
-            dgk = joinResult.dgk;
-
-            // Generate new random database key
-            const databaseKey = wrapRawDatabaseKey(
-                services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
-            );
-
-            // Wait for user password
-            log.debug('Waiting for user password');
-            const userPassword = await userPasswordPromise;
-            if (userPassword.length === 0) {
-                return await throwError(`Received empty user password`, 'generic-error');
-            }
-            keyStoragePassword = userPassword;
-
-            // Write to key storage
-            const keyStorage = factories.keyStorage(
-                {config, crypto: services.crypto},
-                logging.logger('key-storage'),
-            );
-            try {
-                await keyStorage.write(keyStoragePassword, {
-                    schemaVersion: 2,
-                    identityData: {
-                        identity: identityData.identity,
-                        ck: rawCkForKeystore,
-                        serverGroup: identityData.serverGroup,
-                    },
-                    dgk,
-                    databaseKey,
-                    deviceIds: {...deviceIds},
-                });
-            } catch (error) {
-                throw new BackendCreationError(
-                    'key-storage-error',
-                    `Could not write to key storage: ${error}`,
-                    {from: error},
-                );
-            }
-
-            // Purge sensitive data
-            rawCkForKeystore.purge();
-            joinResult.rawCk.purge();
-
-            // Send "Registered" message and close the connection.
-            // TODO(DESK-1038): Do this later, once registration is actually complete!
-            await joinProtocol.joinComplete();
-            await linkingState.updateState({state: 'registered'});
-        }
-
         // Initialize key storage
         const keyStorage = factories.keyStorage(
             {config, crypto: services.crypto},
             logging.logger('key-storage'),
         );
-        if (!keyStorage.isPresent()) {
-            // No key storage was found. Signal this to the caller, so that the device linking flow
-            // can be triggered.
-            throw new BackendCreationError('no-identity', 'No identity was found');
-        }
-
-        // Ensure that we have a password
-        if (keyStoragePassword === undefined) {
-            // Key storage is present, but cannot be decrypted without a password
-            throw new BackendCreationError(
-                'key-storage-error-missing-password',
-                'Key storage cannot be decrypted, missing password?',
-            );
-        }
 
         // Try to read the credentials from the key storage.
         //
         // TODO(DESK-383): We might need to move this whole section into a pre-step
-        //     before the backend is actually attempted to be created.
+        //                 before the backend is actually attempted to be created.
         let keyStorageContents: KeyStorageContents;
         try {
             keyStorageContents = await keyStorage.read(keyStoragePassword);
@@ -666,13 +462,9 @@ export class Backend implements ProxyMarked {
             assertError(error, KeyStorageError);
             switch (error.type) {
                 case 'not-found':
-                    // This should not happen as it is caught above.
-                    throw new Error(
-                        `Unexpected error type: ${error.type} (${extractErrorMessage(
-                            error,
-                            'short',
-                        )})`,
-                    );
+                    // No key storage was found. Signal this to the caller, so that the device
+                    // linking flow can be triggered.
+                    throw new BackendCreationError('no-identity', 'No identity was found');
                 case 'not-readable':
                     // TODO(DESK-383): Assume a permission issue. This cannot be solved by
                     //     overwriting. Gracefully return to the UI and notify the user.
@@ -714,7 +506,7 @@ export class Backend implements ProxyMarked {
         }
 
         // Extract identity data from key storage
-        identityData = {
+        const identityData = {
             identity: keyStorageContents.identityData.identity,
             ck: SecureSharedBoxFactory.consume(
                 services.crypto,
@@ -722,8 +514,8 @@ export class Backend implements ProxyMarked {
             ) as ClientKey,
             serverGroup: keyStorageContents.identityData.serverGroup,
         };
-        dgk = keyStorageContents.dgk;
-        deviceIds = keyStorageContents.deviceIds;
+        const deviceIds = keyStorageContents.deviceIds;
+        const dgk = keyStorageContents.dgk;
 
         // Create database
         //
@@ -736,8 +528,230 @@ export class Backend implements ProxyMarked {
         const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
         const backend = new Backend(backendServices);
 
-        /* TODO(DESK-1038)
+        // Expose the backend on a new channel
+        const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
+        endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
+        return endpoint.transfer(remote, [remote]);
+    }
 
+    /**
+     * Create an instance of the backend worker for a new identity. This will start the device
+     * linking flow.
+     *
+     * @param init {BackendInit} Data required to be supplied to a backend worker for
+     *   initialization.
+     * @param factories {FactoriesForBackend} The factories needed in the backend.
+     * @param services The services needed in the backend.
+     * @param deviceLinkingSetup Information needed for the device linking flow.
+     * @returns A remote BackendHandle that can be used by the backend controller to access the
+     *   backend worker.
+     */
+    public static async createFromDeviceJoin(
+        {notificationEndpoint, systemDialogEndpoint}: BackendInit,
+        factories: FactoriesForBackend,
+        {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
+        deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
+    ): Promise<EndpointFor<BackendHandle>> {
+        const log = logging.logger('backend.create.join');
+        log.info('Creating backend through device linking flow');
+
+        // Initialize services that are needed early
+        const services = initBackendServicesWithoutIdentity(
+            factories,
+            {config, endpoint, logging},
+            notificationEndpoint,
+            systemDialogEndpoint,
+        );
+
+        // Get access to linking setup information
+        const wrappedDeviceLinkingSetup = endpoint.wrap<DeviceLinkingSetup>(
+            deviceLinkingSetup,
+            logging.logger('com.device-linking'),
+        );
+        const {linkingState} = wrappedDeviceLinkingSetup;
+
+        // Helper function for error handling
+        // eslint-disable-next-line no-inner-declarations
+        async function throwError(
+            message: string,
+            type: LinkingStateErrorType,
+            error?: Error,
+        ): Promise<never> {
+            await linkingState.updateState({state: 'error', type, message});
+            if (error !== undefined) {
+                message += `\n\n${extractErrorTraceback(error)}`;
+            }
+            log.error(message);
+            throw new BackendCreationError('handled-linking-error', message, {from: error});
+        }
+
+        // Generate rendezvous setup with all information needed to show the QR code
+        let setup: RendezvousProtocolSetup;
+        {
+            const rendezvousPath = bytesToHex(services.crypto.randomBytes(new Uint8Array(32)));
+            const url = config.RENDEZVOUS_SERVER_URL.replaceAll(
+                '{prefix4}',
+                rendezvousPath.slice(0, 1),
+            ).replaceAll('{prefix8}', rendezvousPath.slice(0, 2));
+            setup = {
+                role: 'initiator',
+                ak: randomRendezvousAuthenticationKey(services.crypto),
+                relayedWebSocket: {
+                    pathId: 1,
+                    url: `${url}/${rendezvousPath}`,
+                },
+            };
+        }
+
+        // Create RendezvousConnection and open WebSocket connection
+        let rendezvous;
+        try {
+            rendezvous = await RendezvousConnection.create({logging}, setup);
+        } catch (error) {
+            return await throwError(
+                `Rendezvous connection failed: ${error}`,
+                'connection-error',
+                ensureError(error),
+            );
+        }
+        await linkingState.updateState({
+            state: 'waiting-for-handshake',
+            joinUri: rendezvous.joinUri,
+        });
+
+        // Do the rendezvous handshake and wait for nomination of a path
+        let connectResult;
+        try {
+            connectResult = await rendezvous.connect();
+        } catch (error) {
+            return await throwError(
+                `Rendezvous handshake failed: ${error}`,
+                'rendezvous-error',
+                ensureError(error),
+            );
+        }
+        log.info('Rendezvous connection established');
+        await linkingState.updateState({
+            state: 'nominated',
+            rph: connectResult.rph,
+        });
+
+        // Now that we established the connection and showed the RPH, we can wait for ED to
+        // start sending essential data and then run the join protocol.
+        const userPasswordPromise = new ResolvablePromise<string>();
+        // eslint-disable-next-line func-style
+        const onBegin = async (): Promise<void> => {
+            // Update state and wait for password
+            await linkingState.updateState({state: 'waiting-for-password'});
+
+            // Once the password is entered, show "syncing" screen
+            wrappedDeviceLinkingSetup.userPassword
+                .then(async (password) => {
+                    await linkingState.updateState({state: 'syncing'});
+                    userPasswordPromise.resolve(password);
+                })
+                .catch((error) => log.error(`Waiting for userPassword promise failed: ${error}`));
+        };
+        const joinProtocol = new DeviceJoinProtocol(
+            connectResult.connection,
+            onBegin,
+            logging.logger('backend-controller.join'),
+            {crypto: services.crypto, file: services.file},
+        );
+        let joinResult;
+        try {
+            joinResult = await joinProtocol.run();
+        } catch (error) {
+            return await throwError(
+                `Device join protocol failed: ${error}`,
+                'join-error',
+                ensureError(error),
+            );
+        }
+
+        // Wrap the client key (but keep a copy for the key storage)
+        const rawCkForKeystore = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
+        const ck = SecureSharedBoxFactory.consume(services.crypto, joinResult.rawCk) as ClientKey;
+
+        // Look up identity information and server group on directory server
+        let privateData;
+        try {
+            privateData = await services.directory.privateData(joinResult.identity, ck);
+        } catch (error) {
+            return await throwError(
+                `Fetching information about identity failed: ${error}`,
+                'generic-error',
+                ensureError(error),
+            );
+        }
+        if (privateData.serverGroup !== joinResult.serverGroup) {
+            return await throwError(
+                `Server group reported by server (${privateData.serverGroup}) does not match server group received from join protocol (${joinResult.serverGroup})`,
+                'generic-error',
+            );
+        }
+
+        // Set identity data
+        const identityData: IdentityData = {
+            identity: joinResult.identity,
+            ck,
+            serverGroup: joinResult.serverGroup,
+        };
+        const deviceIds: DeviceIds = joinResult.deviceIds;
+        const dgk: RawDeviceGroupKey = joinResult.dgk;
+
+        // Generate new random database key
+        const databaseKey = wrapRawDatabaseKey(
+            services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
+        );
+
+        // Wait for user password
+        log.debug('Waiting for user password');
+        const userPassword = await userPasswordPromise;
+        if (userPassword.length === 0) {
+            return await throwError(`Received empty user password`, 'generic-error');
+        }
+
+        // Write to key storage
+        const keyStorage = factories.keyStorage(
+            {config, crypto: services.crypto},
+            logging.logger('key-storage'),
+        );
+        try {
+            await keyStorage.write(userPassword, {
+                schemaVersion: 2,
+                identityData: {
+                    identity: identityData.identity,
+                    ck: rawCkForKeystore,
+                    serverGroup: identityData.serverGroup,
+                },
+                dgk,
+                databaseKey,
+                deviceIds: {...deviceIds},
+            });
+        } catch (error) {
+            throw new BackendCreationError(
+                'key-storage-error',
+                `Could not write to key storage: ${error}`,
+                {from: error},
+            );
+        }
+
+        // Purge sensitive data
+        rawCkForKeystore.purge();
+        joinResult.rawCk.purge();
+
+        // Create database
+        //
+        // TODO(DESK-383): If the database does not exist but should exist,
+        //     gracefully return to the UI, etc.
+        const db = factories.db({config}, logging.logger('db'), databaseKey);
+
+        // Create backend
+        const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
+        const backend = new Backend(backendServices);
+
+        /* TODO(DESK-1038)
         if (backupData !== undefined) {
             try {
                 await bootstrapFromBackup(backend._services, identityData.identity, backupData);
@@ -756,6 +770,11 @@ export class Backend implements ProxyMarked {
             requestGroupSync(backend._services);
         }
         */
+
+        // Send "Registered" message and close the connection.
+        // TODO(DESK-1038): Do this later, once registration is actually complete!
+        await joinProtocol.joinComplete();
+        await linkingState.updateState({state: 'registered'});
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();

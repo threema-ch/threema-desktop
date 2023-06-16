@@ -2,6 +2,7 @@ import {type ServicesForBackendController} from '~/common/backend';
 import {type DeviceIds} from '~/common/device';
 import {
     BackendCreationError,
+    type BackendCreator,
     type BackendHandle,
     type BackendInit,
     type DeviceLinkingSetup,
@@ -53,20 +54,6 @@ interface EssentialStartupData {
     readonly leaderState: RemoteStore<D2mLeaderState>;
     readonly user: UserData;
 }
-
-/**
- * Create an instance of the backend worker.
- *
- * @param init Data required for initialization
- * @param deviceLinkingSetup If specified, device rendezvous and join protocols will be run before
- *   the backend is initialized. Note that any pre-existing database will be deleted.
- * @returns An endpoint if the backend could be instantiated.
- * @throws {BackendCreationError} if something goes wrong (e.g. if no key)
- */
-type BackendCreator = (
-    init: BackendInit,
-    deviceLinkingSetup?: EndpointFor<DeviceLinkingSetup>,
-) => Promise<EndpointFor<BackendHandle>>;
 
 export type InitialBootstrapData = SafeCredentials & DeviceIds & {newPassword: string};
 
@@ -126,7 +113,7 @@ export class BackendController {
         /**
          * Helper function to assemble a {@link BackendInit} object.
          */
-        function assembleBackendInit(keyStoragePassword: string | undefined): BackendInit {
+        function assembleBackendInit(): BackendInit {
             // Notifications
             const {local: localNotificationEndpoint, remote: notificationEndpoint} =
                 endpoint.createEndpointPair<NotificationCreator>();
@@ -149,7 +136,6 @@ export class BackendController {
             const result = {
                 notificationEndpoint,
                 systemDialogEndpoint,
-                keyStoragePassword,
             };
             return endpoint.transfer(result, [
                 result.notificationEndpoint,
@@ -193,11 +179,10 @@ export class BackendController {
             loopToCreateBackendWithKeyStorage: for (;;) {
                 log.debug('Loop to create backend with existing key storage');
                 try {
-                    backendEndpoint = await creator(
+                    backendEndpoint = await creator.fromKeyStorage(
                         // TODO(DESK-731): Remove the transitional logic involving LEGACY_DEFAULT_PASSWORD
-                        assembleBackendInit(
-                            passwordForExistingKeyStorage ?? LEGACY_DEFAULT_PASSWORD,
-                        ),
+                        assembleBackendInit(),
+                        passwordForExistingKeyStorage ?? LEGACY_DEFAULT_PASSWORD,
                     );
                 } catch (error) {
                     assertError(
@@ -217,16 +202,6 @@ export class BackendController {
                             throw new Error(
                                 `TODO(DESK-383): handle key storage error (${errorMessage})`,
                             );
-                        case 'key-storage-error-missing-password':
-                            // Backend cannot be created because key storage password is not provided.
-                            // Ask the user for the password and try again.
-                            log.debug(
-                                'Backend could not be created, no key storage password provided',
-                            );
-                            passwordForExistingKeyStorage = await requestUserPassword(
-                                passwordForExistingKeyStorage,
-                            );
-                            continue;
                         case 'key-storage-error-wrong-password':
                             log.debug('Backend could not be created, wrong key storage password');
                             passwordForExistingKeyStorage = await requestUserPassword(
@@ -252,7 +227,6 @@ export class BackendController {
 
         // If backend could not be created, that means that no identity was found. Initiate device
         // linking flow.
-        let newKeyStoragePassword: string | undefined;
         // TODO(DESK-1038): Can we get rid of the loop?
         while (backendEndpoint === undefined) {
             log.debug('Starting device linking process');
@@ -266,12 +240,10 @@ export class BackendController {
             const userPassword = new ResolvablePromise<string>();
             await showLinkingWizard(linkingStateStore, userPassword);
 
-            newKeyStoragePassword = 'asdf'; // TODO(DESK-1038)
-
             // Retry backend creation
             try {
-                backendEndpoint = await creator(
-                    assembleBackendInit(newKeyStoragePassword),
+                backendEndpoint = await creator.fromDeviceJoin(
+                    assembleBackendInit(),
                     assembleDeviceLinkingSetup(linkingStateStore, userPassword),
                 );
             } catch (error) {
@@ -300,13 +272,6 @@ export class BackendController {
                                 error,
                                 'short',
                             )}`,
-                        );
-                    case 'key-storage-error-missing-password':
-                        throw new Error(
-                            `Unexpected error type: ${error.type} (${extractErrorMessage(
-                                error,
-                                'short',
-                            )})`,
                         );
                     case 'key-storage-error-wrong-password':
                         throw new Error(
