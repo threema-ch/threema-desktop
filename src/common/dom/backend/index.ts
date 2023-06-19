@@ -73,7 +73,7 @@ import {
 } from '~/common/network/types/keys';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
-import {type ReadonlyUint8Array} from '~/common/types';
+import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {
     assert,
     assertError,
@@ -212,6 +212,7 @@ export interface SafeCredentialsAndDeviceIds {
  * - rendezvous-error: The rendezvous protocol did not succeed.
  * - join-error: The device join protocol did not succeed.
  * - restore-error: Restoring essential data did not succeed.
+ * - registration-error: Initial registration at Mediator server failed.
  * - generic-error: Some other error during linking.
  */
 export type LinkingStateErrorType =
@@ -219,6 +220,7 @@ export type LinkingStateErrorType =
     | 'rendezvous-error'
     | 'join-error'
     | 'restore-error'
+    | 'registration-error'
     | 'generic-error';
 
 /**
@@ -525,7 +527,7 @@ export class Backend implements ProxyMarked {
         const backend = new Backend(backendServices);
 
         // Start connection
-        backend.connectionManager.start();
+        void backend.connectionManager.start();
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
@@ -763,12 +765,23 @@ export class Backend implements ProxyMarked {
 
         // Now that essential data is processed, we can connect to the Mediator server and register
         // ourselves
-        backend.connectionManager.start();
+        const initialConnectionResult = await backend.connectionManager.start();
 
-        // Send "Registered" message and close the connection.
-        // TODO(DESK-1038): Do this later, once registration is actually complete!
-        await joinProtocol.complete();
-        await linkingState.updateState({state: 'registered'});
+        // If connection was successful, send "Registered" message and close the connection.
+        if (initialConnectionResult.connected) {
+            await joinProtocol.complete();
+            await linkingState.updateState({state: 'registered'});
+        } else {
+            let errorInfo = `Close code ${initialConnectionResult.closeCode}`;
+            const closeCodeName = CloseCodeUtils.nameOf(initialConnectionResult.closeCode);
+            if (closeCodeName !== undefined) {
+                errorInfo += ` (${closeCodeName})`;
+            }
+            return await throwError(
+                `Initial connection with server failed: ${errorInfo} `,
+                'registration-error',
+            );
+        }
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
@@ -821,6 +834,11 @@ export class Backend implements ProxyMarked {
 }
 
 /**
+ * The result of the initial server connection.
+ */
+export type InitialConnectionResult = {connected: true} | {connected: false; closeCode: u53};
+
+/**
  * Connection logger style (white on yellow).
  */
 const connectionLoggerStyle = createLoggerStyle('#EE9B00', '#FFFFFF');
@@ -842,6 +860,7 @@ class ConnectionManager {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
     public readonly state: MonotonicEnumStore<ConnectionState>;
     public readonly leaderState: MonotonicEnumStore<D2mLeaderState>;
+    private readonly _initialConnectionResult = new ResolvablePromise<InitialConnectionResult>();
     private readonly _log: Logger;
     private _autoConnect: ResolvablePromise<void> = ResolvablePromise.resolve();
     private _connection?: Connection;
@@ -868,6 +887,20 @@ class ConnectionManager {
                 tag: 'state',
             },
         );
+
+        // After first successful connection, update initial connection result
+        const unsubscribeFromState = this.state.subscribe((state) => {
+            if (state === ConnectionState.CONNECTED) {
+                if (!this._initialConnectionResult.done) {
+                    this._initialConnectionResult.resolve({connected: true});
+                }
+                unsubscribeFromState();
+            }
+        });
+    }
+
+    public get initialConnectionResult(): Promise<InitialConnectionResult> {
+        return this._initialConnectionResult;
     }
 
     /**
@@ -876,7 +909,8 @@ class ConnectionManager {
      * This will connect to the server and automatically reconnect on connection loss (unless
      * auto-connect is disabled).
      */
-    public start(): void {
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    public start(): Promise<InitialConnectionResult> {
         if (this._started) {
             throw new Error('Started an already-started connection manager');
         }
@@ -884,15 +918,21 @@ class ConnectionManager {
         this._run().catch((error) =>
             assertUnreachable(`Connection manager failed to run: ${error}`),
         );
+        return this.initialConnectionResult;
     }
 
     /**
      * Disable auto-connect. The current connection will be closed (if any).
      */
-    public disableAutoConnect(): void {
+    public disableAutoConnect(closeCode?: u53): void {
         this._log.debug('Turning off auto-connect');
         this._connection?.disconnect();
         this._autoConnect = new ResolvablePromise();
+
+        // Update initial connection result (if promise is not already resolved)
+        if (closeCode !== undefined && !this._initialConnectionResult.done) {
+            this._initialConnectionResult.resolve({connected: false, closeCode});
+        }
     }
 
     /**
@@ -954,7 +994,7 @@ class ConnectionManager {
                                     skipConnectionDelay = true;
                                     break;
                                 case 'cancelled':
-                                    this.disableAutoConnect();
+                                    this.disableAutoConnect(closeInfo.code);
                                     break;
                                 default:
                                     unreachable(action);
@@ -968,7 +1008,7 @@ class ConnectionManager {
                                 },
                             });
 
-                            this.disableAutoConnect();
+                            this.disableAutoConnect(closeInfo.code);
                         }
                         break;
                     case CloseCode.DEVICE_DROPPED:
@@ -984,13 +1024,13 @@ class ConnectionManager {
                             },
                         });
 
-                        this.disableAutoConnect();
+                        this.disableAutoConnect(closeInfo.code);
                         break;
                     case CloseCode.DEVICE_LIMIT_REACHED:
                     case CloseCode.DEVICE_ID_REUSED:
                     case CloseCode.REFLECTION_QUEUE_LENGTH_LIMIT_REACHED:
                         // TODO(DESK-487): Request user interaction to continue
-                        this.disableAutoConnect();
+                        this.disableAutoConnect(closeInfo.code);
                         throw new Error(
                             `TODO(DESK-487): Connection closed, request user interaction to continue (code=${closeInfo.code}, reason=${closeInfo.reason})`,
                         );
@@ -1017,7 +1057,7 @@ class ConnectionManager {
                         unreachable(closeInfo.code);
                 }
             } else if (closeInfo.code >= 4100 && closeInfo.code < 4200) {
-                this.disableAutoConnect();
+                this.disableAutoConnect(closeInfo.code);
                 // TODO(DESK-487): Request user interaction to continue?
                 throw new Error(
                     `Connection closed with unrecoverable unknown close code (code=${closeInfo.code}, reason=${closeInfo.reason})`,
