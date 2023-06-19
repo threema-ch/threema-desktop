@@ -524,6 +524,9 @@ export class Backend implements ProxyMarked {
         const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
         const backend = new Backend(backendServices);
 
+        // Start connection
+        backend.connectionManager.start();
+
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
         endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
@@ -747,8 +750,6 @@ export class Backend implements ProxyMarked {
         const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
         const backend = new Backend(backendServices);
 
-        // TODO(DESK-1038): Disallow connection until data is restored
-
         // Initialize database with essential data
         try {
             await joinProtocol.restoreEssentialData(backend.model);
@@ -759,6 +760,10 @@ export class Backend implements ProxyMarked {
                 ensureError(error),
             );
         }
+
+        // Now that essential data is processed, we can connect to the Mediator server and register
+        // ourselves
+        backend.connectionManager.start();
 
         // Send "Registered" message and close the connection.
         // TODO(DESK-1038): Do this later, once registration is actually complete!
@@ -825,6 +830,8 @@ export class Backend implements ProxyMarked {
  *   UX.
  * - Manages the connection state.
  * - Ensures that all relevant tasks are not lost between reconnections.
+ *
+ * Note that the connection will only be established once the `readyToConnect` promise is resolved.
  */
 class ConnectionManager {
     public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
@@ -833,6 +840,7 @@ class ConnectionManager {
     private readonly _log: Logger;
     private _autoReconnect: ResolvablePromise<void> = ResolvablePromise.resolve();
     private _connection?: Connection;
+    private _started = false;
 
     public constructor(
         private readonly _services: ServicesForBackend,
@@ -849,6 +857,19 @@ class ConnectionManager {
             D2mLeaderState.NONLEADER,
             {log: _services.logging.logger('connection.leaderState'), tag: 'state'},
         );
+    }
+
+    /**
+     * Start the connection manager
+     *
+     * This will connect to the server and automatically reconnect on connection loss (unless
+     * auto-reconnect is disabled).
+     */
+    public start(): void {
+        if (this._started) {
+            throw new Error('Started an already-started connection manager');
+        }
+        this._started = true;
         this._run().catch((error) =>
             assertUnreachable(`Connection manager failed to run: ${error}`),
         );
