@@ -28,7 +28,7 @@
       <Button
         flavor="filled"
         on:click={() => {
-          void backend.toggleAutoReconnect();
+          void backend.toggleAutoConnect();
         }}
       >
         <span class="icon-and-text" title="Toggle auto-connection">

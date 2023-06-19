@@ -843,7 +843,7 @@ class ConnectionManager {
     public readonly state: MonotonicEnumStore<ConnectionState>;
     public readonly leaderState: MonotonicEnumStore<D2mLeaderState>;
     private readonly _log: Logger;
-    private _autoReconnect: ResolvablePromise<void> = ResolvablePromise.resolve();
+    private _autoConnect: ResolvablePromise<void> = ResolvablePromise.resolve();
     private _connection?: Connection;
     private _started = false;
 
@@ -874,7 +874,7 @@ class ConnectionManager {
      * Start the connection manager
      *
      * This will connect to the server and automatically reconnect on connection loss (unless
-     * auto-reconnect is disabled).
+     * auto-connect is disabled).
      */
     public start(): void {
         if (this._started) {
@@ -887,24 +887,23 @@ class ConnectionManager {
     }
 
     /**
-     * Disable auto-reconnect. The current connection will be closed (if any).
+     * Disable auto-connect. The current connection will be closed (if any).
      */
-    public disableAutoReconnect(): void {
-        this._log.debug('Turning off auto-reconnect');
+    public disableAutoConnect(): void {
+        this._log.debug('Turning off auto-connect');
         this._connection?.disconnect();
-        this._autoReconnect = new ResolvablePromise();
+        this._autoConnect = new ResolvablePromise();
     }
 
     /**
-     * Toggle auto-reconnect. When auto-reconnect is turned off, the current connection will be
-     * closed.
+     * Toggle auto-connect. When auto-connect is turned off, the current connection will be closed.
      */
-    public toggleAutoReconnect(): void {
-        if (this._autoReconnect.done) {
-            this.disableAutoReconnect();
+    public toggleAutoConnect(): void {
+        if (this._autoConnect.done) {
+            this.disableAutoConnect();
         } else {
-            this._log.debug('Turning on auto-reconnect');
-            this._autoReconnect.resolve();
+            this._log.debug('Turning on auto-connect');
+            this._autoConnect.resolve();
         }
     }
 
@@ -914,12 +913,12 @@ class ConnectionManager {
         let skipConnectionDelay = false;
         for (;;) {
             // Check if we should (re)connect.
-            if (!this._autoReconnect.done) {
+            if (!this._autoConnect.done) {
                 this._log.debug(
-                    'Auto-connection currently disabled. Waiting until auto-reconnection has been re-enabled.',
+                    'Auto-connect currently disabled. Waiting until auto-connect has been re-enabled.',
                 );
             }
-            await this._autoReconnect;
+            await this._autoConnect;
 
             // Check if network connectivity is available.
             //
@@ -946,7 +945,7 @@ class ConnectionManager {
                                 },
                             });
                             this._log.info(
-                                'Waiting for user interaction before reenabling reconnect',
+                                'Waiting for user interaction before re-enabling auto-connect',
                             );
                             const action = await handle.closed;
                             // eslint-disable-next-line max-depth
@@ -955,7 +954,7 @@ class ConnectionManager {
                                     skipConnectionDelay = true;
                                     break;
                                 case 'cancelled':
-                                    this.disableAutoReconnect();
+                                    this.disableAutoConnect();
                                     break;
                                 default:
                                     unreachable(action);
@@ -969,7 +968,7 @@ class ConnectionManager {
                                 },
                             });
 
-                            this.disableAutoReconnect();
+                            this.disableAutoConnect();
                         }
                         break;
                     case CloseCode.DEVICE_DROPPED:
@@ -985,13 +984,13 @@ class ConnectionManager {
                             },
                         });
 
-                        this.disableAutoReconnect();
+                        this.disableAutoConnect();
                         break;
                     case CloseCode.DEVICE_LIMIT_REACHED:
                     case CloseCode.DEVICE_ID_REUSED:
                     case CloseCode.REFLECTION_QUEUE_LENGTH_LIMIT_REACHED:
                         // TODO(DESK-487): Request user interaction to continue
-                        this.disableAutoReconnect();
+                        this.disableAutoConnect();
                         throw new Error(
                             `TODO(DESK-487): Connection closed, request user interaction to continue (code=${closeInfo.code}, reason=${closeInfo.reason})`,
                         );
@@ -1018,7 +1017,7 @@ class ConnectionManager {
                         unreachable(closeInfo.code);
                 }
             } else if (closeInfo.code >= 4100 && closeInfo.code < 4200) {
-                this.disableAutoReconnect();
+                this.disableAutoConnect();
                 // TODO(DESK-487): Request user interaction to continue?
                 throw new Error(
                     `Connection closed with unrecoverable unknown close code (code=${closeInfo.code}, reason=${closeInfo.reason})`,

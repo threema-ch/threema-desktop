@@ -357,11 +357,10 @@ export class BackendController {
     }
 
     /**
-     * Toggle auto-reconnect. When auto-reconnect is turned off, the current connection will be
-     * closed.
+     * Toggle auto-connect. When auto-connect is turned off, the current connection will be closed.
      */
-    public async toggleAutoReconnect(): Promise<void> {
-        await this._remote.connectionManager.toggleAutoReconnect();
+    public async toggleAutoConnect(): Promise<void> {
+        await this._remote.connectionManager.toggleAutoConnect();
     }
 
     /**
