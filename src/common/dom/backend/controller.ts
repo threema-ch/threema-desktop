@@ -221,8 +221,7 @@ export class BackendController {
             }
         }
 
-        // Determine whether this is a new identity. If it is, a welcome screen will be shown when
-        // first launching Threema Desktop.
+        // If at this point we could load an existing keystore, then this is not a new identity
         const isNewIdentity = backendEndpoint === undefined;
 
         // If backend could not be created, that means that no identity was found. Initiate device
@@ -305,12 +304,12 @@ export class BackendController {
 
         // Done
         log.debug('Creating backend controller');
-        const controller = new BackendController(services, log, remote, deviceIds, {
+        const backend = new BackendController(services, log, remote, deviceIds, {
             connectionState,
             leaderState,
             user: {identity, profilePicture, displayName},
         });
-        return [controller, isNewIdentity];
+        return [backend, isNewIdentity];
     }
 
     /**

@@ -1,25 +1,19 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingParams, type LinkingWizardState} from '~/app/ui/linking';
+  import {type LinkingWizardStateSuccess} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
 
-  export let params: LinkingParams;
-  export let linkingWizardState: LinkingWizardState;
-  unusedProp(params, linkingWizardState);
-
-  const dispatchEvent = createEventDispatcher();
+  export let linkingWizardState: LinkingWizardStateSuccess;
 </script>
 
 <template>
   <Step>
     <div class="body">
       <div class="party">
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         {@html PartyPopper}
       </div>
       <h1 class="title">
@@ -47,7 +41,7 @@
         {/if}
       </p>
       <div class="button">
-        <Button flavor="filled" on:click={() => dispatchEvent('confirm')}
+        <Button flavor="filled" on:click={() => linkingWizardState.identityReady.resolve()}
           >{$i18n.t('dialog--linking-success.action--confirm', 'Start using Threema')}</Button
         >
       </div>

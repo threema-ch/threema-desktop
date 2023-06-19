@@ -13,6 +13,11 @@ export interface LinkingParams {
      * A promise that should be fulfilled when the user has chosen a password.
      */
     readonly userPassword: ResolvablePromise<string>;
+
+    /**
+     * A promise that should be fulfilled when the user clicks the button in the success screen.
+     */
+    readonly identityReady: ResolvablePromise<void>;
 }
 
 export interface LinkingWizardStateScan {
@@ -30,6 +35,11 @@ export interface LinkingWizardStateSetPassword {
     readonly userPassword: ResolvablePromise<string>;
 }
 
+export interface LinkingWizardStateSuccess {
+    readonly currentStep: 'success-linked';
+    readonly identityReady: ResolvablePromise<void>;
+}
+
 export interface LinkingWizardStateError {
     readonly currentStep: 'error';
     readonly errorType: LinkingStateErrorType;
@@ -44,5 +54,5 @@ export type LinkingWizardState =
     | LinkingWizardStateConfirmEmoji
     | LinkingWizardStateSetPassword
     | {readonly currentStep: 'syncing'}
-    | {readonly currentStep: 'success-linked'}
+    | LinkingWizardStateSuccess
     | LinkingWizardStateError;

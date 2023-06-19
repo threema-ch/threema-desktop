@@ -29,7 +29,7 @@ import {extractErrorTraceback} from '~/common/error';
 import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
-import {type ResolvablePromise} from '~/common/utils/resolvable-promise';
+import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type ISubscribableStore, type ReadableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
@@ -84,7 +84,7 @@ function attachPasswordInput(
 /**
  * Attach app to DOM.
  */
-function attachApp(services: AppServices, isNewIdentity: boolean, elements: Elements): App {
+function attachApp(services: AppServices, elements: Elements): App {
     const log = services.logging.logger('attach');
 
     // Hide splash screen and remove it entirely after 1s
@@ -96,7 +96,6 @@ function attachApp(services: AppServices, isNewIdentity: boolean, elements: Elem
     const app = new App({
         target: elements.container,
         props: {
-            isNewIdentity,
             services,
         },
     });
@@ -141,6 +140,14 @@ export async function main(appState: AppState): Promise<App> {
             resolve();
         });
     });
+
+    // Promise that will be resolved when the identity is ready
+    //
+    // - When linking, this should be resolved when the user clicks the button in the success
+    //   screen.
+    // - When restoring an existing identity, this should be resolved when the backend could be
+    //   initialized.
+    const identityReady = new ResolvablePromise<void>();
 
     // Set up logging
     let logging = TagLogger.styled(CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
@@ -287,6 +294,7 @@ export async function main(appState: AppState): Promise<App> {
         attachLinkingWizard(elements, {
             linkingState,
             userPassword,
+            identityReady,
         });
     }
 
@@ -336,6 +344,11 @@ export async function main(appState: AppState): Promise<App> {
         router,
     };
 
+    // If this is an existing identity, resolve `identityReady` promise
+    if (!isNewIdentity) {
+        identityReady.resolve();
+    }
+
     // Check for updates in the background, if this is an Electron release build
     if (!import.meta.env.DEBUG) {
         void updateCheck(services, systemInfo);
@@ -358,10 +371,13 @@ export async function main(appState: AppState): Promise<App> {
     totalUnreadMessageCountStore.subscribe(debounce(updateUnreadMessageAppBadge, 300));
     appState.totalUnreadMessageCountStore = totalUnreadMessageCountStore;
 
-    // Attach app when DOM is loaded
+    // Attach app when the identity is ready and DOM is loaded
+    log.debug('Waiting for identity');
+    await identityReady;
+    log.debug('Waiting for DOM');
     await domContentLoaded;
     log.debug('Attaching app');
-    return attachApp(services, isNewIdentity, elements);
+    return attachApp(services, elements);
 }
 
 // Global app state

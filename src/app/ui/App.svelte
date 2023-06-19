@@ -5,7 +5,6 @@
   import {type AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
-  import SuccessLinked from '~/app/ui/bootstrap/SuccessLinked.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
   import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
   import MainProfile from '~/app/ui/main/Profile.svelte';
@@ -22,8 +21,6 @@
   import {display, layout} from '~/common/dom/ui/state';
   import {ConnectionState} from '~/common/network/protocol/state';
   import {unreachable} from '~/common/utils/assert';
-
-  export let isNewIdentity: boolean;
 
   export let services: AppServices;
 
@@ -167,16 +164,6 @@
         <DebugPanel {services} />
       </footer>
     {/if}
-
-    {#if isNewIdentity}
-      <div class="first-start">
-        <SuccessLinked
-          on:close={() => {
-            isNewIdentity = false;
-          }}
-        />
-      </div>
-    {/if}
   </div>
 </template>
 
@@ -195,15 +182,6 @@
         'network-alert' auto
         'app' 1fr
         'debug' auto;
-    }
-
-    .first-start {
-      height: 100vh;
-      display: grid;
-      grid-template: 'app' min-content;
-      place-content: center;
-      color: var(--t-text-e1-color);
-      background-color: var(--t-pairing-background-color);
     }
   }
 

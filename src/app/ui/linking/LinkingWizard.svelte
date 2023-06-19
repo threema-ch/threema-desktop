@@ -70,7 +70,10 @@
         linkingWizardState = {currentStep: 'syncing'};
         break;
       case 'registered':
-        linkingWizardState = {currentStep: 'success-linked'};
+        linkingWizardState = {
+          currentStep: 'success-linked',
+          identityReady: params.identityReady,
+        };
         break;
       case 'error':
         linkingWizardState = {
