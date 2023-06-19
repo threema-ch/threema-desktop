@@ -14,7 +14,7 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {isIdentityString} from '~/common/network/types';
+import {type IdentityString, isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {purgeUndefinedProperties} from '~/common/utils/object';
@@ -158,6 +158,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     }
 
     private async _processProfilePictures(
+        identity: IdentityString,
         createOrUpdate: ProfilePictures,
         profilePicture: LocalModelStore<ProfilePicture>,
     ): Promise<void> {
@@ -177,7 +178,9 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                 this._processProfilePicture(
                     profilePicture,
                     createOrUpdate.userDefinedProfilePicture,
-                    'user-defined',
+                    // TODO(DESK-1074): Remove logic below. Instead, ignore user-defined profile
+                    //                  pictures for Gateway IDs.
+                    identity.startsWith('*') ? 'gateway-defined' : 'user-defined',
                 ),
             );
         }
@@ -213,7 +216,11 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             } as const),
         );
 
-        await this._processProfilePictures(create, contact.get().controller.profilePicture);
+        await this._processProfilePictures(
+            create.identity,
+            create,
+            contact.get().controller.profilePicture,
+        );
     }
 
     private async _updateContactFromD2dSync(
@@ -255,6 +262,10 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
             });
         }
 
-        await this._processProfilePictures(update, controller.profilePicture);
+        await this._processProfilePictures(
+            contact.get().view.identity,
+            update,
+            controller.profilePicture,
+        );
     }
 }
