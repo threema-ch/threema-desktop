@@ -17,7 +17,11 @@
 </script>
 
 <template>
-  <div>{@html processedText}</div>
+  <div>
+    <!-- Note: Safe because we run `escapeHtmlUnsafeChars` above. -->
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+    {@html processedText}
+  </div>
 </template>
 
 <style lang="scss">

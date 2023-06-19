@@ -372,6 +372,9 @@ function parseLinks(text: string): string {
  * Parses some text and replaces various tokens with HTML. This is useful to render messages and
  * message previews with formatting.
  *
+ * Warning: If you render the output in a web UI, you must absolutely make sure that the input
+ *          `text` is sanitized (e.g. with {@link escapeHtmlUnsafeChars})!
+ *
  * @param text The text to parse.
  * @param mentions The {@link Mention}s to search for and replace in the text.
  * @param highlights The highlights to search for and replace in the text.

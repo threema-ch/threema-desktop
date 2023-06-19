@@ -23,7 +23,7 @@
   export let services: AppServices;
 
   // Unpack services
-  export let {storage} = services;
+  const {storage} = services;
 
   // Unpack stores
   const {debugPanelHeight} = storage;

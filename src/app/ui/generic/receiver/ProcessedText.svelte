@@ -18,6 +18,8 @@
 </script>
 
 <template>
+  <!-- Note: Safe because we run `escapeHtmlUnsafeChars` above. -->
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
   {@html processedText}
 </template>
 

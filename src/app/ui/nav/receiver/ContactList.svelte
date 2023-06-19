@@ -162,7 +162,7 @@
         toast.addSimpleFailure($i18n.t('contacts.error--delete-contact', {name: displayName}));
       });
 
-    // TODO (routing): Move route to (?) if current contact is current active chat
+    // TODO(DESK-1072): Move route to (?) if current contact is current active chat
     currentContact = undefined;
     deleteContactDialogVisible = false;
   }

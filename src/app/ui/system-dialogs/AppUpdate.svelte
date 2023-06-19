@@ -3,8 +3,8 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {type AppUpdateDialog} from '~/common/system-dialog';
 
   export let visible: boolean;

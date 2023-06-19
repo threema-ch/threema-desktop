@@ -14,6 +14,8 @@
   <ModalDialog visible={true}>
     <div class="body" slot="body">
       <div class="party">
+        <!-- Note: Safe because party popper SVG is static. -->
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         {@html PartyPopper}
       </div>
       <div class="title">

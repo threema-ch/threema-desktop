@@ -160,9 +160,9 @@
     self.queueMicrotask(() => {
       // Workaround to avoid recursive access to compose area.
       //
-      // TODO(https://github.com/threema-ch/compose-area/issues/97,
-      //      https://github.com/threema-ch/compose-area/issues/98): Fix this, see this discussion for details:
-      //       https://git.threema.ch/clients/web/threema-desktop-web/-/merge_requests/92#note_31788
+      // TODO(https://github.com/threema-ch/compose-area/issues/97, https://github.com/threema-ch/compose-area/issues/98):
+      // Fix this, see this discussion for details:
+      // https://git.threema.ch/clients/web/threema-desktop-web/-/merge_requests/92#note_31788
       isEmpty_.set(area.is_empty());
     });
   }

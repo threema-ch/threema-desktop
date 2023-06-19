@@ -6,6 +6,8 @@
 <template>
   <div>
     <span data-display={$display}>
+      <!-- Note: Safe because icon SVG is static. -->
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
       {@html SVGThreemaIcon}
     </span>
   </div>

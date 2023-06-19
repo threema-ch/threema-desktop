@@ -41,7 +41,7 @@
 </script>
 
 <template>
-  {#if isBlocked === undefined || !$isBlocked}
+  {#if $isBlocked === undefined || !$isBlocked}
     <div class="recipient">
       {#if transformedContact !== undefined && $profilePicture !== undefined}
         <DeprecatedReceiver

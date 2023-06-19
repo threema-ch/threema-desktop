@@ -1,4 +1,6 @@
 <script lang="ts">
+  /* global $$Generic:readable */ // TODO(https://github.com/sveltejs/eslint-plugin-svelte/issues/348)
+
   import {identity} from 'svelte/internal';
 
   type T = $$Generic<string>;
