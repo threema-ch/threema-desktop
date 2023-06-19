@@ -8,6 +8,7 @@ import {
 } from '~/app/ui/generic/receiver';
 import {type PublicKey} from '~/common/crypto';
 import {type DbReceiverLookup} from '~/common/db';
+import {type BackendController} from '~/common/dom/backend/controller';
 import {
     AcquaintanceLevel,
     ReceiverType,
@@ -29,9 +30,10 @@ import {type Remote} from '~/common/utils/endpoint';
 import {
     DeprecatedDerivedStore,
     type IQueryableStore,
-    type ReadableStore,
+    type LocalStore,
     WritableStore,
 } from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
 import {localeSort} from '~/common/utils/string';
 import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
 import {type ContactData} from '~/common/viewmodel/types';
@@ -55,7 +57,7 @@ export type TransformedContact = StrictOmit<Remote<ContactData>, 'isBlocked'> & 
     readonly verificationLevelColors: VerificationLevelColors;
     readonly notifications: ReceiverNotificationPolicy;
     readonly activityState: 'active' | 'inactive' | 'invalid';
-    readonly isBlocked: ReadableStore<boolean>;
+    readonly isBlocked: LocalStore<Promise<boolean>>;
 };
 
 /**
@@ -181,6 +183,7 @@ export function transformContactVerificationLevel(
 }
 
 export async function transformContact(
+    backend: BackendController,
     contact: RemoteModelFor<Contact>,
 ): Promise<TransformedContact> {
     // Determine activity state
@@ -220,7 +223,10 @@ export async function transformContact(
         fullName: getFullName(contact.view),
         displayName: contact.view.displayName,
         initials: contact.view.initials,
-        isBlocked: await contact.controller.isBlocked,
+        isBlocked: derive(
+            await backend.model.user.privacySettings,
+            async (ps) => await ps.controller.isIdentityExplicitlyBlocked(contact.view.identity),
+        ),
         notifications: transformNotificationPolicyFromContact(contact.view),
         verificationLevel,
         verificationLevelColors,

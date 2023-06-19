@@ -559,12 +559,6 @@ export type ContactController = ReceiverController & {
      */
     readonly remove: Omit<ControllerUpdateFromSource, 'fromRemote'>;
 
-    // TODO(DESK-1062): Refactor `ContactController.isBlocked` property into the corresponding viewModel
-    /**
-     * Returns a store informing whether a contact is explicitly blocked.
-     */
-    readonly isBlocked: LocalStore<boolean>;
-
     /**
      * Informs whether a contact can be deleted. Currently a user is only deletable if it does not
      * belong to any active group. This might change with DESK-770.

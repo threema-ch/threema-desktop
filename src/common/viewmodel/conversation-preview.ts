@@ -6,6 +6,7 @@ import {
     type Conversation,
     type ConversationView,
     type Group,
+    type PrivacySettings,
     type ProfilePicture,
 } from '~/common/model';
 import {getDisplayName} from '~/common/model/contact';
@@ -100,7 +101,11 @@ function getViewModel(
                 const contact = getAndSubscribe(receiver);
                 item = {
                     ...commonProperties,
-                    receiver: deriveContactListItem(contact, getAndSubscribe),
+                    receiver: deriveContactListItem(
+                        model.user.privacySettings,
+                        contact,
+                        getAndSubscribe,
+                    ),
                     receiverLookup: {type: receiver.type, uid: receiver.ctx},
                 };
                 break;
@@ -131,6 +136,7 @@ interface ContactListItem {
     isBlocked: boolean;
 }
 function deriveContactListItem(
+    privacySettings: LocalModelStore<PrivacySettings>,
     contact: Contact,
     getAndSubscribe: GetAndSubscribeFunction,
 ): ContactListItem {
@@ -138,7 +144,9 @@ function deriveContactListItem(
         type: 'contact',
         displayName: getDisplayName(contact.view),
         initials: contact.view.initials,
-        isBlocked: getAndSubscribe(contact.controller.isBlocked),
+        isBlocked: getAndSubscribe(privacySettings).controller.isIdentityExplicitlyBlocked(
+            contact.view.identity,
+        ),
     };
 }
 

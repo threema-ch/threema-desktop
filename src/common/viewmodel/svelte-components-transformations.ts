@@ -19,9 +19,11 @@ import {
     type ContactView,
     type Group,
     type GroupView,
+    type PrivacySettings,
     type ProfilePicture,
     type Repositories,
 } from '~/common/model';
+import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
@@ -39,6 +41,7 @@ export type TransformedReceiverData = AnyReceiverData & {
 export type ReceiverNotificationPolicy = 'default' | 'muted' | 'mentioned' | 'never';
 
 export function transformContact(
+    privacySettings: LocalModelStore<PrivacySettings>,
     contact: Contact,
     profilePicture: ProfilePicture,
     getAndSubscribe: GetAndSubscribeFunction,
@@ -58,7 +61,9 @@ export function transformContact(
         badge: getContactBadge(contact.view),
         verificationLevel,
         verificationLevelColors,
-        isBlocked: getAndSubscribe(contact.controller.isBlocked),
+        isBlocked: getAndSubscribe(privacySettings).controller.isIdentityExplicitlyBlocked(
+            contact.view.identity,
+        ),
         notifications: transformNotificationPolicyFromContact(contact.view),
     };
 }
@@ -92,7 +97,12 @@ export function transformReceiver(
 ): TransformedReceiverData {
     switch (receiver.type) {
         case ReceiverType.CONTACT:
-            return transformContact(receiver, profilePicture, getAndSubscribe);
+            return transformContact(
+                model.user.privacySettings,
+                receiver,
+                profilePicture,
+                getAndSubscribe,
+            );
         case ReceiverType.DISTRIBUTION_LIST:
             throw new Error('TODO(DESK-236): Implement distribution list');
         case ReceiverType.GROUP:

@@ -298,7 +298,12 @@ function getConversationMessageBodyBaseMessage(
         case MessageDirection.INBOUND: {
             const sender = getAndSubscribe(messageModel.controller.sender());
             const profilePicture = getAndSubscribe(sender.controller.profilePicture);
-            const contact = transformContact(sender, profilePicture, getAndSubscribe);
+            const contact = transformContact(
+                user.privacySettings,
+                sender,
+                profilePicture,
+                getAndSubscribe,
+            );
             assert(contact.type === 'contact');
 
             const incomingBaseMessage: Omit<

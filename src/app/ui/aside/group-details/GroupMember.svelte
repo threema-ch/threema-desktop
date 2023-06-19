@@ -9,10 +9,12 @@
     transformContact,
     type TransformedContact,
   } from '~/app/ui/nav/receiver';
+  import {type BackendController} from '~/common/dom/backend/controller';
   import {type Contact, type ProfilePicture} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type IdentityString} from '~/common/network/types';
-  import {type ReadableStore} from '~/common/utils/store';
+
+  export let backend: BackendController;
 
   export let member: RemoteModelStore<Contact>;
 
@@ -20,19 +22,25 @@
 
   let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
   let transformedContact: TransformedContact | undefined = undefined;
-  let isBlocked: ReadableStore<boolean> | undefined = undefined;
+  let isBlocked = false;
 
   function resetContactData(): void {
     transformedContact = undefined;
     profilePicture = undefined;
-    isBlocked = undefined;
+    isBlocked = false;
   }
 
   // TODO(DESK-830): Refactor this into the ViewModel.
-  $: transformContact($member)
+  $: transformContact(backend, $member)
     .then((c) => {
       transformedContact = c;
-      isBlocked = c.isBlocked;
+      c.isBlocked.subscribe((isBlockedPromise) => {
+        isBlockedPromise
+          .then((b) => {
+            isBlocked = b;
+          })
+          .catch(resetContactData);
+      });
       getStores($member)
         .then((stores) => {
           profilePicture = stores.profilePicture;
@@ -73,7 +81,7 @@
         />
       </div>
       <div class="identity" slot="additional-bottom">
-        {#if isBlocked !== undefined && $isBlocked}
+        {#if isBlocked}
           <span class="property" data-property="blocked">
             <BlockedIcon />
           </span>

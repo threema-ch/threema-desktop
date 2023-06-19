@@ -28,7 +28,6 @@ import {
     REQUIRED,
 } from '~/common/utils/property-validator';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
-import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
 
@@ -259,7 +258,6 @@ export class ContactModelController implements ContactController {
     public readonly meta = new ModelLifetimeGuard<ContactView>();
 
     public readonly profilePicture: LocalModelStore<ProfilePicture>;
-    public readonly isBlocked;
 
     public readonly update: ContactController['update'] = {
         [TRANSFER_MARKER]: PROXY_HANDLER,
@@ -348,10 +346,6 @@ export class ContactModelController implements ContactController {
             this.uid,
             this._identity,
             initialProfilePictureData,
-        );
-
-        this.isBlocked = derive(this._services.model.user.privacySettings, ({controller}) =>
-            controller.isIdentityExplicitlyBlocked(this._identity),
         );
     }
 

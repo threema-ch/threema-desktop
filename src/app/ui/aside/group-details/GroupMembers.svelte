@@ -115,6 +115,7 @@
       {/if}
       {#each getVisibleMembers(sortedMembersExcludingCurrentContact, isParticipantsListExpanded) as member (member.id)}
         <GroupMember
+          {backend}
           {member}
           {creator}
           on:click={() => navigateToContactConversation(member.ctx)}

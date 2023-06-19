@@ -111,7 +111,7 @@ function getViewModelStore(
     services: ServicesForViewModel,
     contactStore: LocalModelStore<Contact>,
 ): ContactListItemViewModelStore {
-    const {endpoint} = services;
+    const {endpoint, model} = services;
     return derive(contactStore, (contact, getAndSubscribe) =>
         endpoint.exposeProperties({
             uid: contact.ctx,
@@ -130,7 +130,9 @@ function getViewModelStore(
             ...transformContactVerificationLevel(contact.view),
             showInContactList: contact.view.acquaintanceLevel !== AcquaintanceLevel.GROUP,
             activityState: contact.view.activityState,
-            isBlocked: getAndSubscribe(contact.controller.isBlocked),
+            isBlocked: getAndSubscribe(
+                model.user.privacySettings,
+            ).controller.isIdentityExplicitlyBlocked(contact.view.identity),
         } as const),
     );
 }
