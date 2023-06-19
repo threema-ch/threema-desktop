@@ -306,7 +306,10 @@ export class OutgoingCspMessageTask<
 
         // TODO(DESK-573): Bundle sending of group messages
         for (const receiver of receivers) {
-            if (!BLOCK_EXEMPTION_TYPES.has(messageType) && receiver.controller.isBlocked.get()) {
+            if (
+                !BLOCK_EXEMPTION_TYPES.has(messageType) &&
+                model.user.privacySettings.get().controller.isContactBlocked(receiver.view.identity)
+            ) {
                 this._log.info(
                     `Discarding sending message to blocked contact ${receiver.view.identity}`,
                 );
