@@ -273,7 +273,7 @@ export class SafeError extends BaseError {
  * Error types that can happen in connection with the Device Join Protocol.
  *
  * - encoding: Bytes could not be decompressed or decoded.
- * - validation: The backup JSON does not pass validation.
+ * - validation: Protobuf message does not pass validation.
  * - protocol: Aborted due to device join protocol violation.
  * - internal: An internal implementation error occurred.
  */

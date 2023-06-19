@@ -754,7 +754,7 @@ export class Backend implements ProxyMarked {
 
         // Initialize database with essential data
         try {
-            await joinProtocol.restoreEssentialData(backend.model);
+            await joinProtocol.restoreEssentialData(backend.model, identityData.identity);
         } catch (error) {
             return await throwError(
                 `Failed to restore essential data: ${error}`,

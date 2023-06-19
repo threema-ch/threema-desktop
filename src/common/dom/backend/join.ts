@@ -6,16 +6,19 @@ import {type ServicesForBackend} from '~/common/backend';
 import {randomU64} from '~/common/crypto/random';
 import {type DeviceIds} from '~/common/device';
 import {type RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
+import {ReceiverType} from '~/common/enum';
 import {DeviceJoinError} from '~/common/error';
 import {FileStorageError, type StoredFileHandle} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {type ProfileSettingsUpdate, type Repositories} from '~/common/model';
+import {groupDebugString} from '~/common/model/group';
 import * as protobuf from '~/common/network/protobuf';
 import {validate} from '~/common/network/protobuf';
 import {join} from '~/common/network/protobuf/js';
 import {type EssentialData} from '~/common/network/protobuf/validate/join';
 import {type BlobIdString, blobIdToString} from '~/common/network/protocol/blob';
 import {
+    type ConversationId,
     ensureCspDeviceId,
     ensureD2mDeviceId,
     type IdentityString,
@@ -26,6 +29,8 @@ import {type RawClientKey, type RawDeviceGroupKey} from '~/common/network/types/
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
+import {idColorIndex} from '~/common/utils/id-color';
+import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 type JoinState = 'wait-for-begin' | 'sync-blob-data' | 'sync-essential-data';
 
@@ -148,7 +153,10 @@ export class DeviceJoinProtocol {
      * Initialize database with data from the `EssentialData` message (i.e. user profile, contacts,
      * settings, etc).
      */
-    public async restoreEssentialData(repositories: Repositories): Promise<void> {
+    public async restoreEssentialData(
+        repositories: Repositories,
+        ownIdentity: IdentityString,
+    ): Promise<void> {
         const essentialData = this._essentialData.unwrap();
 
         // Load profile picture bytes from temporary file
@@ -184,13 +192,10 @@ export class DeviceJoinProtocol {
         };
         repositories.user.profileSettings.get().controller.update(profile);
 
-        // TODO(DESK-1038): Contacts
-        //const contactImporter = new SafeContactImporter(services);
-        //await contactImporter.importFrom(backupData);
-
-        // TODO(DESK-1038): Groups
-        //const groupImporter = new SafeGroupImporter(services);
-        //groupImporter.importFrom(backupData);
+        // Contacts and groups
+        this._restoreContacts(essentialData.contacts, repositories);
+        this._restoreGroups(essentialData.groups, repositories, ownIdentity);
+        // TODO(DESK-236): Import distribution lists
     }
 
     /**
@@ -207,6 +212,124 @@ export class DeviceJoinProtocol {
 
         // Close connection
         this._rendezvousConnection.abort.raise();
+    }
+
+    /**
+     * Restore contacts into database.
+     */
+    private _restoreContacts(
+        contacts: EssentialData.Type['contacts'],
+        repositories: Repositories,
+    ): void {
+        for (const {contact, lastUpdateAt} of contacts) {
+            this._log.debug(`Restoring contact ${contact.identity}`);
+            repositories.contacts.add.fromSync(
+                mapValitaDefaultsToUndefined({
+                    identity: contact.identity,
+                    publicKey: contact.publicKey,
+                    identityType: contact.identityType,
+                    featureMask: contact.featureMask,
+                    createdAt: contact.createdAt,
+                    lastUpdate: lastUpdateAt,
+                    firstName: contact.firstName ?? '',
+                    lastName: contact.lastName ?? '',
+                    nickname: contact.nickname,
+                    colorIndex: idColorIndex({
+                        type: ReceiverType.CONTACT,
+                        identity: contact.identity,
+                    }),
+                    verificationLevel: contact.verificationLevel,
+                    workVerificationLevel: contact.workVerificationLevel,
+                    acquaintanceLevel: contact.acquaintanceLevel,
+                    syncState: contact.syncState,
+                    activityState: contact.activityState,
+                    category: contact.conversationCategory,
+                    visibility: contact.conversationVisibility,
+                } as const),
+            );
+        }
+    }
+
+    /**
+     * Restore groups into database.
+     *
+     * Note: Must be called after contact import!
+     */
+    private _restoreGroups(
+        groups: EssentialData.Type['groups'],
+        repositories: Repositories,
+        ownIdentity: IdentityString,
+    ): void {
+        for (const {group, lastUpdateAt} of groups) {
+            const debugString = groupDebugString(
+                group.groupIdentity.creatorIdentity,
+                group.groupIdentity.groupId,
+            );
+            this._log.debug(`Restoring group ${debugString}`);
+
+            // Collect member UIDs. We assume that all contacts must have been restored in the
+            // contact restore step. A missing contact is treated as an invalid group.
+            const memberUids = [];
+            for (const member of group.memberIdentities.identities) {
+                // Sanity check: Our own identity must not be part of the members list
+                if (member === ownIdentity) {
+                    throw new DeviceJoinError(
+                        'protocol',
+                        `Group ${groupDebugString} contained user's own identity as member`,
+                    );
+                }
+                const contact = repositories.contacts.getByIdentity(member);
+                if (contact === undefined) {
+                    throw new DeviceJoinError(
+                        'protocol',
+                        `Group ${groupDebugString} could not be imported, member ${member} not found in database`,
+                    );
+                }
+                memberUids.push(contact.ctx);
+            }
+
+            // Explicitly add creator to members list
+            // TODO(DESK-558): Remove this
+            if (
+                group.groupIdentity.creatorIdentity !== ownIdentity &&
+                !group.memberIdentities.identities.includes(group.groupIdentity.creatorIdentity)
+            ) {
+                const creator = repositories.contacts.getByIdentity(
+                    group.groupIdentity.creatorIdentity,
+                );
+                if (creator === undefined) {
+                    throw new DeviceJoinError(
+                        'protocol',
+                        `Group ${groupDebugString} could not be imported, creator ${group.groupIdentity.creatorIdentity} not found in database`,
+                    );
+                }
+                memberUids.push(creator.ctx);
+            }
+
+            // Add group
+            const conversationId: ConversationId = {
+                type: ReceiverType.GROUP,
+                creatorIdentity: group.groupIdentity.creatorIdentity,
+                groupId: group.groupIdentity.groupId,
+            };
+            repositories.groups.add.fromSync(
+                mapValitaDefaultsToUndefined({
+                    groupId: group.groupIdentity.groupId,
+                    creatorIdentity: group.groupIdentity.creatorIdentity,
+                    createdAt: group.createdAt,
+                    lastUpdate: lastUpdateAt,
+                    name: group.name,
+                    colorIndex: idColorIndex(conversationId),
+                    userState: group.userState,
+                    notificationTriggerPolicyOverride: group.notificationTriggerPolicyOverride,
+                    notificationSoundPolicyOverride: group.notificationSoundPolicyOverride,
+                    category: group.conversationCategory,
+                    visibility: group.conversationVisibility,
+                } as const),
+                memberUids,
+            );
+            this._log.debug(`Group ${debugString} successfully imported`);
+        }
     }
 
     private _setState(newState: JoinState): void {
