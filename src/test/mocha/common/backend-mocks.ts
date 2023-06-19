@@ -174,6 +174,7 @@ import {
 } from '~/common/viewmodel/conversation-message-set';
 import {
     type ConversationPreviewSetStore,
+    type ConversationPreviewTranslationsStore,
     getConversationPreviewSetStore,
 } from '~/common/viewmodel/conversation-preview';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
@@ -446,8 +447,10 @@ export class TestViewModel implements IViewModelRepository {
 
     public constructor(private readonly _services: Omit<ServicesForBackend, 'viewModel'>) {}
 
-    public conversationPreviews(): ConversationPreviewSetStore {
-        return getConversationPreviewSetStore(this._services, this);
+    public conversationPreviews(
+        translations: ConversationPreviewTranslationsStore,
+    ): ConversationPreviewSetStore {
+        return getConversationPreviewSetStore(this._services, this, translations);
     }
 
     public conversation(receiver: DbReceiverLookup): ConversationViewModel | undefined {

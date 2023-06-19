@@ -330,6 +330,7 @@ function getConversationMessageBodyBaseMessage(
                 id,
                 status,
                 sender: {
+                    type: 'self',
                     name: getAndSubscribe(user.displayName),
                     profilePicture: getAndSubscribe(user.profilePicture),
                 },

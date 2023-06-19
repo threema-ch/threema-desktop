@@ -342,6 +342,7 @@ export type OutgoingMessage<B extends AnyMessageBody> = {
     readonly id: string;
     readonly status: MessageStatus;
     readonly sender: {
+        readonly type: 'self';
         readonly name: string;
         readonly profilePicture: ProfilePictureView;
     };

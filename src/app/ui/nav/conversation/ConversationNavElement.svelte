@@ -12,7 +12,13 @@
   import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts} from '~/app/ui/main/conversation';
   import MessageStatus from '~/app/ui/main/conversation/conversation-messages/MessageStatus.svelte';
-  import {conversationPreviewListFilter, isInactiveGroup} from '~/app/ui/nav/conversation';
+  import {
+    type ConversationPreviewData,
+    conversationPreviewListFilter,
+    isInactiveGroup,
+    transformConversation,
+    transformReceiver,
+  } from '~/app/ui/nav/conversation';
   import {
     ConversationCategory,
     ConversationVisibility,
@@ -20,11 +26,10 @@
     ReceiverType,
   } from '~/common/enum';
   import {statusFromView} from '~/common/model/message';
+  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {type ConversationPreview} from '~/common/viewmodel/conversation-preview';
-
-  import {type ConversationPreviewData, transformConversation, transformReceiver} from '.';
 
   /**
    * ConversationPreview
@@ -58,12 +63,10 @@
   /**
    * Store containing the conversation's last message
    */
-  let lastMessageStore = $viewModel.lastMessage?.messageStore;
-  let lastMessageViewModelStore = $viewModel.lastMessage?.viewModel;
-  $: {
-    lastMessageStore = $viewModel.lastMessage?.messageStore;
-    lastMessageViewModelStore = $viewModel.lastMessage?.viewModel;
-  }
+  $: lastConversationMessage = $viewModel.lastMessage;
+  $: lastMessageStore = lastConversationMessage?.messageStore;
+  $: lastMessageViewModelStore = lastConversationMessage?.viewModel;
+  $: lastMessagePreviewText = $viewModel.lastMessagePreview;
 
   /**
    * Router
@@ -79,6 +82,9 @@
    * Whether the conversation is currently being displayed.
    */
   export let active = false;
+
+  const conversationType = $conversation.view.type;
+  const isGroupConversation = conversationType === ReceiverType.GROUP;
 
   // Transform conversation data and set store instances
   $: conversation$ = transformConversation($conversation);
@@ -123,23 +129,50 @@
     }
   }
 
-  let draftOrLastMessageText = '';
+  // TODO(DESK-1073): Add default preview text for message types other than `text` or `file`.
+  let previewText = '';
   $: {
+    // Use default preview if conversation is protected.
     if (conversation$.category === ConversationCategory.PROTECTED) {
-      draftOrLastMessageText = $i18n.t('messaging.label--protected-conversation', 'Private');
-    } else if (conversationDraft !== undefined) {
-      draftOrLastMessageText = conversationDraft;
-    } else if ($lastMessageStore?.type === 'text') {
-      draftOrLastMessageText = $lastMessageStore.view.text;
-    } else if ($lastMessageStore?.type === 'file') {
-      draftOrLastMessageText = $lastMessageStore?.view.caption ?? '';
-    } else {
-      draftOrLastMessageText = '';
+      previewText = $i18n.t('messaging.label--protected-conversation', 'Private');
+      break $;
     }
-  }
 
-  const conversationType = $conversation.view.type;
-  const isGroupConversation = conversationType === ReceiverType.GROUP;
+    // Use draft as preview if there is any.
+    if (conversationDraft !== undefined) {
+      previewText = conversationDraft;
+      break $;
+    }
+
+    // Use last message as preview text.
+    if (lastMessagePreviewText !== undefined) {
+      if (isGroupConversation) {
+        const sender = $lastMessageViewModelStore?.body.sender;
+
+        switch (sender?.type) {
+          case 'self':
+            previewText = $i18n.t('messaging.label--default-sender-self', 'Me: {text}', {
+              text: lastMessagePreviewText,
+            });
+            break;
+          case 'contact':
+            previewText = `${sender.name}: ${lastMessagePreviewText}`;
+            break;
+          case undefined:
+            previewText = '';
+            break;
+          default:
+            unreachable(sender);
+        }
+      } else {
+        previewText = lastMessagePreviewText;
+      }
+
+      break $;
+    }
+
+    previewText = '';
+  }
 </script>
 
 <template>
@@ -164,7 +197,7 @@
               title: receiver$.name,
               titleLineThrough: isInactiveGroup($receiver),
               subtitle: {
-                text: draftOrLastMessageText,
+                text: previewText,
                 mentions: $lastMessageViewModelStore?.mentions,
               },
               isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,

@@ -13,7 +13,7 @@ import {getDisplayName} from '~/common/model/contact';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';
-import {type LocalStore} from '~/common/utils/store';
+import {type LocalStore, type RemoteStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
@@ -24,18 +24,26 @@ export type ConversationPreviewSetStore = LocalDerivedSetStore<
     ConversationPreview
 >;
 
+export interface ConversationPreviewTranslations {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    readonly 'messaging.label--default-file-message-preview': string;
+}
+
+export type ConversationPreviewTranslationsStore = RemoteStore<ConversationPreviewTranslations>;
+
 /**
  * Get a SetStore that contains a ConversationPreview for every existing Conversation.
  */
 export function getConversationPreviewSetStore(
     services: ServicesForViewModel,
     viewModelRepository: IViewModelRepository,
+    translations: ConversationPreviewTranslationsStore,
 ): ConversationPreviewSetStore {
     const {model} = services;
     const conversationSetStore = model.conversations.getAll();
 
     return new LocalDerivedSetStore(conversationSetStore, (conversationStore) =>
-        getConversationPreview(services, viewModelRepository, conversationStore),
+        getConversationPreview(services, viewModelRepository, conversationStore, translations),
     );
 }
 
@@ -52,6 +60,7 @@ function getConversationPreview(
     services: ServicesForViewModel,
     viewModelRepository: IViewModelRepository,
     conversationStore: LocalModelStore<Conversation>,
+    translations: ConversationPreviewTranslationsStore,
 ): ConversationPreview {
     const {endpoint} = services;
     const conversationController = conversationStore.get().controller;
@@ -62,7 +71,7 @@ function getConversationPreview(
         conversationStore,
         receiver,
         profilePicture,
-        viewModel: getViewModel(services, viewModelRepository, conversationStore),
+        viewModel: getViewModel(services, viewModelRepository, conversationStore, translations),
     });
 }
 
@@ -72,6 +81,7 @@ export type ConversationPreviewItem = {
     readonly receiver: ContactListItem | GroupListItem;
     readonly receiverLookup: DbReceiverLookup;
     readonly lastMessage: ConversationMessage | undefined;
+    readonly lastMessagePreview: string | undefined;
 } & ConversationView &
     PropertiesMarked;
 
@@ -79,20 +89,27 @@ function getViewModel(
     {endpoint, model}: ServicesForViewModel,
     viewModelRepository: IViewModelRepository,
     conversationStore: LocalModelStore<Conversation>,
+    translations: ConversationPreviewTranslationsStore,
 ): ConversationPreviewViewModel {
     return derive(conversationStore, (conversation, getAndSubscribe) => {
         const receiver = conversation.controller.receiver();
         const lastMessageStore = getAndSubscribe(conversation.controller.lastMessageStore());
+
         let lastMessage = undefined;
+        let lastMessagePreview = undefined;
         if (lastMessageStore !== undefined) {
             lastMessage = viewModelRepository.conversationMessage(
                 conversationStore,
                 lastMessageStore,
             );
+            lastMessagePreview = getAndSubscribe(
+                deriveLastMessagePreview(lastMessage, getAndSubscribe(translations)),
+            );
         }
         const commonProperties = {
             ...conversation.view,
             lastMessage,
+            lastMessagePreview,
         };
 
         let item;
@@ -161,4 +178,35 @@ function deriveGroupListItem(group: Group): GroupListItem {
         displayName: group.view.displayName,
         initials: group.view.displayName.slice(0, 2),
     };
+}
+
+export function deriveLastMessagePreview(
+    lastConversationMessage: ConversationMessage,
+    translations: Pick<
+        ConversationPreviewTranslations,
+        'messaging.label--default-file-message-preview'
+    >,
+): LocalStore<string> {
+    return derive(
+        lastConversationMessage.viewModel,
+        (lastMessageViewModelStore, getAndSubscribe) => {
+            const lastMessage = getAndSubscribe(lastConversationMessage.messageStore);
+            switch (lastMessage.type) {
+                case 'text':
+                    return lastMessage.view.text;
+
+                case 'file': {
+                    const caption = lastMessage.view.caption;
+                    if (caption !== undefined && caption !== '') {
+                        return caption;
+                    } else {
+                        return translations['messaging.label--default-file-message-preview'];
+                    }
+                }
+
+                default:
+                    return unreachable(lastMessage);
+            }
+        },
+    );
 }

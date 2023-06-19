@@ -10,6 +10,9 @@
   import ConversationNavList from '~/app/ui/nav/conversation/ConversationNavList.svelte';
   import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
   import {type Remote} from '~/common/utils/endpoint';
+  import {type LocalStore} from '~/common/utils/store';
+  import {derive} from '~/common/utils/store/derived-store';
+  import {type ConversationPreviewTranslations} from '~/common/viewmodel/conversation-preview';
   import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-nav');
@@ -36,6 +39,18 @@
   function handleHotkeyControlF(): void {
     searchInput.select();
   }
+
+  // TODO(DESK-1082): This translation should be entirely in the backend and not passed in.
+  const translationsForBackend: LocalStore<ConversationPreviewTranslations> = derive(
+    i18n,
+    ({t}) => ({
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      'messaging.label--default-file-message-preview': t(
+        'messaging.label--default-file-message-preview',
+        'File',
+      ),
+    }),
+  );
 
   onMount(() => {
     hotkeyManager.registerHotkey({control: true, code: 'KeyF'}, handleHotkeyControlF);
@@ -73,7 +88,7 @@
       />
     </div>
     <div class="conversation-preview-list">
-      {#await viewModel.conversationPreviews() then conversationPreviews}
+      {#await viewModel.conversationPreviews(translationsForBackend) then conversationPreviews}
         <ConversationNavList {conversationPreviews} {router} />
       {/await}
     </div>

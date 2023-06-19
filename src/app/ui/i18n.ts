@@ -217,6 +217,7 @@ async function setLanguage(locale: Locale): Promise<void> {
 
 // Svelte only re-renders the component using the store, when the store is updated.
 // Returning an object is a way to force triggering an update.
+// TODO(DESK-1081): `i18n` should not be a global, but exposed through `globals`.
 export const i18n: IQueryableStore<Pick<i18nType, 't'>> = derive(i18nStore, (updatedI18nStore) => ({
     t: updatedI18nStore.i18n.t,
 }));

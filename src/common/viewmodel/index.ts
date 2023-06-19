@@ -27,6 +27,7 @@ import {
 } from '~/common/viewmodel/conversation-message-set';
 import {
     type ConversationPreviewSetStore,
+    type ConversationPreviewTranslationsStore,
     getConversationPreviewSetStore,
 } from '~/common/viewmodel/conversation-preview';
 import {type DebugPanelViewModel, getDebugPanelViewModel} from '~/common/viewmodel/debug-panel';
@@ -44,7 +45,9 @@ export type ServicesForViewModel = Pick<
     'config' | 'device' | 'endpoint' | 'file' | 'logging' | 'model' | 'crypto'
 >;
 export interface IViewModelRepository extends ProxyMarked {
-    readonly conversationPreviews: () => ConversationPreviewSetStore;
+    readonly conversationPreviews: (
+        translations: ConversationPreviewTranslationsStore,
+    ) => ConversationPreviewSetStore;
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModel | undefined;
 
     readonly conversationMessageSet: (
@@ -76,9 +79,11 @@ export class ViewModelRepository implements IViewModelRepository {
         private readonly _cache: ViewModelCache,
     ) {}
 
-    public conversationPreviews(): ConversationPreviewSetStore {
+    public conversationPreviews(
+        translations: ConversationPreviewTranslationsStore,
+    ): ConversationPreviewSetStore {
         return this._cache.conversationPreview.derefOrCreate(() =>
-            getConversationPreviewSetStore(this._services, this),
+            getConversationPreviewSetStore(this._services, this, translations),
         );
     }
 
