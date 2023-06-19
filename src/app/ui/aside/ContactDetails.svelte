@@ -164,7 +164,9 @@
       <div class="profile-picture">
         <span>
           <RecipientProfilePicture
-            on:click={() => (contactProfilePictureDialogVisible = true)}
+            on:click={() => {
+              contactProfilePictureDialogVisible = true;
+            }}
             profilePicture={$profilePicture.view}
             alt={$i18n.t('contacts.hint--profile-picture', 'Profile picture of {name}', {
               name: $contactViewModel.displayName,

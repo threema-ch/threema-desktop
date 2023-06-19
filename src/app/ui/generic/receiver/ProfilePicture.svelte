@@ -18,7 +18,7 @@
 </script>
 
 <template>
-  <div class="profile-picture">
+  <div class="profile-picture" on:click>
     <div class="inner">
       <ProfilePictureComponent
         img={transformProfilePicture(profilePicture.picture)}
