@@ -261,3 +261,10 @@ export class RemoteFileLogger implements Logger {
 export function getGroupTag(identity: IdentityString, groupId: GroupId): string {
     return `group.${identity}.${u64ToHexLe(groupId)}`;
 }
+
+/**
+ * Create a logger style with the specified background- and foreground-colors.
+ */
+export function createLoggerStyle(bg: string, fg: string): string {
+    return `color: ${fg}; background-color: ${bg}; padding: .2em .3em; border-radius: 4px;`;
+}

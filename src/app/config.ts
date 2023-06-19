@@ -1,3 +1,5 @@
+import {createLoggerStyle} from '~/common/logging';
+
 /**
  * App configuration.
  */
@@ -12,6 +14,5 @@ interface AppConfig {
  * Default app configuration.
  */
 export const APP_CONFIG: AppConfig = {
-    LOG_DEFAULT_STYLE:
-        'color: #fff; background-color: #05a63f; padding: .2em .3em; border-radius: 4px;',
+    LOG_DEFAULT_STYLE: createLoggerStyle('#05a63f', '#ffffff'),
 };

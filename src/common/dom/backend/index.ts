@@ -42,7 +42,7 @@ import {
     KeyStorageError,
     type ServicesForKeyStorageFactory,
 } from '~/common/key-storage';
-import {type Logger, type LoggerFactory} from '~/common/logging';
+import {createLoggerStyle, type Logger, type LoggerFactory} from '~/common/logging';
 import {type Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
 import {type CloseInfo} from '~/common/network';
@@ -821,6 +821,11 @@ export class Backend implements ProxyMarked {
 }
 
 /**
+ * Connection logger style (white on yellow).
+ */
+const connectionLoggerStyle = createLoggerStyle('#EE9B00', '#FFFFFF');
+
+/**
  * Handles connections to the mediator server. It ensures the following things:
  *
  * - That only one connection to the server is active.
@@ -846,16 +851,22 @@ class ConnectionManager {
         private readonly _services: ServicesForBackend,
         private readonly _getCaptureHandlers: () => RawCaptureHandlers | undefined,
     ) {
-        this._log = _services.logging.logger('connection.manager');
+        this._log = _services.logging.logger('connection.manager', connectionLoggerStyle);
         this.state = ConnectionStateUtils.createStore(
             MonotonicEnumStore,
             ConnectionState.DISCONNECTED,
-            {log: _services.logging.logger('connection.state'), tag: 'state'},
+            {
+                log: _services.logging.logger('connection.state', connectionLoggerStyle),
+                tag: 'state',
+            },
         );
         this.leaderState = D2mLeaderStateUtils.createStore(
             MonotonicEnumStore,
             D2mLeaderState.NONLEADER,
-            {log: _services.logging.logger('connection.leaderState'), tag: 'state'},
+            {
+                log: _services.logging.logger('connection.leaderState', connectionLoggerStyle),
+                tag: 'state',
+            },
         );
     }
 
@@ -1156,7 +1167,7 @@ class Connection {
         getCaptureHandlers: () => RawCaptureHandlers | undefined,
     ): Promise<Connection> {
         const {config, crypto, device, logging} = services;
-        const log = logging.logger(`connection.${taskManager.id}`);
+        const log = logging.logger(`connection.${taskManager.id}`, connectionLoggerStyle);
         const connectionState = ConnectionStateUtils.createStore(
             MonotonicEnumStore,
             ConnectionState.CONNECTING,
