@@ -45,7 +45,16 @@ export const SCHEMA_KEY_REQUIRED = validator(
     v
         .object({
             ...BASE_SCHEMA,
-            key: instanceOf(Uint8Array).map(wrapRawBlobKey),
+            key: instanceOf(Uint8Array).chain((bytes) => {
+                if (bytes.byteLength === 0) {
+                    return v.err('Expected 32-byte blob key, but found 0 bytes');
+                }
+                try {
+                    return v.ok(wrapRawBlobKey(bytes));
+                } catch (error) {
+                    return v.err(`Invalid blob key: ${error}`);
+                }
+            }),
         })
         .rest(v.unknown()),
 );
