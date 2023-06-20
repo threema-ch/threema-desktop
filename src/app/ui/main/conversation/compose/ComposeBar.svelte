@@ -155,6 +155,7 @@
             vertical: 'bottom',
           },
         }}
+        flip={false}
       >
         <IconButton slot="trigger" flavor="naked">
           <MdIcon theme="Outlined">insert_emoticon</MdIcon>

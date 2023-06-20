@@ -1,6 +1,6 @@
 import Long from 'long';
 
-import {type ibig, type u32, type u53, type u64} from '~/common/types';
+import {type i53, type ibig, type u32, type u53, type u64} from '~/common/types';
 
 import {ensureError} from './assert';
 import {bytesToHex, byteView, hexToBytes} from './byte';
@@ -165,4 +165,19 @@ export function byteSizeToHumanReadable(size: u53): string {
     const base = (size / divisor ** exponent).toFixed(2);
     const unit = SI_BYTE_UNITS[exponent] ?? '???';
     return `${base} ${unit}`;
+}
+
+/**
+ * Limits the supplied value to the given range. `min` and `max` values are optional, so that the
+ * value can only be clamped in one direction if necessary.
+ *
+ * @param value The number to clamp.
+ * @param param1 Configuration of `min` and `max` values.
+ * @returns Clamped `value` to satisfy `min` and `max` constraints.
+ */
+export function clamp(
+    value: i53,
+    {min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER}: {min?: i53; max?: i53},
+): i53 {
+    return Math.max(Math.min(value, max), min);
 }

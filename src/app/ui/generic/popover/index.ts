@@ -1,6 +1,7 @@
 import {type ActionReturn} from 'svelte/action';
 
-import {type u53} from '~/common/types';
+import {type i53, type u53} from '~/common/types';
+import {clamp} from '~/common/utils/number';
 import {WritableStore} from '~/common/utils/store';
 
 /*
@@ -146,14 +147,14 @@ export function getPopoverOffset(
     const popoverRect = getUntransformedBoundingClientRect(popover);
 
     // Calculate the preferred `Offset` of the popover without considering any constraints.
-    const preferredPopoverTranslation = getUnconstrainedPopoverOffset(
+    const preferredPopoverOffset = getUnconstrainedPopoverOffset(
         positioningContainer,
         reference,
         popover,
         anchorPoints,
         offset,
     );
-    const translatedPopoverRect = getRectPlusOffset(popoverRect, preferredPopoverTranslation);
+    const translatedPopoverRect = getRectPlusOffset(popoverRect, preferredPopoverOffset);
 
     // Calculate the necessary `Flip` that needs to be applied so that the popover is fully visible.
     const suggestedPopoverFlip = flip
@@ -161,15 +162,26 @@ export function getPopoverOffset(
         : 'none';
 
     // Calculate and return the final `Offset` of the popover, and account for a possible `Flip`.
-    return suggestedPopoverFlip === 'none'
-        ? preferredPopoverTranslation
-        : getUnconstrainedPopoverOffset(
-              positioningContainer,
-              reference,
-              popover,
-              getFlippedAnchorPoint(anchorPoints, suggestedPopoverFlip),
-              getFlippedOffset(offset, suggestedPopoverFlip),
-          );
+    const popoverOffset =
+        suggestedPopoverFlip === 'none'
+            ? preferredPopoverOffset
+            : getUnconstrainedPopoverOffset(
+                  positioningContainer,
+                  reference,
+                  popover,
+                  getFlippedAnchorPoint(anchorPoints, suggestedPopoverFlip),
+                  getFlippedOffset(offset, suggestedPopoverFlip),
+              );
+    const maybeFlippedPopoverOffsetRect = getRectPlusOffset(popoverRect, popoverOffset);
+    const popoverOffsetCorrection = getSuggestedOffsetCorrection(
+        maybeFlippedPopoverOffsetRect,
+        constraintContainer,
+    );
+
+    return {
+        left: popoverOffset.left + popoverOffsetCorrection.left,
+        top: popoverOffset.top + popoverOffsetCorrection.top,
+    };
 }
 
 /**
@@ -327,6 +339,83 @@ function getSuggestedPopoverFlip(
 }
 
 /**
+ * Calculates the suggested {@link Offset} by which the `popoverRect` should be moved to be fully
+ * (or optimally) visible inside the container.
+ *
+ * @param popoverRect The {@link PartialDOMRect} of the popover.
+ * @param constraintContainer The container that should constrain the popover.
+ * @returns The suggested offset to move the popover by.
+ */
+function getSuggestedOffsetCorrection(
+    popoverRect: PartialDOMRect,
+    constraintContainer: HTMLElement,
+): Offset {
+    const containerRect = constraintContainer.getBoundingClientRect();
+    const visibleArea = {
+        ...containerRect,
+        top: Math.max(containerRect.top, 0),
+        left: Math.max(containerRect.left, 0),
+        bottom: Math.min(containerRect.bottom, window.innerHeight),
+        right: Math.min(containerRect.right, window.innerWidth),
+    };
+    const relativeOffset = getBoundingRectRelativeToContainer(popoverRect, visibleArea);
+
+    const horizontalPosition =
+        constraintContainer.scrollLeft <
+        constraintContainer.scrollWidth - constraintContainer.scrollLeft
+            ? 'left-half'
+            : 'right-half';
+    const verticalPosition =
+        constraintContainer.scrollTop <
+        constraintContainer.scrollHeight - constraintContainer.scrollTop
+            ? 'top-half'
+            : 'bottom-half';
+
+    // The amount by which the popover overflows its container.
+    const overflow = {
+        top: Math.abs(Math.min(relativeOffset.top, 0)),
+        left: Math.abs(Math.min(relativeOffset.left, 0)),
+        bottom: Math.abs(Math.min(relativeOffset.bottom, 0)),
+        right: Math.abs(Math.min(relativeOffset.right, 0)),
+    };
+
+    let offsetCorrectionLeft = 0;
+    if (horizontalPosition === 'left-half') {
+        // If we are in the left half, we want the popover to overlap on the right so it can be
+        // revealed by scrolling, if necessary.
+        offsetCorrectionLeft =
+            overflow.left > overflow.right
+                ? clamp(overflow.left, {min: 0})
+                : clamp(overflow.right, {min: 0});
+    } else {
+        // If we are in the right half, we want the popover to overlap on the left so it can be
+        // revealed by scrolling, if necessary.
+        offsetCorrectionLeft =
+            overflow.left > overflow.right
+                ? clamp(overflow.left, {min: 0, max: relativeOffset.right})
+                : clamp(overflow.right, {min: 0, max: relativeOffset.left});
+    }
+
+    let offsetCorrectionTop = 0;
+    if (verticalPosition === 'top-half') {
+        offsetCorrectionTop =
+            overflow.top > overflow.bottom
+                ? clamp(overflow.top, {min: 0})
+                : clamp(overflow.bottom, {min: 0});
+    } else {
+        offsetCorrectionTop =
+            overflow.top > overflow.bottom
+                ? clamp(overflow.top, {min: 0, max: relativeOffset.bottom})
+                : clamp(overflow.bottom, {min: 0, max: relativeOffset.top});
+    }
+
+    return {
+        left: offsetCorrectionLeft,
+        top: offsetCorrectionTop,
+    };
+}
+
+/**
  * Calculates and returns the inverse {@link AnchorPoint} definition based on an existing
  * {@link AnchorPoint} and a {@link Flip}.
  *
@@ -403,8 +492,8 @@ function getIsRectInVisibleAreaOfContainer(
     const containerRect = container.getBoundingClientRect();
 
     const visibleArea = {
-        top: containerRect.top,
-        left: containerRect.left,
+        top: Math.max(containerRect.top, 0),
+        left: Math.max(containerRect.left, 0),
         bottom: Math.min(containerRect.bottom, window.innerHeight),
         right: Math.min(containerRect.right, window.innerWidth),
     };
@@ -443,4 +532,23 @@ function getRectPlusOffset(rect: PartialDOMRect, offset: Offset): PartialDOMRect
  */
 function getRectWithOffset(rect: PartialDOMRect, offset: Offset): PartialDOMRect {
     return new DOMRect(offset.left, offset.top, rect.width, rect.height);
+}
+
+/**
+ * Returns the position of a `rect` relative to the supplied `containerRect`.
+ *
+ * @param rect The rect to get the position of.
+ * @param containerRect The container to calculate the relative position from.
+ * @returns The position of `rect` relative to `containerRect` on all its sides.
+ */
+function getBoundingRectRelativeToContainer(
+    rect: PartialDOMRect,
+    containerRect: PartialDOMRect,
+): {left: i53; right: i53; top: i53; bottom: i53} {
+    return {
+        left: Math.floor(rect.left) - Math.ceil(containerRect.left),
+        right: Math.floor(containerRect.right) - Math.ceil(rect.right),
+        top: Math.floor(rect.top) - Math.ceil(containerRect.top),
+        bottom: Math.floor(containerRect.bottom) - Math.ceil(rect.bottom),
+    };
 }

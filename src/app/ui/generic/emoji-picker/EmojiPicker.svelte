@@ -45,6 +45,7 @@
     width: rem(280px);
     padding: rem(8px);
     margin: rem(8px);
+    max-height: calc(100vh - rem(8px) - rem(8px));
 
     // Styling
     @extend %elevation-060;
