@@ -226,8 +226,7 @@ export class BackendController {
 
         // If backend could not be created, that means that no identity was found. Initiate device
         // linking flow.
-        // TODO(DESK-1038): Can we get rid of the loop?
-        while (backendEndpoint === undefined) {
+        if (backendEndpoint === undefined) {
             log.debug('Starting device linking process');
 
             // Store containing the backend's linking state
@@ -239,7 +238,7 @@ export class BackendController {
             const userPassword = new ResolvablePromise<string>();
             await showLinkingWizard(linkingStateStore, userPassword);
 
-            // Retry backend creation
+            // Create backend through device join
             try {
                 backendEndpoint = await creator.fromDeviceJoin(
                     assembleBackendInit(),
@@ -256,8 +255,7 @@ export class BackendController {
                         log.warn(
                             'Encountered a linking error that is handled by the UI. Waiting for application restart.',
                         );
-                        await eternalPromise();
-                        break;
+                        return unreachable(await eternalPromise());
                     case 'no-identity':
                         throw new Error(
                             `Unexpected error type: ${error.type} (${extractErrorMessage(
@@ -280,11 +278,12 @@ export class BackendController {
                             )})`,
                         );
                     default:
-                        unreachable(error.type);
+                        return unreachable(error.type);
                 }
             }
         }
 
+        // Wrap backend endpoint
         const remote = endpoint.wrap<BackendHandle>(backendEndpoint, logging.logger('com.backend'));
 
         // Release the one-shot backend creator
