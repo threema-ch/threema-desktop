@@ -16,7 +16,7 @@ import * as protobuf from '~/common/network/protobuf';
 import {validate} from '~/common/network/protobuf';
 import {join} from '~/common/network/protobuf/js';
 import {type EssentialData} from '~/common/network/protobuf/validate/join';
-import {type BlobIdString, blobIdToString} from '~/common/network/protocol/blob';
+import {type BlobId, type BlobIdString, blobIdToString} from '~/common/network/protocol/blob';
 import {
     type ConversationId,
     ensureCspDeviceId,
@@ -163,23 +163,10 @@ export class DeviceJoinProtocol {
         let profilePicture: ReadonlyUint8Array | undefined;
         const profilePictureBlobId = essentialData.userProfile.profilePicture?.updated.blob.id;
         if (profilePictureBlobId !== undefined) {
-            const fileHandle = this._blobIdToFileId.get(blobIdToString(profilePictureBlobId));
-            if (fileHandle === undefined) {
-                throw new DeviceJoinError(
-                    'protocol',
-                    'No blob data found for user profile picture',
-                );
-            }
-            try {
-                profilePicture = await this._services.file.load(fileHandle);
-            } catch (error) {
-                let msg = 'Could not load profile picture from file service';
-                if (error instanceof FileStorageError) {
-                    msg += `: ${error.type}`;
-                }
-                throw new DeviceJoinError('internal', msg, {from: error});
-            }
-            await this._services.file.delete(fileHandle.fileId);
+            profilePicture = await this._loadFileContents(
+                profilePictureBlobId,
+                'user profile picture',
+            );
         }
 
         // Profile settings: Nickname and profile picture
@@ -193,8 +180,8 @@ export class DeviceJoinProtocol {
         repositories.user.profileSettings.get().controller.update(profile);
 
         // Contacts and groups
-        this._restoreContacts(essentialData.contacts, repositories);
-        this._restoreGroups(essentialData.groups, repositories, ownIdentity);
+        await this._restoreContacts(essentialData.contacts, repositories);
+        await this._restoreGroups(essentialData.groups, repositories, ownIdentity);
         // TODO(DESK-236): Import distribution lists
     }
 
@@ -215,15 +202,41 @@ export class DeviceJoinProtocol {
     }
 
     /**
+     * Load file contents for the specified {@link blobId} from the file system, then delete the file.
+     */
+    private async _loadFileContents(blobId: BlobId, subject: string): Promise<ReadonlyUint8Array> {
+        const fileHandle = this._blobIdToFileId.get(blobIdToString(blobId));
+        if (fileHandle === undefined) {
+            throw new DeviceJoinError('protocol', `No blob data found for ${subject}`);
+        }
+
+        let bytes;
+        try {
+            bytes = await this._services.file.load(fileHandle);
+        } catch (error) {
+            let msg = `Could not load ${subject} from file service`;
+            if (error instanceof FileStorageError) {
+                msg += `: ${error.type}`;
+            }
+            throw new DeviceJoinError('internal', msg, {from: error});
+        }
+
+        await this._services.file.delete(fileHandle.fileId);
+        return bytes;
+    }
+
+    /**
      * Restore contacts into database.
      */
-    private _restoreContacts(
+    private async _restoreContacts(
         contacts: EssentialData.Type['contacts'],
         repositories: Repositories,
-    ): void {
+    ): Promise<void> {
         for (const {contact, lastUpdateAt} of contacts) {
             this._log.debug(`Restoring contact ${contact.identity}`);
-            repositories.contacts.add.fromSync(
+
+            // Basic data
+            const contactModelStore = repositories.contacts.add.fromSync(
                 mapValitaDefaultsToUndefined({
                     identity: contact.identity,
                     publicKey: contact.publicKey,
@@ -247,6 +260,29 @@ export class DeviceJoinProtocol {
                     visibility: contact.conversationVisibility,
                 } as const),
             );
+
+            // Profile pictures
+            const profilePictureController = contactModelStore
+                .get()
+                .controller.profilePicture.get().controller;
+            const contactDefinedProfilePictureBlobId =
+                contact.contactDefinedProfilePicture?.updated.blob.id;
+            if (contactDefinedProfilePictureBlobId !== undefined) {
+                const bytes = await this._loadFileContents(
+                    contactDefinedProfilePictureBlobId,
+                    'contact-defined contact profile picture',
+                );
+                profilePictureController.setPicture.fromSync(bytes, 'contact-defined');
+            }
+            const userDefinedProfilePictureBlobId =
+                contact.userDefinedProfilePicture?.updated.blob.id;
+            if (userDefinedProfilePictureBlobId !== undefined) {
+                const bytes = await this._loadFileContents(
+                    userDefinedProfilePictureBlobId,
+                    'user-defined contact profile picture',
+                );
+                profilePictureController.setPicture.fromSync(bytes, 'user-defined');
+            }
         }
     }
 
@@ -255,11 +291,11 @@ export class DeviceJoinProtocol {
      *
      * Note: Must be called after contact import!
      */
-    private _restoreGroups(
+    private async _restoreGroups(
         groups: EssentialData.Type['groups'],
         repositories: Repositories,
         ownIdentity: IdentityString,
-    ): void {
+    ): Promise<void> {
         for (const {group, lastUpdateAt} of groups) {
             const debugString = groupDebugString(
                 group.groupIdentity.creatorIdentity,
@@ -312,7 +348,7 @@ export class DeviceJoinProtocol {
                 creatorIdentity: group.groupIdentity.creatorIdentity,
                 groupId: group.groupIdentity.groupId,
             };
-            repositories.groups.add.fromSync(
+            const groupModelStore = repositories.groups.add.fromSync(
                 mapValitaDefaultsToUndefined({
                     groupId: group.groupIdentity.groupId,
                     creatorIdentity: group.groupIdentity.creatorIdentity,
@@ -328,6 +364,20 @@ export class DeviceJoinProtocol {
                 } as const),
                 memberUids,
             );
+
+            // Profile picture
+            const profilePictureController = groupModelStore
+                .get()
+                .controller.profilePicture.get().controller;
+            const profilePictureBlobId = group.profilePicture?.updated.blob.id;
+            if (profilePictureBlobId !== undefined) {
+                const bytes = await this._loadFileContents(
+                    profilePictureBlobId,
+                    'group profile picture',
+                );
+                profilePictureController.setPicture.fromSync(bytes, 'admin-defined');
+            }
+
             this._log.debug(`Group ${debugString} successfully imported`);
         }
     }
