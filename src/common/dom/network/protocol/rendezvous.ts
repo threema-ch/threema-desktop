@@ -134,7 +134,7 @@ class MultiplexedPath
         // Abort the queue when the protocol is aborted and vice versa.
         abort.subscribe(() => queue.error(new Error('Abort raised')));
         queue.aborted.catch((error) => {
-            _log.debug('Queue aborted', error);
+            _log.debug(`Queue aborted: ${error}`);
             abort.raise();
         });
 
@@ -360,9 +360,13 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
             this.writable = transform.writable;
 
             // Forward outgoing frames to the nominated path
-            void transform.readable.pipeTo(path.writable, {
-                signal: abort.attach(new AbortController()),
-            });
+            transform.readable
+                .pipeTo(path.writable, {
+                    signal: abort.attach(new AbortController()),
+                })
+                .catch((error) => {
+                    // Ignore
+                });
         }
     }
 

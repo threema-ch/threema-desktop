@@ -198,6 +198,7 @@ export class DeviceJoinProtocol {
         await this._writer.write(encoder.encode(new Uint8Array(encoder.byteLength())));
 
         // Close connection
+        this._reader.releaseLock();
         this._rendezvousConnection.abort.raise();
     }
 
