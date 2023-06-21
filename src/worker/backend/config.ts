@@ -14,5 +14,5 @@ interface BackendWorkerConfig {
  * Default backend worker configuration.
  */
 export const BACKEND_WORKER_CONFIG: BackendWorkerConfig = {
-    LOG_DEFAULT_STYLE: createLoggerStyle('#0096ff', '#ffffff'),
+    LOG_DEFAULT_STYLE: createLoggerStyle('#0096ff', 'white'),
 };

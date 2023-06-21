@@ -1,8 +1,10 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* @param {Logger} logger
+* @param {LogLevel} min_log_level
 */
-export function initLogging(): void;
+export function initLogging(logger: Logger, min_log_level: LogLevel): void;
 export type PathStateUpdate = { state: "awaiting-nominate"; measuredRttMs: number } | { state: "nominated"; rph: Uint8Array };
 
 export interface PathProcessResult {
@@ -17,6 +19,21 @@ export interface InitialOutgoingFrame {
     pid: number;
     frame: Uint8Array;
 }
+
+
+type LogRecordFn = (...data: readonly unknown[]) => void;
+
+interface Logger {
+    debug: LogRecordFn;
+    info: LogRecordFn;
+    warn: LogRecordFn;
+    error: LogRecordFn;
+}
+
+
+
+type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error';
+
 
 /**
 */
@@ -74,7 +91,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly initLogging: () => void;
   readonly __wbg_rendezvousprotocol_free: (a: number) => void;
   readonly rendezvousprotocol_newAsRid: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly rendezvousprotocol_newAsRrd: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
@@ -85,6 +101,7 @@ export interface InitOutput {
   readonly rendezvousprotocol_processFrame: (a: number, b: number, c: number) => void;
   readonly rendezvousprotocol_nominatePath: (a: number, b: number, c: number) => void;
   readonly rendezvousprotocol_createUlpFrame: (a: number, b: number, c: number, d: number) => void;
+  readonly initLogging: (a: number, b: number) => void;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;

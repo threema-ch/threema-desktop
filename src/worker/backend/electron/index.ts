@@ -9,6 +9,7 @@ import {type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {type ServicesForKeyStorageFactory} from '~/common/key-storage';
 import {
     CONSOLE_LOGGER,
+    createLoggerStyle,
     type Logger,
     type LoggerFactory,
     TagLogger,
@@ -67,7 +68,16 @@ export default async function run(): Promise<void> {
     // Initialize WASM packages
     initLog.debug('Initializing WASM packages');
     await initLibthreema();
-    libthreema.initLogging();
+    const libthreemaLog = logging.logger('libthreema', createLoggerStyle('#5C2751', 'white'));
+    libthreema.initLogging(
+        {
+            debug: (message) => libthreemaLog.debug(message),
+            info: (message) => libthreemaLog.info(message),
+            warn: (message) => libthreemaLog.warn(message),
+            error: (message) => libthreemaLog.error(message),
+        },
+        import.meta.env.DEBUG ? 'debug' : 'info',
+    );
 
     // Start backend worker for Electron
     main(CONFIG, {

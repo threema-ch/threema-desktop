@@ -737,7 +737,7 @@ export class Backend implements ProxyMarked {
         }
         if (privateData.serverGroup !== joinResult.serverGroup) {
             return await throwLinkingError(
-                `Server group reported by server (${privateData.serverGroup}) does not match server group received from join protocol (${joinResult.serverGroup})`,
+                `Server group reported by directory server (${privateData.serverGroup}) does not match server group received from join protocol (${joinResult.serverGroup})`,
                 'generic-error',
             );
         }
@@ -885,7 +885,7 @@ export type InitialConnectionResult = {connected: true} | {connected: false; clo
 /**
  * Connection logger style (white on yellow).
  */
-const connectionLoggerStyle = createLoggerStyle('#EE9B00', '#FFFFFF');
+const connectionLoggerStyle = createLoggerStyle('#EE9B00', 'white');
 
 /**
  * Handles connections to the mediator server. It ensures the following things:
