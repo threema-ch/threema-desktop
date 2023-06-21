@@ -94,17 +94,33 @@ export default async function run(): Promise<void> {
 
         compressor: () => new ZlibCompressor(),
 
-        db: (services: ServicesForDatabaseFactory, log: Logger, key: RawDatabaseKey) => {
+        db: (
+            services: ServicesForDatabaseFactory,
+            log: Logger,
+            key: RawDatabaseKey,
+            shouldExist: boolean,
+        ) => {
             const {config} = services;
 
+            // Process database path
+            let databasePath;
+            if (config.DATABASE_PATH === ':memory:') {
+                log.info('Using in-memory database');
+                databasePath = ':memory:';
+            } else {
+                databasePath = path.join(appPath, ...config.DATABASE_PATH);
+                if (!shouldExist) {
+                    // Ensure that database does not exist. If necessary, remove leftover files from
+                    // an incomplete join process.
+                    fs.rmSync(databasePath, {force: true});
+                } else {
+                    // TODO(DESK-383): If `shouldExist` is true but DB does not exist, gracefully return to
+                    // the UI, etc.
+                }
+            }
+
             // Instantiate backend
-            const backend = SqliteDatabaseBackend.create(
-                log,
-                config.DATABASE_PATH === ':memory:'
-                    ? config.DATABASE_PATH
-                    : path.join(appPath, ...config.DATABASE_PATH),
-                key,
-            );
+            const backend = SqliteDatabaseBackend.create(log, databasePath, key);
 
             // Run migrations
             backend.runMigrations();

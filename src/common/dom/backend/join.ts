@@ -39,7 +39,7 @@ type ServicesForDeviceJoinProtocol = Pick<ServicesForBackend, 'crypto' | 'file'>
 /**
  * Data obtained as part of the device join protocol, which is needed to initialize the backend.
  */
-interface DeviceJoinResult {
+export interface DeviceJoinResult {
     readonly identity: IdentityString;
     readonly rawCk: RawClientKey;
     readonly serverGroup: ServerGroup;

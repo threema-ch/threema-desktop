@@ -85,6 +85,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
      */
     private readonly _db: DBConnection;
 
+    /**
+     * Instantiate database backend.
+     *
+     * Note: The {@link dbKey} will be consumed and purged after initialization!
+     */
     private constructor(
         private readonly _log: Logger,
         private readonly _migrationHelper: MigrationHelper,
@@ -192,6 +197,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     /**
      * Instantiate SqlCipher database.
+     *
+     * Note: The {@link dbKey} will be consumed and purged after initialization!
      *
      * Note: Migrations are loaded, but not run!
      */

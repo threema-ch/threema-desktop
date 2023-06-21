@@ -11,7 +11,7 @@ import {
     wrapRawDatabaseKey,
 } from '~/common/db';
 import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device';
-import {DeviceJoinProtocol} from '~/common/dom/backend/join';
+import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/join';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {FetchBlobBackend} from '~/common/dom/network/protocol/fetch-blob';
@@ -67,9 +67,11 @@ import {ConnectedTaskManager, TaskManager} from '~/common/network/protocol/task/
 import {
     type ClientKey,
     randomRendezvousAuthenticationKey,
+    type RawClientKey,
     type RawDeviceGroupKey,
     type TemporaryClientKey,
     wrapRawClientKey,
+    wrapRawDeviceGroupKey,
 } from '~/common/network/types/keys';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import {type SystemDialogService} from '~/common/system-dialog';
@@ -186,14 +188,24 @@ export type BackendHandle = Pick<
  * Service factories needed for a backend worker.
  */
 export interface FactoriesForBackend {
+    /** Instantiate logger factory. */
     readonly logging: (rootTag: string, defaultStyle: string) => LoggerFactory;
+    /** Instantiate key storage. */
     readonly keyStorage: (services: ServicesForKeyStorageFactory, log: Logger) => KeyStorage;
+    /** Instantiate file storage. */
     readonly fileStorage: (services: ServicesForFileStorageFactory, log: Logger) => FileStorage;
+    /** Instantiate compressor. */
     readonly compressor: () => Compressor;
+    /**
+     * Instantiate database backend.
+     *
+     * Note: The {@link key} may be consumed and purged after initialization!
+     */
     readonly db: (
         services: ServicesForDatabaseFactory,
         log: Logger,
         key: RawDatabaseKey,
+        shouldExist: boolean,
     ) => DatabaseBackend;
 }
 
@@ -333,6 +345,8 @@ function initBackendServicesWithoutIdentity(
 
 /**
  * Init the full backend services.
+ *
+ * Note: The {@link dgk} will be consumed and purged after initialization!
  */
 function initBackendServices(
     simpleServices: Omit<ServicesForBackend, ServicesThatRequireIdentity>,
@@ -385,6 +399,41 @@ function initBackendServices(
 }
 
 /**
+ * Write key storage with the provided data.
+ */
+async function writeKeyStorage(
+    factories: FactoriesForBackend,
+    {config, crypto, logging}: Pick<ServicesForBackend, 'config' | 'crypto' | 'logging'>,
+    password: string,
+    identityData: IdentityData,
+    deviceIds: DeviceIds,
+    ck: RawClientKey,
+    dgk: RawDeviceGroupKey,
+    databaseKey: RawDatabaseKey,
+): Promise<void> {
+    const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
+    try {
+        await keyStorage.write(password, {
+            schemaVersion: 2,
+            identityData: {
+                identity: identityData.identity,
+                ck,
+                serverGroup: identityData.serverGroup,
+            },
+            dgk,
+            databaseKey,
+            deviceIds: {...deviceIds},
+        });
+    } catch (error) {
+        throw new BackendCreationError(
+            'key-storage-error',
+            `Could not write to key storage: ${error}`,
+            {from: error},
+        );
+    }
+}
+
+/**
  * The backend combines all required services and contains the core logic of our application.
  *
  * The backend lives in the worker thread. It is exposed via its {@link BackendHandle} to the UI
@@ -432,7 +481,7 @@ export class Backend implements ProxyMarked {
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         keyStoragePassword: string,
     ): Promise<EndpointFor<BackendHandle>> {
-        const log = logging.logger('backend.create.keystorage');
+        const log = logging.logger('backend.create.from-keystorage');
         log.info('Creating backend from existing key storage');
 
         // Initialize services that are needed early
@@ -515,12 +564,13 @@ export class Backend implements ProxyMarked {
         const deviceIds = keyStorageContents.deviceIds;
         const dgk = keyStorageContents.dgk;
 
-        // Create database
-        //
-        // TODO(DESK-383): Some kind of signal whether the database file needs to exist needs
-        //     to be passed into the worker. If the database does not exist but should exist,
-        //     gracefully return to the UI, etc.
-        const db = factories.db({config}, logging.logger('db'), keyStorageContents.databaseKey);
+        // Open database
+        const db = factories.db(
+            {config},
+            logging.logger('db'),
+            keyStorageContents.databaseKey,
+            true,
+        );
 
         // Create backend
         const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
@@ -553,7 +603,7 @@ export class Backend implements ProxyMarked {
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
     ): Promise<EndpointFor<BackendHandle>> {
-        const log = logging.logger('backend.create.join');
+        const log = logging.logger('backend.create.from-join');
         log.info('Creating backend through device linking flow');
 
         // Initialize services that are needed early
@@ -573,7 +623,7 @@ export class Backend implements ProxyMarked {
 
         // Helper function for error handling
         // eslint-disable-next-line no-inner-declarations
-        async function throwError(
+        async function throwLinkingError(
             message: string,
             type: LinkingStateErrorType,
             error?: Error,
@@ -609,7 +659,7 @@ export class Backend implements ProxyMarked {
         try {
             rendezvous = await RendezvousConnection.create({logging}, setup);
         } catch (error) {
-            return await throwError(
+            return await throwLinkingError(
                 `Rendezvous connection failed: ${error}`,
                 'connection-error',
                 ensureError(error),
@@ -625,7 +675,7 @@ export class Backend implements ProxyMarked {
         try {
             connectResult = await rendezvous.connect();
         } catch (error) {
-            return await throwError(
+            return await throwLinkingError(
                 `Rendezvous handshake failed: ${error}`,
                 'rendezvous-error',
                 ensureError(error),
@@ -659,11 +709,11 @@ export class Backend implements ProxyMarked {
             logging.logger('backend-controller.join'),
             {crypto: services.crypto, file: services.file},
         );
-        let joinResult;
+        let joinResult: DeviceJoinResult;
         try {
             joinResult = await joinProtocol.join();
         } catch (error) {
-            return await throwError(
+            return await throwLinkingError(
                 `Device join protocol failed: ${error}`,
                 'join-error',
                 ensureError(error),
@@ -671,7 +721,7 @@ export class Backend implements ProxyMarked {
         }
 
         // Wrap the client key (but keep a copy for the key storage)
-        const rawCkForKeystore = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
+        const rawCkForKeyStorage = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
         const ck = SecureSharedBoxFactory.consume(services.crypto, joinResult.rawCk) as ClientKey;
 
         // Look up identity information and server group on directory server
@@ -679,14 +729,14 @@ export class Backend implements ProxyMarked {
         try {
             privateData = await services.directory.privateData(joinResult.identity, ck);
         } catch (error) {
-            return await throwError(
+            return await throwLinkingError(
                 `Fetching information about identity failed: ${error}`,
                 'generic-error',
                 ensureError(error),
             );
         }
         if (privateData.serverGroup !== joinResult.serverGroup) {
-            return await throwError(
+            return await throwLinkingError(
                 `Server group reported by server (${privateData.serverGroup}) does not match server group received from join protocol (${joinResult.serverGroup})`,
                 'generic-error',
             );
@@ -700,53 +750,16 @@ export class Backend implements ProxyMarked {
         };
         const deviceIds: DeviceIds = joinResult.deviceIds;
         const dgk: RawDeviceGroupKey = joinResult.dgk;
+        const dgkForKeyStorage = wrapRawDeviceGroupKey(dgk.unwrap().slice());
 
         // Generate new random database key
         const databaseKey = wrapRawDatabaseKey(
             services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
         );
-
-        // Wait for user password
-        log.debug('Waiting for user password');
-        const userPassword = await userPasswordPromise;
-        if (userPassword.length === 0) {
-            return await throwError(`Received empty user password`, 'generic-error');
-        }
-
-        // Write to key storage
-        const keyStorage = factories.keyStorage(
-            {config, crypto: services.crypto},
-            logging.logger('key-storage'),
-        );
-        try {
-            await keyStorage.write(userPassword, {
-                schemaVersion: 2,
-                identityData: {
-                    identity: identityData.identity,
-                    ck: rawCkForKeystore,
-                    serverGroup: identityData.serverGroup,
-                },
-                dgk,
-                databaseKey,
-                deviceIds: {...deviceIds},
-            });
-        } catch (error) {
-            throw new BackendCreationError(
-                'key-storage-error',
-                `Could not write to key storage: ${error}`,
-                {from: error},
-            );
-        }
-
-        // Purge sensitive data
-        rawCkForKeystore.purge();
-        joinResult.rawCk.purge();
+        const databaseKeyForKeyStorage = wrapRawDatabaseKey(databaseKey.unwrap().slice());
 
         // Create database
-        //
-        // TODO(DESK-383): If the database does not exist but should exist,
-        //     gracefully return to the UI, etc.
-        const db = factories.db({config}, logging.logger('db'), databaseKey);
+        const db = factories.db({config}, logging.logger('db'), databaseKey, false);
 
         // Create backend
         const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
@@ -756,28 +769,59 @@ export class Backend implements ProxyMarked {
         try {
             await joinProtocol.restoreEssentialData(backend.model, identityData.identity);
         } catch (error) {
-            return await throwError(
+            return await throwLinkingError(
                 `Failed to restore essential data: ${error}`,
                 'restore-error',
                 ensureError(error),
             );
         }
 
+        // Wait for user password
+        log.debug('Waiting for user password');
+        const userPassword = await userPasswordPromise;
+        if (userPassword.length === 0) {
+            return await throwLinkingError(`Received empty user password`, 'generic-error');
+        }
+
+        /**
+         * Helper function to purge sensitive data.
+         */
+        function purgeSensitiveData(): void {
+            rawCkForKeyStorage.purge();
+            dgkForKeyStorage.purge();
+            databaseKeyForKeyStorage.purge();
+            joinResult.rawCk.purge();
+        }
+
         // Now that essential data is processed, we can connect to the Mediator server and register
         // ourselves
         const initialConnectionResult = await backend.connectionManager.start();
-
-        // If connection was successful, send "Registered" message and close the connection.
         if (initialConnectionResult.connected) {
+            // Write key storage
+            await writeKeyStorage(
+                factories,
+                services,
+                userPassword,
+                identityData,
+                deviceIds,
+                rawCkForKeyStorage,
+                dgkForKeyStorage,
+                databaseKeyForKeyStorage,
+            );
+            purgeSensitiveData();
+
+            // Mark join protocol as complete and update state
             await joinProtocol.complete();
             await linkingState.updateState({state: 'registered'});
         } else {
+            // Purge data and report error
+            purgeSensitiveData();
             let errorInfo = `Close code ${initialConnectionResult.closeCode}`;
             const closeCodeName = CloseCodeUtils.nameOf(initialConnectionResult.closeCode);
             if (closeCodeName !== undefined) {
                 errorInfo += ` (${closeCodeName})`;
             }
-            return await throwError(
+            return await throwLinkingError(
                 `Initial connection with server failed: ${errorInfo} `,
                 'registration-error',
             );
