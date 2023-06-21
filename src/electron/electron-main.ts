@@ -37,21 +37,28 @@ const ELECTRON_PATH_USER_DATA = 'userData';
 /**
  * Run parameters parsed from CLI arguments.
  */
+const RUN_PARAMETER_BOOL_SCHEMA = v
+    .string()
+    .chain((bool) =>
+        ['true', 'false'].includes(bool)
+            ? v.ok(bool === 'true')
+            : v.err(`Expected "true" or "false", but got "${bool}"`),
+    );
 const RUN_PARAMETERS_SCHEMA = v.object({
     'profile': v.string().default('default'),
-    'persist-profile': v
-        .string()
-        .assert((bool) => ['true', 'false'].includes(bool), "Expected 'true' or 'false'")
-        .map((bool) => bool === 'true')
-        .default(true),
+    'persist-profile': RUN_PARAMETER_BOOL_SCHEMA.default(true),
+    'single-instance-lock': RUN_PARAMETER_BOOL_SCHEMA.optional(),
 });
 type RunParameters = Readonly<v.Infer<typeof RUN_PARAMETERS_SCHEMA>>;
 /**
  * Run parameter documentation.
  */
 const RUN_PARAMETERS_DOCS: {readonly [K in keyof RunParameters]: string} = {
-    'profile': '<session-profile-name>',
-    'persist-profile': '<true|false>',
+    'profile': '<session-profile-name> – The name of the profile to use. "default" by default.',
+    'persist-profile':
+        '<true|false> – Persist the profile to a permanent location (default: "true") or use a volatile session and temporary storage ("false").',
+    'single-instance-lock':
+        '<true|false> – Prevent running multiple instances of Threema Desktop at the same time (default: "true"). Development option, disable at your own risk!',
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -303,10 +310,7 @@ async function init(): Promise<MainInit> {
     }
 
     /**
-     * Parses the following arguments into options:
-     *
-     * - `--profile=<session-profile-name>`
-     * - `--persist-profile=<true|false>`
+     * Parses the CLI arguments into options:
      */
     function parseParameters(argv: readonly string[]): RunParameters {
         // Note: The number of entries in argv depends on whether the application is packaged or not.
@@ -875,15 +879,6 @@ function main(
 void (async () => {
     const signal = {start: false};
 
-    // Acquire lock that can be used for ensuring a single instance
-    if (!import.meta.env.DEBUG) {
-        const singleInstanceLock = electron.app.requestSingleInstanceLock();
-        if (!singleInstanceLock) {
-            log.error('Application is already open, refusing to start a second instance');
-            electron.app.exit(0);
-        }
-    }
-
     // Quit application when all windows are closed
     electron.app.on('window-all-closed', () => electron.app.quit());
 
@@ -902,6 +897,15 @@ void (async () => {
             stacktrace,
         });
         return;
+    }
+
+    // Acquire lock that can be used for ensuring a single instance
+    if (result.parameters['single-instance-lock'] ?? !import.meta.env.DEBUG) {
+        const singleInstanceLock = electron.app.requestSingleInstanceLock();
+        if (!singleInstanceLock) {
+            log.error('Application is already open, refusing to start a second instance');
+            electron.app.exit(0);
+        }
     }
 
     // Run main app
