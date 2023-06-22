@@ -177,16 +177,14 @@ export class BackendController {
         log.debug('Waiting for remote backend to be created');
         let backendEndpoint;
         {
-            const LEGACY_DEFAULT_PASSWORD = 'please-change-me-i-am-so-insecure'; // TODO(DESK-731)
-            let passwordForExistingKeyStorage: string | undefined = undefined;
+            let passwordForExistingKeyStorage: string | undefined = await requestUserPassword();
             // eslint-disable-next-line no-labels
             loopToCreateBackendWithKeyStorage: for (;;) {
                 log.debug('Loop to create backend with existing key storage');
                 try {
                     backendEndpoint = await creator.fromKeyStorage(
-                        // TODO(DESK-731): Remove the transitional logic involving LEGACY_DEFAULT_PASSWORD
                         assembleBackendInit(),
-                        passwordForExistingKeyStorage ?? LEGACY_DEFAULT_PASSWORD,
+                        passwordForExistingKeyStorage,
                     );
                 } catch (error) {
                     assertError(
