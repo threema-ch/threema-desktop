@@ -60,6 +60,21 @@
     "markup--windows-p1": "Please update by downloading and installing the latest release from <1 />.",
     "prose--intro": "An update for Threema is available!"
   },
+  "dialog--change-password": {
+    "action--cancel": "Cancel",
+    "action--confirm": "Confirm",
+    "error--current-password-incorrect": "Your current password is incorrect",
+    "error--current-password-present": "Please enter your current password",
+    "error--new-password-must-be-different": "New password must be different from the old one.",
+    "error--password-equality": "Passwords do not match",
+    "error--password-length": "Please enter at least {n, plural, =1 {1 character} other {# characters}}",
+    "label--current-password": "Current Password",
+    "label--new-password": "New Password",
+    "label--repeat-new-password": "Repeat New Password",
+    "label--title": "Change Password",
+    "prose--intro": "The password protects your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again.",
+    "success--password-changed": "Successfully changed password"
+  },
   "dialog--compose-media-message": {
     "hint--drop-files-to-add": "Drop files here to add",
     "label--media-message-caption": "Add a caption to this media format",

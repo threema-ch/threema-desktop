@@ -9,6 +9,7 @@
   import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
   import MainProfile from '~/app/ui/main/Profile.svelte';
   import MainWelcome from '~/app/ui/main/Welcome.svelte';
+  import ChangePassword from '~/app/ui/modal/ChangePassword.svelte';
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
   import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';
   import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
@@ -111,6 +112,9 @@
         break;
       case 'groupEdit':
         modalComponent = ModalGroupEdit;
+        break;
+      case 'changePassword':
+        modalComponent = ChangePassword;
         break;
       default:
         unreachable(modalId, new Error('Unhandled modal router state'));

@@ -60,6 +60,21 @@
     "markup--windows-p1": "[d] Bitte aktualisieren Sie, indem Sie die neueste Version von <1 /> herunterladen und installieren.",
     "prose--intro": "[d] Ein Update für Threema ist verfügbar!"
   },
+  "dialog--change-password": {
+    "action--cancel": "[d] Abbrechen",
+    "action--confirm": "[d] Bestätigen",
+    "error--current-password-incorrect": "[d] Ihr aktuelles Passwort ist falsch",
+    "error--current-password-present": "[d] Bitte geben Sie Ihr aktuelles Passwort ein",
+    "error--new-password-must-be-different": "[d] Das neue Passwort muss sich vom alten unterscheiden.",
+    "error--password-equality": "[d] Passwörter stimmen nicht überein",
+    "error--password-length": "[d] Bitte geben Sie mindestens {n, plural, =1 {1 Zeichen} other {# Zeichen}} ein",
+    "label--current-password": "[d] Aktuelles Passwort",
+    "label--new-password": "[d] Neues Passwort",
+    "label--repeat-new-password": "[d] Neues Passwort wiederholen",
+    "label--title": "[d] Passwort ändern",
+    "prose--intro": "[d] Das Passwort schützt Ihre Nachrichten, Threema-ID und andere Daten auf diesem Computer. Sie müssen es eingeben, wenn Sie Threema für den Desktop starten. Bitte beachten Sie, dass es keine Möglichkeit gibt, dieses Passwort wiederherzustellen. Wenn Sie es vergessen, müssen Sie dieses Gerät erneut verknüpfen.",
+    "success--password-changed": "[d] Passwort erfolgreich geändert"
+  },
   "dialog--compose-media-message": {
     "hint--drop-files-to-add": "[d] Dateien hier ablegen zum Hinzufügen",
     "label--media-message-caption": "[d] Fügen Sie dieser Mediendatei eine Bildunterschrift hinzu",

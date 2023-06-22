@@ -190,6 +190,7 @@ export type BackendHandle = Pick<
     | 'deviceIds'
     | 'directory'
     | 'model'
+    | 'keyStorage'
     | 'viewModel'
     | 'selfKickFromMediator'
 >;
@@ -337,6 +338,7 @@ function initBackendServicesWithoutIdentity(
         logging.logger('com.system-dialog'),
     );
     const taskManager = new TaskManager({logging});
+    const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
 
     return {
         compressor,
@@ -345,6 +347,7 @@ function initBackendServicesWithoutIdentity(
         directory,
         endpoint,
         file,
+        keyStorage,
         logging,
         notification,
         systemDialog,
@@ -412,8 +415,7 @@ function initBackendServices(
  * Write key storage with the provided data.
  */
 async function writeKeyStorage(
-    factories: FactoriesForBackend,
-    {config, crypto, logging}: Pick<ServicesForBackend, 'config' | 'crypto' | 'logging'>,
+    {keyStorage}: Pick<ServicesForBackend, 'keyStorage'>,
     password: string,
     identityData: IdentityData,
     deviceIds: DeviceIds,
@@ -421,7 +423,6 @@ async function writeKeyStorage(
     dgk: RawDeviceGroupKey,
     databaseKey: RawDatabaseKey,
 ): Promise<void> {
-    const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
     try {
         await keyStorage.write(password, {
             schemaVersion: 2,
@@ -455,6 +456,7 @@ export class Backend implements ProxyMarked {
     public readonly deviceIds: DeviceIds;
     public readonly directory: DirectoryBackend;
     public readonly model: Repositories;
+    public readonly keyStorage: KeyStorage;
     public readonly viewModel: IViewModelRepository;
     public readonly connectionManager: ConnectionManager;
     private readonly _log: Logger;
@@ -470,6 +472,7 @@ export class Backend implements ProxyMarked {
         };
         this.directory = _services.directory;
         this.model = _services.model;
+        this.keyStorage = _services.keyStorage;
         this.viewModel = _services.viewModel;
     }
 
@@ -502,19 +505,13 @@ export class Backend implements ProxyMarked {
             systemDialogEndpoint,
         );
 
-        // Initialize key storage
-        const keyStorage = factories.keyStorage(
-            {config, crypto: services.crypto},
-            logging.logger('key-storage'),
-        );
-
         // Try to read the credentials from the key storage.
         //
         // TODO(DESK-383): We might need to move this whole section into a pre-step
         //                 before the backend is actually attempted to be created.
         let keyStorageContents: KeyStorageContents;
         try {
-            keyStorageContents = await keyStorage.read(keyStoragePassword);
+            keyStorageContents = await services.keyStorage.read(keyStoragePassword);
         } catch (error) {
             assertError(error, KeyStorageError);
             switch (error.type) {
@@ -810,7 +807,6 @@ export class Backend implements ProxyMarked {
         if (initialConnectionResult.connected) {
             // Write key storage
             await writeKeyStorage(
-                factories,
                 services,
                 userPassword,
                 identityData,

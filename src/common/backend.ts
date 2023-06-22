@@ -3,6 +3,7 @@ import {type Config} from './config';
 import {type CryptoBackend} from './crypto';
 import {type Device} from './device';
 import {type FileStorage} from './file-storage';
+import {type KeyStorage} from './key-storage';
 import {type LoggerFactory} from './logging';
 import {type Repositories} from './model';
 import {type BlobBackend} from './network/protocol/blob';
@@ -26,6 +27,7 @@ export interface ServicesForBackend {
     readonly blob: BlobBackend;
     readonly endpoint: EndpointService;
     readonly file: FileStorage;
+    readonly keyStorage: KeyStorage;
     readonly logging: LoggerFactory;
     readonly model: Repositories;
     readonly viewModel: IViewModelRepository;

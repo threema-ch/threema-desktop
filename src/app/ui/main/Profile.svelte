@@ -80,6 +80,10 @@
    * DOC: https://github.com/i18next/i18next-parser#caveats
    */
   $: optionToLabel = (l: Locale): string => $i18n.t(`locale.${l}`);
+
+  function handleClickedOnChangePassword(): void {
+    router.replaceModal(ROUTE_DEFINITIONS.modal.changePassword.withoutParams());
+  }
 </script>
 
 <template>
@@ -144,8 +148,14 @@
         {optionToLabel}
       />
 
+      <div class="button">
+        <Button flavor="filled" on:click={handleClickedOnChangePassword}
+          >{$i18n.t('dialog--change-password.label--title', 'Change Password')}</Button
+        >
+      </div>
+
       {#if showToggleDebugMode}
-        <div class="debug-button">
+        <div class="button">
           <Button
             flavor="filled"
             on:click={() => {
@@ -180,7 +190,7 @@
       }
     }
 
-    .debug-button {
+    .button {
       padding: rem(10px) rem(16px) rem(10px) rem(16px);
     }
   }

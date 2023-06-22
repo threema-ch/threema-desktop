@@ -1,6 +1,4 @@
 import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
 
 import * as chai from 'chai';
 
@@ -16,7 +14,6 @@ import {
     KeyStorageError,
     type KeyStorageErrorType,
 } from '~/common/key-storage';
-import {NOOP_LOGGER} from '~/common/logging';
 import {
     ensureCspDeviceId,
     ensureD2mDeviceId,
@@ -24,7 +21,7 @@ import {
     ensureServerGroup,
 } from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
-import {FileSystemKeyStorage} from '~/common/node/key-storage';
+import {type FileSystemKeyStorage} from '~/common/node/key-storage';
 import {
     DecryptedKeyStorage,
     EncryptedKeyStorage,
@@ -35,6 +32,7 @@ import {assert, assertError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {intoUnsignedLong} from '~/common/utils/number';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
+import {makeTestFileSystemKeyStorage} from '~/test/mocha/common/backend-mocks';
 import {fakeRandomBytes} from '~/test/mocha/common/utils';
 
 const {expect} = chai.use(chaiByteEqual);
@@ -52,9 +50,10 @@ export function run(): void {
         let keyStorage: FileSystemKeyStorage;
 
         this.beforeEach(function () {
-            appPath = fs.mkdtempSync(path.join(os.tmpdir(), 'threema-desktop-test-'));
-            keyStoragePath = path.join(appPath, 'key-storage.pb3');
-            keyStorage = new FileSystemKeyStorage({crypto}, NOOP_LOGGER, keyStoragePath);
+            const keyStorageDetails = makeTestFileSystemKeyStorage(crypto);
+            appPath = keyStorageDetails.appPath;
+            keyStoragePath = keyStorageDetails.keyStoragePath;
+            keyStorage = keyStorageDetails.keyStorage;
         });
 
         this.afterEach(function () {

@@ -2,12 +2,16 @@
  * Mocked services and other aspects of the backend.
  */
 import {randomBytes} from 'node:crypto';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
 import {type Config} from '~/common/config';
 import {
+    type CryptoBackend,
     type EncryptedData,
     ensurePublicKey,
     NACL_CONSTANTS,
@@ -44,7 +48,7 @@ import {
 } from '~/common/enum';
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
-import {type Logger, type LoggerFactory, TagLogger} from '~/common/logging';
+import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {
     type AnyMessageModelStore,
     type CallsSettings,
@@ -126,6 +130,7 @@ import {
 import {type ClientKey, wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {ZlibCompressor} from '~/common/node/compressor';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
+import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {
     type ExtendedNotificationOptions,
     type NotificationCreator,
@@ -547,9 +552,23 @@ export interface TestServices extends ServicesForBackend {
     readonly model: TestModelRepositories;
 }
 
+interface TestKeyStorageDetails {
+    appPath: string;
+    keyStoragePath: string;
+    keyStorage: FileSystemKeyStorage;
+}
+
+export function makeTestFileSystemKeyStorage(crypto: CryptoBackend): TestKeyStorageDetails {
+    const appPath = fs.mkdtempSync(path.join(os.tmpdir(), 'threema-desktop-test-'));
+    const keyStoragePath = path.join(appPath, 'key-storage.pb3');
+    const keyStorage = new FileSystemKeyStorage({crypto}, NOOP_LOGGER, keyStoragePath);
+    return {appPath, keyStoragePath, keyStorage};
+}
+
 export function makeTestServices(identity: IdentityString): TestServices {
     const rawClientKeyBytes: Uint8Array = randomBytes(32);
     const crypto = new TestTweetNaClBackend();
+    const {keyStorage} = makeTestFileSystemKeyStorage(crypto);
     const logging = new TestLoggerFactory('mocha-test');
     const rawDeviceGroupKey = wrapRawDeviceGroupKey(randomBytes(32));
     const cspNonceGuard = new NoopNonceGuard() as CspNonceGuard;
@@ -587,11 +606,13 @@ export function makeTestServices(identity: IdentityString): TestServices {
         remote: new RemoteObjectMapper(),
         counter: undefined,
     };
+
     const partialServices = {
         config: new TestConfig(),
         crypto,
         device,
         directory: new TestDirectoryBackend(),
+        keyStorage,
         logging,
         notification,
         compressor: new ZlibCompressor(),

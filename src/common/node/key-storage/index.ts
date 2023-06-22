@@ -81,6 +81,7 @@ import {type Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
 import {KiB, MiB, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {intoUnsignedLong} from '~/common/utils/number';
 
 import {DecryptedKeyStorage, EncryptedKeyStorage} from './key-storage-file';
@@ -92,6 +93,8 @@ import {
 
 /** @inheritdoc */
 export class FileSystemKeyStorage implements KeyStorage {
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
     /**
      * Create a key storage backed by the file system.
      *
@@ -195,6 +198,12 @@ export class FileSystemKeyStorage implements KeyStorage {
 
         // Write file
         await this._write(password, contents, kdfParams);
+    }
+
+    /** @inheritdoc */
+    public async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+        const currentContent = await this.read(currentPassword);
+        await this.write(newPassword, currentContent);
     }
 
     private async _write(

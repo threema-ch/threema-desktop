@@ -138,6 +138,11 @@ type RouteDefinition<TRoute extends RawRouteDefinition & Partial<RoutePathDefini
     readonly withTypedParams: (
         params: RouteInstanceParams<TRoute['params']>,
     ) => RouteInstance<TRoute>;
+
+    /**
+     * Function that returns a route instance that does not have params.
+     */
+    readonly withoutParams: () => RouteInstance<TRoute>;
 };
 
 /**
@@ -246,7 +251,14 @@ function defineImplementation<TRoute extends RawRouteDefinition & Partial<RouteP
         } as RouteInstance<TRoute>;
     }
 
-    return {...route, matches, withUntypedParams, withTypedParams};
+    function withoutParams(): RouteInstance<TRoute> {
+        return {
+            id: route.id,
+            params: undefined,
+        } as RouteInstance<TRoute>;
+    }
+
+    return {...route, matches, withUntypedParams, withTypedParams, withoutParams};
 }
 
 function defineNav<TRoute extends RawRouteDefinition>(route: TRoute): RouteDefinition<TRoute> {
@@ -383,6 +395,10 @@ export const ROUTE_DEFINITIONS = {
         groupEdit: defineModal({
             id: 'groupEdit',
             params: PARAM_GROUP_LOOKUP_SCHEMA,
+        } as const),
+        changePassword: defineModal({
+            id: 'changePassword',
+            params: undefined,
         } as const),
     },
 } as const;

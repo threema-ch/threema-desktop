@@ -15,7 +15,11 @@ import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/ke
 import {EncryptedKeyStorage_Argon2idParameters_Argon2Version} from '~/common/node/key-storage/key-storage-file';
 import {KiB, MiB, type u8, type u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {
+    type ProxyMarked,
+    registerErrorTransferHandler,
+    TRANSFER_HANDLER,
+} from '~/common/utils/endpoint';
 import {instanceOf, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /**
@@ -261,7 +265,7 @@ export type ServicesForKeyStorage = Pick<ServicesForBackend, 'crypto'>;
 /**
  * Stores and retrieves secret keys securely.
  */
-export interface KeyStorage {
+export interface KeyStorage extends ProxyMarked {
     /**
      * Check if the key storage file is present in the file system. If not, there is no identity set
      * up for the app and the initial setup process should be probably triggered.
@@ -284,6 +288,14 @@ export interface KeyStorage {
      *   fails.
      */
     readonly write: (password: string, contents: KeyStorageContents) => Promise<void>;
+
+    /**
+     * Change the key storage password.
+     *
+     * @throws {KeyStorageError} In case encrypting or writing the key storage
+     *   fails.
+     */
+    readonly changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 /**

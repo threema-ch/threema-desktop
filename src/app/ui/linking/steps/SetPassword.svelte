@@ -1,13 +1,12 @@
 <script lang="ts">
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import Password from '#3sc/components/blocks/Input/Password.svelte';
+  import {APP_CONFIG} from '~/app/config';
   import {i18n} from '~/app/ui/i18n';
   import {type LinkingWizardStateSetPassword} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
 
   export let linkingWizardState: LinkingWizardStateSetPassword;
-
-  const minPasswordLength = import.meta.env.DEBUG ? 1 : 8;
 
   let password = '';
   let confirmation = '';
@@ -31,12 +30,12 @@
 
   $: errors = {
     minPasswordLength:
-      password.length >= minPasswordLength
+      password.length >= APP_CONFIG.MIN_PASSWORD_LENGTH
         ? undefined
         : $i18n.t(
             'dialog--linking-set-password.error--password-length',
             'Please enter at least {n, plural, =1 {1 character} other {# characters}}',
-            {n: minPasswordLength},
+            {n: APP_CONFIG.MIN_PASSWORD_LENGTH},
           ),
     passwordEquality:
       password === confirmation

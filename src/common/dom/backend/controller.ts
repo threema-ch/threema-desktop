@@ -12,6 +12,7 @@ import {type DebugBackend} from '~/common/dom/debug';
 import {type SafeCredentials} from '~/common/dom/safe';
 import {type D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
+import {type KeyStorage} from '~/common/key-storage';
 import {type Logger} from '~/common/logging';
 import {type ProfilePictureView, type Repositories} from '~/common/model';
 import {type DisplayPacket} from '~/common/network/protocol/capture';
@@ -72,6 +73,7 @@ export class BackendController {
     public readonly deviceIds: DeviceIds;
     public readonly directory: Remote<DirectoryBackend>;
     public readonly model: Remote<Repositories>;
+    public readonly keyStorage: Remote<KeyStorage>;
     public readonly viewModel: Remote<IViewModelRepository>;
     public capturing?: {
         readonly packets: IQueryableStore<readonly DisplayPacket[]>;
@@ -92,6 +94,7 @@ export class BackendController {
         this.deviceIds = deviceIds;
         this.directory = _remote.directory;
         this.model = _remote.model;
+        this.keyStorage = _remote.keyStorage;
         this.viewModel = _remote.viewModel;
     }
 
