@@ -61,6 +61,11 @@
         &.color-red {
           color: $alert-red;
         }
+
+        &.color-orange {
+          color: $warning-orange;
+        }
+
         &.color-green {
           color: $consumer-green-600;
         }

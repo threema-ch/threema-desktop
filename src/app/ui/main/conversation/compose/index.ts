@@ -1,3 +1,7 @@
+import {type i18n as i18nStore} from '~/app/ui/i18n';
+import {toast} from '~/app/ui/snackbar';
+import {type Logger} from '~/common/logging';
+import {unreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
 import {type RemoteStore} from '~/common/utils/store';
 import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
@@ -63,3 +67,42 @@ export type ComposeAreaEnterKeyMode = 'submit' | 'newline';
  * The timeout to debounce byte length recounts by.
  */
 export const DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS = 300;
+
+export function showFileResultError(
+    status: 'empty' | 'inaccessible' | 'partial',
+    i18n: typeof i18nStore,
+    log: Logger,
+): void {
+    switch (status) {
+        case 'empty':
+            log.error('A file or list of files was added, but it was empty');
+            toast.addSimpleFailure(
+                i18n.get().t('messaging.error--add-files-empty', "Files couldn't be added"),
+            );
+            break;
+
+        case 'inaccessible':
+            log.error('A file or list of files was added, but it could not be accessed');
+            toast.addSimpleFailure(
+                i18n
+                    .get()
+                    .t('messaging.error--add-files-inaccessible', "Files couldn't be accessed"),
+            );
+            break;
+
+        case 'partial':
+            log.warn('A file or list of files was added, but some files could not be accessed');
+            toast.addSimpleWarning(
+                i18n
+                    .get()
+                    .t(
+                        'messaging.error--add-files-partially-inaccessible',
+                        "Some files couldn't be accessed",
+                    ),
+            );
+            break;
+
+        default:
+            unreachable(status);
+    }
+}

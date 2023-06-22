@@ -1,9 +1,10 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy} from 'svelte';
   import {type Writable} from 'svelte/store';
-  import IconButton from 'threema-svelte-components/src/components/blocks/Button/IconButton.svelte';
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
 
+  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {type FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
@@ -81,10 +82,10 @@
   export let mediaMessageDialogVisible: boolean;
 
   /**
-   * Open the media compose message dialog.
+   * Open the media compose message dialog if accessible files have been dropped
    */
-  export function handleFileDrop(files: File[]): void {
-    return composeHandler.handleFileDrop(files);
+  export function handleFileDrop(fileResult: FileResult): void {
+    composeHandler.handleFileDrop(fileResult);
   }
 
   /**

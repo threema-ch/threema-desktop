@@ -5,7 +5,7 @@ import {WritableStore} from '~/common/utils/store';
 const SIMPLE_TOAST_TTL_MILLISECONDS = 5000 as const;
 const ACTION_TOAST_TTL_MILLISECONDS = 10000 as const;
 
-export type ToastIconColor = 'green' | 'red';
+export type ToastIconColor = 'green' | 'red' | 'orange';
 
 export interface ToastIcon {
     type: IconSet;
@@ -68,6 +68,18 @@ function addSimpleSuccess(message: string): void {
 }
 
 /**
+ * Add simple toast with a warning icon.
+ */
+function addSimpleWarning(message: string): void {
+    addSimple(message, {
+        type: 'md-icon',
+        name: 'warning',
+        theme: 'Outlined',
+        color: 'orange',
+    });
+}
+
+/**
  * Add simple toast with an error icon.
  */
 function addSimpleFailure(message: string): void {
@@ -111,6 +123,7 @@ function removeToast(toast: Toast): void {
 export const toast = {
     addSimple,
     addSimpleSuccess,
+    addSimpleWarning,
     addSimpleFailure,
     addDismissable,
     addAction,

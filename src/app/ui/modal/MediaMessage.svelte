@@ -10,10 +10,12 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import {type FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import {showFileResultError} from '~/app/ui/main/conversation/compose';
   import {MAX_CAPTION_BYTE_LENGTH, type MediaFile} from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
@@ -21,12 +23,13 @@
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {ensureU53, type u53} from '~/common/types';
-  import {assert} from '~/common/utils/assert';
+  import {assert, unreachable} from '~/common/utils/assert';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {WritableStore} from '~/common/utils/store';
   import {getUtf8ByteLength} from '~/common/utils/string';
   import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
 
+  const log = globals.unwrap().uiLogging.logger('ui.component.media-message-modal');
   const hotkeyManager = globals.unwrap().hotkeyManager;
 
   export let title: string;
@@ -149,11 +152,25 @@
     });
   }
 
-  function attachMoreFiles(files: File[]): void {
-    if (files.length === 0) {
-      return;
+  function attachMoreFiles(fileResult: FileResult): void {
+    switch (fileResult.status) {
+      case 'empty':
+      case 'inaccessible':
+        showFileResultError(fileResult.status, i18n, log);
+        return;
+
+      case 'partial':
+        showFileResultError(fileResult.status, i18n, log);
+        break;
+
+      case 'ok':
+        break;
+
+      default:
+        unreachable(fileResult);
     }
-    const newMediaFiles = files.map(
+
+    const newMediaFiles = fileResult.files.map(
       (file): MediaFile => ({
         type: 'local',
         file,

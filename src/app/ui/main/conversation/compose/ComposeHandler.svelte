@@ -1,13 +1,19 @@
 <script lang="ts">
+  import {type FileResult} from '#3sc/utils/filelist';
+  import {globals} from '~/app/globals';
   import {i18n} from '~/app/ui/i18n';
+  import {showFileResultError} from '~/app/ui/main/conversation/compose';
   import ComposeBar from '~/app/ui/main/conversation/compose/ComposeBar.svelte';
   import {type MediaFile} from '~/app/ui/modal/media-message';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {ReceiverType} from '~/common/enum';
   import {type AnyReceiverStore} from '~/common/model';
+  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {WritableStore} from '~/common/utils/store';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.compose-handler');
 
   /**
    * Text that will be used to initialize the compose area.
@@ -41,8 +47,25 @@
   /**
    * Handle the dropped files by opening the media compose message dialog.
    */
-  export function handleFileDrop(files: File[]): void {
-    openMediaMessageDialog(files, 'local');
+  export function handleFileDrop(fileResult: FileResult): void {
+    switch (fileResult.status) {
+      case 'empty':
+      case 'inaccessible':
+        showFileResultError(fileResult.status, i18n, log);
+        return;
+
+      case 'partial':
+        showFileResultError(fileResult.status, i18n, log);
+        break;
+
+      case 'ok':
+        break;
+
+      default:
+        unreachable(fileResult);
+    }
+
+    openMediaMessageDialog(fileResult.files, 'local');
   }
 
   /**
