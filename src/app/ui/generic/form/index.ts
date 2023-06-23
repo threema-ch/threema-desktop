@@ -382,6 +382,19 @@ export function parseLinks(text: string): string {
     });
 }
 
+export interface ParseTextParams {
+    /** The text to parse. */
+    readonly text: string | undefined;
+    /** The {@link Mention}s to search for and replace in the text. */
+    readonly mentions?: Mention | Mention[];
+    /** The highlights to search for and replace in the text. */
+    readonly highlights?: string | string[];
+    /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
+    readonly shouldParseMarkup?: boolean;
+    /** If links should be detected and replaced. */
+    readonly shouldParseLinks?: boolean;
+}
+
 /**
  * Parses some text and replaces various tokens with HTML. This is useful to render messages and
  * message previews with formatting.
@@ -390,12 +403,7 @@ export function parseLinks(text: string): string {
  *          `text` is sanitized (e.g. with {@link escapeHtmlUnsafeChars})!
  *
  * @param t The function to use for translating labels of special mentions, such as "@All".
- * @param text The text to parse.
- * @param mentions The {@link Mention}s to search for and replace in the text.
- * @param highlights The highlights to search for and replace in the text.
- * @param shouldParseMarkup If simple markup tokens (bold, italic, strikethrough) should be
- * replaced.
- * @param shouldParseLinks If links should be detected and replaced.
+ * @param params See {@link ParseTextParams} for docs
  * @returns The text containing the specified tokens replaced with HTML.
  */
 export function parseText(
@@ -406,18 +414,7 @@ export function parseText(
         highlights,
         shouldParseMarkup = false,
         shouldParseLinks = false,
-    }: {
-        /** The text to parse. */
-        text: string | undefined;
-        /** The {@link Mention}s to search for and replace in the text. */
-        mentions?: Mention | Mention[];
-        /** The highlights to search for and replace in the text. */
-        highlights?: string | string[];
-        /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
-        shouldParseMarkup?: boolean;
-        /** If links should be detected and replaced. */
-        shouldParseLinks?: boolean;
-    },
+    }: ParseTextParams,
 ): string {
     if (text === undefined || text === '') {
         return '';
