@@ -21,6 +21,28 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0-preview14" date="2023-06-26">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Correctly handle messages from unknown and blocked contacts</li>
+                    <li>Prevent application from being launched multiple times</li>
+                    <li>Improve display of @Me and @All mentions in conversation list</li>
+                    <li>Automatically un-archive chats when a message is sent or received</li>
+                </ul>
+                <p>Bugfixes:</p>
+                <ul>
+                    <li>Fix issue that caused some data synchronization messages to be ignored</li>
+                    <li>Prevent cases where context menus were displayed behind other elements and could not be clicked</li>
+                    <li>Properly store and display profile pictures from Threema Gateway IDs</li>
+                </ul>
+                <p>Other:</p>
+                <ul>
+                    <li>Preparations for new device linking flow</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0-preview13" date="2023-06-12">
             <description>
                 <p>Improvements:</p>
