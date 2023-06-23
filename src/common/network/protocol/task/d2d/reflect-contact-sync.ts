@@ -17,43 +17,34 @@ import {unreachable} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {hasProperty} from '~/common/utils/object';
 
+const DEFAULT_POLICY_OVERRIDE = {
+    default: protobuf.UNIT_MESSAGE,
+    policy: undefined,
+} as const;
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_READ_RECEIPT_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.ReadReceiptPolicyOverride,
-    {
-        default: protobuf.UNIT_MESSAGE,
-        policy: undefined,
-    },
+    DEFAULT_POLICY_OVERRIDE,
 );
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.TypingIndicatorPolicyOverride,
-    {
-        default: protobuf.UNIT_MESSAGE,
-        policy: undefined,
-    },
+    DEFAULT_POLICY_OVERRIDE,
 );
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.NotificationTriggerPolicyOverride,
-    {
-        default: protobuf.UNIT_MESSAGE,
-        policy: undefined,
-    },
+    DEFAULT_POLICY_OVERRIDE,
 );
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Contact.NotificationSoundPolicyOverride,
-    {
-        default: protobuf.UNIT_MESSAGE,
-        policy: undefined,
-    },
+    DEFAULT_POLICY_OVERRIDE,
 );
-
-const DEFAULT_UNSET_NICKNAME = '';
 
 export type ProfilePictureUpdate =
     | {
@@ -195,7 +186,8 @@ function getD2dContactSyncUpdateData(
     let nickname: string | undefined = undefined;
     if (hasProperty(update, 'nickname')) {
         if (update.nickname === undefined) {
-            nickname = DEFAULT_UNSET_NICKNAME;
+            // To unset the nickname, an empty string must be sent
+            nickname = '';
         } else {
             nickname = update.nickname;
         }

@@ -417,7 +417,7 @@ export class ConversationModelController implements ConversationController {
     }
 
     /**
-     * Delivery receipts have to be sent and reflected only for contact conversations following the
+     * Read receipts have to be sent and reflected only for contact conversations following the
      * read receipt policy override for the contact if defined, or following the global read receipt
      * policy otherwise. Note that if no delivery receipt is sent, an {@link IncomingMessageUpdate}
      * has to be sent instead.
@@ -427,23 +427,17 @@ export class ConversationModelController implements ConversationController {
             return false;
         }
 
+        // Check contact read receipt policy override
         const contactReceiver = this.receiver();
         assert(contactReceiver.type === ReceiverType.CONTACT);
-
         const {readReceiptPolicyOverride} = contactReceiver.get().view;
         if (readReceiptPolicyOverride !== undefined) {
             return readReceiptPolicyOverride === ReadReceiptPolicy.SEND_READ_RECEIPT;
         }
 
+        // Otherwise, fall back to global default
         const {readReceiptPolicy} = this._services.model.user.privacySettings.get().view;
-        if (readReceiptPolicy === ReadReceiptPolicy.DONT_SEND_READ_RECEIPT) {
-            this._log.info(
-                'Skip sending read receipts as global ReadReceiptPolicy is set to DONT_SEND_READ_RECEIPT',
-            );
-            return false;
-        }
-
-        return true;
+        return readReceiptPolicy !== ReadReceiptPolicy.DONT_SEND_READ_RECEIPT;
     }
 
     /**

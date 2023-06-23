@@ -13,8 +13,8 @@ import {DeltaImage, GroupIdentity, Identities} from '~/common/network/protobuf/v
 import {unixTimestampToDateMs} from '~/common/utils/number';
 import {
     nullOptional,
-    policyOverrideOrDefault,
-    policyOverrideWithOptionalExpirationDateOrDefault,
+    policyOverrideOrValitaDefault,
+    policyOverrideWithOptionalExpirationDateOrValitaDefault,
     unsignedLongAsU64,
 } from '~/common/utils/valita-helpers';
 
@@ -24,10 +24,10 @@ const BASE_SCHEMA = validator(sync.Group, {
     name: v.string(),
     createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
     userState: v.number().map(GroupUserStateUtils.fromNumber),
-    notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrDefault(
+    notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrValitaDefault(
         GroupNotificationTriggerPolicyUtils,
     ),
-    notificationSoundPolicyOverride: policyOverrideOrDefault(NotificationSoundPolicyUtils),
+    notificationSoundPolicyOverride: policyOverrideOrValitaDefault(NotificationSoundPolicyUtils),
     profilePicture: DeltaImage.SCHEMA,
     memberIdentities: Identities.SCHEMA,
     conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),

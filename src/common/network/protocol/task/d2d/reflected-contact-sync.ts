@@ -18,7 +18,7 @@ import {isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {purgeUndefinedProperties} from '~/common/utils/object';
-import {setValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
+import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 type ProfilePictures = Pick<
     protobuf.validate.sync.Contact.CreateType,
@@ -189,7 +189,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     ): Promise<void> {
         // Create contact
         const contact = this._services.model.contacts.add.fromSync(
-            setValitaDefaultsToUndefined({
+            mapValitaDefaultsToUndefined({
                 identity: create.identity,
                 publicKey: create.publicKey,
                 createdAt: create.createdAt,
@@ -222,7 +222,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
     ): Promise<void> {
         const controller = contact.get().controller;
 
-        const propertiesToUpdate = setValitaDefaultsToUndefined(
+        const propertiesToUpdate = mapValitaDefaultsToUndefined(
             purgeUndefinedProperties({
                 createdAt: update.createdAt,
                 firstName: update.firstName,

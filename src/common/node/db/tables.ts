@@ -156,7 +156,7 @@ export const tContact = new (class TContact extends Table<DBConnection, 'TContac
     public typingIndicatorPolicyOverride = this.optionalColumn<TypingIndicatorPolicy>(
         'typingIndicatorPolicyOverride',
         'custom',
-        CUSTOM_TYPES.READ_RECEIPT_POLICY,
+        CUSTOM_TYPES.TYPING_INDICATOR_POLICY,
     );
 
     /**
@@ -165,7 +165,7 @@ export const tContact = new (class TContact extends Table<DBConnection, 'TContac
     public readReceiptPolicyOverride = this.optionalColumn<ReadReceiptPolicy>(
         'readReceiptPolicyOverride',
         'custom',
-        CUSTOM_TYPES.TYPING_INDICATOR_POLICY,
+        CUSTOM_TYPES.READ_RECEIPT_POLICY,
     );
 
     /**

@@ -18,16 +18,26 @@ import {
 import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import {DeltaImage} from '~/common/network/protobuf/validate/common';
-import {ensureFeatureMask, ensureIdentityString, type Nickname} from '~/common/network/types';
+import {
+    ensureFeatureMask,
+    ensureIdentityString,
+    ensureNickname,
+    type Nickname,
+} from '~/common/network/types';
 import {unixTimestampToDateMs} from '~/common/utils/number';
 import {
     instanceOf,
-    nonEmptyStringOrDefault,
     nullOptional,
-    policyOverrideOrDefault,
-    policyOverrideWithOptionalExpirationDateOrDefault,
+    policyOverrideOrValitaDefault,
+    policyOverrideWithOptionalExpirationDateOrValitaDefault,
     unsignedLongAsU64,
+    VALITA_DEFAULT,
+    type ValitaDefault,
 } from '~/common/utils/valita-helpers';
+
+function nicknameOrValitaDefault(): v.Type<Nickname | ValitaDefault> {
+    return v.string().map((value) => (value === '' ? VALITA_DEFAULT : ensureNickname(value)));
+}
 
 /** Validates generic properties of {@link sync.Contact}. */
 const BASE_SCHEMA = validator(sync.Contact, {
@@ -36,7 +46,7 @@ const BASE_SCHEMA = validator(sync.Contact, {
     createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
     firstName: v.string(),
     lastName: v.string(),
-    nickname: nonEmptyStringOrDefault<Nickname>(),
+    nickname: nicknameOrValitaDefault(),
     verificationLevel: v.number().map(VerificationLevelUtils.fromNumber),
     workVerificationLevel: v.number().map(WorkVerificationLevelUtils.fromNumber),
     identityType: v.number().map(IdentityTypeUtils.fromNumber),
@@ -44,12 +54,12 @@ const BASE_SCHEMA = validator(sync.Contact, {
     activityState: v.number().map(ActivityStateUtils.fromNumber),
     featureMask: unsignedLongAsU64().map(ensureFeatureMask),
     syncState: v.number().map(SyncStateUtils.fromNumber),
-    readReceiptPolicyOverride: policyOverrideOrDefault(ReadReceiptPolicyUtils),
-    typingIndicatorPolicyOverride: policyOverrideOrDefault(TypingIndicatorPolicyUtils),
-    notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrDefault(
+    readReceiptPolicyOverride: policyOverrideOrValitaDefault(ReadReceiptPolicyUtils),
+    typingIndicatorPolicyOverride: policyOverrideOrValitaDefault(TypingIndicatorPolicyUtils),
+    notificationTriggerPolicyOverride: policyOverrideWithOptionalExpirationDateOrValitaDefault(
         ContactNotificationTriggerPolicyUtils,
     ),
-    notificationSoundPolicyOverride: policyOverrideOrDefault(NotificationSoundPolicyUtils),
+    notificationSoundPolicyOverride: policyOverrideOrValitaDefault(NotificationSoundPolicyUtils),
     contactDefinedProfilePicture: DeltaImage.SCHEMA,
     userDefinedProfilePicture: DeltaImage.SCHEMA,
     conversationCategory: v.number().map(ConversationCategoryUtils.fromNumber),

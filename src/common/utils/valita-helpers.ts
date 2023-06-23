@@ -117,38 +117,36 @@ export function optionalEnum<T>(enumUtils: {
 }
 
 /**
- * This value indicates that a policy override parameter specifies that the default policy must be
- * used.
+ * A value that can be used as a placeholder for a "default value" (as opposed to a value that is
+ * not set at all).
+ *
+ * For example, when receiving a contact update, an empty string in the "nickname" field is treated
+ * as "no nickname set", while `undefined` is treated as "nickname not changed". If both would get
+ * mapped to `undefined`, then we could not differentiate the two. By mapping the empty string to
+ * `VALITA_DEFAULT`, we can distinguish between these two cases.
+ *
+ * Note: This is especially useful in combination with {@link purgeUndefinedProperties} followed by
+ *       {@link mapValitaDefaultsToUndefined}.
  */
 export const VALITA_DEFAULT = Symbol('valita-default');
-type ValitaDefault = typeof VALITA_DEFAULT;
-
-/**
- * Parse a parameter that represents a string where the empty string represents the default value,
- * not a set value.
- */
-export function nonEmptyStringOrDefault<TNonDefault extends string>(): v.Type<
-    ValitaDefault | TNonDefault
-> {
-    return v.string().map((value) => (value === '' ? VALITA_DEFAULT : (value as TNonDefault)));
-}
+export type ValitaDefault = typeof VALITA_DEFAULT;
 
 /**
  * Parse a parameter that represents a simple policy override.
  */
-export function policyOverrideOrDefault<TEnum>(enumUtils: {
+export function policyOverrideOrValitaDefault<TEnum>(enumUtils: {
     fromNumber: (value: u53) => TEnum;
-}): v.Type<ValitaDefault | TEnum> {
-    return customPolicyOverrideOrDefault(v.number().map(enumUtils.fromNumber));
+}): v.Type<TEnum | ValitaDefault> {
+    return customPolicyOverrideOrValitaDefault(v.number().map(enumUtils.fromNumber));
 }
 
 /**
  * Parse a parameter that represents a policy override with an optional expiration date.
  */
-export function policyOverrideWithOptionalExpirationDateOrDefault<TEnum>(enumUtils: {
+export function policyOverrideWithOptionalExpirationDateOrValitaDefault<TEnum>(enumUtils: {
     fromNumber: (value: u53) => TEnum;
-}): v.Type<ValitaDefault | {policy: TEnum; expiresAt?: Date}> {
-    return customPolicyOverrideOrDefault(
+}): v.Type<{policy: TEnum; expiresAt?: Date} | ValitaDefault> {
+    return customPolicyOverrideOrValitaDefault(
         v
             .object({
                 policy: v.number().map(enumUtils.fromNumber),
@@ -161,7 +159,7 @@ export function policyOverrideWithOptionalExpirationDateOrDefault<TEnum>(enumUti
 /**
  * Parse a parameter that represents a custom policy override.
  */
-function customPolicyOverrideOrDefault<T>(schema: v.Type<T>): v.Type<ValitaDefault | T> {
+function customPolicyOverrideOrValitaDefault<T>(schema: v.Type<T>): v.Type<T | ValitaDefault> {
     return v
         .union(
             v
@@ -186,10 +184,12 @@ function customPolicyOverrideOrDefault<T>(schema: v.Type<T>): v.Type<ValitaDefau
 }
 
 /**
- * Set all properties from an object whose value is VALITA_DEFAULT to undefined. In order to
- * properly return the expected types, probably `as const` has to be used in the `object` parameter.
+ * Map all properties from an object whose value is {@link VALITA_DEFAULT} to undefined.
+ *
+ * Note: In order to properly return the expected types, probably `as const` has to be used in the
+ *       `object` parameter.
  */
-export function setValitaDefaultsToUndefined<
+export function mapValitaDefaultsToUndefined<
     TObjectIn extends object,
     TObjectOut extends {
         [K in keyof TObjectIn]: Extract<TObjectIn[K], ValitaDefault> extends never
