@@ -42,7 +42,8 @@ export const MODEL_MARKER = Symbol('model-marker');
 /**
  * Symbol to mark a remote as a model store.
  */
-export const MODEL_STORE_REMOTE_MARKER: unique symbol = Symbol('model-store-remote-marker');
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const MODEL_STORE_REMOTE_MARKER: symbol = Symbol('model-store-remote-marker');
 
 function defaultModelRepresentation<TView>({view}: {readonly view: TView}): string {
     return `${JSON.stringify(view)}`;
@@ -153,13 +154,18 @@ function releaseRemoteModelStore({
  * another thread via a {@link Endpoint}.
  */
 export class RemoteModelStore<
-    TModel extends LocalModel<TView, TLocalController, TCtx, TType>,
-    TView = TModel['view'],
-    TLocalController extends LocalModelController<TView> = TModel['controller'],
-    TCtx = TModel['ctx'],
-    TType = TModel['type'],
-> extends ReadableStore<RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>> {
+        TModel extends LocalModel<TView, TLocalController, TCtx, TType>,
+        TView = TModel['view'],
+        TLocalController extends LocalModelController<TView> = TModel['controller'],
+        TCtx = TModel['ctx'],
+        TType = TModel['type'],
+    >
+    extends ReadableStore<RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>>
+    implements CustomTransferredRemoteMarker<typeof MODEL_STORE_REMOTE_MARKER>
+{
     private static readonly _REGISTRY = new FinalizationRegistry(releaseRemoteModelStore);
+
+    public [TRANSFERRED_MARKER] = MODEL_STORE_REMOTE_MARKER;
 
     private constructor(
         public readonly id: ObjectId<RemoteModelStore<TModel>>,

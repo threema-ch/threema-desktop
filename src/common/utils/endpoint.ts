@@ -28,6 +28,20 @@ import {
     type RemoteSetStore,
 } from '~/common/utils/store/set-store';
 
+/**
+ * Symbol to mark a remote as an object with transferred properties.
+ */
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER: symbol = Symbol(
+    'object-properties-transferred-remote-marker',
+);
+
+/**
+ * Symbol to mark a remote as an proxy object.
+ */
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+const PROXY_OJBECT_REMOTE_MARKER: symbol = Symbol('proxy-object-remote-marker');
+
 // Minimal incomplete but DOM-compatible interfaces for MessagePort and co.
 export interface MessageEvent {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,7 +246,7 @@ interface ThrowMarked extends CustomTransferable<typeof THROW_HANDLER> {
 /**
  * Marker for the representation of an object on the remote side.
  */
-export const TRANSFERRED_MARKER: unique symbol = Symbol('endpoint-transferred-marker');
+export const TRANSFERRED_MARKER = Symbol('endpoint-transferred-marker');
 
 /**
  * Marks an object on the remote side as a special transferred type.
@@ -275,7 +289,7 @@ export type RemoteProxy<T> = RemoteProxyFunction<T> &
  *
  * @param TRemote The Remote Type.
  */
-export type Local<TRemote> = TRemote extends CustomTransferredRemoteMarker<never>
+export type Local<TRemote> = TRemote extends CustomTransferredRemoteMarker<unknown>
     ? CustomTransferableLocal<TRemote>
     : StructuredCloneOf<TRemote>;
 
@@ -285,7 +299,7 @@ export type Local<TRemote> = TRemote extends CustomTransferredRemoteMarker<never
  * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
  *            used here, otherwise false positives are possible.
  */
-export type CustomTransferableLocal<T extends CustomTransferredRemoteMarker<never>> =
+export type CustomTransferableLocal<T extends CustomTransferredRemoteMarker<unknown>> =
     T extends RemoteModelStore<
         infer TModel,
         infer TView,
@@ -299,14 +313,14 @@ export type CustomTransferableLocal<T extends CustomTransferredRemoteMarker<neve
         : T extends RemoteStore<infer TValue>
         ? LocalStore<TValue>
         : T extends PropertiesMarkedRemote<infer TValue>
-        ? TValue
+        ? TValue & PropertiesMarked
         : T extends RemoteProxy<infer TValue>
-        ? TValue
+        ? TValue & ProxyMarked
         : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
-        // types. Use the following as fallback for other cases:
-        T extends Remote<infer TValue>
-        ? TValue
-        : never;
+          // types. Use the following as fallback for other cases:
+          //     T extends Remote<infer TValue>
+          //   ? TValue :
+          never;
 
 /**
  * A proxied remote function type. See {@link RemoteProxy}.
@@ -333,7 +347,7 @@ type RemoteProxyObject<T> = keyof Omit<T, typeof TRANSFER_HANDLER> extends never
               TProperty,
               typeof TRANSFER_HANDLER
           >]: ProxyMarkedRemoteObjectProperty<T[TProperty]>;
-      };
+      } & CustomTransferredRemoteMarker<typeof PROXY_OJBECT_REMOTE_MARKER>;
 
 /**
  * Handle property access to a remote object, see {@link RemoteProxyObject}.
@@ -369,7 +383,7 @@ type RemoteProxyPromise<T> = T extends ProxyMarked
  */
 export type PropertiesMarkedRemote<T> = {
     readonly [P in keyof T as Exclude<P, typeof TRANSFER_HANDLER>]: Remote<T[P]>;
-};
+} & CustomTransferredRemoteMarker<typeof OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER>;
 
 /**
  * Make sure that {@param T} extends an object.
@@ -877,6 +891,9 @@ export class EndpointService {
                         void service._releaseEndpoint(ep, releaser);
                     };
                 }
+                if (prop === TRANSFERRED_MARKER) {
+                    return PROXY_OJBECT_REMOTE_MARKER;
+                }
                 if (prop === 'then') {
                     if (path.length === 0) {
                         return {then: (): object => proxy};
@@ -1193,14 +1210,15 @@ const PROPERTIES_HANDLER: RegisteredTransferHandler<
     },
 
     deserialize: (values, service) =>
-        Object.fromEntries(
-            values.map(([key, serialized]) => [
+        Object.fromEntries([
+            ...values.map(([key, serialized]) => [
                 key,
                 serialized.type === WireValueType.RAW
                     ? serialized.value
                     : service.deserialize(serialized, false),
             ]),
-        ),
+            [TRANSFERRED_MARKER, OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER],
+        ]),
 } as const);
 
 export type SerializedError<TAdditionalValues extends unknown[] = []> = [

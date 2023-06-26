@@ -4,6 +4,8 @@ import {ensureU53, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,
+    type CustomTransferable,
+    type CustomTransferredRemoteMarker,
     type DomTransferable,
     type Endpoint,
     type EndpointFor,
@@ -13,10 +15,16 @@ import {
     type RegisteredTransferHandler,
     registerTransferHandler,
     TRANSFER_HANDLER,
-    type CustomTransferable,
+    TRANSFERRED_MARKER,
     type WireValue,
 } from '~/common/utils/endpoint';
 import {type AbortRaiser} from '~/common/utils/signal';
+
+/**
+ * Symbol to mark a remote as a store.
+ */
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const STORE_REMOTE_MARKER: symbol = Symbol('store-remote-marker');
 
 /**
  * A svelte-compatible store event subscriber.
@@ -769,8 +777,12 @@ function releaseRemote({endpoint, releaser}: {endpoint: Endpoint; releaser?: Abo
  * A remote store reader receives updates from another store on another thread via a
  * {@link Endpoint}.
  */
-export class RemoteStore<TValue> extends ReadableStore<TValue> {
+export class RemoteStore<TValue>
+    extends ReadableStore<TValue>
+    implements CustomTransferredRemoteMarker<typeof STORE_REMOTE_MARKER>
+{
     private static readonly _REGISTRY = new FinalizationRegistry(releaseRemote);
+    public readonly [TRANSFERRED_MARKER] = STORE_REMOTE_MARKER;
 
     /**
      * Create a remote store reader.

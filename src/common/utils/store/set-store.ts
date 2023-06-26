@@ -3,6 +3,8 @@ import {type LogPrefix} from '~/common/logging';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,
+    type CustomTransferable,
+    type CustomTransferredRemoteMarker,
     type DomTransferable,
     type Endpoint,
     type EndpointFor,
@@ -13,7 +15,7 @@ import {
     type RegisteredTransferHandler,
     registerTransferHandler,
     TRANSFER_HANDLER,
-    type CustomTransferable,
+    TRANSFERRED_MARKER,
 } from '~/common/utils/endpoint';
 import {EventController, type EventListener, type EventUnsubscriber} from '~/common/utils/event';
 import {type AbortRaiser} from '~/common/utils/signal';
@@ -23,6 +25,12 @@ import {
     ReadableStore,
     type StoreOptions,
 } from '~/common/utils/store';
+
+/**
+ * Symbol to mark a remote as a set store.
+ */
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const SET_STORE_REMOTE_MARKER: symbol = Symbol('set-store-remote-marker');
 
 export type DeltaUpdate<TValue> =
     | [type: Exclude<DeltaUpdateType, DeltaUpdateType.CLEARED>, value: TValue]
@@ -201,9 +209,12 @@ type SerializedSetStoreWireValue =
 
 export class RemoteSetStore<TValue extends object>
     extends ReadableStore<Set<TValue>, ReadonlySet<TValue>>
-    implements SetStoreDeltaListener<TValue>
+    implements
+        SetStoreDeltaListener<TValue>,
+        CustomTransferredRemoteMarker<typeof SET_STORE_REMOTE_MARKER>
 {
     private static readonly _REGISTRY = new FinalizationRegistry(releaseRemoteSetValues);
+    public readonly [TRANSFERRED_MARKER] = SET_STORE_REMOTE_MARKER;
     private readonly _delta: EventController<DeltaUpdate<TValue>>;
 
     private constructor(
