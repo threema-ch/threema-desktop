@@ -22,6 +22,7 @@ import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {AbortRaiser} from '~/common/utils/signal';
 import {type LocalStore, type RemoteStore} from '~/common/utils/store';
 import {
+    type ISetStore,
     type LocalDerivedSetStore,
     type LocalSetStore,
     type RemoteSetStore,
@@ -258,6 +259,43 @@ export type RemoteProxy<T> = RemoteProxyFunction<T> &
     ProxyEndpointMethods;
 
 /**
+ * Get the Local type of an object wrapped through the {@link Endpoint} API.
+ *
+ * @param TRemote The Remote Type.
+ */
+export type Local<TRemote> = TRemote extends TransferMarked
+    ? TransferMarkedLocal<TRemote>
+    : StructuredCloneOf<TRemote>;
+
+/**
+ * Maps our custom remote transfer marked types to the matching local counterpart type.
+ *
+ * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
+ *            used here, otherwise false positives are possible.
+ */
+export type TransferMarkedLocal<T extends TransferMarked> = T extends RemoteModelStore<
+    infer TModel,
+    infer TView,
+    infer TController,
+    infer TCtx,
+    infer TType
+>
+    ? LocalModelStore<TModel, TView, TController, TCtx, TType>
+    : T extends RemoteSetStore<infer TValue>
+    ? ISetStore<TValue>
+    : T extends RemoteStore<infer TValue>
+    ? LocalStore<TValue>
+    : T extends PropertiesMarkedRemote<infer TValue>
+    ? TValue
+    : T extends RemoteProxy<infer TValue>
+    ? TValue
+    : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
+    // types. Use the following as fallback for other cases:
+    T extends Remote<infer TValue>
+    ? TValue
+    : never;
+
+/**
  * A proxied remote function type. See {@link RemoteProxy}.
  *
  * Allows {@param T} to be called as a function - if it is a function.
@@ -265,7 +303,7 @@ export type RemoteProxy<T> = RemoteProxyFunction<T> &
 type RemoteProxyFunction<T> = T extends (...args: infer TArguments) => infer TReturn
     ? (
           ...args: {
-              [I in keyof TArguments]: TArguments[I];
+              [I in keyof TArguments]: Local<TArguments[I]>;
           }
       ) => Promisify<Remote<Awaited<TReturn>>>
     : unknown;
@@ -389,7 +427,7 @@ type StructuredCloneUnclonableTypes = Promise<unknown> | Function;
  * Use {@link RemoteProxy} if you created the proxy manually with
  * {@link EndpointService.wrap}.
  *
- * @param T The Local Type.
+ * @param TLocal The Local Type.
  */
 export type Remote<TLocal> = TLocal extends TransferMarked
     ? TransferMarkedRemote<TLocal>
