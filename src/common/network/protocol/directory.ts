@@ -14,7 +14,7 @@ import {base64ToU8a} from '~/common/utils/base64';
 import {
     type ProxyMarked,
     registerErrorTransferHandler,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 
 export const VALID_IDENTITY_DATA_SCHEMA = v
@@ -125,7 +125,7 @@ const DIRECTORY_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors related to working with the identity directory.
  */
 export class DirectoryError extends BaseError {
-    public [TRANSFER_MARKER] = DIRECTORY_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = DIRECTORY_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: DirectoryErrorType,

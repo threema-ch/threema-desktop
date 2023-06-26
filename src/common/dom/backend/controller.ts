@@ -27,7 +27,7 @@ import {
     RELEASE_PROXY,
     type Remote,
     type RemoteProxy,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -156,10 +156,10 @@ export class BackendController {
                     updateState: (state: LinkingState) => {
                         linkingStateStore.set(state);
                     },
-                    [TRANSFER_MARKER]: PROXY_HANDLER,
+                    [TRANSFER_HANDLER]: PROXY_HANDLER,
                 },
                 userPassword,
-                [TRANSFER_MARKER]: PROXY_HANDLER,
+                [TRANSFER_HANDLER]: PROXY_HANDLER,
             };
 
             // Expose

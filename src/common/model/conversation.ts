@@ -23,7 +23,7 @@ import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d
 import {type ConversationId, type MessageId} from '~/common/network/types';
 import {type i53, type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
     createExactPropertyValidator,
@@ -165,18 +165,18 @@ function update(
 }
 
 export class ConversationModelController implements ConversationController {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<ConversationView>();
 
     public readonly read = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (readAt: Date) => this._handleRead(TriggerSource.LOCAL, readAt),
     };
 
     /** @inheritdoc */
     public readonly addMessage: ConversationController['addMessage'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromLocal: async (
             init: DirectedMessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>,
         ) => {
@@ -239,7 +239,7 @@ export class ConversationModelController implements ConversationController {
 
     /** @inheritdoc */
     public readonly removeMessage: ConversationController['removeMessage'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (uid: MessageId) => {
             const messageToRemove = this.getMessage(uid);
@@ -255,7 +255,7 @@ export class ConversationModelController implements ConversationController {
 
     /** @inheritdoc */
     public readonly removeAllMessages: ConversationController['removeAllMessages'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async () => {
             this.meta.update(() => {
@@ -733,7 +733,7 @@ export class ConversationModelStore extends LocalModelStore<Conversation> {
 
 /** @inheritdoc */
 export class ConversationModelRepository implements ConversationRepository {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly totalUnreadMessageCount: LocalStore<u53>;
 
     private readonly _log: Logger;

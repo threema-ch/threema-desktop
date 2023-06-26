@@ -29,7 +29,7 @@ import {type ConversationId, type GroupId, type IdentityString} from '~/common/n
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
@@ -108,12 +108,12 @@ function updateGroupProfilePicture(
 }
 
 export class ProfilePictureModelController implements ProfilePictureController {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<ProfilePictureView>();
 
     /** @inheritdoc */
     public readonly setPicture: ProfilePictureController['setPicture'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
 
         fromLocal: async (profilePicture: ReadonlyUint8Array, source: ProfilePictureSource) => {
             this._log.debug(`ProfilePictureModelController: Set ${source} picture from local`);
@@ -213,7 +213,7 @@ export class ProfilePictureModelController implements ProfilePictureController {
 
     /** @inheritdoc */
     public readonly removePicture: ProfilePictureController['removePicture'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
 
         fromLocal: async (source: ProfilePictureSource) => {
             this._log.debug(`ProfilePictureModelController: Remove ${source} picture from local`);
@@ -520,7 +520,7 @@ export class ProfilePictureModelStore extends LocalModelStore<ProfilePicture> {
 
 /** @inheritdoc */
 export class ProfilePictureModelRepository implements IProfilePictureRepository {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public constructor(
         private readonly _services: ServicesForModel,

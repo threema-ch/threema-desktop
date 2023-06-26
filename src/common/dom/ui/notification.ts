@@ -5,14 +5,14 @@ import {
     type NotificationHandle,
     type NotificationTag,
 } from '~/common/notification';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 class ProxyNotification extends Notification {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 }
 
 export class FrontendNotificationCreator implements NotificationCreator {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     private readonly _notifications = new Map<NotificationTag, ProxyNotification>();
 

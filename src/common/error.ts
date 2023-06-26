@@ -4,7 +4,7 @@ import {
     type RegisteredErrorTransferHandler,
     type RegisteredTransferHandler,
     registerErrorTransferHandler,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 
 import {CloseCode, type CloseInfo} from './network';
@@ -50,7 +50,7 @@ export interface BaseErrorOptions {
  * Common base class for errors.
  */
 export abstract class BaseError extends Error {
-    public abstract readonly [TRANSFER_MARKER]: RegisteredTransferHandler<
+    public abstract readonly [TRANSFER_HANDLER]: RegisteredTransferHandler<
         // Note: Would be great if we could constrain this in some way but it's tedious as hell.
         /* eslint-disable @typescript-eslint/no-explicit-any */
         any,
@@ -91,7 +91,7 @@ const CONNECTION_CLOSED_TRANSFER_HANDLER = registerErrorTransferHandler<
  * The connection has been closed or aborted.
  */
 export class ConnectionClosed extends BaseError {
-    public [TRANSFER_MARKER] = CONNECTION_CLOSED_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = CONNECTION_CLOSED_TRANSFER_HANDLER;
     public constructor(
         public readonly type: ConnectionClosedType,
         message: string,
@@ -114,7 +114,7 @@ const CRYPTO_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * A general crypto-related error.
  */
 export class CryptoError extends BaseError {
-    public [TRANSFER_MARKER] = CRYPTO_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = CRYPTO_ERROR_TRANSFER_HANDLER;
 }
 
 /**
@@ -144,7 +144,7 @@ const PROTOCOL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  *            purposes in development mode.
  */
 export class ProtocolError<TType extends ProtocolErrorType> extends BaseError implements CloseInfo {
-    public [TRANSFER_MARKER]: RegisteredErrorTransferHandler<
+    public [TRANSFER_HANDLER]: RegisteredErrorTransferHandler<
         ProtocolError<ProtocolErrorType>,
         TransferTag.PROTOCOL_ERROR,
         [type: ProtocolErrorType, info: CloseInfo]
@@ -184,7 +184,7 @@ const MIGRATION_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * An error that occurs when applying migrations.
  */
 export class MigrationError extends BaseError {
-    public [TRANSFER_MARKER] = MIGRATION_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = MIGRATION_ERROR_TRANSFER_HANDLER;
 }
 
 type TypeTransformErrorDirection = 'encode' | 'decode';
@@ -203,7 +203,7 @@ const TYPE_TRANSFORM_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * An error that occurs when transforming values from/to database types.
  */
 export class TypeTransformError extends BaseError {
-    public [TRANSFER_MARKER] = TYPE_TRANSFORM_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = TYPE_TRANSFORM_ERROR_TRANSFER_HANDLER;
 
     public constructor(public readonly direction: TypeTransformErrorDirection, message: string) {
         super(message);
@@ -229,7 +229,7 @@ export class TypeTransformError extends BaseError {
  * An error that occurs when something could not be parsed.
  */
 export class ParseError extends BaseError {
-    public [TRANSFER_MARKER] = MIGRATION_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = MIGRATION_ERROR_TRANSFER_HANDLER;
 }
 
 /**
@@ -258,7 +258,7 @@ const SAFE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors types that can happen in connection with the Threema Safe restore process.
  */
 export class SafeError extends BaseError {
-    public [TRANSFER_MARKER] = SAFE_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = SAFE_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: SafeErrorType,
@@ -293,7 +293,7 @@ const DEVICE_JOIN_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors types that can happen in connection with the Threema Safe restore process.
  */
 export class DeviceJoinError extends BaseError {
-    public [TRANSFER_MARKER] = DEVICE_JOIN_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = DEVICE_JOIN_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: DeviceJoinErrorType,

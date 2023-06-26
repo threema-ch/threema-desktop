@@ -1,6 +1,6 @@
 import {type Mutable} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {
     type IQueryableStore,
     type IQueryableStoreValue,
@@ -128,7 +128,7 @@ export function concentrate<TSourceStores extends QueryableStores>(
 export class ConcentratorStore<TSourceStores extends QueryableStores>
     implements IQueryableStore<StoreValues<TSourceStores>>, LocalStore<StoreValues<TSourceStores>>
 {
-    public readonly [TRANSFER_MARKER] = STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly tag: string;
 
     /**

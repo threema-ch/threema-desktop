@@ -19,7 +19,7 @@ import {
 } from '~/common/network/protocol';
 import {type ClientKey} from '~/common/network/types/keys';
 import {type WeakOpaque} from '~/common/types';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {type QueueConsumer, type QueueProducer} from '~/common/utils/queue';
 import {type QueryablePromise, type ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type AbortListener} from '~/common/utils/signal';
@@ -322,7 +322,7 @@ const TASK_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors related to tasks.
  */
 export class TaskError extends BaseError {
-    public [TRANSFER_MARKER] = TASK_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = TASK_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: TaskErrorType,

@@ -14,7 +14,7 @@ import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
  * Byte length of a Threema Blob ID.
@@ -168,7 +168,7 @@ const BLOB_BACKEND_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors related to working with the blob mirror.
  */
 export class BlobBackendError extends BaseError {
-    public [TRANSFER_MARKER] = BLOB_BACKEND_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = BLOB_BACKEND_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: BlobBackendErrorType,

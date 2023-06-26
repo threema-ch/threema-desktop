@@ -14,7 +14,7 @@ import {
     type EndpointFor,
     PROXY_HANDLER,
     type ProxyMarked,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {BACKEND_WORKER_CONFIG} from '~/worker/backend/config';
 
@@ -68,7 +68,7 @@ export function main(config: Config, factories: FactoriesForBackend): void {
                 deviceLinkingSetup,
             );
         },
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
     };
 
     endpoint.exposeProxy(creator, self, logging.logger('com.backend-creator'));

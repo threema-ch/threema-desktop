@@ -12,13 +12,13 @@ import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {ensureNickname, type IdentityString} from '~/common/network/types';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
 export class UserModel implements User {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public readonly identity: IdentityString;
     public readonly displayName: LocalStore<string>;

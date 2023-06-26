@@ -17,7 +17,7 @@ import {type IdentityString} from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
  * Schema for the challenge payload returned by the directory server.
@@ -50,7 +50,7 @@ const BULK_IDENTITIES_SCHEMA = v
  * [Fetch API]: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
  */
 export class FetchDirectoryBackend implements DirectoryBackend {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     private readonly _base: string;
     private readonly _requestInit: RequestInit;
 

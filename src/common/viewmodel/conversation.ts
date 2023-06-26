@@ -18,7 +18,7 @@ import {
     PROXY_HANDLER,
     type ProxyMarked,
     type Remote,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -54,7 +54,7 @@ export interface IConversationViewModelController extends ProxyMarked {
 }
 
 export class ConversationViewModelController implements IConversationViewModelController {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     private readonly _log: Logger;
 

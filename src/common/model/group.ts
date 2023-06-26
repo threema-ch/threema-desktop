@@ -38,7 +38,7 @@ import {type GroupId, type IdentityString} from '~/common/network/types';
 import {getNotificationTagForGroup, type NotificationTag} from '~/common/notification';
 import {type Mutable, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {u64ToHexLe} from '~/common/utils/number';
 import {
@@ -334,11 +334,11 @@ function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Group>> 
 
 /** @inheritdoc */
 class GroupMemberModelController implements GroupMemberController {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     /** @inheritdoc */
     public readonly add: GroupMemberController['add'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Add members from local');
@@ -348,7 +348,7 @@ class GroupMemberModelController implements GroupMemberController {
 
     /** @inheritdoc */
     public readonly remove: GroupMemberController['remove'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Remove members from local');
@@ -370,7 +370,7 @@ class GroupMemberModelController implements GroupMemberController {
 
     /** @inheritdoc */
     public readonly set: GroupMemberController['set'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (contactUids: DbContactUid[]) => {
             this._log.debug('GroupMemberModelController: Set members from sync');
             this._set(...this._diff(contactUids));
@@ -470,7 +470,7 @@ class GroupMemberModelController implements GroupMemberController {
 
 /** @inheritdoc */
 export class GroupModelController implements GroupController {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<GroupView>();
     public readonly notificationTag: NotificationTag;
 
@@ -482,7 +482,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public readonly update: GroupController['update'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromLocal: async (change: GroupUpdateFromLocal) => {
             this._log.debug('GroupModelController: Update from local');
             const validatedChange = ensureExactGroupUpdateFromLocal(change);
@@ -503,7 +503,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public readonly name: GroupController['name'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (name) => {
             this._log.debug('GroupModelController: Change name from local');
@@ -522,7 +522,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public readonly remove: GroupController['remove'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromLocal: async () => {
             this._log.debug('GroupModelController: Remove from local');
             // TODO(DESK-551): Remove Group and sync to D2D
@@ -536,7 +536,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public readonly kick: GroupController['kick'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle) => {
             this._log.debug('GroupModelController: Kicked from remote');
@@ -551,7 +551,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public readonly leave: GroupController['leave'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async () => {
             this._log.debug('GroupModelController: Leave from local');
@@ -566,7 +566,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public readonly dissolve: GroupController['dissolve'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: () => {
             this._log.debug('GroupModelController: Dissolve from sync');
             this._update({userState: GroupUserState.LEFT});
@@ -575,7 +575,7 @@ export class GroupModelController implements GroupController {
 
     /** @inheritdoc */
     public readonly join: GroupController['join'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle) => {
             this._log.debug('GroupModelController: Join from remote');
@@ -798,10 +798,10 @@ export class GroupModelStore extends LocalModelStore<Group> {
 
 /** @inheritdoc */
 export class GroupModelRepository implements GroupRepository {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public readonly add: GroupRepository['add'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
 
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (init: GroupInit, members: DbContactUid[]) => {

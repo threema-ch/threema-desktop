@@ -10,6 +10,8 @@ import {type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,
+    type CustomTransferable,
+    type CustomTransferredRemoteMarker,
     type Endpoint,
     type EndpointFor,
     type EndpointPairFor,
@@ -21,8 +23,8 @@ import {
     registerTransferHandler,
     RELEASE_PROXY,
     type Remote,
-    TRANSFER_MARKER,
-    type CustomTransferable,
+    TRANSFER_HANDLER,
+    TRANSFERRED_MARKER,
 } from '~/common/utils/endpoint';
 import {type AbortRaiser} from '~/common/utils/signal';
 import {
@@ -36,6 +38,11 @@ import {
  * Symbol to mark an interface as a model.
  */
 export const MODEL_MARKER = Symbol('model-marker');
+
+/**
+ * Symbol to mark a remote as a model store.
+ */
+export const MODEL_STORE_REMOTE_MARKER: unique symbol = Symbol('model-store-remote-marker');
 
 function defaultModelRepresentation<TView>({view}: {readonly view: TView}): string {
     return `${JSON.stringify(view)}`;
@@ -65,7 +72,7 @@ export class LocalModelStore<
     >
     implements CustomTransferable<typeof MODEL_STORE_TRANSFER_HANDLER>
 {
-    public readonly [TRANSFER_MARKER] = MODEL_STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = MODEL_STORE_TRANSFER_HANDLER;
 
     /**
      * A tag that will be assigned to the associated debug logger.

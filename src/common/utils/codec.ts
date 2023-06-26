@@ -1,6 +1,6 @@
 import {TransferTag} from '~/common/enum';
 import {BaseError} from '~/common/error';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
  * A handle to the `enqueue` function of a compatible codec.
@@ -247,7 +247,7 @@ const ENCODING_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * UTF-8 codec error.
  */
 export class EncodingError extends BaseError {
-    public [TRANSFER_MARKER] = ENCODING_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = ENCODING_ERROR_TRANSFER_HANDLER;
 }
 
 /**

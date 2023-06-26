@@ -12,7 +12,7 @@ import {
     type ObjectId,
     type RegisteredTransferHandler,
     registerTransferHandler,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
     type CustomTransferable,
     type WireValue,
 } from '~/common/utils/endpoint';
@@ -321,7 +321,7 @@ export class WritableStore<TInValue extends TOutValue, TOutValue = TInValue>
     extends ReadableStore<TInValue, TOutValue>
     implements IWritableStore<TInValue>, IQueryableStore<TOutValue>, LocalStore<TOutValue>
 {
-    public readonly [TRANSFER_MARKER] = STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly tag: string;
 
     /**
@@ -382,7 +382,7 @@ export class MonotonicEnumStore<TValue extends u53>
     extends ReadableStore<TValue>
     implements IWritableStore<TValue>, LocalStore<TValue>
 {
-    public readonly [TRANSFER_MARKER] = STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly tag: string;
 
     /**
@@ -497,7 +497,7 @@ export class DeprecatedDerivedStore<
     TTransformed,
 > implements IQueryableStore<TTransformed>, LocalStore<TTransformed>
 {
-    public readonly [TRANSFER_MARKER] = STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly tag: string;
     private _state?: {
         subscribers: Set<StoreSubscriber<TTransformed>>;

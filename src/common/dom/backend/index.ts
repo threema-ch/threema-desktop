@@ -92,7 +92,7 @@ import {
     type ProxyMarked,
     registerErrorTransferHandler,
     type Remote,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser} from '~/common/utils/signal';
@@ -135,7 +135,7 @@ const BACKEND_CREATION_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors that can be thrown by the BackendCreator.
  */
 export class BackendCreationError extends BaseError {
-    public [TRANSFER_MARKER] = BACKEND_CREATION_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = BACKEND_CREATION_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: BackendCreationErrorType,
@@ -440,7 +440,7 @@ async function writeKeyStorage(
  * thread through the {@link BackendController}.
  */
 export class Backend implements ProxyMarked {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly debug: DebugBackend;
     public readonly deviceIds: DeviceIds;
     public readonly directory: DirectoryBackend;
@@ -901,7 +901,7 @@ const connectionLoggerStyle = createLoggerStyle('#EE9B00', 'white');
  * Note that the connection will only be established once the `readyToConnect` promise is resolved.
  */
 class ConnectionManager {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly state: MonotonicEnumStore<ConnectionState>;
     public readonly leaderState: MonotonicEnumStore<D2mLeaderState>;
     private readonly _initialConnectionResult = new ResolvablePromise<InitialConnectionResult>();

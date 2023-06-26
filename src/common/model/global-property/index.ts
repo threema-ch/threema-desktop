@@ -14,10 +14,10 @@ import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 export class GlobalPropertyRepository implements IGlobalPropertyRepository {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public constructor(
         private readonly _services: ServicesForModel,
@@ -98,7 +98,7 @@ const GLOBAL_PROPERTY_CODECS: GlobalPropertyCodecs = {
 export class GlobalPropertyController<K extends keyof GlobalPropertyValues>
     implements IGlobalPropertyController<K>
 {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<GlobalPropertyView<K>>();
 
     public constructor(private readonly _services: ServicesForModel) {}

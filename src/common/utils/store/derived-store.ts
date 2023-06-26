@@ -1,5 +1,5 @@
 import {assert} from '~/common/utils/assert';
-import {TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {
     type IQueryableStore,
     type IQueryableStoreValue,
@@ -159,7 +159,7 @@ export class DerivedStore<
     TOutDerivedValue = TDerivedValue,
 > implements IQueryableStore<TOutDerivedValue>, LocalStore<TOutDerivedValue>
 {
-    public readonly [TRANSFER_MARKER] = STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly tag: string;
 
     protected _state: States<TSourceStore, TDerivedValue, TOutDerivedValue> = {

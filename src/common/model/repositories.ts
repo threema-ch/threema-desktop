@@ -10,10 +10,10 @@ import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
 import {ProfilePictureModelRepository} from '~/common/model/profile-picture';
 import {UserModel} from '~/common/model/user';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 export class ModelRepositories implements Repositories {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly user: UserModel;
     public readonly contacts: ContactModelRepository;
     public readonly groups: GroupModelRepository;

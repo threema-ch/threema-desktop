@@ -3,7 +3,7 @@ import {type DbContactUid, type DbReceiverLookup} from '~/common/db';
 import {type AnyMessageModelStore} from '~/common/model';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import {type MessageId} from '~/common/network/types';
-import {PROXY_HANDLER, type ProxyMarked, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
 import {type LocalStore} from '~/common/utils/store';
 import {type ViewModelCache} from '~/common/viewmodel/cache';
@@ -69,7 +69,7 @@ export interface IViewModelRepository extends ProxyMarked {
 }
 
 export class ViewModelRepository implements IViewModelRepository {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public constructor(
         private readonly _services: ServicesForViewModel,

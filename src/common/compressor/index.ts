@@ -1,7 +1,7 @@
 import {TransferTag} from '~/common/enum';
 import {BaseError} from '~/common/error';
 import {type ReadonlyUint8Array} from '~/common/types';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
  * Compression methods supported by the compressor.
@@ -37,5 +37,5 @@ const COMPRESSION_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
 });
 
 export class CompressionError extends BaseError {
-    public [TRANSFER_MARKER] = COMPRESSION_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = COMPRESSION_ERROR_TRANSFER_HANDLER;
 }

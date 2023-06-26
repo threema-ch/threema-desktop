@@ -10,7 +10,7 @@ import {type Logger} from '~/common/logging';
 import {type ReadonlyUint8Array, type u53, type WeakOpaque} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
  * A 24-byte File ID in lowercase hexadecimal string format.
@@ -232,7 +232,7 @@ const FILE_STORAGE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors related to a {@link FileStorage}.
  */
 export class FileStorageError extends BaseError {
-    public [TRANSFER_MARKER] = FILE_STORAGE_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = FILE_STORAGE_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: FileStorageErrorType,

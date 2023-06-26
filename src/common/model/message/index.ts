@@ -38,7 +38,7 @@ import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
 import {type MessageId} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {bigintSortAsc} from '~/common/utils/number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
@@ -416,7 +416,7 @@ export function all(
 }
 
 abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageView> {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<TView>();
 
     protected readonly _log: Logger;
@@ -497,16 +497,16 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     extends CommonBaseMesageModelController<TView>
     implements InboundBaseMessageController<TView>
 {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<TView>();
 
     public readonly read: InboundBaseMessageController<TView>['read'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (readAt: Date) => this._handleRead(TriggerSource.SYNC, readAt),
     };
 
     public readonly reaction: InboundBaseMessageController<TView>['reaction'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (type: MessageReaction, reactedAt: Date) =>
             this._handleReaction(TriggerSource.LOCAL, type, reactedAt),
@@ -592,11 +592,11 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     extends CommonBaseMesageModelController<TView>
     implements OutboundBaseMessageController<TView>
 {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<TView>();
 
     public readonly delivered: OutboundBaseMessageController<TView>['delivered'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (deliveredAt: Date) => this._handleDelivered(deliveredAt),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, deliveredAt: Date) =>
@@ -604,7 +604,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     };
 
     public readonly reaction: OutboundBaseMessageController<TView>['reaction'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (type: MessageReaction, reactedAt: Date) => this._handleReaction(type, reactedAt),
 
         fromRemote: async (
@@ -616,7 +616,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     };
 
     public readonly read: OutboundBaseMessageController<TView>['read'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromSync: (readAt: Date) => this._handleRead(readAt),
         // eslint-disable-next-line @typescript-eslint/require-await
         fromRemote: async (handle: ActiveTaskCodecHandle<'volatile'>, readAt: Date) =>

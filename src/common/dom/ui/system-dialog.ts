@@ -4,7 +4,7 @@ import {
     type SystemDialogHandle,
     type SystemDialogService,
 } from '~/common/system-dialog';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {WritableStore} from '~/common/utils/store';
 
@@ -18,7 +18,7 @@ export const systemDialogStore = new WritableStore<
 >([]);
 
 export class FrontendSystemDialogHandle implements SystemDialogHandle {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     /**
      * Resolves once the dialog was closed.
@@ -27,7 +27,7 @@ export class FrontendSystemDialogHandle implements SystemDialogHandle {
 }
 
 export class FrontendSystemDialogService implements SystemDialogService {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     /**
      * Show the specified system dialog.

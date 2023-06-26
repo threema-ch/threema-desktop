@@ -12,7 +12,7 @@ import {
     type ObjectId,
     type RegisteredTransferHandler,
     registerTransferHandler,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
     type CustomTransferable,
 } from '~/common/utils/endpoint';
 import {EventController, type EventListener, type EventUnsubscriber} from '~/common/utils/event';
@@ -43,7 +43,7 @@ export class LocalSetStore<TValue extends CustomTransferable>
     extends ReadableStore<Set<TValue>, ReadonlySet<TValue>>
     implements ISetStore<TValue>, SetStoreDeltaListener<TValue>
 {
-    public readonly [TRANSFER_MARKER] = SET_STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
     public readonly tag: string;
     private readonly _delta: EventController<DeltaUpdate<TValue>>;
 
@@ -101,7 +101,7 @@ export class LocalDerivedSetStore<
     extends ReadableStore<Set<TDerived>, ReadonlySet<TDerived>>
     implements ISetStore<TDerived>, SetStoreDeltaListener<TDerived>
 {
-    public readonly [TRANSFER_MARKER] = SET_STORE_TRANSFER_HANDLER;
+    public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
     public readonly tag: string;
     private readonly _delta: EventController<DeltaUpdate<TDerived>>;
 

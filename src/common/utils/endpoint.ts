@@ -183,7 +183,7 @@ type Message = GetMessage | SetMessage | ApplyMessage | ReleaseMessage;
 /**
  * Marker for an object that requires serialization in a special form.
  */
-export const TRANSFER_MARKER = Symbol('endpoint-transfer-marker');
+export const TRANSFER_HANDLER = Symbol('endpoint-transfer-handler');
 
 /**
  * Called from the remote side to explicitly release a proxy on the local side.
@@ -202,7 +202,7 @@ export interface CustomTransferable<
         TransferTag
     > = RegisteredTransferHandler<any, any, any, any, TransferTag>,
 > {
-    readonly [TRANSFER_MARKER]: THandler;
+    readonly [TRANSFER_HANDLER]: THandler;
 }
 
 /**
@@ -210,7 +210,7 @@ export interface CustomTransferable<
  * via a proxy on the remote side.
  */
 export interface ProxyMarked extends CustomTransferable<typeof PROXY_HANDLER> {
-    readonly [TRANSFER_MARKER]: typeof PROXY_HANDLER;
+    readonly [TRANSFER_HANDLER]: typeof PROXY_HANDLER;
 }
 
 /**
@@ -218,15 +218,27 @@ export interface ProxyMarked extends CustomTransferable<typeof PROXY_HANDLER> {
  * handler, if existing (fall back to structured cloning).
  */
 export interface PropertiesMarked extends CustomTransferable<typeof PROPERTIES_HANDLER> {
-    readonly [TRANSFER_MARKER]: typeof PROPERTIES_HANDLER;
+    readonly [TRANSFER_HANDLER]: typeof PROPERTIES_HANDLER;
 }
 
 /**
  * Marks an object as *thrown*.
  */
 interface ThrowMarked extends CustomTransferable<typeof THROW_HANDLER> {
-    readonly [TRANSFER_MARKER]: typeof THROW_HANDLER;
+    readonly [TRANSFER_HANDLER]: typeof THROW_HANDLER;
     readonly error: unknown;
+}
+
+/**
+ * Marker for the representation of an object on the remote side.
+ */
+export const TRANSFERRED_MARKER: unique symbol = Symbol('endpoint-transferred-marker');
+
+/**
+ * Marks an object on the remote side as a special transferred type.
+ */
+export interface CustomTransferredRemoteMarker<TMarker> {
+    readonly [TRANSFERRED_MARKER]: TMarker;
 }
 
 /**
@@ -263,7 +275,7 @@ export type RemoteProxy<T> = RemoteProxyFunction<T> &
  *
  * @param TRemote The Remote Type.
  */
-export type Local<TRemote> = TRemote extends CustomTransferable
+export type Local<TRemote> = TRemote extends CustomTransferredRemoteMarker<never>
     ? CustomTransferableLocal<TRemote>
     : StructuredCloneOf<TRemote>;
 
@@ -273,27 +285,28 @@ export type Local<TRemote> = TRemote extends CustomTransferable
  * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
  *            used here, otherwise false positives are possible.
  */
-export type CustomTransferableLocal<T extends CustomTransferable> = T extends RemoteModelStore<
-    infer TModel,
-    infer TView,
-    infer TController,
-    infer TCtx,
-    infer TType
->
-    ? LocalModelStore<TModel, TView, TController, TCtx, TType>
-    : T extends RemoteSetStore<infer TValue>
-    ? ISetStore<TValue>
-    : T extends RemoteStore<infer TValue>
-    ? LocalStore<TValue>
-    : T extends PropertiesMarkedRemote<infer TValue>
-    ? TValue
-    : T extends RemoteProxy<infer TValue>
-    ? TValue
-    : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
-    // types. Use the following as fallback for other cases:
-    T extends Remote<infer TValue>
-    ? TValue
-    : never;
+export type CustomTransferableLocal<T extends CustomTransferredRemoteMarker<never>> =
+    T extends RemoteModelStore<
+        infer TModel,
+        infer TView,
+        infer TController,
+        infer TCtx,
+        infer TType
+    >
+        ? LocalModelStore<TModel, TView, TController, TCtx, TType>
+        : T extends RemoteSetStore<infer TValue>
+        ? ISetStore<TValue>
+        : T extends RemoteStore<infer TValue>
+        ? LocalStore<TValue>
+        : T extends PropertiesMarkedRemote<infer TValue>
+        ? TValue
+        : T extends RemoteProxy<infer TValue>
+        ? TValue
+        : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
+        // types. Use the following as fallback for other cases:
+        T extends Remote<infer TValue>
+        ? TValue
+        : never;
 
 /**
  * A proxied remote function type. See {@link RemoteProxy}.
@@ -313,12 +326,12 @@ type RemoteProxyFunction<T> = T extends (...args: infer TArguments) => infer TRe
  *
  * Allows {@param T}'s properties to be proxy-accessed - if it is an object with properties.
  */
-type RemoteProxyObject<T> = keyof Omit<T, typeof TRANSFER_MARKER> extends never
+type RemoteProxyObject<T> = keyof Omit<T, typeof TRANSFER_HANDLER> extends never
     ? unknown // We're reducing a potential object T here to find out if it has any more keys
     : {
           readonly [TProperty in keyof T as Exclude<
               TProperty,
-              typeof TRANSFER_MARKER
+              typeof TRANSFER_HANDLER
           >]: ProxyMarkedRemoteObjectProperty<T[TProperty]>;
       };
 
@@ -355,7 +368,7 @@ type RemoteProxyPromise<T> = T extends ProxyMarked
  * Map all properties of an object marked with {@link PropertiesMarked} to their remote type.
  */
 export type PropertiesMarkedRemote<T> = {
-    readonly [P in keyof T as Exclude<P, typeof TRANSFER_MARKER>]: Remote<T[P]>;
+    readonly [P in keyof T as Exclude<P, typeof TRANSFER_HANDLER>]: Remote<T[P]>;
 };
 
 /**
@@ -762,7 +775,7 @@ export class EndpointService {
     public exposeProperties<TObject extends Record<string | u53, unknown>>(
         object: TObject,
     ): TObject & PropertiesMarked {
-        return Object.assign(object, {[TRANSFER_MARKER]: PROPERTIES_HANDLER});
+        return Object.assign(object, {[TRANSFER_HANDLER]: PROPERTIES_HANDLER});
     }
 
     public transfer<TResult, TTransferable extends any[]>(
@@ -798,11 +811,11 @@ export class EndpointService {
     ): readonly [value: unknown, transfers: readonly DomTransferable[]] {
         if (
             ((typeof value === 'object' && value !== null) || typeof value === 'function') &&
-            TRANSFER_MARKER in value
+            TRANSFER_HANDLER in value
         ) {
             return this._toWireValueViaHandler(
                 value as {
-                    readonly [TRANSFER_MARKER]: RegisteredTransferHandler<
+                    readonly [TRANSFER_HANDLER]: RegisteredTransferHandler<
                         any,
                         any,
                         any,
@@ -964,10 +977,10 @@ export class EndpointService {
                         unreachable(type);
                 }
             } catch (error) {
-                returnValue = {error, [TRANSFER_MARKER]: THROW_HANDLER};
+                returnValue = {error, [TRANSFER_HANDLER]: THROW_HANDLER};
             }
             void Promise.resolve(returnValue)
-                .catch((error) => ({error, [TRANSFER_MARKER]: THROW_HANDLER}))
+                .catch((error) => ({error, [TRANSFER_HANDLER]: THROW_HANDLER}))
                 .then((returnValue_) => {
                     const [wireValue, transfers] = service._toWireValue(returnValue_);
                     ep.postMessage({...wireValue, id}, transfers as any[]);
@@ -997,11 +1010,11 @@ export class EndpointService {
     ): readonly [value: WireValue, transfers: readonly DomTransferable[]] {
         if (
             ((typeof value === 'object' && value !== null) || typeof value === 'function') &&
-            TRANSFER_MARKER in value
+            TRANSFER_HANDLER in value
         ) {
             return this._toWireValueViaHandler(
                 value as {
-                    readonly [TRANSFER_MARKER]: RegisteredTransferHandler<
+                    readonly [TRANSFER_HANDLER]: RegisteredTransferHandler<
                         any,
                         any,
                         any,
@@ -1020,9 +1033,9 @@ export class EndpointService {
     ): readonly [value: HandlerWireValue, transfers: readonly DomTransferable[]] {
         // Look up the handler depending on the transfer marker.
         const object = value as {
-            readonly [TRANSFER_MARKER]: RegisteredTransferHandler<any, any, any, any, TransferTag>;
+            readonly [TRANSFER_HANDLER]: RegisteredTransferHandler<any, any, any, any, TransferTag>;
         };
-        const handler = object[TRANSFER_MARKER];
+        const handler = object[TRANSFER_HANDLER];
 
         // Serialize the object using the handler
         const [serialized, transfers] = handler.serialize(object, this);
@@ -1216,7 +1229,7 @@ function serializeError(
               service.serialize(error.cause, () =>
                   unwrap(
                       service.serialize({
-                          [TRANSFER_MARKER]: THROW_HANDLER,
+                          [TRANSFER_HANDLER]: THROW_HANDLER,
                           error: error.cause,
                       }),
                   ),
@@ -1359,7 +1372,7 @@ export function registerErrorTransferHandler<
                       service.serialize(error.cause, () =>
                           unwrap(
                               service.serialize({
-                                  [TRANSFER_MARKER]: THROW_HANDLER,
+                                  [TRANSFER_HANDLER]: THROW_HANDLER,
                                   error: error.cause,
                               } as ThrowMarked),
                           ),

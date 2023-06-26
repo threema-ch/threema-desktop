@@ -19,7 +19,7 @@ import {getNotificationTagForContact, type NotificationTag} from '~/common/notif
 import {type StrictOmit, type u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
-import {PROXY_HANDLER, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
     createExactPropertyValidator,
@@ -257,14 +257,14 @@ function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Contact>
 
 /** @inheritdoc */
 export class ContactModelController implements ContactController {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly notificationTag: NotificationTag;
     public readonly meta = new ModelLifetimeGuard<ContactView>();
 
     public readonly profilePicture: LocalModelStore<ProfilePicture>;
 
     public readonly update: ContactController['update'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromLocal: async (change: ContactUpdate) => {
             this._log.debug('ContactModelController: Update from local');
             return await this._updateAsync({source: TriggerSource.LOCAL}, change);
@@ -280,7 +280,7 @@ export class ContactModelController implements ContactController {
     };
 
     public readonly remove: ContactController['remove'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
 
         fromLocal: async () => {
             const {taskManager} = this._services;
@@ -495,11 +495,11 @@ export class ContactModelStore extends LocalModelStore<Contact> {
 
 /** @inheritdoc */
 export class ContactModelRepository implements ContactRepository {
-    public readonly [TRANSFER_MARKER] = PROXY_HANDLER;
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     /** @inheritdoc */
     public readonly add: ContactRepository['add'] = {
-        [TRANSFER_MARKER]: PROXY_HANDLER,
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
 
         fromLocal: async (init: ContactInit) => {
             this._log.debug('ContactModelRepository: Add from local');

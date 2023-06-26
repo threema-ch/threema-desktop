@@ -21,7 +21,7 @@ import {type RendezvousAuthenticationKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u32} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {Queue} from '~/common/utils/queue';
 import {AbortRaiser} from '~/common/utils/signal';
 
@@ -282,7 +282,7 @@ const RENDEZVOUS_PROTOCOL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
 
 /** Rendezvous Protocol error. */
 export class RendezvousProtocolError extends BaseError {
-    public [TRANSFER_MARKER] = RENDEZVOUS_PROTOCOL_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = RENDEZVOUS_PROTOCOL_ERROR_TRANSFER_HANDLER;
 }
 
 export class RendezvousConnection implements BidirectionalStream<Uint8Array, ReadonlyUint8Array> {

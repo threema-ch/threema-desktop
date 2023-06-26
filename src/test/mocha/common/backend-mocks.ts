@@ -148,7 +148,7 @@ import {
     type Remote,
     RemoteObjectMapper,
     type RemoteProxy,
-    TRANSFER_MARKER,
+    TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {Identity} from '~/common/utils/identity';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -249,7 +249,7 @@ export function initSqliteBackend(logger: Logger): SqliteDatabaseBackend {
  * directory.
  */
 export class TestDirectoryBackend implements DirectoryBackend {
-    public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
+    public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
     private readonly _knownUsers: Record<IdentityString, IdentityData | undefined> = {};
     private _privateData: IdentityPrivateData | undefined = undefined;
@@ -383,7 +383,7 @@ class TestLoggerFactory implements LoggerFactory {
 }
 
 class UserRepository implements User {
-    public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
+    public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
     public identity: IdentityString;
     public profilePicture: LocalStore<ProfilePictureView>;
@@ -416,7 +416,7 @@ class UserRepository implements User {
 }
 
 export class TestModelRepositories implements Repositories {
-    public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
+    public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
     public user: User;
     public contacts: ContactRepository;
@@ -442,7 +442,7 @@ export class TestModelRepositories implements Repositories {
 }
 
 export class TestViewModel implements IViewModelRepository {
-    public [TRANSFER_MARKER] = FAKE_PROXY_HANDLER;
+    public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
     public constructor(private readonly _services: Omit<ServicesForBackend, 'viewModel'>) {}
 

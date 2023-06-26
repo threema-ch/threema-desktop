@@ -15,7 +15,7 @@ import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/ke
 import {EncryptedKeyStorage_Argon2idParameters_Argon2Version} from '~/common/node/key-storage/key-storage-file';
 import {KiB, MiB, type u8, type u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {registerErrorTransferHandler, TRANSFER_MARKER} from '~/common/utils/endpoint';
+import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {instanceOf, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /**
@@ -320,7 +320,7 @@ const KEY_STORAGE_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  * Errors related to reading, decrypting and decoding a {@link KeyStorage}.
  */
 export class KeyStorageError extends BaseError {
-    public [TRANSFER_MARKER] = KEY_STORAGE_ERROR_TRANSFER_HANDLER;
+    public [TRANSFER_HANDLER] = KEY_STORAGE_ERROR_TRANSFER_HANDLER;
 
     public constructor(
         public readonly type: KeyStorageErrorType,
