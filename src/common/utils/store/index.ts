@@ -13,7 +13,7 @@ import {
     type RegisteredTransferHandler,
     registerTransferHandler,
     TRANSFER_MARKER,
-    type TransferMarked,
+    type CustomTransferable,
     type WireValue,
 } from '~/common/utils/endpoint';
 import {type AbortRaiser} from '~/common/utils/signal';
@@ -128,7 +128,7 @@ export interface LocalStore<
         TransferTag
     > = typeof STORE_TRANSFER_HANDLER,
 > extends IQueryableStore<TValue>,
-        TransferMarked<TTransferHandler> {
+        CustomTransferable<TTransferHandler> {
     /**
      * A tag that will be assigned to the associated debug logger.
      */

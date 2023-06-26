@@ -1,6 +1,7 @@
 import {type ServicesForBackend} from '~/common/backend';
 import {type u53} from '~/common/types';
 import {
+    type CustomTransferable,
     type DebugObjectCacheCounter,
     type Endpoint,
     type EndpointPairFor,
@@ -9,7 +10,6 @@ import {
     type ObjectCache,
     type ObjectId,
     RemoteObjectMapper,
-    type TransferMarked,
 } from '~/common/utils/endpoint';
 
 /**
@@ -51,7 +51,7 @@ export function createEndpointService(
     //
     // Note also that we can safely use the cache for any kind of object
     // instance since the assigned IDs are always unique in that case.
-    const cache: ObjectCache<TransferMarked, object> = {
+    const cache: ObjectCache<CustomTransferable, object> = {
         local: new LocalObjectMapper(),
         remote: new RemoteObjectMapper(),
         counter,

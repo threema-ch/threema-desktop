@@ -193,7 +193,7 @@ export const RELEASE_PROXY = Symbol('endpoint-release-proxy');
 /**
  * Marks an object as a special transfer type that requires custom serialization.
  */
-export interface TransferMarked<
+export interface CustomTransferable<
     THandler extends RegisteredTransferHandler<
         any, // TLocal
         any, // TRemote
@@ -209,7 +209,7 @@ export interface TransferMarked<
  * Marks an object as a proxy. The local object will not be cloned but exposed
  * via a proxy on the remote side.
  */
-export interface ProxyMarked extends TransferMarked<typeof PROXY_HANDLER> {
+export interface ProxyMarked extends CustomTransferable<typeof PROXY_HANDLER> {
     readonly [TRANSFER_MARKER]: typeof PROXY_HANDLER;
 }
 
@@ -217,14 +217,14 @@ export interface ProxyMarked extends TransferMarked<typeof PROXY_HANDLER> {
  * Marks an object such that all of its properties are serialised with their respective transfer
  * handler, if existing (fall back to structured cloning).
  */
-export interface PropertiesMarked extends TransferMarked<typeof PROPERTIES_HANDLER> {
+export interface PropertiesMarked extends CustomTransferable<typeof PROPERTIES_HANDLER> {
     readonly [TRANSFER_MARKER]: typeof PROPERTIES_HANDLER;
 }
 
 /**
  * Marks an object as *thrown*.
  */
-interface ThrowMarked extends TransferMarked<typeof THROW_HANDLER> {
+interface ThrowMarked extends CustomTransferable<typeof THROW_HANDLER> {
     readonly [TRANSFER_MARKER]: typeof THROW_HANDLER;
     readonly error: unknown;
 }
@@ -263,8 +263,8 @@ export type RemoteProxy<T> = RemoteProxyFunction<T> &
  *
  * @param TRemote The Remote Type.
  */
-export type Local<TRemote> = TRemote extends TransferMarked
-    ? TransferMarkedLocal<TRemote>
+export type Local<TRemote> = TRemote extends CustomTransferable
+    ? CustomTransferableLocal<TRemote>
     : StructuredCloneOf<TRemote>;
 
 /**
@@ -273,7 +273,7 @@ export type Local<TRemote> = TRemote extends TransferMarked
  * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
  *            used here, otherwise false positives are possible.
  */
-export type TransferMarkedLocal<T extends TransferMarked> = T extends RemoteModelStore<
+export type CustomTransferableLocal<T extends CustomTransferable> = T extends RemoteModelStore<
     infer TModel,
     infer TView,
     infer TController,
@@ -333,8 +333,8 @@ type ProxyMarkedRemoteObjectProperty<T> = T extends ProxyMarked // Access nested
     ? Promisify<Remote<TPromised>>
     : T extends Primitive // Required to be handled for OpaqueTag types
     ? Promisify<T>
-    : T extends TransferMarked // For objects with a custom transferhandler, that one is used.
-    ? Promisify<TransferMarkedRemote<T>>
+    : T extends CustomTransferable // For objects with a custom transferhandler, that one is used.
+    ? Promisify<CustomTransferableRemote<T>>
     : T extends Function | object // Generic functions and objects calls handled by the proxy.
     ? RemoteProxy<T>
     : Promisify<Remote<T>>; // Default: Transfer element with handler or do structural cloning.
@@ -369,7 +369,7 @@ type MustExtendObject<T extends object> = T;
  * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
  *            used here, otherwise false positives are possible.
  */
-type TransferMarkedRemote<T extends TransferMarked> = T extends LocalModelStore<
+type CustomTransferableRemote<T extends CustomTransferable> = T extends LocalModelStore<
     infer TModel,
     infer TView,
     infer TController,
@@ -429,8 +429,8 @@ type StructuredCloneUnclonableTypes = Promise<unknown> | Function;
  *
  * @param TLocal The Local Type.
  */
-export type Remote<TLocal> = TLocal extends TransferMarked
-    ? TransferMarkedRemote<TLocal>
+export type Remote<TLocal> = TLocal extends CustomTransferable
+    ? CustomTransferableRemote<TLocal>
     : StructuredCloneOf<TLocal>;
 
 /**
@@ -451,7 +451,7 @@ export interface TransferHandler<
     /**
      * Gets called with the value if `canHandle()` returned `true` to produce a
      * value that can be sent in a message, consisting of structured-cloneable
-     * values and/or transferrable objects.
+     * values and/or transferable objects.
      */
     readonly serialize: (
         value: TLocal,
@@ -549,7 +549,7 @@ export type ObjectId<TTarget> = WeakOpaque<
     {readonly ObjectId: unique symbol; readonly Target: TTarget}
 >;
 
-export class LocalObjectMapper<TLocalObject extends TransferMarked> {
+export class LocalObjectMapper<TLocalObject extends CustomTransferable> {
     private readonly _sn = new SequenceNumberU53<u53>(0);
     private readonly _map = new WeakMap<TLocalObject, u53>();
 
@@ -593,7 +593,10 @@ export interface DebugObjectCacheCounter {
     readonly get: (id: ObjectId<unknown>) => u53;
 }
 
-export interface ObjectCache<TLocalObject extends TransferMarked, TRemoteObject extends object> {
+export interface ObjectCache<
+    TLocalObject extends CustomTransferable,
+    TRemoteObject extends object,
+> {
     readonly local: LocalObjectMapper<TLocalObject>;
     readonly remote: RemoteObjectMapper<TRemoteObject>;
     readonly counter?: DebugObjectCacheCounter;
@@ -637,7 +640,7 @@ export class EndpointService {
     public constructor(
         services: Pick<ServicesForBackend, 'config' | 'logging'>,
         public readonly createEndpointPair: EndpointPairCreator,
-        private readonly _cache: ObjectCache<TransferMarked, object>,
+        private readonly _cache: ObjectCache<CustomTransferable, object>,
     ) {
         this.logging = services.logging;
 
@@ -695,10 +698,10 @@ export class EndpointService {
         return this._debug?.tap;
     }
 
-    public cache<TLocalObject extends TransferMarked, TRemoteObject extends object>(): ObjectCache<
-        TLocalObject,
-        TRemoteObject
-    > {
+    public cache<
+        TLocalObject extends CustomTransferable,
+        TRemoteObject extends object,
+    >(): ObjectCache<TLocalObject, TRemoteObject> {
         // Note: As explained in dom/utils/endpoint.ts, it is okay to use the
         //       cache for any kind of object.
         return this._cache as ObjectCache<TLocalObject, TRemoteObject>;
@@ -775,7 +778,7 @@ export class EndpointService {
      *
      * @returns The serialized object or the fallback value in case no transfer marker was present.
      */
-    public serialize<TValue extends TransferMarked>(
+    public serialize<TValue extends CustomTransferable>(
         value: TValue,
     ): readonly [value: HandlerWireValue, transfers: readonly DomTransferable[]];
     public serialize<TValue>(
@@ -1013,7 +1016,7 @@ export class EndpointService {
     }
 
     private _toWireValueViaHandler(
-        value: TransferMarked,
+        value: CustomTransferable,
     ): readonly [value: HandlerWireValue, transfers: readonly DomTransferable[]] {
         // Look up the handler depending on the transfer marker.
         const object = value as {

@@ -22,7 +22,7 @@ import {
     RELEASE_PROXY,
     type Remote,
     TRANSFER_MARKER,
-    type TransferMarked,
+    type CustomTransferable,
 } from '~/common/utils/endpoint';
 import {type AbortRaiser} from '~/common/utils/signal';
 import {
@@ -63,7 +63,7 @@ export class LocalModelStore<
         LocalModel<TView, TController, TCtx, TType> & {view: Readonly<TView>},
         LocalModel<TView, TController, TCtx, TType>
     >
-    implements TransferMarked<typeof MODEL_STORE_TRANSFER_HANDLER>
+    implements CustomTransferable<typeof MODEL_STORE_TRANSFER_HANDLER>
 {
     public readonly [TRANSFER_MARKER] = MODEL_STORE_TRANSFER_HANDLER;
 

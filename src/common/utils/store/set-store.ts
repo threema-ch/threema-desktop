@@ -13,7 +13,7 @@ import {
     type RegisteredTransferHandler,
     registerTransferHandler,
     TRANSFER_MARKER,
-    type TransferMarked,
+    type CustomTransferable,
 } from '~/common/utils/endpoint';
 import {EventController, type EventListener, type EventUnsubscriber} from '~/common/utils/event';
 import {type AbortRaiser} from '~/common/utils/signal';
@@ -39,7 +39,7 @@ function defaultSetStoreRepresentation(set: ReadonlySet<unknown>): string {
 export type ISetStore<TValue> = IQueryableStore<ReadonlySet<TValue>> &
     LocalStore<ReadonlySet<TValue>, typeof SET_STORE_TRANSFER_HANDLER>;
 
-export class LocalSetStore<TValue extends TransferMarked>
+export class LocalSetStore<TValue extends CustomTransferable>
     extends ReadableStore<Set<TValue>, ReadonlySet<TValue>>
     implements ISetStore<TValue>, SetStoreDeltaListener<TValue>
 {
@@ -94,7 +94,10 @@ export class LocalSetStore<TValue extends TransferMarked>
  * - subscribes only to changes of the set itself, **not** the inner value,
  * - call a derivation function for a single item.
  */
-export class LocalDerivedSetStore<TValue extends TransferMarked, TDerived extends TransferMarked>
+export class LocalDerivedSetStore<
+        TValue extends CustomTransferable,
+        TDerived extends CustomTransferable,
+    >
     extends ReadableStore<Set<TDerived>, ReadonlySet<TDerived>>
     implements ISetStore<TDerived>, SetStoreDeltaListener<TDerived>
 {
@@ -323,7 +326,7 @@ export class RemoteSetStore<TValue extends object>
         return store;
     }
 
-    public static expose<TValue extends TransferMarked>(
+    public static expose<TValue extends CustomTransferable>(
         service: EndpointService,
         store: LocalSetStore<TValue>,
         set: {
@@ -396,17 +399,17 @@ export class RemoteSetStore<TValue extends object>
 }
 
 const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
-    LocalSetStore<TransferMarked>,
-    RemoteSetStore<TransferMarked>,
+    LocalSetStore<CustomTransferable>,
+    RemoteSetStore<CustomTransferable>,
     readonly [
-        id: ObjectId<LocalSetStore<TransferMarked>>,
+        id: ObjectId<LocalSetStore<CustomTransferable>>,
         tag: string,
         prefix: LogPrefix | undefined,
         endpoint: EndpointFor<'set', CreatedEndpoint>,
         values: readonly SerializedSetStoreWireValue[],
     ],
     readonly [
-        id: ObjectId<RemoteSetStore<TransferMarked>>,
+        id: ObjectId<RemoteSetStore<CustomTransferable>>,
         tag: string,
         prefix: LogPrefix | undefined,
         endpoint: EndpointFor<'set', CreatedEndpoint>,
@@ -446,7 +449,7 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         return service.cache().remote.getOrCreate(
             id,
             () =>
-                RemoteSetStore.wrap<TransferMarked>(
+                RemoteSetStore.wrap<CustomTransferable>(
                     service,
                     {
                         endpoint,
