@@ -2,13 +2,9 @@
 
 A standalone Threema client for the desktop and the web.
 
-**NOTE: This project contains recursive git submodules. Make sure to clone with
-`--recursive` or to run `git submodule update --init --recursive` inside the
-project directory.** (If you downloaded the source distribution, then the
-submodules are already included.)
-
 ## Table of Contents
 
+- [Cloning](#cloning)
 - [Building](#building)
   - [Requirements](#requirements)
   - [Install Dependencies](#install-dependencies)
@@ -23,6 +19,17 @@ submodules are already included.)
   - [JSDoc Rules](#jsdoc-rules)
   - [Pre-Commit](#pre-commit)
 - [License](#license)
+
+## Cloning
+
+⚠️ Note: This project contains recursive git submodules. Make sure to clone with
+`--recursive`. If you already cloned the repository without that flag, run the
+following command inside the project directory.
+
+    git submodule update --init --recursive
+
+(If you downloaded the source distribution, then the submodules are already
+included.)
 
 ## Building
 
@@ -98,6 +105,10 @@ You can directly open the built version respectively with:
 
 - `npm run dist:open:linux`
 - `npm run dist:open:macos`
+
+Note: If you get an error message while building similar to `Error: ENOENT: no
+such file or directory, lstat 'libs/threema-svelte-components/src'`, check out
+the hints about [cloning](#cloning).
 
 ### Package
 
