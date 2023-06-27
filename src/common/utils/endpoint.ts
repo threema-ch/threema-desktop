@@ -15,7 +15,13 @@ import {type ServicesForBackend} from '~/common/backend';
 import {TransferTag} from '~/common/enum';
 import {type Logger, type LoggerFactory} from '~/common/logging';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type i53, type Primitive, type u53, type WeakOpaque} from '~/common/types';
+import {
+    type BareFromTag,
+    type i53,
+    type Primitive,
+    type u53,
+    type WeakOpaque,
+} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
@@ -110,6 +116,22 @@ export interface CreatedEndpoint extends Endpoint {
 export type EndpointFor<TTarget, TEndpoint extends Endpoint = Endpoint> = WeakOpaque<
     TEndpoint,
     {readonly Endpoint: TTarget}
+>;
+
+/**
+ * A object that was transferred to another thread (resp. marked to be transfered at a later time)
+ */
+export type TransferredToRemote<TObject> = WeakOpaque<
+    TObject,
+    {readonly Transferred: unique symbol}
+>;
+
+/**
+ * A object that was transfered here from a remote thread.
+ */
+export type TransferredFromRemote<TObject> = WeakOpaque<
+    TObject,
+    {readonly Transferred: unique symbol}
 >;
 
 /**
@@ -423,6 +445,10 @@ type CustomTransferableRemote<T extends CustomTransferable> = T extends LocalMod
  */
 type StructuredCloneOf<T> = T extends StructuredCloneUnclonableTypes
     ? never
+    : T extends TransferredToRemote<infer TTransferred>
+    ? TransferredFromRemote<TTransferred>
+    : T extends TransferredFromRemote<infer TTransferred>
+    ? TransferredToRemote<TTransferred>
     : T extends Map<infer TKey, infer TValue>
     ? Map<StructuredCloneOf<TKey>, StructuredCloneOf<TValue>>
     : T extends Set<infer TValue>
@@ -792,10 +818,11 @@ export class EndpointService {
         return Object.assign(object, {[TRANSFER_HANDLER]: PROPERTIES_HANDLER});
     }
 
-    public transfer<TResult, TTransferable extends any[]>(
-        value: TResult,
-        transfers: TTransferable,
-    ): TResult {
+    public transfer<
+        TInput extends BareFromTag<TResult, TransferredToRemote<unknown>>,
+        TTransferable extends any[],
+        TResult,
+    >(value: TInput, transfers: TTransferable): TResult {
         return this._transfer(value, transfers);
     }
 
@@ -1013,9 +1040,12 @@ export class EndpointService {
         ep.start?.();
     }
 
-    private _transfer<T>(obj: T, transfers: readonly DomTransferable[]): T {
+    private _transfer<TResult, TInput extends BareFromTag<TResult, TransferredToRemote<unknown>>>(
+        obj: TInput,
+        transfers: readonly DomTransferable[],
+    ): TResult {
         this._transferCache.set(obj, transfers);
-        return obj;
+        return obj as unknown as TResult;
     }
 
     /**

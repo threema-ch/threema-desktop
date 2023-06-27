@@ -4,7 +4,7 @@ import {
     BackendCreationError,
     type BackendCreator,
     type BackendHandle,
-    type BackendInit,
+    type BackendInitAfterTransfer,
     type DeviceLinkingSetup,
     type LinkingState,
 } from '~/common/dom/backend';
@@ -28,6 +28,7 @@ import {
     type Remote,
     type RemoteProxy,
     TRANSFER_HANDLER,
+    type TransferredToRemote,
 } from '~/common/utils/endpoint';
 import {eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -113,7 +114,7 @@ export class BackendController {
         /**
          * Helper function to assemble a {@link BackendInit} object.
          */
-        function assembleBackendInit(): BackendInit {
+        function assembleBackendInit(): BackendInitAfterTransfer {
             // Notifications
             const {local: localNotificationEndpoint, remote: notificationEndpoint} =
                 endpoint.createEndpointPair<NotificationCreator>();
@@ -146,7 +147,7 @@ export class BackendController {
         function assembleDeviceLinkingSetup(
             linkingStateStore: WritableStore<LinkingState>,
             userPassword: Promise<string>,
-        ): EndpointFor<DeviceLinkingSetup> {
+        ): TransferredToRemote<EndpointFor<DeviceLinkingSetup>> {
             const {local, remote} = endpoint.createEndpointPair<DeviceLinkingSetup>();
 
             // Add transfer markers

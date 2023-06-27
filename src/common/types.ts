@@ -132,6 +132,20 @@ export type Bare<T> = T extends WeakOpaque<infer I, TagOf<T>>
     : never;
 
 /**
+ * Remove the new-type from a type. If the type is an object, it removes
+ * all new-type properties of the object as well.
+ */
+export type BareFromTag<T, TOpaque extends OpaqueTag<unknown>> = T extends WeakOpaque<
+    infer I,
+    TagOf<TOpaque>
+>
+    ? I
+    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    T extends Record<any, any>
+    ? {[K in Exclude<keyof T, keyof OpaqueTag<unknown>>]: BareFromTag<T[K], TOpaque>}
+    : T;
+
+/**
  * From a new-type object T, pick a set of properties by its keys K.
  */
 export type OpaquePick<T extends WeakOpaque<unknown, TagOf<T>>, K extends keyof T> = Pick<

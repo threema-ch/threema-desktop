@@ -93,6 +93,8 @@ import {
     registerErrorTransferHandler,
     type Remote,
     TRANSFER_HANDLER,
+    type TransferredFromRemote,
+    type TransferredToRemote,
 } from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser} from '~/common/utils/signal';
@@ -155,18 +157,26 @@ export interface BackendInit {
 }
 
 /**
+ * Data required to be supplied to a backend worker for initialisation.
+ */
+export interface BackendInitAfterTransfer {
+    readonly notificationEndpoint: TransferredToRemote<EndpointFor<NotificationCreator>>;
+    readonly systemDialogEndpoint: TransferredToRemote<EndpointFor<SystemDialogService>>;
+}
+
+/**
  * Interface exposed by the worker towards the backend controller. It is used to instantiate the
  * backend in the context of the worker.
  */
 export interface BackendCreator {
     readonly fromKeyStorage: (
-        init: BackendInit,
+        init: Remote<BackendInitAfterTransfer>,
         userPassword: string,
-    ) => Promise<EndpointFor<BackendHandle>>;
+    ) => Promise<TransferredToRemote<EndpointFor<BackendHandle>>>;
     readonly fromDeviceJoin: (
-        init: BackendInit,
-        deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
-    ) => Promise<EndpointFor<BackendHandle>>;
+        init: Remote<BackendInitAfterTransfer>,
+        deviceLinkingSetup: TransferredFromRemote<EndpointFor<DeviceLinkingSetup>>,
+    ) => Promise<TransferredToRemote<EndpointFor<BackendHandle>>>;
 }
 
 /**
@@ -480,7 +490,7 @@ export class Backend implements ProxyMarked {
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         keyStoragePassword: string,
-    ): Promise<EndpointFor<BackendHandle>> {
+    ): Promise<TransferredToRemote<EndpointFor<BackendHandle>>> {
         const log = logging.logger('backend.create.from-keystorage');
         log.info('Creating backend from existing key storage');
 
@@ -582,6 +592,7 @@ export class Backend implements ProxyMarked {
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
         endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
+        // eslint-disable-next-line @typescript-eslint/return-await
         return endpoint.transfer(remote, [remote]);
     }
 
@@ -602,7 +613,7 @@ export class Backend implements ProxyMarked {
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
-    ): Promise<EndpointFor<BackendHandle>> {
+    ): Promise<TransferredToRemote<EndpointFor<BackendHandle>>> {
         const log = logging.logger('backend.create.from-join');
         log.info('Creating backend through device linking flow');
 
@@ -830,7 +841,9 @@ export class Backend implements ProxyMarked {
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
         endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
-        return endpoint.transfer(remote, [remote]);
+        const transferredRemote: TransferredToRemote<EndpointFor<BackendHandle>> =
+            endpoint.transfer(remote, [remote]);
+        return transferredRemote;
     }
 
     /**
