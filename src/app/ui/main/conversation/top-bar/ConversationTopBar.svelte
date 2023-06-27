@@ -103,7 +103,7 @@
   }
 
   function closeConversation(): void {
-    router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
+    router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
   }
 
   let isConversationEmptyDialogVisible = false;

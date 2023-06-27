@@ -19,8 +19,8 @@ export interface RouterState {
  * Initial router state, when no other state can be determined (e.g. from the URL fragment).
  */
 const INITIAL_STATE: RouterState = {
-    nav: ROUTE_DEFINITIONS.nav.conversationList.withTypedParams(undefined),
-    main: ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined),
+    nav: ROUTE_DEFINITIONS.nav.conversationList.withoutParams(),
+    main: ROUTE_DEFINITIONS.main.welcome.withoutParams(),
     aside: undefined,
     modal: undefined,
 };
@@ -249,7 +249,7 @@ export class Router extends WritableStore<RouterState> {
     public goToWelcome(): void {
         this.go(
             this.get().nav,
-            ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined),
+            ROUTE_DEFINITIONS.main.welcome.withoutParams(),
             undefined,
             undefined,
         );

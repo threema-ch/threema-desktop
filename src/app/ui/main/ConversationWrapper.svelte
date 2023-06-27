@@ -42,7 +42,7 @@
         toast.addSimpleFailure(
           i18n.get().t('messaging.error--conversation-not-found', 'Conversation not found'),
         );
-        router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
+        router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
         return;
       }
 

@@ -152,7 +152,7 @@
   function sendMessageActions(_: CustomEvent): void {
     // Set Nav to Conversation Preview List
     if ($router.nav?.id !== 'conversationList') {
-      router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withTypedParams(undefined));
+      router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withoutParams());
     }
 
     // Dispatch an event to scroll the conversation list all the way to the top

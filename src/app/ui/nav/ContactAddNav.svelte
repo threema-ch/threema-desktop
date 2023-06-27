@@ -36,7 +36,7 @@
   }
 
   function navigateToContactList(): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withTypedParams(undefined));
+    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams());
   }
 
   function navigateToContactDetails(identityData: ValidIdentityData): void {

@@ -38,7 +38,7 @@
     });
 
   function closeProfile(): void {
-    router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined));
+    router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
   }
 
   let showToggleDebugMode = false;

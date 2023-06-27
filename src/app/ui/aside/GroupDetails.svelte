@@ -94,12 +94,7 @@
       route.params.receiverLookup.type === ReceiverType.GROUP &&
       route.params.receiverLookup.uid === $group.ctx
     ) {
-      router.go(
-        $router.nav,
-        ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined),
-        undefined,
-        undefined,
-      );
+      router.go($router.nav, ROUTE_DEFINITIONS.main.welcome.withoutParams(), undefined, undefined);
     }
 
     const groupName = $group.view.name;

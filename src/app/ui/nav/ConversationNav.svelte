@@ -71,12 +71,12 @@
           on:click-profile-picture={() => {
             const newMainRoute =
               router.get().main.id === 'profile'
-                ? ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined)
-                : ROUTE_DEFINITIONS.main.profile.withTypedParams(undefined);
+                ? ROUTE_DEFINITIONS.main.welcome.withoutParams()
+                : ROUTE_DEFINITIONS.main.profile.withoutParams();
             router.go(router.get().nav, newMainRoute, undefined);
           }}
           on:click-contact={() =>
-            router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withTypedParams(undefined))}
+            router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams())}
         />
       {/if}
     </div>

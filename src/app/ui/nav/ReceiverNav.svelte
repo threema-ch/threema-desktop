@@ -66,7 +66,7 @@
   }
 
   function navigateBack(): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withTypedParams(undefined));
+    router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withoutParams());
   }
 
   function handleAdd(): void {

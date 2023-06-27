@@ -119,31 +119,35 @@ type RouteDefinition<TRoute extends RawRouteDefinition & Partial<RoutePathDefini
      * route matches – returns a route instance.
      */
     readonly matches: (path: string, log: Logger) => RouteInstance<TRoute> | undefined;
+} & (TRoute['params'] extends undefined
+        ? {
+              /**
+               * Function that returns a route instance that does not have params.
+               */
+              readonly withoutParams: () => RouteInstance<TRoute>;
+          }
+        : {
+              /**
+               * Function that validates a set of parameters against a parameter schema,
+               * and – if it passes – returns a route instance.
+               *
+               * If a route has no parameters, this should be called with `undefined` as
+               * argument.
+               */
+              readonly withUntypedParams: (
+                  params?: Record<string, unknown>,
+              ) => RouteInstance<TRoute>;
 
-    /**
-     * Function that validates a set of parameters against a parameter schema,
-     * and – if it passes – returns a route instance.
-     *
-     * If a route has no parameters, this should be called with `undefined` as
-     * argument.
-     */
-    readonly withUntypedParams: (params?: Record<string, unknown>) => RouteInstance<TRoute>;
-
-    /**
-     * Function that returns a route instance with the specified params.
-     *
-     * If a route has no parameters, this should be called with `undefined` as
-     * argument.
-     */
-    readonly withTypedParams: (
-        params: RouteInstanceParams<TRoute['params']>,
-    ) => RouteInstance<TRoute>;
-
-    /**
-     * Function that returns a route instance that does not have params.
-     */
-    readonly withoutParams: () => RouteInstance<TRoute>;
-};
+              /**
+               * Function that returns a route instance with the specified params.
+               *
+               * If a route has no parameters, this should be called with `undefined` as
+               * argument.
+               */
+              readonly withTypedParams: (
+                  params: RouteInstanceParams<TRoute['params']>,
+              ) => RouteInstance<TRoute>;
+          });
 
 /**
  * Map parameter schemas to their resulting type (if any).

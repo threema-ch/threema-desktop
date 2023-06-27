@@ -143,7 +143,7 @@
       ) {
         router.go(
           $router.nav,
-          ROUTE_DEFINITIONS.main.welcome.withTypedParams(undefined),
+          ROUTE_DEFINITIONS.main.welcome.withoutParams(),
           undefined,
           undefined,
         );

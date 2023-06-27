@@ -43,7 +43,7 @@
   }
 
   function navigateToContactList(): void {
-    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withTypedParams(undefined));
+    router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams());
   }
 
   async function handleAddContact(): Promise<void> {
@@ -69,7 +69,7 @@
     }
 
     router.go(
-      ROUTE_DEFINITIONS.nav.contactList.withTypedParams(undefined),
+      ROUTE_DEFINITIONS.nav.contactList.withoutParams(),
       ROUTE_DEFINITIONS.main.conversation.withTypedParams({
         receiverLookup: {
           type: ReceiverType.CONTACT,
