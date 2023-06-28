@@ -2,6 +2,7 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   NODE_VERSION: 18.15.0
+  FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
 
 # Workflow: Run for tags and commits to branches
 workflow:
