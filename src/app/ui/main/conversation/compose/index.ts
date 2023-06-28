@@ -66,7 +66,7 @@ export type ComposeAreaEnterKeyMode = 'submit' | 'newline';
 /**
  * The timeout to debounce byte length recounts by.
  */
-export const DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS = 300;
+export const DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS = 1000;
 
 export function showFileResultError(
     status: 'empty' | 'inaccessible' | 'partial',

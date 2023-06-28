@@ -15,13 +15,6 @@
   const hotkeyManager = globals.unwrap().hotkeyManager;
 
   /**
-   * The maximum allowed byte length of the message text.
-   *
-   * TODO(SE-266): Update (message) size limitation
-   */
-  const MAX_TEXT_BYTE_LENGTH = 7000;
-
-  /**
    * Text that will be used to initialize the compose area.
    */
   export let initialText: string | undefined;
@@ -84,7 +77,7 @@
     composeAreaTextByteLength = composeArea.getTextByteLength();
 
     // Prevent send if message is too long
-    if (composeAreaTextByteLength > MAX_TEXT_BYTE_LENGTH) {
+    if (composeAreaTextByteLength > import.meta.env.MAX_TEXT_MESSAGE_BYTES) {
       return;
     }
 
@@ -97,8 +90,10 @@
     composeAreaTextByteLength = event.detail;
   }
 
-  $: isTextByteLengthVisible = composeAreaTextByteLength >= MAX_TEXT_BYTE_LENGTH - 200;
-  $: isMaxTextByteLengthExceeded = composeAreaTextByteLength > MAX_TEXT_BYTE_LENGTH;
+  $: isTextByteLengthVisible =
+    composeAreaTextByteLength >= import.meta.env.MAX_TEXT_MESSAGE_BYTES - 200;
+  $: isMaxTextByteLengthExceeded =
+    composeAreaTextByteLength > import.meta.env.MAX_TEXT_MESSAGE_BYTES;
 
   function handleHotkeyControlE(): void {
     emojiPickerPopover?.toggle();
@@ -139,7 +134,7 @@
     <div class="icons-right">
       {#if isTextByteLengthVisible}
         <div class="bytes-count" class:exceeded={isMaxTextByteLengthExceeded}>
-          {composeAreaTextByteLength}/{MAX_TEXT_BYTE_LENGTH}
+          {composeAreaTextByteLength}/{import.meta.env.MAX_TEXT_MESSAGE_BYTES}
         </div>
       {/if}
       <Popover

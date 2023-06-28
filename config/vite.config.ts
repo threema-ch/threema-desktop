@@ -140,6 +140,14 @@ function makeConfig(
         BUILD_ENVIRONMENT: env.environment,
         APP_NAME: determineAppName(env),
 
+        // Defaults
+        /**
+         * TODO(SE-266): Update (message) size limitation.
+         */
+        MAX_TEXT_MESSAGE_BYTES: 7000,
+        MAX_FILE_MESSAGE_BYTES: 100 * MiB,
+        MAX_FILE_MESSAGE_CAPTION_BYTES: 1000,
+
         // Version info
         GIT_REVISION: process.env.GIT_REVISION ?? '',
         BUILD_HASH: 'TODOTODOTODO', // TODO(DESK-154): Add build hash

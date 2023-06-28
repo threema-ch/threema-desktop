@@ -189,6 +189,11 @@ interface ImportMetaEnv extends BuildConfig {
     readonly BUILD_ENVIRONMENT: import('../../config/build').BuildEnvironment;
     readonly APP_NAME: string;
 
+    // Defaults
+    readonly MAX_TEXT_MESSAGE_BYTES: import('./types').u53;
+    readonly MAX_FILE_MESSAGE_BYTES: import('./types').u53;
+    readonly MAX_FILE_MESSAGE_CAPTION_BYTES: import('./types').u53;
+
     // Version info
     readonly GIT_REVISION: string;
     readonly BUILD_HASH: string;
