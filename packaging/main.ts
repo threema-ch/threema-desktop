@@ -1003,6 +1003,7 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
         repoPath = path.join(flatpakDir, 'repo');
     }
     buildArgs.push(`--repo=${repoPath}`);
+    buildArgs.push(`--state-dir=${path.join(flatpakDir, '.flatpak-builder')}`);
     let branch = (process.env.THREEMADESKTOP_FLATPAK_BRANCH ?? '').trim();
     if (branch === '') {
         // Fallback to master (the Flatpak default)
@@ -1015,7 +1016,11 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     }
     for (const appId of appIds) {
         log.minor(`Building app ${appId}`);
-        execFileSync('flatpak-builder', [...buildArgs, 'build', `${appId}.yml`], options);
+        execFileSync(
+            'flatpak-builder',
+            [...buildArgs, 'build', path.join(flatpakDir, `${appId}.yml`)],
+            options,
+        );
     }
 
     // Update repo
