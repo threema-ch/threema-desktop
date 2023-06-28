@@ -230,6 +230,29 @@ package-lock-in-sync:
         echo -e "\e[32mNo changes detected after running 'npm install'\e[0m"
       fi
 
+i18n-translations-in-sync:
+  stage: test
+  needs: []
+  <<: *cache
+  before_script:
+    - node --version
+    - npm --version
+  script:
+    # Install npm dependencies
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+    # Parse i18n translations found in code into translation files
+    - npm run i18n:parse
+    # Ensure that there are no local changes to the translation files
+    - |
+      DIFF="$(git diff)"
+      if [[ -n "$DIFF" ]]; then
+        echo -e "\e[31mFound local changes after running 'npm run i18n:parse'. Translations out of sync?\e[0m"
+        echo -e "\n$ git diff:\n$DIFF"
+        exit 1
+      else
+        echo -e "\e[32mNo changes detected after running 'npm run i18n:parse'\e[0m"
+      fi
+
 protobuf-in-sync:
   stage: test
   needs: []
