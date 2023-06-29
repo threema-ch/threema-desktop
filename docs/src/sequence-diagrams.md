@@ -21,27 +21,40 @@ box Backend #fcf2ef
   participant Database
 endbox
 box Network #f0fcef
-  participant SafeServer
+  participant RendezvousServer
+  participant Directory
+  participant Mediator
 endbox
 
 App->User:showLoadingScreen()
 App->BackendController:create()
-BackendController->Backend:create()
+BackendController->Backend:BackendCreator.fromKeyStorage()
 
-alt identity not found
+alt key storage not found
   Backend->BackendController:Error(no-identity)
-
-  BackendController->User:requestSafeBackupCredentials()
-  BackendController->Backend:create(safeCredentials)
-  Backend->SafeServer:download()
-  alt electron
-    Backend->KeyStorage:createKeyStorage(clientKey)
-  end
-  Backend->Database:createDatabase(essentialData)
-else identity found
-  alt electron
-    Backend->KeyStorage:loadKeyStorage()
-  end
+  BackendController->User:showLinkingWizard()
+  BackendController->Backend:BackendCreator.fromDeviceJoin()
+  |||
+  Backend->RendezvousServer:handshake()
+  activate RendezvousServer
+  Backend->User:showLinkingEmoji()
+  Backend->RendezvousServer:runJoinProtocol()
+  RendezvousServer->Backend:Blobs
+  RendezvousServer->Backend:EssentialData
+  |||
+  Backend->Directory:validateIdentity()
+  Backend->Database:createDatabase()
+  Backend->Database:restoreEssentialData()
+  |||
+  Backend->User:requestPassword()
+  Backend->User:showSyncingScreen()
+  Backend->Mediator:register()
+  Backend->KeyStorage:writeKeyStorage()
+  Backend->RendezvousServer:complete()
+  deactivate RendezvousServer
+  Backend->User:showSuccessScreen()
+else key storage found
+  Backend->KeyStorage:loadKeyStorage()
   Backend->Database:loadDatabase()
 end
 
