@@ -4,14 +4,25 @@ variables:
   NODE_VERSION: 18.15.0
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
 
+default:
+  image: docker.io/node:${NODE_VERSION}-bullseye
+  hooks:
+    pre_get_sources_script:
+      # FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR disables the umask here,
+      # but executes a chown to the job's container user - if it is not root.
+      # In case the last runner's job was not root, it leaves files that are owned by
+      # some other user - breaking npm's chown. See:
+      # - https://gitlab.com/gitlab-org/gitlab-runner/-/issues/1736
+      # - https://gitlab.com/gitlab-org/gitlab/-/issues/368133
+      - |
+        echo "Reset permissions to root:root of path ${CI_PROJECT_DIR}"
+        chown -R root:root "${CI_PROJECT_DIR}"
+
 # Workflow: Run for tags and commits to branches
 workflow:
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH
-
-# Default base image
-image: docker.io/node:${NODE_VERSION}-bullseye
 
 # CI stages
 stages:
