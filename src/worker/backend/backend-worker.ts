@@ -47,6 +47,7 @@ export function main(config: Config, factories: FactoriesForBackend): void {
     };
 
     const creator: BackendCreator & ProxyMarked = {
+        hasIdentity: () => Backend.hasIdentity(factories, services),
         fromKeyStorage: async (init: BackendInit, keyStoragePassword: string) => {
             log.info('Creating backend from key storage');
             return await Backend.createFromKeyStorage(

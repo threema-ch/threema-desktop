@@ -169,10 +169,16 @@ export interface BackendInitAfterTransfer {
  * backend in the context of the worker.
  */
 export interface BackendCreator {
+    /** Return whether or not an identity (i.e. a key storage file) is present. */
+    readonly hasIdentity: () => boolean;
+
+    /** Instantiate backend from an existing key storage. */
     readonly fromKeyStorage: (
         init: Remote<BackendInitAfterTransfer>,
         userPassword: string,
     ) => Promise<TransferredToRemote<EndpointFor<BackendHandle>>>;
+
+    /** Instantiate backend through the device join protocol. */
     readonly fromDeviceJoin: (
         init: Remote<BackendInitAfterTransfer>,
         deviceLinkingSetup: TransferredFromRemote<EndpointFor<DeviceLinkingSetup>>,
@@ -474,6 +480,26 @@ export class Backend implements ProxyMarked {
         this.model = _services.model;
         this.keyStorage = _services.keyStorage;
         this.viewModel = _services.viewModel;
+    }
+
+    /**
+     * Return whether or not an identity (i.e. a key storage file) is present.
+     */
+    public static hasIdentity(
+        factories: FactoriesForBackend,
+        {config, logging}: Pick<ServicesForBackend, 'config' | 'logging'>,
+    ): boolean {
+        const log = logging.logger('backend.create');
+
+        const crypto = new TweetNaClBackend(randomBytes);
+        const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
+        if (keyStorage.isPresent()) {
+            log.info('Identity found');
+            return true;
+        } else {
+            log.info('No identity found');
+            return false;
+        }
     }
 
     /**

@@ -173,10 +173,11 @@ export class BackendController {
             return endpoint.transfer(remote, [remote]);
         }
 
-        // Create backend (initial attempt, assuming that an ID is already set up)
+        // Create backend from existing key storage (if present)
         log.debug('Waiting for remote backend to be created');
+        const isNewIdentity = !(await creator.hasIdentity());
         let backendEndpoint;
-        {
+        if (!isNewIdentity) {
             let passwordForExistingKeyStorage: string | undefined = await requestUserPassword();
             // eslint-disable-next-line no-labels
             loopToCreateBackendWithKeyStorage: for (;;) {
@@ -222,9 +223,6 @@ export class BackendController {
                 break loopToCreateBackendWithKeyStorage;
             }
         }
-
-        // If at this point we could load an existing keystore, then this is not a new identity
-        const isNewIdentity = backendEndpoint === undefined;
 
         // If backend could not be created, that means that no identity was found. Initiate device
         // linking flow.
