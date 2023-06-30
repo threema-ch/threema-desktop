@@ -83,6 +83,9 @@ $brandings: (
     --ic-swipe-area-button-outline--focus: rem(1px) solid -g($b, primary-outline--focus),
     --ic-swipe-area-button-icon-color: -g($b, primary-text-e1),
     --ic-swipe-area-button-name-color: -g($b, primary-text-e1),
+    // Tooltip
+    --ic-tooltip-background-color: -g($ic, tooltip-background-color),
+    --ic-tooltip-color: -g($ic, tooltip-color),
   );
 }
 

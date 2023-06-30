@@ -44,6 +44,9 @@
       contact-navigation-context-button-background-color--focus: rgba(#000000, 4%),
       contact-navigation-context-button-color--active: theme.$primary-text-e1,
       contact-navigation-context-button-opacity--disabled: 26%,
+      // Tooltip
+      tooltip-background-color: #ffffff,
+      tooltip-color: theme.$grey-900,
     ),
     message-components: (
       // Message footer

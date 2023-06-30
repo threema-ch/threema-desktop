@@ -1,65 +1,6 @@
-import {type ActionReturn} from 'svelte/action';
-
 import {type i53, type u53} from '~/common/types';
 import {clamp} from '~/common/utils/number';
 import {WritableStore} from '~/common/utils/store';
-
-/*
- * `clickoutside` Svelte Action
- */
-
-/**
- * The data that is sent as the `detail` of the {@link CustomEvent}.
- */
-interface ClickOutsideEventDetail {
-    readonly event: MouseEvent;
-}
-
-/**
- * Additional properties that will be accepted on the `use:clickoutside` action.
- */
-interface ClickOutsideActionProperties {
-    readonly enabled: boolean;
-}
-
-/**
- * Additional attributes that Svelte will recognize on elements that use the `use:clickoutside`
- * action.
- */
-interface ClickOutsideActionAttributes {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    readonly 'on:clickoutside': (event: CustomEvent<ClickOutsideEventDetail>) => void;
-}
-
-export function clickoutside(
-    node: HTMLElement,
-    {enabled: initialEnabled}: ClickOutsideActionProperties,
-): ActionReturn<ClickOutsideActionProperties, ClickOutsideActionAttributes> {
-    function handleOutsideClick(event: MouseEvent): void {
-        if (!node.contains(event.target as Node)) {
-            node.dispatchEvent(
-                new CustomEvent<ClickOutsideEventDetail>('clickoutside', {detail: {event}}),
-            );
-        }
-    }
-
-    function update({enabled}: ClickOutsideActionProperties): void {
-        if (enabled) {
-            window.addEventListener('click', handleOutsideClick);
-        } else {
-            window.removeEventListener('click', handleOutsideClick);
-        }
-    }
-
-    update({enabled: initialEnabled});
-
-    return {
-        update,
-        destroy(): void {
-            window.removeEventListener('click', handleOutsideClick);
-        },
-    };
-}
 
 /*
  * Popover
@@ -386,14 +327,14 @@ function getSuggestedOffsetCorrection(
         offsetCorrectionLeft =
             overflow.left > overflow.right
                 ? clamp(overflow.left, {min: 0})
-                : clamp(overflow.right, {min: 0});
+                : -clamp(overflow.right, {min: 0});
     } else {
         // If we are in the right half, we want the popover to overlap on the left so it can be
         // revealed by scrolling, if necessary.
         offsetCorrectionLeft =
             overflow.left > overflow.right
                 ? clamp(overflow.left, {min: 0, max: relativeOffset.right})
-                : clamp(overflow.right, {min: 0, max: relativeOffset.left});
+                : -clamp(overflow.right, {min: 0, max: relativeOffset.left});
     }
 
     let offsetCorrectionTop = 0;
@@ -401,12 +342,12 @@ function getSuggestedOffsetCorrection(
         offsetCorrectionTop =
             overflow.top > overflow.bottom
                 ? clamp(overflow.top, {min: 0})
-                : clamp(overflow.bottom, {min: 0});
+                : -clamp(overflow.bottom, {min: 0});
     } else {
         offsetCorrectionTop =
             overflow.top > overflow.bottom
                 ? clamp(overflow.top, {min: 0, max: relativeOffset.bottom})
-                : clamp(overflow.bottom, {min: 0, max: relativeOffset.top});
+                : -clamp(overflow.bottom, {min: 0, max: relativeOffset.top});
     }
 
     return {

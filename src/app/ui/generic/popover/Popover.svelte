@@ -14,12 +14,13 @@
 
   import {
     type AnchorPoint,
-    clickoutside,
     getPopoverOffset,
     type Offset,
     popoverStore,
     type VirtualRect,
   } from '~/app/ui/generic/popover';
+  import {clickoutside} from '~/app/ui/generic/popover/actions';
+  import {unreachable} from '~/common/utils/assert';
 
   /**
    * The reference element the popover should attach to.
@@ -70,10 +71,10 @@
   export let flip = true;
 
   /**
-   * Whether clicking the trigger element should toggle the state or only open the popover.
-   * This will only have an effect if the `trigger` slot is filled.
+   * Whether clicking the trigger element should toggle or only open the popover, or if it should be
+   * disabled. This will only have an effect if the `trigger` slot is filled.
    */
-  export let triggerBehavior: 'toggle' | 'open' = 'toggle';
+  export let triggerBehavior: 'toggle' | 'open' | 'none' = 'toggle';
 
   /**
    * If the `popover` should be closed when a click is detected outside its bounds.
@@ -178,11 +179,23 @@
   function handleTriggerClick(event: MouseEvent): void {
     dispatch('clicktrigger', event);
 
-    if (triggerBehavior === 'open' && isVisible) {
-      return;
-    }
+    switch (triggerBehavior) {
+      case 'none':
+        break;
 
-    toggle();
+      case 'open':
+        if (!isVisible) {
+          open();
+        }
+        break;
+
+      case 'toggle':
+        toggle();
+        break;
+
+      default:
+        unreachable(triggerBehavior);
+    }
   }
 
   function handleOutsideClick(event: MouseEvent): void {

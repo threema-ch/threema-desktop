@@ -62,6 +62,10 @@ $config: config-merge(components.$config, (
       --ic-swipe-area-button-outline--focus,
       --ic-swipe-area-button-icon-color,
       --ic-swipe-area-button-name-color,
+
+      // Tooltip
+      --ic-tooltip-background-color,
+      --ic-tooltip-color,
     ),
 
     message-components: (
