@@ -15,8 +15,10 @@ default:
       # - https://gitlab.com/gitlab-org/gitlab-runner/-/issues/1736
       # - https://gitlab.com/gitlab-org/gitlab/-/issues/368133
       - |
-        echo "Reset permissions to root:root of path ${CI_PROJECT_DIR}"
-        chown -R root:root "${CI_PROJECT_DIR}"
+        if [[ "$(uname)" = "Linux" ]]; then
+          echo "Reset permissions to root:root of path ${CI_PROJECT_DIR}"
+          chown -R root:root "${CI_PROJECT_DIR}"
+        fi
 
 # Workflow: Run for tags and commits to branches
 workflow:
