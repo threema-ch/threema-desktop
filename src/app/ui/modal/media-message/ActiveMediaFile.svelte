@@ -5,11 +5,13 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Image from '#3sc/components/blocks/Image/Image.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type MediaFile} from '~/app/ui/modal/media-message';
+  import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
+  import {unreachable} from '~/common/utils/assert';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
 
   export let mediaFile: MediaFile;
+  export let validationResult: ValidationResult;
 
   const dispatchEvent = createEventDispatcher<{remove: undefined}>();
 </script>
@@ -20,6 +22,19 @@
       <span class="chip">
         {mediaFile.sanitizedFilenameDetails.name} ({byteSizeToHumanReadable(mediaFile.file.size)})
       </span>
+      {#if validationResult.status === 'error'}
+        {#each validationResult.reasons as reason}
+          <span class="chip error">
+            {#if reason === 'fileTooLarge'}
+              {$i18n.t('messaging.error--send-file-file-too-large', 'File is too big')}
+            {:else if reason === 'captionTooLong'}
+              {$i18n.t('messaging.error--send-file-caption-too-long', 'Caption is too long')}
+            {:else}
+              {unreachable(reason)}
+            {/if}
+          </span>
+        {/each}
+      {/if}
     </div>
     <div class="preview">
       {#if mediaFile.file.type.startsWith('image/')}
@@ -68,9 +83,13 @@
 
     .header {
       z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
       grid-row: 1 / span 1;
       grid-column: 1 / span 1;
       padding: rem(16px) rem(20px);
+      column-gap: rem(4px);
+      row-gap: rem(4px);
 
       .chip {
         @extend %font-small-400;
@@ -78,6 +97,11 @@
         color: var(--cc-media-message-active-file-chip-text-color);
         border-radius: rem(4px);
         padding: rem(2px) rem(4px);
+
+        &.error {
+          background-color: $alert-red;
+          color: white;
+        }
       }
     }
 

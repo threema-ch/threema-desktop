@@ -1,29 +1,23 @@
 <script lang="ts">
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Image from '#3sc/components/blocks/Image/Image.svelte';
+  import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
-  import {getUtf8ByteLength} from '~/common/utils/string';
-
-  import {MAX_CAPTION_BYTE_LENGTH, type MediaFile} from '.';
 
   export let mediaFile: MediaFile;
+  export let validationResult: ValidationResult;
 
   export let active = false;
   export let disabled = false;
-
-  $: caption = mediaFile.caption;
-  $: invalid =
-    $caption !== undefined ? getUtf8ByteLength($caption) > MAX_CAPTION_BYTE_LENGTH : false;
 </script>
 
 <template>
-  <button
-    on:click
-    class:active
-    class:invalid
-    disabled={disabled || active}
-    type="button"
-    class="file"
-  >
+  <button on:click class:active disabled={disabled || active} type="button" class="file">
+    {#if validationResult.status === 'error'}
+      <div class="status invalid">
+        <MdIcon theme="Outlined">priority_high</MdIcon>
+      </div>
+    {/if}
     <div class="overlay" />
     {#if mediaFile.file.type.startsWith('image/')}
       <Image class="thumbnail-image" src={mediaFile.file} alt={mediaFile.file.name} />
@@ -41,10 +35,29 @@
   button {
     @include clicktarget-button-circle;
     border-radius: rem(4px);
-    overflow: hidden;
+    margin-top: rem(5px);
 
     &:disabled {
       opacity: 1;
+    }
+
+    .status {
+      display: none;
+
+      &.invalid {
+        $size: rem(20px);
+        $offset: rem(5px);
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        position: absolute;
+        width: $size;
+        height: $size;
+        border-radius: calc($size / 2);
+        left: calc(100% - $size + $offset);
+        top: -$offset;
+        background-color: $alert-red;
+      }
     }
   }
 
@@ -57,24 +70,17 @@
     background-color: var(--cc-media-message-miniatures-background-color);
     outline: none;
 
-    &.active,
-    &.invalid {
+    &.active {
       $-outline-width: 2px;
       outline-style: solid;
       outline-width: $-outline-width;
       outline-offset: -$-outline-width;
-    }
-
-    &.invalid {
-      outline-color: $alert-red;
-    }
-
-    &.active {
       outline-color: var(--t-color-primary);
 
       .overlay {
         background-color: var(--t-color-primary);
         opacity: 0.5;
+        border-radius: rem(4px);
       }
     }
 

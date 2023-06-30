@@ -273,6 +273,8 @@
     "error--quoted-message-not-found": "[d] Die zitierte Nachricht konnte nicht gefunden werden.",
     "error--reaction": "[d] Konnte nicht auf Nachricht reagieren",
     "error--retrieve-file-data": "[d] Dateidaten konnten nicht abgerufen werden",
+    "error--send-file-caption-too-long": "Caption is too long",
+    "error--send-file-file-too-large": "File is too big",
     "error--unsupported-message-type": "[d] Nicht unterstützter Nachrichtentyp \"{type}\"",
     "hint--drop-files-to-send": "[d] Dateien hier ablegen, um sie zu senden",
     "label--compose-area": "[d] Schreiben Sie eine Nachricht...",

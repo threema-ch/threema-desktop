@@ -3,12 +3,12 @@
 
   import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
+  import Miniature from '~/app/ui/modal/media-message/Miniature.svelte';
+  import {type u53} from '~/common/types';
 
-  import {type MediaFile} from '.';
-  import Miniature from './Miniature.svelte';
-
-  export let mediaFiles: MediaFile[];
-  export let activeMediaFile: MediaFile | undefined;
+  export let validatedMediaFiles: [mediaFile: MediaFile, result: ValidationResult][];
+  export let activeMediaFileIndex: u53;
 
   /**
    * Whether or not more files can be attached.
@@ -18,15 +18,18 @@
   const dispatchEvent = createEventDispatcher<{
     select: MediaFile;
   }>();
+
+  $: [activeMediaFile] = validatedMediaFiles.at(activeMediaFileIndex) ?? [];
 </script>
 
 <template>
   <ul>
-    {#each mediaFiles as mediaFile}
+    {#each validatedMediaFiles as [mediaFile, validationResult]}
       <li>
         <Miniature
           {mediaFile}
-          active={activeMediaFile === mediaFile}
+          {validationResult}
+          active={mediaFile === activeMediaFile}
           on:click={() => dispatchEvent('select', mediaFile)}
         />
       </li>
@@ -51,16 +54,11 @@
     display: flex;
     flex-direction: row;
     column-gap: rem(8px);
+    align-items: end;
     list-style-type: none;
     overflow-x: scroll;
     padding: 0;
     margin: 0;
-  }
-
-  li {
-    display: grid;
-    place-items: center;
-    position: relative;
   }
 
   button {

@@ -273,6 +273,8 @@
     "error--quoted-message-not-found": "The quoted message could not be found.",
     "error--reaction": "Could not react to message",
     "error--retrieve-file-data": "Could not retrieve file data",
+    "error--send-file-caption-too-long": "Caption is too long",
+    "error--send-file-file-too-large": "File is too big",
     "error--unsupported-message-type": "Unsupported message type \"{type}\"",
     "hint--drop-files-to-send": "Drop files here to send",
     "label--compose-area": "Write a message...",

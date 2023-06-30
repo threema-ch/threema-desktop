@@ -14,19 +14,19 @@
   import {globals} from '~/app/globals';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import Tooltip from '~/app/ui/generic/popover/Tooltip.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {showFileResultError} from '~/app/ui/main/conversation/compose';
-  import {MAX_CAPTION_BYTE_LENGTH, type MediaFile} from '~/app/ui/modal/media-message';
+  import {type MediaFile, validateMediaFiles} from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
   import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {ensureU53, type u53} from '~/common/types';
-  import {assert, unreachable} from '~/common/utils/assert';
+  import {unreachable} from '~/common/utils/assert';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {WritableStore} from '~/common/utils/store';
-  import {getUtf8ByteLength} from '~/common/utils/string';
   import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.media-message-modal');
@@ -41,70 +41,65 @@
    */
   export let moreFilesAttachable = true;
 
-  let emojiPickerPopover: Popover | undefined;
+  // Values bound by Svelte could become null.
+  /* eslint-disable @typescript-eslint/ban-types */
+  let sendButtonWrapper: HTMLElement | undefined | null;
+  let sendButtonPopover: Popover | undefined | null;
+  let emojiPickerPopover: Popover | undefined | null;
+  let captionComposeArea: Caption | undefined | null;
+  /* eslint-enable @typescript-eslint/ban-types */
+
+  let activeMediaFileIndex: u53 = 0;
   let confirmCloseDialogVisible = false;
-  let captionComposeArea: Caption;
-  let activeMediaFile: MediaFile | undefined = mediaFiles[0];
-  let currentCaptionTextByteLength: u53 | undefined;
-  let isAnyCaptionTooLong: boolean | undefined;
+  let isSendingEnabled = false;
 
   /**
-   * Component event dispatcher
+   * Component event dispatcher.
    */
   const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
 
+  /**
+   * Handle change events of the caption textarea.
+   *
+   * @param event Event data including the current length of text in bytes.
+   */
   function handleTextChange(event: CustomEvent<u53>): void {
-    currentCaptionTextByteLength = event.detail;
-  }
-
-  function calcIsAnyCaptionTooLong(): boolean {
-    return mediaFiles.some((mediaFile) => {
-      const caption = mediaFile.caption.get();
-
-      if (caption !== undefined) {
-        return getUtf8ByteLength(caption) > MAX_CAPTION_BYTE_LENGTH;
-      }
-
-      return false;
-    });
+    saveCurrentCaption();
   }
 
   /**
-   * Save the current visible caption text string into the mediaFile.caption property
+   * Save caption text to the `mediaFile.caption` store.
    */
   function saveCurrentCaption(): void {
-    if (activeMediaFile !== undefined) {
-      activeMediaFile.caption.set(captionComposeArea.getText());
-      isAnyCaptionTooLong = calcIsAnyCaptionTooLong();
-    }
+    mediaFiles.at(activeMediaFileIndex)?.caption.set(captionComposeArea?.getText());
   }
 
   /**
-   * Save and clear the current visible caption text string into the mediaFile.caption property
+   * Save caption text to the `mediaFile.caption` store and clear the caption textarea.
    */
   function saveAndClearCurrentCaption(): void {
     saveCurrentCaption();
-    captionComposeArea.clearText();
+    captionComposeArea?.clearText();
   }
 
   /**
-   * Clear the current active media file and auto switch to the next media file
+   * Remove the active media file and switch to the next one.
    */
   function removeActiveMediaFile(): void {
     saveAndClearCurrentCaption();
 
-    if (activeMediaFile !== undefined) {
-      const index = mediaFiles.indexOf(activeMediaFile);
-      assert(index >= 0, 'Active file could not be found in mediaFiles');
+    // Remove and trigger Svelte reactivity.
+    mediaFiles = [
+      ...mediaFiles.slice(0, activeMediaFileIndex),
+      ...mediaFiles.slice(activeMediaFileIndex + 1),
+    ];
 
-      // Remove
-      mediaFiles.splice(index, 1);
-
-      // Re-assign array to trigger Svelte reactivity
-      mediaFiles = [...mediaFiles];
-
-      // Set new active media file
-      setNewActiveMediaFile(mediaFiles[index] ?? mediaFiles[Math.max(index - 1, 0)]);
+    if (mediaFiles.length > 0) {
+      // Set new active media file.
+      setNewActiveMediaFile(Math.max(activeMediaFileIndex - 1, 0));
+    } else {
+      // Close the modal if all files have been removed.
+      visible = false;
     }
   }
 
@@ -112,28 +107,25 @@
    * Set the next active media file (eg, by click on preview of user), if it is undefined, hide
    * dialog.
    */
-  function setNewActiveMediaFile(mediaFile: MediaFile | undefined): void {
-    activeMediaFile = mediaFile;
-    if (mediaFile === undefined) {
-      visible = false;
-      return;
+  function setNewActiveMediaFile(index: u53): void {
+    const mediaFile = mediaFiles.at(index);
+    if (mediaFile !== undefined) {
+      activeMediaFileIndex = index;
+
+      captionComposeArea?.insertText(mediaFile.caption.get() ?? '');
+      captionComposeArea?.focus();
     }
-
-    captionComposeArea.insertText(mediaFile.caption.get() ?? '');
-    captionComposeArea.focus();
-
-    currentCaptionTextByteLength = captionComposeArea.getTextByteLength();
   }
 
   async function sendMessages(): Promise<void> {
-    currentCaptionTextByteLength = captionComposeArea.getTextByteLength();
+    saveCurrentCaption();
 
-    // Prevent send if any caption is too long
-    if (currentCaptionTextByteLength > MAX_CAPTION_BYTE_LENGTH || isAnyCaptionTooLong === true) {
+    const isValid = validateMediaFiles(mediaFiles).every(([_, result]) => result.status === 'ok');
+    if (!isValid) {
+      log.error('No media messages were sent because some files or messages contain errors');
       return;
     }
 
-    saveCurrentCaption();
     visible = false;
 
     const files = await Promise.all(
@@ -170,6 +162,7 @@
         unreachable(fileResult);
     }
 
+    const currentCount = mediaFiles.length;
     const newMediaFiles = fileResult.files.map(
       (file): MediaFile => ({
         type: 'local',
@@ -178,15 +171,17 @@
         sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
       }),
     );
+
     mediaFiles = [...mediaFiles, ...newMediaFiles];
+
     saveAndClearCurrentCaption();
-    setNewActiveMediaFile(newMediaFiles[0]);
+    setNewActiveMediaFile(currentCount);
   }
 
   function closeWithOptionalConfirmation(event: CustomEvent): void {
     event.preventDefault();
 
-    const needsConfirmation = mediaFiles.length > 1 || captionComposeArea.getText() !== '';
+    const needsConfirmation = mediaFiles.length > 1 || captionComposeArea?.getText() !== '';
 
     if (needsConfirmation) {
       confirmCloseDialogVisible = true;
@@ -205,20 +200,32 @@
   let zoneHover = false;
   let bodyHover = false;
 
-  $: isTextByteLengthVisible =
-    currentCaptionTextByteLength !== undefined &&
-    currentCaptionTextByteLength >= MAX_CAPTION_BYTE_LENGTH - 100;
-  $: isMaxTextByteLengthExceeded =
-    currentCaptionTextByteLength !== undefined &&
-    currentCaptionTextByteLength > MAX_CAPTION_BYTE_LENGTH;
-  $: isSendingDisabled = isMaxTextByteLengthExceeded || isAnyCaptionTooLong === true;
+  $: validatedMediaFiles = validateMediaFiles(mediaFiles);
+  $: [activeMediaFile, activeValidationResult] = validatedMediaFiles.at(activeMediaFileIndex) ?? [];
+  $: activeCaption = activeMediaFile?.caption;
+  $: {
+    // Trigger reactivity of `mediaFiles` when `activeCaption` changes (e.g. to trigger another
+    // validation).
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $activeCaption;
+    mediaFiles = [...mediaFiles];
+  }
+  $: isSendingEnabled = validatedMediaFiles.every(([_, result]) => result.status === 'ok');
 
   function handleHotkeyControlE(): void {
     emojiPickerPopover?.toggle();
   }
 
+  function handleTriggerMouseEnter(event: MouseEvent): void {
+    sendButtonPopover?.open();
+  }
+
+  function handleTriggerMouseLeave(event: MouseEvent): void {
+    sendButtonPopover?.close();
+  }
+
   onMount(() => {
-    captionComposeArea.focus();
+    captionComposeArea?.focus();
     hotkeyManager.registerHotkey({control: true, code: 'KeyE'}, handleHotkeyControlE);
   });
 
@@ -254,8 +261,12 @@
         >
           <TitleAndClose let:modal {modal} slot="header" {title} />
           <div class="body" slot="body">
-            {#if activeMediaFile !== undefined}
-              <ActiveMediaFile mediaFile={activeMediaFile} on:remove={removeActiveMediaFile} />
+            {#if activeMediaFile !== undefined && activeValidationResult !== undefined}
+              <ActiveMediaFile
+                mediaFile={activeMediaFile}
+                validationResult={activeValidationResult}
+                on:remove={removeActiveMediaFile}
+              />
             {/if}
           </div>
           <div class="footer" slot="footer">
@@ -266,11 +277,6 @@
                 on:submit={sendMessages}
                 on:textByteLengthChanged={handleTextChange}
               />
-              {#if isTextByteLengthVisible}
-                <div class="bytes-count" class:exceeded={isMaxTextByteLengthExceeded}>
-                  {currentCaptionTextByteLength}/{MAX_CAPTION_BYTE_LENGTH}
-                </div>
-              {/if}
             </div>
             <Popover
               bind:this={emojiPickerPopover}
@@ -295,26 +301,41 @@
 
               <EmojiPicker
                 slot="popover"
-                on:insertEmoji={(event) => captionComposeArea.insertText(event.detail)}
+                on:insertEmoji={(event) => captionComposeArea?.insertText(event.detail)}
               />
             </Popover>
             <div class="miniatures">
               <Miniatures
-                {mediaFiles}
-                {activeMediaFile}
+                {validatedMediaFiles}
+                {activeMediaFileIndex}
                 {moreFilesAttachable}
                 on:select={(event) => {
                   saveAndClearCurrentCaption();
-                  // Set new active media file
-                  setNewActiveMediaFile(event.detail);
+
+                  const index = mediaFiles.indexOf(event.detail);
+                  if (index !== -1) {
+                    setNewActiveMediaFile(index);
+                  }
                 }}
                 on:fileDrop={(event) => attachMoreFiles(event.detail)}
               />
             </div>
-            <div class="action">
-              <IconButton flavor="filled" on:click={sendMessages} disabled={isSendingDisabled}>
-                <MdIcon theme="Filled">arrow_upward</MdIcon>
-              </IconButton>
+            <div class="action" class:disabled={!isSendingEnabled}>
+              <div
+                bind:this={sendButtonWrapper}
+                on:mouseenter={handleTriggerMouseEnter}
+                on:mouseleave={handleTriggerMouseLeave}
+              >
+                <IconButton flavor="filled" disabled={!isSendingEnabled} on:click={sendMessages}>
+                  <MdIcon theme="Filled">arrow_upward</MdIcon>
+                </IconButton>
+              </div>
+
+              {#if !isSendingEnabled && sendButtonPopover !== null}
+                <Tooltip bind:popover={sendButtonPopover} reference={sendButtonWrapper}>
+                  <p class="tooltip-content">Some files contain errors</p>
+                </Tooltip>
+              {/if}
             </div>
           </div>
         </ModalDialog>
@@ -392,32 +413,35 @@
     align-items: center;
     grid-template:
       'caption emoji' minmax(#{rem(64px)}, auto)
-      'miniatures action' min(#{rem(80px)})
+      'miniatures action' auto
       / calc(100% - #{rem(50px)}) #{rem(50px)};
 
     .caption {
       padding: rem(8px) rem(8px) rem(8px) rem(16px);
-
-      .bytes-count {
-        display: flex;
-        place-content: end;
-
-        &.exceeded {
-          color: var(--cc-compose-bar-bytes-count-exceeded-color);
-        }
-      }
     }
 
     .miniatures {
       align-self: start;
-      height: rem(64px);
       padding: 0 rem(16px) 0 rem(16px);
     }
 
     .action {
       align-self: start;
-      padding-top: rem(12px);
-      padding-left: rem(2px);
+      justify-self: left;
+      margin-top: rem(12px);
+      margin-left: rem(1px);
+
+      .tooltip-content {
+        white-space: nowrap;
+        padding: 0;
+        margin: rem(10px);
+      }
+
+      &.disabled {
+        :global(button) {
+          cursor: not-allowed;
+        }
+      }
     }
   }
 </style>
