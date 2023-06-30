@@ -24,6 +24,16 @@ export interface FilenameDetails {
     readonly displayType: string | undefined;
 }
 
+function pickExtension<T extends string>(array: T[]): T {
+    const first = array.at(0);
+    if (first !== undefined && first.length <= 4) {
+        return first;
+    }
+
+    const shortest = array.reduce((a, b) => (a.length < b.length ? a : b));
+    return shortest;
+}
+
 export function getSanitizedFileNameDetails(file: {name: string; type: string}): FilenameDetails {
     const originalFilename = file.name;
     const validExtensionsForMediaType = mediaTypeToExtensions(file.type);
@@ -38,7 +48,7 @@ export function getSanitizedFileNameDetails(file: {name: string; type: string}):
             displayType:
                 validExtensionsForMediaType === undefined
                     ? undefined
-                    : validExtensionsForMediaType[0],
+                    : pickExtension(validExtensionsForMediaType),
         };
     }
 
@@ -55,7 +65,7 @@ export function getSanitizedFileNameDetails(file: {name: string; type: string}):
     }
 
     // If we do know this media type and the file has a valid file extension, keep it.
-    const defaultExtensionForMediaType = validExtensionsForMediaType[0];
+    const defaultExtensionForMediaType = pickExtension(validExtensionsForMediaType);
     if (validExtensionsForMediaType.includes(originalExtension)) {
         return {
             name: originalFilename,

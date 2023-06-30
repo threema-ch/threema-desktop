@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    {filenameDetails.displayType ?? '?'}
+    {filenameDetails.displayType === undefined ? '?' : filenameDetails.displayType.substring(0, 4)}
   </div>
 </template>
 
