@@ -114,6 +114,7 @@
             {#await filterContacts(contacts.get(), filter, activeTab === 'work-contacts' ? WorkVerificationLevel.WORK_SUBSCRIPTION_VERIFIED : undefined) then filtered}
               {#each filtered.get() as contact (contact.id)}
                 <ForwardRecipient
+                  {services}
                   {contact}
                   {filter}
                   on:click={() =>
