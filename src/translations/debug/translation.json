@@ -127,13 +127,6 @@
     "error--is-group-member": "[d] \"{name}\" ist noch Mitglied einer Gruppe. Entfernen Sie den Kontakt aus der Gruppe oder löschen Sie die Gruppe.",
     "label--title": "[d] Kontakt konnte nicht gelöscht werden"
   },
-  "dialog--error-safe-restore": {
-    "action--confirm": "[d] Gerät neu verknüpfen",
-    "label--title": "[d] Fehler bei der Wiederherstellung des Safes",
-    "markup--description-p1": "[d] Die Wiederherstellung der Safe-Backup-Daten ist fehlgeschlagen. Bitte verknüpfen Sie dieses Gerät erneut, um Nachrichtenverluste zu vermeiden.",
-    "markup--description-p2": "[d] Gemeldeter Fehler: <1>{error}</1>",
-    "markup--description-p3": "[d] Bitte melden Sie diesen Fehler an den Threema Support von Threema auf Ihrem Mobilgerät (Einstellungen > Beta-Feedback). Weitere Informationen finden Sie in den <1>FAQ</1>."
-  },
   "dialog--forward-message": {
     "hint--profile-picture": "[d] Profilbild von {name}",
     "label--search-distribution-lists": "[d] Verteilerlisten suchen",
@@ -191,8 +184,8 @@
   "dialog--linking-success": {
     "action--confirm": "[d] Threema benutzen",
     "label--title": "[d] Gerät erfolgreich verbunden",
-    "markup--description-work": "[d] You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off).",
-    "markup--description-consumer": "[d] You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off)."
+    "markup--description-consumer": "[d] You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).",
+    "markup--description-work": "[d] You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off)."
   },
   "dialog--linking-sync": {
     "action--need-help": "[d] Need help?",
@@ -211,54 +204,12 @@
   "dialog--server-alert": {
     "action--confirm": "[d] OK"
   },
-  "dialog--setup-linking-code": {
-    "action--cancel": "[d] Zurück",
-    "action--confirm": "[d] Weiter",
-    "error--invalid-code": "[d] Bitte geben Sie einen gültigen Verbindungscode ein.",
-    "error--invalid-code-advanced": "[d] Bitte geben Sie einen gültigen Verbindungscode ein und stellen Sie sicher, dass Ihre benutzerdefinierten Safe-Server-Anmeldedaten und Konfigurationen (einschließlich CORS) korrekt sind.",
-    "error--unknown": "[d] Technische Details: {details}",
-    "label--title": "[d] Verbindungscode eingeben",
-    "prose--instructions": "[d] Ihr Verbindungscode wird auf Ihrem Mobilgerät angezeigt."
-  },
-  "dialog--setup-password": {
-    "action--cancel": "[d] Zurück",
-    "action--confirm": "[d] Weiter",
-    "error--password-equality": "[d] Passwörter stimmen nicht überein",
-    "error--password-length": "[d] Bitte geben Sie mindestens {min} Zeichen ein",
-    "label--new-password": "[d] Neues Passwort",
-    "label--new-password-confirmation": "[d] Passwort bestätigen",
-    "label--title": "[d] Passwort festlegen",
-    "prose--instructions": "[d] Das Passwort schützt Ihre Nachrichten, Threema ID und andere Daten auf diesem Computer. Sie müssen es eingeben, wenn Sie Threema für Desktop starten."
-  },
-  "dialog--setup-threema-id": {
-    "action--cancel": "[d] Zurück",
-    "action--confirm": "[d] Weiter",
-    "action--hide-advanced-options": "[d] Erweiterte Optionen ausblenden",
-    "action--show-advanced-options": "[d] Erweiterte Optionen anzeigen",
-    "error--invalid-id": "[d] Diese Threema ID ist ungültig",
-    "error--url": "[d] Bitte geben Sie eine gültige URL ein.",
-    "error--url-protocol": "[d] Bitte geben Sie eine gültige URL ein. https-Protokoll ist erforderlich.",
-    "label--csp-device-id": "[d] CSP-Geräte-ID",
-    "label--custom-threema-safe-password": "[d] Benutzerdefiniertes Threema Safe-Passwort (Optional)",
-    "label--custom-threema-safe-url": "[d] Benutzerdefinierte Threema Safe-URL",
-    "label--custom-threema-safe-username": "[d] Benutzerdefinierter Threema Safe-Benutzername (Optional)",
-    "label--d2m-device-id": "[d] D2M-Geräte-ID",
-    "label--threema-id": "[d] Threema ID",
-    "label--title": "[d] Geben Sie Ihre Threema ID ein",
-    "prose--instructions": "[d] Ihre Threema ID wird auf Ihrem Mobilgerät angezeigt."
-  },
   "dialog--startup-unlock": {
     "action--confirm": "[d] Weiter",
     "error--incorrect-password": "[d] Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
     "label--password": "[d] Passwort",
     "label--title": "[d] Passwort eingeben",
     "markup--password-hint": "[d] Passwort vergessen? Bitte sehen Sie sich einige <1>FAQ</1> an."
-  },
-  "dialog--success-link-device": {
-    "action--confirm": "[d] Schließen",
-    "label--title": "[d] Gerät erfolgreich verknüpft",
-    "markup--description": "[d] Sie können Threema jetzt auf diesem Computer verwenden <1></1>(auch wenn Ihr iOS-Gerät ausgeschaltet ist).",
-    "markup--tech-preview": "[d] Bitte beachten Sie, dass dies eine Technologievorschau ist. Bekannte Probleme sind <1>hier</1> aufgeführt."
   },
   "dialog--unsupported-feature-protected-conversation": {
     "label--title": "[d] Privater Chat",
@@ -272,17 +223,6 @@
     "prose--level-server-verified-default": "[d] Die ID wurde mit einem Kontakt in Ihrem Adressbuch abgeglichen (über Telefonnummer oder E-Mail). Da der Server Telefonnummern und E-Mail-Adressen überprüft, können Sie mit ziemlicher Sicherheit davon ausgehen, dass die Person ist, für die sie sich ausgibt.",
     "prose--level-server-verified-work": "[d] Diese Verifizierungsebene ist nur in Threema Work verfügbar; sie zeigt an, dass die Threema ID zu einem internen Firmenkontakt gehört.",
     "prose--level-unverified": "[d] Die ID und der öffentliche Schlüssel wurden vom Server erhalten, weil Sie zum ersten Mal eine Nachricht von diesem Kontakt erhalten oder die ID manuell hinzugefügt haben. Es wurde kein übereinstimmender Kontakt in Ihrem Adressbuch gefunden (über Telefonnummer oder E-Mail), und daher können Sie nicht sicher sein, dass die Person in ihren Nachrichten ist, für die sie sich ausgibt."
-  },
-  "dialog--welcome": {
-    "action--confirm": "[d] Geben Sie hier Ihre Threema ID ein",
-    "label--link-device-instructions": "[d] Verknüpfen Sie Ihr iOS-Gerät",
-    "label--link-device-step-1": "[d] Schritt 1:",
-    "label--link-device-step-2": "[d] Schritt 2:",
-    "label--link-device-step-3": "[d] Schritt 3:",
-    "label--title": "[d] Multi-Device-Vorschau",
-    "markup--intro": "[d] Diese Technologie-Vorschau funktioniert nur in Verbindung mit der Beta-Version von Threema für iOS. Bitte beachten Sie, dass einige Funktionen noch nicht verfügbar sind. <1>Weitere Informationen...</1>.",
-    "markup--link-device-step-1": "[d] <1>Installieren Sie die Multi-Device-Beta von Threema für iOS auf Ihrem Gerät</1>.",
-    "markup--link-device-step-2": "[d] Öffnen Sie die Beta-Version, navigieren Sie zu <1>„Einstellungen > Multi-Device-Vorschau“</1> und aktivieren Sie <2>„Dieses Gerät“</2>."
   },
   "locale": {
     "cimode": "Entwicklermodus",
@@ -320,9 +260,9 @@
     "label--compose-area": "[d] Schreiben Sie eine Nachricht...",
     "label--default-file-message-preview": "[d] Datei",
     "label--default-filename": "[d] (kein Name)",
+    "label--default-sender-self": "[d] Ich: {text}",
     "label--mention-all": "[d] Alle",
     "label--mention-me": "[d] Ich",
-    "label--default-sender-self": "[d] Ich: {text}",
     "label--prefix-draft": "[d] Entwurf:",
     "label--protected-conversation": "[d] Privat",
     "label--search-conversation": "[d] Chat suchen",

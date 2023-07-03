@@ -127,13 +127,6 @@
     "error--is-group-member": "\"{name}\" is still member of a group. Remove contact from group, or delete group.",
     "label--title": "Unable to Delete Contact"
   },
-  "dialog--error-safe-restore": {
-    "action--confirm": "Relink device",
-    "label--title": "Safe Restore Error",
-    "markup--description-p1": "Restoring of the safe backup data failed. Please relink this device to prevent message loss.",
-    "markup--description-p2": "Reported error: <1>{error}</1>",
-    "markup--description-p3": "Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback). For more information, see the <1>FAQ</1>."
-  },
   "dialog--forward-message": {
     "hint--profile-picture": "Profile picture of {name}",
     "label--search-distribution-lists": "Search Distribution Lists",
@@ -191,8 +184,8 @@
   "dialog--linking-success": {
     "action--confirm": "Start using Threema",
     "label--title": "Device Linked Successfully",
-    "markup--description-work": "You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off).",
-    "markup--description-consumer": "You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off)."
+    "markup--description-consumer": "You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).",
+    "markup--description-work": "You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off)."
   },
   "dialog--linking-sync": {
     "action--need-help": "Need help?",
@@ -211,54 +204,12 @@
   "dialog--server-alert": {
     "action--confirm": "OK"
   },
-  "dialog--setup-linking-code": {
-    "action--cancel": "Back",
-    "action--confirm": "Next",
-    "error--invalid-code": "Please enter a valid linking code.",
-    "error--invalid-code-advanced": "Please enter a valid linking code and ensure that your custom Safe server credentials and configuration (including CORS) are correct.",
-    "error--unknown": "Technical Details: {details}",
-    "label--title": "Enter Linking Code",
-    "prose--instructions": "Your Linking Code is displayed on your mobile device."
-  },
-  "dialog--setup-password": {
-    "action--cancel": "Back",
-    "action--confirm": "Next",
-    "error--password-equality": "Passwords do not match",
-    "error--password-length": "Please enter at least {min} characters",
-    "label--new-password": "New Password",
-    "label--new-password-confirmation": "Confirm Password",
-    "label--title": "Set Password",
-    "prose--instructions": "The password will protect your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop."
-  },
-  "dialog--setup-threema-id": {
-    "action--cancel": "Back",
-    "action--confirm": "Next",
-    "action--hide-advanced-options": "Hide advanced options",
-    "action--show-advanced-options": "Show advanced options",
-    "error--invalid-id": "This Threema ID is not valid",
-    "error--url": "Please enter a valid URL.",
-    "error--url-protocol": "Please enter a valid URL. https protocol is required.",
-    "label--csp-device-id": "CSP Device Id",
-    "label--custom-threema-safe-password": "Custom Threema Safe Password (Optional)",
-    "label--custom-threema-safe-url": "Custom Threema Safe URL",
-    "label--custom-threema-safe-username": "Custom Threema Safe Username (Optional)",
-    "label--d2m-device-id": "D2M Device Id",
-    "label--threema-id": "Threema ID",
-    "label--title": "Enter Your Threema ID",
-    "prose--instructions": "Your Threema ID is displayed on your mobile device."
-  },
   "dialog--startup-unlock": {
     "action--confirm": "Continue",
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "label--password": "Password",
     "label--title": "Enter Password",
     "markup--password-hint": "Forgot password? Please see some <1>FAQ</1>."
-  },
-  "dialog--success-link-device": {
-    "action--confirm": "Close",
-    "label--title": "Device Linked Successfully",
-    "markup--description": "You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).",
-    "markup--tech-preview": "Please remember that this is a tech preview. Known issues are listed <1>here</1>."
   },
   "dialog--unsupported-feature-protected-conversation": {
     "label--title": "Private Chat",
@@ -272,17 +223,6 @@
     "prose--level-server-verified-default": "The ID has been matched with a contact in your address book (by phone number or email). Since the server verifies phone numbers and email addresses, you can be reasonably sure that the person is who they claim to be.",
     "prose--level-server-verified-work": "This verification level is only available in Threema Work; it indicates that the Threema ID belongs to an internal company contact.",
     "prose--level-unverified": "The ID and public key have been obtained from the server because you received a message from this contact for the first time or added the ID manually. No matching contact was found in your address book (by phone number or email), and therefore you cannot be sure that the person is who they claim to be in their messages."
-  },
-  "dialog--welcome": {
-    "action--confirm": "Enter your Threema ID here",
-    "label--link-device-instructions": "Link Your iOS Device",
-    "label--link-device-step-1": "Step 1:",
-    "label--link-device-step-2": "Step 2:",
-    "label--link-device-step-3": "Step 3:",
-    "label--title": "Multi-Device Preview",
-    "markup--intro": "This tech preview only works in conjunction with the beta version of Threema for iOS. Please note that some features are not yet available. <1>Learn more...</1>.",
-    "markup--link-device-step-1": "<1>Install the multi-device beta of Threema for iOS on your device</1>.",
-    "markup--link-device-step-2": "Open the beta version, navigate to <1>“Settings > Multi-Device Preview,”</1> and activate <2>“This Device”</2>."
   },
   "locale": {
     "cimode": "Developer Mode",
@@ -320,9 +260,9 @@
     "label--compose-area": "Write a message...",
     "label--default-file-message-preview": "File",
     "label--default-filename": "(no name)",
+    "label--default-sender-self": "Me: {text}",
     "label--mention-all": "All",
     "label--mention-me": "Me",
-    "label--default-sender-self": "Me: {text}",
     "label--prefix-draft": "Draft:",
     "label--protected-conversation": "Private",
     "label--search-conversation": "Find Chat",
