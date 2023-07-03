@@ -307,6 +307,7 @@
     const mutationObserver = new MutationObserver(handleContentChangeDebounced);
     mutationObserver.observe(areaElement, {
       subtree: true,
+      childList: true,
       characterData: true,
     });
 
