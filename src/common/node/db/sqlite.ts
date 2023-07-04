@@ -71,6 +71,10 @@ import {
     tSettings,
 } from './tables';
 
+type UpdateSetsForDbMessage<TDbMessage extends DbFileMessage> = TDbMessage extends DbFileMessage
+    ? UpdateSets<typeof tMessageFileData, typeof tMessageFileData>
+    : never;
+
 /**
  * Database backend backed by SQLite (with SQLCipher), using the BetterSqlCipher driver.
  */
@@ -1351,9 +1355,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }, this._log);
     }
 
-    private _processFileDataChanges(
-        message: DbUpdate<DbFileMessage>,
-        update: UpdateSets<typeof tMessageFileData, typeof tMessageFileData>,
+    private _processFileDataChanges<TDbMessage extends DbFileMessage>(
+        message: Partial<TDbMessage> & {uid: DbMessageUid},
+        update: UpdateSetsForDbMessage<TDbMessage>,
     ): DbFileDataUid[] {
         // To keep the file data table clean and remove entries that aren't referenced
         // anymore, we first need to query the current UIDs.
