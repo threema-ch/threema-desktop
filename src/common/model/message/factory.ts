@@ -23,7 +23,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
         services: ServicesForModel,
         direction: TLocalModelStore['ctx'],
         conversation: ConversationControllerHandle,
-        message: DbMessageFor<TLocalModelStore['type']>,
+        message: DbMessageFor<TLocalModelStore['type'] | 'image'>, // TODO(DESK-247): Remove image constant
         common: BaseMessageView<TLocalModelStore['ctx']>,
         sender: LocalModelStore<Contact> | typeof NO_SENDER,
     ): TLocalModelStore => {
@@ -45,6 +45,8 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     common,
                     sender,
                 ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+            case 'image':
+                throw new Error('TODO(DESK-247)');
             default:
                 return unreachable(message);
         }

@@ -403,6 +403,17 @@ export interface DbFileMessageUniqueProps {
 export type DbFileMessage = DbFileMessageUniqueProps & DbMessageCommon<MessageType.FILE>;
 
 /**
+ * A database image message.
+ */
+export interface DbImageMessageUniqueProps extends DbFileMessageUniqueProps {
+    readonly renderingType: u53;
+    readonly animated: boolean;
+    readonly height?: u53;
+    readonly width?: u53;
+}
+export type DbImageMessage = DbImageMessageUniqueProps & DbMessageCommon<MessageType.IMAGE>;
+
+/**
  * A file data UID.
  */
 export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique symbol}>;
@@ -410,7 +421,7 @@ export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique sy
 /**
  * Any database message.
  */
-export type DbAnyMessage = DbTextMessage | DbFileMessage;
+export type DbAnyMessage = DbTextMessage | DbFileMessage | DbImageMessage;
 
 /**
  * Map from message type to a specific database message type.
@@ -419,6 +430,8 @@ export type DbMessageFor<TType extends MessageType> = TType extends 'text'
     ? DbTextMessage
     : TType extends 'file'
     ? DbFileMessage
+    : TType extends 'image'
+    ? DbImageMessage
     : never;
 
 /**

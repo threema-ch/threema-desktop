@@ -56,7 +56,7 @@ export interface MessageFactory {
         services: ServicesForModel,
         direction: TLocalModelStore['ctx'],
         conversation: ConversationControllerHandle,
-        message: DbMessageFor<TLocalModelStore['type']>,
+        message: DbMessageFor<TLocalModelStore['type'] | 'image'>, // TODO(DESK-247): Remove image constant
         common: BaseMessageView<TLocalModelStore['ctx']>,
         sender: LocalModelStore<Contact> | typeof NO_SENDER,
     ) => TLocalModelStore;
@@ -149,7 +149,7 @@ function createStore<TModelStore extends AnyMessageModelStore>(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
     factory: MessageFactory,
-    message: DbMessageFor<TModelStore['type']>,
+    message: DbMessageFor<TModelStore['type'] | 'image'>, // TODO(DESK-247): Remove image constant
     senderHint: LocalModelStore<Contact> | undefined,
 ): TModelStore {
     // Determine direction and lookup the sender (if inbound)

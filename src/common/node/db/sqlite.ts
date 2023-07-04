@@ -26,6 +26,8 @@ import {
     type DbGroup,
     type DbGroupUid,
     type DbHas,
+    type DbImageMessage,
+    type DbImageMessageUniqueProps,
     type DbList,
     type DbMessageCommon,
     type DbMessageUid,
@@ -67,13 +69,17 @@ import {
     tGroupMember,
     tMessage,
     tMessageFileData,
+    tMessageImageData,
     tMessageTextData,
     tSettings,
 } from './tables';
 
-type UpdateSetsForDbMessage<TDbMessage extends DbFileMessage> = TDbMessage extends DbFileMessage
-    ? UpdateSets<typeof tMessageFileData, typeof tMessageFileData>
-    : never;
+type UpdateSetsForDbMessage<TDbMessage extends DbFileMessage | DbImageMessage> =
+    TDbMessage extends DbFileMessage
+        ? UpdateSets<typeof tMessageFileData, typeof tMessageFileData>
+        : TDbMessage extends DbImageMessage
+        ? UpdateSets<typeof tMessageImageData, typeof tMessageImageData>
+        : never;
 
 /**
  * Database backend backed by SQLite (with SQLCipher), using the BetterSqlCipher driver.
@@ -1226,6 +1232,68 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ...file,
                 };
             }
+            case MessageType.IMAGE: {
+                // TODO(DESK-247): Is it possible to share logic with file type?
+                const tFileDataJoinable = tFileData.forUseInLeftJoinAs('fileData');
+                const tThumbnailFileDataJoinable =
+                    tFileData.forUseInLeftJoinAs('thumbnailFileData');
+                const file = sync(
+                    this._db
+                        // Main table
+                        .selectFrom(tMessageImageData)
+                        // Join for fileData
+                        .leftJoin(tFileDataJoinable)
+                        .on(tMessageImageData.fileDataUid.equals(tFileDataJoinable.uid))
+                        // Join for thumbnailFileData
+                        .leftJoin(tThumbnailFileDataJoinable)
+                        .on(
+                            tMessageImageData.thumbnailFileDataUid.equals(
+                                tThumbnailFileDataJoinable.uid,
+                            ),
+                        )
+                        // Select data
+                        .select({
+                            blobId: tMessageImageData.blobId,
+                            thumbnailBlobId: tMessageImageData.thumbnailBlobId,
+                            blobDownloadState: tMessageImageData.blobDownloadState,
+                            thumbnailBlobDownloadState:
+                                tMessageImageData.thumbnailBlobDownloadState,
+                            encryptionKey: tMessageImageData.encryptionKey,
+                            fileData: {
+                                fileId: tFileDataJoinable.fileId,
+                                encryptionKey: tFileDataJoinable.encryptionKey,
+                                unencryptedByteCount: tFileDataJoinable.unencryptedByteCount,
+                                storageFormatVersion: tFileDataJoinable.storageFormatVersion,
+                            },
+                            thumbnailFileData: {
+                                fileId: tThumbnailFileDataJoinable.fileId,
+                                encryptionKey: tThumbnailFileDataJoinable.encryptionKey,
+                                unencryptedByteCount:
+                                    tThumbnailFileDataJoinable.unencryptedByteCount,
+                                storageFormatVersion:
+                                    tThumbnailFileDataJoinable.storageFormatVersion,
+                            },
+                            mediaType: tMessageImageData.mediaType,
+                            thumbnailMediaType: tMessageImageData.thumbnailMediaType,
+                            fileName: tMessageImageData.fileName,
+                            fileSize: tMessageImageData.fileSize,
+                            caption: tMessageImageData.caption,
+                            correlationId: tMessageImageData.correlationId,
+                            renderingType: tMessageImageData.renderingType,
+                            animated: tMessageImageData.animated,
+                            height: tMessageImageData.height,
+                            width: tMessageImageData.width,
+                        })
+                        .where(tMessageImageData.messageUid.equals(common.uid))
+                        .executeSelectOne(),
+                );
+                return {
+                    ...common,
+                    lastReaction,
+                    type: MessageType.IMAGE,
+                    ...file,
+                };
+            }
             default:
                 return unreachable(common.type, new Error(`Unknown message type ${common.type}`));
         }
@@ -1268,7 +1336,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return this._db.syncTransaction(() => {
             // Update common data
             //
-            // Note: This makes a sanity-check on the message type and conversation uid by filtering on it.
+            // Note: This makes a sanity-check on the message type and conversation uid by filtering
+            //       on it.
             const updated = sync(
                 this._db
                     .update(tMessage)
@@ -1331,12 +1400,54 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     // Add, update or remove associated file data entries
                     const removedFileDataUids = this._processFileDataChanges(message, update);
 
-                    // Drop message file data
+                    // Update message file data
                     sync(
                         this._db
                             .update(tMessageFileData)
                             .set(update)
                             .where(tMessageFileData.messageUid.equals(message.uid))
+                            .executeUpdate(),
+                    );
+
+                    // Delete file data rows that are now unreferenced
+                    //
+                    // NOTE: This must be called after the db update query! Otherwise rows are still
+                    //       referenced and aren't removed.
+                    const deletedFileIds =
+                        this._deleteFromMessageDataIfUnreferenced(removedFileDataUids);
+
+                    return {deletedFileIds};
+                }
+                case MessageType.IMAGE: {
+                    // Prepare update
+                    const update: UpdateSets<typeof tMessageImageData, typeof tMessageImageData> =
+                        pick<DbImageMessageUniqueProps>(message, [
+                            'blobId',
+                            'thumbnailBlobId',
+                            'blobDownloadState',
+                            'thumbnailBlobDownloadState',
+                            'encryptionKey',
+                            'mediaType',
+                            'thumbnailMediaType',
+                            'fileName',
+                            'fileSize',
+                            'caption',
+                            'correlationId',
+                            'renderingType',
+                            'animated',
+                            'height',
+                            'width',
+                        ]);
+
+                    // Add, update or remove associated file data entries
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
+
+                    // Update message file data
+                    sync(
+                        this._db
+                            .update(tMessageImageData)
+                            .set(update)
+                            .where(tMessageImageData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
 
@@ -1355,7 +1466,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         }, this._log);
     }
 
-    private _processFileDataChanges<TDbMessage extends DbFileMessage>(
+    private _processFileDataChanges<TDbMessage extends DbFileMessage | DbImageMessage>(
         message: Partial<TDbMessage> & {uid: DbMessageUid},
         update: UpdateSetsForDbMessage<TDbMessage>,
     ): DbFileDataUid[] {

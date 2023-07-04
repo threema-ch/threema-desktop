@@ -17,7 +17,6 @@ import {
     CspMessageFlag,
     CspPayloadType,
     D2mPayloadType,
-    type MessageType,
 } from '~/common/enum';
 import type * as protobuf from '~/common/network/protobuf';
 import type * as structbuf from '~/common/network/structbuf';
@@ -308,15 +307,6 @@ export function ensureCspE2eType(value: u53): CspE2eType {
         throw new Error(`Value ${value} is not a valid CSP E2E message type`);
     }
     return value;
-}
-
-/**
- * A mapping of the protocol-specific numeric payload type to the high-level string-based message
- * type.
- */
-export interface CspE2eTypeToMessageType {
-    [CspE2eConversationType.TEXT]: MessageType.TEXT;
-    [CspE2eConversationType.FILE]: MessageType.FILE;
 }
 
 /**

@@ -377,9 +377,6 @@ export enum MessageFilterInstruction {
 /**
  * All possible message types.
  *
- * Note: When adding more message types, the mapping {@link CspE2eTypeToMessageType} must be updated
- *       as well!
- *
  * WARNING: Do not change the internal representation of this enum, since those values are stored
  *          directly in the database!
  *
@@ -388,7 +385,7 @@ export enum MessageFilterInstruction {
 export enum MessageType {
     TEXT = 'text',
     FILE = 'file',
-    // IMAGE = 'image',
+    IMAGE = 'image',
     // VIDEO = 'video',
     // AUDIO = 'audio',
     // POLL = 'poll',
