@@ -93,6 +93,13 @@ export function ensureU64(val: unknown): u64 {
 }
 
 /**
+ * Type guard for {@link f64}.
+ */
+export function isF64(val: unknown): val is f64 {
+    return typeof val === 'number';
+}
+
+/**
  * Pick all keys of T where the value matches U.
  */
 export type PickKeysForType<T, U> = {

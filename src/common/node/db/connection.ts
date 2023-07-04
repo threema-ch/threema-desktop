@@ -51,7 +51,7 @@ import {
     isNickname,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
-import {isU8, type u8, type u53} from '~/common/types';
+import {isF64, isU8, type u8, type u53} from '~/common/types';
 import {exhausted, unreachable} from '~/common/utils/assert';
 import {byteView} from '~/common/utils/byte';
 
@@ -112,6 +112,7 @@ export const CUSTOM_TYPES = {
     UINT8ARRAY: 'Uint8Array',
     U8: 'u8',
     U53: 'u53',
+    F64: 'f64',
 } as const;
 type CustomType = (typeof CUSTOM_TYPES)[keyof typeof CUSTOM_TYPES];
 
@@ -324,6 +325,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return u64ToU8(value, isU8);
             case CUSTOM_TYPES.U53:
                 return u64ToU53(value, isPlainU53);
+            case CUSTOM_TYPES.F64:
+                return isF64(value) ? value : fail();
 
             default:
                 // Fallback to built-in type handling
@@ -431,6 +434,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return value;
             case CUSTOM_TYPES.U8:
             case CUSTOM_TYPES.U53:
+            case CUSTOM_TYPES.F64:
                 // No transformation
                 return value;
 
