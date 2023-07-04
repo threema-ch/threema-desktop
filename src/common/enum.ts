@@ -57,6 +57,8 @@ export namespace TransferTag {
     export type RENDEZVOUS_PROTOCOL_ERROR = typeof RENDEZVOUS_PROTOCOL_ERROR;
     export const DEVICE_JOIN_PROTOCOL_ERROR = 23;
     export type DEVICE_JOIN_PROTOCOL_ERROR = typeof DEVICE_JOIN_PROTOCOL_ERROR;
+    export const APPLICATION_STATE_ERROR = 24;
+    export type APPLICATION_STATE_ERROR = typeof APPLICATION_STATE_ERROR;
 }
 /**
  * ENDPOINT

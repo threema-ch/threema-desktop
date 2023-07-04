@@ -1,5 +1,6 @@
 import {type DbContactUid} from '~/common/db';
 import {ActivityState} from '~/common/enum';
+import {ProtocolError} from '~/common/error';
 import {type Group, type GroupInit} from '~/common/model';
 import {type PassiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
 import {GroupSetupTaskBase} from '~/common/network/protocol/task/common/group-setup';
@@ -96,7 +97,6 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
                 continue;
             }
 
-            // Handle invalid state
             // TODO(DESK-859): Better handling of group state errors
             const errorMessage =
                 'Received reflected incoming group setup for a group where not all contacts are known';
@@ -104,14 +104,13 @@ export class ReflectedIncomingGroupSetupTask extends GroupSetupTaskBase<PassiveT
             this._log.debug(
                 `Group member ${identity} should have been available before the reflected incoming group ${this._groupDebugString} setup message`,
             );
-            const dialog = await this._services.systemDialog.open({
-                type: 'invalid-state',
-                context: {
-                    message: errorMessage,
-                    forceRelink: !import.meta.env.DEBUG,
-                },
-            });
-            await dialog.closed;
+
+            // Throw unrecoverable state error.
+            throw new ProtocolError(
+                'd2d',
+                `Application state is inconsistent: ${errorMessage}`,
+                'unrecoverable',
+            );
         }
         return [];
     }

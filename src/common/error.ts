@@ -6,10 +6,6 @@ import {
     registerErrorTransferHandler,
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
-
-import {CloseCode, type CloseInfo} from './network';
-import {type u53} from './types';
-
 /**
  * Recursively extract the error message, including the message of the error cause.
  */
@@ -122,18 +118,30 @@ export class CryptoError extends BaseError {
  *
  * - csp: An error occurred in the CSP protocol.
  * - d2m: An error occurred in the D2M protocol.
+ * - d2d: An error occurred while processing a d2d message.
  */
-export type ProtocolErrorType = 'csp' | 'd2m';
+export type ProtocolErrorType = 'csp' | 'd2m' | 'd2d';
+
+/**
+ * Recoverability of the {@link ProtocolError}.
+ *
+ * - recoverable-on-reconnect: Error needs reconnect to be recoverable.
+ * - unrecoverable: Error is not recoverable and
+ */
+export type ProtocolErrorRecoverability =
+    | 'recovery-not-needed'
+    | 'recoverable-on-reconnect'
+    | 'unrecoverable';
 
 const PROTOCOL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     ProtocolError<ProtocolErrorType>,
     TransferTag.PROTOCOL_ERROR,
-    [type: ProtocolErrorType, info: CloseInfo]
+    [type: ProtocolErrorType, recoverability: ProtocolErrorRecoverability]
 >({
     tag: TransferTag.PROTOCOL_ERROR,
-    serialize: (error) => [error.type, error.info],
-    deserialize: (message, cause, [type, info]) =>
-        new ProtocolError(type, message, info, {from: cause}),
+    serialize: (error) => [error.type, error.recoverability],
+    deserialize: (message, cause, [type, recoverability]) =>
+        new ProtocolError(type, message, recoverability, {from: cause}),
 } as const);
 
 /**
@@ -143,31 +151,20 @@ const PROTOCOL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
  *            it may be transmitted to the mediator server for debugging
  *            purposes in development mode.
  */
-export class ProtocolError<TType extends ProtocolErrorType> extends BaseError implements CloseInfo {
+export class ProtocolError<TType extends ProtocolErrorType> extends BaseError {
     public [TRANSFER_HANDLER]: RegisteredErrorTransferHandler<
         ProtocolError<ProtocolErrorType>,
         TransferTag.PROTOCOL_ERROR,
-        [type: ProtocolErrorType, info: CloseInfo]
+        [type: ProtocolErrorType, recoverability: ProtocolErrorRecoverability]
     > = PROTOCOL_ERROR_TRANSFER_HANDLER;
-    public readonly code: u53;
-    public readonly reason?: string;
-    public readonly clientInitiated: boolean | undefined;
 
     public constructor(
         public readonly type: TType,
         message: string,
-        public readonly info: CloseInfo = {code: CloseCode.PROTOCOL_ERROR, clientInitiated: true},
+        public readonly recoverability: ProtocolErrorRecoverability = 'recovery-not-needed',
         options?: BaseErrorOptions,
     ) {
         super(message, options);
-        this.code = info.code;
-        this.reason = info.reason;
-        this.clientInitiated = info.clientInitiated;
-
-        // In debug mode, use the message as fallback for the reason
-        if (import.meta.env.DEBUG && this.reason === undefined) {
-            this.reason = `threema-desktop ${import.meta.env.BUILD_VERSION}: ${message}`;
-        }
     }
 }
 

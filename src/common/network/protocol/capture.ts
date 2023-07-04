@@ -170,7 +170,7 @@ function convert(
 
     // Extract error
     if (meta?.error !== undefined) {
-        error = `${meta.error.message} (code: ${meta.error.code})`;
+        error = meta.error.message;
     }
 
     // Create display object

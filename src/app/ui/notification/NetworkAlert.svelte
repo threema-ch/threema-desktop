@@ -1,6 +1,14 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import {type GlobalPropertyKey} from '~/common/enum';
+  import {type IGlobalPropertyModel} from '~/common/model';
+  import {type LocalModelStore} from '~/common/model/utils/model-store';
+  import {type Remote} from '~/common/utils/endpoint';
+
+  export let applicationState: Remote<
+    LocalModelStore<IGlobalPropertyModel<GlobalPropertyKey.APPLICATION_STATE>>
+  >;
 </script>
 
 <template>
@@ -9,10 +17,17 @@
       <MdIcon theme="Outlined">error_outline</MdIcon>
     </div>
     <div class="message">
-      {$i18n.t(
-        'system.error--connection',
-        'No server connection. Try reconnecting to Wi-Fi, or check your modem and router.',
-      )}
+      {#if $applicationState.view.value.unrecoverableStateDetected ?? false}
+        {$i18n.t(
+          'system.error--connection-unrecoverable-state',
+          'This device was disconnected from the server due to an unrecoverable error. Please restart and relink.',
+        )}
+      {:else}
+        {$i18n.t(
+          'system.error--connection',
+          'No server connection. Try reconnecting to Wi-Fi, or check your modem and router.',
+        )}
+      {/if}
     </div>
   </div>
 </template>

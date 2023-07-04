@@ -156,16 +156,6 @@
     "prose--threema-id-description-p1": "Each Threema user gets a randomly generated, 8-digit Threema ID when starting the app for the first time. This ID is your unique address in Threema and makes it possible to use Threema completely anonymously, without disclosing any personal information.",
     "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema's servers to be distributed to your chat partners, the private key remains on your device where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender's device. They can only be decrypted with your personal private key."
   },
-  "dialog--invalid-state": {
-    "action--default-cancel": "Continue with invalid state (Debug)",
-    "action--default-confirm": "Relink",
-    "action--force-relink-confirm": "Remove local profile and relink",
-    "label--title": "Invalid Client State Detected",
-    "prose--description-p1": "We have detected that your local data is not consistent with your mobile device. To prevent data loss, you cannot currently send or receive new messages. We apologize for the inconvience.",
-    "prose--description-p2": "To continue using Threema, you have to remove your local profile and relink.",
-    "prose--description-p3": "Reported error: {error}",
-    "prose--description-p4": "Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback)."
-  },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Need help?",
     "label--title": "Confirm images on your mobile device"
@@ -229,6 +219,14 @@
     "label--password": "Password",
     "label--title": "Enter Password",
     "markup--password-hint": "Forgot password? Please see some <1>FAQ</1>."
+  },
+  "dialog--unrecoverable-state": {
+    "action--cancel": "Continue with invalid state",
+    "action--confirm": "Reset and relink",
+    "label--title": "Unrecoverable State Detected",
+    "prose--description-p1": "We have detected that your local data is in an unrecoverable state. To prevent data loss, you cannot currently send or receive new messages. We apologize for the inconvience.",
+    "prose--description-p2": "To continue using Threema, you have to remove your local profile and relink.",
+    "prose--description-p3": "Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback). Note: Remember to save your logs before relinking, as they will be cleared."
   },
   "dialog--unsupported-feature-protected-conversation": {
     "label--title": "Private Chat",
@@ -308,6 +306,7 @@
     "label--threema-id": "Threema ID"
   },
   "system": {
-    "error--connection": "No server connection. Try reconnecting to Wi-Fi, or check your modem and router."
+    "error--connection": "No server connection. Try reconnecting to Wi-Fi, or check your modem and router.",
+    "error--connection-unrecoverable-state": "This device was disconnected from the server due to an unrecoverable error. Please restart and relink."
   }
 }

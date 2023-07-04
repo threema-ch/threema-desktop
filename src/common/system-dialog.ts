@@ -6,7 +6,7 @@ import {type ProxyMarked} from '~/common/utils/endpoint';
  */
 interface SystemDialogBase {
     readonly type: string;
-    readonly context: unknown;
+    readonly context?: unknown;
 }
 
 /**
@@ -57,12 +57,8 @@ export interface ServerAlertDialog extends SystemDialogBase {
 /**
  * Dialog which is shown on state errors (e.g. in Groups) in production mode.
  */
-export interface InvalidStateDialog extends SystemDialogBase {
-    readonly type: 'invalid-state';
-    readonly context: {
-        readonly message?: string | undefined;
-        readonly forceRelink: boolean;
-    };
+export interface UnrecoverableStateDialog extends SystemDialogBase {
+    readonly type: 'unrecoverable-state';
 }
 
 /**
@@ -73,7 +69,7 @@ export type SystemDialog =
     | AppUpdateDialog
     | ConnectionErrorDialog
     | ServerAlertDialog
-    | InvalidStateDialog;
+    | UnrecoverableStateDialog;
 
 export type DialogAction = 'confirmed' | 'cancelled';
 

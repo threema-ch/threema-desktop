@@ -61,6 +61,7 @@ import {
 } from '.';
 import {getTaskForIncomingCspMessage as getTaskForIncomingL5CspMessage} from './csp';
 import {getTaskForIncomingL5D2mMessage} from './d2m';
+import {DropDeviceTask} from './d2m/drop-device';
 
 // Transaction running token. Must not be exported!
 const TRANSACTION_RUNNING_TOKEN: unique symbol = Symbol('transaction-running-token');
@@ -772,6 +773,29 @@ export class ConnectedTaskManager {
                 }
             } catch (error_) {
                 const error = ensureError(error_);
+
+                if (error instanceof ProtocolError && error.recoverability === 'unrecoverable') {
+                    const {model, device} = services;
+
+                    this._log.error('Unrecoverable application state detected!');
+
+                    // Set unrecoverable state flag (persisted across restarts).
+                    model.globalProperties.createOrUpdate('applicationState', {
+                        unrecoverableStateDetected: true,
+                    });
+
+                    // Drop the device from the Mediator.
+                    this._log.warn(
+                        'Dropping this device from mediator due to invalid application state',
+                    );
+                    await this._run(
+                        new DropDeviceTask(device.d2m.deviceId),
+                        services,
+                        controller,
+                        abort,
+                    );
+                }
+
                 this._tasks.error(error);
                 this._decoder.backlog.error(error);
                 this._decoder.queue.error(error);

@@ -6,6 +6,7 @@ import {
     GroupUserState,
     ReceiverType,
 } from '~/common/enum';
+import {ProtocolError} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {groupDebugString} from '~/common/model/group';
 import {
@@ -79,7 +80,6 @@ export class ReflectedOutgoingGroupSetupTask
                     continue;
                 }
 
-                // Handle invalid state
                 // TODO(DESK-859): Better handling of group state errors
                 const errorMessage =
                     'Received reflected outgoing group setup for a group where not all contacts are known';
@@ -87,15 +87,13 @@ export class ReflectedOutgoingGroupSetupTask
                 this._log.debug(
                     `Group member ${identity} should have been available before the reflected outgoing group ${this._groupDebugString} setup message`,
                 );
-                const dialog = await this._services.systemDialog.open({
-                    type: 'invalid-state',
-                    context: {
-                        message: errorMessage,
-                        forceRelink: !import.meta.env.DEBUG,
-                    },
-                });
-                await dialog.closed;
-                return;
+
+                // Throw unrecoverable state error.
+                throw new ProtocolError(
+                    'd2d',
+                    `Application state is inconsistent: ${errorMessage}`,
+                    'unrecoverable',
+                );
             }
             memberUids.push(contact.ctx);
         }

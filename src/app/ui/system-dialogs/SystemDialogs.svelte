@@ -3,8 +3,8 @@
 
   import AppUpdate from '~/app/ui/system-dialogs/AppUpdate.svelte';
   import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
-  import InvalidState from '~/app/ui/system-dialogs/InvalidState.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
+  import UnrecoverableState from '~/app/ui/system-dialogs/UnrecoverableState.svelte';
   import {type Config} from '~/common/config';
   import {display, layout} from '~/common/dom/ui/state';
   import {systemDialogStore} from '~/common/dom/ui/system-dialog';
@@ -25,7 +25,7 @@
     'app-update': AppUpdate,
     'connection-error': ConnectionError,
     'server-alert': ServerAlert,
-    'invalid-state': InvalidState,
+    'unrecoverable-state': UnrecoverableState,
     /* eslint-enable @typescript-eslint/naming-convention */
   };
 

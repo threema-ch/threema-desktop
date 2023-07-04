@@ -156,16 +156,6 @@
     "prose--threema-id-description-p1": "[d] Jeder Threema-Benutzer erhält beim ersten Start der App eine zufällig generierte, 8-stellige Threema ID. Diese ID ist Ihre eindeutige Adresse in Threema und ermöglicht es Ihnen, Threema vollständig anonym zu nutzen, ohne persönliche Informationen preiszugeben.",
     "prose--threema-id-description-p2": "[d] Ihre Threema ID ist nur eine von zwei Komponenten, die Ihre Identität in Threema ausmachen. Die andere ist das sogenannte Schlüsselpaar (bestehend aus einem öffentlichen Schlüssel und einem privaten Schlüssel), das für die Verschlüsselung unerlässlich ist. Ihre Threema ID ist dauerhaft an Ihren öffentlichen Schlüssel gebunden. Während der öffentliche Schlüssel an die Threema-Server gesendet wird, um an Ihre Chat-Partner verteilt zu werden, bleibt der private Schlüssel auf Ihrem Gerät, wo er sicher gespeichert ist. Alle an Sie gerichteten Nachrichten werden auf dem Gerät des Absenders einzeln mit Ihrem öffentlichen Schlüssel verschlüsselt. Sie können nur mit Ihrem persönlichen privaten Schlüssel entschlüsselt werden."
   },
-  "dialog--invalid-state": {
-    "action--default-cancel": "[d] Fortfahren mit ungültigem Zustand (Debug)",
-    "action--default-confirm": "[d] Neu verbinden",
-    "action--force-relink-confirm": "[d] Lokales Profil entfernen und neu verbinden",
-    "label--title": "[d] Ungültiger Client-Zustand erkannt",
-    "prose--description-p1": "[d] Wir haben festgestellt, dass Ihre lokalen Daten nicht mit Ihrem Mobilgerät übereinstimmen. Um Datenverlust zu verhindern, können Sie derzeit keine neuen Nachrichten senden oder empfangen. Wir entschuldigen uns für die Unannehmlichkeiten.",
-    "prose--description-p2": "[d] Um Threema weiterhin zu nutzen, müssen Sie Ihr lokales Profil entfernen und neu verbinden.",
-    "prose--description-p3": "[d] Gemeldeter Fehler: {error}",
-    "prose--description-p4": "[d] Bitte melden Sie diesen Fehler an den Threema-Support von Threema auf Ihrem Mobilgerät (Einstellungen > Beta-Feedback)."
-  },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "[d] Need help?",
     "label--title": "[d] Confirm images on your mobile device"
@@ -229,6 +219,14 @@
     "label--password": "[d] Passwort",
     "label--title": "[d] Passwort eingeben",
     "markup--password-hint": "[d] Passwort vergessen? Bitte sehen Sie sich einige <1>FAQ</1> an."
+  },
+  "dialog--unrecoverable-state": {
+    "action--cancel": "[d] Fortfahren mit ungültigem Zustand",
+    "action--confirm": "[d] Zurücksetzen und neu verbinden",
+    "label--title": "[d] Ungültiger Zustand erkannt",
+    "prose--description-p1": "[d] Wir haben festgestellt, dass Ihre lokalen Daten in einem nicht zu behebenden Zustand sind. Um Datenverlust zu verhindern, können Sie derzeit keine neuen Nachrichten senden oder empfangen. Wir entschuldigen uns für die Unannehmlichkeiten.",
+    "prose--description-p2": "[d] Um Threema weiterhin zu nutzen, müssen Sie Ihr lokales Profil entfernen und neu verbinden.",
+    "prose--description-p3": "[d] Bitte melden Sie diesen Fehler an den Threema-Support von Threema auf Ihrem Mobilgerät (Einstellungen > Beta-Feedback). Logs sollten vor dem Neu-Verbinden gespeichert werden, da sie zurückgesetzt werden."
   },
   "dialog--unsupported-feature-protected-conversation": {
     "label--title": "[d] Privater Chat",
@@ -308,6 +306,7 @@
     "label--threema-id": "[d] Threema ID"
   },
   "system": {
-    "error--connection": "[d] Keine Verbindung zum Server. Versuchen Sie, sich erneut mit Wi-Fi zu verbinden oder überprüfen Sie Ihr Modem und Ihren Router."
+    "error--connection": "[d] Keine Verbindung zum Server. Versuchen Sie, sich erneut mit Wi-Fi zu verbinden oder überprüfen Sie Ihr Modem und Ihren Router.",
+    "error--connection-unrecoverable-state": "[d] Dieses Gerät wurde wegen einem Fehler deaktiviert. Bitte verlinken Sie das Gerät erneut."
   }
 }

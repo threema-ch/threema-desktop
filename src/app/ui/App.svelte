@@ -20,8 +20,11 @@
   import Snackbar from '~/app/ui/snackbar/Snackbar.svelte';
   import {DisplayModeObserver, manageLayout} from '~/common/dom/ui/layout';
   import {display, layout} from '~/common/dom/ui/state';
+  import {type IGlobalPropertyModel} from '~/common/model';
+  import {type LocalModelStore} from '~/common/model/utils/model-store';
   import {ConnectionState} from '~/common/network/protocol/state';
   import {unreachable} from '~/common/utils/assert';
+  import {type Remote} from '~/common/utils/endpoint';
 
   export let services: AppServices;
 
@@ -31,6 +34,10 @@
   // Unpack stores
   const {debugPanelState} = services.storage;
   const {connectionState} = services.backend;
+  const applicationState = services.backend.model.globalProperties.getOrCreate(
+    'applicationState',
+    {},
+  ) as Promise<Remote<LocalModelStore<IGlobalPropertyModel<'applicationState'>>>>;
 
   // Create display mode observer
   const displayModeObserver = new DisplayModeObserver(display);
@@ -134,7 +141,9 @@
     <!-- App -->
 
     {#if $connectionState !== ConnectionState.CONNECTED}
-      <NetworkAlert />
+      {#await applicationState then resolvedApplicationState}
+        <NetworkAlert applicationState={resolvedApplicationState} />
+      {/await}
     {/if}
 
     <div class="app" data-display={$display} data-layout={$layout[$display]}>

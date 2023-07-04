@@ -1066,7 +1066,7 @@ class ConnectionManager {
     }
 
     private async _run(): Promise<never> {
-        const {config, systemDialog} = this._services;
+        const {model, config, systemDialog} = this._services;
         const reconnectionDelayMs = config.MEDIATOR_RECONNECTION_DELAY_S * 1000;
         let skipConnectionDelay = false;
         for (;;) {
@@ -1134,13 +1134,30 @@ class ConnectionManager {
                         // Both cases happen for the same reason (another device dropped us from the multi-device group)
                         // but DEVICE_DROPPED happens while we are connected, and EXPECTED_DEVICE_SLOT_STATE_MISMATCH
                         // when the dropping happened while we were offline and we are trying to reconnect.
-                        void systemDialog.open({
-                            type: 'connection-error',
-                            context: {
-                                type: 'client-was-dropped',
-                                userCanReconnect: false,
-                            },
-                        });
+
+                        // Check if device was dropped because of unrecoverable state.
+                        if (
+                            model.globalProperties.get('applicationState')?.get().view.value
+                                .unrecoverableStateDetected === true
+                        ) {
+                            this._log.error(
+                                'Connection not established: Device is dropped due to unrecoverable application state',
+                            );
+
+                            void systemDialog.open({
+                                type: 'unrecoverable-state',
+                            });
+                        } else {
+                            this._log.error('Connection not established: Device is dropped');
+
+                            void systemDialog.open({
+                                type: 'connection-error',
+                                context: {
+                                    type: 'client-was-dropped',
+                                    userCanReconnect: false,
+                                },
+                            });
+                        }
 
                         this.disableAutoConnect(closeInfo.code);
                         break;
