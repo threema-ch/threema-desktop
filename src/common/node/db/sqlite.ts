@@ -1324,83 +1324,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                             'correlationId',
                         ]);
 
-                    // To keep the file data table clean and remove entries that aren't referenced
-                    // anymore, we first need to query the current UIDs.
-                    const previousFileDataUids = sync(
-                        this._db
-                            .selectFrom(tMessageFileData)
-                            .select({
-                                fileDataUid: tMessageFileData.fileDataUid,
-                                thumbnailFileDataUid: tMessageFileData.thumbnailFileDataUid,
-                            })
-                            .where(tMessageFileData.messageUid.equals(message.uid))
-                            .executeSelectNoneOrOne(),
-                    );
-
-                    // If necessary, insert new file data rows
-                    if (
-                        message.fileData !== undefined &&
-                        previousFileDataUids?.fileDataUid === undefined
-                    ) {
-                        update.fileDataUid = this._insertFileData(message.fileData);
-                    }
-                    if (
-                        message.thumbnailFileData !== undefined &&
-                        previousFileDataUids?.thumbnailFileDataUid === undefined
-                    ) {
-                        update.thumbnailFileDataUid = this._insertFileData(
-                            message.thumbnailFileData,
-                        );
-                    }
-
-                    // If necessary, remove existing file data rows
-                    const removedFileDataUids: DbFileDataUid[] = [];
-                    if (
-                        hasProperty(message, 'fileData') &&
-                        message.fileData === undefined &&
-                        previousFileDataUids?.fileDataUid !== undefined
-                    ) {
-                        // File data was removed
-                        removedFileDataUids.push(previousFileDataUids.fileDataUid);
-                        update.fileDataUid = undefined;
-                    }
-                    if (
-                        hasProperty(message, 'thumbnailFileData') &&
-                        message.thumbnailFileData === undefined &&
-                        previousFileDataUids?.thumbnailFileDataUid !== undefined
-                    ) {
-                        // Thumbnail file data was removed
-                        removedFileDataUids.push(previousFileDataUids.thumbnailFileDataUid);
-                        update.thumbnailFileDataUid = undefined;
-                    }
-
-                    // If necessary, update existing file data rows
-                    if (
-                        message.fileData !== undefined &&
-                        previousFileDataUids?.fileDataUid !== undefined
-                    ) {
-                        const updateInfo = this._updateFileData(
-                            message.fileData,
-                            previousFileDataUids.fileDataUid,
-                        );
-                        if (updateInfo !== undefined) {
-                            update.fileDataUid = updateInfo.newUid;
-                            removedFileDataUids.push(updateInfo.previousUid);
-                        }
-                    }
-                    if (
-                        message.thumbnailFileData !== undefined &&
-                        previousFileDataUids?.thumbnailFileDataUid !== undefined
-                    ) {
-                        const updateInfo = this._updateFileData(
-                            message.thumbnailFileData,
-                            previousFileDataUids.thumbnailFileDataUid,
-                        );
-                        if (updateInfo !== undefined) {
-                            update.thumbnailFileDataUid = updateInfo.newUid;
-                            removedFileDataUids.push(updateInfo.previousUid);
-                        }
-                    }
+                    // Add, update or remove associated file data entries
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
 
                     // Drop message file data
                     sync(
@@ -1424,6 +1349,83 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     return unreachable(message);
             }
         }, this._log);
+    }
+
+    private _processFileDataChanges(
+        message: DbUpdate<DbFileMessage>,
+        update: UpdateSets<typeof tMessageFileData, typeof tMessageFileData>,
+    ): DbFileDataUid[] {
+        // To keep the file data table clean and remove entries that aren't referenced
+        // anymore, we first need to query the current UIDs.
+        const previousFileDataUids = sync(
+            this._db
+                .selectFrom(tMessageFileData)
+                .select({
+                    fileDataUid: tMessageFileData.fileDataUid,
+                    thumbnailFileDataUid: tMessageFileData.thumbnailFileDataUid,
+                })
+                .where(tMessageFileData.messageUid.equals(message.uid))
+                .executeSelectNoneOrOne(),
+        );
+
+        // If necessary, insert new file data rows
+        if (message.fileData !== undefined && previousFileDataUids?.fileDataUid === undefined) {
+            update.fileDataUid = this._insertFileData(message.fileData);
+        }
+        if (
+            message.thumbnailFileData !== undefined &&
+            previousFileDataUids?.thumbnailFileDataUid === undefined
+        ) {
+            update.thumbnailFileDataUid = this._insertFileData(message.thumbnailFileData);
+        }
+
+        // If necessary, remove existing file data rows
+        const removedFileDataUids: DbFileDataUid[] = [];
+        if (
+            hasProperty(message, 'fileData') &&
+            message.fileData === undefined &&
+            previousFileDataUids?.fileDataUid !== undefined
+        ) {
+            // File data was removed
+            removedFileDataUids.push(previousFileDataUids.fileDataUid);
+            update.fileDataUid = undefined;
+        }
+        if (
+            hasProperty(message, 'thumbnailFileData') &&
+            message.thumbnailFileData === undefined &&
+            previousFileDataUids?.thumbnailFileDataUid !== undefined
+        ) {
+            // Thumbnail file data was removed
+            removedFileDataUids.push(previousFileDataUids.thumbnailFileDataUid);
+            update.thumbnailFileDataUid = undefined;
+        }
+
+        // If necessary, update existing file data rows
+        if (message.fileData !== undefined && previousFileDataUids?.fileDataUid !== undefined) {
+            const updateInfo = this._updateFileData(
+                message.fileData,
+                previousFileDataUids.fileDataUid,
+            );
+            if (updateInfo !== undefined) {
+                update.fileDataUid = updateInfo.newUid;
+                removedFileDataUids.push(updateInfo.previousUid);
+            }
+        }
+        if (
+            message.thumbnailFileData !== undefined &&
+            previousFileDataUids?.thumbnailFileDataUid !== undefined
+        ) {
+            const updateInfo = this._updateFileData(
+                message.thumbnailFileData,
+                previousFileDataUids.thumbnailFileDataUid,
+            );
+            if (updateInfo !== undefined) {
+                update.thumbnailFileDataUid = updateInfo.newUid;
+                removedFileDataUids.push(updateInfo.previousUid);
+            }
+        }
+
+        return removedFileDataUids;
     }
 
     /**
