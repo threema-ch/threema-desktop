@@ -9,3 +9,8 @@ syntax = "proto3";
 message LastMediatorConnection {
     optional uint64 date = 1;
 }
+
+// 
+message ApplicationState {
+    optional bool unrecoverableStateDetected = 1; // default: false
+}

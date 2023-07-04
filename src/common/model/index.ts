@@ -406,6 +406,7 @@ export type CallsSettings = LocalModel<CallsSettingsView, CallsSettingsControlle
  */
 export interface GlobalPropertyValues extends Record<GlobalPropertyKey, unknown> {
     readonly lastMediatorConnection: {readonly date?: Date | undefined};
+    readonly applicationState: {readonly unrecoverableStateDetected?: boolean | undefined};
 }
 
 export type IGlobalPropertyRepository = {

@@ -448,6 +448,8 @@ export enum MessageQueryDirection {
 export enum GlobalPropertyKey {
     /** Connection Metadata of the last successfull mediator connection */
     LAST_MEDIATOR_CONNECTION = 'lastMediatorConnection',
+    /** Application state information */
+    APPLICATION_STATE = 'applicationState',
 }
 
 /**

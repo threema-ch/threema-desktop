@@ -8,6 +8,7 @@ import {
     type IGlobalPropertyRepository,
     type ServicesForModel,
 } from '~/common/model';
+import {APPLICATION_STATE_CODEC} from '~/common/model/global-property/application-state';
 import {LAST_MEDIATOR_CONNECTION_CODEC} from '~/common/model/global-property/last-mediator-connection';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -93,6 +94,7 @@ export type GlobalPropertyCodecs = {
  */
 const GLOBAL_PROPERTY_CODECS: GlobalPropertyCodecs = {
     lastMediatorConnection: LAST_MEDIATOR_CONNECTION_CODEC,
+    applicationState: APPLICATION_STATE_CODEC,
 };
 
 export class GlobalPropertyController<K extends keyof GlobalPropertyValues>

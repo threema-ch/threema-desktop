@@ -1092,6 +1092,9 @@ export namespace GlobalPropertyKey {
     export const LAST_MEDIATOR_CONNECTION = 'lastMediatorConnection';
     /** Connection Metadata of the last successfull mediator connection */
     export type LAST_MEDIATOR_CONNECTION = typeof LAST_MEDIATOR_CONNECTION;
+    export const APPLICATION_STATE = 'applicationState';
+    /** Application state information */
+    export type APPLICATION_STATE = typeof APPLICATION_STATE;
 }
 /**
  * Global Property Keys of this client. Used as key for the globalProperties table.
@@ -1102,6 +1105,7 @@ export type GlobalPropertyKey = (typeof GlobalPropertyKey)[keyof typeof GlobalPr
 export namespace GlobalPropertyKeyUtils {
     export const ALL: ReadonlySet<GlobalPropertyKey> = new Set([
         GlobalPropertyKey.LAST_MEDIATOR_CONNECTION,
+        GlobalPropertyKey.APPLICATION_STATE,
     ] as const);
     export function fromString(value: string, fallback?: GlobalPropertyKey): GlobalPropertyKey {
         if ((ALL as ReadonlySet<string>).has(value)) {
@@ -1120,6 +1124,7 @@ export namespace GlobalPropertyKeyUtils {
     }
     export const NAME_OF = {
         [GlobalPropertyKey.LAST_MEDIATOR_CONNECTION]: 'LAST_MEDIATOR_CONNECTION',
+        [GlobalPropertyKey.APPLICATION_STATE]: 'APPLICATION_STATE',
     } as const;
     export function nameOf<T extends u53>(value: T): string | undefined {
         return (NAME_OF as Record<u53, string | undefined>)[value];
