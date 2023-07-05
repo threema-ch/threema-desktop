@@ -51,9 +51,13 @@ modules:
           - cd /app/main/
           - |
             while true; do
+              # The following options were temporarily disabled to work around a bug in Chromium or Electron:
+              #
+              # --ozone-platform-hint=auto \
+              # --enable-features="WaylandWindowDecorations" \
+              #
+              # See https://github.com/electron/electron/issues/37531
               zypak-wrapper.sh ./ThreemaDesktop \
-                --ozone-platform-hint=auto \
-                --enable-features="WaylandWindowDecorations" \
                 "$@"
               if [ "$?" != "8" ]; then
                 break
