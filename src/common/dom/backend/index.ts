@@ -1343,7 +1343,7 @@ class Connection {
                 deviceSlotExpirationPolicy: protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT,
                 platformDetails: d2mPlatformDetails,
                 // TODO(DESK-773): Make this user-configurable
-                label: 'Desktop',
+                label: `${import.meta.env.APP_NAME} for Desktop`,
             },
             // D2D
             {
