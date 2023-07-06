@@ -131,6 +131,26 @@ function determineAppName(env: ConfigEnv): string {
     return `${name} Tech Preview`;
 }
 
+function determineMobileAppName(env: ConfigEnv): string {
+    let name = 'Threema';
+    switch (`${env.variant}-${env.environment}`) {
+        case 'consumer-live':
+            break;
+        case 'consumer-sandbox':
+            name += ' Red';
+            break;
+        case 'work-live':
+            name += ' Work';
+            break;
+        case 'work-sandbox':
+            name += ' Work Red';
+            break;
+        default:
+            assertUnreachable(`Invalid flavor: ${env.variant}-${env.environment}`);
+    }
+    return name;
+}
+
 function makeConfig(
     pkg: PackageJson,
     env: ConfigEnv,
@@ -149,6 +169,7 @@ function makeConfig(
         BUILD_VARIANT: env.variant,
         BUILD_ENVIRONMENT: env.environment,
         APP_NAME: determineAppName(env),
+        MOBILE_APP_NAME: determineMobileAppName(env),
 
         // Defaults
         /**

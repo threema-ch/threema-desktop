@@ -48,7 +48,8 @@
         <SubstitutableText
           text={$i18n.t(
             'dialog--linking-scan.markup--intro',
-            'This beta works together with Threema for iOS. Please note that some features are not yet available. <1>Learn more</1>',
+            'This beta works together with {threema} for iOS. Please note that some features are not yet available. <1>Learn more</1>',
+            {threema: import.meta.env.MOBILE_APP_NAME},
           )}
         >
           <a
@@ -72,13 +73,10 @@
             <SubstitutableText
               text={$i18n.t(
                 'dialog--linking-scan.markup--step-1',
-                'Open Threema on your mobile device, navigate to <1>Settings</1>, <2>Linked Device</2> and tap <3>Add Device</3>',
+                'Open the {threema} app on your mobile device',
+                {threema: import.meta.env.MOBILE_APP_NAME},
               )}
-            >
-              <strong slot="1" class="bold" let:text>{text}</strong>
-              <strong slot="2" class="bold" let:text>{text}</strong>
-              <strong slot="3" class="bold" let:text>{text}</strong>
-            </SubstitutableText>
+            />
           </p>
         </li>
         <li>
@@ -89,8 +87,20 @@
             <SubstitutableText
               text={$i18n.t(
                 'dialog--linking-scan.markup--step-2',
-                'Scan this QR Code with your mobile app',
+                'In the app, go to <1>Settings</1> → <1>Desktop/Web</1> → <1>Linked Device</1> and tap <1>Add Device</1>',
               )}
+            >
+              <strong slot="1" class="bold" let:text>{text}</strong>
+            </SubstitutableText>
+          </p>
+        </li>
+        <li>
+          <h2 class="label">
+            {$i18n.t('dialog--linking-scan.label--step-3', 'Step 3:')}
+          </h2>
+          <p class="content">
+            <SubstitutableText
+              text={$i18n.t('dialog--linking-scan.markup--step-3', 'Scan this QR Code')}
             />
           </p>
         </li>
@@ -171,7 +181,7 @@
       'steps steps' min-content
       'offset linking' min-content /
       $steps-offset auto;
-    gap: rem(24px) $steps-column-gap;
+    gap: rem(8px) $steps-column-gap;
 
     ol.steps {
       grid-area: steps;

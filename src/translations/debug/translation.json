@@ -168,7 +168,7 @@
   },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "[d] Need help?",
-    "label--title": "[d] Confirm emojis on your mobile device"
+    "label--title": "[d] Confirm images on your mobile device"
   },
   "dialog--linking-error": {
     "action--confirm": "[d] Retry",
@@ -177,14 +177,16 @@
     "prose--description-generic-error": "[d] An error occurred during linking. Please try again."
   },
   "dialog--linking-scan": {
-    "action--need-help": "[d] Need help?",
-    "label--connecting": "[d] Connecting",
-    "label--step-1": "[d] Step 1:",
-    "label--step-2": "[d] Step 2:",
-    "label--title": "[d] Link Your iOS Device",
-    "markup--intro": "[d] This beta works together with Threema for iOS. Please note that some features are not yet available. <1>Learn more</1>",
-    "markup--step-1": "[d] Open Threema on your mobile device, navigate to <1>Settings</1>, <2>Linked Device</2> and tap <3>Add Device</3>",
-    "markup--step-2": "[d] Scan this QR Code with your mobile app"
+    "action--need-help": "Need help?",
+    "label--connecting": "Connecting",
+    "label--step-1": "Step 1:",
+    "label--step-2": "Step 2:",
+    "label--step-3": "Step 3:",
+    "label--title": "Link Your iOS Device",
+    "markup--intro": "This beta works together with {threema} for iOS. Please note that some features are not yet available. <1>Learn more</1>",
+    "markup--step-1": "Open the {threema} app on your mobile device",
+    "markup--step-2": "In the app, go to <1>Settings</1> → <1>Desktop/Web</1> → <1>Linked Device</1> and tap <1>Add Device</1>",
+    "markup--step-3": "Scan this QR Code"
   },
   "dialog--linking-set-password": {
     "action--confirm": "[d] Next",
