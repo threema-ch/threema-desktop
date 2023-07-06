@@ -10,7 +10,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 // Imports cannot be absolute in this file.
 import {KiB, MiB, type u53} from '../src/common/types';
-import {assertUnreachable, unreachable} from '../src/common/utils/assert';
+import {unreachable} from '../src/common/utils/assert';
 import {
     BUILD_ENTRIES,
     BUILD_ENVIRONMENTS,
@@ -113,7 +113,8 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
 
 function determineAppName(env: ConfigEnv): string {
     let name = 'Threema';
-    switch (`${env.variant}-${env.environment}`) {
+    const combination: `${BuildVariant}-${BuildEnvironment}` = `${env.variant}-${env.environment}`;
+    switch (combination) {
         case 'consumer-live':
             break;
         case 'consumer-sandbox':
@@ -126,14 +127,15 @@ function determineAppName(env: ConfigEnv): string {
             name += ' Red';
             break;
         default:
-            assertUnreachable(`Invalid flavor: ${env.variant}-${env.environment}`);
+            unreachable(combination);
     }
     return `${name} Tech Preview`;
 }
 
 function determineMobileAppName(env: ConfigEnv): string {
     let name = 'Threema';
-    switch (`${env.variant}-${env.environment}`) {
+    const combination: `${BuildVariant}-${BuildEnvironment}` = `${env.variant}-${env.environment}`;
+    switch (combination) {
         case 'consumer-live':
             break;
         case 'consumer-sandbox':
@@ -146,7 +148,7 @@ function determineMobileAppName(env: ConfigEnv): string {
             name += ' Work Red';
             break;
         default:
-            assertUnreachable(`Invalid flavor: ${env.variant}-${env.environment}`);
+            unreachable(combination);
     }
     return name;
 }
