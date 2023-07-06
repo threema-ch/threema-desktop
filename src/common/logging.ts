@@ -82,7 +82,7 @@ export const NOOP_LOGGER = new NoopLogger();
 /**
  * Forwards all log records to the default `Console` logger.
  */
-class ConsoleLogger implements Logger {
+export class ConsoleLogger implements Logger {
     public readonly prefix: undefined;
     public readonly debug = console.debug;
     public readonly trace = console.trace;

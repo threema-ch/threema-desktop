@@ -1,7 +1,9 @@
+import * as fs from 'node:fs';
+import {builtinModules} from 'node:module';
+import * as process from 'node:process';
+
 import * as v from '@badrap/valita';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
-import * as fs from 'fs';
-import {builtinModules} from 'module';
 import {type RollupOptions} from 'rollup';
 import {type ConfigEnv as ViteConfigEnv, type Plugin, type UserConfig} from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -80,6 +82,10 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}',
                 RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.threema.ch/{prefix8}',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
+
+                // We don't do any automatic crash reporting for our live (consumer) builds
+                SENTRY_DSN: undefined,
+                MINIDUMP_ENDPOINT: undefined,
             };
         case 'sandbox':
             return {
@@ -95,6 +101,10 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.test.threema.ch/{prefix8}',
                 RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.test.threema.ch/{prefix8}',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
+
+                // Only enabled for internal test builds on sandbox, if set through env variable
+                SENTRY_DSN: process.env.SENTRY_DSN,
+                MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
             };
         default:
             return unreachable(environment);

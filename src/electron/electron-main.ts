@@ -816,13 +816,25 @@ function main(
         });
     });
 
-    // Handle crash events
-    electron.crashReporter.start({
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        submitURL: 'https://threema.invalid/crash-report',
-        uploadToServer: false,
-        ignoreSystemCrashHandler: true,
-    });
+    // In internal test builds on sandbox, we enable crash reporting.
+    //
+    // No automatic crash reporting or telemetry of any kind is being done in production builds!
+    electron.crashReporter.start(
+        import.meta.env.MINIDUMP_ENDPOINT === undefined
+            ? {
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
+                  submitURL: 'https://threema.invalid/crash-report',
+                  uploadToServer: false,
+                  ignoreSystemCrashHandler: true,
+              }
+            : {
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
+                  submitURL: import.meta.env.MINIDUMP_ENDPOINT,
+                  companyName: 'Threema',
+                  productName: import.meta.env.APP_NAME,
+                  ignoreSystemCrashHandler: true,
+              },
+    );
 
     // Handle renderer crashes
     electron.app.on('render-process-gone', (_, contents, details) => {

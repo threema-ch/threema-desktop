@@ -211,6 +211,10 @@ interface ImportMetaEnv extends BuildConfig {
     // Public-key pins (HPKP)
     readonly TLS_CERTIFICATE_PINS: import('./types').DomainCertificatePin[];
 
+    // Crash reporting (only used for internal test builds on sandbox)
+    readonly SENTRY_DSN: string | undefined;
+    readonly MINIDUMP_ENDPOINT: string | undefined;
+
     // Verbose debug logging
     readonly VERBOSE_LOGGING: {
         readonly DB: boolean;

@@ -17,16 +17,18 @@ import {CONFIG} from '~/common/config';
 import {type LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
+import {DOM_CONSOLE_LOGGER} from '~/common/dom/logging';
 import {LocalStorageController} from '~/common/dom/ui/local-storage';
 import {FrontendNotificationCreator} from '~/common/dom/ui/notification';
 import {appVisibility, getAppVisibility} from '~/common/dom/ui/state';
 import {FrontendSystemDialogService} from '~/common/dom/ui/system-dialog';
 import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {checkForUpdate} from '~/common/dom/update-check';
+import {initCrashReportingInSandboxBuilds} from '~/common/dom/utils/crash-reporting';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
 import {type ElectronIpc, type SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
-import {CONSOLE_LOGGER, RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
+import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import {type u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -150,12 +152,13 @@ export async function main(appState: AppState): Promise<App> {
     const identityReady = new ResolvablePromise<void>();
 
     // Set up logging
-    let logging = TagLogger.styled(CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
+    let logging = TagLogger.styled(DOM_CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
     if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
         const fileLogger = new RemoteFileLogger(window.app.logToFile);
         logging = TeeLogger.factory([logging, TagLogger.unstyled(fileLogger, 'app')]);
     }
     const log = logging.logger('main');
+    initCrashReportingInSandboxBuilds(log);
 
     // Get system info
     const systemInfo = await window.app.getSystemInfo();
