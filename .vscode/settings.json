@@ -14,5 +14,6 @@
   },
   "eslint.validate": ["svelte"],
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
   "rewrap.wrappingColumn": 100
 }
