@@ -1,4 +1,4 @@
-import {type GuardedStoreHandle} from '~/common/model';
+import {type GuardedStoreHandle} from '~/common/model/types/common';
 import {type UpdatedView, type ViewUpdateFn} from '~/common/model/utils/model-store';
 import {Delayed} from '~/common/utils/delayed';
 

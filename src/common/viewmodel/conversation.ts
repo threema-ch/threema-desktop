@@ -2,7 +2,8 @@ import {NACL_CONSTANTS} from '~/common/crypto';
 import {randomString} from '~/common/crypto/random';
 import {MessageDirection} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type AnyReceiverStore, type Conversation} from '~/common/model';
+import {type Conversation} from '~/common/model';
+import {type AnyReceiverStore} from '~/common/model/types/receiver';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {
     type OutboundFileMessageInitFragment,

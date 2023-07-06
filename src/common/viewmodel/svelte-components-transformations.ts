@@ -15,14 +15,14 @@ import {
 import {
     type AnyReceiver,
     type Contact,
-    type ContactRepository,
     type ContactView,
     type Group,
     type GroupView,
-    type PrivacySettings,
     type ProfilePicture,
     type Repositories,
 } from '~/common/model';
+import {type ContactRepository} from '~/common/model/types/contact';
+import {type PrivacySettings} from '~/common/model/types/settings';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';

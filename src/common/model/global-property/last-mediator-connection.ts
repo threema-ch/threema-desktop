@@ -2,8 +2,8 @@ import * as v from '@badrap/valita';
 import Long from 'long';
 
 import {type GlobalPropertyKey} from '~/common/enum';
-import {type GlobalPropertyValues} from '~/common/model';
 import * as proto from '~/common/model/global-property/global-property';
+import {type GlobalPropertyValues} from '~/common/model/types/settings';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {
     dateToUnixTimestampMs,

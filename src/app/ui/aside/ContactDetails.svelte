@@ -21,11 +21,8 @@
   import {toast} from '~/app/ui/snackbar';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {ReceiverType} from '~/common/enum';
-  import {
-    type ContactController,
-    type ProfilePicture,
-    type RemoteModelController,
-  } from '~/common/model';
+  import {type ContactController, type ProfilePicture} from '~/common/model';
+  import {type RemoteModelController} from '~/common/model/types/common';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';

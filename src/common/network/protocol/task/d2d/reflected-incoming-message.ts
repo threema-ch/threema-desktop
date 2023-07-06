@@ -8,7 +8,8 @@ import {
     ReceiverType,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type Contact, type MessageFor} from '~/common/model';
+import {type Contact} from '~/common/model';
+import {type MessageFor} from '~/common/model/types/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {

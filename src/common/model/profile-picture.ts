@@ -8,16 +8,13 @@ import {
 } from '~/common/db';
 import {ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
+import {type ServicesForModel} from '~/common/model/types/common';
 import {
-    type ContactProfilePictureFields,
-    type GroupProfilePictureFields,
-    type IProfilePictureRepository,
     type ProfilePicture,
     type ProfilePictureController,
     type ProfilePictureSource,
     type ProfilePictureView,
-    type ServicesForModel,
-} from '~/common/model';
+} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -29,7 +26,7 @@ import {type ConversationId, type GroupId, type IdentityString} from '~/common/n
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {hasProperty} from '~/common/utils/object';
@@ -519,7 +516,7 @@ export class ProfilePictureModelStore extends LocalModelStore<ProfilePicture> {
 }
 
 /** @inheritdoc */
-export class ProfilePictureModelRepository implements IProfilePictureRepository {
+export class ProfilePictureModelRepository implements ProfilePictureRepository {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
     public constructor(
@@ -582,3 +579,33 @@ export class ProfilePictureModelRepository implements IProfilePictureRepository 
         });
     }
 }
+
+export type ContactProfilePictureFields = Pick<
+    DbContact,
+    | 'colorIndex'
+    | 'profilePictureContactDefined'
+    | 'profilePictureGatewayDefined'
+    | 'profilePictureUserDefined'
+>;
+
+export type GroupProfilePictureFields = Pick<DbGroup, 'colorIndex' | 'profilePictureAdminDefined'>;
+
+export type ProfilePictureRepository = {
+    /**
+     * Return the profile picture model store for the specified contact.
+     */
+    readonly getForContact: (
+        uid: DbContactUid,
+        identity: IdentityString,
+        profilePictureData: ContactProfilePictureFields,
+    ) => LocalModelStore<ProfilePicture>;
+    /**
+     * Return the profile picture model store for the specified group.
+     */
+    readonly getForGroup: (
+        uid: DbGroupUid,
+        creatorIdentity: IdentityString,
+        groupId: GroupId,
+        profilePictureData: GroupProfilePictureFields,
+    ) => LocalModelStore<ProfilePicture>;
+} & ProxyMarked;

@@ -1,7 +1,7 @@
 import {ensureNonce} from '~/common/crypto';
 import {extractErrorMessage} from '~/common/error';
 import {type Logger} from '~/common/logging';
-import {type ProfileSettingsView} from '~/common/model';
+import {type ProfileSettingsView} from '~/common/model/types/settings';
 import * as protobuf from '~/common/network/protobuf';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';

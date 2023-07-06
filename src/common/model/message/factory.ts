@@ -2,12 +2,12 @@ import {type DbMessageCommon, type DbMessageFor} from '~/common/db';
 import {type MessageDirection, type MessageType} from '~/common/enum';
 import {
     type AnyMessageModelStore,
-    type BaseMessageView,
     type Contact,
-    type ConversationControllerHandle,
     type DirectedMessageFor,
     type ServicesForModel,
 } from '~/common/model';
+import {type ConversationControllerHandle} from '~/common/model/types/conversation';
+import {type BaseMessageView} from '~/common/model/types/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
 

@@ -3,14 +3,13 @@
  */
 
 import {ReceiverType} from '~/common/enum';
+import {type Conversation, type Repositories} from '~/common/model';
 import {
-    type Conversation,
     type InboundFileMessage,
     type InboundTextMessage,
     type OutboundFileMessage,
     type OutboundTextMessage,
-    type Repositories,
-} from '~/common/model';
+} from '~/common/model/types/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type ConversationId} from '~/common/network/types';
 import {type Mutable} from '~/common/types';

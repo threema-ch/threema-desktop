@@ -6,6 +6,7 @@ import {
     type DbFileMessage,
     type DbMessageCommon,
     type DbMessageUid,
+    type UidOf,
 } from '~/common/db';
 import {
     BlobDownloadState,
@@ -16,11 +17,12 @@ import {
 } from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
+import {type ServicesForModel} from '~/common/model/types/common';
+import {type Contact} from '~/common/model/types/contact';
+import {type ConversationControllerHandle} from '~/common/model/types/conversation';
 import {
     type AnyFileMessageModelStore,
     type BaseMessageView,
-    type Contact,
-    type ConversationControllerHandle,
     type DirectedMessageFor,
     type FileData,
     type FileMessageDataState,
@@ -31,9 +33,7 @@ import {
     type OutboundFileMessage,
     type OutboundFileMessageController,
     type OutboundFileMessageView,
-    type ServicesForModel,
-    type UidOf,
-} from '~/common/model';
+} from '~/common/model/types/message';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {

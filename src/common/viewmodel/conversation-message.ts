@@ -1,15 +1,13 @@
 import {MessageDirection, type MessageReaction, MessageType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
+import {type Conversation, type Repositories, type User} from '~/common/model';
+import {type ConversationModelStore} from '~/common/model/conversation';
+import {statusFromView} from '~/common/model/message';
 import {
     type AnyMessageModel,
     type AnyMessageModelStore,
-    type Conversation,
     type FileMessageViewFragment,
-    type Repositories,
-    type User,
-} from '~/common/model';
-import {type ConversationModelStore} from '~/common/model/conversation';
-import {statusFromView} from '~/common/model/message';
+} from '~/common/model/types/message';
 import {type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';

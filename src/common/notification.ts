@@ -1,10 +1,8 @@
 import {ConversationCategory, ReceiverType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {
-    type AnyInboundMessageModelStore,
-    type AnyReceiverStore,
-    type ConversationView,
-} from '~/common/model';
+import {type ConversationView} from '~/common/model';
+import {type AnyInboundMessageModelStore} from '~/common/model/types/message';
+import {type AnyReceiverStore} from '~/common/model/types/receiver';
 import {type GroupId, type IdentityString} from '~/common/network/types';
 import {type u53, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';

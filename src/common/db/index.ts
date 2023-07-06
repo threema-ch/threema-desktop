@@ -81,6 +81,18 @@ export interface DbTable {
 }
 
 /**
+ * UID pick of a table.
+ */
+export interface PickUid<T extends DbTable, O = undefined> {
+    readonly uid: T['uid'] | O;
+}
+
+/**
+ * Extract the UID type from a table.
+ */
+export type UidOf<T extends DbTable> = T['uid'];
+
+/**
  * Data required to create an entry.
  */
 export type DbCreate<T extends DbTable> = Omit<T, 'uid'>;

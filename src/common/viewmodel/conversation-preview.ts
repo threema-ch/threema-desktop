@@ -1,15 +1,15 @@
 import {type DbReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {
-    type AnyReceiverStore,
     type Contact,
     type Conversation,
     type ConversationView,
     type Group,
-    type PrivacySettings,
     type ProfilePicture,
 } from '~/common/model';
 import {getDisplayName} from '~/common/model/contact';
+import {type AnyReceiverStore} from '~/common/model/types/receiver';
+import {type PrivacySettings} from '~/common/model/types/settings';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
 import {type PropertiesMarked} from '~/common/utils/endpoint';

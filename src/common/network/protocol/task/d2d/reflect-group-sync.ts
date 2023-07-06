@@ -1,7 +1,8 @@
 import {type TransactionScope} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type ConversationUpdateFromToSync, type GroupUpdateFromToSync} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
+import {type ConversationUpdateFromToSync} from '~/common/model/types/conversation';
+import {type GroupUpdateFromToSync} from '~/common/model/types/group';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type ActiveTaskCodecHandle,

@@ -50,22 +50,12 @@ import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
 import {
-    type AnyMessageModelStore,
-    type CallsSettings,
     type Contact,
     type ContactInit,
-    type ContactRepository,
-    type ConversationRepository,
     type Group,
-    type GroupRepository,
-    type IGlobalPropertyRepository,
-    type IProfilePictureRepository,
-    type PrivacySettings,
     type ProfilePictureView,
-    type ProfileSettings,
     type Repositories,
     type ServicesForModel,
-    type User,
 } from '~/common/model';
 import {ContactModelRepository} from '~/common/model/contact';
 import {
@@ -74,10 +64,24 @@ import {
 } from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
-import {ProfilePictureModelRepository} from '~/common/model/profile-picture';
+import {
+    ProfilePictureModelRepository,
+    type ProfilePictureRepository,
+} from '~/common/model/profile-picture';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
+import {type ContactRepository} from '~/common/model/types/contact';
+import {type ConversationRepository} from '~/common/model/types/conversation';
+import {type GroupRepository} from '~/common/model/types/group';
+import {type AnyMessageModelStore} from '~/common/model/types/message';
+import {
+    type CallsSettings,
+    type IGlobalPropertyRepository,
+    type PrivacySettings,
+    type ProfileSettings,
+} from '~/common/model/types/settings';
+import {type User} from '~/common/model/types/user';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -428,7 +432,7 @@ export class TestModelRepositories implements Repositories {
     public contacts: ContactRepository;
     public groups: GroupRepository;
     public conversations: ConversationRepository;
-    public profilePictures: IProfilePictureRepository;
+    public profilePictures: ProfilePictureRepository;
     public globalProperties: IGlobalPropertyRepository;
     public db: DatabaseBackend;
 

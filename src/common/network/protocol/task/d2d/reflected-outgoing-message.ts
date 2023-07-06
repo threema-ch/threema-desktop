@@ -9,7 +9,7 @@ import {
     ReceiverTypeUtils,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type MessageFor} from '~/common/model';
+import {type MessageFor} from '~/common/model/types/message';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type ComposableTask,

@@ -1,10 +1,7 @@
 import {type TransactionScope, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {
-    type ContactInit,
-    type ContactUpdate,
-    type ConversationUpdateFromToSync,
-} from '~/common/model';
+import {type ContactInit, type ContactUpdate} from '~/common/model';
+import {type ConversationUpdateFromToSync} from '~/common/model/types/conversation';
 import * as protobuf from '~/common/network/protobuf';
 import {type BlobId, encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';

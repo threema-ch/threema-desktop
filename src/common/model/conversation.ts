@@ -1,4 +1,9 @@
-import {type DatabaseBackend, type DbConversationUid, type DbReceiverLookup} from '~/common/db';
+import {
+    type DatabaseBackend,
+    type DbConversationUid,
+    type DbReceiverLookup,
+    type UidOf,
+} from '~/common/db';
 import {
     AcquaintanceLevel,
     ConversationVisibility,
@@ -11,6 +16,24 @@ import {
     TriggerSource,
 } from '~/common/enum';
 import {getGroupTag, type Logger} from '~/common/logging';
+import {type ServicesForModel} from '~/common/model/types/common';
+import {
+    type Conversation,
+    type ConversationController,
+    type ConversationControllerHandle,
+    type ConversationRepository,
+    type ConversationUpdate,
+    type ConversationUpdateFromToSync,
+    type ConversationView,
+} from '~/common/model/types/conversation';
+import {
+    type AnyInboundMessageModelStore,
+    type AnyMessageModelStore,
+    type AnyOutboundMessageModelStore,
+    type DirectedMessageFor,
+    type SetOfAnyLocalMessageModelStore,
+} from '~/common/model/types/message';
+import {type AnyReceiver, type AnyReceiverStore} from '~/common/model/types/receiver';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -34,24 +57,6 @@ import {type LocalStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 
-import {
-    type AnyInboundMessageModelStore,
-    type AnyMessageModelStore,
-    type AnyOutboundMessageModelStore,
-    type AnyReceiver,
-    type AnyReceiverStore,
-    type Conversation,
-    type ConversationController,
-    type ConversationControllerHandle,
-    type ConversationRepository,
-    type ConversationUpdate,
-    type ConversationUpdateFromToSync,
-    type ConversationView,
-    type DirectedMessageFor,
-    type ServicesForModel,
-    type SetOfAnyLocalMessageModelStore,
-    type UidOf,
-} from '.';
 import * as contact from './contact';
 import * as group from './group';
 import * as message from './message';

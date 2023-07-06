@@ -9,6 +9,19 @@ import {Existence, ReceiverType, TriggerSource} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
+import {type ContactProfilePictureFields} from '~/common/model/profile-picture';
+import {type ServicesForModel} from '~/common/model/types/common';
+import {
+    type Contact,
+    type ContactController,
+    type ContactInit,
+    type ContactRepository,
+    type ContactUpdate,
+    type ContactView,
+    type ContactViewDerivedProperties,
+} from '~/common/model/types/contact';
+import {type Conversation} from '~/common/model/types/conversation';
+import {type ProfilePicture} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -30,20 +43,6 @@ import {
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
-
-import {
-    type Contact,
-    type ContactController,
-    type ContactInit,
-    type ContactProfilePictureFields,
-    type ContactRepository,
-    type ContactUpdate,
-    type ContactView,
-    type ContactViewDerivedProperties,
-    type Conversation,
-    type ProfilePicture,
-    type ServicesForModel,
-} from '.';
 
 let cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
 

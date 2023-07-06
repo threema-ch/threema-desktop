@@ -4,7 +4,7 @@
 import {type EncryptedData, type Nonce, type PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
-import {type DbContact} from '~/common/db';
+import {type DbContact, type UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -35,7 +35,6 @@ import {
     type DirectedMessageFor,
     type Group,
     type MessageFor,
-    type UidOf,
 } from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';

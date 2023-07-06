@@ -1,10 +1,10 @@
-import {type DbCreate, type DbMessageCommon, type DbTextMessage} from '~/common/db';
+import {type DbCreate, type DbMessageCommon, type DbTextMessage, type UidOf} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
+import {type Contact, type ServicesForModel} from '~/common/model';
+import {type ConversationControllerHandle} from '~/common/model/types/conversation';
 import {
     type AnyTextMessageModelStore,
     type BaseMessageView,
-    type Contact,
-    type ConversationControllerHandle,
     type DirectedMessageFor,
     type IInboundTextMessageModelStore,
     type InboundTextMessage,
@@ -14,10 +14,8 @@ import {
     type OutboundTextMessage,
     type OutboundTextMessageController,
     type OutboundTextMessageModel,
-    type ServicesForModel,
     type TextMessageViewFragment,
-    type UidOf,
-} from '~/common/model';
+} from '~/common/model/types/message';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 

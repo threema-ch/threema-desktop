@@ -3,6 +3,7 @@ import {
     type DbConversation,
     type DbMessageCommon,
     type DbMessageFor,
+    type UidOf,
 } from '~/common/db';
 import {
     CspE2eDeliveryReceiptStatus,
@@ -16,21 +17,22 @@ import {deleteFilesInBackground} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {
     type AnyMessageModelStore,
+    type Contact,
+    type DirectedMessageFor,
+    type ServicesForModel,
+} from '~/common/model';
+import * as contact from '~/common/model/contact';
+import {type GuardedStoreHandle} from '~/common/model/types/common';
+import {type ConversationControllerHandle} from '~/common/model/types/conversation';
+import {
     type BaseMessageView,
     type CommonBaseMessageView,
-    type Contact,
-    type ConversationControllerHandle,
-    type DirectedMessageFor,
-    type GuardedStoreHandle,
     type InboundBaseMessageController,
     type InboundBaseMessageView,
     type OutboundBaseMessageController,
     type OutboundBaseMessageView,
-    type ServicesForModel,
     type SetOfAnyLocalMessageModelStore,
-    type UidOf,
-} from '~/common/model';
-import * as contact from '~/common/model/contact';
+} from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore} from '~/common/model/utils/model-store';

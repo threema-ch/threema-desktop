@@ -8,27 +8,29 @@ import {
 } from '~/common/db';
 import {Existence, GroupUserState, ReceiverType, TriggerSource} from '~/common/enum';
 import {getGroupTag, type Logger} from '~/common/logging';
+import * as contact from '~/common/model/contact';
+import {type ConversationModelStore} from '~/common/model/conversation';
+import * as conversation from '~/common/model/conversation';
+import {type GroupProfilePictureFields} from '~/common/model/profile-picture';
+import {type ServicesForModel} from '~/common/model/types/common';
+import {type Contact} from '~/common/model/types/contact';
 import {
-    type Contact,
     type Conversation,
     type ConversationUpdateFromToSync,
+} from '~/common/model/types/conversation';
+import {
     type Group,
     type GroupController,
     type GroupControllerHandle,
     type GroupInit,
     type GroupMemberController,
-    type GroupProfilePictureFields,
     type GroupRepository,
     type GroupUpdate,
     type GroupUpdateFromLocal,
     type GroupUpdateFromToSync,
     type GroupView,
-    type ProfilePicture,
-    type ServicesForModel,
-} from '~/common/model';
-import * as contact from '~/common/model/contact';
-import {type ConversationModelStore} from '~/common/model/conversation';
-import * as conversation from '~/common/model/conversation';
+} from '~/common/model/types/group';
+import {type ProfilePicture} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';

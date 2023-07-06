@@ -1,15 +1,15 @@
 import {ReceiverType} from '~/common/enum';
-import {
-    type CallsSettings,
-    type PrivacySettings,
-    type ProfilePictureView,
-    type ProfileSettings,
-    type ServicesForModel,
-    type User,
-} from '~/common/model/';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
+import {type ServicesForModel} from '~/common/model/types/common';
+import {type ProfilePictureView} from '~/common/model/types/profile-picture';
+import {
+    type CallsSettings,
+    type PrivacySettings,
+    type ProfileSettings,
+} from '~/common/model/types/settings';
+import {type User} from '~/common/model/types/user';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {ensureNickname, type IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
