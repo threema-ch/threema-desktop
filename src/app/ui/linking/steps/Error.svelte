@@ -10,12 +10,15 @@
 <template>
   <Step>
     <div class="body">
-      <h1 class="title">{$i18n.t('dialog--linking-error.label--title', 'Linking Error')}</h1>
+      <h1 class="title">
+        {$i18n.t('dialog--linking-error.label--title', 'Linking Unsuccessful')}
+      </h1>
+
       <p class="description">
         {#if linkingWizardState.errorType === 'connection-error'}
           {$i18n.t(
             'dialog--linking-error.prose--description-connection-error',
-            'A connection error occurred during linking. Please check your internet connection and try again.',
+            'The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.',
           )}
         {:else}
           {$i18n.t(

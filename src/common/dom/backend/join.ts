@@ -101,10 +101,20 @@ export class DeviceJoinProtocol {
         this._log.info('Starting device join protocol, waiting for ULP messages');
         for (;;) {
             // Read next message from stream
-            const readResult = await this._reader.read();
+            let readResult;
+            try {
+                readResult = await this._reader.read();
+            } catch (error) {
+                throw new DeviceJoinError(
+                    'connection',
+                    'Rendezvous connection stream ended before device join was complete',
+                    {from: error},
+                );
+            }
             if (readResult.done) {
                 this._log.info('ULP stream done');
-                throw new Error(
+                throw new DeviceJoinError(
+                    'connection',
                     'Rendezvous connection stream ended before device join was complete',
                 );
             }

@@ -272,12 +272,18 @@ export class SafeError extends BaseError {
 /**
  * Error types that can happen in connection with the Device Join Protocol.
  *
+ * - connection: The connection was closed or aborted.
  * - encoding: Bytes could not be decompressed or decoded.
  * - validation: Protobuf message does not pass validation.
  * - protocol: Aborted due to device join protocol violation.
  * - internal: An internal implementation error occurred.
  */
-export type DeviceJoinErrorType = 'encoding' | 'validation' | 'protocol' | 'internal';
+export type DeviceJoinErrorType =
+    | 'connection'
+    | 'encoding'
+    | 'validation'
+    | 'protocol'
+    | 'internal';
 
 const DEVICE_JOIN_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     DeviceJoinError,

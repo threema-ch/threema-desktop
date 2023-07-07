@@ -34,7 +34,12 @@ import {
     D2mLeaderStateUtils,
     TransferTag,
 } from '~/common/enum';
-import {BaseError, type BaseErrorOptions, extractErrorTraceback} from '~/common/error';
+import {
+    BaseError,
+    type BaseErrorOptions,
+    extractErrorTraceback,
+    DeviceJoinError,
+} from '~/common/error';
 import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
     type KeyStorage,
@@ -747,11 +752,19 @@ export class Backend implements ProxyMarked {
         try {
             joinResult = await joinProtocol.join();
         } catch (error) {
-            return await throwLinkingError(
-                `Device join protocol failed: ${error}`,
-                'join-error',
-                ensureError(error),
-            );
+            if (error instanceof DeviceJoinError && error.type === 'connection') {
+                return await throwLinkingError(
+                    `Device join protocol failed: ${error.message}`,
+                    'connection-error',
+                    error,
+                );
+            } else {
+                return await throwLinkingError(
+                    `Device join protocol failed: ${error}`,
+                    'join-error',
+                    ensureError(error),
+                );
+            }
         }
 
         // Wrap the client key (but keep a copy for the key storage)
