@@ -37,8 +37,8 @@ import {
 import {
     BaseError,
     type BaseErrorOptions,
-    extractErrorTraceback,
     DeviceJoinError,
+    extractErrorTraceback,
 } from '~/common/error';
 import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
@@ -101,6 +101,7 @@ import {
     type TransferredFromRemote,
     type TransferredToRemote,
 } from '~/common/utils/endpoint';
+import {taggedRace} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser} from '~/common/utils/signal';
 import {
@@ -823,9 +824,21 @@ export class Backend implements ProxyMarked {
             );
         }
 
-        // Wait for user password
+        // Wait for user password (or connection aborting)
         log.debug('Waiting for user password');
-        const userPassword = await userPasswordPromise;
+        const userPasswordResult = await taggedRace(
+            {tag: 'password', promise: userPasswordPromise} as const,
+            {tag: 'join-aborted', promise: joinProtocol.abort.abortedPromise()} as const,
+        );
+        if (userPasswordResult.tag === 'join-aborted') {
+            // The "aborted" signal was raised before the user password was entered. This means that
+            // the rendezvous connection was aborted in the meantime.
+            return await throwLinkingError(
+                `Device join protocol was aborted while waiting for user password`,
+                'connection-error',
+            );
+        }
+        const userPassword = userPasswordResult.value;
         if (userPassword.length === 0) {
             return await throwLinkingError(`Received empty user password`, 'generic-error');
         }

@@ -30,6 +30,7 @@ import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {idColorIndex} from '~/common/utils/id-color';
+import {type AbortRaiser} from '~/common/utils/signal';
 import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 type JoinState = 'wait-for-begin' | 'sync-blob-data' | 'sync-essential-data';
@@ -67,6 +68,8 @@ export interface DeviceJoinResult {
  *    the message
  */
 export class DeviceJoinProtocol {
+    public abort: AbortRaiser;
+
     private _state: JoinState = 'wait-for-begin';
 
     private readonly _reader: ReadableStreamDefaultReader<Uint8Array>;
@@ -90,6 +93,7 @@ export class DeviceJoinProtocol {
     ) {
         this._reader = this._rendezvousConnection.readable.getReader();
         this._writer = this._rendezvousConnection.writable.getWriter();
+        this.abort = this._rendezvousConnection.abort;
     }
 
     /**

@@ -1,7 +1,7 @@
 import {type Logger} from '~/common/logging';
 
 import {EventController, type EventUnsubscriber} from './event';
-import {QueryablePromise, ResolvablePromise} from './resolvable-promise';
+import {type QueryablePromise, ResolvablePromise} from './resolvable-promise';
 
 /**
  * This must be compatible with DOM's {@link AbortController}.
