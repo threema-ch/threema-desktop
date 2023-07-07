@@ -258,6 +258,8 @@ export type LinkingStateErrorType =
     | 'registration-error'
     | 'generic-error';
 
+export type SyncingPhase = 'receiving' | 'restoring' | 'encrypting';
+
 /**
  * The backend's linking state.
  */
@@ -277,7 +279,7 @@ export type LinkingState =
     /**
      * The "Begin" join message was received, blobs and essential data are being processed.
      */
-    | {state: 'syncing'}
+    | {state: 'syncing'; phase: SyncingPhase}
     /**
      * Essential data is fully processed, we are waiting for the user's password in order to write
      * the key storage.
@@ -727,9 +729,18 @@ export class Backend implements ProxyMarked {
             rph: connectResult.rph,
         });
 
+        // Set up promises and state handling used in the next steps
+        const userPasswordPromise = new ResolvablePromise<string>();
+        const syncingPhase = new WritableStore<SyncingPhase>('receiving');
+        async function updateSyncingPhase(phase: SyncingPhase): Promise<void> {
+            syncingPhase.set(phase);
+            if (userPasswordPromise.done) {
+                await linkingState.updateState({state: 'syncing', phase});
+            }
+        }
+
         // Now that we established the connection and showed the RPH, we can wait for ED to
         // start sending essential data and then run the join protocol.
-        const userPasswordPromise = new ResolvablePromise<string>();
         // eslint-disable-next-line func-style
         const onBegin = async (): Promise<void> => {
             // Update state and wait for password
@@ -738,7 +749,7 @@ export class Backend implements ProxyMarked {
             // Once the password is entered, show "syncing" screen
             wrappedDeviceLinkingSetup.userPassword
                 .then(async (password) => {
-                    await linkingState.updateState({state: 'syncing'});
+                    await linkingState.updateState({state: 'syncing', phase: syncingPhase.get()});
                     userPasswordPromise.resolve(password);
                 })
                 .catch((error) => log.error(`Waiting for userPassword promise failed: ${error}`));
@@ -767,6 +778,7 @@ export class Backend implements ProxyMarked {
                 );
             }
         }
+        await updateSyncingPhase('restoring');
 
         // Wrap the client key (but keep a copy for the key storage)
         const rawCkForKeyStorage = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
@@ -826,6 +838,7 @@ export class Backend implements ProxyMarked {
 
         // Wait for user password (or connection aborting)
         log.debug('Waiting for user password');
+        await updateSyncingPhase('encrypting');
         const userPasswordResult = await taggedRace(
             {tag: 'password', promise: userPasswordPromise} as const,
             {tag: 'join-aborted', promise: joinProtocol.abort.abortedPromise()} as const,

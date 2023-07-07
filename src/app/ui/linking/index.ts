@@ -1,4 +1,8 @@
-import {type LinkingState, type LinkingStateErrorType} from '~/common/dom/backend';
+import {
+    type LinkingState,
+    type LinkingStateErrorType,
+    type SyncingPhase,
+} from '~/common/dom/backend';
 import {type ReadonlyUint8Array} from '~/common/types';
 import {type ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type ReadableStore} from '~/common/utils/store';
@@ -35,6 +39,11 @@ export interface LinkingWizardStateSetPassword {
     readonly userPassword: ResolvablePromise<string>;
 }
 
+export interface LinkingWizardStateSyncing {
+    readonly currentStep: 'syncing';
+    readonly phase: SyncingPhase;
+}
+
 export interface LinkingWizardStateSuccess {
     readonly currentStep: 'success-linked';
     readonly identityReady: ResolvablePromise<void>;
@@ -53,6 +62,6 @@ export type LinkingWizardState =
     | LinkingWizardStateScan
     | LinkingWizardStateConfirmEmoji
     | LinkingWizardStateSetPassword
-    | {readonly currentStep: 'syncing'}
+    | LinkingWizardStateSyncing
     | LinkingWizardStateSuccess
     | LinkingWizardStateError;

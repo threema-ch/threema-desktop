@@ -1,12 +1,11 @@
 <script lang="ts">
   import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingWizardState} from '~/app/ui/linking';
+  import {type LinkingWizardStateSyncing} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
+  import {unreachable} from '~/common/utils/assert';
 
-  export let linkingWizardState: LinkingWizardState;
-  unusedProp(linkingWizardState);
+  export let linkingWizardState: LinkingWizardStateSyncing;
 </script>
 
 <template>
@@ -16,7 +15,19 @@
         <CircularProgress variant="indeterminate" />
       </div>
       <h1>
-        {$i18n.t('dialog--linking-sync.label--title', 'Receiving Data')}
+        {#if linkingWizardState.phase === 'receiving'}
+          {$i18n.t('dialog--linking-sync.label--title-receiving', 'Receiving data')}
+        {:else if linkingWizardState.phase === 'restoring'}
+          {$i18n.t('dialog--linking-sync.label--title-restoring', 'Restoring data')}
+        {:else if linkingWizardState.phase === 'encrypting'}
+          {$i18n.t(
+            'dialog--linking-sync.label--title-encrypting',
+            'Encrypting keys with your password',
+          )}
+        {:else}
+          {unreachable(linkingWizardState.phase)}
+          Syncing
+        {/if}
       </h1>
     </div>
 

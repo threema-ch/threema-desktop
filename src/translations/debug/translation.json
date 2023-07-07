@@ -206,7 +206,9 @@
   },
   "dialog--linking-sync": {
     "action--need-help": "[d] Need help?",
-    "label--title": "[d] Receiving Data"
+    "label--title-encrypting": "[d] Encrypting keys with your password",
+    "label--title-receiving": "[d] Receiving data",
+    "label--title-restoring": "[d] Restoring data"
   },
   "dialog--message-details": {
     "label--created-date": "[d] Erstellt",

@@ -67,7 +67,7 @@
         linkingWizardState = {currentStep: 'set-password', userPassword: params.userPassword};
         break;
       case 'syncing':
-        linkingWizardState = {currentStep: 'syncing'};
+        linkingWizardState = {currentStep: 'syncing', phase: state.phase};
         break;
       case 'registered':
         linkingWizardState = {
