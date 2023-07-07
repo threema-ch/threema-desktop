@@ -1,6 +1,7 @@
 import {type Logger} from '~/common/logging';
 
 import {EventController, type EventUnsubscriber} from './event';
+import {QueryablePromise, ResolvablePromise} from './resolvable-promise';
 
 /**
  * This must be compatible with DOM's {@link AbortController}.
@@ -52,6 +53,23 @@ export class AbortRaiser {
      */
     public get aborted(): boolean {
         return this._aborted;
+    }
+
+    /**
+     * Return a promise that resolves when the abort event is raised.
+     */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    public abortedPromise(): QueryablePromise<void> {
+        // If already aborted, resolve immediately
+        if (this.aborted) {
+            return ResolvablePromise.resolve();
+        }
+
+        // Otherwise, subscribe
+        const promise = new ResolvablePromise<void>();
+        const unsubscribe = this.subscribe(() => promise.resolve(undefined));
+        void promise.then(unsubscribe);
+        return promise;
     }
 
     /**
