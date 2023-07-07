@@ -10,15 +10,15 @@ function generate {
     local app_name=$3
     sed "s/{{app-id}}/$app_id/g" $TEMPLATE \
         | sed "s/{{flavor}}/$flavor/g" \
-        | sed "s/{{app_name}}/$app_name/g" \
+        | sed "s/{{app-name}}/$app_name/g" \
         > "$app_id.yml"
 }
 
 # Consumer live
-generate 'ch.threema.threema-desktop' 'consumer-live' 'Threema Tech Preview'
+generate 'ch.threema.threema-desktop' 'consumer-live' 'Threema Beta'
 
 # Work sandbox
-generate 'ch.threema.threema-red-desktop' 'work-sandbox' 'Threema Red Tech Preview'
+generate 'ch.threema.threema-red-desktop' 'work-sandbox' 'Threema Red Beta'
 
 # Work live
-generate 'ch.threema.threema-work-desktop' 'work-live' 'Threema Work Tech Preview'
+generate 'ch.threema.threema-work-desktop' 'work-live' 'Threema Work Beta'

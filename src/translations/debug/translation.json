@@ -132,7 +132,7 @@
     "markup--client-update-required-p1": "[d] Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",
     "markup--client-update-required-p2": "[d] Um Threema weiterhin zu nutzen, bitte <1>aktualisieren Sie auf die neueste Version</1>.",
     "markup--client-was-dropped-p1": "[d] Dieses Gerät wurde getrennt. Das bedeutet, dass Sie derzeit keine neuen Nachrichten senden oder empfangen können.",
-    "markup--client-was-dropped-p2": "[d] Wenn dies nicht von Ihnen ausgelöst wurde, beachten Sie bitte, dass dies aus technischen Gründen während der Tech Preview-Phase passieren kann. Wir entschuldigen uns für die Unannehmlichkeiten.",
+    "markup--client-was-dropped-p2": "[d] Wenn dies nicht von Ihnen ausgelöst wurde, beachten Sie bitte, dass dies aus technischen Gründen während der Beta-Phase passieren kann. Wir entschuldigen uns für die Unannehmlichkeiten.",
     "markup--client-was-dropped-p3": "[d] Weitere Informationen finden Sie in den <1>FAQ</1>.",
     "prose--mediator-update-required-p1": "[d] Diese Version von Threema ist nicht kompatibel mit Ihrem Mediator-Server. Der Server verwendet eine veraltete Protokollversion und muss zuerst aktualisiert werden.",
     "prose--mediator-update-required-p2": "[d] Bitte kontaktieren Sie Ihren Threema Server-Administrator."

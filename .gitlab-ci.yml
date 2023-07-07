@@ -424,11 +424,11 @@ package:source:
         case "$flavor" in
           consumer-live)
             APPID="ch.threema.threema-desktop"
-            TITLE="Threema Tech Preview"
+            TITLE="Threema Beta"
             ;;
           work-sandbox)
             APPID="ch.threema.threema-red-desktop"
-            TITLE="Threema Red Tech Preview"
+            TITLE="Threema Red Beta"
             ;;
           *)
             echo "Invalid build flavor: $flavor"

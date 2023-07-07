@@ -42,5 +42,5 @@ Only the following modifiers (sorted by precedence from highest to lowest) shoul
    - Use cases: `alt=` text, tooltip text
 5. **"markup":** Similar to `prose` (see below), but can contain a set of predefined `slot`s that can be replaced by a predefined component.
 6. **"prose":** Miscellaneous text snippets, which are usually longer and form a coherent text.
-   - Example: "This tech preview only works in..."
+   - Example: "This beta only works in..."
    - Use cases: Explainers, aside text, body text

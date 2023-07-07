@@ -87,8 +87,8 @@ modules:
       - install -Dm644 packaging/metadata/ch.threema.threema-desktop.desktop /app/share/applications/{{app-id}}.desktop
       - sed -i 's/ch.threema.threema-desktop/{{app-id}}/g' /app/share/metainfo/{{app-id}}.metainfo.xml
       - sed -i 's/ch.threema.threema-desktop/{{app-id}}/g' /app/share/applications/{{app-id}}.desktop
-      - sed -i "s#name>Threema<#name>{{app_name}}<#" /app/share/metainfo/{{app-id}}.metainfo.xml
-      - sed -i "s#Name=Threema#Name={{app_name}}#" /app/share/applications/{{app-id}}.desktop
+      - sed -i "s#name>Threema<#name>{{app-name}}<#" /app/share/metainfo/{{app-id}}.metainfo.xml
+      - sed -i "s#Name=Threema#Name={{app-name}}#" /app/share/applications/{{app-id}}.desktop
       # Install Icons
       - mkdir -p /app/share/icons/hicolor/{512x512,scalable}/apps/
       - |

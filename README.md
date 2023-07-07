@@ -98,8 +98,8 @@ To build Threema Desktop, run:
 
 Now you can find the application bundle at `build/electron/packaged/`, e.g.:
 
-- `build/electron/packaged/Threema Tech Preview-linux-x64/ThreemaDesktop` on 64-bit Linux
-- `build/electron/packaged/Threema Tech Preview-darwin-arm64/Threema Desktop.app/Contents/MacOS/ThreemaDesktop` on macOS with Apple Silicon
+- `build/electron/packaged/Threema Beta-linux-x64/ThreemaDesktop` on 64-bit Linux
+- `build/electron/packaged/Threema Beta-darwin-arm64/Threema Desktop.app/Contents/MacOS/ThreemaDesktop` on macOS with Apple Silicon
 
 You can directly open the built version respectively with:
 

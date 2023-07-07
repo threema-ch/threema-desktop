@@ -129,7 +129,7 @@ function determineAppName(env: ConfigEnv): string {
         default:
             unreachable(combination);
     }
-    return `${name} Tech Preview`;
+    return `${name} Beta`;
 }
 
 function determineMobileAppName(env: ConfigEnv): string {

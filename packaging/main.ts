@@ -155,7 +155,7 @@ function determineAppName(flavor: Flavor): string {
         default:
             unreachable(flavor);
     }
-    name += ' Tech Preview';
+    name += ' Beta';
     return name;
 }
 
@@ -380,7 +380,7 @@ function runElectronDistScript(
     }
 
     const buildOutputDir = path.join(dirs.root, 'build', 'electron', 'packaged');
-    const binaryBasename = 'Threema Tech Preview';
+    const binaryBasename = 'Threema Beta';
     const binaryDir = `${binaryBasename}-${process.platform}-${process.arch}`;
     const binaryDirPath = path.join(buildOutputDir, binaryDir);
 

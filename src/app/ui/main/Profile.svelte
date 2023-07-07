@@ -113,7 +113,7 @@
 
       <Text
         label={$i18n.t('settings.label--application-name', 'Application Name')}
-        value={import.meta.env.BUILD_VARIANT === 'work' ? 'Threema Work' : 'Threema'}
+        value={import.meta.env.APP_NAME}
       />
 
       <div on:click={handleVersionClick}>

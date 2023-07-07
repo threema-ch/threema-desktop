@@ -132,7 +132,7 @@
     "markup--client-update-required-p1": "This version of Threema is no longer supported (outdated protocol version).",
     "markup--client-update-required-p2": "To continue using Threema, please <1>update to the latest version</1>.",
     "markup--client-was-dropped-p1": "This device has been unlinked. This means that you cannot currently send or receive new messages.",
-    "markup--client-was-dropped-p2": "If this was not triggered by you, please note that this might happen for technical reasons during the Tech Preview phase. We apologize for the inconvience.",
+    "markup--client-was-dropped-p2": "If this was not triggered by you, please note that this might happen for technical reasons during the Beta phase. We apologize for the inconvience.",
     "markup--client-was-dropped-p3": "For more information, see the <1>FAQ</1>.",
     "prose--mediator-update-required-p1": "This version of Threema is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.",
     "prose--mediator-update-required-p2": "Please contact your Threema server administrator."
