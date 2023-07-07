@@ -430,6 +430,10 @@ package:source:
             APPID="ch.threema.threema-red-desktop"
             TITLE="Threema Red Beta"
             ;;
+          work-live)
+            APPID="ch.threema.threema-work-desktop"
+            TITLE="Threema Work Beta"
+            ;;
           *)
             echo "Invalid build flavor: $flavor"
             exit 1
@@ -485,7 +489,7 @@ package:flatpak-internal:
     REPO: repo
     REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
     REMOTE: threema-internal
-    FLAVORS: consumer-live,work-sandbox
+    FLAVORS: consumer-live,work-sandbox,work-live
     FTP_HOST: $FLATPAK_INTERNAL_FTP_HOST
     FTP_USER: flatpak-internal
     GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
@@ -555,11 +559,11 @@ package:macos:
         release) buildTarget=dmgSigned ;;
         *) echo "Invalid build type: $BUILD_TYPE"; exit 1
       esac
-      npm run package $buildTarget consumer-live,work-sandbox
+      npm run package $buildTarget consumer-live,work-sandbox,work-live
     # Rename and upload DMGs
     - mkdir -p build/dmg/
     - |
-      for flavor in 'consumer-live' 'work-sandbox'; do
+      for flavor in 'consumer-live' 'work-sandbox' 'work-live'; do
 
         # Determine filename
         case "$flavor" in
@@ -570,6 +574,10 @@ package:macos:
           work-sandbox)
             FILENAME="threema-red-desktop"
             DMG="ThreemaRed.dmg"
+            ;;
+          work-live)
+            FILENAME="threema-work-desktop"
+            DMG="ThreemaWork.dmg"
             ;;
           *)
             echo "Invalid build flavor: $flavor"
@@ -667,21 +675,24 @@ package:windows:
     - npm ci --cache .npm
 
     # Build EXE binary
-    - npm run package binarySigned consumer-live,work-sandbox
+    - npm run package binarySigned consumer-live,work-sandbox,work-live
 
     # Build MSIX package
-    - npm run package msixSigned consumer-live,work-sandbox
+    - npm run package msixSigned consumer-live,work-sandbox,work-live
 
     # Upload
     - dir build\out\
     - |
-      foreach ($flavor in "consumer-live","work-sandbox") {
+      foreach ($flavor in "consumer-live","work-sandbox","work-live") {
         switch ($flavor) {
           "consumer-live" {
             $name = "threema"
           }
           "work-sandbox" {
             $name = "threema-red"
+          }
+          "work-live" {
+            $name = "threema-work"
           }
         }
         $sourceFileExe = "build/out/${name}-desktop-bin-win32-${env:ARCH}.zip"
