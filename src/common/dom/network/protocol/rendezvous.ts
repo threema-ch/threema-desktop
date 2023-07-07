@@ -134,7 +134,7 @@ class MultiplexedPath
         // Abort the queue when the protocol is aborted and vice versa.
         abort.subscribe(() => queue.error(new Error('Abort raised')));
         queue.aborted.catch((error) => {
-            _log.debug(`Queue aborted: ${error}`);
+            _log.debug('Queue aborted', error);
             abort.raise();
         });
 
@@ -161,7 +161,11 @@ class MultiplexedPath
                 await path.writer.write(frame);
             },
             close: () => {
-                _log.debug('Multiplexed path reader closed');
+                _log.debug('Multiplexed path writer closed');
+                abort.raise();
+            },
+            abort: (reason) => {
+                _log.debug('Multiplexed path writer aborted, reason:', reason);
                 abort.raise();
             },
         });
@@ -174,8 +178,14 @@ class MultiplexedPath
                 // incoming frame at a time.
                 path.readable
                     .pipeTo(
+                        // TODO(DESK-1096): Instead of always aborting the queue, we should probably
+                        // abort only if it was the last path
                         new WritableStream({
                             write: async (frame) => await queue.put([path.pid, frame]),
+                            close: () => queue.error(new Error('Path reader closed')),
+                            abort: (reason) => {
+                                queue.error(new Error(`Path reader aborted: ${reason}`));
+                            },
                         }),
                     )
                     .catch((error) => _log.error(`Path errored (pid=${path.pid})`, error))
