@@ -21,6 +21,7 @@ import {type RendezvousAuthenticationKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u32} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
+import {byteSplit} from '~/common/utils/byte';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {Queue} from '~/common/utils/queue';
 import {AbortRaiser} from '~/common/utils/signal';
@@ -364,8 +365,14 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                     // We do expect an outgoing frame.
                     assert(result.outgoingFrame !== undefined, 'Expecting outgoing frame');
 
-                    // Send the outgoing frame
-                    controller.enqueue(result.outgoingFrame);
+                    // Send the outgoing frame in 1 MiB chunks
+                    //
+                    // Note: We do this here as it's much more convenient than doing it in all the
+                    // individual `SinglePath`s and 1 MiB is a sensible amount of data for good
+                    // performance on any kind of stream.
+                    for (const chunk of byteSplit(result.outgoingFrame, 1048576)) {
+                        controller.enqueue(chunk);
+                    }
                 },
             });
             this.writable = transform.writable;

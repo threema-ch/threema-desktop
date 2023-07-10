@@ -153,6 +153,18 @@ export function byteJoin(...arrays: readonly ReadonlyUint8Array[]): Uint8Array {
 }
 
 /**
+ * Split bytes into an array of byte views of a specific maximum chunk length.
+ */
+export function* byteSplit<T extends ReadonlyUint8Array>(
+    array: T,
+    maxChunkLength: u53,
+): IterableIterator<ReadonlyUint8Array> {
+    for (let offset = 0; offset < array.byteLength; offset += maxChunkLength) {
+        yield array.subarray(offset, offset + maxChunkLength);
+    }
+}
+
+/**
  * Add a specific amount of PKCS#7 padding to a buffer or byte array.
  *
  * @throws {Error} If the `destination` buffer is claimed.
