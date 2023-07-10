@@ -21,6 +21,24 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0-beta15" date="2023-07-12">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Implement new device linking</li>
+                    <li>Allow changing password in user profile</li>
+                    <li>Improve file message preview in conversation list</li>
+                    <li>Improve group message preview in conversation list</li>
+                    <li>Improve error handling UX in file sending dialog</li>
+                </ul>
+                <p>Bugfixes:</p>
+                <ul>
+                    <li>Better error handling when application cannot access a file</li>
+                    <li>Limit size of file messages</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0-preview14" date="2023-06-26">
             <description>
                 <p>Improvements:</p>
