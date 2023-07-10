@@ -15,7 +15,7 @@
   "build": {
     "dockerfile": "./Dockerfile",
     "args": {
-      "NODE_VERSION": "18.12.1"
+      "NODE_VERSION": "18.15.0"
     }
   },
   "workspaceFolder": "/home/threema/threema-desktop",
