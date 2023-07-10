@@ -21,7 +21,7 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
-        <release version="2.0-beta15" date="2023-07-12">
+        <release version="2.0~publicbeta15" date="2023-07-12">
             <description>
                 <p>Improvements:</p>
                 <ul>
@@ -39,7 +39,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0-preview14" date="2023-06-26">
+        <release version="2.0~preview14" date="2023-06-26">
             <description>
                 <p>Improvements:</p>
                 <ul>
@@ -61,7 +61,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0-preview13" date="2023-06-12">
+        <release version="2.0~preview13" date="2023-06-12">
             <description>
                 <p>Improvements:</p>
                 <ul>
@@ -77,7 +77,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0-preview12" date="2023-05-26">
+        <release version="2.0~preview12" date="2023-05-26">
             <description>
                 <p>Improvements:</p>
                 <ul>
@@ -102,7 +102,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0-preview11" date="2023-05-11">
+        <release version="2.0~preview11" date="2023-05-11">
             <description>
                 <p>Improvements:</p>
                 <ul>
@@ -122,7 +122,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0-preview10" date="2023-04-28">
+        <release version="2.0~preview10" date="2023-04-28">
             <description>
                 <p>Improvements:</p>
                 <ul>
@@ -132,7 +132,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0.0-preview9" date="2023-04-13">
+        <release version="2.0~preview09" date="2023-04-13">
             <description>
                 <p>New features:</p>
                 <ul>
@@ -153,7 +153,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0.0-preview8" date="2023-03-31">
+        <release version="2.0~preview08" date="2023-03-31">
             <description>
                 <p>New features:</p>
                 <ul>
@@ -173,7 +173,7 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0.0-preview7" date="2023-03-09">
+        <release version="2.0~preview07" date="2023-03-09">
             <description>
                 <p>New features:</p>
                 <ul>
@@ -198,12 +198,12 @@
                 <p>...and a few other minor changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0.0-preview6" date="2023-02-27">
+        <release version="2.0~preview06" date="2023-02-27">
             <description>
                 <p>Internal release only, not published</p>
             </description>
         </release>
-        <release version="2.0.0-preview5" date="2023-02-09">
+        <release version="2.0~preview05" date="2023-02-09">
             <description>
                 <p>New features:</p>
                 <ul>
@@ -221,7 +221,7 @@
                 <p>...and a few other changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0.0-preview4" date="2023-01-26">
+        <release version="2.0~preview04" date="2023-01-26">
             <description>
                 <p>New features:</p>
                 <ul>
@@ -245,12 +245,12 @@
                 <p>...and a few other changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0.0-preview3" date="2023-01-12">
+        <release version="2.0~preview03" date="2023-01-12">
             <description>
                 <p>Internal release only, not published</p>
             </description>
         </release>
-        <release version="2.0.0-preview2" date="2022-12-21">
+        <release version="2.0~preview02" date="2022-12-21">
             <description>
                 <p>New features:</p>
                 <ul>
@@ -277,7 +277,7 @@
                 <p>...and a few other changes and improvements.</p>
             </description>
         </release>
-        <release version="2.0.0-preview1" date="2022-12-06">
+        <release version="2.0~preview01" date="2022-12-06">
             <description>
                 <p>First public release</p>
             </description>
