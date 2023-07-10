@@ -255,6 +255,9 @@ $brandings: (
     --cc-media-message-active-file-options-text-color: -g($cc, media-message-active-file-options-text-color),
     --cc-media-message-miniatures-background-color: -g($cc, media-message-miniatures-background-color),
     --cc-media-message-miniatures-text-color: -g($cc, media-message-miniatures-text-color),
+
+    // Linking Wizard
+    --cc-linking-wizard-error-message-background: -g($cc, linking-wizard-error-message-background),
   );
 }
 

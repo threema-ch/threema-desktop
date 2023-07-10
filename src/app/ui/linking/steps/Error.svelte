@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '#3sc/components/blocks/Button/Button.svelte';
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {type LinkingWizardStateError} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
@@ -28,9 +29,27 @@
         {/if}
       </p>
 
-      <p class="technical-details">
-        Technical details: {linkingWizardState.errorMessage}
-      </p>
+      <div class="technical-details">
+        <input type="checkbox" id="drawer-toggle" />
+        <label class="drawer-toggle" for="drawer-toggle">
+          <span>
+            {$i18n.t(
+              'dialog--linking-error.label--technical-details',
+              'Technical details (click to expand)',
+            )}
+          </span>
+          <MdIcon
+            theme="Filled"
+            title={$i18n.t(
+              'dialog--linking-error.hint--expand-full-error-message',
+              'Show full error',
+            )}>expand_more</MdIcon
+          >
+        </label>
+        <p class="drawer-content">
+          {linkingWizardState.errorMessage}
+        </p>
+      </div>
 
       <div class="button">
         <Button flavor="filled" on:click={() => window.location.reload()}
@@ -56,9 +75,9 @@
       'title'
       '.' rem(16px)
       'description'
-      '.' rem(8px)
+      '.' rem(32px)
       'technical-details'
-      '.' rem(40px)
+      '.' rem(24px)
       'button';
     justify-items: center;
     padding: rem(28px) 0;
@@ -78,8 +97,68 @@
     .technical-details {
       grid-area: technical-details;
       color: var(--t-text-e2-color);
-      text-align: center;
+      text-align: left;
       user-select: text;
+      overflow: hidden;
+      border-radius: rem(8px);
+      background-color: var(--cc-linking-wizard-error-message-background);
+
+      input {
+        position: absolute;
+        opacity: 0;
+        z-index: -1;
+      }
+
+      .drawer-toggle,
+      .drawer-content {
+        padding: 0 rem(24px);
+      }
+
+      .drawer-toggle {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        font-size: rem(18px);
+        height: rem(48px);
+        cursor: pointer;
+        border-radius: rem(8px);
+
+        span {
+          font-size: rem(16px);
+        }
+
+        :global(.icon) {
+          transform: rotate(0);
+          transition: transform 0.15s ease-in-out;
+        }
+      }
+
+      .drawer-content {
+        user-select: all;
+        max-height: 0;
+        transition: all 0.15s ease-in-out;
+        font-family: monospace;
+      }
+
+      input:checked {
+        ~ .drawer-toggle {
+          :global(.icon) {
+            transform: rotate(180deg);
+          }
+        }
+
+        ~ .drawer-content {
+          max-height: rem(360px);
+          padding: rem(8px) rem(24px) rem(18px) rem(24px);
+        }
+      }
+
+      input:focus-visible {
+        ~ .drawer-toggle {
+          box-shadow: inset 0 0 0 rem(1px) white;
+        }
+      }
     }
 
     .button {

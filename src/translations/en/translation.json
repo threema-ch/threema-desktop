@@ -162,6 +162,8 @@
   },
   "dialog--linking-error": {
     "action--confirm": "Retry",
+    "hint--expand-full-error-message": "Show full error",
+    "label--technical-details": "Technical details (click to expand)",
     "label--title": "Linking Unsuccessful",
     "prose--description-connection-error": "The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.",
     "prose--description-generic-error": "An error occurred during linking. Please try again."

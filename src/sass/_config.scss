@@ -191,6 +191,9 @@ $config: config-merge(components.$config, (
       --cc-media-message-active-file-options-text-color,
       --cc-media-message-miniatures-background-color,
       --cc-media-message-miniatures-text-color,
+
+      // Linking Wizard
+      --cc-linking-wizard-error-message-background,
     ),
 
     debug-components: (
