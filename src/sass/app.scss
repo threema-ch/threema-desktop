@@ -14,8 +14,8 @@
 @use 'threema-svelte-components/src/sass/utils' as *;
 @use './theme';
 
-// Import main font
-@import url('https://static.threema.ch/fonts/labgrotesque.css');
+// Include fonts
+@use './fonts';
 
 // Include emoji font
 @font-face {
