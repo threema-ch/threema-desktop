@@ -603,6 +603,8 @@ function main(
         window = new electron.BrowserWindow({
             title: import.meta.env.APP_NAME,
             icon: process.platform === 'linux' ? ABOUT_PANEL_OPTIONS.iconPath : undefined,
+            width: 900,
+            height: 700,
             webPreferences: {
                 // TODO(DESK-79): Harden this. Disable `nodeIntegrationInWorker` and enable `sandbox`. This means
                 //       we need to have a preload script that runs for all APIs requiring access to Node
