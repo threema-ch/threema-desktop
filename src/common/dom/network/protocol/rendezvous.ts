@@ -370,7 +370,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                     // Note: We do this here as it's much more convenient than doing it in all the
                     // individual `SinglePath`s and 1 MiB is a sensible amount of data for good
                     // performance on any kind of stream.
-                    for (const chunk of byteSplit(result.outgoingFrame, 1048576)) {
+                    for (const chunk of byteSplit(result.outgoingFrame, 1024 * 1024)) {
                         controller.enqueue(chunk);
                     }
                 },

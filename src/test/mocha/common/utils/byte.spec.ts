@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 
-import {bytePadPkcs7, byteToHex, hexToBytes} from '~/common/utils/byte';
+import {bytePadPkcs7, byteSplit, byteToHex, hexToBytes} from '~/common/utils/byte';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 
@@ -87,6 +87,37 @@ export function run(): void {
             it('validation can be turned off, but results in undefined behavior', function () {
                 expect(() => byteToHex(-1, false)).not.to.throw;
                 expect(() => byteToHex(256, false)).not.to.throw;
+            });
+        });
+
+        describe('byteSplit', function () {
+            it('does not split an array smaller than maxChunkLength', function () {
+                const arr = Uint8Array.of(0, 1, 2, 3);
+                expect([...byteSplit(arr, 5)]).to.deep.equal([arr]);
+                expect([...byteSplit(arr, 99)]).to.deep.equal([arr]);
+                expect([...byteSplit(arr, 729834798273498)]).to.deep.equal([arr]);
+            });
+
+            it('does not split an array of size maxChunkLength', function () {
+                const arr = Uint8Array.of(0, 1, 2, 3);
+                expect([...byteSplit(arr, arr.byteLength)]).to.deep.equal([arr]);
+            });
+
+            it('splits larger chunks', function () {
+                const arr = Uint8Array.of(1, 2, 3, 4, 5, 6);
+                expect([...byteSplit(arr, 5)]).to.deep.equal([
+                    Uint8Array.of(1, 2, 3, 4, 5),
+                    Uint8Array.of(6),
+                ]);
+                expect([...byteSplit(arr, 3)]).to.deep.equal([
+                    Uint8Array.of(1, 2, 3),
+                    Uint8Array.of(4, 5, 6),
+                ]);
+                expect([...byteSplit(arr, 2)]).to.deep.equal([
+                    Uint8Array.of(1, 2),
+                    Uint8Array.of(3, 4),
+                    Uint8Array.of(5, 6),
+                ]);
             });
         });
     });
