@@ -331,12 +331,13 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
                         'Unexpected outgoing frame in nominated state',
                     );
 
-                    // We do expect incoming ULP data.
-                    assert(result.incomingUlpData !== undefined, 'Expecting incoming ULP data');
-
-                    // Hand out the incoming ULP data
-                    log.debug(`Received ULP data (length=${result.incomingUlpData.byteLength})`);
-                    controller.enqueue(result.incomingUlpData);
+                    // Hand out the incoming ULP data (if any)
+                    if (result.incomingUlpData !== undefined) {
+                        log.debug(
+                            `Received ULP data (length=${result.incomingUlpData.byteLength})`,
+                        );
+                        controller.enqueue(result.incomingUlpData);
+                    }
                 },
             }),
         );
