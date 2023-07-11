@@ -1,6 +1,3 @@
-import Long from 'long';
-import * as $protobuf from 'protobufjs/minimal';
-
 import {type Config} from '~/common/config';
 import {
     Backend,
@@ -31,11 +28,6 @@ export function main(config: Config, factories: FactoriesForBackend): void {
 
     // Greet with version!
     log.info(`Loaded worker: ${import.meta.env.BUILD_VERSION} (${import.meta.env.BUILD_HASH})`);
-
-    // Initialize Protobuf Library
-    $protobuf.util.Long = Long;
-    $protobuf.configure();
-    log.debug('Initialized protobufjs');
 
     // The worker exposes backend creation functions that run in the context of the worker, but
     // which can be called from the main thread (through the backend controller).

@@ -14,9 +14,10 @@ ROOT="$DIR/.."
 cd "$ROOT"
 
 # Protocol layer
+OUTFILE=src/common/network/protobuf/js/index.js
 node_modules/.bin/pbjs \
     threema-protocols/*.proto \
-    -o src/common/network/protobuf/js/index.js \
+    -o $OUTFILE \
     -t static-module \
     -w es6 \
     --force-long \
@@ -28,9 +29,22 @@ node_modules/.bin/pbjs \
 
 # Generate types
 node_modules/.bin/pbts \
-    src/common/network/protobuf/js/index.js \
+    $OUTFILE \
     | tools/generate-protobuf-postprocess.cjs \
     > src/common/network/protobuf/js/index.d.ts
+
+# Inject Long global initialization
+# TODO(DESK-48): Remove this
+{
+    head -n 2 $OUTFILE
+    echo ""
+    echo "// Use LongJS"
+    echo "import Long from 'long';"
+    echo "\$protobuf.util.Long = Long;"
+    echo "\$protobuf.configure();"
+    tail -n +3 $OUTFILE
+} > $OUTFILE.new
+mv $OUTFILE.new $OUTFILE
 
 # Local protobuf modules
 TS_PROTO_FILES=(
