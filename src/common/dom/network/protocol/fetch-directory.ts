@@ -124,6 +124,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             'identity/fetch_priv',
             {
                 identity,
+                appVariant: import.meta.env.BUILD_VARIANT === 'work' ? 'work' : 'consumer',
             },
             ck,
             IDENTITY_PRIVATE_DATA_SCHEMA,
