@@ -38,6 +38,7 @@ modules:
         XDG_CACHE_HOME: /run/build/threema-desktop/flatpak-node/cache
         npm_config_cache: /run/build/threema-desktop/flatpak-node/npm-cache
         npm_config_offline: 'true'
+      secret-env: ['SENTRY_DSN', 'MINIDUMP_ENDPOINT']
     sources:
       # Project source code
       - type: dir

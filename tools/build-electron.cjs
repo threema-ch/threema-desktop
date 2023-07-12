@@ -57,6 +57,8 @@ for (const entry of ENTRIES) {
                 VITE_MAKE: `${TARGET},${entry},${variant},${environment}`,
                 GIT_REVISION: gitRevision,
                 PATH: process.env.PATH,
+                SENTRY_DSN: process.env.SENTRY_DSN,
+                MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
             },
             stdio: [0, 1, 2],
         },
