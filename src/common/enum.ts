@@ -68,6 +68,40 @@ export namespace TransferTag {
  * Available transfer handler tags.
  */
 export type TransferTag = (typeof TransferTag)[keyof typeof TransferTag];
+export namespace NonceScope {
+    export const CSP = 0;
+    export type CSP = typeof CSP;
+    export const D2D = 1;
+    export type D2D = typeof D2D;
+}
+/**
+ * PROTOCOL
+ * ========
+ */
+/**
+ * Nonce scopes. Defines in which context a nonce must be unique.
+ *
+ * @generate convert
+ */
+export type NonceScope = (typeof NonceScope)[keyof typeof NonceScope];
+export namespace NonceScopeUtils {
+    export const ALL: ReadonlySet<NonceScope> = new Set([NonceScope.CSP, NonceScope.D2D] as const);
+    export function fromNumber(value: u53, fallback?: NonceScope): NonceScope {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as NonceScope;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid NonceScope`);
+    }
+    export function containsNumber(value: u53): value is NonceScope {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is NonceScope {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
 export namespace CloseCode {
     export const NORMAL = 1000;
     /** Normal closure, e.g. when the user is explicitly disconnecting. */
@@ -129,10 +163,6 @@ export namespace CloseCode {
     /** Web socket connection could not be established. */
     export type WEBSOCKET_UNABLE_TO_ESTABLISH = typeof WEBSOCKET_UNABLE_TO_ESTABLISH;
 }
-/**
- * PROTOCOL
- * ========
- */
 /**
  * WebSocket close code, extended by the Mediator Protocol 4xxx custom close
  * codes.
