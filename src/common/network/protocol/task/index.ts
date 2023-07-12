@@ -3,6 +3,7 @@ import {type NonceGuard} from '~/common/crypto';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {
     CspE2eConversationType,
+    CspE2eGroupControlType,
     CspE2eGroupConversationType,
     type D2dCspMessageType,
     type MessageFilterInstruction,
@@ -12,23 +13,24 @@ import {
 import {BaseError, type BaseErrorOptions} from '~/common/error';
 import type * as protobuf from '~/common/network/protobuf';
 import {
+    type CspE2eType,
     type InboundL4Message,
     type OutboundL4D2mTransactionMessage,
     type OutboundL4Message,
     type OutboundPassiveTaskMessage,
 } from '~/common/network/protocol';
+import {
+    type __TransactionComplete as TransactionComplete,
+    type __TransactionRunning as TransactionRunning,
+    type TransactionAbortedByPrecondition,
+} from '~/common/network/protocol/task/manager';
+import {type IdentityString} from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
 import {type WeakOpaque} from '~/common/types';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {type QueueConsumer, type QueueProducer} from '~/common/utils/queue';
 import {type QueryablePromise, type ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type AbortListener} from '~/common/utils/signal';
-
-import {
-    type __TransactionComplete as TransactionComplete,
-    type __TransactionRunning as TransactionRunning,
-    type TransactionAbortedByPrecondition,
-} from './manager';
 
 // Re-export for other APIs
 export type {TransactionRunning};
@@ -366,4 +368,29 @@ export function placeholderTextForUnhandledMessage(
     }
 
     return `${messageTitle}\n\n_Please view this message on your mobile device. It is not yet supported on desktop._`;
+}
+
+/**
+ * Determines if the creator of a group should receive messages of the given type.
+ *
+ * @returns `true` if the group creator should receive messages of the given {@link messageType},
+ *   `false` otherwise.
+ */
+export function shouldSendGroupMessageToCreator(
+    groupName: string,
+    groupCreatorIdentity: IdentityString,
+    messageType: CspE2eType,
+): boolean {
+    const isGroupManagedByGateway = groupCreatorIdentity.startsWith('*');
+    const isGroupMonitoredByGateway = isGroupManagedByGateway && groupName.startsWith('☁');
+    const isMessageEssential = [
+        CspE2eGroupControlType.GROUP_REQUEST_SYNC,
+        CspE2eGroupControlType.GROUP_LEAVE,
+    ].includes(messageType);
+
+    if (isGroupManagedByGateway && !isGroupMonitoredByGateway && !isMessageEssential) {
+        return false;
+    }
+
+    return true;
 }

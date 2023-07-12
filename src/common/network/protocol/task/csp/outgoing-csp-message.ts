@@ -35,12 +35,13 @@ import {
     type ComposableTask,
     type InternalActiveTaskCodecHandle,
     type ServicesForTasks,
+    shouldSendGroupMessageToCreator,
 } from '~/common/network/protocol/task';
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import * as structbuf from '~/common/network/structbuf';
 import {conversationIdForReceiver, type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, debugAssert, unreachable} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {
@@ -209,7 +210,31 @@ export class OutgoingCspMessageTask<
         }
 
         // Get message receiver contacts
-        const receivers = this._getReceiverContacts();
+        const allReceivers = this._getReceiverContacts();
+
+        // If the message is a group message and it should not be sent to the creator, remove the
+        // creator from the receivers list.
+        let receivers: Set<Contact>;
+        if (
+            this._receiver.type === ReceiverType.GROUP &&
+            !shouldSendGroupMessageToCreator(
+                this._receiver.view.name,
+                this._receiver.view.creatorIdentity,
+                this._messageProperties.type,
+            )
+        ) {
+            const creatorIdentity = this._receiver.view.creatorIdentity;
+            receivers = new Set(
+                [...allReceivers].filter((receiver) => receiver.view.identity !== creatorIdentity),
+            );
+
+            debugAssert(
+                receivers.size === allReceivers.size - 1,
+                'Expected creator to be removed from receivers',
+            );
+        } else {
+            receivers = allReceivers;
+        }
 
         // Send message to receivers
         let sentMessagesCount = 0;

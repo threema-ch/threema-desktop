@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 
+import {type DbGroupUid} from '~/common/db';
 import {
     ConversationCategory,
     ConversationVisibility,
@@ -10,6 +11,8 @@ import {
     D2mPayloadType,
     GroupUserState,
 } from '~/common/enum';
+import {type Group, type GroupController, type GroupView} from '~/common/model';
+import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type CspE2eType} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
@@ -34,6 +37,7 @@ import {Identity} from '~/common/utils/identity';
 import {intoU64, intoUnsignedLong, unixTimestampToDateMs} from '~/common/utils/number';
 import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/assertions';
 import {
+    addTestGroup,
     addTestUserAsContact,
     createClientKey,
     makeTestServices,
@@ -338,131 +342,228 @@ export function run(): void {
             });
         });
 
+        interface GroupMessageTestParams {
+            readonly name: string;
+            readonly creator: TestUser | 'self';
+            readonly members: TestUser[];
+            readonly messageProperties?: Omit<
+                MessageProperties<unknown, CspE2eGroupConversationType>,
+                'messageId'
+            >;
+            readonly testExpectations?: (
+                groupStore: LocalModelStore<
+                    Group,
+                    Readonly<GroupView>,
+                    GroupController,
+                    DbGroupUid,
+                    2
+                >,
+                messageProperties: MessageProperties<unknown, CspE2eGroupConversationType>,
+            ) => NetworkExpectation[];
+        }
+
+        async function runSendGroupMessageTest(params: GroupMessageTestParams): Promise<void> {
+            const {crypto, model} = services;
+
+            // Unpack params and set defaults
+            const {name, creator, members} = params;
+            const messageProperties = params.messageProperties ?? {
+                type: CspE2eGroupConversationType.GROUP_TEXT,
+                encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
+                    text: UTF8.encode('Hello World!'),
+                }),
+                cspMessageFlags: CspMessageFlags.forMessageType('text'),
+                createdAt: new Date(),
+                allowUserProfileDistribution: true,
+            };
+            const testExpectations = params.testExpectations ?? (() => []);
+
+            // Add creator to contacts if necessary
+            if (creator !== 'self') {
+                addTestUserAsContact(model, creator);
+            }
+
+            // Add group members to DB
+            const memberStores = members.map((member) => addTestUserAsContact(model, member));
+
+            // Create group in DB
+            const groupId = randomGroupId(crypto);
+            const groupStore = addTestGroup(model, {
+                groupId,
+                name,
+                creatorIdentity: creator === 'self' ? me : creator.identity.string,
+                createdAt: new Date(),
+                userState: GroupUserState.MEMBER,
+                members: memberStores.map((store) => store.ctx),
+            });
+
+            // Create new OutgoingMessageTask
+            const properties = {
+                messageId: randomMessageId(crypto),
+                ...messageProperties,
+            } as const;
+            const task = new OutgoingCspMessageTask(services, groupStore.get(), properties);
+
+            // Run task
+            const expectations = testExpectations(groupStore, properties);
+            const handle = new TestHandle(services, expectations);
+            await task.run(handle);
+            handle.finish();
+        }
+
         describe('group messaging', function () {
             it('should send a message to all group members', async function () {
-                const {crypto, model} = services;
+                await runSendGroupMessageTest({
+                    name: 'Chüngelizüchter Pfäffikon',
+                    creator: 'self',
+                    members: [user1, user2],
+                    testExpectations: (groupStore, messageProperties) => [
+                        // First, the outgoing message must be reflected.
+                        getExpectedD2dOutgoingReflectedMessage(messageProperties),
 
-                const user1store = addTestUserAsContact(model, user1);
-                const user2store = addTestUserAsContact(model, user2);
+                        // Reflect a message to every member and wait for the ack.
+                        //
+                        // Note: This expects that the messages are sent in the same order as the group
+                        //       members in the database.
+                        ...getExpectedCspMessagesForGroupMember(
+                            user1,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
+                        ...getExpectedCspMessagesForGroupMember(
+                            user2,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
 
-                const groupId = randomGroupId(crypto);
-                const group = model.groups.add.fromSync(
-                    {
-                        groupId,
-                        creatorIdentity: me,
-                        createdAt: new Date(),
-                        name: 'Chüngelizüchter Pfäffikon',
-                        userState: GroupUserState.MEMBER,
-                        category: ConversationCategory.DEFAULT,
-                        visibility: ConversationVisibility.SHOW,
-                        colorIndex: 0,
-                    },
-                    [user1store.ctx, user2store.ctx],
-                );
-
-                const cspMessageFlags = CspMessageFlags.forMessageType('text');
-
-                // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eGroupConversationType.GROUP_TEXT,
-                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                        text: UTF8.encode('Hello World!'),
-                    }),
-                    cspMessageFlags,
-                    messageId: randomMessageId(crypto),
-                    createdAt: new Date(),
-                    allowUserProfileDistribution: true,
-                } as const;
-                const task = new OutgoingCspMessageTask(services, group.get(), messageProperties);
-
-                // Run task
-                const expectations: NetworkExpectation[] = [
-                    // First, the outgoing message must be reflected
-                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
-
-                    // Reflect a message to every member and wait for the ack.
-                    //
-                    // Note: This expects that the messages are sent in the same order as the group
-                    //       members in the database
-                    ...getExpectedCspMessagesForGroupMember(
-                        user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
-                    ),
-                    ...getExpectedCspMessagesForGroupMember(
-                        user2,
-                        messageProperties.messageId,
-                        messageProperties.type,
-                    ),
-
-                    // Finally, an OutgoingMessageUpdate.Sent is reflected
-                    getExpectedD2dOutgoingReflectedMessageUpdate(me, groupId),
-                ];
-                const handle = new TestHandle(services, expectations);
-                await task.run(handle);
-                handle.finish();
+                        // Finally, an OutgoingMessageUpdate.Sent is reflected.
+                        getExpectedD2dOutgoingReflectedMessageUpdate(
+                            me,
+                            groupStore.get().view.groupId,
+                        ),
+                    ],
+                });
             });
 
             it('should also send a message to the creator, if it is not us', async function () {
-                const {crypto, model} = services;
+                await runSendGroupMessageTest({
+                    name: 'Chrüütlisammler Altendorf',
+                    creator: user1,
+                    members: [user2],
+                    testExpectations: (groupStore, messageProperties) => [
+                        // First, the outgoing message must be reflected.
+                        getExpectedD2dOutgoingReflectedMessage(messageProperties),
 
-                addTestUserAsContact(model, user1);
-                const user2store = addTestUserAsContact(model, user2);
+                        // Note: This expects that the messages were sent in a synchronous manner in the order of
+                        // the users in the database.
+                        ...getExpectedCspMessagesForGroupMember(
+                            user1,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
+                        ...getExpectedCspMessagesForGroupMember(
+                            user2,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
 
-                const groupId = randomGroupId(crypto);
-                const group = model.groups.add.fromSync(
-                    {
-                        groupId,
-                        creatorIdentity: user1.identity.string,
-                        createdAt: new Date(),
-                        name: 'Chüngelizüchter Pfäffikon',
-                        userState: GroupUserState.MEMBER,
-                        category: ConversationCategory.DEFAULT,
-                        visibility: ConversationVisibility.SHOW,
-                        colorIndex: 0,
-                    },
-                    [user2store.ctx],
-                );
+                        // Finally, an OutgoingMessageUpdate.Sent is reflected.
+                        getExpectedD2dOutgoingReflectedMessageUpdate(
+                            user1.identity.string,
+                            groupStore.get().view.groupId,
+                        ),
+                    ],
+                });
+            });
+        });
 
-                const cspMessageFlags = CspMessageFlags.forMessageType('text');
+        describe('gateway group messaging', function () {
+            it('should send text messages to the group creator if: creator is not a Gateway ID', async function () {
+                await runSendGroupMessageTest({
+                    name: '☁️ Wolkejäger Freienbach',
+                    creator: user1,
+                    members: [user2],
+                    testExpectations: (groupStore, messageProperties) => [
+                        // First, the outgoing message must be reflected.
+                        getExpectedD2dOutgoingReflectedMessage(messageProperties),
 
-                // Create new OutgoingMessageTask
-                const messageProperties = {
-                    type: CspE2eGroupConversationType.GROUP_TEXT,
-                    encoder: structbuf.bridge.encoder(structbuf.csp.e2e.Text, {
-                        text: UTF8.encode('Hello World!'),
-                    }),
-                    cspMessageFlags,
-                    messageId: randomMessageId(crypto),
-                    createdAt: new Date(),
-                    allowUserProfileDistribution: true,
-                } as const;
-                const task = new OutgoingCspMessageTask(services, group.get(), messageProperties);
+                        // Note: This expects that the messages were sent in a synchronous manner in the order of
+                        // the users in the database.
+                        ...getExpectedCspMessagesForGroupMember(
+                            user1,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
+                        ...getExpectedCspMessagesForGroupMember(
+                            user2,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
 
-                // Run task
-                const expectations: NetworkExpectation[] = [
-                    // First, the outgoing message must be reflected
-                    getExpectedD2dOutgoingReflectedMessage(messageProperties),
+                        // Finally, an OutgoingMessageUpdate.Sent is reflected.
+                        getExpectedD2dOutgoingReflectedMessageUpdate(
+                            user1.identity.string,
+                            groupStore.get().view.groupId,
+                        ),
+                    ],
+                });
+            });
 
-                    // Note: This expects that the were sent in a synchronous manner in the order of
-                    // the users in the database.
-                    ...getExpectedCspMessagesForGroupMember(
-                        user1,
-                        messageProperties.messageId,
-                        messageProperties.type,
-                    ),
-                    ...getExpectedCspMessagesForGroupMember(
-                        user2,
-                        messageProperties.messageId,
-                        messageProperties.type,
-                    ),
+            it('should send text messages to the group creator if: creator is a Gateway ID and group name starts with ☁️', async function () {
+                await runSendGroupMessageTest({
+                    name: '☁️ Wasserskifahrer Lachen',
+                    creator: gateway,
+                    members: [user2],
+                    testExpectations: (groupStore, messageProperties) => [
+                        // First, the outgoing message must be reflected.
+                        getExpectedD2dOutgoingReflectedMessage(messageProperties),
 
-                    // Finally, an OutgoingMessageUpdate.Sent is reflected
-                    getExpectedD2dOutgoingReflectedMessageUpdate(user1.identity.string, groupId),
-                ];
-                const handle = new TestHandle(services, expectations);
-                await task.run(handle);
-                handle.finish();
+                        // Note: This expects that the messages were sent in a synchronous manner in the order of
+                        // the users in the database.
+                        ...getExpectedCspMessagesForGroupMember(
+                            gateway,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
+                        ...getExpectedCspMessagesForGroupMember(
+                            user2,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
+
+                        // Finally, an OutgoingMessageUpdate.Sent is reflected.
+                        getExpectedD2dOutgoingReflectedMessageUpdate(
+                            gateway.identity.string,
+                            groupStore.get().view.groupId,
+                        ),
+                    ],
+                });
+            });
+
+            it("should not send text messages to the group creator if: creator is a Gateway ID and group name doesn't start with ☁️", async function () {
+                await runSendGroupMessageTest({
+                    name: 'Sunneaabäter Rapperswil',
+                    creator: gateway,
+                    members: [user2],
+                    testExpectations: (groupStore, messageProperties) => [
+                        // First, the outgoing message must be reflected.
+                        getExpectedD2dOutgoingReflectedMessage(messageProperties),
+
+                        // Note: This expects that the messages were sent in a synchronous manner in the order of
+                        // the users in the database.
+                        ...getExpectedCspMessagesForGroupMember(
+                            user2,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
+
+                        // Finally, an OutgoingMessageUpdate.Sent is reflected.
+                        getExpectedD2dOutgoingReflectedMessageUpdate(
+                            gateway.identity.string,
+                            groupStore.get().view.groupId,
+                        ),
+                    ],
+                });
             });
         });
 
