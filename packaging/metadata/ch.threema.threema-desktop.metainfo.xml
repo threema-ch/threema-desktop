@@ -21,22 +21,38 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
-        <release version="2.0~publicbeta15" date="2023-07-12">
+        <release version="2.0~publicbeta16" date="2023-07-13">
             <description>
                 <p>Improvements:</p>
                 <ul>
-                    <li>Implement new device linking</li>
+                    <li>New device linking based on QR-Code<br />
+                        <ul>
+                            <li>
+                                Please test this by unlinking and relinking the
+                                Threema desktop app with the latest iOS beta
+                                app. This will empty the chats in the desktop
+                                app.
+                            </li>
+                        </ul>
+                    </li>
+                    <li>Synchronization of profile pictures during linking</li>
                     <li>Allow changing password in user profile</li>
-                    <li>Improve file message preview in conversation list</li>
-                    <li>Improve group message preview in conversation list</li>
-                    <li>Improve error handling UX in file sending dialog</li>
+                    <li>Chats list: Improved text preview of group and file messages</li>
+                    <li>File sending dialog: Improved UX when errors are encountered while accessing files</li>
                 </ul>
-                <p>Bugfixes:</p>
+                <p>Fixes:</p>
                 <ul>
-                    <li>Better error handling when application cannot access a file</li>
-                    <li>Limit size of file messages</li>
+                    <li>Limit size of file messages to maximum supported by Threema (100 MB)</li>
+                    <li>Improve dialog that is shown when an invalid application state is detected</li>
+                    <li>Set initial window size to avoid scrollbars</li>
+                    <li>Embed fonts into application</li>
                 </ul>
                 <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
+        <release version="2.0~publicbeta15" date="2023-07-10">
+            <description>
+                <p>Internal release only, not published</p>
             </description>
         </release>
         <release version="2.0~preview14" date="2023-06-26">

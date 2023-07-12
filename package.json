@@ -3,8 +3,8 @@
   "productName": "Threema Beta",
   "description": "Use Threema on your Desktop",
   "author": "Threema GmbH",
-  "version": "2.0-beta15",
-  "versionCode": 17,
+  "version": "2.0-beta16",
+  "versionCode": 18,
   "license": "AGPL-3.0+",
   "homepage": "https://threema.ch/",
   "keywords": [
