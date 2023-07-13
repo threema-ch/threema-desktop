@@ -21,7 +21,7 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
-        <release version="2.0~publicbeta16" date="2023-07-13">
+        <release version="2.0~publicbeta17" date="2023-07-13">
             <description>
                 <p>Improvements:</p>
                 <ul>
@@ -48,6 +48,11 @@
                     <li>Embed fonts into application</li>
                 </ul>
                 <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
+        <release version="2.0~publicbeta16" date="2023-07-12">
+            <description>
+                <p>Internal release only, not published</p>
             </description>
         </release>
         <release version="2.0~publicbeta15" date="2023-07-10">
