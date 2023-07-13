@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 
-import {NACL_CONSTANTS, type PublicKey} from '~/common/crypto';
+import {ensureNonce, NACL_CONSTANTS, type NonceHash, type PublicKey} from '~/common/crypto';
+import {hashNonce} from '~/common/crypto/nonce';
 import {randomString} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
@@ -15,6 +16,7 @@ import {
     type DbGroupUid,
     type DbMessageCommon,
     type DbMessageUid,
+    type DbNonceUid,
     type DbReceiverLookup,
 } from '~/common/db';
 import {
@@ -31,6 +33,7 @@ import {
     MessageQueryDirection,
     MessageReaction,
     MessageType,
+    NonceScopeUtils,
     type NotificationSoundPolicy,
     ReceiverType,
     SyncState,
@@ -60,8 +63,12 @@ import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type Dimensions, type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
+import {Identity} from '~/common/utils/identity';
 import {hasProperty} from '~/common/utils/object';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
+
+import {makeTestServices} from './backend-mocks';
+import {expectSameNonceHashes} from './crypto/nonce.spec';
 
 /**
  * Available features of the database backend.
@@ -1627,6 +1634,108 @@ export function backendTests(
             expect(db.getSettings('profile')).to.be.eql(settingsWithFooNickname);
             db.setSettings('profile', settingsWithBarNickname);
             expect(db.getSettings('profile')).to.be.eql(settingsWithBarNickname);
+        });
+    });
+
+    describe('NonceDatabaseBackend', function () {
+        function makeRandomNonceHash(): NonceHash {
+            const identity = new Identity(ensureIdentityString('MEMEMEME'));
+            const services = makeTestServices(identity.string);
+            const randomNonce = ensureNonce(
+                services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+            );
+            return hashNonce(identity, randomNonce);
+        }
+        describe('hasNonce', function () {
+            it('returns undefined if the nonce was not persisted before', function () {
+                for (const scope of NonceScopeUtils.ALL) {
+                    const result = db.hasNonce(scope, makeRandomNonceHash());
+                    expect(result).to.be.undefined;
+                }
+            });
+            it("returns the nonce's uid if the nonce was persisted before", function () {
+                for (const scope of NonceScopeUtils.ALL) {
+                    const randomNonce = makeRandomNonceHash();
+                    const uid = db.addNonce(scope, randomNonce);
+                    const result = db.hasNonce(scope, randomNonce);
+                    expect(result).to.equal(uid);
+                }
+            });
+        });
+
+        describe('addNonce', function () {
+            it('persists a nonce that was not persisted before', function () {
+                for (const scope of NonceScopeUtils.ALL) {
+                    const randomNonce = makeRandomNonceHash();
+                    const uid = db.addNonce(scope, randomNonce);
+                    expect(uid >= 0n, 'Nonce UID should be a database uid');
+                    const result = db.hasNonce(scope, randomNonce);
+                    expect(result).to.equal(uid);
+                }
+            });
+            it('persists the same nonce correctly for different scopes', function () {
+                const randomNonce = makeRandomNonceHash();
+                let lastNonceUid: DbNonceUid | undefined = undefined;
+                for (const scope of NonceScopeUtils.ALL) {
+                    const uid = db.addNonce(scope, randomNonce);
+                    expect(uid).to.not.equal(lastNonceUid);
+                    lastNonceUid = uid;
+                    const result = db.hasNonce(scope, randomNonce);
+                    expect(result).to.equal(uid);
+                }
+            });
+            it('throws an error if nonce was persisted before', function () {
+                for (const scope of NonceScopeUtils.ALL) {
+                    const randomNonce = makeRandomNonceHash();
+                    const uid = db.addNonce(scope, randomNonce);
+                    expect(uid >= 0n, 'Nonce UID should be a database uid');
+
+                    // eslint-disable-next-line no-loop-func
+                    expect(() => db.addNonce(scope, randomNonce)).to.throw();
+                }
+            });
+        });
+
+        describe('getAllNonces', function () {
+            it('returns all persisted nonces for a scope.', function () {
+                for (const scope of NonceScopeUtils.ALL) {
+                    const randomNonces = Array(5)
+                        .fill(undefined)
+                        .map(() => makeRandomNonceHash());
+                    for (const randomNonce of randomNonces) {
+                        db.addNonce(scope, randomNonce);
+                    }
+
+                    const persistedNonces = db.getAllNonces(scope);
+                    expectSameNonceHashes(persistedNonces, randomNonces);
+                }
+            });
+        });
+
+        describe('addNonces', function () {
+            it('persists all passed nonces', function () {
+                for (const scope of NonceScopeUtils.ALL) {
+                    const noncesLength = 5;
+                    const randomNonces = Array(noncesLength)
+                        .fill(undefined)
+                        .map(() => makeRandomNonceHash());
+                    db.addNonces(scope, randomNonces);
+
+                    const persistedNonces = db.getAllNonces(scope);
+                    expectSameNonceHashes(persistedNonces, randomNonces);
+                }
+            });
+            it('throws if some nonces were stored before', function () {
+                for (const scope of NonceScopeUtils.ALL) {
+                    const randomNonces = Array(6)
+                        .fill(undefined)
+                        .map(() => makeRandomNonceHash());
+                    db.addNonce(scope, randomNonces[0]);
+
+                    // eslint-disable-next-line no-loop-func
+                    expect(() => db.addNonces(scope, randomNonces)).to.throw();
+                }
+            });
         });
     });
 }

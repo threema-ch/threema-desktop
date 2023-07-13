@@ -200,15 +200,15 @@ export function ensurePublicKey(key: ReadonlyUint8Array): PublicKey {
  */
 export type Nonce = WeakOpaque<Uint8Array, {readonly Nonce: unique symbol}>;
 
-export function isNonce(array: ReadonlyUint8Array): array is Nonce {
-    return array.byteLength === NACL_CONSTANTS.NONCE_LENGTH;
+export function isNonce(value: unknown): value is Nonce {
+    return value instanceof Uint8Array && value.byteLength === NACL_CONSTANTS.NONCE_LENGTH;
 }
 
-export function ensureNonce(array: ReadonlyUint8Array): Nonce {
-    if (!isNonce(array)) {
-        throw new Error(`Array of length ${array.byteLength} is not a valid nonce`);
+export function ensureNonce(value: ReadonlyUint8Array): Nonce {
+    if (!isNonce(value)) {
+        throw new Error(`Array of length ${value.byteLength} is not a valid nonce`);
     }
-    return array;
+    return value;
 }
 
 /**

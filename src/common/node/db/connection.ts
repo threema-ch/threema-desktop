@@ -6,7 +6,7 @@ import {SqliteConnection} from 'ts-sql-query/connections/SqliteConnection';
 import {type QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
 import {type SqliteSqlBuilder} from 'ts-sql-query/sqlBuilders/SqliteSqlBuilder';
 
-import {isPublicKey, isReadonlyRawKey} from '~/common/crypto';
+import {isNonceHash, isPublicKey, isReadonlyRawKey} from '~/common/crypto';
 import {
     DATABASE_KEY_LENGTH,
     type DbContactUid,
@@ -17,6 +17,7 @@ import {
     type DbGroupMemberUid,
     type DbGroupUid,
     type DbMessageUid,
+    type DbNonceUid,
 } from '~/common/db';
 import {
     AcquaintanceLevelUtils,
@@ -32,6 +33,7 @@ import {
     ImageRenderingTypeUtils,
     MessageReactionUtils,
     MessageTypeUtils,
+    NonceScopeUtils,
     NotificationSoundPolicyUtils,
     ReadReceiptPolicyUtils,
     SyncStateUtils,
@@ -73,6 +75,7 @@ export const CUSTOM_TYPES = {
     GROUP_MEMBER_UID: 'DbGroupMemberUid',
     FILE_DATA_UID: 'DbFileDataUid',
     GLOBAL_PROPERTY_UID: 'DbGlobalPropertyUid',
+    NONCE_UID: 'DbNonceUid',
 
     // Enums (value constraints)
     ACQUAINTANCE_LEVEL: 'AcquaintanceLevel',
@@ -94,6 +97,7 @@ export const CUSTOM_TYPES = {
     TYPING_INDICATOR_POLICY: 'TypingIndicatorPolicy',
     VERIFICATION_LEVEL: 'VerificationLevel',
     WORK_VERIFICATION_LEVEL: 'WorkVerificationLevel',
+    NONCE_SCOPE: 'NonceScope',
 
     // New-types (value constraints and tagging)
     BLOB_ID: 'BlobId',
@@ -102,6 +106,7 @@ export const CUSTOM_TYPES = {
     IDENTITY: 'IdentityString',
     PUBLIC_KEY: 'PublicKey',
     NICKNAME: 'Nickname',
+    NONCE_HASH: 'NonceHash',
 
     // Mapped types (value constraints, mapping and optional tagging)
     BLOB_KEY: 'RawBlobKey',
@@ -250,6 +255,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return typeof value === 'bigint' ? (value as DbMessageUid) : fail();
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
                 return typeof value === 'bigint' ? (value as DbGlobalPropertyUid) : fail();
+            case CUSTOM_TYPES.NONCE_UID:
+                return typeof value === 'bigint' ? (value as DbNonceUid) : fail();
 
             // Enums (value constraints)
             case CUSTOM_TYPES.ACQUAINTANCE_LEVEL:
@@ -290,6 +297,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return u64ToU53(value, VerificationLevelUtils.contains);
             case CUSTOM_TYPES.WORK_VERIFICATION_LEVEL:
                 return u64ToU53(value, WorkVerificationLevelUtils.contains);
+            case CUSTOM_TYPES.NONCE_SCOPE:
+                return u64ToU53(value, NonceScopeUtils.contains);
 
             // New-types (value constraints and tagging)
             case CUSTOM_TYPES.BLOB_ID:
@@ -304,6 +313,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return isPublicKey(value) ? value : fail();
             case CUSTOM_TYPES.NICKNAME:
                 return isNickname(value) ? value : undefined;
+            case CUSTOM_TYPES.NONCE_HASH:
+                return isNonceHash(value) ? value : fail();
 
             // Mapped types (value constraints, mapping and optional tagging)
             case CUSTOM_TYPES.BLOB_KEY:
@@ -388,6 +399,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.FILE_DATA_UID:
             case CUSTOM_TYPES.MESSAGE_UID:
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
+            case CUSTOM_TYPES.NONCE_UID:
                 // No transformation
                 return value;
 
@@ -411,6 +423,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.TYPING_INDICATOR_POLICY:
             case CUSTOM_TYPES.VERIFICATION_LEVEL:
             case CUSTOM_TYPES.WORK_VERIFICATION_LEVEL:
+            case CUSTOM_TYPES.NONCE_SCOPE:
                 // No transformation
                 return value;
 
@@ -421,6 +434,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.IDENTITY:
             case CUSTOM_TYPES.NICKNAME:
             case CUSTOM_TYPES.PUBLIC_KEY:
+            case CUSTOM_TYPES.NONCE_HASH:
                 // No transformation
                 return value;
 

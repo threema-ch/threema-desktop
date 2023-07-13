@@ -1,5 +1,5 @@
 import {type ServicesForBackend} from '~/common/backend';
-import {type PublicKey, type RawKey, wrapRawKey} from '~/common/crypto';
+import {type NonceHash, type PublicKey, type RawKey, wrapRawKey} from '~/common/crypto';
 import {
     type AcquaintanceLevel,
     type ActivityState,
@@ -15,6 +15,7 @@ import {
     type MessageQueryDirection,
     type MessageReaction,
     type MessageType,
+    type NonceScope,
     type NotificationSoundPolicy,
     type ReadReceiptPolicy,
     type ReceiverType,
@@ -466,6 +467,17 @@ export interface DbGlobalProperty<TKey extends GlobalPropertyKey> {
 }
 
 /**
+ * A database message UID.
+ */
+export type DbNonceUid = WeakOpaque<DbUid, {readonly DbNonceUid: unique symbol}>;
+
+export interface DbNonce {
+    readonly uid: DbNonceUid;
+    readonly scope: NonceScope;
+    readonly nonce: NonceHash;
+}
+
+/**
  * The {@link DatabaseBackend} is an interface that abstracts away all calls directed at a concrete
  * database backend implementation. This allows implementing multiple persistence layers, e.g. an
  * in-memory store or an SQLite store.
@@ -474,7 +486,7 @@ export interface DbGlobalProperty<TKey extends GlobalPropertyKey> {
  *   additional properties must be provided). Use {@link createExactPropertyValidator} appropriately
  *   in the associated model.
  */
-export interface DatabaseBackend {
+export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Create a new contact and an associated conversation.
      */
@@ -750,4 +762,29 @@ export interface DatabaseBackend {
     readonly getGlobalProperty: <TKey extends GlobalPropertyKey>(
         key: TKey,
     ) => DbGet<DbGlobalProperty<TKey>>;
+}
+
+export interface NonceDatabaseBackend {
+    /**
+     * Create a nonce in a specific nonce scope.
+     *
+     * @throws Error if the nonce already exists.
+     */
+    readonly addNonce: (scope: NonceScope, value: NonceHash) => DbCreated<DbNonce>;
+
+    /**
+     * Add multiple nonces to the database
+     */
+    readonly addNonces: (scope: NonceScope, nonces: NonceHash[]) => void;
+
+    /**
+     * Get the UID for a nonce if it exist. If the property does not exist in the underlying
+     * storage, 'undefined' will be returned.
+     */
+    readonly hasNonce: (scope: NonceScope, value: NonceHash) => DbHas<DbNonce>;
+
+    /**
+     * Get all nonces for a specific scope.
+     */
+    readonly getAllNonces: (scope: NonceScope) => NonceHash[];
 }

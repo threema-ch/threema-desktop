@@ -6,6 +6,7 @@ import {ConsoleLogQueryRunner} from 'ts-sql-query/queryRunners/ConsoleLogQueryRu
 import {type QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
 import {type ColumnsForSetOf, type OuterJoinSourceOf} from 'ts-sql-query/utils/tableOrViewUtils';
 
+import {type NonceHash} from '~/common/crypto';
 import {
     type DatabaseBackend,
     type DbAnyMessage,
@@ -31,6 +32,8 @@ import {
     type DbList,
     type DbMessageCommon,
     type DbMessageUid,
+    type DbNonce,
+    type DbNonceUid,
     type DbReceiverLookup,
     type DbRemove,
     type DbTextMessage,
@@ -45,6 +48,7 @@ import {
     MessageQueryDirection,
     type MessageReaction,
     MessageType,
+    type NonceScope,
     ReceiverType,
 } from '~/common/enum';
 import {type FileId} from '~/common/file-storage';
@@ -71,6 +75,7 @@ import {
     tMessageFileData,
     tMessageImageData,
     tMessageTextData,
+    tNonce,
     tSettings,
 } from './tables';
 
@@ -1943,6 +1948,55 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             return undefined;
         }
         return {...queryResult, key};
+    }
+
+    /** @inheritdoc */
+    public addNonce(scope: NonceScope, nonce: NonceHash): DbNonceUid {
+        const uid = sync(
+            this._db
+                .insertInto(tNonce)
+                .set({scope, nonce})
+                .returningLastInsertedId()
+                .executeInsert(),
+        );
+
+        return uid;
+    }
+
+    /** @inheritdoc */
+    public addNonces(scope: NonceScope, nonces: NonceHash[]): void {
+        const values: {
+            readonly scope: NonceScope;
+            readonly nonce: NonceHash;
+        }[] = nonces.map((nonce) => ({
+            scope,
+            nonce,
+        }));
+        sync(this._db.insertInto(tNonce).values(values).executeInsert());
+    }
+
+    /** @inheritdoc */
+    public hasNonce(scope: NonceScope, nonce: NonceHash): DbHas<DbNonce> {
+        return (
+            sync(
+                this._db
+                    .selectFrom(tNonce)
+                    .selectOneColumn(tNonce.uid)
+                    .where(tNonce.scope.equals(scope).and(tNonce.nonce.equals(nonce)))
+                    .executeSelectNoneOrOne(),
+            ) ?? undefined
+        );
+    }
+
+    /** @inheritdoc */
+    public getAllNonces(scope: NonceScope): NonceHash[] {
+        return sync(
+            this._db
+                .selectFrom(tNonce)
+                .selectOneColumn(tNonce.nonce)
+                .where(tNonce.scope.equals(scope))
+                .executeSelectMany(),
+        );
     }
 
     /* eslint-enable @typescript-eslint/member-ordering */
