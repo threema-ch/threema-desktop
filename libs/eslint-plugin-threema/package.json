@@ -17,6 +17,6 @@
   "license": "AGPL-3.0+",
   "devDependencies": {
     "@typescript-eslint/utils": "~5.60.1",
-    "typescript": "~5.0.4"
+    "typescript": "~5.1.6"
   }
 }
