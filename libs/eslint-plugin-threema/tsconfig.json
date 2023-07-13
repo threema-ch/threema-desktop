@@ -9,8 +9,6 @@
     "allowUnreachableCode": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
-    "isolatedModules": true,
     "newLine": "lf",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
@@ -19,6 +17,7 @@
     "removeComments": true,
     "sourceMap": false,
     "strict": true,
+    "verbatimModuleSyntax": false
   },
 
   "include": ["src/**.ts"]

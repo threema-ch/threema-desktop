@@ -11,12 +11,12 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf build",
-    "install": "npm run build"
+    "postinstall": "npm run build"
   },
   "author": "Threema GmbH",
   "license": "AGPL-3.0+",
   "devDependencies": {
     "@typescript-eslint/utils": "~5.60.1",
-    "typescript": "~4.9.4"
+    "typescript": "~5.0.4"
   }
 }
