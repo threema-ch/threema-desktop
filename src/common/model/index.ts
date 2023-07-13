@@ -747,9 +747,10 @@ export type GroupRepository = {
     /**
      * Add a group and handle the protocol flow according to the source.
      *
+     * TODO(DESK-558): Handle the member list with models.
+     *
      * @param init The group data
      * @param members The members list (including the creator)
-     * TODO(DESK-558): Handle the member list with models.
      */
     readonly add: ControllerUpdateFromSource<
         [init: GroupInit, members: DbContactUid[]],

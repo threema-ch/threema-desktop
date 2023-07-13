@@ -74,6 +74,7 @@ export class AbortRaiser {
 
     /**
      * Subscribe to an abort signal.
+     *
      * @param subscriber An abort signal subscriber.
      * @returns An unsubscriber for this specific subscriber.
      */

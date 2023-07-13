@@ -230,6 +230,7 @@ export function sortMessages(
 
 /**
  * TODO(DESK-536): Temporary solution, which will get replaced after DESK-536 is implemented
+ *
  * @param date Date
  * @returns string ISO formatted DateTime
  */
@@ -249,6 +250,7 @@ export function getDateTimeIsoString(date: Date): string {
 
 /**
  * TODO(DESK-536): Temporary solution, which will get replaced after DESK-536 is implemented
+ *
  * @param date Date
  * @returns string ISO formatted Time
  */

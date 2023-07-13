@@ -7,6 +7,7 @@ import {type D2mMessage, type D2mPayloadType} from '.';
 /**
  * Decode a D2M payload and uplift it into another D2M payload via its payload
  * decoder.
+ *
  * @param packet The D2M payload.
  * @param payloadDecoder The decoder that transforms the inner payload.
  * @returns an uplifted D2M payload.

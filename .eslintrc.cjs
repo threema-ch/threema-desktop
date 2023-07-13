@@ -215,7 +215,7 @@ module.exports = {
     },
 
     settings: {
-        'jsdoc': {},
+        jsdoc: {},
     },
 
     env: {
@@ -576,7 +576,7 @@ module.exports = {
         'jsdoc/check-alignment': 'off',
         'jsdoc/check-examples': 'off',
         'jsdoc/check-indentation': 'off',
-        'jsdoc/check-line-alignment': 'error',
+        'jsdoc/check-line-alignment': ['error', 'never', {wrapIndent: '  '}],
         'jsdoc/check-param-names': [
             // TODO(DESK-680): Reactivate once we can turn off strict ordering of parameters, so we
             // can omit some parameters.
@@ -599,7 +599,6 @@ module.exports = {
         'jsdoc/implements-on-classes': 'off',
         'jsdoc/match-description': 'off',
         'jsdoc/multiline-blocks': 'error',
-        'jsdoc/newline-after-description': 'error',
         'jsdoc/no-bad-blocks': 'error',
         'jsdoc/no-defaults': 'off',
         'jsdoc/no-missing-syntax': 'off',
@@ -643,7 +642,7 @@ module.exports = {
         'jsdoc/require-throws': 'error',
         'jsdoc/require-yields': 'off',
         'jsdoc/require-yields-check': 'error',
-        'jsdoc/tag-lines': 'error',
+        'jsdoc/tag-lines': ['error', 'never', {startLines: 1}],
         'jsdoc/valid-types': 'off',
 
         // Import sorting extension
@@ -684,7 +683,6 @@ module.exports = {
 
                 // TODO (jsdoc): Remove these rules
                 'jsdoc/require-jsdoc': 'off',
-                'jsdoc/newline-after-description': 'off',
                 'jsdoc/require-throws': 'off',
             },
         },

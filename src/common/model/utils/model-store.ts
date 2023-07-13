@@ -82,6 +82,7 @@ export class LocalModelStore<
 
     /**
      * Create an updatedable model store.
+     *
      * @param view The initial view.
      * @param controller The controller for the store.
      * @param ctx Context to be transmitted.
@@ -214,6 +215,7 @@ export class RemoteModelStore<
 
     /**
      * Create a remote model store reader, attached to a local model store.
+     *
      * @param service Endpoint service.
      * @param id Object id that was assigned to the store.
      * @param view The initial view data and endpoint.
@@ -266,6 +268,7 @@ export class RemoteModelStore<
 
     /**
      * Expose a local model store via the provided endpoints.
+     *
      * @param service Endpoint service.
      * @param storeListener A local store listener to attach to.
      * @param view The initial view of the store.

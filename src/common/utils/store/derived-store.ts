@@ -123,7 +123,7 @@ export type DeriveFunction<TSourceStore extends IQueryableStore<unknown>, TDeriv
  *
  * @param sourceStore The source store to derive values from.
  * @param deriveFunction Transform function for aggregating values from the source store. See
- *                       {@link DeriveFunction} for a description of the parameters.
+ *   {@link DeriveFunction} for a description of the parameters.
  * @returns a {@link DerivedStore} of the {@link sourceStore}.
  */
 export function derive<
@@ -171,7 +171,7 @@ export class DerivedStore<
      *
      * @param _sourceStore The source store to derive values from.
      * @param _derive Transform function for aggregating values from the source store. See
-     *                {@link DeriveFunction} for a description of the parameters.
+     *   {@link DeriveFunction} for a description of the parameters.
      * @param options Additional store options.
      */
     public constructor(

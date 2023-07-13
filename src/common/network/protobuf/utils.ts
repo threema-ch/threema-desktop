@@ -70,6 +70,7 @@ function createInPlaceWriter(array: Uint8Array): Writer {
     class InPlaceWriter extends Writer {
         /**
          * Creates a view on top of the underlying array for the specified size.
+         *
          * @param size Requested buffer size.
          * @returns The underlying buffer view.
          * @throws {Error} in case the underlying buffer is too small.

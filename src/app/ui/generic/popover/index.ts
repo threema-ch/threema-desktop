@@ -66,13 +66,13 @@ type Flip = (typeof flips)[u53];
  *
  * @param constraintContainer The container element that constrains the positioning of this popover.
  * @param positioningContainer The container element that is used as the origin to calculate
- * relative positioning.
+ *   relative positioning.
  * @param reference Element or virtual element that the popover will be anchored to.
  * @param popover The popover element.
  * @param anchorPoints Configuration of where the popover should attach to the anchor.
  * @param offset An optional offset to move the popover relative to the anchor.
  * @param flip Whether the popover should flip so that it doesn't overflow the
- * `constraintContainer`.
+ *   `constraintContainer`.
  * @returns The {@link Offset} the popover should move to be at the desired position.
  */
 export function getPopoverOffset(
@@ -130,7 +130,7 @@ export function getPopoverOffset(
  * desired position without considering any constraints.
  *
  * @param positioningContainer The container element that is used as the origin to calculate
- * relative positioning.
+ *   relative positioning.
  * @param reference Element or virtual element that the popover will be anchored to.
  * @param popover The popover element.
  * @param anchorPoints Configuration of where the popover should attach to the anchor.
@@ -220,7 +220,7 @@ function getUntransformedBoundingClientRect(element: HTMLElement): PartialDOMRec
  *
  * @param rect The {@link PartialDOMRect} that the `rectPoint` belongs to.
  * @param rectPoint The {@link RectPoint} to calculate its {@link Offset} from (relative to the
- * `rect`).
+ *   `rect`).
  * @returns The distance of the `rectPoint` relative to the `rect`.
  */
 function getRectPointOffset(rect: PartialDOMRect, rectPoint: RectPoint): Offset {

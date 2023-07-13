@@ -76,6 +76,7 @@ export type IQueryableStoreValue<TStore extends IQueryableStore<unknown>> =
 export interface IWritableStore<in TValue> {
     /**
      * Set the current value.
+     *
      * @param value The new value.
      */
     readonly set: (value: TValue) => void;
@@ -207,6 +208,7 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
 
     /**
      * Create a readable store.
+     *
      * @param _value The initial value.
      * @param options Additional store options.
      */

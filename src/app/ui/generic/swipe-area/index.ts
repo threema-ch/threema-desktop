@@ -5,6 +5,7 @@ export class SwipeAreaGroup {
 
     /**
      * Replace the currently active swipe area.
+     *
      * @param active Reset function of the swipe area to be activated.
      */
     public replace(active: ResetFn): void {
@@ -17,6 +18,7 @@ export class SwipeAreaGroup {
 
     /**
      * Remove the currently active swipe area (if it is still active).
+     *
      * @param active Reset function of a presumably active swipe area.
      */
     public remove(active: ResetFn): void {

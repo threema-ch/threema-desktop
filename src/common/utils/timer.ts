@@ -17,6 +17,7 @@ export type TimerCallback = (canceller: TimerCanceller) => void;
 export interface Timer {
     /**
      * Sleep asynchronously for the given timeout.
+     *
      * @param timeoutMs Amount of milliseconds to sleep.
      */
     readonly sleep: (timeoutMs: u53) => Promise<void>;
@@ -24,6 +25,7 @@ export interface Timer {
     /**
      * Calls the given callback once the given delay elapsed until the canceller function has been
      * invoked.
+     *
      * @param callback The callback to be called in the given delay.
      * @param delayMs Amount of milliseconds to wait.
      * @returns A function that allows to cancel the timer.
@@ -33,6 +35,7 @@ export interface Timer {
     /**
      * Calls the given callback repetitively until the canceller function has
      * been invoked.
+     *
      * @param callback The callback to be called in the given interval.
      * @param intervalMs Amount of milliseconds to wait in between the calls.
      * @returns A function that allows to cancel the timer.

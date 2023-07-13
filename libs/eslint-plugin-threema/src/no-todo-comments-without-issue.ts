@@ -26,9 +26,9 @@ export default createRule({
 
         /**
          * Check whether the comment contains a unreferenced todo statement at the beginning of a comment line.
-         * 
+         *
          * @param node Comment node
-         * @returns boolean 
+         * @returns boolean
          */
         function containsUnreferencedTodo(node: TSESTree.Comment): boolean {
             const regeExp = node.type === TSESTree.AST_TOKEN_TYPES.Line ? singleLineRegexp : multiLineRegexp;

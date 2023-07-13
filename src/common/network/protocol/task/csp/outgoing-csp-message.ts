@@ -278,7 +278,7 @@ export class OutgoingCspMessageTask<
      * Encrypt, serialize and send message to CSP for all recipients.
      *
      * @returns Promise that resolves whether all messages have been queued on the chat server with
-     * a count of how many messages were sent.
+     *   a count of how many messages were sent.
      */
     private async _encryptAndSendMessages(
         handle: InternalActiveTaskCodecHandle,

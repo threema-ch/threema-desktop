@@ -34,6 +34,7 @@ export type Mention =
 
 /**
  * Parse and return mention strings of text
+ *
  * @returns Set of parsed identystrings or `@@@@@@@`
  */
 function getMentionedIdentityStrings(
