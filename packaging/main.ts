@@ -611,7 +611,6 @@ async function buildDmg(
 
     // Variables depending on build flavor
     const appName = determineAppName(flavor);
-    const appBundleId = determineAppRdn(flavor);
     let dmgName;
     let installerBackgroundFilename;
     let iconFilename;
@@ -681,7 +680,6 @@ async function buildDmg(
         );
         await notarizeAsync({
             tool: 'notarytool',
-            appBundleId,
             appPath,
             keychain,
             keychainProfile,
