@@ -3,7 +3,8 @@ import {ConsoleLogger} from '~/common/logging';
 
 class DomConsoleLogger extends ConsoleLogger {
     public readonly error = (...data: readonly unknown[]): void => {
-        super.error(...data);
+        // eslint-disable-next-line no-console
+        console.error(...data);
 
         let logTag: string | undefined;
         let message = '';
