@@ -43,7 +43,8 @@ export interface ProfileSettings_ProfilePictureShareWith {
         | {
               $case: 'allowList';
               allowList: Identities;
-          };
+          }
+        | undefined;
 }
 
 /** Privacy settings */
@@ -176,16 +177,17 @@ export const Unit = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): Unit {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseUnit();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
-                default:
-                    reader.skipType(tag & 7);
-                    break;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
@@ -204,19 +206,24 @@ export const Identities = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): Identities {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseIdentities();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
                     message.identities.push(reader.string());
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
@@ -244,26 +251,39 @@ export const ProfileSettings = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): ProfileSettings {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseProfileSettings();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
                     message.nickname = reader.string();
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
                     message.profilePicture = reader.bytes();
-                    break;
+                    continue;
                 case 3:
+                    if (tag !== 26) {
+                        break;
+                    }
+
                     message.profilePictureShareWith =
                         ProfileSettings_ProfilePictureShareWith.decode(reader, reader.uint32());
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
@@ -278,14 +298,16 @@ export const ProfileSettings_ProfilePictureShareWith = {
         message: ProfileSettings_ProfilePictureShareWith,
         writer: _m0.Writer = _m0.Writer.create(),
     ): _m0.Writer {
-        if (message.policy?.$case === 'nobody') {
-            Unit.encode(message.policy.nobody, writer.uint32(10).fork()).ldelim();
-        }
-        if (message.policy?.$case === 'everyone') {
-            Unit.encode(message.policy.everyone, writer.uint32(18).fork()).ldelim();
-        }
-        if (message.policy?.$case === 'allowList') {
-            Identities.encode(message.policy.allowList, writer.uint32(26).fork()).ldelim();
+        switch (message.policy?.$case) {
+            case 'nobody':
+                Unit.encode(message.policy.nobody, writer.uint32(10).fork()).ldelim();
+                break;
+            case 'everyone':
+                Unit.encode(message.policy.everyone, writer.uint32(18).fork()).ldelim();
+                break;
+            case 'allowList':
+                Identities.encode(message.policy.allowList, writer.uint32(26).fork()).ldelim();
+                break;
         }
         return writer;
     },
@@ -294,34 +316,47 @@ export const ProfileSettings_ProfilePictureShareWith = {
         input: _m0.Reader | Uint8Array,
         length?: number,
     ): ProfileSettings_ProfilePictureShareWith {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseProfileSettings_ProfilePictureShareWith();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
                     message.policy = {
                         $case: 'nobody',
                         nobody: Unit.decode(reader, reader.uint32()),
                     };
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
                     message.policy = {
                         $case: 'everyone',
                         everyone: Unit.decode(reader, reader.uint32()),
                     };
-                    break;
+                    continue;
                 case 3:
+                    if (tag !== 26) {
+                        break;
+                    }
+
                     message.policy = {
                         $case: 'allowList',
                         allowList: Identities.decode(reader, reader.uint32()),
                     };
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
@@ -370,40 +405,73 @@ export const PrivacySettings = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): PrivacySettings {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBasePrivacySettings();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 8) {
+                        break;
+                    }
+
                     message.contactSyncPolicy = reader.int32() as any;
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 16) {
+                        break;
+                    }
+
                     message.unknownContactPolicy = reader.int32() as any;
-                    break;
+                    continue;
                 case 3:
+                    if (tag !== 24) {
+                        break;
+                    }
+
                     message.readReceiptPolicy = reader.int32() as any;
-                    break;
+                    continue;
                 case 4:
+                    if (tag !== 32) {
+                        break;
+                    }
+
                     message.typingIndicatorPolicy = reader.int32() as any;
-                    break;
+                    continue;
                 case 5:
+                    if (tag !== 40) {
+                        break;
+                    }
+
                     message.screenshotPolicy = reader.int32() as any;
-                    break;
+                    continue;
                 case 6:
+                    if (tag !== 48) {
+                        break;
+                    }
+
                     message.keyboardDataCollectionPolicy = reader.int32() as any;
-                    break;
+                    continue;
                 case 7:
+                    if (tag !== 58) {
+                        break;
+                    }
+
                     message.blockedIdentities = Identities.decode(reader, reader.uint32());
-                    break;
+                    continue;
                 case 8:
+                    if (tag !== 66) {
+                        break;
+                    }
+
                     message.excludeFromSyncIdentities = Identities.decode(reader, reader.uint32());
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
@@ -425,22 +493,31 @@ export const CallsSettings = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): CallsSettings {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseCallsSettings();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 8) {
+                        break;
+                    }
+
                     message.callPolicy = reader.int32() as any;
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 16) {
+                        break;
+                    }
+
                     message.callConnectionPolicy = reader.int32() as any;
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },

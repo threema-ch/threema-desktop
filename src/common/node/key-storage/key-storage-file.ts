@@ -20,7 +20,9 @@ export interface EncryptedKeyStorage {
      *    `extra.crypto.encrypted-data-with-nonce-ahead` struct).
      */
     encryptedKeyStorage: Uint8Array;
-    kdfParameters?: {$case: 'argon2id'; argon2id: EncryptedKeyStorage_Argon2idParameters};
+    kdfParameters?:
+        | {$case: 'argon2id'; argon2id: EncryptedKeyStorage_Argon2idParameters}
+        | undefined;
 }
 
 /**
@@ -90,7 +92,7 @@ export interface DecryptedKeyStorage {
 }
 
 function createBaseEncryptedKeyStorage(): EncryptedKeyStorage {
-    return {schemaVersion: 0, encryptedKeyStorage: new Uint8Array(), kdfParameters: undefined};
+    return {schemaVersion: 0, encryptedKeyStorage: new Uint8Array(0), kdfParameters: undefined};
 }
 
 export const EncryptedKeyStorage = {
@@ -101,29 +103,43 @@ export const EncryptedKeyStorage = {
         if (message.encryptedKeyStorage.length !== 0) {
             writer.uint32(10).bytes(message.encryptedKeyStorage);
         }
-        if (message.kdfParameters?.$case === 'argon2id') {
-            EncryptedKeyStorage_Argon2idParameters.encode(
-                message.kdfParameters.argon2id,
-                writer.uint32(18).fork(),
-            ).ldelim();
+        switch (message.kdfParameters?.$case) {
+            case 'argon2id':
+                EncryptedKeyStorage_Argon2idParameters.encode(
+                    message.kdfParameters.argon2id,
+                    writer.uint32(18).fork(),
+                ).ldelim();
+                break;
         }
         return writer;
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): EncryptedKeyStorage {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseEncryptedKeyStorage();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 3:
+                    if (tag !== 24) {
+                        break;
+                    }
+
                     message.schemaVersion = reader.uint32();
-                    break;
+                    continue;
                 case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
                     message.encryptedKeyStorage = reader.bytes();
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
                     message.kdfParameters = {
                         $case: 'argon2id',
                         argon2id: EncryptedKeyStorage_Argon2idParameters.decode(
@@ -131,18 +147,19 @@ export const EncryptedKeyStorage = {
                             reader.uint32(),
                         ),
                     };
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
 };
 
 function createBaseEncryptedKeyStorage_Argon2idParameters(): EncryptedKeyStorage_Argon2idParameters {
-    return {version: 0, salt: new Uint8Array(), memoryBytes: 0, iterations: 0, parallelism: 0};
+    return {version: 0, salt: new Uint8Array(0), memoryBytes: 0, iterations: 0, parallelism: 0};
 }
 
 export const EncryptedKeyStorage_Argon2idParameters = {
@@ -172,38 +189,59 @@ export const EncryptedKeyStorage_Argon2idParameters = {
         input: _m0.Reader | Uint8Array,
         length?: number,
     ): EncryptedKeyStorage_Argon2idParameters {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseEncryptedKeyStorage_Argon2idParameters();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 8) {
+                        break;
+                    }
+
                     message.version = reader.int32() as any;
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
                     message.salt = reader.bytes();
-                    break;
+                    continue;
                 case 3:
+                    if (tag !== 24) {
+                        break;
+                    }
+
                     message.memoryBytes = reader.uint32();
-                    break;
+                    continue;
                 case 4:
+                    if (tag !== 32) {
+                        break;
+                    }
+
                     message.iterations = reader.uint32();
-                    break;
+                    continue;
                 case 5:
+                    if (tag !== 40) {
+                        break;
+                    }
+
                     message.parallelism = reader.uint32();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
 };
 
 function createBaseIdentityData(): IdentityData {
-    return {identity: '', ck: new Uint8Array(), deprecatedServerGroup: 0, serverGroup: ''};
+    return {identity: '', ck: new Uint8Array(0), deprecatedServerGroup: 0, serverGroup: ''};
 }
 
 export const IdentityData = {
@@ -224,28 +262,45 @@ export const IdentityData = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): IdentityData {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseIdentityData();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
                     message.identity = reader.string();
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
                     message.ck = reader.bytes();
-                    break;
+                    continue;
                 case 3:
+                    if (tag !== 24) {
+                        break;
+                    }
+
                     message.deprecatedServerGroup = reader.uint32();
-                    break;
+                    continue;
                 case 4:
+                    if (tag !== 34) {
+                        break;
+                    }
+
                     message.serverGroup = reader.string();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
@@ -267,22 +322,31 @@ export const DeviceIds = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): DeviceIds {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseDeviceIds();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 1:
+                    if (tag !== 8) {
+                        break;
+                    }
+
                     message.d2mDeviceId = reader.uint64() as Long;
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 16) {
+                        break;
+                    }
+
                     message.cspDeviceId = reader.uint64() as Long;
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },
@@ -292,8 +356,8 @@ function createBaseDecryptedKeyStorage(): DecryptedKeyStorage {
     return {
         schemaVersion: 0,
         identityData: undefined,
-        dgk: new Uint8Array(),
-        databaseKey: new Uint8Array(),
+        dgk: new Uint8Array(0),
+        databaseKey: new Uint8Array(0),
         deviceIds: undefined,
     };
 }
@@ -319,31 +383,52 @@ export const DecryptedKeyStorage = {
     },
 
     decode(input: _m0.Reader | Uint8Array, length?: number): DecryptedKeyStorage {
-        const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
         let end = length === undefined ? reader.len : reader.pos + length;
         const message = createBaseDecryptedKeyStorage();
         while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
                 case 5:
+                    if (tag !== 40) {
+                        break;
+                    }
+
                     message.schemaVersion = reader.uint32();
-                    break;
+                    continue;
                 case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
                     message.identityData = IdentityData.decode(reader, reader.uint32());
-                    break;
+                    continue;
                 case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
                     message.dgk = reader.bytes();
-                    break;
+                    continue;
                 case 3:
+                    if (tag !== 26) {
+                        break;
+                    }
+
                     message.databaseKey = reader.bytes();
-                    break;
+                    continue;
                 case 4:
+                    if (tag !== 34) {
+                        break;
+                    }
+
                     message.deviceIds = DeviceIds.decode(reader, reader.uint32());
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+                    continue;
             }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
         }
         return message;
     },

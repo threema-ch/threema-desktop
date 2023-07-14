@@ -188,18 +188,22 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.id = reader.bytes();
-                    break;
-                case 2:
-                    message.nonce = reader.bytes();
-                    break;
-                case 3:
-                    message.key = reader.bytes();
-                    break;
-                case 4:
-                    message.uploadedAt = reader.uint64();
-                    break;
+                case 1: {
+                        message.id = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.nonce = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.key = reader.bytes();
+                        break;
+                    }
+                case 4: {
+                        message.uploadedAt = reader.uint64();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -289,12 +293,14 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.id = reader.bytes();
-                    break;
-                case 2:
-                    message.data = reader.bytes();
-                    break;
+                case 1: {
+                        message.id = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.data = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -384,12 +390,14 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.type = reader.int32();
-                    break;
-                case 2:
-                    message.blob = $root.common.Blob.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.type = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.blob = $root.common.Blob.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -491,12 +499,14 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.groupId = reader.fixed64();
-                    break;
-                case 2:
-                    message.creatorIdentity = reader.string();
-                    break;
+                case 1: {
+                        message.groupId = reader.fixed64();
+                        break;
+                    }
+                case 2: {
+                        message.creatorIdentity = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -600,12 +610,14 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.removed = $root.common.Unit.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.updated = $root.common.Image.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.removed = $root.common.Unit.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.updated = $root.common.Image.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -695,12 +707,14 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.from = reader.uint64();
-                    break;
-                case 2:
-                    message.to = reader.uint64();
-                    break;
+                case 1: {
+                        message.from = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.to = reader.uint64();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -781,11 +795,12 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    if (!(message.identities && message.identities.length))
-                        message.identities = [];
-                    message.identities.push(reader.string());
-                    break;
+                case 1: {
+                        if (!(message.identities && message.identities.length))
+                            message.identities = [];
+                        message.identities.push(reader.string());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -875,12 +890,14 @@ export const common = $root.common = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.width = reader.uint32();
-                    break;
-                case 2:
-                    message.height = reader.uint32();
-                    break;
+                case 1: {
+                        message.width = reader.uint32();
+                        break;
+                    }
+                case 2: {
+                        message.height = reader.uint32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -1154,24 +1171,30 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.sessionId = reader.bytes();
-                    break;
-                case 2:
-                    message.init = $root.csp_e2e_fs.ForwardSecurityEnvelope.Init.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.accept = $root.csp_e2e_fs.ForwardSecurityEnvelope.Accept.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.reject = $root.csp_e2e_fs.ForwardSecurityEnvelope.Reject.decode(reader, reader.uint32());
-                    break;
-                case 5:
-                    message.terminate = $root.csp_e2e_fs.ForwardSecurityEnvelope.Terminate.decode(reader, reader.uint32());
-                    break;
-                case 6:
-                    message.message = $root.csp_e2e_fs.ForwardSecurityEnvelope.Message.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.sessionId = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.init = $root.csp_e2e_fs.ForwardSecurityEnvelope.Init.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.accept = $root.csp_e2e_fs.ForwardSecurityEnvelope.Accept.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.reject = $root.csp_e2e_fs.ForwardSecurityEnvelope.Reject.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 5: {
+                        message.terminate = $root.csp_e2e_fs.ForwardSecurityEnvelope.Terminate.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 6: {
+                        message.message = $root.csp_e2e_fs.ForwardSecurityEnvelope.Message.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -1247,9 +1270,10 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.fssk = reader.bytes();
-                        break;
+                    case 1: {
+                            message.fssk = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -1328,9 +1352,10 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.fssk = reader.bytes();
-                        break;
+                    case 1: {
+                            message.fssk = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -1420,12 +1445,14 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.rejectedMessageId = reader.fixed64();
-                        break;
-                    case 2:
-                        message.cause = reader.int32();
-                        break;
+                    case 1: {
+                            message.rejectedMessageId = reader.fixed64();
+                            break;
+                        }
+                    case 2: {
+                            message.cause = reader.int32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -1607,15 +1634,18 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.dhType = reader.int32();
-                        break;
-                    case 2:
-                        message.counter = reader.uint64();
-                        break;
-                    case 3:
-                        message.encryptedMessage = reader.bytes();
-                        break;
+                    case 1: {
+                            message.dhType = reader.int32();
+                            break;
+                        }
+                    case 2: {
+                            message.counter = reader.uint64();
+                            break;
+                        }
+                    case 3: {
+                            message.encryptedMessage = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -1756,18 +1786,22 @@ export const csp_e2e = $root.csp_e2e = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.padding = reader.bytes();
-                    break;
-                case 2:
-                    message.nickname = reader.string();
-                    break;
-                case 3:
-                    message.messageId = reader.fixed64();
-                    break;
-                case 4:
-                    message.createdAt = reader.uint64();
-                    break;
+                case 1: {
+                        message.padding = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.nickname = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.messageId = reader.fixed64();
+                        break;
+                    }
+                case 4: {
+                        message.createdAt = reader.uint64();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -1868,15 +1902,18 @@ export const csp_e2e = $root.csp_e2e = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.protocolVersion = reader.uint32();
-                    break;
-                case 2:
-                    message.gck = reader.bytes();
-                    break;
-                case 3:
-                    message.sfuBaseUrl = reader.string();
-                    break;
+                case 1: {
+                        message.protocolVersion = reader.uint32();
+                        break;
+                    }
+                case 2: {
+                        message.gck = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.sfuBaseUrl = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -1977,15 +2014,18 @@ export const csp_e2e = $root.csp_e2e = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.token = reader.bytes();
-                    break;
-                case 2:
-                    message.groupName = reader.string();
-                    break;
-                case 3:
-                    message.message = reader.string();
-                    break;
+                case 1: {
+                        message.token = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.groupName = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.message = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -2075,12 +2115,14 @@ export const csp_e2e = $root.csp_e2e = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.token = reader.bytes();
-                    break;
-                case 2:
-                    message.response = $root.csp_e2e.GroupJoinResponse.Response.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.token = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.response = $root.csp_e2e.GroupJoinResponse.Response.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -2203,18 +2245,22 @@ export const csp_e2e = $root.csp_e2e = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.accept = $root.csp_e2e.GroupJoinResponse.Response.Accept.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.expired = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.groupFull = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 4:
-                        message.reject = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.accept = $root.csp_e2e.GroupJoinResponse.Response.Accept.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.expired = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.groupFull = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 4: {
+                            message.reject = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -2290,9 +2336,10 @@ export const csp_e2e = $root.csp_e2e = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.groupId = reader.fixed64();
-                            break;
+                        case 1: {
+                                message.groupId = reader.fixed64();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -2426,37 +2473,41 @@ export const groupcall = $root.groupcall = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.padding = reader.bytes();
-                    break;
-                case 2:
-                    message.stateCreatedBy = reader.uint32();
-                    break;
-                case 3:
-                    message.stateCreatedAt = reader.uint64();
-                    break;
-                case 4:
-                    if (message.participants === $util.emptyObject)
-                        message.participants = {};
-                    let end2 = reader.uint32() + reader.pos;
-                    key = 0;
-                    value = null;
-                    while (reader.pos < end2) {
-                        let tag2 = reader.uint32();
-                        switch (tag2 >>> 3) {
-                        case 1:
-                            key = reader.uint32();
-                            break;
-                        case 2:
-                            value = $root.groupcall.CallState.Participant.decode(reader, reader.uint32());
-                            break;
-                        default:
-                            reader.skipType(tag2 & 7);
-                            break;
-                        }
+                case 1: {
+                        message.padding = reader.bytes();
+                        break;
                     }
-                    message.participants[key] = value;
-                    break;
+                case 2: {
+                        message.stateCreatedBy = reader.uint32();
+                        break;
+                    }
+                case 3: {
+                        message.stateCreatedAt = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        if (message.participants === $util.emptyObject)
+                            message.participants = {};
+                        let end2 = reader.uint32() + reader.pos;
+                        key = 0;
+                        value = null;
+                        while (reader.pos < end2) {
+                            let tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.uint32();
+                                break;
+                            case 2:
+                                value = $root.groupcall.CallState.Participant.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7);
+                                break;
+                            }
+                        }
+                        message.participants[key] = value;
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -2557,12 +2608,14 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 2:
-                        message.threema = $root.groupcall.CallState.Participant.Normal.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.guest = $root.groupcall.CallState.Participant.Guest.decode(reader, reader.uint32());
-                        break;
+                    case 2: {
+                            message.threema = $root.groupcall.CallState.Participant.Normal.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.guest = $root.groupcall.CallState.Participant.Guest.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -2649,12 +2702,14 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.identity = reader.string();
-                            break;
-                        case 2:
-                            message.nickname = reader.string();
-                            break;
+                        case 1: {
+                                message.identity = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.nickname = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -2733,9 +2788,10 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -2884,9 +2940,10 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.callId = reader.bytes();
-                        break;
+                    case 1: {
+                            message.callId = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -2987,15 +3044,18 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.callId = reader.bytes();
-                        break;
-                    case 2:
-                        message.protocolVersion = reader.uint32();
-                        break;
-                    case 3:
-                        message.dtlsFingerprint = reader.bytes();
-                        break;
+                    case 1: {
+                            message.callId = reader.bytes();
+                            break;
+                        }
+                    case 2: {
+                            message.protocolVersion = reader.uint32();
+                            break;
+                        }
+                    case 3: {
+                            message.dtlsFingerprint = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -3177,15 +3237,18 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.startedAt = reader.uint64();
-                        break;
-                    case 2:
-                        message.maxParticipants = reader.uint32();
-                        break;
-                    case 3:
-                        message.encryptedCallState = reader.bytes();
-                        break;
+                    case 1: {
+                            message.startedAt = reader.uint64();
+                            break;
+                        }
+                    case 2: {
+                            message.maxParticipants = reader.uint32();
+                            break;
+                        }
+                    case 3: {
+                            message.encryptedCallState = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -3332,29 +3395,36 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.startedAt = reader.uint64();
-                        break;
-                    case 2:
-                        message.maxParticipants = reader.uint32();
-                        break;
-                    case 3:
-                        message.participantId = reader.uint32();
-                        break;
-                    case 4:
-                        if (!(message.addresses && message.addresses.length))
-                            message.addresses = [];
-                        message.addresses.push($root.groupcall.SfuHttpResponse.Join.Address.decode(reader, reader.uint32()));
-                        break;
-                    case 5:
-                        message.iceUsernameFragment = reader.string();
-                        break;
-                    case 6:
-                        message.icePassword = reader.string();
-                        break;
-                    case 7:
-                        message.dtlsFingerprint = reader.bytes();
-                        break;
+                    case 1: {
+                            message.startedAt = reader.uint64();
+                            break;
+                        }
+                    case 2: {
+                            message.maxParticipants = reader.uint32();
+                            break;
+                        }
+                    case 3: {
+                            message.participantId = reader.uint32();
+                            break;
+                        }
+                    case 4: {
+                            if (!(message.addresses && message.addresses.length))
+                                message.addresses = [];
+                            message.addresses.push($root.groupcall.SfuHttpResponse.Join.Address.decode(reader, reader.uint32()));
+                            break;
+                        }
+                    case 5: {
+                            message.iceUsernameFragment = reader.string();
+                            break;
+                        }
+                    case 6: {
+                            message.icePassword = reader.string();
+                            break;
+                        }
+                    case 7: {
+                            message.dtlsFingerprint = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -3452,15 +3522,18 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.protocol = reader.int32();
-                            break;
-                        case 2:
-                            message.port = reader.uint32();
-                            break;
-                        case 3:
-                            message.ip = reader.string();
-                            break;
+                        case 1: {
+                                message.protocol = reader.int32();
+                                break;
+                            }
+                        case 2: {
+                                message.port = reader.uint32();
+                                break;
+                            }
+                        case 3: {
+                                message.ip = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -3679,21 +3752,26 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.padding = reader.bytes();
-                        break;
-                    case 2:
-                        message.relay = $root.groupcall.ParticipantToParticipant.OuterEnvelope.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.hello = $root.groupcall.SfuToParticipant.Hello.decode(reader, reader.uint32());
-                        break;
-                    case 4:
-                        message.participantJoined = $root.groupcall.SfuToParticipant.ParticipantJoined.decode(reader, reader.uint32());
-                        break;
-                    case 5:
-                        message.participantLeft = $root.groupcall.SfuToParticipant.ParticipantLeft.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.padding = reader.bytes();
+                            break;
+                        }
+                    case 2: {
+                            message.relay = $root.groupcall.ParticipantToParticipant.OuterEnvelope.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.hello = $root.groupcall.SfuToParticipant.Hello.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 4: {
+                            message.participantJoined = $root.groupcall.SfuToParticipant.ParticipantJoined.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 5: {
+                            message.participantLeft = $root.groupcall.SfuToParticipant.ParticipantLeft.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -3777,16 +3855,17 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        if (!(message.participantIds && message.participantIds.length))
-                            message.participantIds = [];
-                        if ((tag & 7) === 2) {
-                            let end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
+                    case 1: {
+                            if (!(message.participantIds && message.participantIds.length))
+                                message.participantIds = [];
+                            if ((tag & 7) === 2) {
+                                let end2 = reader.uint32() + reader.pos;
+                                while (reader.pos < end2)
+                                    message.participantIds.push(reader.uint32());
+                            } else
                                 message.participantIds.push(reader.uint32());
-                        } else
-                            message.participantIds.push(reader.uint32());
-                        break;
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -3865,9 +3944,10 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.participantId = reader.uint32();
-                        break;
+                    case 1: {
+                            message.participantId = reader.uint32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -3946,9 +4026,10 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.participantId = reader.uint32();
-                        break;
+                    case 1: {
+                            message.participantId = reader.uint32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -4163,24 +4244,30 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.padding = reader.bytes();
-                        break;
-                    case 2:
-                        message.relay = $root.groupcall.ParticipantToParticipant.OuterEnvelope.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.updateCallState = $root.groupcall.ParticipantToSfu.UpdateCallState.decode(reader, reader.uint32());
-                        break;
-                    case 6:
-                        message.requestParticipantMicrophone = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.decode(reader, reader.uint32());
-                        break;
-                    case 4:
-                        message.requestParticipantCamera = $root.groupcall.ParticipantToSfu.ParticipantCamera.decode(reader, reader.uint32());
-                        break;
-                    case 5:
-                        message.requestParticipantScreenShare = $root.groupcall.ParticipantToSfu.ParticipantScreen.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.padding = reader.bytes();
+                            break;
+                        }
+                    case 2: {
+                            message.relay = $root.groupcall.ParticipantToParticipant.OuterEnvelope.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.updateCallState = $root.groupcall.ParticipantToSfu.UpdateCallState.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 6: {
+                            message.requestParticipantMicrophone = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 4: {
+                            message.requestParticipantCamera = $root.groupcall.ParticipantToSfu.ParticipantCamera.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 5: {
+                            message.requestParticipantScreenShare = $root.groupcall.ParticipantToSfu.ParticipantScreen.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -4259,9 +4346,10 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.encryptedCallState = reader.bytes();
-                        break;
+                    case 1: {
+                            message.encryptedCallState = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -4376,15 +4464,18 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.participantId = reader.uint32();
-                        break;
-                    case 2:
-                        message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.participantId = reader.uint32();
+                            break;
+                        }
+                    case 2: {
+                            message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Subscribe.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantMicrophone.Unsubscribe.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -4633,15 +4724,18 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.participantId = reader.uint32();
-                        break;
-                    case 2:
-                        message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantCamera.Subscribe.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.participantId = reader.uint32();
+                            break;
+                        }
+                    case 2: {
+                            message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantCamera.Subscribe.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantCamera.Unsubscribe.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -4728,12 +4822,14 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.desiredResolution = $root.common.Resolution.decode(reader, reader.uint32());
-                            break;
-                        case 2:
-                            message.desiredFps = reader.uint32();
-                            break;
+                        case 1: {
+                                message.desiredResolution = $root.common.Resolution.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 2: {
+                                message.desiredFps = reader.uint32();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -4918,15 +5014,18 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.participantId = reader.uint32();
-                        break;
-                    case 2:
-                        message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantScreen.Subscribe.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.participantId = reader.uint32();
+                            break;
+                        }
+                    case 2: {
+                            message.subscribe = $root.groupcall.ParticipantToSfu.ParticipantScreen.Subscribe.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.unsubscribe = $root.groupcall.ParticipantToSfu.ParticipantScreen.Unsubscribe.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -5228,15 +5327,18 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.sender = reader.uint32();
-                        break;
-                    case 2:
-                        message.receiver = reader.uint32();
-                        break;
-                    case 4:
-                        message.encryptedData = reader.bytes();
-                        break;
+                    case 1: {
+                            message.sender = reader.uint32();
+                            break;
+                        }
+                    case 2: {
+                            message.receiver = reader.uint32();
+                            break;
+                        }
+                    case 4: {
+                            message.encryptedData = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -5415,15 +5517,18 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.padding = reader.bytes();
-                            break;
-                        case 2:
-                            message.hello = $root.groupcall.ParticipantToParticipant.Handshake.Hello.decode(reader, reader.uint32());
-                            break;
-                        case 3:
-                            message.guestHello = $root.groupcall.ParticipantToParticipant.Handshake.GuestHello.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.padding = reader.bytes();
+                                break;
+                            }
+                        case 2: {
+                                message.hello = $root.groupcall.ParticipantToParticipant.Handshake.Hello.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 3: {
+                                message.guestHello = $root.groupcall.ParticipantToParticipant.Handshake.GuestHello.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -5538,15 +5643,18 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.padding = reader.bytes();
-                            break;
-                        case 2:
-                            message.auth = $root.groupcall.ParticipantToParticipant.Handshake.Auth.decode(reader, reader.uint32());
-                            break;
-                        case 3:
-                            message.guestAuth = $root.groupcall.ParticipantToParticipant.Handshake.GuestAuth.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.padding = reader.bytes();
+                                break;
+                            }
+                        case 2: {
+                                message.auth = $root.groupcall.ParticipantToParticipant.Handshake.Auth.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 3: {
+                                message.guestAuth = $root.groupcall.ParticipantToParticipant.Handshake.GuestAuth.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -5658,18 +5766,22 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.identity = reader.string();
-                            break;
-                        case 2:
-                            message.nickname = reader.string();
-                            break;
-                        case 3:
-                            message.pck = reader.bytes();
-                            break;
-                        case 4:
-                            message.pcck = reader.bytes();
-                            break;
+                        case 1: {
+                                message.identity = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.nickname = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.pck = reader.bytes();
+                                break;
+                            }
+                        case 4: {
+                                message.pcck = reader.bytes();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -5772,17 +5884,20 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.pck = reader.bytes();
-                            break;
-                        case 2:
-                            message.pcck = reader.bytes();
-                            break;
-                        case 3:
-                            if (!(message.mediaKeys && message.mediaKeys.length))
-                                message.mediaKeys = [];
-                            message.mediaKeys.push($root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                message.pck = reader.bytes();
+                                break;
+                            }
+                        case 2: {
+                                message.pcck = reader.bytes();
+                                break;
+                            }
+                        case 3: {
+                                if (!(message.mediaKeys && message.mediaKeys.length))
+                                    message.mediaKeys = [];
+                                message.mediaKeys.push($root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -5883,15 +5998,18 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            message.pck = reader.bytes();
-                            break;
-                        case 3:
-                            message.pcck = reader.bytes();
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.pck = reader.bytes();
+                                break;
+                            }
+                        case 3: {
+                                message.pcck = reader.bytes();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -5994,17 +6112,20 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.pck = reader.bytes();
-                            break;
-                        case 2:
-                            message.pcck = reader.bytes();
-                            break;
-                        case 3:
-                            if (!(message.mediaKeys && message.mediaKeys.length))
-                                message.mediaKeys = [];
-                            message.mediaKeys.push($root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                message.pck = reader.bytes();
+                                break;
+                            }
+                        case 2: {
+                                message.pcck = reader.bytes();
+                                break;
+                            }
+                        case 3: {
+                                if (!(message.mediaKeys && message.mediaKeys.length))
+                                    message.mediaKeys = [];
+                                message.mediaKeys.push($root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6144,21 +6265,26 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.padding = reader.bytes();
-                        break;
-                    case 2:
-                        message.encryptedAdminEnvelope = reader.bytes();
-                        break;
-                    case 3:
-                        message.rekey = $root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32());
-                        break;
-                    case 4:
-                        message.captureState = $root.groupcall.ParticipantToParticipant.CaptureState.decode(reader, reader.uint32());
-                        break;
-                    case 5:
-                        message.holdState = $root.groupcall.ParticipantToParticipant.HoldState.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.padding = reader.bytes();
+                            break;
+                        }
+                    case 2: {
+                            message.encryptedAdminEnvelope = reader.bytes();
+                            break;
+                        }
+                    case 3: {
+                            message.rekey = $root.groupcall.ParticipantToParticipant.MediaKey.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 4: {
+                            message.captureState = $root.groupcall.ParticipantToParticipant.CaptureState.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 5: {
+                            message.holdState = $root.groupcall.ParticipantToParticipant.HoldState.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -6359,21 +6485,26 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.reportAsAdmin = $root.groupcall.ParticipantToParticipant.Admin.ReportAsAdmin.decode(reader, reader.uint32());
-                            break;
-                        case 2:
-                            message.promoteToAdmin = $root.groupcall.ParticipantToParticipant.Admin.PromoteToAdmin.decode(reader, reader.uint32());
-                            break;
-                        case 3:
-                            message.forceLeave = $root.groupcall.ParticipantToParticipant.Admin.ForceLeave.decode(reader, reader.uint32());
-                            break;
-                        case 4:
-                            message.forceCaptureStateOff = $root.groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.decode(reader, reader.uint32());
-                            break;
-                        case 5:
-                            message.forceFocus = $root.groupcall.ParticipantToParticipant.Admin.ForceFocus.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.reportAsAdmin = $root.groupcall.ParticipantToParticipant.Admin.ReportAsAdmin.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 2: {
+                                message.promoteToAdmin = $root.groupcall.ParticipantToParticipant.Admin.PromoteToAdmin.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 3: {
+                                message.forceLeave = $root.groupcall.ParticipantToParticipant.Admin.ForceLeave.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 4: {
+                                message.forceCaptureStateOff = $root.groupcall.ParticipantToParticipant.Admin.ForceCaptureStateOff.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 5: {
+                                message.forceFocus = $root.groupcall.ParticipantToParticipant.Admin.ForceFocus.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6519,9 +6650,10 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.gcak = reader.bytes();
-                            break;
+                        case 1: {
+                                message.gcak = reader.bytes();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6667,9 +6799,10 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.device = reader.int32();
-                            break;
+                        case 1: {
+                                message.device = reader.int32();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6766,9 +6899,10 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.participantId = reader.uint32();
-                            break;
+                        case 1: {
+                                message.participantId = reader.uint32();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6872,15 +7006,18 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.epoch = reader.uint32();
-                        break;
-                    case 2:
-                        message.ratchetCounter = reader.uint32();
-                        break;
-                    case 3:
-                        message.pcmk = reader.bytes();
-                        break;
+                    case 1: {
+                            message.epoch = reader.uint32();
+                            break;
+                        }
+                    case 2: {
+                            message.ratchetCounter = reader.uint32();
+                            break;
+                        }
+                    case 3: {
+                            message.pcmk = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -6984,12 +7121,14 @@ export const groupcall = $root.groupcall = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.microphone = $root.groupcall.ParticipantToParticipant.CaptureState.Microphone.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.camera = $root.groupcall.ParticipantToParticipant.CaptureState.Camera.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.microphone = $root.groupcall.ParticipantToParticipant.CaptureState.Microphone.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.camera = $root.groupcall.ParticipantToParticipant.CaptureState.Camera.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -7090,12 +7229,14 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.on = $root.common.Unit.decode(reader, reader.uint32());
-                            break;
-                        case 2:
-                            message.off = $root.common.Unit.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.on = $root.common.Unit.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 2: {
+                                message.off = $root.common.Unit.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -7199,12 +7340,14 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.on = $root.common.Unit.decode(reader, reader.uint32());
-                            break;
-                        case 2:
-                            message.off = $root.common.Unit.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.on = $root.common.Unit.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 2: {
+                                message.off = $root.common.Unit.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -7308,12 +7451,14 @@ export const groupcall = $root.groupcall = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.on = $root.common.Unit.decode(reader, reader.uint32());
-                            break;
-                        case 2:
-                            message.off = $root.common.Unit.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.on = $root.common.Unit.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 2: {
+                                message.off = $root.common.Unit.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -7502,12 +7647,14 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.getSummary = $root.history.GetSummary.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.beginTransfer = $root.history.BeginTransfer.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.getSummary = $root.history.GetSummary.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.beginTransfer = $root.history.BeginTransfer.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -7622,15 +7769,18 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.summary = $root.history.Summary.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.blobData = $root.common.BlobData.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.data = $root.history.Data.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.summary = $root.history.Summary.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.blobData = $root.common.BlobData.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.data = $root.history.Data.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -7748,22 +7898,25 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.id = reader.uint32();
-                    break;
-                case 2:
-                    message.timespan = $root.common.Timespan.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    if (!(message.media && message.media.length))
-                        message.media = [];
-                    if ((tag & 7) === 2) {
-                        let end2 = reader.uint32() + reader.pos;
-                        while (reader.pos < end2)
+                case 1: {
+                        message.id = reader.uint32();
+                        break;
+                    }
+                case 2: {
+                        message.timespan = $root.common.Timespan.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        if (!(message.media && message.media.length))
+                            message.media = [];
+                        if ((tag & 7) === 2) {
+                            let end2 = reader.uint32() + reader.pos;
+                            while (reader.pos < end2)
+                                message.media.push(reader.int32());
+                        } else
                             message.media.push(reader.int32());
-                    } else
-                        message.media.push(reader.int32());
-                    break;
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -7864,15 +8017,18 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.id = reader.uint32();
-                    break;
-                case 2:
-                    message.messages = reader.uint32();
-                    break;
-                case 3:
-                    message.size = reader.uint64();
-                    break;
+                case 1: {
+                        message.id = reader.uint32();
+                        break;
+                    }
+                case 2: {
+                        message.messages = reader.uint32();
+                        break;
+                    }
+                case 3: {
+                        message.size = reader.uint64();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -7951,9 +8107,10 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.id = reader.uint32();
-                    break;
+                case 1: {
+                        message.id = reader.uint32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8045,14 +8202,16 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    if (!(message.messages && message.messages.length))
-                        message.messages = [];
-                    message.messages.push($root.history.PastMessage.decode(reader, reader.uint32()));
-                    break;
-                case 2:
-                    message.remaining = reader.uint64();
-                    break;
+                case 1: {
+                        if (!(message.messages && message.messages.length))
+                            message.messages = [];
+                        message.messages.push($root.history.PastMessage.decode(reader, reader.uint32()));
+                        break;
+                    }
+                case 2: {
+                        message.remaining = reader.uint64();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8156,12 +8315,14 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.incoming = $root.history.PastIncomingMessage.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.outgoing = $root.history.PastOutgoingMessage.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.incoming = $root.history.PastIncomingMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.outgoing = $root.history.PastOutgoingMessage.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8251,12 +8412,14 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.at = reader.uint64();
-                    break;
-                case 2:
-                    message.type = reader.int32();
-                    break;
+                case 1: {
+                        message.at = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.type = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8396,18 +8559,22 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.message = $root.d2d.OutgoingMessage.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.sentAt = reader.uint64();
-                    break;
-                case 3:
-                    message.readAt = reader.uint64();
-                    break;
-                case 4:
-                    message.lastReactionAt = $root.history.Reaction.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.message = $root.d2d.OutgoingMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.sentAt = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.readAt = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.lastReactionAt = $root.history.Reaction.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8533,18 +8700,22 @@ export const history = $root.history = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.message = $root.d2d.IncomingMessage.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.receivedAt = reader.uint64();
-                    break;
-                case 3:
-                    message.readAt = reader.uint64();
-                    break;
-                case 4:
-                    message.lastReactionAt = $root.history.Reaction.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.message = $root.d2d.IncomingMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.receivedAt = reader.uint64();
+                        break;
+                    }
+                case 3: {
+                        message.readAt = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.lastReactionAt = $root.history.Reaction.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8646,12 +8817,14 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.padding = reader.bytes();
-                    break;
-                case 2:
-                    message.version = reader.uint32();
-                    break;
+                case 1: {
+                        message.padding = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.version = reader.uint32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8774,21 +8947,26 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.padding = reader.bytes();
-                    break;
-                case 2:
-                    message.platform = reader.int32();
-                    break;
-                case 3:
-                    message.platformDetails = reader.string();
-                    break;
-                case 4:
-                    message.appVersion = reader.string();
-                    break;
-                case 5:
-                    message.label = reader.string();
-                    break;
+                case 1: {
+                        message.padding = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.platform = reader.int32();
+                        break;
+                    }
+                case 3: {
+                        message.platformDetails = reader.string();
+                        break;
+                    }
+                case 4: {
+                        message.appVersion = reader.string();
+                        break;
+                    }
+                case 5: {
+                        message.label = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -8887,9 +9065,10 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.scope = reader.int32();
-                    break;
+                case 1: {
+                        message.scope = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -9116,39 +9295,50 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.padding = reader.bytes();
-                    break;
-                case 2:
-                    message.outgoingMessage = $root.d2d.OutgoingMessage.decode(reader, reader.uint32());
-                    break;
-                case 10:
-                    message.outgoingMessageUpdate = $root.d2d.OutgoingMessageUpdate.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.incomingMessage = $root.d2d.IncomingMessage.decode(reader, reader.uint32());
-                    break;
-                case 11:
-                    message.incomingMessageUpdate = $root.d2d.IncomingMessageUpdate.decode(reader, reader.uint32());
-                    break;
-                case 5:
-                    message.userProfileSync = $root.d2d.UserProfileSync.decode(reader, reader.uint32());
-                    break;
-                case 6:
-                    message.contactSync = $root.d2d.ContactSync.decode(reader, reader.uint32());
-                    break;
-                case 7:
-                    message.groupSync = $root.d2d.GroupSync.decode(reader, reader.uint32());
-                    break;
-                case 8:
-                    message.distributionListSync = $root.d2d.DistributionListSync.decode(reader, reader.uint32());
-                    break;
-                case 9:
-                    message.settingsSync = $root.d2d.SettingsSync.decode(reader, reader.uint32());
-                    break;
-                case 12:
-                    message.mdmParameterSync = $root.d2d.MdmParameterSync.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.padding = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.outgoingMessage = $root.d2d.OutgoingMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 10: {
+                        message.outgoingMessageUpdate = $root.d2d.OutgoingMessageUpdate.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.incomingMessage = $root.d2d.IncomingMessage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 11: {
+                        message.incomingMessageUpdate = $root.d2d.IncomingMessageUpdate.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 5: {
+                        message.userProfileSync = $root.d2d.UserProfileSync.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 6: {
+                        message.contactSync = $root.d2d.ContactSync.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 7: {
+                        message.groupSync = $root.d2d.GroupSync.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 8: {
+                        message.distributionListSync = $root.d2d.DistributionListSync.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 9: {
+                        message.settingsSync = $root.d2d.SettingsSync.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 12: {
+                        message.mdmParameterSync = $root.d2d.MdmParameterSync.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -9263,15 +9453,18 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.contact = reader.string();
-                    break;
-                case 2:
-                    message.distributionList = reader.fixed64();
-                    break;
-                case 3:
-                    message.group = $root.common.GroupIdentity.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.contact = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.distributionList = reader.fixed64();
+                        break;
+                    }
+                case 3: {
+                        message.group = $root.common.GroupIdentity.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -9432,29 +9625,36 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.conversation = $root.d2d.ConversationId.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.messageId = reader.fixed64();
-                    break;
-                case 6:
-                    message.threadMessageId = reader.fixed64();
-                    break;
-                case 3:
-                    message.createdAt = reader.uint64();
-                    break;
-                case 4:
-                    message.type = reader.int32();
-                    break;
-                case 5:
-                    message.body = reader.bytes();
-                    break;
-                case 7:
-                    if (!(message.nonces && message.nonces.length))
-                        message.nonces = [];
-                    message.nonces.push(reader.bytes());
-                    break;
+                case 1: {
+                        message.conversation = $root.d2d.ConversationId.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.messageId = reader.fixed64();
+                        break;
+                    }
+                case 6: {
+                        message.threadMessageId = reader.fixed64();
+                        break;
+                    }
+                case 3: {
+                        message.createdAt = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.type = reader.int32();
+                        break;
+                    }
+                case 5: {
+                        message.body = reader.bytes();
+                        break;
+                    }
+                case 7: {
+                        if (!(message.nonces && message.nonces.length))
+                            message.nonces = [];
+                        message.nonces.push(reader.bytes());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -9535,11 +9735,12 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    if (!(message.updates && message.updates.length))
-                        message.updates = [];
-                    message.updates.push($root.d2d.OutgoingMessageUpdate.Update.decode(reader, reader.uint32()));
-                    break;
+                case 1: {
+                        if (!(message.updates && message.updates.length))
+                            message.updates = [];
+                        message.updates.push($root.d2d.OutgoingMessageUpdate.Update.decode(reader, reader.uint32()));
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -9718,15 +9919,18 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.conversation = $root.d2d.ConversationId.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.messageId = reader.fixed64();
-                        break;
-                    case 3:
-                        message.sent = $root.d2d.OutgoingMessageUpdate.Sent.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.conversation = $root.d2d.ConversationId.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.messageId = reader.fixed64();
+                            break;
+                        }
+                    case 3: {
+                            message.sent = $root.d2d.OutgoingMessageUpdate.Sent.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -9863,24 +10067,30 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.senderIdentity = reader.string();
-                    break;
-                case 2:
-                    message.messageId = reader.fixed64();
-                    break;
-                case 3:
-                    message.createdAt = reader.uint64();
-                    break;
-                case 5:
-                    message.type = reader.int32();
-                    break;
-                case 6:
-                    message.body = reader.bytes();
-                    break;
-                case 7:
-                    message.nonce = reader.bytes();
-                    break;
+                case 1: {
+                        message.senderIdentity = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.messageId = reader.fixed64();
+                        break;
+                    }
+                case 3: {
+                        message.createdAt = reader.uint64();
+                        break;
+                    }
+                case 5: {
+                        message.type = reader.int32();
+                        break;
+                    }
+                case 6: {
+                        message.body = reader.bytes();
+                        break;
+                    }
+                case 7: {
+                        message.nonce = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -9961,11 +10171,12 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    if (!(message.updates && message.updates.length))
-                        message.updates = [];
-                    message.updates.push($root.d2d.IncomingMessageUpdate.Update.decode(reader, reader.uint32()));
-                    break;
+                case 1: {
+                        if (!(message.updates && message.updates.length))
+                            message.updates = [];
+                        message.updates.push($root.d2d.IncomingMessageUpdate.Update.decode(reader, reader.uint32()));
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -10041,9 +10252,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.at = reader.uint64();
-                        break;
+                    case 1: {
+                            message.at = reader.uint64();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -10158,15 +10370,18 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.conversation = $root.d2d.ConversationId.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.messageId = reader.fixed64();
-                        break;
-                    case 3:
-                        message.read = $root.d2d.IncomingMessageUpdate.Read.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.conversation = $root.d2d.ConversationId.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.messageId = reader.fixed64();
+                            break;
+                        }
+                    case 3: {
+                            message.read = $root.d2d.IncomingMessageUpdate.Read.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -10262,9 +10477,10 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.update = $root.d2d.UserProfileSync.Update.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.update = $root.d2d.UserProfileSync.Update.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -10340,9 +10556,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.userProfile = $root.sync.UserProfile.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.userProfile = $root.sync.UserProfile.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -10460,15 +10677,18 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.create = $root.d2d.ContactSync.Create.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.update = $root.d2d.ContactSync.Update.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message["delete"] = $root.d2d.ContactSync.Delete.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.create = $root.d2d.ContactSync.Create.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.update = $root.d2d.ContactSync.Update.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message["delete"] = $root.d2d.ContactSync.Delete.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -10544,9 +10764,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.contact = $root.sync.Contact.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.contact = $root.sync.Contact.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -10625,9 +10846,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.contact = $root.sync.Contact.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.contact = $root.sync.Contact.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -10706,9 +10928,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.deleteIdentity = reader.string();
-                        break;
+                    case 1: {
+                            message.deleteIdentity = reader.string();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -10826,15 +11049,18 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.create = $root.d2d.GroupSync.Create.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.update = $root.d2d.GroupSync.Update.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message["delete"] = $root.d2d.GroupSync.Delete.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.create = $root.d2d.GroupSync.Create.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.update = $root.d2d.GroupSync.Update.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message["delete"] = $root.d2d.GroupSync.Delete.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -10910,9 +11136,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.group = $root.sync.Group.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.group = $root.sync.Group.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -10991,9 +11218,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.group = $root.sync.Group.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.group = $root.sync.Group.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -11072,9 +11300,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.groupIdentity = $root.common.GroupIdentity.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.groupIdentity = $root.common.GroupIdentity.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -11192,15 +11421,18 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.create = $root.d2d.DistributionListSync.Create.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.update = $root.d2d.DistributionListSync.Update.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message["delete"] = $root.d2d.DistributionListSync.Delete.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.create = $root.d2d.DistributionListSync.Create.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.update = $root.d2d.DistributionListSync.Update.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message["delete"] = $root.d2d.DistributionListSync.Delete.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -11276,9 +11508,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.distributionList = $root.sync.DistributionList.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.distributionList = $root.sync.DistributionList.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -11357,9 +11590,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.distributionList = $root.sync.DistributionList.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.distributionList = $root.sync.DistributionList.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -11438,9 +11672,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.distributionListId = reader.fixed64();
-                        break;
+                    case 1: {
+                            message.distributionListId = reader.fixed64();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -11536,9 +11771,10 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.update = $root.d2d.SettingsSync.Update.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.update = $root.d2d.SettingsSync.Update.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -11614,9 +11850,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.settings = $root.sync.Settings.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.settings = $root.sync.Settings.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -11712,9 +11949,10 @@ export const d2d = $root.d2d = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.update = $root.d2d.MdmParameterSync.Update.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.update = $root.d2d.MdmParameterSync.Update.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -11790,9 +12028,10 @@ export const d2d = $root.d2d = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.parameters = $root.sync.MdmParameters.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.parameters = $root.sync.MdmParameters.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -12070,18 +12309,22 @@ export const sync = $root.sync = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.nickname = reader.string();
-                    break;
-                case 2:
-                    message.profilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.profilePictureShareWith = $root.sync.UserProfile.ProfilePictureShareWith.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.identityLinks = $root.sync.UserProfile.IdentityLinks.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.nickname = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.profilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.profilePictureShareWith = $root.sync.UserProfile.ProfilePictureShareWith.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.identityLinks = $root.sync.UserProfile.IdentityLinks.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -12193,15 +12436,18 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.nobody = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.everyone = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 3:
-                        message.allowList = $root.common.Identities.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.nobody = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.everyone = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 3: {
+                            message.allowList = $root.common.Identities.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -12282,11 +12528,12 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        if (!(message.links && message.links.length))
-                            message.links = [];
-                        message.links.push($root.sync.UserProfile.IdentityLinks.IdentityLink.decode(reader, reader.uint32()));
-                        break;
+                    case 1: {
+                            if (!(message.links && message.links.length))
+                                message.links = [];
+                            message.links.push($root.sync.UserProfile.IdentityLinks.IdentityLink.decode(reader, reader.uint32()));
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -12398,15 +12645,18 @@ export const sync = $root.sync = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.phoneNumber = reader.string();
-                            break;
-                        case 2:
-                            message.email = reader.string();
-                            break;
-                        case 3:
-                            message.description = reader.string();
-                            break;
+                        case 1: {
+                                message.phoneNumber = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.email = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.description = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -12868,69 +13118,90 @@ export const sync = $root.sync = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.identity = reader.string();
-                    break;
-                case 2:
-                    message.publicKey = reader.bytes();
-                    break;
-                case 3:
-                    message.createdAt = reader.uint64();
-                    break;
-                case 4:
-                    message.firstName = reader.string();
-                    break;
-                case 5:
-                    message.lastName = reader.string();
-                    break;
-                case 6:
-                    message.nickname = reader.string();
-                    break;
-                case 7:
-                    message.verificationLevel = reader.int32();
-                    break;
-                case 21:
-                    message.workVerificationLevel = reader.int32();
-                    break;
-                case 8:
-                    message.identityType = reader.int32();
-                    break;
-                case 9:
-                    message.acquaintanceLevel = reader.int32();
-                    break;
-                case 10:
-                    message.activityState = reader.int32();
-                    break;
-                case 18:
-                    message.featureMask = reader.uint64();
-                    break;
-                case 13:
-                    message.syncState = reader.int32();
-                    break;
-                case 16:
-                    message.readReceiptPolicyOverride = $root.sync.Contact.ReadReceiptPolicyOverride.decode(reader, reader.uint32());
-                    break;
-                case 17:
-                    message.typingIndicatorPolicyOverride = $root.sync.Contact.TypingIndicatorPolicyOverride.decode(reader, reader.uint32());
-                    break;
-                case 19:
-                    message.notificationTriggerPolicyOverride = $root.sync.Contact.NotificationTriggerPolicyOverride.decode(reader, reader.uint32());
-                    break;
-                case 20:
-                    message.notificationSoundPolicyOverride = $root.sync.Contact.NotificationSoundPolicyOverride.decode(reader, reader.uint32());
-                    break;
-                case 14:
-                    message.contactDefinedProfilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
-                    break;
-                case 15:
-                    message.userDefinedProfilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
-                    break;
-                case 11:
-                    message.conversationCategory = reader.int32();
-                    break;
-                case 12:
-                    message.conversationVisibility = reader.int32();
-                    break;
+                case 1: {
+                        message.identity = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.publicKey = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.createdAt = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.firstName = reader.string();
+                        break;
+                    }
+                case 5: {
+                        message.lastName = reader.string();
+                        break;
+                    }
+                case 6: {
+                        message.nickname = reader.string();
+                        break;
+                    }
+                case 7: {
+                        message.verificationLevel = reader.int32();
+                        break;
+                    }
+                case 21: {
+                        message.workVerificationLevel = reader.int32();
+                        break;
+                    }
+                case 8: {
+                        message.identityType = reader.int32();
+                        break;
+                    }
+                case 9: {
+                        message.acquaintanceLevel = reader.int32();
+                        break;
+                    }
+                case 10: {
+                        message.activityState = reader.int32();
+                        break;
+                    }
+                case 18: {
+                        message.featureMask = reader.uint64();
+                        break;
+                    }
+                case 13: {
+                        message.syncState = reader.int32();
+                        break;
+                    }
+                case 16: {
+                        message.readReceiptPolicyOverride = $root.sync.Contact.ReadReceiptPolicyOverride.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 17: {
+                        message.typingIndicatorPolicyOverride = $root.sync.Contact.TypingIndicatorPolicyOverride.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 19: {
+                        message.notificationTriggerPolicyOverride = $root.sync.Contact.NotificationTriggerPolicyOverride.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 20: {
+                        message.notificationSoundPolicyOverride = $root.sync.Contact.NotificationSoundPolicyOverride.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 14: {
+                        message.contactDefinedProfilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 15: {
+                        message.userDefinedProfilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 11: {
+                        message.conversationCategory = reader.int32();
+                        break;
+                    }
+                case 12: {
+                        message.conversationVisibility = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -13121,12 +13392,14 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message["default"] = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.policy = reader.int32();
-                        break;
+                    case 1: {
+                            message["default"] = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.policy = reader.int32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -13230,12 +13503,14 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message["default"] = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.policy = reader.int32();
-                        break;
+                    case 1: {
+                            message["default"] = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.policy = reader.int32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -13339,12 +13614,14 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message["default"] = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.policy = $root.sync.Contact.NotificationTriggerPolicyOverride.Policy.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message["default"] = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.policy = $root.sync.Contact.NotificationTriggerPolicyOverride.Policy.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -13445,12 +13722,14 @@ export const sync = $root.sync = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.policy = reader.int32();
-                            break;
-                        case 2:
-                            message.expiresAt = reader.uint64();
-                            break;
+                        case 1: {
+                                message.policy = reader.int32();
+                                break;
+                            }
+                        case 2: {
+                                message.expiresAt = reader.uint64();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -13569,12 +13848,14 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message["default"] = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.policy = reader.int32();
-                        break;
+                    case 1: {
+                            message["default"] = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.policy = reader.int32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -13813,36 +14094,46 @@ export const sync = $root.sync = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.groupIdentity = $root.common.GroupIdentity.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.name = reader.string();
-                    break;
-                case 3:
-                    message.createdAt = reader.uint64();
-                    break;
-                case 6:
-                    message.userState = reader.int32();
-                    break;
-                case 9:
-                    message.notificationTriggerPolicyOverride = $root.sync.Group.NotificationTriggerPolicyOverride.decode(reader, reader.uint32());
-                    break;
-                case 10:
-                    message.notificationSoundPolicyOverride = $root.sync.Group.NotificationSoundPolicyOverride.decode(reader, reader.uint32());
-                    break;
-                case 7:
-                    message.profilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
-                    break;
-                case 8:
-                    message.memberIdentities = $root.common.Identities.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.conversationCategory = reader.int32();
-                    break;
-                case 5:
-                    message.conversationVisibility = reader.int32();
-                    break;
+                case 1: {
+                        message.groupIdentity = $root.common.GroupIdentity.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.name = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.createdAt = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.userState = reader.int32();
+                        break;
+                    }
+                case 9: {
+                        message.notificationTriggerPolicyOverride = $root.sync.Group.NotificationTriggerPolicyOverride.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 10: {
+                        message.notificationSoundPolicyOverride = $root.sync.Group.NotificationSoundPolicyOverride.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 7: {
+                        message.profilePicture = $root.common.DeltaImage.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 8: {
+                        message.memberIdentities = $root.common.Identities.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.conversationCategory = reader.int32();
+                        break;
+                    }
+                case 5: {
+                        message.conversationVisibility = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -13959,12 +14250,14 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message["default"] = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.policy = $root.sync.Group.NotificationTriggerPolicyOverride.Policy.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message["default"] = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.policy = $root.sync.Group.NotificationTriggerPolicyOverride.Policy.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -14065,12 +14358,14 @@ export const sync = $root.sync = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.policy = reader.int32();
-                            break;
-                        case 2:
-                            message.expiresAt = reader.uint64();
-                            break;
+                        case 1: {
+                                message.policy = reader.int32();
+                                break;
+                            }
+                        case 2: {
+                                message.expiresAt = reader.uint64();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -14191,12 +14486,14 @@ export const sync = $root.sync = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message["default"] = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.policy = reader.int32();
-                        break;
+                    case 1: {
+                            message["default"] = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.policy = reader.int32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -14380,24 +14677,30 @@ export const sync = $root.sync = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.distributionListId = reader.fixed64();
-                    break;
-                case 2:
-                    message.name = reader.string();
-                    break;
-                case 3:
-                    message.createdAt = reader.uint64();
-                    break;
-                case 6:
-                    message.memberIdentities = $root.common.Identities.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.conversationCategory = reader.int32();
-                    break;
-                case 5:
-                    message.conversationVisibility = reader.int32();
-                    break;
+                case 1: {
+                        message.distributionListId = reader.fixed64();
+                        break;
+                    }
+                case 2: {
+                        message.name = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.createdAt = reader.uint64();
+                        break;
+                    }
+                case 6: {
+                        message.memberIdentities = $root.common.Identities.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.conversationCategory = reader.int32();
+                        break;
+                    }
+                case 5: {
+                        message.conversationVisibility = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -14666,36 +14969,46 @@ export const sync = $root.sync = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.contactSyncPolicy = reader.int32();
-                    break;
-                case 2:
-                    message.unknownContactPolicy = reader.int32();
-                    break;
-                case 3:
-                    message.readReceiptPolicy = reader.int32();
-                    break;
-                case 4:
-                    message.typingIndicatorPolicy = reader.int32();
-                    break;
-                case 5:
-                    message.callPolicy = reader.int32();
-                    break;
-                case 6:
-                    message.callConnectionPolicy = reader.int32();
-                    break;
-                case 7:
-                    message.screenshotPolicy = reader.int32();
-                    break;
-                case 8:
-                    message.keyboardDataCollectionPolicy = reader.int32();
-                    break;
-                case 9:
-                    message.blockedIdentities = $root.common.Identities.decode(reader, reader.uint32());
-                    break;
-                case 10:
-                    message.excludeFromSyncIdentities = $root.common.Identities.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.contactSyncPolicy = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.unknownContactPolicy = reader.int32();
+                        break;
+                    }
+                case 3: {
+                        message.readReceiptPolicy = reader.int32();
+                        break;
+                    }
+                case 4: {
+                        message.typingIndicatorPolicy = reader.int32();
+                        break;
+                    }
+                case 5: {
+                        message.callPolicy = reader.int32();
+                        break;
+                    }
+                case 6: {
+                        message.callConnectionPolicy = reader.int32();
+                        break;
+                    }
+                case 7: {
+                        message.screenshotPolicy = reader.int32();
+                        break;
+                    }
+                case 8: {
+                        message.keyboardDataCollectionPolicy = reader.int32();
+                        break;
+                    }
+                case 9: {
+                        message.blockedIdentities = $root.common.Identities.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 10: {
+                        message.excludeFromSyncIdentities = $root.common.Identities.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -14884,9 +15197,10 @@ export const join = $root.join = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.registered = $root.join.Registered.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.registered = $root.join.Registered.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -15001,15 +15315,18 @@ export const join = $root.join = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.begin = $root.join.Begin.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.blobData = $root.common.BlobData.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.essentialData = $root.join.EssentialData.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.begin = $root.join.Begin.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.blobData = $root.common.BlobData.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.essentialData = $root.join.EssentialData.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -15275,49 +15592,60 @@ export const join = $root.join = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.mediatorServer = $root.join.EssentialData.MediatorServer.decode(reader, reader.uint32());
-                    break;
-                case 2:
-                    message.identityData = $root.join.EssentialData.IdentityData.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.deviceGroupData = $root.join.EssentialData.DeviceGroupData.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.userProfile = $root.sync.UserProfile.decode(reader, reader.uint32());
-                    break;
-                case 5:
-                    message.settings = $root.sync.Settings.decode(reader, reader.uint32());
-                    break;
-                case 6:
-                    message.mdmParameters = $root.sync.MdmParameters.decode(reader, reader.uint32());
-                    break;
-                case 7:
-                    if (!(message.contacts && message.contacts.length))
-                        message.contacts = [];
-                    message.contacts.push($root.join.EssentialData.AugmentedContact.decode(reader, reader.uint32()));
-                    break;
-                case 8:
-                    if (!(message.groups && message.groups.length))
-                        message.groups = [];
-                    message.groups.push($root.join.EssentialData.AugmentedGroup.decode(reader, reader.uint32()));
-                    break;
-                case 9:
-                    if (!(message.distributionLists && message.distributionLists.length))
-                        message.distributionLists = [];
-                    message.distributionLists.push($root.join.EssentialData.AugmentedDistributionList.decode(reader, reader.uint32()));
-                    break;
-                case 10:
-                    if (!(message.cspHashedNonces && message.cspHashedNonces.length))
-                        message.cspHashedNonces = [];
-                    message.cspHashedNonces.push(reader.bytes());
-                    break;
-                case 11:
-                    if (!(message.d2dHashedNonces && message.d2dHashedNonces.length))
-                        message.d2dHashedNonces = [];
-                    message.d2dHashedNonces.push(reader.bytes());
-                    break;
+                case 1: {
+                        message.mediatorServer = $root.join.EssentialData.MediatorServer.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.identityData = $root.join.EssentialData.IdentityData.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.deviceGroupData = $root.join.EssentialData.DeviceGroupData.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.userProfile = $root.sync.UserProfile.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 5: {
+                        message.settings = $root.sync.Settings.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 6: {
+                        message.mdmParameters = $root.sync.MdmParameters.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 7: {
+                        if (!(message.contacts && message.contacts.length))
+                            message.contacts = [];
+                        message.contacts.push($root.join.EssentialData.AugmentedContact.decode(reader, reader.uint32()));
+                        break;
+                    }
+                case 8: {
+                        if (!(message.groups && message.groups.length))
+                            message.groups = [];
+                        message.groups.push($root.join.EssentialData.AugmentedGroup.decode(reader, reader.uint32()));
+                        break;
+                    }
+                case 9: {
+                        if (!(message.distributionLists && message.distributionLists.length))
+                            message.distributionLists = [];
+                        message.distributionLists.push($root.join.EssentialData.AugmentedDistributionList.decode(reader, reader.uint32()));
+                        break;
+                    }
+                case 10: {
+                        if (!(message.cspHashedNonces && message.cspHashedNonces.length))
+                            message.cspHashedNonces = [];
+                        message.cspHashedNonces.push(reader.bytes());
+                        break;
+                    }
+                case 11: {
+                        if (!(message.d2dHashedNonces && message.d2dHashedNonces.length))
+                            message.d2dHashedNonces = [];
+                        message.d2dHashedNonces.push(reader.bytes());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -15418,12 +15746,14 @@ export const join = $root.join = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.publicKey = reader.bytes();
-                        break;
-                    case 2:
-                        message.webSocketHostname = reader.string();
-                        break;
+                    case 1: {
+                            message.publicKey = reader.bytes();
+                            break;
+                        }
+                    case 2: {
+                            message.webSocketHostname = reader.string();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -15535,18 +15865,22 @@ export const join = $root.join = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.identity = reader.string();
-                        break;
-                    case 2:
-                        message.ck = reader.bytes();
-                        break;
-                    case 3:
-                        message.cspDeviceCookie = reader.bytes();
-                        break;
-                    case 4:
-                        message.cspServerGroup = reader.string();
-                        break;
+                    case 1: {
+                            message.identity = reader.string();
+                            break;
+                        }
+                    case 2: {
+                            message.ck = reader.bytes();
+                            break;
+                        }
+                    case 3: {
+                            message.cspDeviceCookie = reader.bytes();
+                            break;
+                        }
+                    case 4: {
+                            message.cspServerGroup = reader.string();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -15625,9 +15959,10 @@ export const join = $root.join = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.dgk = reader.bytes();
-                        break;
+                    case 1: {
+                            message.dgk = reader.bytes();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -15731,12 +16066,14 @@ export const join = $root.join = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.contact = $root.sync.Contact.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.lastUpdateAt = reader.uint64();
-                        break;
+                    case 1: {
+                            message.contact = $root.sync.Contact.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.lastUpdateAt = reader.uint64();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -15826,12 +16163,14 @@ export const join = $root.join = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.group = $root.sync.Group.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.lastUpdateAt = reader.uint64();
-                        break;
+                    case 1: {
+                            message.group = $root.sync.Group.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.lastUpdateAt = reader.uint64();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -15921,12 +16260,14 @@ export const join = $root.join = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.distributionList = $root.sync.DistributionList.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.lastUpdateAt = reader.uint64();
-                        break;
+                    case 1: {
+                            message.distributionList = $root.sync.DistributionList.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.lastUpdateAt = reader.uint64();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -16120,18 +16461,22 @@ export const rendezvous = $root.rendezvous = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.version = reader.int32();
-                    break;
-                case 2:
-                    message.ak = reader.bytes();
-                    break;
-                case 3:
-                    message.relayedWebSocket = $root.rendezvous.RendezvousInit.RelayedWebSocket.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.directTcpServer = $root.rendezvous.RendezvousInit.DirectTcpServer.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.version = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.ak = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.relayedWebSocket = $root.rendezvous.RendezvousInit.RelayedWebSocket.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.directTcpServer = $root.rendezvous.RendezvousInit.DirectTcpServer.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -16257,15 +16602,18 @@ export const rendezvous = $root.rendezvous = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.pathId = reader.uint32();
-                        break;
-                    case 2:
-                        message.networkCost = reader.int32();
-                        break;
-                    case 3:
-                        message.url = reader.string();
-                        break;
+                    case 1: {
+                            message.pathId = reader.uint32();
+                            break;
+                        }
+                    case 2: {
+                            message.networkCost = reader.int32();
+                            break;
+                        }
+                    case 3: {
+                            message.url = reader.string();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -16357,14 +16705,16 @@ export const rendezvous = $root.rendezvous = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.port = reader.uint32();
-                        break;
-                    case 2:
-                        if (!(message.ipAddresses && message.ipAddresses.length))
-                            message.ipAddresses = [];
-                        message.ipAddresses.push($root.rendezvous.RendezvousInit.DirectTcpServer.IpAddress.decode(reader, reader.uint32()));
-                        break;
+                    case 1: {
+                            message.port = reader.uint32();
+                            break;
+                        }
+                    case 2: {
+                            if (!(message.ipAddresses && message.ipAddresses.length))
+                                message.ipAddresses = [];
+                            message.ipAddresses.push($root.rendezvous.RendezvousInit.DirectTcpServer.IpAddress.decode(reader, reader.uint32()));
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -16462,15 +16812,18 @@ export const rendezvous = $root.rendezvous = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.pathId = reader.uint32();
-                            break;
-                        case 2:
-                            message.networkCost = reader.int32();
-                            break;
-                        case 3:
-                            message.ip = reader.string();
-                            break;
+                        case 1: {
+                                message.pathId = reader.uint32();
+                                break;
+                            }
+                        case 2: {
+                                message.networkCost = reader.int32();
+                                break;
+                            }
+                        case 3: {
+                                message.ip = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -16694,12 +17047,14 @@ export const rendezvous = $root.rendezvous = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.challenge = reader.bytes();
-                            break;
-                        case 2:
-                            message.etk = reader.bytes();
-                            break;
+                        case 1: {
+                                message.challenge = reader.bytes();
+                                break;
+                            }
+                        case 2: {
+                                message.etk = reader.bytes();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -16778,9 +17133,10 @@ export const rendezvous = $root.rendezvous = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.response = reader.bytes();
-                            break;
+                        case 1: {
+                                message.response = reader.bytes();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -16948,15 +17304,18 @@ export const rendezvous = $root.rendezvous = (() => {
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.response = reader.bytes();
-                            break;
-                        case 2:
-                            message.challenge = reader.bytes();
-                            break;
-                        case 3:
-                            message.etk = reader.bytes();
-                            break;
+                        case 1: {
+                                message.response = reader.bytes();
+                                break;
+                            }
+                        case 2: {
+                                message.challenge = reader.bytes();
+                                break;
+                            }
+                        case 3: {
+                                message.etk = reader.bytes();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -17143,12 +17502,14 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.deviceGroupId = reader.bytes();
-                    break;
-                case 3:
-                    message.serverGroup = reader.string();
-                    break;
+                case 1: {
+                        message.deviceGroupId = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.serverGroup = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -17249,15 +17610,18 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.version = reader.uint32();
-                    break;
-                case 2:
-                    message.esk = reader.bytes();
-                    break;
-                case 3:
-                    message.challenge = reader.bytes();
-                    break;
+                case 1: {
+                        message.version = reader.uint32();
+                        break;
+                    }
+                case 2: {
+                        message.esk = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.challenge = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -17444,27 +17808,34 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.version = reader.uint32();
-                    break;
-                case 2:
-                    message.response = reader.bytes();
-                    break;
-                case 3:
-                    message.deviceId = reader.fixed64();
-                    break;
-                case 4:
-                    message.deviceSlotsExhaustedPolicy = reader.int32();
-                    break;
-                case 5:
-                    message.deviceSlotExpirationPolicy = reader.int32();
-                    break;
-                case 7:
-                    message.expectedDeviceSlotState = reader.int32();
-                    break;
-                case 6:
-                    message.encryptedDeviceInfo = reader.bytes();
-                    break;
+                case 1: {
+                        message.version = reader.uint32();
+                        break;
+                    }
+                case 2: {
+                        message.response = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.deviceId = reader.fixed64();
+                        break;
+                    }
+                case 4: {
+                        message.deviceSlotsExhaustedPolicy = reader.int32();
+                        break;
+                    }
+                case 5: {
+                        message.deviceSlotExpirationPolicy = reader.int32();
+                        break;
+                    }
+                case 7: {
+                        message.expectedDeviceSlotState = reader.int32();
+                        break;
+                    }
+                case 6: {
+                        message.encryptedDeviceInfo = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -17590,18 +17961,22 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 4:
-                    message.currentTime = reader.uint64();
-                    break;
-                case 1:
-                    message.maxDeviceSlots = reader.uint32();
-                    break;
-                case 2:
-                    message.deviceSlotState = reader.int32();
-                    break;
-                case 3:
-                    message.encryptedSharedDeviceData = reader.bytes();
-                    break;
+                case 4: {
+                        message.currentTime = reader.uint64();
+                        break;
+                    }
+                case 1: {
+                        message.maxDeviceSlots = reader.uint32();
+                        break;
+                    }
+                case 2: {
+                        message.deviceSlotState = reader.int32();
+                        break;
+                    }
+                case 3: {
+                        message.encryptedSharedDeviceData = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -17885,28 +18260,29 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    if (message.augmentedDeviceInfo === $util.emptyObject)
-                        message.augmentedDeviceInfo = {};
-                    let end2 = reader.uint32() + reader.pos;
-                    key = 0;
-                    value = null;
-                    while (reader.pos < end2) {
-                        let tag2 = reader.uint32();
-                        switch (tag2 >>> 3) {
-                        case 1:
-                            key = reader.fixed64();
-                            break;
-                        case 2:
-                            value = $root.d2m.DevicesInfo.AugmentedDeviceInfo.decode(reader, reader.uint32());
-                            break;
-                        default:
-                            reader.skipType(tag2 & 7);
-                            break;
+                case 1: {
+                        if (message.augmentedDeviceInfo === $util.emptyObject)
+                            message.augmentedDeviceInfo = {};
+                        let end2 = reader.uint32() + reader.pos;
+                        key = 0;
+                        value = null;
+                        while (reader.pos < end2) {
+                            let tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.fixed64();
+                                break;
+                            case 2:
+                                value = $root.d2m.DevicesInfo.AugmentedDeviceInfo.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7);
+                                break;
+                            }
                         }
+                        message.augmentedDeviceInfo[typeof key === "object" ? $util.longToHash(key) : key] = value;
+                        break;
                     }
-                    message.augmentedDeviceInfo[typeof key === "object" ? $util.longToHash(key) : key] = value;
-                    break;
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18004,15 +18380,18 @@ export const d2m = $root.d2m = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.encryptedDeviceInfo = reader.bytes();
-                        break;
-                    case 2:
-                        message.lastLoginAt = reader.uint64();
-                        break;
-                    case 3:
-                        message.deviceSlotExpirationPolicy = reader.int32();
-                        break;
+                    case 1: {
+                            message.encryptedDeviceInfo = reader.bytes();
+                            break;
+                        }
+                    case 2: {
+                            message.lastLoginAt = reader.uint64();
+                            break;
+                        }
+                    case 3: {
+                            message.deviceSlotExpirationPolicy = reader.int32();
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;
@@ -18094,9 +18473,10 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.deviceId = reader.fixed64();
-                    break;
+                case 1: {
+                        message.deviceId = reader.fixed64();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18175,9 +18555,10 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.deviceId = reader.fixed64();
-                    break;
+                case 1: {
+                        message.deviceId = reader.fixed64();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18256,9 +18637,10 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.encryptedSharedDeviceData = reader.bytes();
-                    break;
+                case 1: {
+                        message.encryptedSharedDeviceData = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18348,12 +18730,14 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.encryptedScope = reader.bytes();
-                    break;
-                case 2:
-                    message.ttl = reader.uint32();
-                    break;
+                case 1: {
+                        message.encryptedScope = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.ttl = reader.uint32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18644,12 +19028,14 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.deviceId = reader.fixed64();
-                    break;
-                case 2:
-                    message.encryptedScope = reader.bytes();
-                    break;
+                case 1: {
+                        message.deviceId = reader.fixed64();
+                        break;
+                    }
+                case 2: {
+                        message.encryptedScope = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18739,12 +19125,14 @@ export const d2m = $root.d2m = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.deviceId = reader.fixed64();
-                    break;
-                case 2:
-                    message.encryptedScope = reader.bytes();
-                    break;
+                case 1: {
+                        message.deviceId = reader.fixed64();
+                        break;
+                    }
+                case 2: {
+                        message.encryptedScope = reader.bytes();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18871,15 +19259,18 @@ export const callsignaling = $root.callsignaling = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.padding = reader.bytes();
-                    break;
-                case 2:
-                    message.videoQualityProfile = $root.callsignaling.VideoQualityProfile.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.captureStateChange = $root.callsignaling.CaptureState.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.padding = reader.bytes();
+                        break;
+                    }
+                case 2: {
+                        message.videoQualityProfile = $root.callsignaling.VideoQualityProfile.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.captureStateChange = $root.callsignaling.CaptureState.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -18991,18 +19382,22 @@ export const callsignaling = $root.callsignaling = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.profile = reader.int32();
-                    break;
-                case 2:
-                    message.maxBitrateKbps = reader.uint32();
-                    break;
-                case 3:
-                    message.maxResolution = $root.common.Resolution.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    message.maxFps = reader.uint32();
-                    break;
+                case 1: {
+                        message.profile = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.maxBitrateKbps = reader.uint32();
+                        break;
+                    }
+                case 3: {
+                        message.maxResolution = $root.common.Resolution.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.maxFps = reader.uint32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -19108,12 +19503,14 @@ export const callsignaling = $root.callsignaling = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.state = reader.int32();
-                    break;
-                case 2:
-                    message.device = reader.int32();
-                    break;
+                case 1: {
+                        message.state = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.device = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -19267,18 +19664,22 @@ export const url = $root.url = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.adminIdentity = reader.string();
-                    break;
-                case 2:
-                    message.token = reader.bytes();
-                    break;
-                case 3:
-                    message.confirmationMode = reader.int32();
-                    break;
-                case 4:
-                    message.groupName = reader.string();
-                    break;
+                case 1: {
+                        message.adminIdentity = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.token = reader.bytes();
+                        break;
+                    }
+                case 3: {
+                        message.confirmationMode = reader.int32();
+                        break;
+                    }
+                case 4: {
+                        message.groupName = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -19393,15 +19794,18 @@ export const url = $root.url = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1:
-                    message.version = reader.int32();
-                    break;
-                case 2:
-                    message.variant = $root.url.DeviceGroupJoinRequestOrOffer.Variant.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.rendezvousInit = $root.rendezvous.RendezvousInit.decode(reader, reader.uint32());
-                    break;
+                case 1: {
+                        message.version = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.variant = $root.url.DeviceGroupJoinRequestOrOffer.Variant.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.rendezvousInit = $root.rendezvous.RendezvousInit.decode(reader, reader.uint32());
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -19514,12 +19918,14 @@ export const url = $root.url = (() => {
                 while (reader.pos < end) {
                     let tag = reader.uint32();
                     switch (tag >>> 3) {
-                    case 1:
-                        message.requestToJoin = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
-                    case 2:
-                        message.offerToJoin = $root.common.Unit.decode(reader, reader.uint32());
-                        break;
+                    case 1: {
+                            message.requestToJoin = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
+                    case 2: {
+                            message.offerToJoin = $root.common.Unit.decode(reader, reader.uint32());
+                            break;
+                        }
                     default:
                         reader.skipType(tag & 7);
                         break;

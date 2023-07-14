@@ -29,12 +29,14 @@ node_modules/.bin/pbjs \
     --no-convert \
     --no-create \
     --no-delimited \
+    --no-typeurl \
     --no-verify
 
 # Generate types
 node_modules/.bin/pbts \
     $OUTFILE \
     | tools/generate-protobuf-postprocess.cjs \
+    | grep -v 'require("long")' \
     > src/common/network/protobuf/js/index.d.ts
 
 # Inject Long global initialization
