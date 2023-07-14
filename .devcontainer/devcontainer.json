@@ -1,13 +1,5 @@
 {
   "name": "threema-desktop",
-  "extensions": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
-    "svelte.svelte-vscode",
-    "EditorConfig.EditorConfig",
-    "zxh404.vscode-proto3"
-  ],
-  "settings": {},
   "containerUser": "threema",
   "mounts": [
     "source=${localEnv:HOME}/.local/share/ThreemaDesktop,target=/home/threema/.local/share/ThreemaDesktop,type=bind,consistency=cached"
@@ -26,5 +18,17 @@
     "--env=DISPLAY=${localEnv:DISPLAY}",
     "--device=/dev/dri:/dev/dri",
     "--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw"
-  ]
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "svelte.svelte-vscode",
+        "EditorConfig.EditorConfig",
+        "zxh404.vscode-proto3"
+      ],
+      "settings": {}
+    }
+  }
 }
