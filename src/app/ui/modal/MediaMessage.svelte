@@ -333,7 +333,12 @@
 
               {#if !isSendingEnabled && sendButtonPopover !== null}
                 <Tooltip bind:popover={sendButtonPopover} reference={sendButtonWrapper}>
-                  <p class="tooltip-content">Some files contain errors</p>
+                  <p class="tooltip-content">
+                    {$i18n.t(
+                      'messaging.error--send-file-miscellaneous-errors',
+                      'Some files contain errors',
+                    )}
+                  </p>
                 </Tooltip>
               {/if}
             </div>

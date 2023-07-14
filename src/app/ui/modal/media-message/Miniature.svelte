@@ -56,6 +56,7 @@
         border-radius: calc($size / 2);
         left: calc(100% - $size + $offset);
         top: -$offset;
+        color: white;
         background-color: $alert-red;
       }
     }
