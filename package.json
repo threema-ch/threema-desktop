@@ -122,7 +122,7 @@
     "@typescript-eslint/utils": "~5.60.1",
     "chai": "~4.3.4",
     "debug": "~4.3.3",
-    "electron": "25.2.0",
+    "electron": "25.3.0",
     "electron-installer-dmg": "~4.0.0",
     "electron-packager": "~17.1.1",
     "es-module-lexer": "~1.1.0",
