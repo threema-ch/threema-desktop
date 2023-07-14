@@ -160,6 +160,7 @@
     "vite-tsconfig-paths": "3.6.0"
   },
   "overrides": {
-    "glob-parent": "^5.1.2"
+    "glob-parent": "^5.1.2",
+    "optionator": "0.9.3"
   }
 }
