@@ -1,7 +1,8 @@
 # Clone git repository recursively
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  NODE_VERSION: 18.15.0
+  NODE_VERSION: '18.15.0'
+  PROTOC_VERSION: '23.4'
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
 
 default:
@@ -260,8 +261,19 @@ protobuf-in-sync:
   before_script:
     - node --version
     - npm --version
-    - apt-get update && apt-get install -y protobuf-compiler
   script:
+    # Install protoc
+    - |
+      # TODO: Replace this with "apt-get update && apt-get install -y protobuf-compiler"
+      #       (in before_script) once we can upgrade the node image to Debian Bookworm
+      PROTOC_ARCHIVE=protoc-${PROTOC_VERSION}-linux-x86_64.zip
+      PROTOC_DOWNLOAD_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ARCHIVE}
+      mkdir /protobuf \
+       && pushd /protobuf \
+       && curl --proto '=https' --tlsv1.2 -fsOSL $PROTOC_DOWNLOAD_URL \
+       && unzip $PROTOC_ARCHIVE \
+       && mv bin/protoc /usr/local/bin/ \
+       && popd
     # Install npm dependencies
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     # Re-generate protobuf bindings

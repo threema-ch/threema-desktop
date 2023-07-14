@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:23.04
 
 # Update apt cache
 RUN apt-get update
@@ -48,6 +48,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 ARG UID=1000
 ARG GID=1000
 ARG USERNAME=threema
+RUN userdel -r ubuntu # Remove default user
 RUN groupadd -g $GID -o $USERNAME && \
     useradd -l -m -u $UID -g $GID -o -s /bin/bash $USERNAME && \
     cp /etc/skel/.bashrc /home/$USERNAME/.bashrc

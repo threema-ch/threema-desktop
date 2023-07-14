@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+function print_usage() {
+    echo "Usage: $0 [--rebuild]"
+    echo ""
+    echo "Options:"
+    echo "  --rebuild          Force a Docker image rebuild"
+    echo "  -h,--help          Print this help and exit"
+}
+
+# Parse arguments
+force_rebuild=0
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --rebuild) force_rebuild=1 ;;
+        -h|--help) print_usage; return 0 ;;
+        --) shift; break ;;
+        *) echo "Unknown parameter passed: $1"; print_usage; return 1 ;;
+    esac
+    shift
+done
+
 # Extract necessary vars
 NODE_VERSION=$(jq -e -r '.build.args.NODE_VERSION' ./.devcontainer/devcontainer.json)
 WORK_DIRECTORY=$(jq -e -r '.workspaceFolder' ./.devcontainer/devcontainer.json)
@@ -8,7 +28,7 @@ MOUNTS=$(jq -e -r '.mounts | map("--mount=\(sub("\\${localEnv:(?<v>[^}]+)}"; env
 
 # Build the Docker container for the current version, if necessary
 DOCKER_IMAGE=$(docker images -q "threema-desktop-env:${NODE_VERSION}" 2> /dev/null)
-if [[ "$DOCKER_IMAGE" == "" ]]; then
+if [[ "$DOCKER_IMAGE" == "" ]] || [[ "$force_rebuild" -eq 1 ]]; then
     docker build \
       --no-cache \
       --build-arg NODE_VERSION="${NODE_VERSION}" \

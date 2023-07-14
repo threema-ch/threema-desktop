@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Generate protobuf bindings.
+#
+# Requires protoc >= 3.15.0 to be installed!
 set -euo pipefail
 
 if ! command -v protoc >/dev/null 2>&1; then
@@ -65,7 +69,6 @@ protoc \
     --ts_proto_opt=outputServices=false \
     --ts_proto_opt=env=browser \
     --ts_proto_opt=exportCommonSymbols=false \
-    --experimental_allow_proto3_optional \
     "${TS_PROTO_FILES[@]}"
 for file in "${TS_PROTO_FILES[@]}"; do
     prettier --write "${file/.proto/.ts}"
