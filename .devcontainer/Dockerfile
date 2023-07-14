@@ -60,6 +60,7 @@ RUN mkdir /home/$USERNAME/.node && \
     echo "" >> /home/$USERNAME/.bashrc && \
     echo "# Threema Desktop" >> /home/$USERNAME/.bashrc && \
     echo "export PATH=/home/$USERNAME/.node/node-v$NODE_VERSION-linux-x64/bin:${PATH}" >> /home/$USERNAME/.bashrc
+RUN echo "update-notifier=false" >> /home/$USERNAME/.npmrc
 
 # Entrypoint
 CMD /bin/bash
