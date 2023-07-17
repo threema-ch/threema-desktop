@@ -4,12 +4,8 @@
 
 import {ReceiverType} from '~/common/enum';
 import {type Conversation, type Repositories} from '~/common/model';
-import {
-    type InboundFileMessage,
-    type InboundTextMessage,
-    type OutboundFileMessage,
-    type OutboundTextMessage,
-} from '~/common/model/types/message';
+import {type InboundFileMessage, type OutboundFileMessage} from '~/common/model/types/message/file';
+import {type InboundTextMessage, type OutboundTextMessage} from '~/common/model/types/message/text';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type ConversationId} from '~/common/network/types';
 import {type Mutable} from '~/common/types';

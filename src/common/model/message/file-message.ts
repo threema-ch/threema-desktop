@@ -29,14 +29,16 @@ import {
     type FileData,
     type FileMessageDataState,
     type InboundBaseFileMessageView,
+    type OutboundBaseFileMessageView,
+} from '~/common/model/types/message';
+import {
     type InboundFileMessage,
     type InboundFileMessageController,
     type InboundFileMessageView,
-    type OutboundBaseFileMessageView,
     type OutboundFileMessage,
     type OutboundFileMessageController,
     type OutboundFileMessageView,
-} from '~/common/model/types/message';
+} from '~/common/model/types/message/file';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {

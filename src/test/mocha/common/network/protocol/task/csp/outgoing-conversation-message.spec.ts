@@ -9,7 +9,7 @@ import {
 } from '~/common/enum';
 import {type AnyReceiver, type Contact, type Group} from '~/common/model';
 import {type OutboundTextMessageModelStore} from '~/common/model/message/text-message';
-import {type OutboundTextMessageModel} from '~/common/model/types/message';
+import {type OutboundTextMessageModel} from '~/common/model/types/message/text';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {type ActiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
 import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';

@@ -5,7 +5,11 @@ import {type ConversationControllerHandle} from '~/common/model/types/conversati
 import {
     type AnyTextMessageModelStore,
     type BaseMessageView,
+    type CommonBaseMessageView,
     type DirectedMessageFor,
+} from '~/common/model/types/message';
+import {
+    type CommonTextMessageView,
     type IInboundTextMessageModelStore,
     type InboundTextMessage,
     type InboundTextMessageController,
@@ -14,8 +18,7 @@ import {
     type OutboundTextMessage,
     type OutboundTextMessageController,
     type OutboundTextMessageModel,
-    type TextMessageViewFragment,
-} from '~/common/model/types/message';
+} from '~/common/model/types/message/text';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
 
@@ -46,7 +49,7 @@ export function getTextMessageModelStore<TModelStore extends AnyTextMessageModel
     common: BaseMessageView<TModelStore['ctx']>,
     sender: LocalModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
-    const text: TextMessageViewFragment = {
+    const text: Omit<CommonTextMessageView, keyof CommonBaseMessageView> = {
         text: message.text,
         quotedMessageId: message.quotedMessageId,
     };
