@@ -44,11 +44,16 @@
   const translationsForBackend: LocalStore<ConversationPreviewTranslations> = derive(
     i18n,
     ({t}) => ({
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+      /* eslint-disable @typescript-eslint/naming-convention */
       'messaging.label--default-file-message-preview': t(
         'messaging.label--default-file-message-preview',
         'File',
       ),
+      'messaging.label--default-image-message-preview': t(
+        'messaging.label--default-image-message-preview',
+        'Image',
+      ),
+      /* eslint-enable @typescript-eslint/naming-convention */
     }),
   );
 

@@ -6,7 +6,7 @@ import {statusFromView} from '~/common/model/message';
 import {
     type AnyMessageModel,
     type AnyMessageModelStore,
-    type FileMessageViewFragment,
+    type CommonBaseFileMessageView,
 } from '~/common/model/types/message';
 import {type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
@@ -183,7 +183,7 @@ function getMessageOrdinal(message: AnyMessageModel): u53 {
 /**
  * Convert a view `FileMessageDataState` into a viewmodel `FileMessageDataState`.
  */
-function convertFileMessageDataState(view: FileMessageViewFragment): FileMessageDataState {
+function convertFileMessageDataState(view: CommonBaseFileMessageView): FileMessageDataState {
     switch (view.state) {
         case 'syncing':
             return {type: 'syncing', progress: 'TODO(DESK-933)'};
@@ -265,6 +265,8 @@ function getConversationMessageBody(
             }
             break;
         }
+        case 'image':
+            throw new Error('TODO(DESK-247)');
         default:
             unreachable(messageModel);
     }

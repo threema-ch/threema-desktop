@@ -285,6 +285,7 @@
     "label--compose-area": "[d] Schreiben Sie eine Nachricht...",
     "label--default-file-message-preview": "[d] Datei",
     "label--default-filename": "[d] (kein Name)",
+    "label--default-image-message-preview": "Image",
     "label--default-sender-self": "[d] Ich: {text}",
     "label--mention-all": "[d] Alle",
     "label--mention-me": "[d] Ich",

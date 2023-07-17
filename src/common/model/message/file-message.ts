@@ -23,13 +23,16 @@ import {type ConversationControllerHandle} from '~/common/model/types/conversati
 import {
     type AnyFileMessageModelStore,
     type BaseMessageView,
+    type CommonBaseFileMessageView,
+    type CommonBaseMessageView,
     type DirectedMessageFor,
     type FileData,
     type FileMessageDataState,
-    type FileMessageViewFragment,
+    type InboundBaseFileMessageView,
     type InboundFileMessage,
     type InboundFileMessageController,
     type InboundFileMessageView,
+    type OutboundBaseFileMessageView,
     type OutboundFileMessage,
     type OutboundFileMessageController,
     type OutboundFileMessageView,
@@ -133,7 +136,7 @@ export function getFileMessageModelStore<TModelStore extends AnyFileMessageModel
     common: BaseMessageView<TModelStore['ctx']>,
     sender: LocalModelStore<Contact> | typeof NO_SENDER,
 ): TModelStore {
-    const file: FileMessageViewFragment = {
+    const file: Omit<CommonBaseFileMessageView, keyof CommonBaseMessageView> = {
         fileName: message.fileName,
         fileSize: message.fileSize,
         caption: message.caption,
@@ -184,7 +187,9 @@ async function downloadBlob(
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
     lock: AsyncLock,
-    meta: ModelLifetimeGuard<InboundFileMessageView> | ModelLifetimeGuard<OutboundFileMessageView>,
+    lifetimeGuard:
+        | ModelLifetimeGuard<InboundBaseFileMessageView>
+        | ModelLifetimeGuard<OutboundBaseFileMessageView>,
     log: Logger,
 ): Promise<ReadonlyUint8Array>;
 async function downloadBlob(
@@ -194,7 +199,9 @@ async function downloadBlob(
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
     lock: AsyncLock,
-    meta: ModelLifetimeGuard<InboundFileMessageView> | ModelLifetimeGuard<OutboundFileMessageView>,
+    lifetimeGuard:
+        | ModelLifetimeGuard<InboundBaseFileMessageView>
+        | ModelLifetimeGuard<OutboundBaseFileMessageView>,
     log: Logger,
 ): Promise<ReadonlyUint8Array | undefined>;
 /**
@@ -210,10 +217,17 @@ async function downloadBlob(
     conversation: ConversationControllerHandle,
     services: ServicesForModel,
     lock: AsyncLock,
-    meta: ModelLifetimeGuard<InboundFileMessageView> | ModelLifetimeGuard<OutboundFileMessageView>,
+    lifetimeGuard:
+        | ModelLifetimeGuard<InboundBaseFileMessageView>
+        | ModelLifetimeGuard<OutboundBaseFileMessageView>,
     log: Logger,
 ): Promise<ReadonlyUint8Array | undefined> {
     const {blob, crypto, file} = services;
+
+    /**
+     * Properties of all file-based message views that are specific to file-based messages.
+     */
+    type BaseFileMessageViewFragment = Omit<CommonBaseFileMessageView, keyof CommonBaseMessageView>;
 
     /**
      * Mark the download of the file or thumbnail as permanently failed.
@@ -221,8 +235,8 @@ async function downloadBlob(
      * If it's a file download, update the state in the view to 'failed' as well.
      */
     function markDownloadAsPermanentlyFailed(): void {
-        let dbChange: Partial<FileMessageViewFragment>;
-        let viewChange: Partial<FileMessageViewFragment>;
+        let dbChange: Partial<BaseFileMessageViewFragment>;
+        let viewChange: Partial<BaseFileMessageViewFragment>;
         switch (type) {
             case 'main':
                 dbChange = {blobDownloadState: BlobDownloadState.PERMANENT_FAILURE};
@@ -235,7 +249,7 @@ async function downloadBlob(
             default:
                 unreachable(type);
         }
-        meta.update(() => {
+        lifetimeGuard.update(() => {
             updateFileMessage(services, log, conversation.uid, messageUid, dbChange);
             return viewChange;
         });
@@ -245,7 +259,7 @@ async function downloadBlob(
     // avoid races where the same blob is downloaded multiple times.
     return await lock.with(async () => {
         // If blob is already downloaded (i.e. a fileId is set), return it
-        const existingFileData: FileData | undefined = meta.run((handle) => {
+        const existingFileData: FileData | undefined = lifetimeGuard.run((handle) => {
             switch (type) {
                 case 'main':
                     return handle.view().fileData;
@@ -260,7 +274,7 @@ async function downloadBlob(
         }
 
         // If blob is marked as permanently failed, don't attempt to download
-        const downloadState = meta.run((handle) => {
+        const downloadState = lifetimeGuard.run((handle) => {
             switch (type) {
                 case 'main':
                     return handle.view().blobDownloadState;
@@ -283,7 +297,7 @@ async function downloadBlob(
         }
 
         // Get matching blob ID and nonce
-        const [blobId, nonce] = meta.run((handle) => {
+        const [blobId, nonce] = lifetimeGuard.run((handle) => {
             switch (type) {
                 case 'main':
                     return [handle.view().blobId, BLOB_FILE_NONCE];
@@ -316,7 +330,7 @@ async function downloadBlob(
             )} message (scope=${blobDownloadScope})`,
         );
         if (type === 'main') {
-            meta.update((view) => ({state: 'syncing'}));
+            lifetimeGuard.update((view) => ({state: 'syncing'}));
         }
         let downloadResult;
         try {
@@ -328,14 +342,14 @@ async function downloadBlob(
             } else if (type === 'main') {
                 // Temporary failure. If this is about the file (and not the thumbnail), revert the
                 // state to "unsynced".
-                meta.update((view) => ({state: 'unsynced'}));
+                lifetimeGuard.update((view) => ({state: 'unsynced'}));
             }
             throw ensureError(error);
         }
 
         // Decrypt bytes
         const secretBox = crypto.getSecretBox(
-            meta.run((handle) => handle.view().encryptionKey),
+            lifetimeGuard.run((handle) => handle.view().encryptionKey),
             NONCE_UNGUARDED_TOKEN,
         );
         const decryptedBytes = secretBox
@@ -352,8 +366,8 @@ async function downloadBlob(
         };
 
         // Update database
-        let dbChange: Partial<FileMessageViewFragment>;
-        let viewChange: Partial<FileMessageViewFragment>;
+        let dbChange: Partial<BaseFileMessageViewFragment>;
+        let viewChange: Partial<BaseFileMessageViewFragment>;
         switch (type) {
             case 'main':
                 dbChange = {fileData: storedFileData};
@@ -366,7 +380,7 @@ async function downloadBlob(
             default:
                 unreachable(type);
         }
-        meta.update(() => {
+        lifetimeGuard.update(() => {
             updateFileMessage(services, log, conversation.uid, messageUid, dbChange);
             return viewChange;
         });
@@ -393,6 +407,9 @@ async function downloadBlob(
     });
 }
 
+/**
+ * Controller for inbound file messages.
+ */
 export class InboundFileMessageModelController
     extends InboundBaseMessageModelController<InboundFileMessage['view']>
     implements InboundFileMessageController
@@ -431,6 +448,9 @@ export class InboundFileMessageModelController
     }
 }
 
+/**
+ * Controller for outbound file messages.
+ */
 export class OutboundFileMessageModelController
     extends OutboundBaseMessageModelController<OutboundFileMessage['view']>
     implements OutboundFileMessageController
@@ -471,7 +491,7 @@ export class OutboundFileMessageModelController
     /** @inheritdoc */
     public async uploadBlobs(): Promise<void> {
         type FileDataToUpload = Pick<
-            FileMessageViewFragment,
+            CommonBaseFileMessageView,
             'fileData' | 'thumbnailFileData' | 'encryptionKey'
         >;
 

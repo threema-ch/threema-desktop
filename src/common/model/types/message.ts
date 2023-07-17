@@ -15,12 +15,16 @@ import {type Contact} from '~/common/model/types/contact';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type BlobId} from '~/common/network/protocol/blob';
+import {type FileRenderingType} from '~/common/network/structbuf/validate/csp/e2e/file';
 import {type MessageId} from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {type ProxyMarked} from '~/common/utils/endpoint';
 import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
 
+/**
+ * Base view for all message types and directions.
+ */
 export interface CommonBaseMessageView {
     /**
      * Message ID.
@@ -90,6 +94,10 @@ export type OutboundBaseMessageView = CommonBaseMessageView & {
      */
     readonly deliveredAt?: Date;
 };
+
+/**
+ * Helper type to get the proper base message view for the specified direction.
+ */
 export type BaseMessageView<TDirection extends MessageDirection> =
     TDirection extends MessageDirection.INBOUND
         ? InboundBaseMessageView
@@ -110,6 +118,9 @@ type InboundBaseMessageInit<TType extends MessageType> = CommonBaseMessageInit<T
 type OutboundBaseMessageInit<TType extends MessageType> = CommonBaseMessageInit<TType> &
     Pick<OutboundBaseMessageView, 'sentAt'>;
 
+/**
+ * Common parts of the controller for all message types and directions.
+ */
 export type CommonBaseMessageController<TView extends CommonBaseMessageView> = {
     readonly meta: ModelLifetimeGuard<TView>;
 
@@ -118,6 +129,10 @@ export type CommonBaseMessageController<TView extends CommonBaseMessageView> = {
      */
     readonly remove: () => void;
 } & ProxyMarked;
+
+/**
+ * Common parts of the controller for all inbound message types.
+ */
 export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
     CommonBaseMessageController<TView> & {
         /**
@@ -142,6 +157,10 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
             'fromRemote'
         >;
     };
+
+/**
+ * Common parts of the controller for all outbound message types.
+ */
 export type OutboundBaseMessageController<TView extends OutboundBaseMessageView> =
     CommonBaseMessageController<TView> & {
         /**
@@ -234,7 +253,11 @@ export interface FileData {
  *   returns a 404).
  */
 export type FileMessageDataState = 'unsynced' | 'syncing' | 'synced' | 'failed';
-export interface FileMessageViewFragment {
+
+/**
+ * View for file-based messages in all directions.
+ */
+export interface CommonBaseFileMessageView extends CommonBaseMessageView {
     readonly fileName?: string;
     readonly fileSize: u53;
     readonly caption?: string;
@@ -250,12 +273,47 @@ export interface FileMessageViewFragment {
     readonly thumbnailFileData?: FileData;
     readonly state: FileMessageDataState;
 }
-type CommonFileMessageView = CommonBaseMessageView & FileMessageViewFragment;
-export type InboundFileMessageView = InboundBaseMessageView & CommonFileMessageView;
-export type OutboundFileMessageView = OutboundBaseMessageView & CommonFileMessageView;
-type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
+
+/**
+ * View shared among all inbound file-based messages.
+ */
+export type InboundBaseFileMessageView = InboundBaseMessageView & CommonBaseFileMessageView;
+/**
+ * View shared among all outbound file-based messages.
+ */
+export type OutboundBaseFileMessageView = OutboundBaseMessageView & CommonBaseFileMessageView;
+
+/**
+ * View for inbound file messages.
+ */
+export type InboundFileMessageView = InboundBaseFileMessageView;
+/**
+ * View for outbound file messages.
+ */
+export type OutboundFileMessageView = OutboundBaseFileMessageView;
+
+/**
+ * Height and width of a media item (e.g. an image).
+ */
+export interface Dimensions {
+    readonly height: u53;
+    readonly width: u53;
+}
+
+export interface CommonImageMessageView extends CommonBaseFileMessageView {
+    readonly renderingType: Exclude<FileRenderingType, 'file'>;
+    readonly animated: boolean;
+    readonly dimensions?: Dimensions;
+}
+export type InboundImageMessageView = InboundBaseFileMessageView & CommonImageMessageView;
+export type OutboundImageMessageView = OutboundBaseFileMessageView & CommonImageMessageView;
+
+/**
+ * Fields needed to create a new file-based message.
+ */
+type CommonBaseFileMessageInit<T extends MessageType> = CommonBaseMessageInit<T> &
     Pick<
-        CommonFileMessageView,
+        CommonBaseFileMessageView,
         | 'fileName'
         | 'fileSize'
         | 'caption'
@@ -268,9 +326,26 @@ type CommonFileMessageInit = CommonBaseMessageInit<MessageType.FILE> &
         | 'fileData'
         | 'thumbnailFileData'
     >;
+
+/**
+ * Fields needed to create a new file message.
+ */
+type CommonFileMessageInit = CommonBaseFileMessageInit<MessageType.FILE>;
 type InboundFileMessageInit = CommonFileMessageInit & InboundBaseMessageInit<MessageType.FILE>;
 type OutboundFileMessageInit = CommonFileMessageInit & OutboundBaseMessageInit<MessageType.FILE>;
-type CommonFileMessageController<TView extends CommonFileMessageView> =
+
+/**
+ * Fields needed to create a new image message.
+ */
+type CommonImageMessageInit = CommonBaseFileMessageInit<MessageType.IMAGE> &
+    Pick<CommonImageMessageView, 'renderingType' | 'animated' | 'dimensions'>;
+type InboundImageMessageInit = CommonImageMessageInit & InboundBaseMessageInit<MessageType.IMAGE>;
+type OutboundImageMessageInit = CommonImageMessageInit & OutboundBaseMessageInit<MessageType.IMAGE>;
+
+/**
+ * Common parts of the controller for all file-based message types and directions.
+ */
+type CommonBaseFileMessageController<TView extends CommonBaseFileMessageView> =
     CommonBaseMessageController<TView> & {
         /**
          * Return the blob bytes.
@@ -292,15 +367,51 @@ type CommonFileMessageController<TView extends CommonFileMessageView> =
          */
         readonly thumbnailBlob: () => Promise<ReadonlyUint8Array | undefined>;
     };
-export type InboundFileMessageController = InboundBaseMessageController<InboundFileMessageView> &
-    CommonFileMessageController<InboundFileMessageView>;
-export type OutboundFileMessageController = OutboundBaseMessageController<OutboundFileMessageView> &
-    CommonFileMessageController<OutboundFileMessageView> & {
-        /**
-         * Ensure that file and thumbnail data are uploaded to the blob server.
-         */
-        readonly uploadBlobs: () => Promise<void>;
-    };
+
+/**
+ * Common parts of the controller for all inbound file-based message types.
+ */
+export type InboundBaseFileMessageController<TView extends InboundBaseFileMessageView> =
+    InboundBaseMessageController<TView> & CommonBaseFileMessageController<TView>;
+
+/**
+ * Common parts of the controller for all outbound file-based message types.
+ */
+export type OutboundBaseFileMessageController<TView extends OutboundBaseFileMessageView> =
+    OutboundBaseMessageController<TView> &
+        CommonBaseFileMessageController<TView> & {
+            /**
+             * Ensure that file and thumbnail data are uploaded to the blob server.
+             */
+            readonly uploadBlobs: () => Promise<void>;
+        };
+
+/**
+ * Controller for inbound file messages.
+ */
+export type InboundFileMessageController = InboundBaseFileMessageController<InboundFileMessageView>;
+
+/**
+ * Controller for outbound file messages.
+ */
+export type OutboundFileMessageController =
+    OutboundBaseFileMessageController<OutboundFileMessageView>;
+
+/**
+ * Controller for inbound image messages.
+ */
+export type InboundImageMessageController =
+    InboundBaseFileMessageController<InboundImageMessageView>;
+
+/**
+ * Controller for outbound image messages.
+ */
+export type OutboundImageMessageController =
+    OutboundBaseFileMessageController<OutboundImageMessageView>;
+
+/**
+ * Inbound file message model.
+ */
 type InboundFileMessageModel = LocalModel<
     InboundFileMessageView,
     InboundFileMessageController,
@@ -308,6 +419,10 @@ type InboundFileMessageModel = LocalModel<
     MessageType.FILE
 >;
 export type IInboundFileMessageModelStore = LocalModelStore<InboundFileMessageModel>;
+
+/**
+ * Outbound file message model.
+ */
 type OutboundFileMessageModel = LocalModel<
     OutboundFileMessageView,
     OutboundFileMessageController,
@@ -315,6 +430,32 @@ type OutboundFileMessageModel = LocalModel<
     MessageType.FILE
 >;
 export type IOutboundFileMessageModelStore = LocalModelStore<OutboundFileMessageModel>;
+
+/**
+ * Inbound image message model.
+ */
+type InboundImageMessageModel = LocalModel<
+    InboundImageMessageView,
+    InboundImageMessageController,
+    MessageDirection.INBOUND,
+    MessageType.IMAGE
+>;
+export type IInboundImageMessageModelStore = LocalModelStore<InboundImageMessageModel>;
+
+/**
+ * Outbound image message model.
+ */
+type OutboundImageMessageModel = LocalModel<
+    OutboundImageMessageView,
+    OutboundImageMessageController,
+    MessageDirection.OUTBOUND,
+    MessageType.IMAGE
+>;
+export type IOutboundImageMessageModelStore = LocalModelStore<OutboundImageMessageModel>;
+
+/**
+ * Combined types related to an inbound file message.
+ */
 export interface InboundFileMessage {
     readonly view: InboundFileMessageView;
     readonly init: InboundFileMessageInit;
@@ -322,6 +463,10 @@ export interface InboundFileMessage {
     readonly model: InboundFileMessageModel;
     readonly store: LocalModelStore<InboundFileMessageModel>;
 }
+
+/**
+ * Combined types related to an outbound file message.
+ */
 export interface OutboundFileMessage {
     readonly view: OutboundFileMessageView;
     readonly init: OutboundFileMessageInit;
@@ -330,76 +475,133 @@ export interface OutboundFileMessage {
     readonly store: LocalModelStore<OutboundFileMessageModel>;
 }
 
+/**
+ * Combined types related to an inbound image message.
+ */
+export interface InboundImageMessage {
+    readonly view: InboundImageMessageView;
+    readonly init: InboundImageMessageInit;
+    readonly controller: InboundImageMessageController;
+    readonly model: InboundImageMessageModel;
+    readonly store: LocalModelStore<InboundImageMessageModel>;
+}
+
+/**
+ * Combined types related to an outbound image message.
+ */
+export interface OutboundImageMessage {
+    readonly view: OutboundImageMessageView;
+    readonly init: OutboundImageMessageInit;
+    readonly controller: OutboundImageMessageController;
+    readonly model: OutboundImageMessageModel;
+    readonly store: LocalModelStore<OutboundImageMessageModel>;
+}
+
+/**
+ * Helper to return the appropriate bundle for the specified inbound message type.
+ */
 export type InboundMessageFor<TType extends MessageType> = TType extends MessageType.TEXT
     ? InboundTextMessage
     : TType extends MessageType.FILE
     ? InboundFileMessage
+    : TType extends MessageType.IMAGE
+    ? InboundImageMessage
     : never;
+
+/**
+ * Helper to return the appropriate bundle for the specified outbound message type.
+ */
 export type OutboundMessageFor<TType extends MessageType> = TType extends MessageType.TEXT
     ? OutboundTextMessage
     : TType extends MessageType.FILE
     ? OutboundFileMessage
+    : TType extends MessageType.IMAGE
+    ? OutboundImageMessage
     : never;
 
-type MessageVariants = 'view' | 'init' | 'controller' | 'model';
+type BundleProperty = 'view' | 'init' | 'controller' | 'model';
+
+/**
+ * Helper to return the appropriate bundle property for the specified direction and message type.
+ */
 export type DirectedMessageFor<
     TDirection extends MessageDirection,
     TType extends MessageType,
-    TVariant extends MessageVariants,
+    TBundleProperty extends BundleProperty,
 > = TDirection extends MessageDirection.INBOUND
     ? {
           readonly direction: MessageDirection.INBOUND;
-      } & InboundMessageFor<TType>[TVariant]
+      } & InboundMessageFor<TType>[TBundleProperty]
     : TDirection extends MessageDirection.OUTBOUND
     ? {
           readonly direction: MessageDirection.OUTBOUND;
-      } & OutboundMessageFor<TType>[TVariant]
+      } & OutboundMessageFor<TType>[TBundleProperty]
     : never;
+
 export type MessageFor<
     TDirection extends MessageDirection,
     TType extends MessageType,
-    TVariant extends MessageVariants,
+    TVariant extends BundleProperty,
 > = TDirection extends MessageDirection.INBOUND
     ? InboundMessageFor<TType>[TVariant]
     : TDirection extends MessageDirection.OUTBOUND
     ? OutboundMessageFor<TType>[TVariant]
     : never;
-export type AnyMessage<TVariant extends MessageVariants> = MessageFor<
+
+export type AnyMessage<TVariant extends BundleProperty> = MessageFor<
     MessageDirection,
     MessageType,
     TVariant
 >;
+
 export type AnyMessageModel = AnyInboundMessageModel | AnyOutboundMessageModel;
-export type AnyInboundMessageModel = InboundTextMessage['model'] | InboundFileMessage['model'];
-export type AnyOutboundMessageModel = OutboundTextMessage['model'] | OutboundFileMessage['model'];
+export type AnyInboundMessageModel =
+    | InboundTextMessage['model']
+    | InboundFileMessage['model']
+    | InboundImageMessage['model'];
+export type AnyOutboundMessageModel =
+    | OutboundTextMessage['model']
+    | OutboundFileMessage['model']
+    | OutboundImageMessage['model'];
 export type AnyMessageModelStore = AnyInboundMessageModelStore | AnyOutboundMessageModelStore;
 export type AnyInboundMessageModelStore =
     | IInboundTextMessageModelStore
-    | IInboundFileMessageModelStore;
+    | IInboundFileMessageModelStore
+    | IInboundImageMessageModelStore;
 export type AnyOutboundMessageModelStore =
     | IOutboundTextMessageModelStore
-    | IOutboundFileMessageModelStore;
+    | IOutboundFileMessageModelStore
+    | IOutboundImageMessageModelStore;
 export type AnyTextMessageModelStore =
     | IInboundTextMessageModelStore
     | IOutboundTextMessageModelStore;
 export type AnyFileMessageModelStore =
     | IInboundFileMessageModelStore
     | IOutboundFileMessageModelStore;
+export type AnyImageMessageModelStore =
+    | IInboundImageMessageModelStore
+    | IOutboundImageMessageModelStore;
 
 export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundTextMessage['model']>>
     | ReadonlySet<RemoteModelStore<OutboundTextMessage['model']>>
     | ReadonlySet<RemoteModelStore<InboundFileMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundFileMessage['model']>>;
+    | ReadonlySet<RemoteModelStore<OutboundFileMessage['model']>>
+    | ReadonlySet<RemoteModelStore<InboundImageMessage['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundImageMessage['model']>>;
 export type SetOfAnyLocalMessageModelStore = LocalSetStore<
     | LocalModelStore<InboundTextMessage['model']>
     | LocalModelStore<OutboundTextMessage['model']>
     | LocalModelStore<InboundFileMessage['model']>
     | LocalModelStore<OutboundFileMessage['model']>
+    | LocalModelStore<InboundImageMessage['model']>
+    | LocalModelStore<OutboundImageMessage['model']>
 >;
 export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<InboundTextMessage['model']>
     | RemoteModelStore<OutboundTextMessage['model']>
     | RemoteModelStore<InboundFileMessage['model']>
     | RemoteModelStore<OutboundFileMessage['model']>
+    | RemoteModelStore<InboundImageMessage['model']>
+    | RemoteModelStore<OutboundImageMessage['model']>
 >;

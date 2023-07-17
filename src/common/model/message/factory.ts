@@ -72,6 +72,8 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     init as DirectedMessageFor<TDirection, MessageType.FILE, 'init'>,
                 ) as DbMessageFor<TType>;
             }
+            case 'image':
+                throw new Error('TODO(DESK-247)');
             default:
                 return unreachable(init);
         }

@@ -34,7 +34,7 @@ export type ServicesForModel = Pick<
  * IMPORTANT: Only valid while running within a {@link ModelLifetimeGuard} executor. Async executors
  *            are **not** allowed!
  */
-export interface GuardedStoreHandle<TView> {
+export interface GuardedStoreHandle<in out TView> {
     /**
      * Get the current view of the associated store's model.
      */

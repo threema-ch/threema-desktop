@@ -8,7 +8,7 @@ import {Delayed} from '~/common/utils/delayed';
  * Ensures that the controller is attached to an active view when accessing it and throws in case
  * the associated view has been removed from underlying storage.
  */
-export class ModelLifetimeGuard<TView> {
+export class ModelLifetimeGuard<in out TView> {
     private _handle: Delayed<GuardedStoreHandle<TView>> = ModelLifetimeGuard._createDelayed();
 
     private static _createDelayed<TView>(): Delayed<GuardedStoreHandle<TView>> {

@@ -203,7 +203,8 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 });
                 break;
             }
-
+            case 'image':
+                throw new Error('TODO(DESK-247)');
             default:
                 return unreachable(messageModel);
         }
@@ -231,6 +232,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 case 'text':
                     return CspE2eGroupConversationType.GROUP_TEXT;
                 case 'file':
+                case 'image':
                     return CspE2eGroupConversationType.GROUP_FILE;
                 default:
                     return unreachable(this._messageModelStore);
@@ -240,6 +242,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 case 'text':
                     return CspE2eConversationType.TEXT;
                 case 'file':
+                case 'image':
                     return CspE2eConversationType.FILE;
                 default:
                     return unreachable(this._messageModelStore);

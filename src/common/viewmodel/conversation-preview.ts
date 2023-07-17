@@ -25,8 +25,10 @@ export type ConversationPreviewSetStore = LocalDerivedSetStore<
 >;
 
 export interface ConversationPreviewTranslations {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    /* eslint-disable @typescript-eslint/naming-convention */
     readonly 'messaging.label--default-file-message-preview': string;
+    readonly 'messaging.label--default-image-message-preview': string;
+    /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 export type ConversationPreviewTranslationsStore = RemoteStore<ConversationPreviewTranslations>;
@@ -182,10 +184,7 @@ function deriveGroupListItem(group: Group): GroupListItem {
 
 export function deriveLastMessagePreview(
     lastConversationMessage: ConversationMessage,
-    translations: Pick<
-        ConversationPreviewTranslations,
-        'messaging.label--default-file-message-preview'
-    >,
+    translations: ConversationPreviewTranslations,
 ): LocalStore<string> {
     return derive(
         lastConversationMessage.viewModel,
@@ -195,12 +194,15 @@ export function deriveLastMessagePreview(
                 case 'text':
                     return lastMessage.view.text;
 
-                case 'file': {
+                case 'file':
+                case 'image': {
                     const caption = lastMessage.view.caption;
                     if (caption !== undefined && caption !== '') {
                         return caption;
                     } else {
-                        return translations['messaging.label--default-file-message-preview'];
+                        return translations[
+                            `messaging.label--default-${lastMessage.type}-message-preview`
+                        ];
                     }
                 }
 
