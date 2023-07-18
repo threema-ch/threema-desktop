@@ -97,14 +97,16 @@ export class ConversationViewModelController implements IConversationViewModelCo
                 const correlationId =
                     messageEventDetail.files.length > 1 ? randomString(crypto, 32) : undefined;
 
-                // Generate random blob encryption key for the blobs (which will be encrypted and
-                // uploaded by the outgoing conversation message task)
-                const encryptionKey = wrapRawBlobKey(
-                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
-                );
-
                 for (const fileInfo of messageEventDetail.files) {
+                    // Generate random blob encryption key for the blobs (which will be encrypted and
+                    // uploaded by the outgoing conversation message task)
+                    const encryptionKey = wrapRawBlobKey(
+                        crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+                    );
+
+                    // Store data in file system
                     const fileData = await file.store(fileInfo.blob);
+
                     // TODO(DESK-958): Generate a thumbnail for media files
                     outgoingMessageInitFragments.push({
                         type: 'file', // TODO(DESK-958): Might also be 'image', 'video' or something else.
