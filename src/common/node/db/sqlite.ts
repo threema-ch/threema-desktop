@@ -4,7 +4,7 @@ import {type DynamicCondition} from 'ts-sql-query/expressions/dynamicConditionUs
 import {type UpdateSets} from 'ts-sql-query/expressions/update';
 import {ConsoleLogQueryRunner} from 'ts-sql-query/queryRunners/ConsoleLogQueryRunner';
 import {type QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
-import {type ColumnsForSetOf} from 'ts-sql-query/utils/tableOrViewUtils';
+import {type ColumnsForSetOf, type OuterJoinSourceOf} from 'ts-sql-query/utils/tableOrViewUtils';
 
 import {
     type DatabaseBackend,
@@ -1208,6 +1208,27 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    private _getFileDataSelectColumns(
+        tFileDataJoinable: OuterJoinSourceOf<typeof tFileData, 'fileData'>,
+        tThumbnailFileDataJoinable: OuterJoinSourceOf<typeof tFileData, 'thumbnailFileData'>,
+    ) {
+        return {
+            fileData: {
+                fileId: tFileDataJoinable.fileId,
+                encryptionKey: tFileDataJoinable.encryptionKey,
+                unencryptedByteCount: tFileDataJoinable.unencryptedByteCount,
+                storageFormatVersion: tFileDataJoinable.storageFormatVersion,
+            },
+            thumbnailFileData: {
+                fileId: tThumbnailFileDataJoinable.fileId,
+                encryptionKey: tThumbnailFileDataJoinable.encryptionKey,
+                unencryptedByteCount: tThumbnailFileDataJoinable.unencryptedByteCount,
+                storageFormatVersion: tThumbnailFileDataJoinable.storageFormatVersion,
+            },
+        } as const;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getMessage<TType extends MessageType>(
         common: Omit<DbMessageCommon<TType>, 'lastReaction'> & {
             lastReaction?: MessageReaction | undefined;
@@ -1263,25 +1284,17 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         )
                         // Select data
                         .select({
+                            // File data columns
+                            ...this._getFileDataSelectColumns(
+                                tFileDataJoinable,
+                                tThumbnailFileDataJoinable,
+                            ),
+                            // Base file message fields
                             blobId: tMessageFileData.blobId,
                             thumbnailBlobId: tMessageFileData.thumbnailBlobId,
                             blobDownloadState: tMessageFileData.blobDownloadState,
                             thumbnailBlobDownloadState: tMessageFileData.thumbnailBlobDownloadState,
                             encryptionKey: tMessageFileData.encryptionKey,
-                            fileData: {
-                                fileId: tFileDataJoinable.fileId,
-                                encryptionKey: tFileDataJoinable.encryptionKey,
-                                unencryptedByteCount: tFileDataJoinable.unencryptedByteCount,
-                                storageFormatVersion: tFileDataJoinable.storageFormatVersion,
-                            },
-                            thumbnailFileData: {
-                                fileId: tThumbnailFileDataJoinable.fileId,
-                                encryptionKey: tThumbnailFileDataJoinable.encryptionKey,
-                                unencryptedByteCount:
-                                    tThumbnailFileDataJoinable.unencryptedByteCount,
-                                storageFormatVersion:
-                                    tThumbnailFileDataJoinable.storageFormatVersion,
-                            },
                             mediaType: tMessageFileData.mediaType,
                             thumbnailMediaType: tMessageFileData.thumbnailMediaType,
                             fileName: tMessageFileData.fileName,
@@ -1300,7 +1313,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 };
             }
             case MessageType.IMAGE: {
-                // TODO(DESK-247): Is it possible to share logic with file type?
                 const tFileDataJoinable = tFileData.forUseInLeftJoinAs('fileData');
                 const tThumbnailFileDataJoinable =
                     tFileData.forUseInLeftJoinAs('thumbnailFileData');
@@ -1320,32 +1332,25 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         )
                         // Select data
                         .select({
+                            // File data columns
+                            ...this._getFileDataSelectColumns(
+                                tFileDataJoinable,
+                                tThumbnailFileDataJoinable,
+                            ),
+                            // Base file message fields
                             blobId: tMessageImageData.blobId,
                             thumbnailBlobId: tMessageImageData.thumbnailBlobId,
                             blobDownloadState: tMessageImageData.blobDownloadState,
                             thumbnailBlobDownloadState:
                                 tMessageImageData.thumbnailBlobDownloadState,
                             encryptionKey: tMessageImageData.encryptionKey,
-                            fileData: {
-                                fileId: tFileDataJoinable.fileId,
-                                encryptionKey: tFileDataJoinable.encryptionKey,
-                                unencryptedByteCount: tFileDataJoinable.unencryptedByteCount,
-                                storageFormatVersion: tFileDataJoinable.storageFormatVersion,
-                            },
-                            thumbnailFileData: {
-                                fileId: tThumbnailFileDataJoinable.fileId,
-                                encryptionKey: tThumbnailFileDataJoinable.encryptionKey,
-                                unencryptedByteCount:
-                                    tThumbnailFileDataJoinable.unencryptedByteCount,
-                                storageFormatVersion:
-                                    tThumbnailFileDataJoinable.storageFormatVersion,
-                            },
                             mediaType: tMessageImageData.mediaType,
                             thumbnailMediaType: tMessageImageData.thumbnailMediaType,
                             fileName: tMessageImageData.fileName,
                             fileSize: tMessageImageData.fileSize,
                             caption: tMessageImageData.caption,
                             correlationId: tMessageImageData.correlationId,
+                            // Image-specific fields
                             renderingType: tMessageImageData.renderingType,
                             animated: tMessageImageData.animated,
                             dimensions: {
