@@ -517,7 +517,7 @@ package:flatpak-public:
     REPO_BASE_URL: $FLATPAK_PUBLIC_REPO_BASE_URL
     REPO: threema-desktop
     REMOTE: threema-desktop
-    FLAVORS: consumer-live
+    FLAVORS: consumer-live,work-live
     FTP_HOST: $FLATPAK_PUBLIC_FTP_HOST
     FTP_USER: flatpak-internal
     GPG_ID: 8BC90B39A3DEA043F88607CA74463EA2AF62F4C6
