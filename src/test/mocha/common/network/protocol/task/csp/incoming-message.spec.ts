@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN, type PlainData} from '~/common/crypto';
+import {NONCE_UNGUARDED_TOKEN, type PlainData} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
@@ -33,7 +33,6 @@ import {
     type MessageId,
     type Nickname,
 } from '~/common/network/types';
-import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {type ByteLengthEncoder, type u8} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
@@ -52,7 +51,7 @@ import {
     type TestServices,
     type TestUser,
 } from '~/test/mocha/common/backend-mocks';
-import {makeGroup} from '~/test/mocha/common/db-backend-tests';
+import {makeGroup, randomBlobKey} from '~/test/mocha/common/db-backend-tests';
 import {
     reflectAndSendDeliveryReceipt,
     reflectContactSync,
@@ -520,9 +519,7 @@ export function run(): void {
                 expect(conversation.get().controller.getAllMessages().get().size).to.equal(0);
 
                 // Register test blobs
-                const encryptionKey = wrapRawBlobKey(
-                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
-                );
+                const encryptionKey = randomBlobKey();
                 const encryptionSecretBox = crypto.getSecretBox(
                     encryptionKey,
                     NONCE_UNGUARDED_TOKEN,

@@ -3,9 +3,9 @@ import {expect} from 'chai';
 import {ensureNonce, NACL_CONSTANTS} from '~/common/crypto';
 import {Blob} from '~/common/network/protobuf/validate/common';
 import {ensureBlobId} from '~/common/network/protocol/blob';
-import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {dateToUnixTimestampMs, intoU64} from '~/common/utils/number';
 import {TestTweetNaClBackend} from '~/test/mocha/common/backend-mocks';
+import {randomBlobKey} from '~/test/mocha/common/db-backend-tests';
 
 /**
  * Blob validation tests.
@@ -28,9 +28,7 @@ export function run(): void {
                 const nonce = ensureNonce(
                     crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
                 );
-                const key = wrapRawBlobKey(
-                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
-                );
+                const key = randomBlobKey();
                 const uploadedAt = new Date();
                 const serialized = Blob.serialize({
                     id: blobId,

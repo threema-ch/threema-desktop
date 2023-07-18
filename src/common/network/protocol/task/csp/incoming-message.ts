@@ -1407,6 +1407,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return getDirectedTextMessageInit(this._id, contact.get().ctx, initFragment);
             case MessageType.FILE:
                 return getDirectedFileMessageInit(this._id, contact.get().ctx, initFragment);
+            case MessageType.IMAGE:
+                throw new Error('TODO(DESK-935)');
             default:
                 return unreachable(initFragment);
         }

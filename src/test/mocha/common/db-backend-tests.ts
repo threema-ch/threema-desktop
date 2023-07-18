@@ -252,13 +252,21 @@ export type TestImageMessageInit = TestFileMessageInit & {
     readonly dimensions?: Dimensions;
 };
 
+export function randomBlobId(): BlobId {
+    return crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH)) as ReadonlyUint8Array as BlobId;
+}
+
+export function randomBlobKey(): RawBlobKey {
+    return wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)));
+}
+
 /**
  * Create a file message with optional default data.
  */
 export function createFileMessage(db: DatabaseBackend, init: TestFileMessageInit): DbMessageUid {
     let blobId: BlobId | undefined;
     if (!hasProperty(init, 'blobId')) {
-        blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH)) as ReadonlyUint8Array as BlobId;
+        blobId = randomBlobId();
     } else if (init.blobId !== undefined) {
         blobId = init.blobId as BlobId;
     }
@@ -267,9 +275,7 @@ export function createFileMessage(db: DatabaseBackend, init: TestFileMessageInit
         ...getCommonMessage({...init, type: MessageType.FILE}),
         blobId,
         thumbnailBlobId: init.thumbnailBlobId as ReadonlyUint8Array as BlobId | undefined,
-        encryptionKey:
-            init.encryptionKey ??
-            wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))),
+        encryptionKey: init.encryptionKey ?? randomBlobKey(),
         blobDownloadState: init.blobDownloadState,
         thumbnailBlobDownloadState: init.thumbnailBlobDownloadState,
         fileData: init.fileData,
@@ -289,7 +295,7 @@ export function createFileMessage(db: DatabaseBackend, init: TestFileMessageInit
 export function createImageMessage(db: DatabaseBackend, init: TestImageMessageInit): DbMessageUid {
     let blobId: BlobId | undefined;
     if (!hasProperty(init, 'blobId')) {
-        blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH)) as ReadonlyUint8Array as BlobId;
+        blobId = randomBlobId();
     } else if (init.blobId !== undefined) {
         blobId = init.blobId as BlobId;
     }
@@ -298,9 +304,7 @@ export function createImageMessage(db: DatabaseBackend, init: TestImageMessageIn
         ...getCommonMessage({...init, type: MessageType.IMAGE}),
         blobId,
         thumbnailBlobId: init.thumbnailBlobId as ReadonlyUint8Array as BlobId | undefined,
-        encryptionKey:
-            init.encryptionKey ??
-            wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))),
+        encryptionKey: init.encryptionKey ?? randomBlobKey(),
         blobDownloadState: init.blobDownloadState,
         thumbnailBlobDownloadState: init.thumbnailBlobDownloadState,
         fileData: init.fileData,
@@ -932,7 +936,7 @@ export function backendTests(
             assert(conversation !== undefined);
 
             // Create file message
-            const blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH));
+            const blobId = randomBlobId();
             const fileData = makeFileData();
             const thumbnailFileData = makeFileData();
             const messageUid = createFileMessage(db, {
@@ -948,7 +952,7 @@ export function backendTests(
             expect(msg?.type).to.equal(MessageType.FILE);
             assert(msg?.type === MessageType.FILE);
             expect(msg.id).to.equal(1000n);
-            expect(msg.blobId).to.byteEqual(blobId);
+            expect(msg.blobId).to.deep.equal(blobId);
             assert(msg.fileData !== undefined, 'File data should not be undefined');
             expect(msg.fileData, 'Mismatch in fileData').to.deep.equal(fileData);
             assert(
@@ -970,7 +974,7 @@ export function backendTests(
             assert(conversation !== undefined);
 
             // Create image message
-            const blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH));
+            const blobId = randomBlobId();
             const fileData = makeFileData();
             const thumbnailFileData = makeFileData();
             const messageUid = createImageMessage(db, {
@@ -989,7 +993,7 @@ export function backendTests(
             expect(msg?.type).to.equal(MessageType.IMAGE);
             assert(msg?.type === MessageType.IMAGE);
             expect(msg.id).to.equal(1000n);
-            expect(msg.blobId).to.byteEqual(blobId);
+            expect(msg.blobId).to.deep.equal(blobId);
             assert(msg.fileData !== undefined, 'File data should not be undefined');
             expect(msg.fileData, 'Mismatch in fileData').to.deep.equal(fileData);
             assert(
@@ -1031,10 +1035,8 @@ export function backendTests(
             const messageUid3 = createFileMessage(db, {
                 id: 3000n,
                 conversationUid: conversation.uid,
-                blobId: crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH)),
-                encryptionKey: wrapRawBlobKey(
-                    crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
-                ),
+                blobId: randomBlobId(),
+                encryptionKey: randomBlobKey(),
                 mediaType: 'application/jpeg',
                 thumbnailMediaType: 'application/jpeg',
                 fileSize: 43008,
@@ -1058,7 +1060,7 @@ export function backendTests(
             expect(message2.readAt).to.be.undefined;
             expect(message1.text).to.equal('Aaa');
             expect(message2.text).to.equal('Bbb');
-            expect(message2.raw).to.byteEqual(raw);
+            expect(message2.raw).to.deep.equal(raw);
             expect(message3.fileData).to.be.undefined;
 
             // Update text of first message
@@ -1110,7 +1112,7 @@ export function backendTests(
             expect(message2.text).to.equal('Bbb');
             expect(message2.readAt).to.deep.equal(readAt);
             expect(message2.lastReaction).to.deep.equal(lastReaction);
-            expect(message2.raw).to.byteEqual(raw);
+            expect(message2.raw).to.deep.equal(raw);
             expect(message3.fileData).to.deep.equal(fileData);
             expect(message3.thumbnailFileData).to.deep.equal(thumbnailFileData);
 

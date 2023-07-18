@@ -18,6 +18,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';
+import {getFileJsonData} from '~/common/network/protocol/task/csp/common';
 import {
     type IOutgoingCspMessageTaskConstructor,
     OutgoingCspMessageTask,
@@ -30,11 +31,9 @@ import {
     type TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
 import {type MessageId} from '~/common/network/types';
-import {assert, unreachable, unwrap} from '~/common/utils/assert';
-import {bytesToHex} from '~/common/utils/byte';
+import {assert, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';
-import {purgeUndefinedProperties} from '~/common/utils/object';
 
 /**
  * The outgoing message task has the following responsibilities:
@@ -116,8 +115,16 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         );
 
         // Upload file message data
-        if (messageType === 'file') {
-            await this._messageModelStore.get().controller.uploadBlobs();
+        switch (messageType) {
+            case 'file':
+            case 'image':
+                await this._messageModelStore.get().controller.uploadBlobs();
+                break;
+            case 'text':
+                // Nothing to upload
+                break;
+            default:
+                unreachable(messageType);
         }
 
         // Initialize outgoing CSP message task
@@ -181,30 +188,18 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 });
                 break;
             }
-            case 'file': {
-                const view = messageModel.view;
-                const blobId = unwrap(view.blobId, 'Tried to send file message without blob ID');
-                const thumbnailBlobId = view.thumbnailBlobId;
-                const fileJson = purgeUndefinedProperties({
-                    j: 0, // Rendering type: File
-                    i: 0, // Deprecated rendering type for compatibility
-                    k: bytesToHex(view.encryptionKey.unwrap()), // Blob encryption key
-                    b: bytesToHex(blobId), // File blob ID
-                    m: view.mediaType, // File media type
-                    n: view.fileName, // File name
-                    s: view.fileSize, // File size in bytes
-                    t: thumbnailBlobId === undefined ? undefined : bytesToHex(thumbnailBlobId), // Blob containing the thumbnail file data
-                    p: view.thumbnailMediaType, // Media type of the thumbnail
-                    d: view.caption, // Caption text
-                    c: view.correlationId, // Correlation ID
-                });
+            case 'file':
+            case 'image': {
+                const fileJson = getFileJsonData(
+                    messageModel.type === 'file'
+                        ? {type: messageModel.type, view: messageModel.view}
+                        : {type: messageModel.type, view: messageModel.view},
+                );
                 encoder = structbuf.bridge.encoder(structbuf.csp.e2e.File, {
                     file: UTF8.encode(JSON.stringify(fileJson)),
                 });
                 break;
             }
-            case 'image':
-                throw new Error('TODO(DESK-937)');
             default:
                 return unreachable(messageModel);
         }

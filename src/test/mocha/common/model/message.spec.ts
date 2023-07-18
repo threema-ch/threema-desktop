@@ -6,7 +6,6 @@ import {randomFileEncryptionKey, randomFileId} from '~/common/file-storage';
 import {type Contact, type Conversation} from '~/common/model';
 import {type FileMessageDataState} from '~/common/model/types/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {FILE_STORAGE_FORMAT} from '~/common/node/file-storage/system-file-storage';
 import {assert} from '~/common/utils/assert';
@@ -16,7 +15,11 @@ import {
     makeTestUser,
     type TestServices,
 } from '~/test/mocha/common/backend-mocks';
-import {createFileMessage, type TestFileMessageInit} from '~/test/mocha/common/db-backend-tests';
+import {
+    createFileMessage,
+    randomBlobId,
+    type TestFileMessageInit,
+} from '~/test/mocha/common/db-backend-tests';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
 
 const crypto = new TweetNaClBackend(pseudoRandomBytes);
@@ -53,7 +56,7 @@ export function run(): void {
                 // Test case 1: Unsynced because it doesn't contain file data
                 {
                     init: {
-                        blobId: ensureBlobId(crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
+                        blobId: randomBlobId(),
                         blobDownloadState: undefined,
                         fileData: undefined,
                     },
@@ -76,7 +79,7 @@ export function run(): void {
                 // Test case 3: Synced because it contains both blob ID and file data
                 {
                     init: {
-                        blobId: ensureBlobId(crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
+                        blobId: randomBlobId(),
                         blobDownloadState: undefined,
                         fileData: {
                             fileId: randomFileId(crypto),
@@ -90,7 +93,7 @@ export function run(): void {
                 // Test case 4: Failed if marked as failed
                 {
                     init: {
-                        blobId: ensureBlobId(crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
+                        blobId: randomBlobId(),
                         blobDownloadState: BlobDownloadState.PERMANENT_FAILURE,
                         fileData: undefined,
                     },

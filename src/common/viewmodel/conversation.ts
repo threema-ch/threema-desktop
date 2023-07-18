@@ -1,12 +1,13 @@
 import {NACL_CONSTANTS} from '~/common/crypto';
 import {randomString} from '~/common/crypto/random';
-import {MessageDirection} from '~/common/enum';
+import {ImageRenderingType, MessageDirection, MessageType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {type Conversation} from '~/common/model';
 import {type AnyReceiverStore} from '~/common/model/types/receiver';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {
     type OutboundFileMessageInitFragment,
+    type OutboundImageMessageInitFragment,
     type OutboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -31,28 +32,34 @@ import {
     transformReceiver,
 } from '~/common/viewmodel/svelte-components-transformations';
 
-export type SendMessageEventDetail =
-    | {
-          readonly type: 'text';
-          readonly text: string;
-          readonly quotedMessageId?: MessageId | undefined;
-      }
-    | {
-          readonly type: 'files';
-          readonly files: {
-              readonly blob: Uint8Array;
-              readonly caption?: string;
-              fileName: string;
-              fileSize: u53;
-              mediaType: string;
-          }[];
-      };
+interface SendTextMessageEventDetail {
+    readonly type: 'text';
+    readonly text: string;
+    readonly quotedMessageId?: MessageId | undefined;
+}
+interface SendFileBasedMessagesEventDetail {
+    readonly type: 'files';
+    readonly files: {
+        readonly blob: Uint8Array;
+        readonly caption?: string;
+        fileName: string;
+        fileSize: u53;
+        mediaType: string;
+    }[];
+}
+export type SendMessageEventDetail = SendTextMessageEventDetail | SendFileBasedMessagesEventDetail;
 
 export interface IConversationViewModelController extends ProxyMarked {
     getConversationMessagesSetStore: () => ConversationMessageSetStore;
     getConversationMessage: (messageId: MessageId) => ConversationMessage | undefined;
     sendMessage: (messageEventDetail: Remote<SendMessageEventDetail>) => Promise<void>;
 }
+
+type OmittedKeys = 'direction' | 'id' | 'createdAt';
+type OutgoingMessageInitFragment =
+    | Omit<OutboundTextMessageInitFragment, OmittedKeys>
+    | Omit<OutboundFileMessageInitFragment, OmittedKeys>
+    | Omit<OutboundImageMessageInitFragment, OmittedKeys>;
 
 export class ConversationViewModelController implements IConversationViewModelController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -76,11 +83,8 @@ export class ConversationViewModelController implements IConversationViewModelCo
     }
 
     public async sendMessage(messageEventDetail: Remote<SendMessageEventDetail>): Promise<void> {
-        const {crypto, file} = this._services;
-        type OmittedKeys = 'direction' | 'id' | 'createdAt';
-        type OutgoingMessageInitFragment =
-            | Omit<OutboundTextMessageInitFragment, OmittedKeys>
-            | Omit<OutboundFileMessageInitFragment, OmittedKeys>;
+        const {crypto} = this._services;
+
         let outgoingMessageInitFragments: OutgoingMessageInitFragment[] = [];
         switch (messageEventDetail.type) {
             case 'text':
@@ -92,35 +96,11 @@ export class ConversationViewModelController implements IConversationViewModelCo
                     },
                 ];
                 break;
-            case 'files': {
-                // If more than 1 file is being sent, set a correlation ID
-                const correlationId =
-                    messageEventDetail.files.length > 1 ? randomString(crypto, 32) : undefined;
-
-                for (const fileInfo of messageEventDetail.files) {
-                    // Generate random blob encryption key for the blobs (which will be encrypted and
-                    // uploaded by the outgoing conversation message task)
-                    const encryptionKey = wrapRawBlobKey(
-                        crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
-                    );
-
-                    // Store data in file system
-                    const fileData = await file.store(fileInfo.blob);
-
-                    // TODO(DESK-958): Generate a thumbnail for media files
-                    outgoingMessageInitFragments.push({
-                        type: 'file', // TODO(DESK-958): Might also be 'image', 'video' or something else.
-                        caption: fileInfo.caption,
-                        correlationId,
-                        encryptionKey,
-                        fileName: fileInfo.fileName,
-                        fileSize: fileInfo.fileSize,
-                        mediaType: fileInfo.mediaType,
-                        fileData,
-                    });
-                }
+            case 'files':
+                outgoingMessageInitFragments = await this._prepareFileBasedMessageInitFragments(
+                    messageEventDetail.files,
+                );
                 break;
-            }
             default:
                 unreachable(messageEventDetail);
         }
@@ -136,6 +116,73 @@ export class ConversationViewModelController implements IConversationViewModelCo
                 ...init,
             });
         }
+    }
+
+    /**
+     * Generate outgoing message init fragments based on the files. These files may be sent as raw
+     * files or as media files, depending on the media type.
+     */
+    private async _prepareFileBasedMessageInitFragments(
+        files: SendFileBasedMessagesEventDetail['files'],
+    ): Promise<OutgoingMessageInitFragment[]> {
+        const {crypto, file} = this._services;
+
+        const outgoingMessageInitFragments: OutgoingMessageInitFragment[] = [];
+
+        // If more than 1 file is being sent, set a correlation ID
+        const correlationId = files.length > 1 ? randomString(crypto, 32) : undefined;
+
+        for (const fileInfo of files) {
+            // Generate random blob encryption key for the blobs (which will be encrypted and
+            // uploaded by the outgoing conversation message task)
+            const encryptionKey = wrapRawBlobKey(
+                crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
+            );
+
+            // Store data in file system
+            const fileData = await file.store(fileInfo.blob);
+
+            // Determine message type based on media type
+            let messageType: MessageType;
+            if (fileInfo.mediaType.startsWith('image/')) {
+                messageType = MessageType.IMAGE;
+            } else {
+                messageType = MessageType.FILE;
+            }
+
+            // Determine init based on type
+            const commonFileProperties = {
+                caption: fileInfo.caption?.length === 0 ? undefined : fileInfo.caption,
+                correlationId,
+                encryptionKey,
+                fileName: fileInfo.fileName,
+                fileSize: fileInfo.fileSize,
+                mediaType: fileInfo.mediaType,
+                fileData,
+            };
+            switch (messageType) {
+                case MessageType.FILE:
+                    outgoingMessageInitFragments.push({
+                        type: 'file',
+                        ...commonFileProperties,
+                    });
+                    break;
+                case MessageType.IMAGE: {
+                    // TODO(DESK-937): Determine size and generate thumbnail
+                    outgoingMessageInitFragments.push({
+                        type: 'image',
+                        ...commonFileProperties,
+                        renderingType: ImageRenderingType.REGULAR,
+                        animated: false, // TODO(DESK-1115)
+                    });
+                    break;
+                }
+                default:
+                    unreachable(messageType);
+            }
+        }
+
+        return outgoingMessageInitFragments;
     }
 }
 
