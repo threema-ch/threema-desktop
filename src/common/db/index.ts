@@ -11,6 +11,7 @@ import {
     type GroupNotificationTriggerPolicy,
     type GroupUserState,
     type IdentityType,
+    type ImageRenderingType,
     type MessageQueryDirection,
     type MessageReaction,
     type MessageType,
@@ -375,7 +376,7 @@ export interface DbMessageCommon<T extends MessageType> {
 /**
  * A database text message.
  */
-export interface DbTextMessageUniqueProps {
+export interface DbTextMessageFragment {
     /**
      * The message text.
      */
@@ -385,7 +386,7 @@ export interface DbTextMessageUniqueProps {
      */
     readonly quotedMessageId?: MessageId;
 }
-export type DbTextMessage = DbTextMessageUniqueProps & DbMessageCommon<MessageType.TEXT>;
+export type DbTextMessage = DbTextMessageFragment & DbMessageCommon<MessageType.TEXT>;
 
 export interface DbFileData {
     readonly fileId: FileId;
@@ -395,9 +396,9 @@ export interface DbFileData {
 }
 
 /**
- * A database file message.
+ * Fields shared among all file-based message data tables in the database.
  */
-export interface DbFileMessageUniqueProps {
+export interface DbBaseFileMessageFragment {
     readonly blobId?: BlobId;
     readonly thumbnailBlobId?: BlobId;
     readonly blobDownloadState?: BlobDownloadState;
@@ -412,18 +413,25 @@ export interface DbFileMessageUniqueProps {
     readonly caption?: string;
     readonly correlationId?: string;
 }
-export type DbFileMessage = DbFileMessageUniqueProps & DbMessageCommon<MessageType.FILE>;
 
 /**
- * A database image message.
+ * Fields of the database file message data table.
  */
-export interface DbImageMessageUniqueProps extends DbFileMessageUniqueProps {
-    readonly renderingType: u53;
+export type DbFileMessageFragment = DbBaseFileMessageFragment;
+export type DbFileMessage = DbFileMessageFragment & DbMessageCommon<MessageType.FILE>;
+
+/**
+ * Fields of the database image message data table.
+ */
+export interface DbImageMessageFragment extends DbBaseFileMessageFragment {
+    readonly renderingType: ImageRenderingType;
     readonly animated: boolean;
-    readonly height?: u53;
-    readonly width?: u53;
+    readonly dimensions?: {
+        readonly height: u53;
+        readonly width: u53;
+    };
 }
-export type DbImageMessage = DbImageMessageUniqueProps & DbMessageCommon<MessageType.IMAGE>;
+export type DbImageMessage = DbImageMessageFragment & DbMessageCommon<MessageType.IMAGE>;
 
 /**
  * A file data UID.
@@ -604,6 +612,11 @@ export interface DatabaseBackend {
      * Create a new file message.
      */
     readonly createFileMessage: (message: DbCreate<DbFileMessage>) => DbCreated<DbFileMessage>;
+
+    /**
+     * Create a new image message.
+     */
+    readonly createImageMessage: (message: DbCreate<DbImageMessage>) => DbCreated<DbImageMessage>;
 
     /**
      * If the message ID exists in the conversation, return its UID.

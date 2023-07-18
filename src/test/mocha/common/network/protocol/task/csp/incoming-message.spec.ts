@@ -618,7 +618,8 @@ export function run(): void {
                 expect(view.thumbnailMediaType).to.equal(thumbnailMediaType);
                 expect(view.fileName).to.equal(fileName);
                 expect(view.fileSize).to.equal(fileSizeBytes);
-                // TODO(DESK-247): Test rendering type
+
+                // TODO(DESK-935): Test other rendering types as well
             });
         });
 

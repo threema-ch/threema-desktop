@@ -9,6 +9,7 @@ import {type ColumnsForSetOf} from 'ts-sql-query/utils/tableOrViewUtils';
 import {
     type DatabaseBackend,
     type DbAnyMessage,
+    type DbBaseFileMessageFragment,
     type DbContact,
     type DbContactUid,
     type DbConversation,
@@ -20,21 +21,20 @@ import {
     type DbFileData,
     type DbFileDataUid,
     type DbFileMessage,
-    type DbFileMessageUniqueProps,
     type DbGet,
     type DbGlobalProperty,
     type DbGroup,
     type DbGroupUid,
     type DbHas,
     type DbImageMessage,
-    type DbImageMessageUniqueProps,
+    type DbImageMessageFragment,
     type DbList,
     type DbMessageCommon,
     type DbMessageUid,
     type DbReceiverLookup,
     type DbRemove,
     type DbTextMessage,
-    type DbTextMessageUniqueProps,
+    type DbTextMessageFragment,
     type DbUnreadMessageCountMixin,
     type DbUpdate,
     type RawDatabaseKey,
@@ -1035,56 +1035,123 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         return this._insertFileData(fileData);
     }
 
-    /** @inheritdoc */
-    public createFileMessage(message: DbCreate<DbFileMessage>): DbCreated<DbFileMessage> {
+    /**
+     * Write file data for file and thumbnail into the appropriate DB table and return the
+     * corresponding UIDs.
+     */
+    private _writeFileDataForMessage(
+        message: Pick<DbFileMessage, 'fileData' | 'thumbnailFileData'>,
+    ): {fileDataUid?: DbFileDataUid; thumbnailFileDataUid?: DbFileDataUid} {
+        const fileDataUid =
+            message.fileData === undefined
+                ? undefined
+                : this._getOrInsertFileDataUid(message.fileData);
+        const thumbnailFileDataUid =
+            message.thumbnailFileData === undefined
+                ? undefined
+                : this._getOrInsertFileDataUid(message.thumbnailFileData);
+
+        // Sanity check: File and thumbnail data UIDs must be different
+        if (fileDataUid !== undefined || thumbnailFileDataUid !== undefined) {
+            assert(
+                fileDataUid !== thumbnailFileDataUid,
+                'fileDataUid and thumbnailFileDataUid must be different',
+            );
+        }
+
+        return {fileDataUid, thumbnailFileDataUid};
+    }
+
+    /**
+     * Helper function to insert a file based message into the database.
+     *
+     * @param message The message to insert.
+     * @param insertMessageData This function is responsible for executing the insert query, using
+     *   the provided shared fields.
+     */
+    private _createFileBasedMessage<
+        TMessageType extends MessageType,
+        TDbMessage extends DbMessageCommon<TMessageType> & DbBaseFileMessageFragment,
+    >(
+        message: DbCreate<TDbMessage>,
+        insertMessageData: (sharedFields: {
+            messageUid: DbMessageUid;
+            fileDataUid?: DbFileDataUid;
+            thumbnailFileDataUid?: DbFileDataUid;
+        }) => void,
+    ): DbCreated<TDbMessage> {
         return this._db.syncTransaction(() => {
             // Common message
             const messageUid: DbMessageUid = this._insertCommonMessageData(message);
 
             // Write file data into `fileData` table, store UIDs
-            const fileDataUid =
-                message.fileData === undefined
-                    ? undefined
-                    : this._getOrInsertFileDataUid(message.fileData);
-            const thumbnailFileDataUid =
-                message.thumbnailFileData === undefined
-                    ? undefined
-                    : this._getOrInsertFileDataUid(message.thumbnailFileData);
+            const {fileDataUid, thumbnailFileDataUid} = this._writeFileDataForMessage(message);
 
-            // Sanity check: File and thumbnail data UIDs must be different
-            if (fileDataUid !== undefined || thumbnailFileDataUid !== undefined) {
-                assert(
-                    fileDataUid !== thumbnailFileDataUid,
-                    'fileDataUid and thumbnailFileDataUid must be different',
-                );
-            }
-
-            // Write message file data
-            sync(
-                this._db
-                    .insertInto(tMessageFileData)
-                    .set({
-                        messageUid,
-                        blobId: message.blobId,
-                        thumbnailBlobId: message.thumbnailBlobId,
-                        blobDownloadState: message.blobDownloadState,
-                        thumbnailBlobDownloadState: message.thumbnailBlobDownloadState,
-                        encryptionKey: message.encryptionKey,
-                        fileDataUid,
-                        thumbnailFileDataUid,
-                        mediaType: message.mediaType,
-                        thumbnailMediaType: message.thumbnailMediaType,
-                        fileName: message.fileName,
-                        fileSize: message.fileSize,
-                        caption: message.caption,
-                        correlationId: message.correlationId,
-                    })
-                    .executeInsert(),
-            );
+            // Write message data
+            insertMessageData({messageUid, fileDataUid, thumbnailFileDataUid});
 
             // Note: Returning the UID of the main message, not of the messageFileData
             return messageUid;
         }, this._log);
+    }
+
+    /**
+     * Return the insert set for the {@link DbBaseFileMessageFragment} fields (excluding file data).
+     */
+    private _getBaseFileMessageFragmentInsertSet(
+        message: DbBaseFileMessageFragment,
+    ): Omit<DbBaseFileMessageFragment, 'fileData' | 'thumbnailFileData'> {
+        return {
+            blobId: message.blobId,
+            thumbnailBlobId: message.thumbnailBlobId,
+            blobDownloadState: message.blobDownloadState,
+            thumbnailBlobDownloadState: message.thumbnailBlobDownloadState,
+            encryptionKey: message.encryptionKey,
+            mediaType: message.mediaType,
+            thumbnailMediaType: message.thumbnailMediaType,
+            fileName: message.fileName,
+            fileSize: message.fileSize,
+            caption: message.caption,
+            correlationId: message.correlationId,
+        };
+    }
+
+    /** @inheritdoc */
+    public createFileMessage(message: DbCreate<DbFileMessage>): DbCreated<DbFileMessage> {
+        return this._createFileBasedMessage(message, (sharedFields) => {
+            sync(
+                this._db
+                    .insertInto(tMessageFileData)
+                    .set({
+                        // Fields shared among all file-based message types
+                        ...this._getBaseFileMessageFragmentInsertSet(message),
+                        ...sharedFields,
+                    })
+                    .executeInsert(),
+            );
+        });
+    }
+
+    /** @inheritdoc */
+    public createImageMessage(message: DbCreate<DbImageMessage>): DbCreated<DbImageMessage> {
+        return this._createFileBasedMessage(message, (sharedFields) => {
+            sync(
+                this._db
+                    .insertInto(tMessageImageData)
+                    .set({
+                        // Fields shared among all file-based message types
+                        ...this._getBaseFileMessageFragmentInsertSet(message),
+                        ...sharedFields,
+
+                        // Fields specific to this message type
+                        renderingType: message.renderingType,
+                        animated: message.animated,
+                        height: message.dimensions?.height,
+                        width: message.dimensions?.width,
+                    })
+                    .executeInsert(),
+            );
+        });
     }
 
     /** @inheritdoc */
@@ -1281,8 +1348,10 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                             correlationId: tMessageImageData.correlationId,
                             renderingType: tMessageImageData.renderingType,
                             animated: tMessageImageData.animated,
-                            height: tMessageImageData.height,
-                            width: tMessageImageData.width,
+                            dimensions: {
+                                height: tMessageImageData.height.asRequiredInOptionalObject(),
+                                width: tMessageImageData.width.asRequiredInOptionalObject(),
+                            },
                         })
                         .where(tMessageImageData.messageUid.equals(common.uid))
                         .executeSelectOne(),
@@ -1370,12 +1439,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     sync(
                         this._db
                             .update(tMessageTextData)
-                            .set(
-                                pick<DbTextMessageUniqueProps>(message, [
-                                    'text',
-                                    'quotedMessageId',
-                                ]),
-                            )
+                            .set(pick<DbTextMessageFragment>(message, ['text', 'quotedMessageId']))
                             .where(tMessageTextData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
@@ -1383,7 +1447,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 case MessageType.FILE: {
                     // Prepare update
                     const update: UpdateSets<typeof tMessageFileData, typeof tMessageFileData> =
-                        pick<DbFileMessageUniqueProps>(message, [
+                        pick<DbBaseFileMessageFragment>(message, [
                             'blobId',
                             'thumbnailBlobId',
                             'blobDownloadState',
@@ -1421,7 +1485,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 case MessageType.IMAGE: {
                     // Prepare update
                     const update: UpdateSets<typeof tMessageImageData, typeof tMessageImageData> =
-                        pick<DbImageMessageUniqueProps>(message, [
+                        pick<DbImageMessageFragment>(message, [
                             'blobId',
                             'thumbnailBlobId',
                             'blobDownloadState',
@@ -1435,8 +1499,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                             'correlationId',
                             'renderingType',
                             'animated',
-                            'height',
-                            'width',
+                            'dimensions',
                         ]);
 
                     // Add, update or remove associated file data entries

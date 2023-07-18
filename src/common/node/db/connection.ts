@@ -29,6 +29,7 @@ import {
     GroupNotificationTriggerPolicyUtils,
     GroupUserStateUtils,
     IdentityTypeUtils,
+    ImageRenderingTypeUtils,
     MessageReactionUtils,
     MessageTypeUtils,
     NotificationSoundPolicyUtils,
@@ -84,6 +85,7 @@ export const CUSTOM_TYPES = {
     GROUP_NOTIFICATION_TRIGGER_POLICY: 'GroupNotificationTriggerPolicy',
     GROUP_USER_STATE: 'GroupUserState',
     IDENTITY_TYPE: 'IdentityType',
+    IMAGE_RENDERING_TYPE: 'ImageRenderingType',
     MESSAGE_REACTION: 'MessageReaction',
     MESSAGE_TYPE: 'MessageType',
     NOTIFICATION_SOUND_POLICY: 'NotificationSoundPolicy',
@@ -113,6 +115,7 @@ export const CUSTOM_TYPES = {
     U8: 'u8',
     U53: 'u53',
     F64: 'f64',
+    BOOLEAN: 'boolean',
 } as const;
 type CustomType = (typeof CUSTOM_TYPES)[keyof typeof CUSTOM_TYPES];
 
@@ -267,6 +270,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return u64ToU53(value, GroupNotificationTriggerPolicyUtils.contains);
             case CUSTOM_TYPES.IDENTITY_TYPE:
                 return u64ToU53(value, IdentityTypeUtils.contains);
+            case CUSTOM_TYPES.IMAGE_RENDERING_TYPE:
+                return u64ToU53(value, ImageRenderingTypeUtils.contains);
             case CUSTOM_TYPES.MESSAGE_TYPE:
                 return MessageTypeUtils.contains(value) ? value : fail();
             case CUSTOM_TYPES.MESSAGE_REACTION:
@@ -327,6 +332,10 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return u64ToU53(value, isPlainU53);
             case CUSTOM_TYPES.F64:
                 return isF64(value) ? value : fail();
+            case CUSTOM_TYPES.BOOLEAN:
+                return typeof value === 'bigint' && [0n, 1n].includes(value)
+                    ? value === 1n
+                    : fail();
 
             default:
                 // Fallback to built-in type handling
@@ -393,6 +402,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.GROUP_NOTIFICATION_TRIGGER_POLICY:
             case CUSTOM_TYPES.GROUP_USER_STATE:
             case CUSTOM_TYPES.IDENTITY_TYPE:
+            case CUSTOM_TYPES.IMAGE_RENDERING_TYPE:
             case CUSTOM_TYPES.MESSAGE_TYPE:
             case CUSTOM_TYPES.MESSAGE_REACTION:
             case CUSTOM_TYPES.NOTIFICATION_SOUND_POLICY:
@@ -437,6 +447,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.F64:
                 // No transformation
                 return value;
+            case CUSTOM_TYPES.BOOLEAN:
+                return (value as boolean) ? 1 : 0;
 
             default:
                 // Fallback to built-in type handling

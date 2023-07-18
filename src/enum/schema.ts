@@ -708,3 +708,19 @@ export enum Browser {
     ELECTRON = 7,
     UNKNOWN = 8,
 }
+
+/**
+ * Rendering type of an image message.
+ *
+ * @generate convert
+ */
+export enum ImageRenderingType {
+    /**
+     * Render as regular image.
+     */
+    REGULAR = 1,
+    /**
+     * Render as sticker (no background bubble).
+     */
+    STICKER = 2,
+}

@@ -1,6 +1,11 @@
 import {type DbCreate, type DbMessageCommon, type DbTextMessage, type UidOf} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
 import {type Contact, type ServicesForModel} from '~/common/model';
+import {
+    InboundBaseMessageModelController,
+    OutboundBaseMessageModelController,
+} from '~/common/model/message';
+import {NO_SENDER} from '~/common/model/message/common';
 import {type ConversationControllerHandle} from '~/common/model/types/conversation';
 import {
     type AnyTextMessageModelStore,
@@ -21,8 +26,6 @@ import {
 } from '~/common/model/types/message/text';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';
-
-import {InboundBaseMessageModelController, NO_SENDER, OutboundBaseMessageModelController} from '.';
 
 export function createTextMessage<TDirection extends MessageDirection>(
     services: ServicesForModel,

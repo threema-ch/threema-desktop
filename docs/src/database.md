@@ -64,3 +64,24 @@ Example (for the column `fileData` in the table `messagefileData`):
 ```sql
 CREATE UNIQUE INDEX messageFileDataUniqueFileData ON messageFileData(fileData);
 ```
+
+## Validation of Insert Sets
+
+TypeScript interfaces only guarantee that certain fields are set, but not that certain fields are
+absent. This can be a problem in the database layer. If you have an object that corresponds to the
+interface `MessageData`, it's possible that at runtime the object contains other fields as well. If
+these are passed to the database without any sanitizing, data might be inserted that we did not mean
+to insert.
+
+To avoid this issue, **every `DatabaseBackend` implementation must ensure that only the expected
+fields are passed to the database.**
+
+To make this easier, the `pick` helper function can be used. Example:
+
+```ts
+this._db
+      .update(tMessageTextData)
+      .set(pick<DbTextMessageFragment>(message, ['text', 'quotedMessageId']))
+      .where(tMessageTextData.messageUid.equals(message.uid))
+      .executeUpdate(),
+```

@@ -23,6 +23,7 @@ import {
     type GroupNotificationTriggerPolicy,
     type GroupUserState,
     type IdentityType,
+    type ImageRenderingType,
     type MessageReaction,
     type MessageType,
     type NotificationSoundPolicy,
@@ -828,11 +829,15 @@ export const tMessageImageData = new (class TMessageImageData extends Table<
      *
      * 1: Regular image, 2: Sticker
      */
-    public renderingType = this.column<u53>('renderingType', 'custom', CUSTOM_TYPES.U53);
+    public renderingType = this.column<ImageRenderingType>(
+        'renderingType',
+        'custom',
+        CUSTOM_TYPES.IMAGE_RENDERING_TYPE,
+    );
     /**
      * Whether this is an animated image.
      */
-    public animated = this.column('animated', 'boolean');
+    public animated = this.column<boolean>('animated', 'custom', CUSTOM_TYPES.BOOLEAN);
     /**
      * Optional image height (in px).
      */

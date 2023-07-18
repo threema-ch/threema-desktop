@@ -1,4 +1,4 @@
-import {type MessageDirection, type MessageType} from '~/common/enum';
+import {type ImageRenderingType, type MessageDirection, type MessageType} from '~/common/enum';
 import {type LocalModel} from '~/common/model';
 import {
     type CommonBaseFileMessageInit,
@@ -12,12 +12,11 @@ import {
     type OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type FileRenderingType} from '~/common/network/structbuf/validate/csp/e2e/file';
 
 // View
 
 export interface CommonImageMessageView extends CommonBaseFileMessageView {
-    readonly renderingType: Exclude<FileRenderingType, 'file'>;
+    readonly renderingType: ImageRenderingType;
     readonly animated: boolean;
     readonly dimensions?: Dimensions;
 }

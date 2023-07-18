@@ -27,6 +27,7 @@ import {
     GroupNotificationTriggerPolicy,
     GroupUserState,
     IdentityType,
+    ImageRenderingType,
     MessageQueryDirection,
     MessageReaction,
     MessageType,
@@ -60,6 +61,7 @@ import {type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {hasProperty} from '~/common/utils/object';
+import {type Dimensions} from '~/common/viewmodel/types';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
 
 /**
@@ -229,19 +231,25 @@ export function createTextMessage(db: DatabaseBackend, init: TestTextMessageInit
 }
 
 export type TestFileMessageInit = Omit<CommonMessageInit<MessageType.FILE>, 'type'> & {
-    blobId?: Uint8Array | ReadonlyUint8Array | BlobId;
-    thumbnailBlobId?: Uint8Array;
-    encryptionKey?: RawBlobKey;
-    blobDownloadState?: BlobDownloadState;
-    thumbnailBlobDownloadState?: BlobDownloadState;
-    fileData?: DbFileData;
-    thumbnailFileData?: DbFileData;
-    mediaType?: string;
-    thumbnailMediaType?: string;
-    fileName?: string;
-    fileSize?: u53;
-    caption?: string;
-    correlationId?: string;
+    readonly blobId?: Uint8Array | ReadonlyUint8Array | BlobId;
+    readonly thumbnailBlobId?: Uint8Array;
+    readonly encryptionKey?: RawBlobKey;
+    readonly blobDownloadState?: BlobDownloadState;
+    readonly thumbnailBlobDownloadState?: BlobDownloadState;
+    readonly fileData?: DbFileData;
+    readonly thumbnailFileData?: DbFileData;
+    readonly mediaType?: string;
+    readonly thumbnailMediaType?: string;
+    readonly fileName?: string;
+    readonly fileSize?: u53;
+    readonly caption?: string;
+    readonly correlationId?: string;
+};
+
+export type TestImageMessageInit = TestFileMessageInit & {
+    readonly renderingType?: ImageRenderingType;
+    readonly animated?: boolean;
+    readonly dimensions?: Dimensions;
 };
 
 /**
@@ -272,6 +280,40 @@ export function createFileMessage(db: DatabaseBackend, init: TestFileMessageInit
         fileSize: init.fileSize ?? 43008,
         caption: init.caption,
         correlationId: init.correlationId,
+    });
+}
+
+/**
+ * Create a file message with optional default data.
+ */
+export function createImageMessage(db: DatabaseBackend, init: TestImageMessageInit): DbMessageUid {
+    let blobId: BlobId | undefined;
+    if (!hasProperty(init, 'blobId')) {
+        blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH)) as ReadonlyUint8Array as BlobId;
+    } else if (init.blobId !== undefined) {
+        blobId = init.blobId as BlobId;
+    }
+
+    return db.createImageMessage({
+        ...getCommonMessage({...init, type: MessageType.IMAGE}),
+        blobId,
+        thumbnailBlobId: init.thumbnailBlobId as ReadonlyUint8Array as BlobId | undefined,
+        encryptionKey:
+            init.encryptionKey ??
+            wrapRawBlobKey(crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH))),
+        blobDownloadState: init.blobDownloadState,
+        thumbnailBlobDownloadState: init.thumbnailBlobDownloadState,
+        fileData: init.fileData,
+        thumbnailFileData: init.thumbnailFileData,
+        mediaType: init.mediaType ?? 'application/jpeg',
+        thumbnailMediaType: init.thumbnailMediaType,
+        fileName: init.fileName,
+        fileSize: init.fileSize ?? 43008,
+        caption: init.caption,
+        correlationId: init.correlationId,
+        renderingType: init.renderingType ?? ImageRenderingType.REGULAR,
+        animated: init.animated ?? false,
+        dimensions: init.dimensions,
     });
 }
 
@@ -916,6 +958,50 @@ export function backendTests(
             expect(msg.thumbnailFileData, 'Mismatch in thumbnailFileData').to.deep.equal(
                 thumbnailFileData,
             );
+        });
+
+        it('createImageMessage / getMessageByUid', function () {
+            // And contact and get conversation
+            const contactUid = makeContact(db, {identity: 'TESTTEST'});
+            const conversation = db.getConversationOfReceiver({
+                type: ReceiverType.CONTACT,
+                uid: contactUid,
+            });
+            assert(conversation !== undefined);
+
+            // Create image message
+            const blobId = crypto.randomBytes(new Uint8Array(BLOB_ID_LENGTH));
+            const fileData = makeFileData();
+            const thumbnailFileData = makeFileData();
+            const messageUid = createImageMessage(db, {
+                id: 1000n,
+                conversationUid: conversation.uid,
+                blobId,
+                fileData,
+                thumbnailFileData,
+                renderingType: ImageRenderingType.STICKER,
+                animated: false,
+                dimensions: {height: 30, width: 600},
+            });
+
+            // Query message
+            const msg = db.getMessageByUid(messageUid);
+            expect(msg?.type).to.equal(MessageType.IMAGE);
+            assert(msg?.type === MessageType.IMAGE);
+            expect(msg.id).to.equal(1000n);
+            expect(msg.blobId).to.byteEqual(blobId);
+            assert(msg.fileData !== undefined, 'File data should not be undefined');
+            expect(msg.fileData, 'Mismatch in fileData').to.deep.equal(fileData);
+            assert(
+                msg.thumbnailFileData !== undefined,
+                'Thumbnail file data should not be undefined',
+            );
+            expect(msg.thumbnailFileData, 'Mismatch in thumbnailFileData').to.deep.equal(
+                thumbnailFileData,
+            );
+            expect(msg.renderingType).to.equal(ImageRenderingType.STICKER);
+            expect(msg.animated).to.be.false;
+            expect(msg.dimensions).to.deep.equal({height: 30, width: 600});
         });
 
         it('updateMessage', function () {

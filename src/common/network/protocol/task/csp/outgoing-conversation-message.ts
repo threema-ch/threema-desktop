@@ -204,7 +204,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 break;
             }
             case 'image':
-                throw new Error('TODO(DESK-247)');
+                throw new Error('TODO(DESK-937)');
             default:
                 return unreachable(messageModel);
         }

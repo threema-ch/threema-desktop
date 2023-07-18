@@ -6,14 +6,15 @@ import {
     type DirectedMessageFor,
     type ServicesForModel,
 } from '~/common/model';
+import {type MessageFactory} from '~/common/model/message';
+import {type NO_SENDER} from '~/common/model/message/common';
+import {createFileMessage, getFileMessageModelStore} from '~/common/model/message/file-message';
+import {createImageMessage, getImageMessageModelStore} from '~/common/model/message/image-message';
+import {createTextMessage, getTextMessageModelStore} from '~/common/model/message/text-message';
 import {type ConversationControllerHandle} from '~/common/model/types/conversation';
 import {type BaseMessageView} from '~/common/model/types/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
-
-import {type MessageFactory, type NO_SENDER} from '.';
-import {createFileMessage, getFileMessageModelStore} from './file-message';
-import {createTextMessage, getTextMessageModelStore} from './text-message';
 
 /**
  * Default message factory for creating stores and database entries for all existing message types.
@@ -23,7 +24,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
         services: ServicesForModel,
         direction: TLocalModelStore['ctx'],
         conversation: ConversationControllerHandle,
-        message: DbMessageFor<TLocalModelStore['type'] | 'image'>, // TODO(DESK-247): Remove image constant
+        message: DbMessageFor<TLocalModelStore['type']>,
         common: BaseMessageView<TLocalModelStore['ctx']>,
         sender: LocalModelStore<Contact> | typeof NO_SENDER,
     ): TLocalModelStore => {
@@ -46,7 +47,13 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     sender,
                 ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
             case 'image':
-                throw new Error('TODO(DESK-247)');
+                return getImageMessageModelStore(
+                    services,
+                    conversation,
+                    message,
+                    common,
+                    sender,
+                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
             default:
                 return unreachable(message);
         }
@@ -73,7 +80,11 @@ export const MESSAGE_FACTORY: MessageFactory = {
                 ) as DbMessageFor<TType>;
             }
             case 'image':
-                throw new Error('TODO(DESK-247)');
+                return createImageMessage(
+                    services,
+                    common,
+                    init as DirectedMessageFor<TDirection, MessageType.IMAGE, 'init'>,
+                ) as DbMessageFor<TType>;
             default:
                 return unreachable(init);
         }

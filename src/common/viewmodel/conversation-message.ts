@@ -233,7 +233,9 @@ function getConversationMessageBody(
             }
             break;
         }
-        case 'file': {
+        // TODO(DESK-936): Separate viewmodel for image messages
+        case 'file':
+        case 'image': {
             const type = 'file';
             const body = {
                 mediaType: messageModel.view.mediaType,
@@ -265,8 +267,6 @@ function getConversationMessageBody(
             }
             break;
         }
-        case 'image':
-            throw new Error('TODO(DESK-247)');
         default:
             unreachable(messageModel);
     }

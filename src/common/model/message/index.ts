@@ -22,6 +22,7 @@ import {
     type ServicesForModel,
 } from '~/common/model';
 import * as contact from '~/common/model/contact';
+import {NO_SENDER} from '~/common/model/message/common';
 import {type GuardedStoreHandle} from '~/common/model/types/common';
 import {type ConversationControllerHandle} from '~/common/model/types/conversation';
 import {
@@ -46,8 +47,6 @@ import {bigintSortAsc} from '~/common/utils/number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import {type MessageStatus} from '~/common/viewmodel/types';
 
-export const NO_SENDER = Symbol('no-sender');
-
 /**
  * Factory for creating stores and database entries for concrete message types.
  *
@@ -58,7 +57,7 @@ export interface MessageFactory {
         services: ServicesForModel,
         direction: TLocalModelStore['ctx'],
         conversation: ConversationControllerHandle,
-        message: DbMessageFor<TLocalModelStore['type'] | 'image'>, // TODO(DESK-247): Remove image constant
+        message: DbMessageFor<TLocalModelStore['type']>,
         common: BaseMessageView<TLocalModelStore['ctx']>,
         sender: LocalModelStore<Contact> | typeof NO_SENDER,
     ) => TLocalModelStore;
@@ -151,7 +150,7 @@ function createStore<TModelStore extends AnyMessageModelStore>(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
     factory: MessageFactory,
-    message: DbMessageFor<TModelStore['type'] | 'image'>, // TODO(DESK-247): Remove image constant
+    message: DbMessageFor<TModelStore['type']>,
     senderHint: LocalModelStore<Contact> | undefined,
 ): TModelStore {
     // Determine direction and lookup the sender (if inbound)

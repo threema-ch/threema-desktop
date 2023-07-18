@@ -37,7 +37,7 @@ CREATE TABLE messageImageData (
     -- Image metadata
     -- 1: Regular image, 2: Sticker
     renderingType INTEGER NOT NULL DEFAULT 1,
-    animated BOOLEAN NOT NULL DEFAULT false,
+    animated INTEGER NOT NULL DEFAULT 0,
     height INTEGER,
     width INTEGER,
 

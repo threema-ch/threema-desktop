@@ -17,6 +17,7 @@ import {
     type IOutboundTextMessageModelStore,
     type OutboundTextMessage,
 } from '~/common/model/types/message/text';
+import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
 
@@ -130,3 +131,13 @@ export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<InboundImageMessage['model']>
     | RemoteModelStore<OutboundImageMessage['model']>
 >;
+
+export type AnyFileBasedInboundMessageModelLifetimeGuard =
+    | ModelLifetimeGuard<InboundFileMessage['view']>
+    | ModelLifetimeGuard<InboundImageMessage['view']>;
+export type AnyFileBasedOutboundMessageModelLifetimeGuard =
+    | ModelLifetimeGuard<OutboundFileMessage['view']>
+    | ModelLifetimeGuard<OutboundImageMessage['view']>;
+export type AnyFileBasedMessageModelLifetimeGuard =
+    | AnyFileBasedInboundMessageModelLifetimeGuard
+    | AnyFileBasedOutboundMessageModelLifetimeGuard;
