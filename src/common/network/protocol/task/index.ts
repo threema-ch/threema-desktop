@@ -51,6 +51,7 @@ export type ServicesForTasks = Pick<
     | 'file'
     | 'logging'
     | 'model'
+    | 'nonces'
     | 'notification'
     | 'systemDialog'
     | 'timer'

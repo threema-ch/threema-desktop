@@ -13,15 +13,18 @@ import {type Config} from '~/common/config';
 import {
     type CryptoBackend,
     type EncryptedData,
+    ensureNonce,
     ensurePublicKey,
     NACL_CONSTANTS,
     type Nonce,
     type NonceGuard,
+    type NonceHash,
     type RawKey,
     wrapRawKey,
 } from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
+import {type INonceGuard, type INonceService} from '~/common/crypto/nonce';
 import {type CryptoPrng, randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
@@ -40,6 +43,7 @@ import {
     IdentityType,
     MessageFilterInstruction,
     MessageFilterInstructionUtils,
+    type NonceScope,
     SyncState,
     type TransactionScope,
     TransactionScopeUtils,
@@ -160,6 +164,7 @@ import {
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {Identity} from '~/common/utils/identity';
+import {ValueObject} from '~/common/utils/object';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type AbortSubscriber} from '~/common/utils/signal';
 import {type LocalStore} from '~/common/utils/store';
@@ -514,6 +519,39 @@ export class TestViewModel implements IViewModelRepository {
     }
 }
 
+export class TestNonceService implements INonceService {
+    public checkAndRegisterNonce(scope: NonceScope, nonce: Nonce): INonceGuard {
+        return {
+            nonce,
+            processed: new ValueObject(false),
+            commit: () => {
+                /* No-op */
+            },
+            discard: () => {
+                /* No-op */
+            },
+        };
+    }
+    public getRandomNonce(scope: NonceScope): INonceGuard {
+        return {
+            nonce: ensureNonce(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+            processed: new ValueObject(false),
+            commit: () => {
+                /* No-op */
+            },
+            discard: () => {
+                /* No-op */
+            },
+        };
+    }
+    public getAllPersistedNonces(scope: NonceScope): ReadonlySet<NonceHash> {
+        return new Set();
+    }
+    public importNonces(scope: NonceScope, hashes: ReadonlySet<NonceHash>): void {
+        return;
+    }
+}
+
 export class TestNotificationService extends NotificationService {
     public constructor(log: Logger) {
         // Mock remote NotificationCreator
@@ -610,6 +648,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         },
     };
     const notification = new TestNotificationService(logging.logger('notifications'));
+    const nonces = new TestNonceService();
     const file = new InMemoryFileStorage(crypto);
     const taskManager = new TaskManager({logging});
     const endpointCache = {
@@ -625,6 +664,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         directory: new TestDirectoryBackend(),
         keyStorage,
         logging,
+        nonces,
         notification,
         compressor: new ZlibCompressor(),
         blob: new TestBlobBackend(),

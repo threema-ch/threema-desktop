@@ -2,6 +2,7 @@ import {type ServicesForBackend, type ServicesThatRequireIdentity} from '~/commo
 import {type Compressor} from '~/common/compressor';
 import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
+import {NonceService} from '~/common/crypto/nonce';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
     DATABASE_KEY_LENGTH,
@@ -103,6 +104,7 @@ import {
     type TransferredFromRemote,
     type TransferredToRemote,
 } from '~/common/utils/endpoint';
+import {Identity} from '~/common/utils/identity';
 import {u64ToHexLe} from '~/common/utils/number';
 import {taggedRace} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -403,6 +405,7 @@ function initBackendServices(
         timer,
     } = simpleServices;
 
+    const nonces = new NonceService({crypto, db, logging}, new Identity(identityData.identity));
     const device = new DeviceBackend({crypto, db, logging}, identityData, deviceIds, dgk);
     const blob = new FetchBlobBackend({config, device});
     const model = new ModelRepositories({
@@ -415,6 +418,7 @@ function initBackendServices(
         endpoint,
         file,
         logging,
+        nonces,
         notification,
         taskManager,
         systemDialog,
@@ -429,6 +433,7 @@ function initBackendServices(
         device,
         blob,
         model,
+        nonces,
         viewModel,
     };
 }

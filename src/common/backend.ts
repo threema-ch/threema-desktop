@@ -1,6 +1,7 @@
 import {type Compressor} from './compressor';
 import {type Config} from './config';
 import {type CryptoBackend} from './crypto';
+import {type INonceService} from './crypto/nonce';
 import {type Device} from './device';
 import {type FileStorage} from './file-storage';
 import {type KeyStorage} from './key-storage';
@@ -30,8 +31,9 @@ export interface ServicesForBackend {
     readonly keyStorage: KeyStorage;
     readonly logging: LoggerFactory;
     readonly model: Repositories;
-    readonly viewModel: IViewModelRepository;
+    readonly nonces: INonceService;
     readonly notification: NotificationService;
+    readonly viewModel: IViewModelRepository;
     readonly systemDialog: Remote<SystemDialogService>;
     readonly taskManager: TaskManager;
     readonly timer: Timer;
@@ -40,7 +42,7 @@ export interface ServicesForBackend {
 /**
  * List of services that require an initialized identity before they can be instantiated.
  */
-export type ServicesThatRequireIdentity = 'device' | 'blob' | 'model' | 'viewModel';
+export type ServicesThatRequireIdentity = 'device' | 'blob' | 'model' | 'nonces' | 'viewModel';
 
 /**
  * Services available in the backend controller.
