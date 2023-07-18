@@ -12,9 +12,9 @@ import {instanceOf} from '~/common/utils/valita-helpers';
 const RAW_IMAGE_METADATA_SCHEMA = v
     .object({
         // The width as an integer in px
-        w: v.number().map(ensureU53),
+        w: v.number().map(ensureU53).optional(),
         // The height as an integer in px
-        h: v.number().map(ensureU53),
+        h: v.number().map(ensureU53).optional(),
         // Whether this is an animated picture (e.g. an AnimGIF)
         a: v.boolean().default(false),
     })
@@ -23,18 +23,24 @@ const RAW_IMAGE_METADATA_SCHEMA = v
 const RAW_AUDIO_METADATA_SCHEMA = v
     .object({
         // The duration as float in seconds
-        d: v.number().map((val) => val as f64),
+        d: v
+            .number()
+            .map((val) => val as f64)
+            .optional(),
     })
     .rest(v.unknown());
 
 const RAW_VIDEO_METADATA_SCHEMA = v
     .object({
         // The width as an integer in px
-        w: v.number().map(ensureU53),
+        w: v.number().map(ensureU53).optional(),
         // The height as an integer in px
-        h: v.number().map(ensureU53),
+        h: v.number().map(ensureU53).optional(),
         // The duration as float in seconds
-        d: v.number().map((val) => val as f64),
+        d: v
+            .number()
+            .map((val) => val as f64)
+            .optional(),
     })
     .rest(v.unknown());
 
