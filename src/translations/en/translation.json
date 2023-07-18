@@ -220,7 +220,7 @@
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "label--password": "Password",
     "label--title": "Enter Password",
-    "markup--password-hint": "Forgot password? Please see some <1>FAQ</1>."
+    "markup--password-hint": "Forgot password? Please consult the <1>FAQ</1>."
   },
   "dialog--unrecoverable-state": {
     "action--cancel": "Continue with invalid state",

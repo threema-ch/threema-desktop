@@ -73,7 +73,7 @@
           <SubstitutableText
             text={$i18n.t(
               'dialog--startup-unlock.markup--password-hint',
-              'Forgot password? Please see some <1>FAQ</1>.',
+              'Forgot password? Please consult the <1>FAQ</1>.',
             )}
           >
             <a
