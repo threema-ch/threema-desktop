@@ -161,6 +161,7 @@
   },
   "overrides": {
     "glob-parent": "^5.1.2",
-    "optionator": "0.9.3"
+    "optionator": "0.9.3",
+    "node-gyp": "~9.3.1"
   }
 }
