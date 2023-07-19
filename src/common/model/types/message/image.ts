@@ -3,7 +3,6 @@ import {type LocalModel} from '~/common/model';
 import {
     type CommonBaseFileMessageInit,
     type CommonBaseFileMessageView,
-    type Dimensions,
     type InboundBaseFileMessageController,
     type InboundBaseFileMessageView,
     type InboundBaseMessageInit,
@@ -12,6 +11,7 @@ import {
     type OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
+import {type Dimensions} from '~/common/types';
 
 // View
 

@@ -4,21 +4,13 @@ import {
 } from '#3sc/components/threema/VerificationDots';
 import {type MessageDirection, type MessageReaction} from '~/common/enum';
 import {type ProfilePictureView} from '~/common/model';
-import {type u53} from '~/common/types';
+import {type Dimensions, type u53} from '~/common/types';
 import {type ProfilePictureData} from '~/common/viewmodel/profile-picture';
 
 /**
  * Status of a message.
  */
 export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'error';
-
-/**
- * Dimensions for a 2D pixel-based object.
- */
-export interface Dimensions {
-    width: u53;
-    height: u53;
-}
 
 /**
  * Message types.

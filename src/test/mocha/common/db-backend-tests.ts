@@ -57,11 +57,10 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
+import {type Dimensions, type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {hasProperty} from '~/common/utils/object';
-import {type Dimensions} from '~/common/viewmodel/types';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
 
 /**

@@ -370,3 +370,11 @@ export interface DomainCertificatePin {
      */
     readonly fingerprints: string[];
 }
+
+/**
+ * Dimensions (height and width) of a 2D object.
+ */
+export interface Dimensions {
+    readonly height: u53;
+    readonly width: u53;
+}

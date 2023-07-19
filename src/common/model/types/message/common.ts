@@ -236,14 +236,6 @@ export type InboundBaseFileMessageView = InboundBaseMessageView & CommonBaseFile
 export type OutboundBaseFileMessageView = OutboundBaseMessageView & CommonBaseFileMessageView;
 
 /**
- * Height and width of a media item (e.g. an image).
- */
-export interface Dimensions {
-    readonly height: u53;
-    readonly width: u53;
-}
-
-/**
  * Fields needed to create a new file-based message.
  */
 export type CommonBaseFileMessageInit<T extends MessageType> = CommonBaseMessageInit<T> &
