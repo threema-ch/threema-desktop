@@ -13,7 +13,7 @@ import {
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {type MessageId} from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
-import {type u53} from '~/common/types';
+import {type Dimensions, type ReadonlyUint8Array, type u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {
     type PropertiesMarked,
@@ -32,19 +32,21 @@ import {
     transformReceiver,
 } from '~/common/viewmodel/svelte-components-transformations';
 
-interface SendTextMessageEventDetail {
+export interface SendTextMessageEventDetail {
     readonly type: 'text';
     readonly text: string;
     readonly quotedMessageId?: MessageId | undefined;
 }
-interface SendFileBasedMessagesEventDetail {
+export interface SendFileBasedMessagesEventDetail {
     readonly type: 'files';
     readonly files: {
-        readonly blob: Uint8Array;
+        readonly bytes: ReadonlyUint8Array;
+        readonly thumbnailBytes?: ReadonlyUint8Array;
         readonly caption?: string;
-        fileName: string;
-        fileSize: u53;
-        mediaType: string;
+        readonly fileName: string;
+        readonly fileSize: u53;
+        readonly mediaType: string;
+        readonly dimensions?: Dimensions;
     }[];
 }
 export type SendMessageEventDetail = SendTextMessageEventDetail | SendFileBasedMessagesEventDetail;
@@ -140,7 +142,11 @@ export class ConversationViewModelController implements IConversationViewModelCo
             );
 
             // Store data in file system
-            const fileData = await file.store(fileInfo.blob);
+            const fileData = await file.store(fileInfo.bytes);
+            const thumbnailFileData =
+                fileInfo.thumbnailBytes !== undefined
+                    ? await file.store(fileInfo.thumbnailBytes)
+                    : undefined;
 
             // Determine message type based on media type
             let messageType: MessageType;
@@ -159,6 +165,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
                 fileSize: fileInfo.fileSize,
                 mediaType: fileInfo.mediaType,
                 fileData,
+                thumbnailFileData,
             };
             switch (messageType) {
                 case MessageType.FILE:
@@ -168,12 +175,12 @@ export class ConversationViewModelController implements IConversationViewModelCo
                     });
                     break;
                 case MessageType.IMAGE: {
-                    // TODO(DESK-937): Determine size and generate thumbnail
                     outgoingMessageInitFragments.push({
                         type: 'image',
                         ...commonFileProperties,
                         renderingType: ImageRenderingType.REGULAR,
                         animated: false, // TODO(DESK-1115)
+                        dimensions: fileInfo.dimensions,
                     });
                     break;
                 }

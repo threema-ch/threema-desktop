@@ -17,7 +17,11 @@
   import Tooltip from '~/app/ui/generic/popover/Tooltip.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {showFileResultError} from '~/app/ui/main/conversation/compose';
-  import {type MediaFile, validateMediaFiles} from '~/app/ui/modal/media-message';
+  import {
+    generateThumbnail,
+    type MediaFile,
+    validateMediaFiles,
+  } from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
   import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
@@ -27,7 +31,10 @@
   import {unreachable} from '~/common/utils/assert';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {WritableStore} from '~/common/utils/store';
-  import {type SendMessageEventDetail} from '~/common/viewmodel/conversation';
+  import {
+    type SendFileBasedMessagesEventDetail,
+    type SendMessageEventDetail,
+  } from '~/common/viewmodel/conversation';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.media-message-modal');
   const hotkeyManager = globals.unwrap().hotkeyManager;
@@ -128,14 +135,22 @@
 
     visible = false;
 
-    const files = await Promise.all(
-      mediaFiles.map(async ({caption, file}) => ({
-        blob: new Uint8Array(await file.arrayBuffer()),
-        caption: caption.get(),
-        fileName: file.name,
-        fileSize: ensureU53(file.size),
-        mediaType: file.type,
-      })),
+    const files: SendFileBasedMessagesEventDetail['files'] = await Promise.all(
+      mediaFiles.map(async (mediaFile) => {
+        const thumbnailBlob = await mediaFile.thumbnail;
+        return {
+          bytes: new Uint8Array(await mediaFile.file.arrayBuffer()),
+          thumbnailBytes:
+            thumbnailBlob !== undefined
+              ? new Uint8Array(await thumbnailBlob.arrayBuffer())
+              : undefined,
+          caption: mediaFile.caption.get(),
+          fileName: mediaFile.file.name,
+          fileSize: ensureU53(mediaFile.file.size),
+          mediaType: mediaFile.file.type,
+          dimensions: await mediaFile.dimensions,
+        };
+      }),
     );
 
     dispatch('sendMessage', {
@@ -163,14 +178,17 @@
     }
 
     const currentCount = mediaFiles.length;
-    const newMediaFiles = fileResult.files.map(
-      (file): MediaFile => ({
+    const newMediaFiles = fileResult.files.map((file): MediaFile => {
+      const thumbnailPromise = generateThumbnail(file, log);
+      return {
         type: 'local',
         file,
+        thumbnail: thumbnailPromise.then((result) => result?.thumbnail),
+        dimensions: thumbnailPromise.then((result) => result?.originalDimensions),
         caption: new WritableStore<string | undefined>(undefined),
         sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
-      }),
-    );
+      };
+    });
 
     mediaFiles = [...mediaFiles, ...newMediaFiles];
 

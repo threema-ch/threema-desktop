@@ -36,3 +36,8 @@ export const BLOB_THUMBNAIL_NONCE = ensureNonce(
         0, 0, 0, 0, 0, 0, 0, 2,
     ]),
 );
+
+/**
+ * Max size for media message thumbnails.
+ */
+export const THUMBNAIL_MAX_SIZE = 512;

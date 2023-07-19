@@ -4,7 +4,7 @@
   import {i18n} from '~/app/ui/i18n';
   import {showFileResultError} from '~/app/ui/main/conversation/compose';
   import ComposeBar from '~/app/ui/main/conversation/compose/ComposeBar.svelte';
-  import {type MediaFile} from '~/app/ui/modal/media-message';
+  import {generateThumbnail, type MediaFile} from '~/app/ui/modal/media-message';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {ReceiverType} from '~/common/enum';
   import {type AnyReceiverStore} from '~/common/model';
@@ -72,12 +72,17 @@
    * Open the media compose message dialog.
    */
   function openMediaMessageDialog(files: File[], type: MediaFile['type']): void {
-    mediaFiles = files.map((file) => ({
-      type,
-      file,
-      caption: new WritableStore<string | undefined>(undefined),
-      sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
-    }));
+    mediaFiles = files.map((file) => {
+      const thumbnailPromise = generateThumbnail(file, log);
+      return {
+        type,
+        file,
+        thumbnail: thumbnailPromise.then((result) => result?.thumbnail),
+        dimensions: thumbnailPromise.then((result) => result?.originalDimensions),
+        caption: new WritableStore<string | undefined>(undefined),
+        sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
+      };
+    });
 
     // If there is only one file, move the current compose text to the caption.
     if (mediaFiles.length === 1) {
