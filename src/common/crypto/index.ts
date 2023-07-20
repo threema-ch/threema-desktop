@@ -212,6 +212,22 @@ export function ensureNonce(array: ReadonlyUint8Array): Nonce {
 }
 
 /**
+ * HMAC-SHA256 hash of a {@link Nonce}.
+ */
+export type NonceHash = WeakOpaque<ReadonlyUint8Array, {readonly NonceHash: unique symbol}>;
+
+export function isNonceHash(value: unknown): value is NonceHash {
+    return value instanceof Uint8Array && value.byteLength === 32;
+}
+
+export function ensureNonceHash(value: ReadonlyUint8Array): NonceHash {
+    if (!isNonceHash(value)) {
+        throw new Error(`Array of length ${value.byteLength} is not a valid nonce hash`);
+    }
+    return value;
+}
+
+/**
  * The first 16 byte of an NaCl nonce as used in the chat server protocol.
  */
 export type Cookie = WeakOpaque<Uint8Array, {readonly Cookie: unique symbol}>;
