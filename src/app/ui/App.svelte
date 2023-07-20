@@ -20,7 +20,7 @@
   import Snackbar from '~/app/ui/snackbar/Snackbar.svelte';
   import {DisplayModeObserver, manageLayout} from '~/common/dom/ui/layout';
   import {display, layout} from '~/common/dom/ui/state';
-  import {type IGlobalPropertyModel} from '~/common/model';
+  import {type IGlobalPropertyModel} from '~/common/model/types/settings';
   import {type LocalModelStore} from '~/common/model/utils/model-store';
   import {ConnectionState} from '~/common/network/protocol/state';
   import {unreachable} from '~/common/utils/assert';

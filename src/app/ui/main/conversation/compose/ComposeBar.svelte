@@ -38,7 +38,6 @@
   // Emoji picker
   // eslint-disable-next-line @typescript-eslint/ban-types
   let emojiPickerPopover: Popover | null;
-  let emojiPicker: EmojiPicker | undefined;
 
   /**
    * Insert more text content into the compose area
@@ -157,7 +156,6 @@
         </IconButton>
 
         <EmojiPicker
-          bind:this={emojiPicker}
           slot="popover"
           on:insertEmoji={(event) => composeArea.insertText(event.detail)}
         />

@@ -65,10 +65,10 @@
 </script>
 
 <svelte:body
-  on:threema-drag-start={() => {
+  on:threemadragstart={() => {
     bodyHover = true;
   }}
-  on:threema-drag-end={() => {
+  on:threemadragend={() => {
     bodyHover = false;
   }}
 />

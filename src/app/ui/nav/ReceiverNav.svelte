@@ -220,8 +220,5 @@
         'list    ' minmax(0, 1fr)
         / 100%;
     }
-    .wip {
-      margin: rem(40px) auto;
-    }
   }
 </style>
