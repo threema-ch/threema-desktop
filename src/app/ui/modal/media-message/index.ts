@@ -94,7 +94,13 @@ export async function generateThumbnail(
     }
 
     // Create image bitmap and wait for it to load
-    const bitmap = await createImageBitmap(file);
+    let bitmap;
+    try {
+        bitmap = await createImageBitmap(file);
+    } catch (error) {
+        log?.warn(`Could not load bitmap: ${error}`);
+        return undefined;
+    }
 
     // Extract dimensions
     const dimensions = {width: bitmap.width, height: bitmap.height};

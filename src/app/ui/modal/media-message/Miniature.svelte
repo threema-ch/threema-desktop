@@ -1,14 +1,29 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Image from '#3sc/components/blocks/Image/Image.svelte';
+  import {globals} from '~/app/globals';
   import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.modal.media-message.miniature');
 
   export let mediaFile: MediaFile;
   export let validationResult: ValidationResult;
 
   export let active = false;
   export let disabled = false;
+
+  let thumbnail: Blob | undefined;
+
+  $: {
+    mediaFile.thumbnail
+      .then((value) => {
+        thumbnail = value;
+      })
+      .catch((error) => {
+        log.error(`An error occurred while loading thumbnail: ${error}`);
+      });
+  }
 </script>
 
 <template>
@@ -19,8 +34,8 @@
       </div>
     {/if}
     <div class="overlay" />
-    {#if mediaFile.file.type.startsWith('image/')}
-      <Image class="thumbnail-image" src={mediaFile.file} alt={mediaFile.file.name} />
+    {#if mediaFile.file.type.startsWith('image/') && thumbnail !== undefined}
+      <Image class="thumbnail-image" src={thumbnail} alt={mediaFile.file.name} />
     {:else}
       <div class="type">
         <FileType filenameDetails={mediaFile.sanitizedFilenameDetails} />
