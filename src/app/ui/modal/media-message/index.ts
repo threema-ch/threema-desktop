@@ -7,12 +7,13 @@ import {type WritableStore} from '~/common/utils/store';
 import {getUtf8ByteLength} from '~/common/utils/string';
 
 export interface MediaFile {
-    type: 'local' | 'pasted';
-    file: File;
-    thumbnail: Promise<Blob | undefined>;
-    dimensions: Promise<Dimensions | undefined>;
-    caption: WritableStore<string | undefined>;
-    sanitizedFilenameDetails: FilenameDetails;
+    readonly type: 'local' | 'pasted';
+    readonly file: File;
+    readonly thumbnail: Promise<Blob | undefined>;
+    readonly dimensions: Promise<Dimensions | undefined>;
+    readonly caption: WritableStore<string | undefined>;
+    readonly sanitizedFilenameDetails: FilenameDetails;
+    sendAsFile: boolean;
 }
 
 type ValidationErrorReason = 'fileTooLarge' | 'captionTooLong';

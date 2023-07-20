@@ -81,6 +81,7 @@
         dimensions: thumbnailPromise.then((result) => result?.originalDimensions),
         caption: new WritableStore<string | undefined>(undefined),
         sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
+        sendAsFile: false,
       };
     });
 

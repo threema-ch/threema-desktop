@@ -51,15 +51,16 @@
     </div>
     <div class="options">
       <div class="left">
-        <div class="send-option wip">
-          <!-- Hardcoded for now, as file can currently only be sent as file -->
-          <Checkbox id="send-as-file-checkbox" checked={true} disabled={true} />
-          <label class="label wip" for="send-as-file-checkbox"
-            >{$i18n.t(
-              'dialog--compose-media-message.label--send-as-file-option',
-              'Send as File (Original Size)',
-            )}</label
-          >
+        <div class="send-option">
+          {#if mediaFile.file.type.startsWith('image/')}
+            <Checkbox id="send-as-file-checkbox" bind:checked={mediaFile.sendAsFile} />
+            <label class="label" for="send-as-file-checkbox"
+              >{$i18n.t(
+                'dialog--compose-media-message.label--send-as-file-option',
+                'Send as File (Original Size)',
+              )}</label
+            >
+          {/if}
         </div>
       </div>
       <div class="right">

@@ -47,6 +47,7 @@ export interface SendFileBasedMessagesEventDetail {
         readonly fileSize: u53;
         readonly mediaType: string;
         readonly dimensions?: Dimensions;
+        readonly sendAsFile: boolean;
     }[];
 }
 export type SendMessageEventDetail = SendTextMessageEventDetail | SendFileBasedMessagesEventDetail;
@@ -150,7 +151,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
 
             // Determine message type based on media type
             let messageType: MessageType;
-            if (fileInfo.mediaType.startsWith('image/')) {
+            if (fileInfo.mediaType.startsWith('image/') && !fileInfo.sendAsFile) {
                 messageType = MessageType.IMAGE;
             } else {
                 messageType = MessageType.FILE;

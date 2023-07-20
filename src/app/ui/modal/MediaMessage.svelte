@@ -149,6 +149,7 @@
           fileSize: ensureU53(mediaFile.file.size),
           mediaType: mediaFile.file.type,
           dimensions: await mediaFile.dimensions,
+          sendAsFile: mediaFile.sendAsFile,
         };
       }),
     );
@@ -187,6 +188,7 @@
         dimensions: thumbnailPromise.then((result) => result?.originalDimensions),
         caption: new WritableStore<string | undefined>(undefined),
         sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
+        sendAsFile: false,
       };
     });
 
