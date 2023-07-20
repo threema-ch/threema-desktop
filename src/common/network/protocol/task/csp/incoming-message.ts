@@ -20,6 +20,7 @@ import {
     CspE2eGroupStatusUpdateType,
     CspE2eStatusUpdateType,
     type D2dCspMessageType,
+    ImageRenderingType,
     MessageDirection,
     MessageType,
     ReceiverType,
@@ -61,10 +62,12 @@ import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quot
 import {
     type AnyInboundMessageInitFragment,
     type InboundFileMessageInitFragment,
+    type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
+import {RAW_IMAGE_METADATA_SCHEMA} from '~/common/network/structbuf/validate/csp/e2e/file';
 import {
     type ContactConversationId,
     ensureIdentityString,
@@ -141,14 +144,59 @@ function getTextMessageInitFragment(
 function getFileMessageInitFragment(
     createdAt: Date,
     cspFileMessageBody: ReadonlyUint8Array,
-): InboundFileMessageInitFragment {
+    log: Logger,
+): InboundFileMessageInitFragment | InboundImageMessageInitFragment {
     // Decode file message
     const fileData = structbuf.validate.csp.e2e.File.SCHEMA.parse(
         structbuf.csp.e2e.File.decode(cspFileMessageBody as Uint8Array),
     ).file;
+
+    let extraProperties;
+    if (
+        fileData.file.mediaType.startsWith('image/') &&
+        (fileData.renderingType === 'media' || fileData.renderingType === 'sticker')
+    ) {
+        let imageRenderingType: ImageRenderingType;
+        switch (fileData.renderingType) {
+            case 'media':
+                imageRenderingType = ImageRenderingType.REGULAR;
+                break;
+            case 'sticker':
+                imageRenderingType = ImageRenderingType.STICKER;
+                break;
+            default:
+                unreachable(fileData.renderingType);
+        }
+
+        try {
+            const parsedMetadata = RAW_IMAGE_METADATA_SCHEMA.parse(fileData.metadata ?? {});
+
+            extraProperties = {
+                type: MessageType.IMAGE,
+                renderingType: imageRenderingType,
+                animated: parsedMetadata.a,
+                dimensions:
+                    parsedMetadata.h !== undefined && parsedMetadata.w !== undefined
+                        ? {width: parsedMetadata.w, height: parsedMetadata.h}
+                        : undefined,
+            } as const;
+        } catch (error) {
+            log.warn(`Image metadata did not pass validation: ${error}`);
+
+            extraProperties = {
+                type: MessageType.IMAGE,
+                renderingType: imageRenderingType,
+                animated: false,
+            } as const;
+        }
+    } else {
+        extraProperties = {
+            type: MessageType.FILE,
+        } as const;
+    }
+
     return {
         ...getCommonMessageInitFragment(createdAt, cspFileMessageBody),
-        type: 'file',
         blobId: fileData.file.blobId,
         thumbnailBlobId: fileData.thumbnail?.blobId,
         encryptionKey: fileData.encryptionKey,
@@ -158,6 +206,7 @@ function getFileMessageInitFragment(
         fileSize: fileData.fileSize,
         caption: fileData.caption,
         correlationId: fileData.correlationId,
+        ...extraProperties,
     };
 }
 
@@ -195,6 +244,19 @@ function getDirectedFileMessageInit(
     sender: UidOf<DbContact>,
     fragment: InboundFileMessageInitFragment,
 ): DirectedMessageFor<MessageDirection.INBOUND, MessageType.FILE, 'init'> {
+    return {
+        ...fragment,
+        direction: MessageDirection.INBOUND,
+        sender,
+        id,
+    };
+}
+
+function getDirectedImageMessageInit(
+    id: MessageId,
+    sender: UidOf<DbContact>,
+    fragment: InboundImageMessageInitFragment,
+): DirectedMessageFor<MessageDirection.INBOUND, MessageType.IMAGE, 'init'> {
     return {
         ...fragment,
         direction: MessageDirection.INBOUND,
@@ -665,7 +727,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         );
 
                     // If this is a file message, trigger the downloading of the thumbnail
-                    if (messageStore.type === 'file') {
+                    if (messageStore.type === 'image') {
                         messageStore
                             .get()
                             .controller.thumbnailBlob()
@@ -973,7 +1035,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         );
                         break;
                     case CspE2eConversationType.FILE:
-                        initFragment = getFileMessageInitFragment(clampedCreatedAt, cspMessageBody);
+                        initFragment = getFileMessageInitFragment(
+                            clampedCreatedAt,
+                            cspMessageBody,
+                            this._log,
+                        );
                         break;
                     default:
                         unreachable(maybeCspE2eType);
@@ -1009,6 +1075,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         initFragment = getFileMessageInitFragment(
                             clampedCreatedAt,
                             validatedContainer.innerData,
+                            this._log,
                         );
                         break;
                     default:
@@ -1408,7 +1475,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             case MessageType.FILE:
                 return getDirectedFileMessageInit(this._id, contact.get().ctx, initFragment);
             case MessageType.IMAGE:
-                throw new Error('TODO(DESK-935)');
+                return getDirectedImageMessageInit(this._id, contact.get().ctx, initFragment);
             default:
                 return unreachable(initFragment);
         }

@@ -41,11 +41,11 @@ export function run(): void {
             expect(validated.s).to.equal(1234);
         });
 
-        it('maps empty metadata object to undefined', function () {
+        it('maps undefined metadata to empty object', function () {
             const missing = RAW_FILE_JSON_SCHEMA.parse({...minimalFileJson});
-            expect(missing.x).to.be.undefined;
+            expect(missing.x).to.deep.equal({});
             const empty = RAW_FILE_JSON_SCHEMA.parse({...minimalFileJson, x: {}});
-            expect(empty.x).to.be.undefined;
+            expect(empty.x).to.deep.equal({});
         });
 
         it('minimal file JSON (full)', function () {
@@ -160,7 +160,7 @@ export function run(): void {
             expect(validated.fileSize).to.equal(140666);
             expect(validated.caption).to.be.undefined;
             expect(validated.correlationId).to.equal('842f55b680f79bda59dea0c36d7d9865');
-            // TODO(DESK-935): Metadata
+            expect(validated.metadata).to.deep.equal({d: 3.576});
         });
 
         it('sticker message as sent by android 5.0.3.1', function () {

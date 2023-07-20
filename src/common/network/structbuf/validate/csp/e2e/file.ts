@@ -9,7 +9,7 @@ import {hexToBytes} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {instanceOf} from '~/common/utils/valita-helpers';
 
-const RAW_IMAGE_METADATA_SCHEMA = v
+export const RAW_IMAGE_METADATA_SCHEMA = v
     .object({
         // The width as an integer in px
         w: v.number().map(ensureU53).optional(),
@@ -20,7 +20,7 @@ const RAW_IMAGE_METADATA_SCHEMA = v
     })
     .rest(v.unknown());
 
-const RAW_AUDIO_METADATA_SCHEMA = v
+export const RAW_AUDIO_METADATA_SCHEMA = v
     .object({
         // The duration as float in seconds
         d: v
@@ -30,7 +30,7 @@ const RAW_AUDIO_METADATA_SCHEMA = v
     })
     .rest(v.unknown());
 
-const RAW_VIDEO_METADATA_SCHEMA = v
+export const RAW_VIDEO_METADATA_SCHEMA = v
     .object({
         // The width as an integer in px
         w: v.number().map(ensureU53).optional(),
@@ -70,15 +70,7 @@ export const RAW_FILE_JSON_SCHEMA = v
         // Optional correlation ID: 32 byte ASCII string to collocate multiple media files
         c: v.string().optional(),
         // Optional metadata
-        x: v
-            .union(
-                v.object({}),
-                RAW_IMAGE_METADATA_SCHEMA,
-                RAW_AUDIO_METADATA_SCHEMA,
-                RAW_VIDEO_METADATA_SCHEMA,
-            )
-            .map((val) => (Object.keys(val).length === 0 ? undefined : val))
-            .optional(),
+        x: v.record().default({}),
     })
     .rest(v.unknown());
 
@@ -102,7 +94,7 @@ export interface FileJson {
     readonly fileSize: u53;
     readonly caption?: string;
     readonly correlationId?: string;
-    // TODO(DESK-935): Metadata
+    readonly metadata?: Record<string, unknown>;
 }
 
 /**
@@ -140,6 +132,7 @@ function processRawFileJson(json: v.Infer<typeof RAW_FILE_JSON_SCHEMA>): FileJso
         fileSize: json.s,
         caption: json.d,
         correlationId: json.c,
+        metadata: json.x,
     };
 }
 
