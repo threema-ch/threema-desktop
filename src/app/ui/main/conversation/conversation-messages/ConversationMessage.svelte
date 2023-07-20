@@ -41,7 +41,10 @@
   import {assert, ensureError, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type RemoteStore} from '~/common/utils/store';
-  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
+  import {
+    type ConversationMessageViewModel,
+    type ConversationMessageViewModelController,
+  } from '~/common/viewmodel/conversation-message';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-message');
@@ -78,6 +81,11 @@
    * The ConversationMessageViewModel
    */
   export let viewModelStore: RemoteStore<Remote<ConversationMessageViewModel>>;
+
+  /**
+   * The ConversationMessageViewModelController
+   */
+  export let viewModelController: Remote<ConversationMessageViewModelController>;
 
   /**
    * The ModelStore for the Message
@@ -197,6 +205,9 @@
         break;
       case 'delete':
         isDeleteMessageConfirmationModalVisible = true;
+        break;
+      case 'save':
+        void saveFile();
         break;
       case 'forward':
         isForwardMessageModalVisible = true;
@@ -328,7 +339,7 @@
    * Retrieve the current message data and save it to the file system.
    */
   async function saveFile(): Promise<void> {
-    if (messageStore.type !== 'file') {
+    if (messageStore.type !== 'file' && messageStore.type !== 'image') {
       log.warn(`saveFile called for ${messageStore.type} message`);
       return;
     }
@@ -394,6 +405,7 @@
       <div class="message" use:contextMenuAction={handleContextMenuAction}>
         <MessageComponent
           messageViewModel={$viewModelStore}
+          messageViewModelController={viewModelController}
           {receiver}
           on:saveFile={saveFile}
           on:abortSync={() => {
@@ -451,6 +463,7 @@
             options={{
               showReactions: !isReceiverBlocked,
               showAction: {
+                save: ['file', 'image'].includes(messageBody.type),
                 quote: !isReceiverBlocked,
                 copyLink: hrefToCopy !== undefined,
                 copyMessage: messageContentToCopy !== undefined,
@@ -460,6 +473,7 @@
             on:copy={() => handleContextMenuEvent('copy')}
             on:copyLink={() => handleContextMenuEvent('copyLink')}
             on:delete={() => handleContextMenuEvent('delete')}
+            on:save={() => handleContextMenuEvent('save')}
             on:showMessageDetails={() => handleContextMenuEvent('showMessageDetails')}
             on:thumbup={() => handleContextMenuEvent('thumbup')}
             on:thumbdown={() => handleContextMenuEvent('thumbdown')}

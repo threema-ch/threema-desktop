@@ -146,15 +146,24 @@ interface TextMessageBody {
 
 interface ImageMessageBody {
     /**
-     * Thumbnail URL to be used. If not set, should fall back to an
-     * appropriate image placeholder.
+     * Media type of the file.
      */
-    readonly thumbnail?: Promise<string>;
+    readonly mediaType: string;
 
     /**
-     * Optional caption of the image.
+     * File size in bytes.
+     */
+    readonly size: u53;
+
+    /**
+     * Optional caption of the file.
      */
     readonly caption?: string;
+
+    /**
+     * Optional dimensions of the image.
+     */
+    readonly dimensions?: Dimensions;
 }
 
 interface LocationMessageBody {
@@ -244,12 +253,6 @@ interface FileMessageBody {
      * File size in bytes.
      */
     readonly size: u53;
-
-    /**
-     * Optional thumbnail URL to be used. If not set, will fall back to an icon
-     * appropriate for the media type.
-     */
-    readonly thumbnail?: Promise<string>;
 
     /**
      * Optional filename to be displayed.

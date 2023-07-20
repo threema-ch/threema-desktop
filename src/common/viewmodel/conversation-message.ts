@@ -9,9 +9,14 @@ import {
     type CommonBaseFileMessageView,
 } from '~/common/model/types/message';
 import {type MessageId} from '~/common/network/types';
-import {type u53} from '~/common/types';
+import {type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
-import {type PropertiesMarked} from '~/common/utils/endpoint';
+import {
+    type PropertiesMarked,
+    PROXY_HANDLER,
+    type ProxyMarked,
+    TRANSFER_HANDLER,
+} from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
 import {type LocalStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
@@ -22,6 +27,7 @@ import {
     type FileMessageDataState,
     type IncomingMessage,
     type Message,
+    type MessageBodyFor,
     type OutgoingMessage,
 } from '~/common/viewmodel/types';
 import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
@@ -30,6 +36,7 @@ export interface ConversationMessage extends PropertiesMarked {
     readonly id: MessageId;
     readonly direction: MessageDirection;
     readonly messageStore: AnyMessageModelStore;
+    readonly viewModelController: IConversationMessageViewModelController;
     readonly viewModel: ConversationMessageViewModelStore;
 }
 
@@ -49,6 +56,7 @@ export function getConversationMessage(
         direction: messageModel.view.direction,
         messageStore,
         viewModel: getViewModel(services, log, messageStore, conversationModelStore.get()),
+        viewModelController: new ConversationMessageViewModelController(messageStore),
     });
 }
 
@@ -102,17 +110,26 @@ function getViewModel(
             resolveQuotedMessage,
         );
 
+        // Determine sync direction.
         let syncDirection: ConversationMessageViewModel['syncDirection'];
-        if (message.type === 'file') {
-            if (message.view.state === 'unsynced' || message.view.state === 'syncing') {
-                const fileData = message.view.fileData;
-                const blobId = message.view.blobId;
-                if (fileData === undefined && blobId !== undefined) {
-                    syncDirection = 'download';
-                } else if (fileData !== undefined && blobId === undefined) {
-                    syncDirection = 'upload';
+        switch (message.type) {
+            case MessageType.FILE:
+            case MessageType.IMAGE: {
+                if (message.view.state === 'unsynced' || message.view.state === 'syncing') {
+                    const fileData = message.view.fileData;
+                    const blobId = message.view.blobId;
+                    if (fileData === undefined && blobId !== undefined) {
+                        syncDirection = 'download';
+                    } else if (fileData !== undefined && blobId === undefined) {
+                        syncDirection = 'upload';
+                    }
                 }
+                break;
             }
+            case MessageType.TEXT:
+                break;
+            default:
+                return unreachable(message);
         }
 
         const conversationMessage = {
@@ -233,16 +250,44 @@ function getConversationMessageBody(
             }
             break;
         }
-        // TODO(DESK-936): Separate viewmodel for image messages
-        case 'file':
-        case 'image': {
+        case 'file': {
             const type = 'file';
-            const body = {
+            const body: MessageBodyFor<typeof type> = {
                 mediaType: messageModel.view.mediaType,
                 size: messageModel.view.fileSize,
-                thumbnail: undefined,
                 filename: messageModel.view.fileName,
                 caption: messageModel.view.caption,
+            };
+            if (messageModel.ctx === MessageDirection.INBOUND) {
+                messageData = {
+                    ...(baseMessage as Omit<
+                        IncomingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
+                    type,
+                    body,
+                    state: convertFileMessageDataState(messageModel.view),
+                };
+            } else {
+                messageData = {
+                    ...(baseMessage as Omit<
+                        OutgoingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
+                    type,
+                    body,
+                    state: convertFileMessageDataState(messageModel.view),
+                };
+            }
+            break;
+        }
+        case 'image': {
+            const type = 'image';
+            const body: MessageBodyFor<typeof type> = {
+                mediaType: messageModel.view.mediaType,
+                size: messageModel.view.fileSize,
+                caption: messageModel.view.caption,
+                dimensions: messageModel.view.dimensions,
             };
             if (messageModel.ctx === MessageDirection.INBOUND) {
                 messageData = {
@@ -348,4 +393,45 @@ function getConversationMessageBodyBaseMessage(
             unreachable(messageModel);
     }
     return baseMessage;
+}
+
+export interface IConversationMessageViewModelController extends ProxyMarked {
+    getBlob: () => Promise<ReadonlyUint8Array | undefined>;
+    getThumbnail: () => Promise<ReadonlyUint8Array | undefined>;
+}
+
+export class ConversationMessageViewModelController
+    implements IConversationMessageViewModelController
+{
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public constructor(private readonly _message: AnyMessageModelStore) {}
+
+    public async getBlob(): Promise<ReadonlyUint8Array | undefined> {
+        switch (this._message.type) {
+            case MessageType.FILE:
+            case MessageType.IMAGE:
+                return await this._message.get().controller.blob();
+
+            case MessageType.TEXT:
+                return undefined;
+
+            default:
+                return unreachable(this._message);
+        }
+    }
+
+    public async getThumbnail(): Promise<ReadonlyUint8Array | undefined> {
+        switch (this._message.type) {
+            case MessageType.FILE:
+            case MessageType.IMAGE:
+                return await this._message.get().controller.thumbnailBlob();
+
+            case MessageType.TEXT:
+                return undefined;
+
+            default:
+                return unreachable(this._message);
+        }
+    }
 }

@@ -13,6 +13,7 @@
   interface OpenOptions {
     readonly showReactions: boolean;
     readonly showAction: {
+      readonly save: boolean;
       readonly quote: boolean;
       readonly copyLink: boolean;
       readonly copyMessage: boolean;
@@ -27,6 +28,7 @@
   export let options: OpenOptions = {
     showReactions: true,
     showAction: {
+      save: false,
       quote: true,
       copyLink: false,
       copyMessage: true,
@@ -71,6 +73,14 @@
           <span>{$i18n.t('messaging.action--message-option-disagree', 'Disagree')}</span>
         </MenuItem>
         <MenuItemDivider />
+      {/if}
+      {#if options.showAction.save}
+        <MenuItem on:click={() => dispatchEvent('save')}>
+          <span class="icon" slot="icon">
+            <MdIcon theme="Outlined">download</MdIcon>
+          </span>
+          <span>{$i18n.t('messaging.action--message-option-save-as-file', 'Save as File')}</span>
+        </MenuItem>
       {/if}
       {#if options.showAction.quote}
         <MenuItem on:click={() => dispatchEvent('quote')}>

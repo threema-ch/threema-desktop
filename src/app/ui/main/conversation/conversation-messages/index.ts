@@ -8,5 +8,14 @@ export type ConversationMessageContextMenuEvent =
     | 'forward'
     | 'copy'
     | 'copyLink'
+    | 'save'
     | 'showMessageDetails'
     | 'delete';
+
+/**
+ * States used to describe the progress when loading an image.
+ */
+export type ConversationMessageImageState =
+    | {status: 'loading'}
+    | {status: 'failed'}
+    | {status: 'loaded'; url: string};

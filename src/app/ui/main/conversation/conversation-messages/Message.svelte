@@ -14,7 +14,10 @@
   import {type AnyReceiverStore} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
-  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
+  import {
+    type ConversationMessageViewModel,
+    type ConversationMessageViewModelController,
+  } from '~/common/viewmodel/conversation-message';
   import {
     type AnyMessageBody,
     type IncomingMessage,
@@ -29,6 +32,11 @@
    * The conversation message viewmodel.
    */
   export let messageViewModel: Remote<ConversationMessageViewModel>;
+
+  /**
+   * The conversation message viewmodel controller.
+   */
+  export let messageViewModelController: Remote<ConversationMessageViewModelController>;
 
   // Extract/alias message body from viewmodel
   let message: ConversationMessageViewModel['body'];
@@ -86,7 +94,11 @@
 </script>
 
 <template>
-  <div class="message" data-contact={showContactFor(receiver.type, message)}>
+  <div
+    class="message"
+    class:thin-border={message.type === 'image'}
+    data-contact={showContactFor(receiver.type, message)}
+  >
     {#if showContactFor(receiver.type, message)}
       <span class="contact">
         <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
@@ -109,51 +121,57 @@
     <span class="content">
       <MessageContent
         {message}
+        {messageViewModelController}
         mentions={messageViewModel.mentions}
         on:saveFile={() => dispatch('saveFile')}
       />
     </span>
-    <span class="footer">
-      <MessageFooter
-        direction={message.direction}
-        date={message.updatedAt}
-        status={messageFooterStatus}
-        receiverType={receiver.type}
-        reaction={message.lastReaction?.type}
-      />
-    </span>
 
-    {#if message.state.type === 'unsynced' || message.state.type === 'syncing'}
-      <div class="overlay">
-        <button class="overlay-button" on:click={handleMessageOverlayClick}>
-          {#if message.state.type === 'unsynced'}
-            {#if messageViewModel.syncDirection === 'download'}
-              <MdIcon
-                theme="Filled"
-                title={$i18n.t('messaging.action--file-sync-download', 'Click to download file')}
-                >file_download</MdIcon
-              >
-            {:else if messageViewModel.syncDirection === 'upload'}
-              <MdIcon
-                theme="Filled"
-                title={$i18n.t('messaging.action--file-sync-upload', 'Click to upload file')}
-                >file_upload</MdIcon
-              >
-            {:else}
-              <MdIcon
-                theme="Filled"
-                title={$i18n.t(
-                  'messaging.action--file-sync-unknown-direction',
-                  'Unknown sync direction',
-                )}>help</MdIcon
-              >
+    {#if !(message.type === 'image')}
+      <span class="footer">
+        <MessageFooter
+          direction={message.direction}
+          date={message.updatedAt}
+          status={messageFooterStatus}
+          receiverType={receiver.type}
+          reaction={message.lastReaction?.type}
+        />
+      </span>
+    {/if}
+
+    {#if message.type === 'file'}
+      {#if message.state.type === 'unsynced' || message.state.type === 'syncing'}
+        <div class="overlay">
+          <button class="overlay-button" on:click={handleMessageOverlayClick}>
+            {#if message.state.type === 'unsynced'}
+              {#if messageViewModel.syncDirection === 'download'}
+                <MdIcon
+                  theme="Filled"
+                  title={$i18n.t('messaging.action--file-sync-download', 'Click to download file')}
+                  >file_download</MdIcon
+                >
+              {:else if messageViewModel.syncDirection === 'upload'}
+                <MdIcon
+                  theme="Filled"
+                  title={$i18n.t('messaging.action--file-sync-upload', 'Click to upload file')}
+                  >file_upload</MdIcon
+                >
+              {:else}
+                <MdIcon
+                  theme="Filled"
+                  title={$i18n.t(
+                    'messaging.action--file-sync-unknown-direction',
+                    'Unknown sync direction',
+                  )}>help</MdIcon
+                >
+              {/if}
+            {:else if message.state.type === 'syncing'}
+              <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>-->
+              <IconButtonProgressBarOverlay />
             {/if}
-          {:else if message.state.type === 'syncing'}
-            <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>-->
-            <IconButtonProgressBarOverlay />
-          {/if}
-        </button>
-      </div>
+          </button>
+        </div>
+      {/if}
     {/if}
   </div>
 </template>
@@ -171,6 +189,10 @@
       / auto;
 
     padding: rem(8px);
+
+    &.thin-border {
+      padding: rem(3px);
+    }
 
     .contact {
       grid-area: contact;
@@ -190,7 +212,7 @@
 
     .content {
       grid-area: content;
-      margin-bottom: rem(2px);
+
       &:not(:first-child) {
         margin-top: rem(2px);
       }
