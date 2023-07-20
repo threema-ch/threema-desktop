@@ -14,7 +14,6 @@
   export let disabled = false;
 
   let thumbnail: Blob | undefined;
-
   $: {
     mediaFile.thumbnail
       .then((value) => {
@@ -24,6 +23,8 @@
         log.error(`An error occurred while loading thumbnail: ${error}`);
       });
   }
+
+  const sendAsFile = mediaFile.sendAsFile;
 </script>
 
 <template>
@@ -34,7 +35,7 @@
       </div>
     {/if}
     <div class="overlay" />
-    {#if mediaFile.file.type.startsWith('image/') && thumbnail !== undefined}
+    {#if mediaFile.file.type.startsWith('image/') && thumbnail !== undefined && !$sendAsFile}
       <Image class="thumbnail-image" src={thumbnail} alt={mediaFile.file.name} />
     {:else}
       <div class="type">

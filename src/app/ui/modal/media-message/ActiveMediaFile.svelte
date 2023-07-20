@@ -13,6 +13,8 @@
   export let mediaFile: MediaFile;
   export let validationResult: ValidationResult;
 
+  $: sendAsFile = mediaFile.sendAsFile;
+
   const dispatchEvent = createEventDispatcher<{remove: undefined}>();
 </script>
 
@@ -53,7 +55,7 @@
       <div class="left">
         <div class="send-option">
           {#if mediaFile.file.type.startsWith('image/')}
-            <Checkbox id="send-as-file-checkbox" bind:checked={mediaFile.sendAsFile} />
+            <Checkbox id="send-as-file-checkbox" bind:checked={$sendAsFile} />
             <label class="label" for="send-as-file-checkbox"
               >{$i18n.t(
                 'dialog--compose-media-message.label--send-as-file-option',

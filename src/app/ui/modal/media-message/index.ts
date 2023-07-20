@@ -13,7 +13,7 @@ export interface MediaFile {
     readonly dimensions: Promise<Dimensions | undefined>;
     readonly caption: WritableStore<string | undefined>;
     readonly sanitizedFilenameDetails: FilenameDetails;
-    sendAsFile: boolean;
+    readonly sendAsFile: WritableStore<boolean>;
 }
 
 type ValidationErrorReason = 'fileTooLarge' | 'captionTooLong';
