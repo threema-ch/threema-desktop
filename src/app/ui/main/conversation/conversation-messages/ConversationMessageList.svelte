@@ -139,7 +139,7 @@
 </script>
 
 <template>
-  {#each $sortedMessages as { id, messageStore, viewModel: viewModelStore, viewModelController }, index (id)}
+  {#each $sortedMessages as viewModelBundle, index (viewModelBundle.id)}
     {#if index === unreadMessageInfo.earliestUnreadMessageIndex}
       <div class="unread-messages-separator">
         {#if !unreadMessageInfo.hasOutboundMessageAfterEarliestUnreadMessage}
@@ -155,9 +155,7 @@
     {/if}
 
     <ConversationMessageComponent
-      {messageStore}
-      {viewModelStore}
-      {viewModelController}
+      {viewModelBundle}
       {receiver}
       {isReceiverBlocked}
       {receiverLookup}

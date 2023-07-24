@@ -174,8 +174,8 @@ import {
 } from '~/common/viewmodel/contact-list-item';
 import {type ConversationViewModel} from '~/common/viewmodel/conversation';
 import {
-    type ConversationMessage,
-    getConversationMessage,
+    type ConversationMessageViewModelBundle,
+    getConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation-message';
 import {
     type ConversationMessageSetStore,
@@ -475,15 +475,19 @@ export class TestViewModel implements IViewModelRepository {
     public conversationMessage(
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
-    ): ConversationMessage {
-        return getConversationMessage(this._services, messageStore, conversation);
+    ): ConversationMessageViewModelBundle {
+        return getConversationMessageViewModelBundle(this._services, messageStore, conversation);
     }
 
     public conversationMessageById(
         conversation: ConversationModelStore,
         messageId: MessageId,
-    ): ConversationMessage | undefined {
-        return undefined;
+    ): ConversationMessageViewModelBundle | undefined {
+        const messageStore = conversation.get().controller.getMessage(messageId);
+        if (messageStore === undefined) {
+            return undefined;
+        }
+        return this.conversationMessage(conversation, messageStore);
     }
 
     public contactListItems(): ContactListItemSetStore {

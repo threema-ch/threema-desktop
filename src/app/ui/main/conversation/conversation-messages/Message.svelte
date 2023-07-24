@@ -9,15 +9,14 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
+  import MessageContent from '~/app/ui/main/conversation/conversation-messages/MessageContent.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
+  import MessageQuote from '~/app/ui/main/conversation/conversation-messages/MessageQuote.svelte';
   import {MessageDirection, ReceiverType} from '~/common/enum';
   import {type AnyReceiverStore} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
-  import {
-    type ConversationMessageViewModel,
-    type ConversationMessageViewModelController,
-  } from '~/common/viewmodel/conversation-message';
+  import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
   import {
     type AnyMessageBody,
     type IncomingMessage,
@@ -25,27 +24,18 @@
     type MessageStatus,
   } from '~/common/viewmodel/types';
 
-  import MessageContent from './MessageContent.svelte';
-  import MessageQuote from './MessageQuote.svelte';
+  export let viewModelBundle: Remote<ConversationMessageViewModelBundle>;
 
-  /**
-   * The conversation message viewmodel.
-   */
-  export let messageViewModel: Remote<ConversationMessageViewModel>;
+  const viewModelStore = viewModelBundle.viewModel;
 
-  /**
-   * The conversation message viewmodel controller.
-   */
-  export let messageViewModelController: Remote<ConversationMessageViewModelController>;
-
-  // Extract/alias message body from viewmodel
-  let message: ConversationMessageViewModel['body'];
-  $: message = messageViewModel.body;
+  $: message = $viewModelStore.body;
 
   /**
    * The Conversation's receiver
    */
   export let receiver: Remote<AnyReceiverStore>;
+
+  let messageQuote: Remote<ConversationMessageViewModelBundle> | 'not-found' | undefined;
 
   const dispatch = createEventDispatcher<{saveFile: undefined; abortSync: undefined}>();
 
@@ -104,9 +94,9 @@
         <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
       </span>
     {/if}
-    {#if messageViewModel.quote !== undefined}
+    {#if messageQuote !== undefined}
       <div class="quote">
-        {#if messageViewModel.quote === 'not-found'}
+        {#if messageQuote === 'not-found'}
           <p class="quote-not-found">
             {$i18n.t(
               'messaging.error--quoted-message-not-found',
@@ -114,15 +104,15 @@
             )}
           </p>
         {:else}
-          <MessageQuote quote={messageViewModel.quote} />
+          <MessageQuote {viewModelBundle} />
         {/if}
       </div>
     {/if}
     <span class="content">
       <MessageContent
         {message}
-        {messageViewModelController}
-        mentions={messageViewModel.mentions}
+        messageViewModelController={viewModelBundle.viewModelController}
+        mentions={$viewModelStore.mentions}
         on:saveFile={() => dispatch('saveFile')}
       />
     </span>
@@ -144,13 +134,13 @@
         <div class="overlay">
           <button class="overlay-button" on:click={handleMessageOverlayClick}>
             {#if message.state.type === 'unsynced'}
-              {#if messageViewModel.syncDirection === 'download'}
+              {#if $viewModelStore.syncDirection === 'download'}
                 <MdIcon
                   theme="Filled"
                   title={$i18n.t('messaging.action--file-sync-download', 'Click to download file')}
                   >file_download</MdIcon
                 >
-              {:else if messageViewModel.syncDirection === 'upload'}
+              {:else if $viewModelStore.syncDirection === 'upload'}
                 <MdIcon
                   theme="Filled"
                   title={$i18n.t('messaging.action--file-sync-upload', 'Click to upload file')}

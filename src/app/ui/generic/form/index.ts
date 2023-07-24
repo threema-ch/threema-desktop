@@ -9,7 +9,7 @@ import {dateToUnixTimestampMs} from '~/common/utils/number';
 import {escapeRegExp} from '~/common/utils/regex';
 import {type IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
+import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 import {type Mention} from '~/common/viewmodel/utils/mentions';
 
@@ -41,7 +41,7 @@ export function escapeHtmlUnsafeChars(text: string | undefined): string {
 /**
  * A list of messages sorted from oldest to newest.
  */
-export type SortedMessageList = Remote<ConversationMessage>[];
+export type SortedMessageList = Remote<ConversationMessageViewModelBundle>[];
 /**
  * A store containing a {@link SortedMessageList}.
  */

@@ -23,10 +23,7 @@
    */
   export let message: Message<AnyMessageBody>;
 
-  /**
-   * The conversation message viewmodel controller.
-   */
-  export let messageViewModelController: Remote<ConversationMessageViewModelController> | undefined;
+  export let messageViewModelController: Remote<ConversationMessageViewModelController>;
 
   /**
    * Mentions parsed from the message
@@ -39,6 +36,9 @@
   export let isQuoted = false;
 
   let isImageModalVisible = false;
+  let thumbnail: ConversationMessageImageState = {
+    status: 'loading',
+  };
 
   function handleImageClick(): void {
     if (!isImageModalVisible) {
@@ -52,12 +52,9 @@
     }
   }
 
-  let thumbnail: ConversationMessageImageState = {
-    status: 'loading',
-  };
-  $: {
-    messageViewModelController
-      ?.getThumbnail()
+  function getThumbnail(controller: Remote<ConversationMessageViewModelController>): void {
+    controller
+      .getThumbnail()
       .then((bytes) => {
         if (thumbnail.status === 'loaded') {
           // Release previous `objectURL`.
@@ -78,6 +75,8 @@
         };
       });
   }
+
+  $: getThumbnail(messageViewModelController);
 
   onDestroy(() => {
     if (thumbnail.status === 'loaded') {
@@ -120,7 +119,7 @@
     {/if}
   </div>
 
-  {#if isImageModalVisible && message.type === 'image' && messageViewModelController !== undefined}
+  {#if isImageModalVisible && message.type === 'image'}
     <div class="modal">
       <ImageDetail
         {messageViewModelController}

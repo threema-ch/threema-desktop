@@ -2,25 +2,32 @@
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageContent from '~/app/ui/main/conversation/conversation-messages/MessageContent.svelte';
   import {type Remote} from '~/common/utils/endpoint';
-  import {type LocalStore} from '~/common/utils/store';
-  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
+  import {
+    type ConversationMessageViewModelBundle,
+    type ConversationMessageViewModelStore,
+  } from '~/common/viewmodel/conversation-message';
 
-  /**
-   * The message to be parsed and displayed with the requested features.
-   */
-  export let quote: Remote<LocalStore<ConversationMessageViewModel>>;
+  export let viewModelBundle: Remote<ConversationMessageViewModelBundle>;
+
+  let viewModelStore: Remote<ConversationMessageViewModelStore>;
+  $: viewModelStore = viewModelBundle.viewModel;
 </script>
 
 <template>
-  <div class="quote" data-color={$quote.body.sender.profilePicture.color}>
+  <div class="quote" data-color={$viewModelStore.body.sender.profilePicture.color}>
     <div class="contact">
       <MessageContact
-        name={$quote.body.sender.name}
-        color={$quote.body.sender.profilePicture.color}
+        name={$viewModelStore.body.sender.name}
+        color={$viewModelStore.body.sender.profilePicture.color}
       />
     </div>
     <div class="content">
-      <MessageContent message={$quote.body} mentions={$quote.mentions} isQuoted={true} />
+      <MessageContent
+        messageViewModelController={viewModelBundle.viewModelController}
+        isQuoted={true}
+        message={$viewModelStore.body}
+        mentions={$viewModelStore.mentions}
+      />
     </div>
   </div>
 </template>

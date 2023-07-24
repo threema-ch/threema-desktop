@@ -17,7 +17,7 @@ import {type LocalStore, type RemoteStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
-import {type ConversationMessage} from '~/common/viewmodel/conversation-message';
+import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
 export type ConversationPreviewSetStore = LocalDerivedSetStore<
     LocalSetStore<LocalModelStore<Conversation>>,
@@ -82,7 +82,7 @@ export type ConversationPreviewViewModel = LocalStore<ConversationPreviewItem>;
 export type ConversationPreviewItem = {
     readonly receiver: ContactListItem | GroupListItem;
     readonly receiverLookup: DbReceiverLookup;
-    readonly lastMessage: ConversationMessage | undefined;
+    readonly lastMessage: ConversationMessageViewModelBundle | undefined;
     readonly lastMessagePreview: string | undefined;
 } & ConversationView &
     PropertiesMarked;
@@ -183,7 +183,7 @@ function deriveGroupListItem(group: Group): GroupListItem {
 }
 
 export function deriveLastMessagePreview(
-    lastConversationMessage: ConversationMessage,
+    lastConversationMessage: ConversationMessageViewModelBundle,
     translations: ConversationPreviewTranslations,
 ): LocalStore<string> {
     return derive(

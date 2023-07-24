@@ -26,14 +26,14 @@
   import {type MessageId} from '~/common/network/types';
   import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
-  import {type RemoteStore, WritableStore} from '~/common/utils/store';
+  import {WritableStore} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
   import {
     type ConversationViewModel,
     type InnerConversationViewModelStore,
     type SendMessageEventDetail,
   } from '~/common/viewmodel/conversation';
-  import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
+  import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation');
 
@@ -126,9 +126,7 @@
   function sendTextMessage(ev: CustomEvent<string>): void {
     const text = ev.detail;
     const quotedMessageId =
-      $composeData.mode === 'quote'
-        ? $composeData.quotedMessageViewModel.get().messageId
-        : undefined;
+      $composeData.mode === 'quote' ? $composeData.quotedMessageViewModelBundle.id : undefined;
 
     // Do not send empty messages
     if (text.trim() === '') {
@@ -178,14 +176,14 @@
       mode: 'text',
       text,
       attachment: undefined,
-      quotedMessageViewModel: undefined,
+      quotedMessageViewModelBundle: undefined,
     };
   }
 
   type ComposeDataUpdate =
     | {
         readonly mode: 'quote';
-        readonly quotedMessageViewModel: RemoteStore<Remote<ConversationMessageViewModel>>;
+        readonly quotedMessageViewModelBundle: Remote<ConversationMessageViewModelBundle>;
       }
     | {
         readonly mode: 'text';
@@ -206,7 +204,7 @@
           newData = {
             ...currentData,
             mode: 'text',
-            quotedMessageViewModel: undefined,
+            quotedMessageViewModelBundle: undefined,
             text: update.text ?? currentData.text,
           } as const;
           break;
@@ -308,12 +306,10 @@
   /**
    * Set a message as the current quote
    */
-  function quoteMessage(
-    event: CustomEvent<RemoteStore<Remote<ConversationMessageViewModel>>>,
-  ): void {
+  function quoteMessage(event: CustomEvent<Remote<ConversationMessageViewModelBundle>>): void {
     updateComposeData({
       mode: 'quote',
-      quotedMessageViewModel: event.detail,
+      quotedMessageViewModelBundle: event.detail,
     });
     composeHandler.focus();
   }
@@ -334,7 +330,7 @@
 
     if (
       $composeData.mode === 'quote' &&
-      $composeData.quotedMessageViewModel.get().messageId === messageId
+      $composeData.quotedMessageViewModelBundle.id === messageId
     ) {
       updateComposeData({
         mode: 'text',
@@ -428,8 +424,8 @@
         {:else if $composeData.mode === 'text' || $composeData.mode === 'quote'}
           {#if $composeData.mode === 'quote'}
             <div class="quote">
-              {#key $composeData.quotedMessageViewModel}
-                <MessageQuote quote={$composeData.quotedMessageViewModel} />
+              {#key $composeData.quotedMessageViewModelBundle}
+                <MessageQuote viewModelBundle={$composeData.quotedMessageViewModelBundle} />
               {/key}
               <IconButton flavor="naked" on:click={removeQuote}>
                 <MdIcon theme="Filled">close</MdIcon>

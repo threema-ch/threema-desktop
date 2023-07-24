@@ -11,15 +11,12 @@
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type Dimensions} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
+  import {type Remote, type RemoteProxy} from '~/common/utils/endpoint';
   import {GlobalTimer} from '~/common/utils/timer';
   import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
 
-  const log = globals.unwrap().uiLogging.logger(`ui.component.linking.scan`);
+  const log = globals.unwrap().uiLogging.logger(`ui.component.modal.image-detail`);
 
-  /**
-   * The conversation message viewmodel controller.
-   */
   export let messageViewModelController: Remote<ConversationMessageViewModelController>;
 
   /**
@@ -59,8 +56,8 @@
     }
   }
 
-  $: {
-    messageViewModelController
+  function getImage(controller: RemoteProxy<ConversationMessageViewModelController>): void {
+    controller
       ?.getBlob()
       .then((bytes) => {
         if (bytes !== undefined) {
@@ -83,6 +80,10 @@
           status: 'failed',
         };
       });
+  }
+
+  $: if (messageViewModelController !== undefined) {
+    getImage(messageViewModelController);
   }
 
   onDestroy(() => {

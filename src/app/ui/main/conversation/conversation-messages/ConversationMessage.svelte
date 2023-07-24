@@ -40,10 +40,9 @@
   import {type ReadonlyUint8Array} from '~/common/types';
   import {assert, ensureError, unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
-  import {type RemoteStore} from '~/common/utils/store';
   import {
-    type ConversationMessageViewModel,
-    type ConversationMessageViewModelController,
+    type ConversationMessageViewModelBundle,
+    type ConversationMessageViewModelStore,
   } from '~/common/viewmodel/conversation-message';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
 
@@ -77,20 +76,7 @@
   export let services: AppServices;
   const {router} = services;
 
-  /**
-   * The ConversationMessageViewModel
-   */
-  export let viewModelStore: RemoteStore<Remote<ConversationMessageViewModel>>;
-
-  /**
-   * The ConversationMessageViewModelController
-   */
-  export let viewModelController: Remote<ConversationMessageViewModelController>;
-
-  /**
-   * The ModelStore for the Message
-   */
-  export let messageStore: RemoteModelStoreFor<AnyMessageModelStore>;
+  export let viewModelBundle: Remote<ConversationMessageViewModelBundle>;
 
   /**
    * The reference to the element which contains this message element.
@@ -98,7 +84,13 @@
   // eslint-disable-next-line @typescript-eslint/ban-types
   export let container: HTMLElement | null;
 
-  let messageBody: Message<AnyMessageBody> = $viewModelStore.body;
+  let viewModelStore: Remote<ConversationMessageViewModelStore>;
+  $: viewModelStore = viewModelBundle.viewModel;
+
+  let messageStore: RemoteModelStoreFor<AnyMessageModelStore>;
+  $: messageStore = viewModelBundle.messageStore;
+
+  let messageBody: Message<AnyMessageBody>;
   $: messageBody = $viewModelStore.body;
 
   // Context menu
@@ -216,7 +208,7 @@
         isMessageDetailModalVisible = true;
         break;
       case 'quote':
-        dispatchEvent('quoteMessage', viewModelStore);
+        dispatchEvent('quoteMessage', viewModelBundle);
         break;
       default:
         unreachable(type);
@@ -360,7 +352,7 @@
   }
 
   const dispatchEvent = createEventDispatcher<{
-    readonly quoteMessage: RemoteStore<Remote<ConversationMessageViewModel>>;
+    readonly quoteMessage: Remote<ConversationMessageViewModelBundle>;
     readonly deleteMessage: MessageId;
   }>();
 
@@ -404,8 +396,7 @@
 
       <div class="message" use:contextMenuAction={handleContextMenuAction}>
         <MessageComponent
-          messageViewModel={$viewModelStore}
-          messageViewModelController={viewModelController}
+          {viewModelBundle}
           {receiver}
           on:saveFile={saveFile}
           on:abortSync={() => {

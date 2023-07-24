@@ -3,8 +3,7 @@ import {toast} from '~/app/ui/snackbar';
 import {type Logger} from '~/common/logging';
 import {unreachable} from '~/common/utils/assert';
 import {type Remote} from '~/common/utils/endpoint';
-import {type RemoteStore} from '~/common/utils/store';
-import {type ConversationMessageViewModel} from '~/common/viewmodel/conversation-message';
+import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
 /**
  * Compose area data.
@@ -20,7 +19,7 @@ interface TextComposeData extends BaseComposeData {
     readonly mode: 'text';
 
     /** @inheritdoc */
-    readonly quotedMessageViewModel: undefined;
+    readonly quotedMessageViewModelBundle: undefined;
 }
 
 interface QuoteComposeData extends BaseComposeData {
@@ -31,7 +30,7 @@ interface QuoteComposeData extends BaseComposeData {
     readonly attachment: undefined;
 
     /** @inheritdoc */
-    readonly quotedMessageViewModel: RemoteStore<Remote<ConversationMessageViewModel>>;
+    readonly quotedMessageViewModelBundle: Remote<ConversationMessageViewModelBundle>;
 }
 
 interface BaseComposeData {
@@ -53,7 +52,7 @@ interface BaseComposeData {
     /**
      * Quoted Message ID
      */
-    readonly quotedMessageViewModel: RemoteStore<Remote<ConversationMessageViewModel>> | undefined;
+    readonly quotedMessageViewModelBundle: Remote<ConversationMessageViewModelBundle> | undefined;
 }
 
 /**

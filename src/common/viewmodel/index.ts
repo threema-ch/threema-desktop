@@ -18,8 +18,8 @@ import {
     getConversationViewModel,
 } from '~/common/viewmodel/conversation';
 import {
-    type ConversationMessage,
-    getConversationMessage,
+    type ConversationMessageViewModelBundle,
+    getConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation-message';
 import {
     type ConversationMessageSetStore,
@@ -56,11 +56,11 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly conversationMessage: (
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
-    ) => ConversationMessage;
+    ) => ConversationMessageViewModelBundle;
     readonly conversationMessageById: (
         conversation: ConversationModelStore,
         messageId: MessageId,
-    ) => ConversationMessage | undefined;
+    ) => ConversationMessageViewModelBundle | undefined;
 
     readonly debugPanel: () => DebugPanelViewModel;
     readonly contactListItems: () => ContactListItemSetStore;
@@ -108,21 +108,21 @@ export class ViewModelRepository implements IViewModelRepository {
     public conversationMessage(
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
-    ): ConversationMessage {
+    ): ConversationMessageViewModelBundle {
         return this._cache.conversationMessage
             .getOrCreate(
                 conversation,
-                () => new WeakValueMap<AnyMessageModelStore, ConversationMessage>(),
+                () => new WeakValueMap<AnyMessageModelStore, ConversationMessageViewModelBundle>(),
             )
             .getOrCreate(messageStore, () =>
-                getConversationMessage(this._services, messageStore, conversation),
+                getConversationMessageViewModelBundle(this._services, messageStore, conversation),
             );
     }
 
     public conversationMessageById(
         conversation: ConversationModelStore,
         messageId: MessageId,
-    ): ConversationMessage | undefined {
+    ): ConversationMessageViewModelBundle | undefined {
         const messageStore = conversation.get().controller.getMessage(messageId);
         if (messageStore === undefined) {
             return undefined;

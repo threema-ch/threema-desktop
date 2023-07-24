@@ -1,6 +1,6 @@
 import {MessageDirection, type MessageReaction, MessageType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
-import {type Conversation, type Repositories, type User} from '~/common/model';
+import {type Repositories, type User} from '~/common/model';
 import {type ConversationModelStore} from '~/common/model/conversation';
 import {statusFromView} from '~/common/model/message';
 import {
@@ -32,7 +32,7 @@ import {
 } from '~/common/viewmodel/types';
 import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
 
-export interface ConversationMessage extends PropertiesMarked {
+export interface ConversationMessageViewModelBundle extends PropertiesMarked {
     readonly id: MessageId;
     readonly direction: MessageDirection;
     readonly messageStore: AnyMessageModelStore;
@@ -40,11 +40,12 @@ export interface ConversationMessage extends PropertiesMarked {
     readonly viewModel: ConversationMessageViewModelStore;
 }
 
-export function getConversationMessage(
+export function getConversationMessageViewModelBundle(
     services: ServicesForViewModel,
     messageStore: AnyMessageModelStore,
     conversationModelStore: ConversationModelStore,
-): ConversationMessage {
+    resolveQuotedMessage = true,
+): ConversationMessageViewModelBundle {
     const {endpoint, logging} = services;
     const log = logging.logger('viewmodel.conversation-messages');
 
@@ -55,13 +56,15 @@ export function getConversationMessage(
         id: messageModel.view.id,
         direction: messageModel.view.direction,
         messageStore,
-        viewModel: getViewModel(services, log, messageStore, conversationModelStore.get()),
+        viewModel: getViewModel(
+            services,
+            log,
+            messageStore,
+            conversationModelStore,
+            resolveQuotedMessage,
+        ),
         viewModelController: new ConversationMessageViewModelController(messageStore),
     });
-}
-
-export interface Quote extends PropertiesMarked {
-    readonly messageId: MessageId;
 }
 
 export type ConversationMessageViewModelStore = LocalStore<ConversationMessageViewModel>;
@@ -80,7 +83,7 @@ export interface ConversationMessageViewModel extends PropertiesMarked {
      * Store of the quoted message, if any.
      * If the quoted message could not be found in the database, 'not-found' is returned.
      */
-    readonly quote: ConversationMessageViewModelStore | 'not-found' | undefined;
+    readonly quote: ConversationMessageViewModelBundle | 'not-found' | undefined;
 
     /**
      * Ordinal for message ordering in the conversation list.
@@ -97,16 +100,16 @@ function getViewModel(
     services: ServicesForViewModel,
     log: Logger,
     messageStore: AnyMessageModelStore,
-    conversationModel: Conversation,
+    conversationModelStore: ConversationModelStore,
     resolveQuotedMessage = true,
 ): ConversationMessageViewModelStore {
     const {endpoint, model} = services;
     return derive(messageStore, (message, getAndSubscribe) => {
-        const quote = getQuotedMessageViewModel(
+        const quote = getQuotedMessage(
             services,
             log,
             message,
-            conversationModel,
+            conversationModelStore,
             resolveQuotedMessage,
         );
 
@@ -150,13 +153,13 @@ function getViewModel(
  *
  * {@param resolveQuotedMessage} is {@code true}.
  */
-function getQuotedMessageViewModel(
+function getQuotedMessage(
     services: ServicesForViewModel,
     log: Logger,
     messageModel: AnyMessageModel,
-    conversationModel: Conversation,
+    conversationModelStore: ConversationModelStore,
     resolveQuotedMessage: boolean,
-): ConversationMessageViewModelStore | 'not-found' | undefined {
+): ConversationMessageViewModelBundle | 'not-found' | undefined {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages
         return undefined;
@@ -167,7 +170,9 @@ function getQuotedMessageViewModel(
         return undefined;
     }
 
-    const messageStore = conversationModel.controller.getMessage(messageModel.view.quotedMessageId);
+    const messageStore = conversationModelStore
+        .get()
+        .controller.getMessage(messageModel.view.quotedMessageId);
     if (messageStore === undefined) {
         log.info(
             `Quoted message id ${u64ToHexLe(
@@ -179,7 +184,12 @@ function getQuotedMessageViewModel(
 
     let quotedMessageStore = undefined;
     if (resolveQuotedMessage) {
-        quotedMessageStore = getViewModel(services, log, messageStore, conversationModel, false);
+        quotedMessageStore = getConversationMessageViewModelBundle(
+            services,
+            messageStore,
+            conversationModelStore,
+            false,
+        );
     }
 
     return quotedMessageStore;
