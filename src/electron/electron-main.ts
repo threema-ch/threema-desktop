@@ -525,6 +525,14 @@ function main(
 
         log.info('Starting');
 
+        // Configure DNS
+        electron.app.configureHostResolver({
+            // Disable built-in DNS resolver to avoid communication with Google / CloudFlare DNS
+            enableBuiltInResolver: false,
+            // Prefer DoH if supported by system nameserver
+            secureDnsMode: 'automatic',
+        });
+
         // Set Electron menu
         electron.Menu.setApplicationMenu(buildElectronMenu());
         electron.app.setAboutPanelOptions(ABOUT_PANEL_OPTIONS);
