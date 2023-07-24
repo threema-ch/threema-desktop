@@ -796,9 +796,12 @@ export class Backend implements ProxyMarked {
             );
         }
         if (privateData.serverGroup !== joinResult.serverGroup) {
-            return await throwLinkingError(
+            // Because the server group entropy was reduced from 8 to 4 bits a few years ago, it's
+            // possible that there are still Threema installations where the old server group is
+            // being used. Thus, a mismatch can happen in practice, and it should be a warning, not
+            // an error. In case of conflict, the server group from the directory server wins.
+            log.warn(
                 `Server group reported by directory server (${privateData.serverGroup}) does not match server group received from join protocol (${joinResult.serverGroup})`,
-                'generic-error',
             );
         }
 
@@ -806,7 +809,7 @@ export class Backend implements ProxyMarked {
         const identityData: IdentityData = {
             identity: joinResult.identity,
             ck,
-            serverGroup: joinResult.serverGroup,
+            serverGroup: privateData.serverGroup,
         };
         const deviceIds: DeviceIds = joinResult.deviceIds;
         const dgk: RawDeviceGroupKey = joinResult.dgk;
