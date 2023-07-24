@@ -338,7 +338,7 @@
     try {
       blobBytes = await store.controller.blob();
     } catch (error) {
-      log.error('Could not retrieve file data', extractErrorMessage(ensureError(error), 'short'));
+      log.warn('Could not retrieve file data', extractErrorMessage(ensureError(error), 'short'));
       toast.addSimpleFailure(
         i18n.get().t('messaging.error--retrieve-file-data', 'Could not retrieve file data'),
       );

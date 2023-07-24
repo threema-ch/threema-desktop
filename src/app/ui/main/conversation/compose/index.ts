@@ -75,14 +75,14 @@ export function showFileResultError(
 ): void {
     switch (status) {
         case 'empty':
-            log.error('A file or list of files was added, but it was empty');
+            log.warn('A file or list of files was added, but it was empty');
             toast.addSimpleFailure(
                 i18n.get().t('messaging.error--add-files-empty', "Files couldn't be added"),
             );
             break;
 
         case 'inaccessible':
-            log.error('A file or list of files was added, but it could not be accessed');
+            log.warn('A file or list of files was added, but it could not be accessed');
             toast.addSimpleFailure(
                 i18n
                     .get()
