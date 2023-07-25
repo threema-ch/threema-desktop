@@ -177,11 +177,29 @@
   }
 
   .actions {
+    position: relative;
     display: flex;
     gap: rem(8px);
     z-index: calc($z-index-modal + $z-index-plus);
     position: absolute;
     top: rem(12px);
     right: rem(8px);
+
+    &::before {
+      content: '';
+      display: block;
+      position: absolute;
+      width: calc(100% + rem(256px));
+      height: calc(100% + rem(128px));
+      top: rem(-12px);
+      right: rem(-8px);
+      background: radial-gradient(
+        farthest-corner at top right,
+        rgba(var(--cc-modal-dialog-background-color-rgb-triplet), 0.625) 0%,
+        rgba(var(--cc-modal-dialog-background-color-rgb-triplet), 0.375) 18.75%,
+        rgba(var(--cc-modal-dialog-background-color-rgb-triplet), 0.0625) 50%,
+        rgba(var(--cc-modal-dialog-background-color-rgb-triplet), 0) 62.5%
+      );
+    }
   }
 </style>

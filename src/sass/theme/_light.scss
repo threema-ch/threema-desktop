@@ -133,7 +133,8 @@
       // Emoji picker
       emoji-picker-background-color: #ffffff,
       // Modal dialog
-      modal-dialog-background-color: rgba(#ffffff, 74%),
+      modal-dialog-background-color-rgb-triplet: (255, 255, 255),
+      modal-dialog-background-color: rgba(255, 255, 255, 74%),
       // MediaMessage Modal
       media-message-background-color: theme.$grey-900,
       media-message-active-file-chip-background-color: rgba(#ffffff, 54%),
