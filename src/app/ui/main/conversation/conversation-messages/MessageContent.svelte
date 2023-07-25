@@ -154,7 +154,7 @@
         </div>
       {/if}
       {#if message.body.caption !== undefined}
-        <div class="text">
+        <div class="text caption">
           <Text text={message.body.caption} {mentions} />
         </div>
       {/if}
@@ -184,6 +184,9 @@
 
   .container {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: rem(8px);
 
     &.is-quoted {
       .text,
@@ -212,6 +215,10 @@
         max-width: 100%;
         max-height: 250px;
       }
+    }
+
+    .text.caption {
+      padding: 0 rem(6px) rem(6px);
     }
   }
 
