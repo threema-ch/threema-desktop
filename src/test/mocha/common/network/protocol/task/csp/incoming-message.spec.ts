@@ -14,7 +14,10 @@ import {
     TransactionScope,
     UnknownContactPolicy,
 } from '~/common/enum';
+import {type Conversation} from '~/common/model';
+import {type LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
+import {type BlobId} from '~/common/network/protocol/blob';
 import {
     BLOB_FILE_NONCE,
     BLOB_THUMBNAIL_NONCE,
@@ -25,6 +28,8 @@ import {IncomingGroupNameTask} from '~/common/network/protocol/task/csp/incoming
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
+import {type MessageWithMetadataBoxLike} from '~/common/network/structbuf/csp/payload';
+import {type FileRenderingType} from '~/common/network/structbuf/validate/csp/e2e/file';
 import {
     ensureIdentityString,
     ensureMessageId,
@@ -33,8 +38,9 @@ import {
     type MessageId,
     type Nickname,
 } from '~/common/network/types';
-import {type ByteLengthEncoder, type u8} from '~/common/types';
-import {assert, unwrap} from '~/common/utils/assert';
+import {type RawBlobKey} from '~/common/network/types/keys';
+import {type ByteLengthEncoder, type Dimensions, type u8, type u53} from '~/common/types';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {Identity} from '~/common/utils/identity';
@@ -504,7 +510,12 @@ export function run(): void {
         });
 
         describe('file messages', function () {
-            it('stores a raw file message from a known contact', async function () {
+            async function setupFileMessageTest(): Promise<{
+                fileBlobId: BlobId;
+                thumbnailBlobId: BlobId;
+                encryptionKey: RawBlobKey;
+                conversation: LocalModelStore<Conversation>;
+            }> {
                 const {blob, crypto, model} = services;
 
                 // Add contacts
@@ -536,13 +547,44 @@ export function run(): void {
                 const fileBlobId = await blob.upload('public', encryptedFileBlobBytes);
                 const thumbnailBlobId = await blob.upload('public', encryptedThumbnailBlobBytes);
 
-                // Create incoming file message
+                return {
+                    fileBlobId,
+                    thumbnailBlobId,
+                    encryptionKey,
+                    conversation,
+                };
+            }
+
+            function createFileBasedMessage(
+                encryptionKey: RawBlobKey,
+                fileBlobId: BlobId,
+                thumbnailBlobId: BlobId,
+                fileProperties: {
+                    fileName: string;
+                    fileMediaType: string;
+                    thumbnailMediaType: string;
+                    fileSizeBytes: u53;
+                    renderingType: FileRenderingType;
+                    metadata: Record<string, unknown>;
+                },
+            ): MessageWithMetadataBoxLike {
                 const encryptionKeyHex = bytesToHex(encryptionKey.unwrap());
-                const fileMediaType = 'application/pdf';
-                const thumbnailMediaType = 'image/png';
-                const fileName = 'document.pdf';
-                const fileSizeBytes = 12342345;
-                const fileMessage = createMessage(
+                let i, j;
+                switch (fileProperties.renderingType) {
+                    case 'file':
+                        i = j = 0;
+                        break;
+                    case 'media':
+                        i = j = 1;
+                        break;
+                    case 'sticker':
+                        i = 1;
+                        j = 2;
+                        break;
+                    default:
+                        unreachable(fileProperties.renderingType);
+                }
+                return createMessage(
                     services,
                     user1,
                     me,
@@ -556,26 +598,29 @@ export function run(): void {
                                 // Encryption key
                                 k: encryptionKeyHex,
                                 // Media
-                                m: fileMediaType,
-                                p: thumbnailMediaType,
+                                m: fileProperties.fileMediaType,
+                                p: fileProperties.thumbnailMediaType,
                                 // Name
-                                n: fileName,
+                                n: fileProperties.fileName,
                                 // Size
-                                s: fileSizeBytes,
+                                s: fileProperties.fileSizeBytes,
                                 // Correlation ID
                                 c: '6c9e78d01f5235a7da752df188e48924',
                                 // Metadata
-                                x: {},
+                                x: fileProperties.metadata,
                                 // Rendering type
-                                i: 0,
-                                j: 0,
+                                i,
+                                j,
                             }),
                         ),
                     }),
                     CspMessageFlags.fromPartial({sendPushNotification: true}),
                 );
+            }
 
-                // Run task
+            async function runIncomingFileMessageTask(
+                fileMessage: MessageWithMetadataBoxLike,
+            ): Promise<void> {
                 const task = new IncomingMessageTask(services, fileMessage);
                 const handle = new TestHandle(services, [
                     // Reflect and ack incoming file message
@@ -598,6 +643,33 @@ export function run(): void {
                 ]);
                 await task.run(handle);
                 handle.finish();
+            }
+
+            it('stores a raw file message from a known contact', async function () {
+                const {fileBlobId, thumbnailBlobId, encryptionKey, conversation} =
+                    await setupFileMessageTest();
+
+                // Create incoming file message
+                const fileMediaType = 'application/pdf';
+                const thumbnailMediaType = 'image/png';
+                const fileName = 'document.pdf';
+                const fileSizeBytes = 12342345;
+                const fileMessage = createFileBasedMessage(
+                    encryptionKey,
+                    fileBlobId,
+                    thumbnailBlobId,
+                    {
+                        fileMediaType,
+                        thumbnailMediaType,
+                        fileName,
+                        fileSizeBytes,
+                        renderingType: 'file',
+                        metadata: {},
+                    },
+                );
+
+                // Run task
+                await runIncomingFileMessageTask(fileMessage);
 
                 // File message should be part of the 1:1 conversation
                 const messages = [...conversation.get().controller.getAllMessages().get()];
@@ -615,9 +687,74 @@ export function run(): void {
                 expect(view.thumbnailMediaType).to.equal(thumbnailMediaType);
                 expect(view.fileName).to.equal(fileName);
                 expect(view.fileSize).to.equal(fileSizeBytes);
-
-                // TODO(DESK-935): Test other rendering types as well
             });
+
+            async function imageMessageTest(
+                animated: boolean,
+                dimensions: Dimensions | undefined,
+            ): Promise<void> {
+                const {fileBlobId, thumbnailBlobId, encryptionKey, conversation} =
+                    await setupFileMessageTest();
+
+                // Create incoming image message
+                const fileMediaType = 'image/jpeg';
+                const thumbnailMediaType = 'image/png';
+                const fileName = 'hello.jpg';
+                const fileSizeBytes = 23523;
+                const fileMessage = createFileBasedMessage(
+                    encryptionKey,
+                    fileBlobId,
+                    thumbnailBlobId,
+                    {
+                        fileMediaType,
+                        thumbnailMediaType,
+                        fileName,
+                        fileSizeBytes,
+                        renderingType: 'media',
+                        metadata: {
+                            a: animated,
+                            ...(dimensions === undefined
+                                ? {}
+                                : {
+                                      w: dimensions.width,
+                                      h: dimensions.height,
+                                  }),
+                        },
+                    },
+                );
+
+                // Run task
+                await runIncomingFileMessageTask(fileMessage);
+
+                // Image message should be part of the 1:1 conversation
+                const messages = [...conversation.get().controller.getAllMessages().get()];
+                expect(messages.length).to.equal(1);
+                const message = messages[0];
+                assert(
+                    message.type === MessageType.IMAGE,
+                    `Expected message type to be image, but was ${message.type}`,
+                );
+                const view = message.get().view;
+                expect(view.blobId).to.deep.equal(fileBlobId);
+                expect(view.thumbnailBlobId).to.deep.equal(thumbnailBlobId);
+                expect(view.encryptionKey).to.deep.equal(encryptionKey);
+                expect(view.mediaType).to.equal(fileMediaType);
+                expect(view.thumbnailMediaType).to.equal(thumbnailMediaType);
+                expect(view.fileName).to.equal(fileName);
+                expect(view.fileSize).to.equal(fileSizeBytes);
+                expect(view.animated).to.equal(animated);
+                expect(view.dimensions).to.deep.equal(dimensions);
+            }
+
+            for (const animated of [true, false]) {
+                for (const dimensions of [{width: 123, height: 35}, undefined]) {
+                    it(`stores an ${animated ? 'animated' : 'non-animated'} image message ${
+                        dimensions === undefined ? 'without' : 'with'
+                    } dimensions from a known contact`, async function () {
+                        await imageMessageTest(animated, dimensions);
+                    });
+                }
+            }
         });
 
         describe('group messages', () => {
