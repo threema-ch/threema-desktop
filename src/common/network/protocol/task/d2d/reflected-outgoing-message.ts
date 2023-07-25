@@ -19,6 +19,7 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
+import {getFileBasedMessageTypeAndExtraProperties} from '~/common/network/protocol/task/common/file';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
@@ -26,6 +27,7 @@ import {
     type AnyOutboundMessageInitFragment,
     getConversationById,
     type OutboundFileMessageInitFragment,
+    type OutboundImageMessageInitFragment,
     type OutboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import type * as structbuf from '~/common/network/structbuf';
@@ -277,6 +279,7 @@ export class ReflectedOutgoingMessageTask
                         initFragment = getFileMessageInitFragment(
                             validatedBody.message,
                             commonFragment,
+                            this._log,
                         );
                         break;
                     case CspE2eConversationType.LOCATION:
@@ -314,6 +317,7 @@ export class ReflectedOutgoingMessageTask
                         initFragment = getFileMessageInitFragment(
                             validatedBody.message,
                             commonFragment,
+                            this._log,
                         );
                         break;
                     case CspE2eGroupConversationType.GROUP_LOCATION:
@@ -467,11 +471,12 @@ function getTextMessageInitFragment(
 function getFileMessageInitFragment(
     message: structbuf.validate.csp.e2e.File.Type,
     commonFragment: CommonOutboundMessageInitFragment,
-): OutboundFileMessageInitFragment {
+    log: Logger,
+): OutboundFileMessageInitFragment | OutboundImageMessageInitFragment {
     const fileData = message.file;
+
     return {
         ...commonFragment,
-        type: 'file',
         blobId: fileData.file.blobId,
         thumbnailBlobId: fileData.thumbnail?.blobId,
         encryptionKey: fileData.encryptionKey,
@@ -481,6 +486,7 @@ function getFileMessageInitFragment(
         fileSize: fileData.fileSize,
         caption: fileData.caption,
         correlationId: fileData.correlationId,
+        ...getFileBasedMessageTypeAndExtraProperties(fileData, log),
     };
 }
 

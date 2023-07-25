@@ -20,7 +20,6 @@ import {
     CspE2eGroupStatusUpdateType,
     CspE2eStatusUpdateType,
     type D2dCspMessageType,
-    ImageRenderingType,
     MessageDirection,
     MessageType,
     ReceiverType,
@@ -56,6 +55,7 @@ import {
     placeholderTextForUnhandledMessage,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
+import {getFileBasedMessageTypeAndExtraProperties} from '~/common/network/protocol/task/common/file';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
@@ -67,7 +67,6 @@ import {
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {RAW_IMAGE_METADATA_SCHEMA} from '~/common/network/structbuf/validate/csp/e2e/file';
 import {
     type ContactConversationId,
     ensureIdentityString,
@@ -151,50 +150,6 @@ function getFileMessageInitFragment(
         structbuf.csp.e2e.File.decode(cspFileMessageBody as Uint8Array),
     ).file;
 
-    let extraProperties;
-    if (
-        fileData.file.mediaType.startsWith('image/') &&
-        (fileData.renderingType === 'media' || fileData.renderingType === 'sticker')
-    ) {
-        let imageRenderingType: ImageRenderingType;
-        switch (fileData.renderingType) {
-            case 'media':
-                imageRenderingType = ImageRenderingType.REGULAR;
-                break;
-            case 'sticker':
-                imageRenderingType = ImageRenderingType.STICKER;
-                break;
-            default:
-                unreachable(fileData.renderingType);
-        }
-
-        try {
-            const parsedMetadata = RAW_IMAGE_METADATA_SCHEMA.parse(fileData.metadata ?? {});
-
-            extraProperties = {
-                type: MessageType.IMAGE,
-                renderingType: imageRenderingType,
-                animated: parsedMetadata.a,
-                dimensions:
-                    parsedMetadata.h !== undefined && parsedMetadata.w !== undefined
-                        ? {width: parsedMetadata.w, height: parsedMetadata.h}
-                        : undefined,
-            } as const;
-        } catch (error) {
-            log.warn(`Image metadata did not pass validation: ${error}`);
-
-            extraProperties = {
-                type: MessageType.IMAGE,
-                renderingType: imageRenderingType,
-                animated: false,
-            } as const;
-        }
-    } else {
-        extraProperties = {
-            type: MessageType.FILE,
-        } as const;
-    }
-
     return {
         ...getCommonMessageInitFragment(createdAt, cspFileMessageBody),
         blobId: fileData.file.blobId,
@@ -206,7 +161,7 @@ function getFileMessageInitFragment(
         fileSize: fileData.fileSize,
         caption: fileData.caption,
         correlationId: fileData.correlationId,
-        ...extraProperties,
+        ...getFileBasedMessageTypeAndExtraProperties(fileData, log),
     };
 }
 

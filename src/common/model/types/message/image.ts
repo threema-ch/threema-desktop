@@ -28,7 +28,7 @@ export type OutboundImageMessageView = OutboundBaseFileMessageView & CommonImage
 /**
  * Fields needed to create a new image message.
  */
-type CommonImageMessageInit = CommonBaseFileMessageInit<MessageType.IMAGE> &
+export type CommonImageMessageInit = CommonBaseFileMessageInit<MessageType.IMAGE> &
     Pick<CommonImageMessageView, 'renderingType' | 'animated' | 'dimensions'>;
 type InboundImageMessageInit = CommonImageMessageInit & InboundBaseMessageInit<MessageType.IMAGE>;
 type OutboundImageMessageInit = CommonImageMessageInit & OutboundBaseMessageInit<MessageType.IMAGE>;

@@ -27,7 +27,7 @@ export type OutboundFileMessageView = OutboundBaseFileMessageView;
 /**
  * Fields needed to create a new file message.
  */
-type CommonFileMessageInit = CommonBaseFileMessageInit<MessageType.FILE>;
+export type CommonFileMessageInit = CommonBaseFileMessageInit<MessageType.FILE>;
 type InboundFileMessageInit = CommonFileMessageInit & InboundBaseMessageInit<MessageType.FILE>;
 type OutboundFileMessageInit = CommonFileMessageInit & OutboundBaseMessageInit<MessageType.FILE>;
 
