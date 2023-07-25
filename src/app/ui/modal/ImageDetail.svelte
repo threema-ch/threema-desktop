@@ -7,7 +7,6 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {globals} from '~/app/globals';
   import {i18n} from '~/app/ui/i18n';
-  import {type ConversationMessageImageState} from '~/app/ui/main/conversation/conversation-messages';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type Dimensions} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
@@ -23,6 +22,14 @@
    * The real dimensions of the image.
    */
   export let dimensions: Dimensions | undefined;
+
+  /**
+   * States used to describe the progress when loading the image.
+   */
+  type ConversationMessageImageState =
+    | {status: 'loading'}
+    | {status: 'failed'}
+    | {status: 'loaded'; url: string};
 
   let image: ConversationMessageImageState = {
     status: 'loading',
@@ -116,6 +123,7 @@
               <CircularProgress variant="indeterminate" />
             </div>
           {:else if image.status === 'loaded'}
+            <!-- svelte-ignore a11y-img-redundant-alt -->
             <img src={image.url} alt="Image message" on:click />
           {:else if image.status === 'failed'}
             <p class="error">

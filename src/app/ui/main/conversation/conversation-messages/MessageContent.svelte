@@ -8,9 +8,10 @@
   import {globals} from '~/app/globals';
   import Text from '~/app/ui/generic/form/Text.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type ConversationMessageImageState} from '~/app/ui/main/conversation/conversation-messages';
+  import {getExpectedDisplayDimensions} from '~/app/ui/main/conversation/conversation-messages';
   import FileMessageContent from '~/app/ui/main/conversation/conversation-messages/message-type/FileMessageContent.svelte';
   import ImageDetail from '~/app/ui/modal/ImageDetail.svelte';
+  import {type Dimensions} from '~/common/types';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
   import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
@@ -36,9 +37,6 @@
   export let isQuoted = false;
 
   let isImageModalVisible = false;
-  let thumbnail: ConversationMessageImageState = {
-    status: 'loading',
-  };
 
   function handleImageClick(): void {
     if (!isImageModalVisible) {
@@ -55,17 +53,32 @@
   function getThumbnail(controller: Remote<ConversationMessageViewModelController>): void {
     controller
       .getThumbnail()
-      .then((bytes) => {
+      .then(async (bytes) => {
+        if (bytes === undefined) {
+          return undefined;
+        }
+        const blob = new Blob([bytes]);
+        const imageBitmap = await createImageBitmap(blob);
+
+        const thumbnail = {
+          status: 'loaded',
+          dimensions: {
+            width: imageBitmap.width,
+            height: imageBitmap.height,
+          },
+          url: URL.createObjectURL(blob),
+        } as const;
+
+        imageBitmap.close();
+        return thumbnail;
+      })
+      .then((data) => {
         if (thumbnail.status === 'loaded') {
           // Release previous `objectURL`.
           URL.revokeObjectURL(thumbnail.url);
         }
-
-        if (bytes !== undefined) {
-          thumbnail = {
-            status: 'loaded',
-            url: URL.createObjectURL(new Blob([bytes])),
-          };
+        if (data !== undefined) {
+          thumbnail = data;
         }
       })
       .catch((error) => {
@@ -76,7 +89,25 @@
       });
   }
 
+  /**
+   * States used to describe the progress when loading a thumbnail image.
+   */
+  type ConversationMessageImageState =
+    | {status: 'loading'}
+    | {status: 'failed'}
+    | {status: 'loaded'; url: string; dimensions: Dimensions};
+
+  /**
+   * The current thumbnail state.
+   */
+  let thumbnail: ConversationMessageImageState = {
+    status: 'loading',
+  };
   $: getThumbnail(messageViewModelController);
+  $: expectedThumbnailDimensions =
+    message.type === 'image' ? getExpectedDisplayDimensions(message.body.dimensions) : undefined;
+  $: thumbnailDimensions =
+    thumbnail.status === 'loaded' ? getExpectedDisplayDimensions(thumbnail.dimensions) : undefined;
 
   onDestroy(() => {
     if (thumbnail.status === 'loaded') {
@@ -96,10 +127,22 @@
         <FileMessageContent body={message.body} {mentions} on:saveFile />
       </div>
     {:else if message.type === 'image'}
-      {#if thumbnail.status === 'loaded'}
-        <div class="image" on:click={handleImageClick}>
-          <img src={thumbnail.url} alt={message.body.caption ?? 'Image message'} />
-        </div>
+      {#if thumbnail.status === 'loading'}
+        <div
+          class="image placeholder"
+          style={expectedThumbnailDimensions === undefined
+            ? ''
+            : `width: ${expectedThumbnailDimensions.width}px;
+            height: ${expectedThumbnailDimensions.height}px;`}
+        />
+      {:else if thumbnail.status === 'loaded' && thumbnailDimensions !== undefined}
+        <button class="image" on:click={handleImageClick}>
+          <img
+            src={thumbnail.url}
+            alt={message.body.caption ?? 'Image message'}
+            style={`width: ${thumbnailDimensions.width}px; height: ${thumbnailDimensions.height}px;`}
+          />
+        </button>
       {:else}
         <div class="text">
           <Text
@@ -108,6 +151,11 @@
               'The image preview could not be loaded.',
             )}
           />
+        </div>
+      {/if}
+      {#if message.body.caption !== undefined}
+        <div class="text">
+          <Text text={message.body.caption} {mentions} />
         </div>
       {/if}
     {:else}
@@ -145,15 +193,18 @@
     }
 
     .image {
+      @include clicktarget-button-rect;
       display: grid;
       place-items: center;
       cursor: pointer;
+      border-radius: rem(5px);
+      overflow: hidden;
       min-width: rem(120px);
       min-height: rem(120px);
+      max-width: 100%;
 
       img {
         display: block;
-        border-radius: rem(5px);
         object-fit: contain;
         object-position: center;
         width: 100%;

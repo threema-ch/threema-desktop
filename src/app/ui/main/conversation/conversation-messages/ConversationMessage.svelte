@@ -517,6 +517,7 @@
         justify-self: start;
         border-radius: var(--mc-message-border-radius);
         background-color: var(--mc-message-background-color-incoming);
+        max-width: 100%;
 
         .hover {
           position: absolute;
