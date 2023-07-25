@@ -17,7 +17,6 @@ import {
     ensurePublicKey,
     NACL_CONSTANTS,
     type Nonce,
-    type NonceGuard,
     type NonceHash,
     type RawKey,
     wrapRawKey,
@@ -43,7 +42,7 @@ import {
     IdentityType,
     MessageFilterInstruction,
     MessageFilterInstructionUtils,
-    type NonceScope,
+    NonceScope,
     SyncState,
     type TransactionScope,
     TransactionScopeUtils,
@@ -120,8 +119,6 @@ import {_only_for_testing, TaskManager} from '~/common/network/protocol/task/man
 import {randomGroupId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {
-    type CspNonceGuard,
-    type D2xNonceGuard,
     ensureCspDeviceId,
     ensureD2mDeviceId,
     ensureFeatureMask,
@@ -239,12 +236,6 @@ export class TestTweetNaClBackend extends TweetNaClBackend {
             return buffer;
         };
         super(crpytoPrng);
-    }
-}
-
-export class NoopNonceGuard implements NonceGuard {
-    public use(nonce: Nonce): void {
-        // No-op
     }
 }
 
@@ -615,40 +606,37 @@ export function makeTestFileSystemKeyStorage(crypto: CryptoBackend): TestKeyStor
 }
 
 export function makeTestServices(identity: IdentityString): TestServices {
+    const nonces = new TestNonceService();
     const rawClientKeyBytes: Uint8Array = randomBytes(32);
     const crypto = new TestTweetNaClBackend();
     const {keyStorage} = makeTestFileSystemKeyStorage(crypto);
     const logging = new TestLoggerFactory('mocha-test');
     const rawDeviceGroupKey = wrapRawDeviceGroupKey(randomBytes(32));
-    const cspNonceGuard = new NoopNonceGuard() as CspNonceGuard;
-    const d2xNonceGuard = new NoopNonceGuard() as D2xNonceGuard;
-    const deviceGroupBoxes = deriveDeviceGroupKeys(crypto, rawDeviceGroupKey, d2xNonceGuard);
+    const deviceGroupBoxes = deriveDeviceGroupKeys(crypto, rawDeviceGroupKey, nonces);
     const device: Device = {
         identity: new Identity(identity),
         serverGroup: ensureServerGroup('00'),
         csp: {
             ck: SecureSharedBoxFactory.consume(
                 crypto,
+                nonces,
+                NonceScope.CSP,
                 wrapRawClientKey(Uint8Array.from(rawClientKeyBytes)),
             ) as ClientKey,
             deviceId: ensureCspDeviceId(randomU64(crypto)),
-            nonceGuard: cspNonceGuard,
         },
         d2m: {
             deviceId: ensureD2mDeviceId(randomU64(crypto)),
-            nonceGuard: d2xNonceGuard,
             dgpk: deviceGroupBoxes.dgpk,
             dgdik: deviceGroupBoxes.dgdik,
         },
         d2d: {
-            nonceGuard: d2xNonceGuard,
             dgrk: deviceGroupBoxes.dgrk,
             dgsddk: deviceGroupBoxes.dgsddk,
             dgtsk: deviceGroupBoxes.dgtsk,
         },
     };
     const notification = new TestNotificationService(logging.logger('notifications'));
-    const nonces = new TestNonceService();
     const file = new InMemoryFileStorage(crypto);
     const taskManager = new TaskManager({logging});
     const endpointCache = {
@@ -848,7 +836,6 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
 
         this.controller = {
             csp: {
-                nonceGuard: device.csp.nonceGuard,
                 ck: device.csp.ck,
                 authenticated: authenticatedPromise,
             },
@@ -857,7 +844,6 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
                 promotedToLeader: promotedToLeaderPromise,
             },
             d2d: {
-                nonceGuard: device.d2d.nonceGuard,
                 dgrk: device.d2d.dgrk,
                 dgtsk: device.d2d.dgtsk,
             },
@@ -1038,8 +1024,9 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
  */
 export function createClientKey(fromRawKey?: RawKey<32>): ClientKey {
     const crypto = new TestTweetNaClBackend();
+    const nonces = new TestNonceService();
     const rawKey = fromRawKey ?? wrapRawKey(randomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
-    return SecureSharedBoxFactory.consume(crypto, rawKey) as ClientKey;
+    return SecureSharedBoxFactory.consume(crypto, nonces, NonceScope.CSP, rawKey) as ClientKey;
 }
 
 /**

@@ -117,10 +117,11 @@ export class ReflectedTask implements PassiveTask<void> {
 
         // Decrypt Envelope
         const decryptor = dgrk.decryptorWithNonceAhead(CREATE_BUFFER_TOKEN, encryptedEnvelope);
-        const plainData = decryptor.decrypt();
+        const {plainData, nonceGuard} = decryptor.decrypt();
 
         // Decode protobuf Envelop
         return protobuf.d2d.Envelope.decode(plainData);
+        // TODO: Handle nonce guard
     }
 
     private async _acknowledgeMessage(handle: PassiveTaskCodecHandle): Promise<void> {

@@ -1,5 +1,4 @@
 import {type ServicesForBackend} from '~/common/backend';
-import {type NonceGuard} from '~/common/crypto';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {
     CspE2eConversationType,
@@ -66,11 +65,6 @@ export interface TaskController {
      */
     readonly csp: {
         /**
-         * Nonce guard used for E2E messages and `vouch-data`.
-         */
-        readonly nonceGuard: NonceGuard;
-
-        /**
          * Client Key (32 bytes, permanent secret key associated to the Threema ID).
          */
         readonly ck: ClientKey;
@@ -99,12 +93,7 @@ export interface TaskController {
     /**
      * Device to device protocol releated properties.
      */
-    readonly d2d: {
-        /**
-         * Nonce guard used for D2D messages and the D2M challenge response.
-         */
-        readonly nonceGuard: NonceGuard;
-    } & Pick<DeviceGroupBoxes, 'dgrk' | 'dgtsk'>;
+    readonly d2d: Pick<DeviceGroupBoxes, 'dgrk' | 'dgtsk'>;
 }
 
 export type TaskCodecReadInstruction<T = undefined> =

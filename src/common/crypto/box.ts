@@ -6,9 +6,8 @@ import {
     type EncryptedDataWithNonceAhead,
     NACL_CONSTANTS,
     type Nonce,
-    NONCE_UNGUARDED_TOKEN,
-    type NonceGuard,
-    type NonceUnguarded,
+    NONCE_UNGUARDED_SCOPE,
+    type NonceUnguardedScope,
     type PlainData,
     type PublicKey,
     type RawEncryptedData,
@@ -18,8 +17,11 @@ import {
     wrapRawKey,
 } from '~/common/crypto';
 import {type Blake2bKeyLength, type Blake2bParameters, deriveKey} from '~/common/crypto/blake2b';
+import {type INonceGuard, type INonceService, NONCE_REUSED} from '~/common/crypto/nonce';
+import {type NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
 import {type ByteEncoder, type ByteLengthEncoder, type u53, type u64} from '~/common/types';
+import {assert} from '~/common/utils/assert';
 import {byteView} from '~/common/utils/byte';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 
@@ -32,15 +34,15 @@ export type CreateBufferToken = typeof CREATE_BUFFER_TOKEN;
 export class CryptoBoxDecryptor<
     DCK extends Cookie,
     DSN extends u64,
-    NG extends NonceGuard | NonceUnguarded,
+    TNonceScope extends NonceScope | NonceUnguardedScope,
 > {
-    private readonly _box: CryptoBox<DCK, never, DSN, never, NG>;
+    private readonly _box: CryptoBox<DCK, never, DSN, never, TNonceScope>;
     private readonly _array: Uint8Array;
     private readonly _nonce: Nonce;
     private _encrypted?: EncryptedData;
 
     public constructor(
-        box: CryptoBox<DCK, never, DSN, never, NG>,
+        box: CryptoBox<DCK, never, DSN, never, TNonceScope>,
         array: Uint8Array,
         nonce: Nonce,
     ) {
@@ -60,21 +62,32 @@ export class CryptoBoxDecryptor<
     /**
      * Decrypt the encrypted box.
      *
-     * @returns The decrypted data.
+     * @returns The decrypted data and the nonceguard (if guarded scope).
      * @throws {CryptoError} if data is already decrypted.
      * @throws {CryptoError} if decryption fails.
      * @throws {CryptoError} if nonce re-use was detected.
      */
-    public decrypt(): PlainData {
+    public decrypt(): {
+        nonceGuard: TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard;
+        plainData: PlainData;
+    } {
         // Ensure we haven't already decrypted
         if (this._encrypted === undefined) {
             throw new CryptoError('Cannot decrypt, data already decrypted');
         }
 
         // Ensure the nonce is unique
-        const {nonceGuard}: {nonceGuard: NonceGuard | NonceUnguarded} = this._box;
-        if (nonceGuard !== NONCE_UNGUARDED_TOKEN) {
-            nonceGuard.use(this._nonce);
+        const nonceScope = this._box.nonceScope;
+        let nonceGuard;
+        if (nonceScope !== NONCE_UNGUARDED_SCOPE) {
+            assert(
+                this._box.nonceService !== undefined,
+                'NonceService must be defined since nonceScope is not NonceUnguardedScope',
+            );
+            nonceGuard = this._box.nonceService.checkAndRegisterNonce(nonceScope, this._nonce);
+            if (nonceGuard === NONCE_REUSED) {
+                throw new CryptoError('Decryption failed, nonce reused!');
+            }
         }
 
         // Decrypt data in-place
@@ -91,21 +104,25 @@ export class CryptoBoxDecryptor<
         // Remove cipher-text view
         this._encrypted = undefined;
 
+        const plainData = this._array.subarray(this._box.crypto.plainHeadroom) as PlainData;
         // Return plain-text view
-        return this._array.subarray(this._box.crypto.plainHeadroom) as PlainData;
+        return {nonceGuard, plainData} as {
+            nonceGuard: TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard;
+            plainData: PlainData;
+        };
     }
 }
 
 export class CryptoBoxEncryptor<
     ECK extends Cookie,
     ESN extends u64,
-    NG extends NonceGuard | NonceUnguarded,
+    TNonceScope extends NonceScope | NonceUnguardedScope,
 > {
-    private readonly _box: CryptoBox<never, ECK, never, ESN, NG>;
+    private readonly _box: CryptoBox<never, ECK, never, ESN, TNonceScope>;
     private readonly _array: Uint8Array;
     private _plain?: PlainData;
 
-    public constructor(box: CryptoBox<never, ECK, never, ESN, NG>, array: Uint8Array) {
+    public constructor(box: CryptoBox<never, ECK, never, ESN, TNonceScope>, array: Uint8Array) {
         this._box = box;
         this._array = array;
         this._plain = this._array.subarray(
@@ -181,16 +198,23 @@ export class CryptoBoxEncryptor<
         return nonce;
     }
 
-    private _encrypt(nonce: Nonce): void {
+    private _encrypt(
+        nonce: Nonce,
+    ): TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard {
         // Ensure we haven't already encrypted
         if (this._plain === undefined) {
             throw new CryptoError('Cannot encrypt, data already encrypted');
         }
 
         // Ensure the nonce is unique
-        const {nonceGuard}: {nonceGuard: NonceGuard | NonceUnguarded} = this._box;
-        if (nonceGuard !== NONCE_UNGUARDED_TOKEN) {
-            nonceGuard.use(nonce);
+        const {nonceScope} = this._box;
+        let nonceGuard = undefined;
+        if (nonceScope !== NONCE_UNGUARDED_SCOPE) {
+            assert(
+                this._box.nonceService !== undefined,
+                'NonceService must be defined since nonceScope is not NonceUnguardedScope',
+            );
+            nonceGuard = this._box.nonceService.checkNonce(nonceScope, nonce);
         }
 
         // Encrypt data in-place
@@ -199,6 +223,7 @@ export class CryptoBoxEncryptor<
 
         // Remove plain-text view
         this._plain = undefined;
+        return nonceGuard as TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard;
     }
 }
 
@@ -211,7 +236,7 @@ export class CryptoBox<
     ECK extends Cookie,
     DSN extends u64,
     ESN extends u64,
-    NG extends NonceGuard | NonceUnguarded,
+    TNonceScope extends NonceScope | NonceUnguardedScope,
 > {
     /**
      * Headroom required by the encryptor.
@@ -225,14 +250,21 @@ export class CryptoBox<
         public readonly crypto: CryptoBackend,
 
         /**
+         * The nonce service.
+         */
+        public readonly nonceService: TNonceScope extends NonceUnguardedScope
+            ? undefined
+            : INonceService,
+
+        /**
          * The underlying crypto box backend (for raw access).
          */
         public readonly raw: CryptoBoxBackend,
 
         /**
-         * The nonce guard used to ensure uniqueness.
+         * The nonce scope used to ensure uniqueness.
          */
-        public readonly nonceGuard: NG,
+        public readonly nonceScope: TNonceScope,
     ) {
         this.encryptorHeadroom = NACL_CONSTANTS.NONCE_LENGTH + crypto.plainHeadroom;
     }
@@ -256,7 +288,7 @@ export class CryptoBox<
         cookie: DCK,
         sn: DSN,
         encrypted: EncryptedData,
-    ): CryptoBoxDecryptor<DCK, DSN, NG> {
+    ): CryptoBoxDecryptor<DCK, DSN, TNonceScope> {
         // Allocate space for the decryption
         const arrayLength = this.crypto.encryptedHeadroom + encrypted.byteLength;
         let nonce: Nonce;
@@ -299,7 +331,7 @@ export class CryptoBox<
         bufferOrToken: ByteBuffer | CreateBufferToken,
         nonce: Nonce,
         encrypted: EncryptedData,
-    ): CryptoBoxDecryptor<DCK, DSN, NG> {
+    ): CryptoBoxDecryptor<DCK, DSN, TNonceScope> {
         // Allocate space for the decryption and copy the cipher-text data
         const length = this.crypto.encryptedHeadroom + encrypted.byteLength;
         const array =
@@ -329,7 +361,7 @@ export class CryptoBox<
     public decryptorWithNonceAhead(
         bufferOrToken: ByteBuffer | CreateBufferToken,
         encryptedWithNonceAhead: EncryptedDataWithNonceAhead,
-    ): CryptoBoxDecryptor<DCK, DSN, NG> {
+    ): CryptoBoxDecryptor<DCK, DSN, TNonceScope> {
         // Create a view into the nonce which is ahead of the cipher-text data
         const nonce = encryptedWithNonceAhead.subarray(0, NACL_CONSTANTS.NONCE_LENGTH) as Nonce;
 
@@ -360,7 +392,7 @@ export class CryptoBox<
             | ByteBuffer
             | (T extends PlainData | ByteLengthEncoder ? CreateBufferToken : never),
         encoderOrPlain: T,
-    ): CryptoBoxEncryptor<ECK, ESN, NG> {
+    ): CryptoBoxEncryptor<ECK, ESN, TNonceScope> {
         const buffer: ByteBuffer | undefined =
             bufferOrToken instanceof ByteBuffer ? bufferOrToken : undefined;
         const headroom = this.encryptorHeadroom;
@@ -398,7 +430,7 @@ export class CryptoBox<
  * by the public API.
  */
 export class SharedBoxFactory<
-    TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceGuard | NonceUnguarded>,
+    TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceScope | NonceUnguardedScope>,
 > {
     /**
      * Get the derived public part of the secret key.
@@ -420,11 +452,20 @@ export class SharedBoxFactory<
      * the given public key.
      *
      * @param publicKey Given public key to derive a secret from.
-     * @param nonceGuard Optional nonce guard to prevent nonce reuse.
+     * @param nonceScope Optional nonce scope to prevent nonce reuse.
      * @returns A crypto box for encryption/decryption.
      */
-    public getSharedBox(publicKey: PublicKey, nonceGuard: TBox['nonceGuard']): TBox {
-        return this._crypto.getSharedBox(publicKey, this.#_secret, nonceGuard) as TBox;
+    public getSharedBox(
+        publicKey: PublicKey,
+        nonceScope: TBox['nonceScope'],
+        nonceService: TBox['nonceScope'] extends NonceUnguardedScope ? undefined : INonceService,
+    ): TBox {
+        return this._crypto.getSharedBox(
+            publicKey,
+            this.#_secret,
+            nonceScope,
+            nonceService,
+        ) as TBox;
     }
 }
 
@@ -437,7 +478,7 @@ export class SharedBoxFactory<
  *            been purged and should not be used anymore.
  */
 export class SecureSharedBoxFactory<
-    TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceGuard | NonceUnguarded>,
+    TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceScope | NonceUnguardedScope>,
 > {
     /**
      * Get the derived public part of the secret key.
@@ -445,9 +486,14 @@ export class SecureSharedBoxFactory<
     public readonly public: PublicKey;
 
     readonly #_makeSharedSecret: (publicKey: PublicKey) => RawKey<32>;
-    readonly #_makeSharedBox: (publicKey: PublicKey, nonceGuard: TBox['nonceGuard']) => TBox;
+    readonly #_makeSharedBox: (publicKey: PublicKey) => TBox;
 
-    private constructor(crypto: CryptoBackend, secret: RawKey<32>) {
+    private constructor(
+        crypto: CryptoBackend,
+        nonceService: INonceService,
+        nonceScope: NonceScope,
+        secret: RawKey<32>,
+    ) {
         // Derive the public key
         this.public = crypto.derivePublicKey(secret.asReadonly());
 
@@ -458,7 +504,8 @@ export class SecureSharedBoxFactory<
                 crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
                 NACL_CONSTANTS.KEY_LENGTH,
             ).asReadonly(),
-            NONCE_UNGUARDED_TOKEN,
+            NONCE_UNGUARDED_SCOPE,
+            undefined,
         );
         const encryptedKey = box
             .encryptor(CREATE_BUFFER_TOKEN, secret.unwrap() as PlainData)
@@ -474,7 +521,7 @@ export class SecureSharedBoxFactory<
         // Declare protected operations for use with the key
         function runWithKey<TResult>(executor: (key: RawKey<32>) => TResult): TResult {
             const decryptedKey = wrapRawKey(
-                box.decryptorWithNonceAhead(decryptBuffer, encryptedKey).decrypt(),
+                box.decryptorWithNonceAhead(decryptBuffer, encryptedKey).decrypt().plainData,
                 NACL_CONSTANTS.KEY_LENGTH,
             );
             const result = executor(decryptedKey);
@@ -484,9 +531,9 @@ export class SecureSharedBoxFactory<
         }
         this.#_makeSharedSecret = (publicKey) =>
             runWithKey((secretKey) => crypto.getSharedKey(publicKey, secretKey.asReadonly()));
-        this.#_makeSharedBox = (publicKey, nonceGuard) =>
+        this.#_makeSharedBox = (publicKey) =>
             runWithKey((secretKey) =>
-                crypto.getSharedBox(publicKey, secretKey.asReadonly(), nonceGuard),
+                crypto.getSharedBox(publicKey, secretKey.asReadonly(), nonceScope, nonceService),
             ) as TBox;
     }
 
@@ -496,9 +543,15 @@ export class SecureSharedBoxFactory<
      * IMPORTANT: After wrapping, the key will have been purged and cannot be used anymore.
      */
     public static consume<
-        TBox extends CryptoBox<Cookie, Cookie, u64, u64, NonceGuard | NonceUnguarded>,
-    >(crypto: CryptoBackend, secret: RawKey<32>): SecureSharedBoxFactory<TBox> {
-        return new SecureSharedBoxFactory(crypto, secret);
+        TBox extends CryptoBox<Cookie, Cookie, u64, u64, TNonceScope>,
+        TNonceScope extends NonceScope,
+    >(
+        crypto: CryptoBackend,
+        nonceService: INonceService,
+        nonceScope: TNonceScope,
+        secret: RawKey<32>,
+    ): SecureSharedBoxFactory<TBox> {
+        return new SecureSharedBoxFactory(crypto, nonceService, nonceScope, secret);
     }
 
     /**
@@ -530,10 +583,10 @@ export class SecureSharedBoxFactory<
      * the given public key.
      *
      * @param publicKey Given public key to derive a secret from.
-     * @param nonceGuard Optional nonce guard to prevent nonce reuse.
+     * @param nonceScope Optional nonce scope to prevent nonce reuse.
      * @returns A crypto box for encryption/decryption.
      */
-    public getSharedBox(publicKey: PublicKey, nonceGuard: TBox['nonceGuard']): TBox {
-        return this.#_makeSharedBox(publicKey, nonceGuard) as TBox;
+    public getSharedBox(publicKey: PublicKey): TBox {
+        return this.#_makeSharedBox(publicKey) as TBox;
     }
 }

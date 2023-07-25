@@ -4,7 +4,7 @@ import {
     ensurePublicKey,
     NACL_CONSTANTS,
     type Nonce,
-    NONCE_UNGUARDED_TOKEN,
+    NONCE_UNGUARDED_SCOPE,
     type PlainData,
     type PublicKey,
     wrapRawKey,
@@ -38,7 +38,7 @@ export function run(): void {
                         ...testCase.data,
                         encryptedWithSecretKeyEncryption: bytesToHex(
                             crypto
-                                .getSecretBox(secretKey, NONCE_UNGUARDED_TOKEN)
+                                .getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                                 .encryptor(CREATE_BUFFER_TOKEN, plainData)
                                 .encryptWithNonce(nonce),
                         ),
@@ -49,7 +49,8 @@ export function run(): void {
                                         testCase.publicKey,
                                     ) as ReadonlyUint8Array as PublicKey,
                                     secretKey,
-                                    NONCE_UNGUARDED_TOKEN,
+                                    NONCE_UNGUARDED_SCOPE,
+                                    undefined,
                                 )
                                 .encryptor(CREATE_BUFFER_TOKEN, plainData)
                                 .encryptWithNonce(nonce),
@@ -72,12 +73,12 @@ export function run(): void {
                         const plainData = hexToBytes(testCase.data.plain) as PlainData;
 
                         const [nonce, encryptedWithRandomNonce] = crypto
-                            .getSharedBox(publicKey, secretKey, NONCE_UNGUARDED_TOKEN)
+                            .getSharedBox(publicKey, secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithRandomNonce();
 
                         const encryptedWithGivenNonce = crypto
-                            .getSharedBox(publicKey, secretKey, NONCE_UNGUARDED_TOKEN)
+                            .getSharedBox(publicKey, secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithNonce(nonce);
 
@@ -98,12 +99,12 @@ export function run(): void {
                         const plainData = hexToBytes(testCase.data.plain) as PlainData;
 
                         const [nonce, encryptedWithRandomNonce] = crypto
-                            .getSecretBox(secretKey, NONCE_UNGUARDED_TOKEN)
+                            .getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithRandomNonce();
 
                         const encryptedWithGivenNonce = crypto
-                            .getSecretBox(secretKey, NONCE_UNGUARDED_TOKEN)
+                            .getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithNonce(nonce);
 
@@ -127,12 +128,12 @@ export function run(): void {
                 describe('different keys but same nonce', function () {
                     it('should return different encrypted data', function () {
                         const encryptedWithKey1 = crypto
-                            .getSecretBox(key1, NONCE_UNGUARDED_TOKEN)
+                            .getSecretBox(key1, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithNonce(nonce1);
 
                         const encryptedWithKey2 = crypto
-                            .getSecretBox(key2, NONCE_UNGUARDED_TOKEN)
+                            .getSecretBox(key2, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithNonce(nonce1);
 
@@ -145,12 +146,12 @@ export function run(): void {
                 describe('same key but different nonces', function () {
                     it('should return different encrypted data', function () {
                         const encryptedWithKey1 = crypto
-                            .getSecretBox(key1, NONCE_UNGUARDED_TOKEN)
+                            .getSecretBox(key1, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithNonce(nonce1);
 
                         const encryptedWithKey2 = crypto
-                            .getSecretBox(key1, NONCE_UNGUARDED_TOKEN)
+                            .getSecretBox(key1, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
                             .encryptWithNonce(nonce2);
 

@@ -2,7 +2,7 @@ import {
     type EncryptedData,
     NACL_CONSTANTS,
     type Nonce,
-    NONCE_UNGUARDED_TOKEN,
+    NONCE_UNGUARDED_SCOPE,
     type PlainData,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
@@ -200,8 +200,10 @@ export async function downloadAndDecryptBlob(
     const result = await blob.download(downloadScope, id);
 
     // Decrypt blob bytes
-    const box = crypto.getSecretBox(key, NONCE_UNGUARDED_TOKEN);
-    const decrypted = box.decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, result.data).decrypt();
+    const box = crypto.getSecretBox(key, NONCE_UNGUARDED_SCOPE, undefined);
+    const decrypted = box
+        .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, result.data)
+        .decrypt().plainData;
 
     // Mark as downloaded in the background
     // TODO(DESK-921): Do this *after* processing!
@@ -239,7 +241,7 @@ export async function encryptAndUploadBlobWithEncryptionKey(
     const {blob, crypto} = services;
 
     // Encrypt blob bytes
-    const box = crypto.getSecretBox(key, NONCE_UNGUARDED_TOKEN);
+    const box = crypto.getSecretBox(key, NONCE_UNGUARDED_SCOPE, undefined);
     const encryptedBytes = box
         .encryptor(CREATE_BUFFER_TOKEN, bytes as PlainData)
         .encryptWithNonce(nonce);

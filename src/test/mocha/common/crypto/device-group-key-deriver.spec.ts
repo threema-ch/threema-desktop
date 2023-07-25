@@ -5,18 +5,17 @@ import {
     ensurePublicKey,
     NACL_CONSTANTS,
     type Nonce,
-    NONCE_UNGUARDED_TOKEN,
-    type NonceGuard,
+    NONCE_UNGUARDED_SCOPE,
     type PlainData,
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, type CryptoBox} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys, type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
-import {type D2xNonceGuard} from '~/common/network/types';
 import {wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {type Bare} from '~/common/types';
 import {hexToBytes} from '~/common/utils/byte';
+import {TestNonceService} from '~/test/mocha/common/backend-mocks';
 import {
     type DeviceGroupKeyDerivationTestVector,
     testVectors,
@@ -35,10 +34,6 @@ export function run(): void {
     const publicKey = ensurePublicKey(new Uint8Array(32));
     const plaintext = Uint8Array.from([0x01, 0x02, 0x03, 0x04]) as PlainData;
     const nonce = new Uint8Array(24) as Nonce;
-    const noopNonceGuard = {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        use: (): void => {},
-    } as NonceGuard as D2xNonceGuard;
 
     describe('deriveDeviceGroupKeys', function () {
         // Note: We cannot compare the actual keys because the API conceals them immediately. That's
@@ -60,7 +55,8 @@ export function run(): void {
             function createSecretBox(key: string): CryptoBox<never, never, never, never, any> {
                 return crypto.getSecretBox(
                     wrapRawKey(hexToBytes(key), NACL_CONSTANTS.KEY_LENGTH).asReadonly(),
-                    NONCE_UNGUARDED_TOKEN,
+                    NONCE_UNGUARDED_SCOPE,
+                    undefined,
                 );
             }
             return {
@@ -68,7 +64,8 @@ export function run(): void {
                     crypto.getSharedBox(
                         publicKey,
                         wrapRawKey(hexToBytes(keys.dgpk), NACL_CONSTANTS.KEY_LENGTH).asReadonly(),
-                        NONCE_UNGUARDED_TOKEN,
+                        NONCE_UNGUARDED_SCOPE,
+                        undefined,
                     ),
                 ),
                 dgrk: encryptTestData(createSecretBox(keys.dgrk)),
@@ -80,7 +77,7 @@ export function run(): void {
 
         function encryptTestDataForAllBoxes(boxes: Bare<DeviceGroupBoxes>): TestVectorCiphertexts {
             return {
-                dgpk: encryptTestData(boxes.dgpk.getSharedBox(publicKey, noopNonceGuard)),
+                dgpk: encryptTestData(boxes.dgpk.getSharedBox(publicKey)),
                 dgrk: encryptTestData(boxes.dgrk),
                 dgdik: encryptTestData(boxes.dgdik),
                 dgsddk: encryptTestData(boxes.dgsddk),
@@ -97,7 +94,7 @@ export function run(): void {
                 const boxes = deriveDeviceGroupKeys(
                     crypto,
                     wrapRawDeviceGroupKey(hexToBytes(dgk)),
-                    noopNonceGuard,
+                    new TestNonceService(),
                 );
                 return {dgk, data: encryptTestDataForAllBoxes(boxes)};
             });

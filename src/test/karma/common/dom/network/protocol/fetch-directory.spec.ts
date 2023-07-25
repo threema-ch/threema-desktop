@@ -2,11 +2,13 @@ import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 
 import {CONFIG} from '~/common/config';
-import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
+import {ensureNonce, NACL_CONSTANTS, type Nonce, type NonceHash, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
+import {type INonceGuard, type INonceService} from '~/common/crypto/nonce';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
+import {NonceScope} from '~/common/enum';
 import {type Logger, type LoggerFactory, NOOP_LOGGER} from '~/common/logging';
 import {DirectoryError, type DirectoryErrorType} from '~/common/network/protocol/directory';
 import {ensureIdentityString} from '~/common/network/types';
@@ -14,6 +16,7 @@ import {type ClientKey} from '~/common/network/types/keys';
 import {type u53} from '~/common/types';
 import {assert, assertError} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
+import {ValueObject} from '~/common/utils/object';
 
 const {expect} = chai.use(sinonChai);
 
@@ -98,6 +101,38 @@ async function assertDirectoryError(
         expect.fail('Expected a DirectoryError, but no exception was thrown');
     }
 }
+class TestNonceService implements INonceService {
+    public checkAndRegisterNonce(scope: NonceScope, nonce: Nonce): INonceGuard {
+        return {
+            nonce,
+            processed: new ValueObject(false),
+            commit: () => {
+                /* No-op */
+            },
+            discard: () => {
+                /* No-op */
+            },
+        };
+    }
+    public getRandomNonce(scope: NonceScope): INonceGuard {
+        return {
+            nonce: ensureNonce(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+            processed: new ValueObject(false),
+            commit: () => {
+                /* No-op */
+            },
+            discard: () => {
+                /* No-op */
+            },
+        };
+    }
+    public getAllPersistedNonces(scope: NonceScope): ReadonlySet<NonceHash> {
+        return new Set();
+    }
+    public importNonces(scope: NonceScope, hashes: ReadonlySet<NonceHash>): void {
+        return;
+    }
+}
 
 /**
  * Config tests.
@@ -112,6 +147,8 @@ export function run(): void {
 
         const ck = SecureSharedBoxFactory.consume(
             crypto,
+            new TestNonceService(),
+            NonceScope.CSP,
             wrapRawKey(
                 randomBytes(new Uint8Array(NACL_CONSTANTS.KEY_LENGTH)),
                 NACL_CONSTANTS.KEY_LENGTH,

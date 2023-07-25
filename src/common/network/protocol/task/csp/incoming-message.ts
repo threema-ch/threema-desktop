@@ -851,40 +851,40 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     private _decodeAndDecryptMetadata(
         senderPublicKey: PublicKey,
     ): protobuf.validate.csp_e2e.MessageMetadata.Type | undefined {
-        const {crypto, device} = this._services;
+        const {device} = this._services;
         if (this._message.metadataLength === 0) {
             return undefined;
         }
+        const {plainData, nonceGuard} = deriveMessageMetadataKey(
+            this._services,
+            device.csp.ck,
+            senderPublicKey,
+        )
+            .decryptorWithNonce(
+                CREATE_BUFFER_TOKEN,
+                this._message.messageAndMetadataNonce as Nonce,
+                this._message.metadataContainer as EncryptedData,
+            )
+            .decrypt();
+        // TODO: This will fail since the nonce has been taken before...
         return protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
-            protobuf.csp_e2e.MessageMetadata.decode(
-                deriveMessageMetadataKey(
-                    crypto,
-                    device.csp.ck,
-                    senderPublicKey,
-                    device.csp.nonceGuard,
-                )
-                    .decryptorWithNonce(
-                        CREATE_BUFFER_TOKEN,
-                        this._message.messageAndMetadataNonce as Nonce,
-                        this._message.metadataContainer as EncryptedData,
-                    )
-                    .decrypt(),
-            ),
+            protobuf.csp_e2e.MessageMetadata.decode(plainData),
         );
+        // TODO: Handle nonce guard
     }
 
     private _decodeAndDecryptContainer(senderPublicKey: PublicKey): structbuf.csp.e2e.Container {
         const {device} = this._services;
-        return structbuf.csp.e2e.Container.decode(
-            device.csp.ck
-                .getSharedBox(senderPublicKey, device.csp.nonceGuard)
-                .decryptorWithNonce(
-                    CREATE_BUFFER_TOKEN,
-                    this._message.messageAndMetadataNonce as Nonce,
-                    this._message.messageBox as EncryptedData,
-                )
-                .decrypt(),
-        );
+        const {nonceGuard, plainData} = device.csp.ck
+            .getSharedBox(senderPublicKey)
+            .decryptorWithNonce(
+                CREATE_BUFFER_TOKEN,
+                this._message.messageAndMetadataNonce as Nonce,
+                this._message.messageBox as EncryptedData,
+            )
+            .decrypt();
+        return structbuf.csp.e2e.Container.decode(plainData);
+        // TODO: Implement nonceguard handling
     }
 
     private _getContactOrInit(

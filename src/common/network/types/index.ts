@@ -1,5 +1,5 @@
-import {type Cookie, type CryptoBox, type NonceGuard, type NonceUnguarded} from '~/common/crypto';
-import {ReceiverType} from '~/common/enum';
+import {type Cookie, type CryptoBox, type NonceUnguardedScope} from '~/common/crypto';
+import {type NonceScope, ReceiverType} from '~/common/enum';
 import {type AnyReceiver} from '~/common/model';
 import {isU64, type u32, type u64, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
@@ -154,16 +154,6 @@ export type ClientCookie = WeakOpaque<Cookie, {readonly ClientCookie: unique sym
 export type ServerCookie = WeakOpaque<Cookie, {readonly ServerCookie: unique symbol}>;
 
 /**
- * Chat Server Protocol nonce guard.
- */
-export type CspNonceGuard = WeakOpaque<NonceGuard, {readonly CspNonceGuard: unique symbol}>;
-
-/**
- * Device to Mediator and Device to Device Protocol nonce guard.
- */
-export type D2xNonceGuard = WeakOpaque<NonceGuard, {readonly D2xNonceGuard: unique symbol}>;
-
-/**
  * Chat Server Payload Box.
  *
  * Note: No nonce guard needs to be present since `TCK` is ephemeral.
@@ -174,7 +164,7 @@ export type CspPayloadBox = WeakOpaque<
         ClientCookie,
         ServerSequenceNumberValue,
         ClientSequenceNumberValue,
-        NonceUnguarded
+        NonceUnguardedScope
     >,
     {readonly CspPayloadBox: unique symbol}
 >;
@@ -183,7 +173,7 @@ export type CspPayloadBox = WeakOpaque<
  * Chat Server E2EE Message crypto box.
  */
 export type CspE2eBox = WeakOpaque<
-    CryptoBox<never, never, never, never, CspNonceGuard>,
+    CryptoBox<never, never, never, never, NonceScope.CSP>,
     {readonly CspE2eBox: unique symbol}
 >;
 
@@ -191,7 +181,7 @@ export type CspE2eBox = WeakOpaque<
  * Mediator Challenge Box.
  */
 export type D2mChallengeBox = WeakOpaque<
-    CryptoBox<never, never, never, never, D2xNonceGuard>,
+    CryptoBox<never, never, never, never, NonceScope.D2D>,
     {readonly D2mChallengeBox: unique symbol}
 >;
 

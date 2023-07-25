@@ -4,13 +4,14 @@ import {
     ensurePublicKey,
     NACL_CONSTANTS,
     type Nonce,
-    NONCE_UNGUARDED_TOKEN,
     type PlainData,
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN, SecureSharedBoxFactory} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
+import {NonceScope} from '~/common/enum';
 import {bytesToHex, hexToBytes} from '~/common/utils/byte';
+import {TestNonceService} from '~/test/mocha/common/backend-mocks';
 import {type CryptoBoxTestCase, testCases} from '~/test/mocha/common/data/crypto-box-test-cases';
 import {pseudoRandomBytes} from '~/test/mocha/common/utils';
 
@@ -25,6 +26,8 @@ export function run(): void {
             const actual = testCases.map((testCase): CryptoBoxTestCase => {
                 const boxFactory = SecureSharedBoxFactory.consume(
                     crypto,
+                    new TestNonceService(),
+                    NonceScope.CSP,
                     wrapRawKey(hexToBytes(testCase.secretKey), NACL_CONSTANTS.KEY_LENGTH),
                 );
 
@@ -37,10 +40,7 @@ export function run(): void {
                         ...testCase.data,
                         encryptedWithPublicKeyEncryption: bytesToHex(
                             boxFactory
-                                .getSharedBox(
-                                    ensurePublicKey(hexToBytes(testCase.publicKey)),
-                                    NONCE_UNGUARDED_TOKEN,
-                                )
+                                .getSharedBox(ensurePublicKey(hexToBytes(testCase.publicKey)))
                                 .encryptor(CREATE_BUFFER_TOKEN, plainData)
                                 .encryptWithNonce(nonce),
                         ),

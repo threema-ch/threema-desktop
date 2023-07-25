@@ -3,7 +3,7 @@ import * as chai from 'chai';
 import {
     NACL_CONSTANTS,
     type Nonce,
-    NONCE_UNGUARDED_TOKEN,
+    NONCE_UNGUARDED_SCOPE,
     type PublicKey,
     type RawEncryptedData,
     type RawPlainData,
@@ -54,7 +54,11 @@ export function run(): void {
             describe('#getSecretBox()', function () {
                 it('should assert secret key length', () => {
                     expect(() =>
-                        tweetnacl.getSecretBox(invalidReadonlyRawKey, NONCE_UNGUARDED_TOKEN),
+                        tweetnacl.getSecretBox(
+                            invalidReadonlyRawKey,
+                            NONCE_UNGUARDED_SCOPE,
+                            undefined,
+                        ),
                     ).to.throw(Error);
                 });
             });
@@ -65,21 +69,24 @@ export function run(): void {
                         tweetnacl.getSharedBox(
                             new Uint8Array(11) as ReadonlyUint8Array as PublicKey,
                             invalidReadonlyRawKey,
-                            NONCE_UNGUARDED_TOKEN,
+                            NONCE_UNGUARDED_SCOPE,
+                            undefined,
                         ),
                     ).to.throw(Error);
                     expect(() =>
                         tweetnacl.getSharedBox(
                             new Uint8Array(32) as ReadonlyUint8Array as PublicKey,
                             invalidReadonlyRawKey,
-                            NONCE_UNGUARDED_TOKEN,
+                            NONCE_UNGUARDED_SCOPE,
+                            undefined,
                         ),
                     ).to.throw(Error);
                     expect(() =>
                         tweetnacl.getSharedBox(
                             new Uint8Array(31) as ReadonlyUint8Array as PublicKey,
                             invalidReadonlyRawKey,
-                            NONCE_UNGUARDED_TOKEN,
+                            NONCE_UNGUARDED_SCOPE,
+                            undefined,
                         ),
                     ).to.throw(Error);
                 });
@@ -97,7 +104,8 @@ export function run(): void {
                             new Uint8Array(NACL_CONSTANTS.KEY_LENGTH),
                             NACL_CONSTANTS.KEY_LENGTH,
                         ).asReadonly(),
-                        NONCE_UNGUARDED_TOKEN,
+                        NONCE_UNGUARDED_SCOPE,
+                        undefined,
                     ).raw;
 
                     it('should validate nonce length', function () {
@@ -148,7 +156,8 @@ export function run(): void {
                             new Uint8Array(NACL_CONSTANTS.KEY_LENGTH),
                             NACL_CONSTANTS.KEY_LENGTH,
                         ).asReadonly(),
-                        NONCE_UNGUARDED_TOKEN,
+                        NONCE_UNGUARDED_SCOPE,
+                        undefined,
                     ).raw;
 
                     it('should validate nonce length', function () {
@@ -201,7 +210,11 @@ export function run(): void {
                         );
                         for (const [key, nonce, plain, encrypted] of vectors) {
                             const buffer = new Uint8Array(encrypted.byteLength);
-                            const box = tweetnacl.getSecretBox(key, NONCE_UNGUARDED_TOKEN).raw;
+                            const box = tweetnacl.getSecretBox(
+                                key,
+                                NONCE_UNGUARDED_SCOPE,
+                                undefined,
+                            ).raw;
 
                             // Encrypt
                             box.encrypt(buffer as RawEncryptedData, plain, nonce);
@@ -243,7 +256,8 @@ export function run(): void {
                             const box = tweetnacl.getSharedBox(
                                 publicKey,
                                 secretKey,
-                                NONCE_UNGUARDED_TOKEN,
+                                NONCE_UNGUARDED_SCOPE,
+                                undefined,
                             ).raw;
 
                             // Encrypt
@@ -281,7 +295,8 @@ export function run(): void {
                             const box = tweetnacl.getSharedBox(
                                 publicKey,
                                 secretKey,
-                                NONCE_UNGUARDED_TOKEN,
+                                NONCE_UNGUARDED_SCOPE,
+                                undefined,
                             ).raw;
 
                             // Encrypt

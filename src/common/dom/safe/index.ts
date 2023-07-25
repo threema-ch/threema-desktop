@@ -5,7 +5,7 @@ import {type ServicesForBackend} from '~/common/backend';
 import {
     ensureEncryptedDataWithNonceAhead,
     NACL_CONSTANTS,
-    NONCE_UNGUARDED_TOKEN,
+    NONCE_UNGUARDED_SCOPE,
     type PlainData,
     type RawKey,
     wrapRawKey,
@@ -332,12 +332,12 @@ function decryptBackupBytes(
     const {crypto} = services;
     try {
         return crypto
-            .getSecretBox(encryptionKey.asReadonly(), NONCE_UNGUARDED_TOKEN)
+            .getSecretBox(encryptionKey.asReadonly(), NONCE_UNGUARDED_SCOPE, undefined)
             .decryptorWithNonceAhead(
                 CREATE_BUFFER_TOKEN,
                 ensureEncryptedDataWithNonceAhead(encrypted),
             )
-            .decrypt();
+            .decrypt().plainData;
     } catch (error) {
         throw new SafeError('crypto', `Decrypting backup failed: ${error}`, {from: error});
     }

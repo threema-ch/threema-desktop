@@ -6,8 +6,7 @@ import {
     type CryptoBoxBackend,
     NACL_CONSTANTS,
     type Nonce,
-    type NonceGuard,
-    type NonceUnguarded,
+    type NonceUnguardedScope,
     type PublicKey,
     type RawEncryptedData,
     type RawKey,
@@ -16,7 +15,9 @@ import {
     wrapRawKey,
 } from '~/common/crypto';
 import {CryptoBox} from '~/common/crypto/box';
+import {type INonceService} from '~/common/crypto/nonce';
 import {type CryptoPrng} from '~/common/crypto/random';
+import {type NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
 import {
     type i53,
@@ -197,13 +198,17 @@ export class TweetNaClBackend implements CryptoBackend {
         ECK extends Cookie,
         DSN extends u64,
         ESN extends u64,
-        NG extends NonceGuard | NonceUnguarded,
-    >(secretKey: ReadonlyRawKey<32>, nonceGuard: NG): CryptoBox<DCK, ECK, DSN, ESN, NG> {
+        TNonceScope extends NonceScope | NonceUnguardedScope,
+    >(
+        secretKey: ReadonlyRawKey<32>,
+        nonceScope: TNonceScope,
+        nonceService: TNonceScope extends NonceUnguardedScope ? undefined : INonceService,
+    ): CryptoBox<DCK, ECK, DSN, ESN, TNonceScope> {
         // Sanity-check
         assert(secretKey.unwrap().byteLength === NACL_CONSTANTS.KEY_LENGTH);
 
         // Create box instance
-        return new CryptoBox(this, new TweetNaClBoxBackend(secretKey), nonceGuard);
+        return new CryptoBox(this, nonceService, new TweetNaClBoxBackend(secretKey), nonceScope);
     }
 
     /** @inheritdoc */
@@ -231,16 +236,18 @@ export class TweetNaClBackend implements CryptoBackend {
         ECK extends Cookie,
         DSN extends u64,
         ESN extends u64,
-        NG extends NonceGuard | NonceUnguarded,
+        TNonceScope extends NonceScope | NonceUnguardedScope,
     >(
         publicKey: PublicKey,
         secretKey: ReadonlyRawKey<32>,
-        nonceGuard: NG,
-    ): CryptoBox<DCK, ECK, DSN, ESN, NG> {
+        nonceScope: TNonceScope,
+        nonceService: TNonceScope extends NonceUnguardedScope ? undefined : INonceService,
+    ): CryptoBox<DCK, ECK, DSN, ESN, TNonceScope> {
         return new CryptoBox(
             this,
+            nonceService,
             new TweetNaClBoxBackend(this.getSharedKey(publicKey, secretKey).asReadonly()),
-            nonceGuard,
+            nonceScope,
         );
     }
 }

@@ -7,12 +7,13 @@ import {
 } from '~/common/crypto';
 import {deriveKey} from '~/common/crypto/blake2b';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
+import {type INonceService} from '~/common/crypto/nonce';
+import {NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
-import {type D2xNonceGuard} from '~/common/network/types';
 import {type RawDeviceGroupKey} from '~/common/network/types/keys';
 import {type Bare, type WeakOpaque} from '~/common/types';
 
-type SecretBoxWithRandomNonce = CryptoBox<never, never, never, never, D2xNonceGuard>;
+type SecretBoxWithRandomNonce = CryptoBox<never, never, never, never, NonceScope.D2D>;
 
 /**
  * This type binds several characteristics of a key to its name (i.e. `dg*k`): The type, the box
@@ -98,7 +99,7 @@ export type DeviceGroupBoxes = {
 export function deriveDeviceGroupKeys(
     crypto: CryptoBackend,
     dgk: RawDeviceGroupKey,
-    d2xNonceGuard: D2xNonceGuard,
+    nonceService: INonceService,
 ): DeviceGroupBoxes {
     function deriveKeyWithSalt<
         TKeyName extends keyof DeviceGroupKeyMap,
@@ -124,11 +125,20 @@ export function deriveDeviceGroupKeys(
     const boxes: {
         readonly [K in keyof DeviceGroupBoxes]: Bare<DeviceGroupBoxes[K]>;
     } = {
-        dgpk: SecureSharedBoxFactory.consume(crypto, deriveKeyWithSalt('dgpk', 'p')),
-        dgrk: crypto.getSecretBox(deriveKeyWithSalt('dgrk', 'r'), d2xNonceGuard),
-        dgdik: crypto.getSecretBox(deriveKeyWithSalt('dgdik', 'di'), d2xNonceGuard),
-        dgsddk: crypto.getSecretBox(deriveKeyWithSalt('dgsddk', 'sdd'), d2xNonceGuard),
-        dgtsk: crypto.getSecretBox(deriveKeyWithSalt('dgtsk', 'ts'), d2xNonceGuard),
+        dgpk: SecureSharedBoxFactory.consume(
+            crypto,
+            nonceService,
+            NonceScope.D2D,
+            deriveKeyWithSalt('dgpk', 'p'),
+        ),
+        dgrk: crypto.getSecretBox(deriveKeyWithSalt('dgrk', 'r'), NonceScope.D2D, nonceService),
+        dgdik: crypto.getSecretBox(deriveKeyWithSalt('dgdik', 'di'), NonceScope.D2D, nonceService),
+        dgsddk: crypto.getSecretBox(
+            deriveKeyWithSalt('dgsddk', 'sdd'),
+            NonceScope.D2D,
+            nonceService,
+        ),
+        dgtsk: crypto.getSecretBox(deriveKeyWithSalt('dgtsk', 'ts'), NonceScope.D2D, nonceService),
     };
 
     // Upcast to the tagged box types

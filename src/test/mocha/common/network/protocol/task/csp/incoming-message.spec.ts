@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {NONCE_UNGUARDED_TOKEN, type PlainData} from '~/common/crypto';
+import {NONCE_UNGUARDED_SCOPE, type PlainData} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
@@ -54,6 +54,7 @@ import {
     type NetworkExpectation,
     NetworkExpectationFactory,
     TestHandle,
+    TestNonceService,
     type TestServices,
     type TestUser,
 } from '~/test/mocha/common/backend-mocks';
@@ -85,10 +86,9 @@ function createMessage(
     const createdAt = new Date();
     const messageId = overrides?.messageId ?? randomMessageId(crypto);
     const [messageAndMetadataNonce, metadataContainer] = deriveMessageMetadataKey(
-        crypto,
+        {crypto, nonces: new TestNonceService()},
         device.csp.ck,
         sender.ck.public,
-        device.csp.nonceGuard,
     )
         .encryptor(
             CREATE_BUFFER_TOKEN,
@@ -101,7 +101,7 @@ function createMessage(
         )
         .encryptWithRandomNonce();
     const messageBox = device.csp.ck
-        .getSharedBox(sender.ck.public, device.csp.nonceGuard)
+        .getSharedBox(sender.ck.public)
         .encryptor(
             CREATE_BUFFER_TOKEN,
             structbuf.bridge.encoder(structbuf.csp.e2e.Container, {
@@ -533,7 +533,8 @@ export function run(): void {
                 const encryptionKey = randomBlobKey();
                 const encryptionSecretBox = crypto.getSecretBox(
                     encryptionKey,
-                    NONCE_UNGUARDED_TOKEN,
+                    NONCE_UNGUARDED_SCOPE,
+                    undefined,
                 );
                 const plainFileBlobBytes = new Uint8Array([1, 2, 9, 8, 5, 5]) as PlainData;
                 const plainThumbnailBlobBytes = new Uint8Array([9, 8, 9]) as PlainData;

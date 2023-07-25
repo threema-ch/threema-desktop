@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 
 import * as chai from 'chai';
 
-import {NACL_CONSTANTS, NONCE_UNGUARDED_TOKEN, type PlainData, type RawKey} from '~/common/crypto';
+import {NACL_CONSTANTS, NONCE_UNGUARDED_SCOPE, type PlainData, type RawKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {DATABASE_KEY_LENGTH, wrapRawDatabaseKey} from '~/common/db';
@@ -323,7 +323,8 @@ export function run(): void {
                     encryptedKeyStorage: crypto
                         .getSecretBox(
                             keys.filestoreEncryptionKey.asReadonly(),
-                            NONCE_UNGUARDED_TOKEN,
+                            NONCE_UNGUARDED_SCOPE,
+                            undefined,
                         )
                         .encryptor(
                             CREATE_BUFFER_TOKEN,
@@ -388,7 +389,11 @@ export function run(): void {
 
             it('should reject key storage with malformed protobuf bytes', async function () {
                 const encryptedInvalidKeyStorageBytes = crypto
-                    .getSecretBox(keys.filestoreEncryptionKey.asReadonly(), NONCE_UNGUARDED_TOKEN)
+                    .getSecretBox(
+                        keys.filestoreEncryptionKey.asReadonly(),
+                        NONCE_UNGUARDED_SCOPE,
+                        undefined,
+                    )
                     .encryptor(CREATE_BUFFER_TOKEN, new Uint8Array([1, 2, 3, 4]) as PlainData)
                     .encryptWithRandomNonceAhead();
                 const encryptedInvalidKeyStorage: EncryptedKeyStorage = {
@@ -478,7 +483,11 @@ export function run(): void {
                 },
             }).finish() as PlainData;
             const encryptedKeyStorageBytes = crypto
-                .getSecretBox(keys.filestoreEncryptionKey.asReadonly(), NONCE_UNGUARDED_TOKEN)
+                .getSecretBox(
+                    keys.filestoreEncryptionKey.asReadonly(),
+                    NONCE_UNGUARDED_SCOPE,
+                    undefined,
+                )
                 .encryptor(CREATE_BUFFER_TOKEN, encodedBytes)
                 .encryptWithRandomNonceAhead();
             const encryptedKeyStorageFileBytes = EncryptedKeyStorage.encode({

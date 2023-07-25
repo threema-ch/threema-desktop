@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import {type ServicesForBackend} from '~/common/backend';
-import {type EncryptedData, type Nonce, type NonceGuard, type PublicKey} from '~/common/crypto';
+import {type EncryptedData, type Nonce, type PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
@@ -14,7 +14,6 @@ import * as protobuf from '~/common/network/protobuf';
 import {CspPayloadType, D2mPayloadType, type LayerEncoder} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
 import {
-    type CspNonceGuard,
     ensureMessageId,
     type GroupId,
     type IdentityString,
@@ -28,14 +27,9 @@ import {assertCspPayloadType, assertD2mPayloadType} from '~/test/mocha/common/as
 import {
     type NetworkExpectation,
     NetworkExpectationFactory,
+    TestNonceService,
     type TestUser,
 } from '~/test/mocha/common/backend-mocks';
-
-const CSP_NONCE_GUARD = {
-    use: () => {
-        // Ignore
-    },
-} as NonceGuard as CspNonceGuard;
 
 /**
  * Convert a layer encoder for a message payload to the actual message by encoding and decoding.
@@ -63,13 +57,17 @@ export function decryptMetadata(
     }
     return protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
         protobuf.csp_e2e.MessageMetadata.decode(
-            deriveMessageMetadataKey(crypto, receiverCk, senderPublicKey, CSP_NONCE_GUARD)
+            deriveMessageMetadataKey(
+                {crypto, nonces: new TestNonceService()},
+                receiverCk,
+                senderPublicKey,
+            )
                 .decryptorWithNonce(
                     CREATE_BUFFER_TOKEN,
                     message.messageAndMetadataNonce as Nonce,
                     message.metadataContainer as EncryptedData,
                 )
-                .decrypt(),
+                .decrypt().plainData,
         ),
     );
 }
@@ -83,13 +81,13 @@ export function decryptContainer(
     receiverCk: ClientKey,
 ): structbuf.csp.e2e.Container {
     const decrypted = receiverCk
-        .getSharedBox(senderPublicKey, CSP_NONCE_GUARD)
+        .getSharedBox(senderPublicKey)
         .decryptorWithNonce(
             CREATE_BUFFER_TOKEN,
             message.messageAndMetadataNonce as Nonce,
             message.messageBox as EncryptedData,
         )
-        .decrypt();
+        .decrypt().plainData;
     return structbuf.csp.e2e.Container.decode(decrypted);
 }
 

@@ -345,10 +345,9 @@ export class OutgoingCspMessageTask<
                 Math.max(0, 16 - (encodedLegacyNickname?.encoded.byteLength ?? 0)),
             );
             const [messageAndMetadataNonce, metadataContainer] = deriveMessageMetadataKey(
-                crypto,
+                this._services,
                 device.csp.ck,
                 receiver.view.publicKey,
-                device.csp.nonceGuard,
             )
                 .encryptor(
                     CREATE_BUFFER_TOKEN,
@@ -363,7 +362,7 @@ export class OutgoingCspMessageTask<
 
             // Encrypt message and use the same nonce as used for the metadata
             const messageBox = device.csp.ck
-                .getSharedBox(receiver.view.publicKey, device.csp.nonceGuard)
+                .getSharedBox(receiver.view.publicKey)
                 .encryptor(
                     CREATE_BUFFER_TOKEN,
                     structbuf.bridge.encoder(structbuf.csp.e2e.Container, {

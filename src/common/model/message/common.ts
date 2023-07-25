@@ -1,4 +1,4 @@
-import {type Nonce, NONCE_UNGUARDED_TOKEN} from '~/common/crypto';
+import {type Nonce, NONCE_UNGUARDED_SCOPE} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {
     type DbBaseFileMessageFragment,
@@ -302,11 +302,12 @@ export async function downloadBlob(
         // Decrypt bytes
         const secretBox = crypto.getSecretBox(
             lifetimeGuard.run((handle) => handle.view().encryptionKey),
-            NONCE_UNGUARDED_TOKEN,
+            NONCE_UNGUARDED_SCOPE,
+            undefined,
         );
         const decryptedBytes = secretBox
             .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, downloadResult.data)
-            .decrypt();
+            .decrypt().plainData;
 
         // Blob downloaded, store in file storage
         const storedFile = await file.store(decryptedBytes);

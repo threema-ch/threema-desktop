@@ -33,6 +33,7 @@ import {
     D2mAuthStateUtils,
     D2mLeaderState,
     D2mLeaderStateUtils,
+    NonceScope,
     TransferTag,
 } from '~/common/enum';
 import {
@@ -391,6 +392,7 @@ function initBackendServices(
     identityData: IdentityData,
     deviceIds: DeviceIds,
     dgk: RawDeviceGroupKey,
+    nonces: NonceService,
 ): ServicesForBackend {
     const {
         config,
@@ -405,8 +407,7 @@ function initBackendServices(
         timer,
     } = simpleServices;
 
-    const nonces = new NonceService({crypto, db, logging}, new Identity(identityData.identity));
-    const device = new DeviceBackend({crypto, db, logging}, identityData, deviceIds, dgk);
+    const device = new DeviceBackend({crypto, db, logging, nonces}, identityData, deviceIds, dgk);
     const blob = new FetchBlobBackend({config, device});
     const model = new ModelRepositories({
         blob,
@@ -616,18 +617,6 @@ export class Backend implements ProxyMarked {
             }
         }
 
-        // Extract identity data from key storage
-        const identityData = {
-            identity: keyStorageContents.identityData.identity,
-            ck: SecureSharedBoxFactory.consume(
-                services.crypto,
-                keyStorageContents.identityData.ck,
-            ) as ClientKey,
-            serverGroup: keyStorageContents.identityData.serverGroup,
-        };
-        const deviceIds = keyStorageContents.deviceIds;
-        const dgk = keyStorageContents.dgk;
-
         // Open database
         const db = factories.db(
             {config},
@@ -636,8 +625,35 @@ export class Backend implements ProxyMarked {
             true,
         );
 
+        // Create nonces service
+        const nonces = new NonceService(
+            {crypto: services.crypto, db, logging},
+            new Identity(keyStorageContents.identityData.identity),
+        );
+
+        // Extract identity data from key storage
+        const identityData = {
+            identity: keyStorageContents.identityData.identity,
+            ck: SecureSharedBoxFactory.consume(
+                services.crypto,
+                nonces,
+                NonceScope.CSP,
+                keyStorageContents.identityData.ck,
+            ) as ClientKey,
+            serverGroup: keyStorageContents.identityData.serverGroup,
+        };
+        const deviceIds = keyStorageContents.deviceIds;
+        const dgk = keyStorageContents.dgk;
+
         // Create backend
-        const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
+        const backendServices = initBackendServices(
+            services,
+            db,
+            identityData,
+            deviceIds,
+            dgk,
+            nonces,
+        );
         const backend = new Backend(backendServices);
 
         // Start connection
@@ -811,9 +827,29 @@ export class Backend implements ProxyMarked {
         }
         await updateSyncingPhase('restoring');
 
+        // Generate new random database key
+        const databaseKey = wrapRawDatabaseKey(
+            services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
+        );
+        const databaseKeyForKeyStorage = wrapRawDatabaseKey(databaseKey.unwrap().slice());
+
+        // Create database
+        const db = factories.db({config}, logging.logger('db'), databaseKey, false);
+
+        // Create nonces service
+        const nonces = new NonceService(
+            {crypto: services.crypto, db, logging},
+            new Identity(joinResult.identity),
+        );
+
         // Wrap the client key (but keep a copy for the key storage)
         const rawCkForKeyStorage = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
-        const ck = SecureSharedBoxFactory.consume(services.crypto, joinResult.rawCk) as ClientKey;
+        const ck = SecureSharedBoxFactory.consume(
+            services.crypto,
+            nonces,
+            NonceScope.CSP,
+            joinResult.rawCk,
+        ) as ClientKey;
 
         // Look up identity information and server group on directory server
         let privateData;
@@ -849,17 +885,15 @@ export class Backend implements ProxyMarked {
         const dgk: RawDeviceGroupKey = joinResult.dgk;
         const dgkForKeyStorage = wrapRawDeviceGroupKey(dgk.unwrap().slice());
 
-        // Generate new random database key
-        const databaseKey = wrapRawDatabaseKey(
-            services.crypto.randomBytes(new Uint8Array(DATABASE_KEY_LENGTH)),
-        );
-        const databaseKeyForKeyStorage = wrapRawDatabaseKey(databaseKey.unwrap().slice());
-
-        // Create database
-        const db = factories.db({config}, logging.logger('db'), databaseKey, false);
-
         // Create backend
-        const backendServices = initBackendServices(services, db, identityData, deviceIds, dgk);
+        const backendServices = initBackendServices(
+            services,
+            db,
+            identityData,
+            deviceIds,
+            dgk,
+            nonces,
+        );
         const backend = new Backend(backendServices);
 
         // Initialize database with essential data
@@ -1413,7 +1447,6 @@ class Connection {
             abort.listener,
             // CSP
             {
-                nonceGuard: device.csp.nonceGuard,
                 ck: device.csp.ck,
                 tck,
                 identity: device.identity.bytes,
@@ -1428,7 +1461,6 @@ class Connection {
             },
             // D2M
             {
-                nonceGuard: device.d2m.nonceGuard,
                 dgpk: device.d2m.dgpk,
                 dgdik: device.d2m.dgdik,
                 deviceId: device.d2m.deviceId,
@@ -1439,7 +1471,6 @@ class Connection {
             },
             // D2D
             {
-                nonceGuard: device.d2d.nonceGuard,
                 dgrk: device.d2d.dgrk,
                 dgtsk: device.d2d.dgtsk,
             },

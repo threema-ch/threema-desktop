@@ -1,4 +1,6 @@
 import {type CryptoBox} from '~/common/crypto/box';
+import {type INonceService} from '~/common/crypto/nonce';
+import {type NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
 import {type ReadonlyUint8Array, type u53, type u64, type WeakOpaque} from '~/common/types';
 import {byteEquals} from '~/common/utils/byte';
@@ -311,25 +313,12 @@ export interface CryptoBoxBackend {
 /**
  * Token that allows to use a crypto backend with no nonce guard.
  */
-export const NONCE_UNGUARDED_TOKEN: unique symbol = Symbol('nonce-unguarded-token');
+export const NONCE_UNGUARDED_SCOPE: unique symbol = Symbol('nonce-unguarded-scope');
 
 /**
- * The type of {@link NONCE_UNGUARDED_TOKEN}.
+ * The type of {@link NONCE_UNGUARDED_SCOPE}.
  */
-export type NonceUnguarded = typeof NONCE_UNGUARDED_TOKEN;
-
-/**
- * Nonce storage to prevent reuse by checking for uniqueness.
- */
-export interface NonceGuard {
-    /**
-     * Ensure a given nonce is unique and mark it as used.
-     *
-     * @param nonce The nonce to check for uniqueness and then remember.
-     * @throws {CryptoError} if nonce re-use was detected.
-     */
-    readonly use: (nonce: Nonce) => void;
-}
+export type NonceUnguardedScope = typeof NONCE_UNGUARDED_SCOPE;
 
 /**
  * A crypto backend.
@@ -368,7 +357,7 @@ export interface CryptoBackend {
      * Note: After calling this function, it often may be a good idea to purge the `secretKey`!
      *
      * @param secretKey The secret key.
-     * @param nonceGuard Optional nonce guard to prevent nonce reuse.
+     * @param nonceScope Optional nonce scope to prevent nonce reuse.
      * @throws {CryptoError} if the secret key has an invalid length.
      */
     readonly getSecretBox: <
@@ -376,11 +365,12 @@ export interface CryptoBackend {
         ECK extends Cookie,
         DSN extends u64,
         ESN extends u64,
-        NG extends NonceGuard | NonceUnguarded,
+        TNonceScope extends NonceScope | NonceUnguardedScope,
     >(
         secretKey: ReadonlyRawKey<32>,
-        nonceGuard: NG,
-    ) => CryptoBox<DCK, ECK, DSN, ESN, NG>;
+        nonceScope: TNonceScope,
+        nonceService: TNonceScope extends NonceUnguardedScope ? undefined : INonceService,
+    ) => CryptoBox<DCK, ECK, DSN, ESN, TNonceScope>;
 
     /**
      * Derive the shared key.
@@ -395,17 +385,18 @@ export interface CryptoBackend {
      *
      * @param publicKey The public key (i.e. of the other party).
      * @param secretKey The secret key (i.e. yours).
-     * @param nonceGuard Optional nonce guard to prevent nonce reuse.
+     * @param nonceScope Optional nonce scope to prevent nonce reuse.
      */
     readonly getSharedBox: <
         DCK extends Cookie,
         ECK extends Cookie,
         DSN extends u64,
         ESN extends u64,
-        NG extends NonceGuard | NonceUnguarded,
+        TNonceScope extends NonceScope | NonceUnguardedScope,
     >(
         publicKey: PublicKey,
         secretKey: ReadonlyRawKey<32>,
-        nonceGuard: NG,
-    ) => CryptoBox<DCK, ECK, DSN, ESN, NG>;
+        nonceScope: TNonceScope,
+        nonceService: TNonceScope extends NonceUnguardedScope ? undefined : INonceService,
+    ) => CryptoBox<DCK, ECK, DSN, ESN, TNonceScope>;
 }

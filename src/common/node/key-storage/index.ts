@@ -58,7 +58,7 @@ import * as argon2 from 'argon2';
 
 import {
     NACL_CONSTANTS,
-    NONCE_UNGUARDED_TOKEN,
+    NONCE_UNGUARDED_SCOPE,
     type PlainData,
     type RawKey,
     wrapRawKey,
@@ -452,14 +452,14 @@ export class FileSystemKeyStorage implements KeyStorage {
             validatedEncryptedKeyStorage.kdfParameters.argon2id,
             KDF_TARGET_RUNTIME_MS,
         );
-        const secretBox = crypto.getSecretBox(key.asReadonly(), NONCE_UNGUARDED_TOKEN);
+        const secretBox = crypto.getSecretBox(key.asReadonly(), NONCE_UNGUARDED_SCOPE, undefined);
         const decryptor = secretBox.decryptorWithNonceAhead(
             CREATE_BUFFER_TOKEN,
             validatedEncryptedKeyStorage.encryptedKeyStorage,
         );
         let decryptedBytes: Uint8Array;
         try {
-            decryptedBytes = decryptor.decrypt();
+            decryptedBytes = decryptor.decrypt().plainData;
         } catch (error) {
             throw new KeyStorageError('undecryptable', `Cannot decrypt encrypted key storage`, {
                 from: error,
@@ -503,7 +503,7 @@ export class FileSystemKeyStorage implements KeyStorage {
         // Encrypt
         const key = await this._deriveKey(password, kdfParameters, KDF_TARGET_RUNTIME_MS);
         const encryptedKeyStorageBytes = crypto
-            .getSecretBox(key.asReadonly(), NONCE_UNGUARDED_TOKEN)
+            .getSecretBox(key.asReadonly(), NONCE_UNGUARDED_SCOPE, undefined)
             .encryptor(
                 CREATE_BUFFER_TOKEN,
                 DecryptedKeyStorage.encode({

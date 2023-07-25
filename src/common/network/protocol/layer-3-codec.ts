@@ -10,7 +10,7 @@ import {
     type EncryptedData,
     type EncryptedDataWithNonceAhead,
     ensurePublicKey,
-    NONCE_UNGUARDED_TOKEN,
+    NONCE_UNGUARDED_SCOPE,
     type PlainData,
     type PublicKey,
 } from '~/common/crypto';
@@ -29,11 +29,9 @@ import {
     type ClientSequenceNumber,
     type ClientSequenceNumberValue,
     type CspDeviceId,
-    type CspNonceGuard,
     type CspPayloadBox,
     type D2mChallengeBox,
     type D2mDeviceId,
-    type D2xNonceGuard,
     type IdentityBytes,
     type ServerCookie,
     type ServerSequenceNumber,
@@ -125,11 +123,6 @@ export interface Layer3Controller {
      */
     readonly csp: {
         /**
-         * Nonce guard used for E2E messages and `vouch-data`.
-         */
-        readonly nonceGuard: CspNonceGuard;
-
-        /**
          * Client Key (32 bytes, permanent secret key associated to the Threema ID).
          */
         readonly ck: ClientKey;
@@ -198,11 +191,6 @@ export interface Layer3Controller {
      * Device to Mediator protocol related properties.
      */
     readonly d2m: {
-        /**
-         * Nonce guard used for D2D messages and the D2M challenge response.
-         */
-        readonly nonceGuard: D2xNonceGuard;
-
         /**
          * The client's device ID towards the mediator server.
          */
@@ -358,7 +346,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 // Store the server cookie and a box for subsequent payloads
                 const tsk = ensurePublicKey(challengeResponse.tsk) as TemporaryServerKey;
                 csp.sck.set(serverHello.sck as ServerCookie);
-                csp.box.set(csp.tck.getSharedBox(tsk, NONCE_UNGUARDED_TOKEN));
+                csp.box.set(csp.tck.getSharedBox(tsk, NONCE_UNGUARDED_SCOPE, undefined));
 
                 // Encode, encrypt and enqueue `login`
                 const loginMessage = this._createCspLogin(tsk);
@@ -425,7 +413,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     csp.ssn.next(),
                     frame.box as EncryptedData,
                 )
-                .decrypt(),
+                .decrypt().plainData,
         );
 
         // Decode payload according to its type
@@ -478,7 +466,8 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
             csp.tck
                 .getSharedBox(
                     config.CHAT_SERVER_KEY,
-                    NONCE_UNGUARDED_TOKEN, // Safe because TCK is ephemeral
+                    NONCE_UNGUARDED_SCOPE, // Safe because TCK is ephemeral
+                    undefined,
                 )
                 .decryptorWithCspNonce(
                     buffer,
@@ -486,7 +475,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     csp.ssn.next(),
                     serverHello.serverChallengeResponseBox as EncryptedData,
                 )
-                .decrypt(),
+                .decrypt().plainData,
         );
     }
 
@@ -503,7 +492,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 csp.ssn.next(),
                 loginAck.reservedBox as EncryptedData,
             )
-            .decrypt();
+            .decrypt().plainData;
     }
 
     private _createCspLogin(
@@ -817,7 +806,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
         // Encrypt the challenge response
         const challengeResponse = d2m.dgpk
-            .getSharedBox(serverHello.esk as ReadonlyUint8Array as PublicKey, d2m.nonceGuard)
+            .getSharedBox(serverHello.esk as ReadonlyUint8Array as PublicKey)
             .encryptor(buffer, serverHello.challenge as PlainData)
             .encryptWithRandomNonceAhead();
 

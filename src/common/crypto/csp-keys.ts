@@ -1,7 +1,8 @@
 import {type Config} from '~/common/config';
 import {type CryptoBackend, type PublicKey, wrapRawKey} from '~/common/crypto';
 import {deriveKey} from '~/common/crypto/blake2b';
-import {type CspNonceGuard} from '~/common/network/types';
+import {type INonceService} from '~/common/crypto/nonce';
+import {NonceScope} from '~/common/enum';
 import {
     type ClientKey,
     type DirectoryChallengeResponseKey,
@@ -47,11 +48,11 @@ export function deriveDirectoryChallengeResponseKey(
  * Derive the key used for the `MessageMetadata` box.
  */
 export function deriveMessageMetadataKey(
-    crypto: CryptoBackend,
+    services: {crypto: CryptoBackend; nonces: INonceService},
     ck: ClientKey,
     contactPublicKey: PublicKey,
-    cspNonceGuard: CspNonceGuard,
 ): MessageMetadataBox {
+    const {crypto, nonces} = services;
     return crypto.getSecretBox(
         ck
             .deriveSharedKey(32, contactPublicKey, {
@@ -59,6 +60,7 @@ export function deriveMessageMetadataKey(
                 salt: 'mm',
             })
             .asReadonly(),
-        cspNonceGuard,
+        NonceScope.CSP,
+        nonces,
     ) as MessageMetadataBox;
 }
