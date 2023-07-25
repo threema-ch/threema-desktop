@@ -2127,7 +2127,7 @@ export namespace ImageRenderingType {
 /**
  * Rendering type of an image message.
  *
- * @generate convert
+ * @generate convert name
  */
 export type ImageRenderingType = (typeof ImageRenderingType)[keyof typeof ImageRenderingType];
 export namespace ImageRenderingTypeUtils {
@@ -2149,6 +2149,13 @@ export namespace ImageRenderingTypeUtils {
     }
     export function contains(value: unknown): value is ImageRenderingType {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+    export const NAME_OF = {
+        [ImageRenderingType.REGULAR]: 'REGULAR',
+        [ImageRenderingType.STICKER]: 'STICKER',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
 

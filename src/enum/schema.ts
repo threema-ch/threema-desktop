@@ -712,7 +712,7 @@ export enum Browser {
 /**
  * Rendering type of an image message.
  *
- * @generate convert
+ * @generate convert name
  */
 export enum ImageRenderingType {
     /**

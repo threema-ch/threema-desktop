@@ -6,7 +6,13 @@
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
-  import {MessageDirection, MessageReaction, MessageReactionUtils} from '~/common/enum';
+  import {
+    ImageRenderingTypeUtils,
+    MessageDirection,
+    MessageDirectionUtils,
+    MessageReaction,
+    MessageReactionUtils,
+  } from '~/common/enum';
   import {type AnyMessageModel, type RemoteModelFor} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
   import {u64ToHexLe} from '~/common/utils/number';
@@ -86,6 +92,52 @@
             </div>
           {/if}
         </ListElement>
+        {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
+          <Divider />
+          <ListElement label="Debug Info 🐛">
+            ℹ️ This section is only shown in DEBUG and SANDBOX builds.
+          </ListElement>
+          <ListElement label="Direction">
+            {MessageDirectionUtils.nameOf(message.view.direction)?.toLowerCase()}
+          </ListElement>
+          {#if message.type === 'file' || message.type === 'image'}
+            <ListElement label="File Message Data State">
+              {message.view.state}
+            </ListElement>
+            <ListElement label="File Size">
+              {(message.view.fileSize / 1024).toFixed(0)} KiB (reported){#if message.view.fileData !== undefined},
+                {(message.view.fileData.unencryptedByteCount / 1024).toFixed(0)} KiB (actual){/if}
+            </ListElement>
+            <ListElement label="Thumbnail Size">
+              {#if message.view.thumbnailFileData !== undefined}
+                {(message.view.thumbnailFileData.unencryptedByteCount / 1024).toFixed(0)} KiB (actual)
+              {:else}
+                undefined
+              {/if}
+            </ListElement>
+            <ListElement label="Correlation ID">
+              {message.view.correlationId}
+            </ListElement>
+          {/if}
+          {#if message.type === 'image'}
+            <ListElement label="Media Types">
+              Image: {message.view.mediaType}, Thumbnail: {message.view.thumbnailMediaType}
+            </ListElement>
+            <ListElement label="Image Rendering Type">
+              {ImageRenderingTypeUtils.nameOf(message.view.renderingType)?.toLowerCase()}
+            </ListElement>
+            <ListElement label="Animated">
+              {message.view.animated}
+            </ListElement>
+            <ListElement label="Dimensions">
+              {#if message.view.dimensions}
+                {message.view.dimensions.width}x{message.view.dimensions.height}
+              {:else}
+                undefined
+              {/if}
+            </ListElement>
+          {/if}
+        {/if}
       </div>
     </ModalDialog>
   </ModalWrapper>
