@@ -29,13 +29,12 @@
   const viewModelStore = viewModelBundle.viewModel;
 
   $: message = $viewModelStore.body;
+  $: quote = $viewModelStore.quote;
 
   /**
    * The Conversation's receiver
    */
   export let receiver: Remote<AnyReceiverStore>;
-
-  let messageQuote: Remote<ConversationMessageViewModelBundle> | 'not-found' | undefined;
 
   const dispatch = createEventDispatcher<{saveFile: undefined; abortSync: undefined}>();
 
@@ -94,9 +93,9 @@
         <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
       </span>
     {/if}
-    {#if messageQuote !== undefined}
+    {#if quote !== undefined}
       <div class="quote">
-        {#if messageQuote === 'not-found'}
+        {#if quote === 'not-found'}
           <p class="quote-not-found">
             {$i18n.t(
               'messaging.error--quoted-message-not-found',
@@ -104,7 +103,7 @@
             )}
           </p>
         {:else}
-          <MessageQuote {viewModelBundle} />
+          <MessageQuote viewModelBundle={quote} />
         {/if}
       </div>
     {/if}
