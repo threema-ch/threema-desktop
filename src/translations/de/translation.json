@@ -1,0 +1,319 @@
+{
+  "contacts": {
+    "action--add-contact": "Neuer Kontakt",
+    "action--add-contact-cancel": "Abbrechen",
+    "action--add-contact-from-work-directory": "Kontakt aus dem Unternehmensverzeichnis hinzufügen",
+    "action--add-contact-next": "Weiter",
+    "action--add-distribution-list": "Neue Verteilerliste",
+    "action--add-group": "Neue Gruppe",
+    "action--delete": "Löschen",
+    "action--delete-contact": "Kontakt löschen",
+    "action--edit": "Bearbeiten",
+    "action--group-members-show-all": "Alle anzeigen",
+    "action--group-members-show-less": "Weniger anzeigen",
+    "error--add-contact": "Kontakt konnte nicht hinzugefügt werden. Bitte überprüfen Sie Ihre Internetverbindung.",
+    "error--add-contact-threema-id-already-added": "Diese Threema-ID ist bereits in Ihrer Kontaktliste vorhanden.",
+    "error--add-contact-threema-id-is-own": "Ihre eigene Threema-ID kann nicht als Kontakt hinzugefügt werden. Tipp: Erstellen Sie eine Gruppe mit Ihnen als einziges Mitglied, um diesen Chat für persönliche Notizen zu verwenden.",
+    "error--add-contact-threema-id-not-found": "Diese Threema-ID konnte nicht gefunden werden oder wurde gelöscht.",
+    "error--add-contact-threema-id-unable-to-validate": "Kontakt konnte nicht auf Gültigkeit überprüft werden. Ist Ihr Gerät mit dem Internet verbunden?",
+    "error--delete-contact": "Der Kontakt «{name}» konnte nicht gelöscht werden",
+    "error--delete-group": "Die Gruppe «{name}» konnte nicht gelöscht werden",
+    "hint--badge-consumer": "Dieser Kontakt nutzt die Threema-Version für Privatanwender.",
+    "hint--badge-work": "Dieser Kontakt nutzt die Business-Lösung Threema Work.",
+    "hint--own-profile-picture": "Mein Profilbild",
+    "hint--profile-picture": "Profilbild von {name}",
+    "hint--profile-picture-own": "Mein Profilbild",
+    "label--add-contact": "Neuer Kontakt",
+    "label--badge-work": "Threema Work-Kontakt",
+    "label--blocked": "Blockiert",
+    "label--contact-detail": "Kontaktdetails",
+    "label--contacts": "Kontakte",
+    "label--first-name": "Vorname",
+    "label--group-detail": "Gruppendetails",
+    "label--group-members-count-long": "{n, plural, =0 {Keine Gruppenmitglieder} =1 {1 Gruppenmitglied} other {# Gruppenmitglieder}}",
+    "label--group-members-count-short": "{n, plural, =1 {1 Mitglied} other {# Mitglieder}}",
+    "label--last-name": "Nachname",
+    "label--nickname": "Nickname",
+    "label--own-initials": "ICH",
+    "label--own-name": "Ich",
+    "label--search-distribution-lists": "Verteilerliste suchen",
+    "label--search-groups": "Gruppe suchen",
+    "label--search-private-contacts": "Kontakte suchen",
+    "label--search-work-contacts": "Unternehmenskontakte suchen",
+    "label--status-archived": "Archiviert",
+    "label--status-creator": "Admin",
+    "label--status-inactive": "Inaktiv",
+    "label--threema-id": "Threema-ID",
+    "label--verification-level": "Vertrauensstufe",
+    "prose--add-contact-instructions": "Bitte geben Sie die Threema-ID des Kontaktes ein, den Sie hinzufügen möchten:",
+    "prose--add-contact-instructions-work-directory": "Suchen Sie alternativ einen Kontakt im Unternehmensverzeichnis, um ihn zu Ihrer Kontaktliste hinzuzufügen:",
+    "success--delete-contact": "Kontakt «{name}» wurde gelöscht",
+    "success--delete-group": "Die Gruppe «{name}» wurde gelöscht"
+  },
+  "dialog--app-update": {
+    "action--confirm": "OK",
+    "label--title": "Update verfügbar: {current} → {latest}",
+    "markup--linux-p1": "Bitte installieren Sie das Update über Ihren Systempaketmanager oder indem Sie <1>flatpak update</1> in Ihrem Terminal ausführen.",
+    "markup--linux-p2": "Details zu diesem Update: <1 />",
+    "markup--macos-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie sie.",
+    "markup--other-os-p1": "Bitte aktualisieren Sie {name}.",
+    "markup--windows-p1": "Bitte laden Sie die neueste Version von <1 /> herunter und installieren Sie sie.",
+    "prose--intro": "Ein Update für Threema ist verfügbar!"
+  },
+  "dialog--change-password": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "Bestätigen",
+    "error--current-password-incorrect": "Das aktuelle Passwort stimmt nicht",
+    "error--current-password-present": "Bitte geben Sie Ihr aktuelles Passwort ein",
+    "error--new-password-must-be-different": "Das neue Passwort muss sich vom alten unterscheiden",
+    "error--password-equality": "Passwörter stimmen nicht überein",
+    "error--password-length": "Bitte geben Sie mindestens {n, plural, =1 {1 Zeichen} other {# Zeichen}} ein",
+    "label--current-password": "Aktuelles Passwort",
+    "label--new-password": "Neues Passwort",
+    "label--repeat-new-password": "Neues Passwort wiederholen",
+    "label--title": "Passwort ändern",
+    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen. Bitte beachten Sie, dass das Passwort nicht wiederhergestellt werden kann. Bei Verlust des Passworts muss dieses Gerät neu verknüpft werden.",
+    "success--password-changed": "Passwort wurde geändert"
+  },
+  "dialog--compose-media-message": {
+    "hint--drop-files-to-add": "Dateien zum Senden ablegen",
+    "label--media-message-caption": "Text hinzufügen",
+    "label--send-as-file-option": "Als Datei senden (in Originalgrösse)",
+    "label--title": "Datei an {name} senden"
+  },
+  "dialog--delete-contact": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "Kontakt + Chatverlauf löschen",
+    "label--title": "«{name}» löschen",
+    "prose--prompt": "Möchten Sie diesen Kontakt und den entsprechenden Chat wirklich löschen?"
+  },
+  "dialog--delete-message": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "Nachricht löschen",
+    "label--title": "Nachricht von diesem Gerät löschen?"
+  },
+  "dialog--discard-media-message": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "Verwerfen",
+    "label--title": "Medien verwerfen",
+    "prose--prompt": "Ungesendete Mediennachrichten verwerfen?"
+  },
+  "dialog--edit-contact": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "OK",
+    "label--first-name": "Vorname",
+    "label--last-name": "Nachname",
+    "label--title": "{name} bearbeiten"
+  },
+  "dialog--edit-group": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "OK",
+    "error--group-name-empty": "Darf nicht leer sein",
+    "error--group-name-too-long": "Name ist zu lang",
+    "label--group-name": "Gruppenname",
+    "label--title": "{name} bearbeiten"
+  },
+  "dialog--empty-conversation": {
+    "action--cancel": "Abbrechen",
+    "action--contact-conversation-confirm": "Chat leeren",
+    "action--distribution-list-conversation-confirm": "Chat leeren",
+    "action--group-conversation-confirm": "Gruppenchat leeren",
+    "label--title": "Chat leeren",
+    "prose--contact-conversation-prompt": "Dadurch {n, plural, =1 {wird die Nachricht} other {werden alle # Nachrichten}} in diesem Chat mit {name} auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
+    "prose--distribution-list-conversation-prompt": "Dadurch {n, plural, =1 {wird die Nachricht} other {werden alle # Nachrichten}} in der Verteilerliste «{name}» auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten).",
+    "prose--group-conversation-prompt": "Dadurch {n, plural, =1 {wird die Nachricht} other {werden alle # Nachrichten}} im Gruppenchat «{name}» auf diesem Gerät gelöscht (jedoch nicht auf den verknüpften Geräten)."
+  },
+  "dialog--error-connection": {
+    "action--client-was-dropped-cancel": "OK",
+    "action--client-was-dropped-confirm": "Lokales Profil entfernen und Gerät erneut verknüpfen",
+    "action--default-cancel": "OK",
+    "action--default-confirm": "Ernet verknüpfen",
+    "label--title": "Erneute Verknüpfung fehlgeschlagen",
+    "markup--client-update-required-p1": "Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",
+    "markup--client-update-required-p2": "Bitte <1>installieren Sie die neueste Version</1>, um Threema weiterhin zu nutzen.",
+    "markup--client-was-dropped-p1": "Die Verknüpfung mit diesem Gerät wurde aufgehoben, weshalb im Moment keine neuen Nachrichten mehr gesendet oder empfangen werden können.",
+    "markup--client-was-dropped-p2": "Falls die Aufhebung der Verknüpfung nicht durch Sie veranlasst wurde, beachten Sie bitte, dass während der Beta-Phase technische Gründe dafür verantwortlich sein können. Wir bitten um Verständnis.",
+    "markup--client-was-dropped-p3": "Weitere Details finden Sie in <1>diesem FAQ-Eintrag</1>.",
+    "prose--mediator-update-required-p1": "Diese Version von Threema ist nicht mit Ihrem Mediator-Server kompatibel. Der Server verwendet eine veraltete Protokollversion und muss zuerst aktualisiert werden.",
+    "prose--mediator-update-required-p2": "Bitte kontaktieren Sie Ihren Server-Administrator."
+  },
+  "dialog--error-delete-contact": {
+    "action--confirm": "OK",
+    "error--is-group-member": "«{name}» ist noch Mitglied einer Gruppe. Entfernen Sie den Kontakt von der Gruppe, oder löschen Sie die Gruppe.",
+    "label--title": "Kontakt kann nicht gelöscht werden"
+  },
+  "dialog--forward-message": {
+    "hint--profile-picture": "Profilbild von {name}",
+    "label--search-distribution-lists": "Verteilerliste suchen",
+    "label--search-groups": "Gruppe suchen",
+    "label--search-private-contacts": "Kontakte suchen",
+    "label--search-work-contacts": "Unternehmenskontakte suchen",
+    "label--title": "Empfänger auswählen"
+  },
+  "dialog--id-information": {
+    "label--public-key": "Öffentlicher Schlüssel",
+    "label--title": "Threema-ID",
+    "prose--threema-id-description-p1": "Bei der ersten Nutzung vom Threema wird jedem Nutzer eine zufällig erzeugte, achtstellige Threema-ID zugeteilt. Diese Threema-ID ist Ihre eindeutige Adresse bei Threema. Dadurch ist es möglich, Threema komplett anonym zu nutzen, ohne private Daten preisgeben zu müssen.",
+    "prose--threema-id-description-p2": "Ihre Threema-ID ist nur eine Komponente Ihrer Identität bei Threema. Die zweite Komponente ist das sogenannte Schlüsselpaar (bestehend aus einem privaten und einem öffentlichen Schlüssel), welches für die sichere Verschlüsselung benötigt wird. Ihre Threema-ID ist untrennbar mit Ihrem Schlüsselpaar verbunden. Der private Schlüssel verbleibt auf Ihrem Handy, während der öffentliche Schlüssel auf die Threema-Server hochgeladen wird, welche diesen an Ihre Gesprächspartner verteilen. Auf dem Handy Ihres Gesprächspartners werden Nachrichten an Sie mit Ihrem öffentlichen Schlüssel verschlüsselt. Diese Nachrichten können ausschliesslich mit Ihrem privaten Schlüssel wieder entschlüsselt werden."
+  },
+  "dialog--linking-confirm-emoji": {
+    "action--need-help": "Brauchen Sie Hilfe?",
+    "label--title": "Bestätigen Sie die Bilder auf Ihrem Mobilgerät"
+  },
+  "dialog--linking-error": {
+    "action--confirm": "Ernet versuchen",
+    "hint--expand-full-error-message": "Vollständiger Fehler anzeigen",
+    "label--technical-details": "Technische Details anzeigen",
+    "label--title": "Verknüpfung nicht erfolgreich",
+    "prose--description-connection-error": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
+    "prose--description-generic-error": "Während der Verknüpfung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+  },
+  "dialog--linking-scan": {
+    "action--need-help": "Brauchen Sie Hilfe?",
+    "label--connecting": "Wird verbunden",
+    "label--step-1": "Schritt 1:",
+    "label--step-2": "Schritt 2:",
+    "label--step-3": "Schritt 3:",
+    "label--title": "Verknüpfen Sie Ihr iOS-Gerät",
+    "markup--intro": "Diese Beta-Version kann zusammen mit {threema} für iOS verwendet werden. Bitte beachten Sie, dass noch nicht alle Funktionen verfügbar sind. <1>Mehr erfahren</1>",
+    "markup--step-1": "Öffnen Sie die {threema}-App auf Ihrem Mobilgerät",
+    "markup--step-2": "Navigieren Sie in der App zu «<1>Einstellungen</1> > <1>Desktop/Web</1> > <1>Verknüpftes Gerät</1>», und tippen Sie auf «<1>Gerät hinzufügen</1>»",
+    "markup--step-3": "Scannen Sie diesen QR-Code"
+  },
+  "dialog--linking-set-password": {
+    "action--confirm": "Weiter",
+    "action--need-help": "Brauchen Sie Hilfe?",
+    "error--password-equality": "Die Passwörter stimmen nicht überein",
+    "error--password-length": "Bitte geben Sie mindestens {n, plural, =1 {1 Zeichen} other {# Zeichen}} ein",
+    "label--password": "Passwort",
+    "label--repeat-password": "Passwort wiederholen",
+    "label--title": "Passwort festlegen",
+    "prose--intro": "Das Passwort schützt Ihre Nachrichten, Threema-ID und weitere Daten auf diesem Computer. Es wird jedes Mal abgefragt, wenn Sie Threema für Desktop öffnen."
+  },
+  "dialog--linking-success": {
+    "action--confirm": "Threema jetzt verwenden",
+    "label--title": "Gerät erfolgreich verknüpft",
+    "markup--description-consumer": "Threema lässt sich nun auf diesem Computer verwenden <1/>(auch wenn das iOS-Gerät ausgeschaltet oder nicht mit dem Internet verbunden ist).",
+    "markup--description-work": "Threema Work lässt sich nun auf diesem Computer verwenden <1/>(auch wenn das iOS-Gerät ausgeschaltet oder nicht mit dem Internet verbunden ist)."
+  },
+  "dialog--linking-sync": {
+    "action--need-help": "Brauchen Sie Hilfe?",
+    "label--title-encrypting": "Schlüssel mit Ihrem Passwort verschlüsseln",
+    "label--title-receiving": "Daten werden empfangen",
+    "label--title-restoring": "Daten werden wiederhergestellt"
+  },
+  "dialog--message-details": {
+    "label--created-date": "Erstellt",
+    "label--delivered-date": "Zugestellt",
+    "label--last-reaction": "Letzte Reaktion",
+    "label--message-id": "Nachrichten-ID",
+    "label--read-date": "Gelesen",
+    "label--received-date": "Erhalten",
+    "label--sent-date": "Gesendet",
+    "label--title": "Nachrichtendetails"
+  },
+  "dialog--server-alert": {
+    "action--confirm": "OK"
+  },
+  "dialog--startup-unlock": {
+    "action--confirm": "Weiter",
+    "error--incorrect-password": "Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
+    "label--password": "Passwort",
+    "label--title": "Passwort eingeben",
+    "markup--password-hint": "Passwort vergessen? Bitte beachten Sie <1>diesen FAQ-Eintrag</1>."
+  },
+  "dialog--unrecoverable-state": {
+    "action--cancel": "OK",
+    "action--confirm": "Zurücksetzen und erneut verknüpfen",
+    "label--title": "Ungültiger Zustand",
+    "prose--description-p1": "Die lokalen Daten befinden sich in einem ungültigen Zustand. Um Datenverlust zu vermeiden, können im Moment keine Nachrichten versendet oder empfangen werden. Wir bitten um Verständnis.",
+    "prose--description-p2": "Um Threema weiterhin zu nutzen, müssen Sie Ihr lokales Profil entfernen und das Gerät neu verknüpfen.",
+    "prose--description-p3": "Bitte melden Sie diesen Fehler dem Threema-Support über die App auf dem Mobilgerät («Einstellungen > Beta Feedback»). Hinweis: Speichern Sie Ihre Logs, bevor Sie das Gerät neu verknüpfen, da sie bei erneuter Verknüpfung gelöscht werden."
+  },
+  "dialog--unsupported-feature-protected-conversation": {
+    "label--title": "Privater Chat",
+    "prose--description": "Private Chats werden in {appName} noch nicht unterstützt."
+  },
+  "dialog--verification-levels": {
+    "label--title": "Vertrauensstufen",
+    "prose--intro": "Die Punkte geben die Vertrauensstufe eines Kontakts an. ",
+    "prose--level-fully-verified-default": "Der öffentliche Schlüssel der Person wurde persönlich durch Scannen des QR-Codes verifiziert. Solange das Gerät dieser Person nicht gestohlen/gehackt wurde, ist es ausgeschlossen, dass ein Dritter Nachrichten von dieser Person fälschen oder Nachrichten an diese Person mitlesen kann.",
+    "prose--level-fully-verified-work": "Diese Vertrauensstufe ist nur in Threema Work verfügbar und zeigt an, dass Sie den öffentlichen Schlüssel dieses internen Kontakts durch Scannen des QR-Codes verifiziert haben.",
+    "prose--level-server-verified-default": "Der Kontakt wurde im Adressbuch gefunden (mit Handynummer oder E-Mail-Adresse). Da der Server Handynummern und E-Mail-Adressen prüft (SMS bzw. E-Mail mit Aktivierungslink), kann man sich ohne zusätzliches Verifizieren relativ sicher sein, dass diese Person wirklich diejenige ist, die man meint.",
+    "prose--level-server-verified-work": "Diese Vertrauensstufe ist nur in Threema Work verfügbar und zeigt an, dass es sich um einen internen Firmenkontakt handelt.",
+    "prose--level-unverified": "ID und öffentlicher Schlüssel wurden vom Server geholt, weil zum ersten Mal von diesem Kontakt eine Nachricht eingetroffen ist (oder der Kontakt manuell hinzugefügt wurde). Da kein passender Kontakt im Adressbuch gefunden wurde (mit Handynummer oder E-Mail-Adresse), kann man sich nicht sicher sein, ob die Person wirklich die ist, die sie in ihren Nachrichten vorgibt zu sein."
+  },
+  "locale": {
+    "cimode": "Developer Mode",
+    "de": "Deutsch",
+    "en": "Englisch"
+  },
+  "messaging": {
+    "action--conversation-option-archive": "Archivieren",
+    "action--conversation-option-more": "Mehr",
+    "action--conversation-option-unpin": "Entpinnen",
+    "action--empty-conversation": "Chat leeren",
+    "action--file-sync-download": "Zum Herunterladen der Datei klicken",
+    "action--file-sync-unknown-direction": "Unbekannte Synchronisierungsrichtung",
+    "action--file-sync-upload": "Zum Hochladen einer Datei klicken",
+    "action--message-option-agree": "Zustimmen",
+    "action--message-option-copy": "Nachricht kopieren",
+    "action--message-option-copy-link": "Link kopieren",
+    "action--message-option-delete": "Löschen",
+    "action--message-option-details": "Nachrichtendetails",
+    "action--message-option-disagree": "Ablehnen",
+    "action--message-option-forward": "Weiterleiten",
+    "action--message-option-quote": "Zitieren",
+    "action--message-option-save-as-file": "Als Datei speichern",
+    "error--add-files-empty": "Dateien konnten nicht hinzugefügt werden",
+    "error--add-files-inaccessible": "Dateien konnten nicht geöffnet werden",
+    "error--add-files-partially-inaccessible": "Einige Dateien konnten nicht geöffnet werden",
+    "error--blocked-contact": "Sie können keine Nachricht an diesen Kontakt senden, weil er blockiert wurde.",
+    "error--conversation-not-found": "Konversation nicht gefunden",
+    "error--copy-message-content": "Nachricht konnte nicht in die Zwischenablage kopiert werden",
+    "error--copy-message-link": "Link konnte nicht in die Zwischenablage kopiert werden",
+    "error--copy-undefined-message-content": "Es gibt nichts zu kopieren",
+    "error--delete-message": "Nachricht konnte nicht gelöscht werden",
+    "error--group-membership": "Sie sind nicht mehr Mitglied dieser Gruppe.",
+    "error--image-message-image-not-loaded": "Das Bild konnte nicht geladen werden.",
+    "error--image-message-thumbnail-not-loaded": "Die Bildvorschau konnte nicht geladen werden.",
+    "error--quoted-message-not-found": "Die zitierte Nachricht konnte nicht gefunden werden.",
+    "error--reaction": "Auf die Nachricht konnte nicht reagiert werden",
+    "error--retrieve-file-data": "Daten konnten nicht abgerufen werden",
+    "error--send-file-caption-too-long": "Text ist zu lang",
+    "error--send-file-file-too-large": "Datei ist zu gross",
+    "error--send-file-miscellaneous-errors": "Einige Dateien enthalten Fehler",
+    "error--unsupported-message-type": "Nachrichtentyp «{type}» wird nicht unterstützt",
+    "hint--drop-files-to-send": "Dateien zum Senden hier ablegen",
+    "label--compose-area": "Neue Nachricht...",
+    "label--default-file-message-preview": "Datei",
+    "label--default-filename": "(kein Dateiname)",
+    "label--default-image-message-preview": "Bild",
+    "label--default-sender-self": "Ich: {text}",
+    "label--mention-all": "Alle",
+    "label--mention-me": "Ich",
+    "label--prefix-draft": "Entwurf:",
+    "label--protected-conversation": "Privat",
+    "label--search-conversation": "Chat suchen",
+    "label--unread-messages-count": "{n, plural, =0 {} =1 {1 neue Nachricht} other {# neue Nachrichten}}",
+    "markup--chat-empty-state": "Dieser Chat ist mit Ihrem Mobilgerät verknüpft. <1/>Alle künftigen Nachrichten werden hier erscheinen.",
+    "success--copy-message-content": "Nachricht in die Zwischenablage kopiert",
+    "success--copy-message-link": "Link in die Zwischenablage kopiert"
+  },
+  "settings": {
+    "hint--own-profile-picture": "Mein Profilbild",
+    "label--application-name": "Name der Applikation",
+    "label--application-version": "Version der Applikation",
+    "label--copyright": "Copyright",
+    "label--git-revision": "Git-Revision",
+    "label--language": "Sprache",
+    "label--nickname": "Nickname",
+    "label--public-key": "Öffentlicher Schlüssel",
+    "label--theme": "Theme",
+    "label--threema-id": "Threema-ID"
+  },
+  "system": {
+    "error--connection": "Keine Serververbindung. Versuchen Sie, sich erneut mit dem Wifi zu verbinden, oder prüfen Sie Ihr Modem oder Router.",
+    "error--connection-unrecoverable-state": "Aufgrund eines unvorhergesehenen Fehlers wurde dieses Gerät vom Server getrennt. Bitte starten Sie die App neu, und verknüpfen Sie es erneut."
+  }
+}

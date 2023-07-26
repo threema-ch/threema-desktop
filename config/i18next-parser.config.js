@@ -1,4 +1,4 @@
 export default {
-    locales: ['en', 'debug'],
+    locales: ['de', 'en'],
     sort: true,
 };

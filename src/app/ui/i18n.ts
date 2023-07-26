@@ -1,7 +1,7 @@
 /* eslint '@typescript-eslint/no-misused-promises': 0 */
 // SOURCE: https://github.com/i18next/i18next/issues/1901
 
-import {default as i18next, type i18n as i18nType} from 'i18next';
+import {default as i18next, type i18n as I18nType} from 'i18next';
 import ICU from 'i18next-icu';
 
 import {type Logger, type LoggerFactory, type LogRecordFn} from '~/common/logging';
@@ -11,7 +11,7 @@ import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
-import translationDebugJson from '../../translations/debug/translation.json';
+import translationDeJson from '../../translations/de/translation.json';
 import translationEnJson from '../../translations/en/translation.json';
 
 /**
@@ -62,34 +62,29 @@ const translationEn: BaseTranslationNamespace = translationEnJson;
 // only keys defined in the base translation while allowing for missing keys. If a translation
 // provides a key that does not exist in the base translation, a type error is raised here when
 // typechecking.
-const translationDebug: StrictPartial<typeof translationDebugJson, BaseTranslationNamespace> =
-    translationDebugJson;
-
-const debugResources = {
-    debug: {
-        translation: translationDebug,
-    },
-} as const;
+const translationDe: StrictPartial<typeof translationDeJson, BaseTranslationNamespace> =
+    translationDeJson;
 
 // Consider keeping the locales in sync in the config/i18next-parser.config.js file.
 export const resources = {
     en: {
         translation: translationEn,
     },
-    ...debugResources,
+    de: {
+        translation: translationDe,
+    },
 } as const;
 
 /**
  * Available locales.
  */
-const DEBUG_LOCALES = keys(debugResources);
 const LOCALES_WITH_TRANSLATIONS = keys(resources);
 
 // Note: 'cimode' is a special locale from i18next to always display the translation key instead
 // of the translation.
 export const LOCALES = import.meta.env.DEBUG
     ? ([...LOCALES_WITH_TRANSLATIONS, 'cimode'] as const)
-    : LOCALES_WITH_TRANSLATIONS.filter((locale) => !(DEBUG_LOCALES as string[]).includes(locale));
+    : LOCALES_WITH_TRANSLATIONS;
 
 export type Locale = (typeof LOCALES)[u53];
 
@@ -140,8 +135,8 @@ let log: Logger;
 
 // Returning an object `{i18n: i18nType}` instead of directly `i18n: i18nType` is a way to force
 // triggering an update.
-function createI18nStore(i18n: i18nType): WritableStore<{i18n: i18nType}> {
-    const i18nStore = new WritableStore<{i18n: i18nType}>({i18n});
+function createI18nStore(i18n: I18nType): WritableStore<{i18n: I18nType}> {
+    const i18nStore = new WritableStore<{i18n: I18nType}>({i18n});
 
     function forceStoreRefresh(): void {
         i18nStore.set({i18n});
@@ -157,7 +152,7 @@ function createI18nStore(i18n: i18nType): WritableStore<{i18n: i18nType}> {
 
 const i18nStore = createI18nStore(i18next);
 
-function currentI18n(): i18nType {
+function currentI18n(): I18nType {
     return i18nStore.get().i18n;
 }
 
@@ -185,11 +180,6 @@ export async function initialize(config: LocaleConfig): Promise<void> {
             fallbackLng: FALLBACK_LOCALE,
             debug: import.meta.env.DEBUG,
             returnNull: false,
-            i18nFormat: {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                parseLngForICU: (locale: (typeof LOCALES_WITH_TRANSLATIONS)[u53]) =>
-                    (DEBUG_LOCALES as string[]).includes(locale) ? 'de' : locale,
-            },
         });
 
     log.info('Initialization complete', {
@@ -218,6 +208,6 @@ async function setLanguage(locale: Locale): Promise<void> {
 // Svelte only re-renders the component using the store, when the store is updated.
 // Returning an object is a way to force triggering an update.
 // TODO(DESK-1081): `i18n` should not be a global, but exposed through `globals`.
-export const i18n: IQueryableStore<Pick<i18nType, 't'>> = derive(i18nStore, (updatedI18nStore) => ({
+export const i18n: IQueryableStore<Pick<I18nType, 't'>> = derive(i18nStore, (updatedI18nStore) => ({
     t: updatedI18nStore.i18n.t,
 }));

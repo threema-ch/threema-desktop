@@ -2,34 +2,34 @@
   "contacts": {
     "action--add-contact": "New Contact",
     "action--add-contact-cancel": "Cancel",
-    "action--add-contact-from-work-directory": "Add Contact from Directory",
+    "action--add-contact-from-work-directory": "Add Contact from Company Directory",
     "action--add-contact-next": "Next",
     "action--add-distribution-list": "New Distribution List",
     "action--add-group": "New Group",
     "action--delete": "Delete",
     "action--delete-contact": "Delete Contact",
     "action--edit": "Edit",
-    "action--group-members-show-all": "Show all",
-    "action--group-members-show-less": "Show less",
+    "action--group-members-show-all": "Show All",
+    "action--group-members-show-less": "Show Less",
     "error--add-contact": "Unable to add contact. Please check your Internet connection.",
-    "error--add-contact-threema-id-already-added": "Threema ID is already part of your contact list",
-    "error--add-contact-threema-id-is-own": "You cannot add your own Threema ID as contact. Hint: To keep private notes you can create a group with only yourself as member.",
-    "error--add-contact-threema-id-not-found": "Threema ID was not found or has been revoked",
-    "error--add-contact-threema-id-unable-to-validate": "Cannot check contact validity. Are you connected to the internet?",
-    "error--delete-contact": "Could not delete contact \"{name}\"",
-    "error--delete-group": "Could not delete group \"{name}\"",
-    "hint--badge-consumer": "This contact uses Threema's private version.",
-    "hint--badge-work": "This contact uses the business app \"Threema Work.\"",
+    "error--add-contact-threema-id-already-added": "This Threema ID is already part of your contact list.",
+    "error--add-contact-threema-id-is-own": "You cannot add your own Threema ID as a contact. Tip: For personal notes, you can create a group chat with you as the only member.",
+    "error--add-contact-threema-id-not-found": "This Threema ID could not be found or has been revoked.",
+    "error--add-contact-threema-id-unable-to-validate": "Couldn’t check if contact is valid. Is your device connected to the Internet?",
+    "error--delete-contact": "Contact “{name}” could not be deleted",
+    "error--delete-group": "Group “{name}” could not be deleted",
+    "hint--badge-consumer": "This contact uses Threema’s consumer version.",
+    "hint--badge-work": "This contact uses the business version Threema Work.",
     "hint--own-profile-picture": "My profile picture",
     "hint--profile-picture": "Profile picture of {name}",
     "hint--profile-picture-own": "My profile picture",
     "label--add-contact": "New Contact",
     "label--badge-work": "Threema Work Contact",
     "label--blocked": "Blocked",
-    "label--contact-detail": "Contact Detail",
+    "label--contact-detail": "Contact Details",
     "label--contacts": "Contacts",
     "label--first-name": "First Name",
-    "label--group-detail": "Group Detail",
+    "label--group-detail": "Group Details",
     "label--group-members-count-long": "{n, plural, =0 {No Group Members} =1 {1 Group Member} other {# Group Members}}",
     "label--group-members-count-short": "{n, plural, =1 {1 Member} other {# Members}}",
     "label--last-name": "Last Name",
@@ -46,14 +46,14 @@
     "label--threema-id": "Threema ID",
     "label--verification-level": "Verification Level",
     "prose--add-contact-instructions": "Please enter the Threema ID of the contact you would like to add:",
-    "prose--add-contact-instructions-work-directory": "Or search a contact in corporate directory and add it to your personal contact list:",
-    "success--delete-contact": "Successfully removed contact \"{name}\"",
-    "success--delete-group": "Successfully removed group \"{name}\""
+    "prose--add-contact-instructions-work-directory": "Alternatively, search a contact in the company directory, and add it to your contact list:",
+    "success--delete-contact": "Successfully removed contact “{name}”",
+    "success--delete-group": "Successfully removed group “{name}”"
   },
   "dialog--app-update": {
     "action--confirm": "OK",
-    "label--title": "Update available: {current} → {latest}",
-    "markup--linux-p1": "Please install the update through your system package manager, or by running <1>flatpak update</1> in your terminal.",
+    "label--title": "Update Available: {current} → {latest}",
+    "markup--linux-p1": "Please install the update through your system package manager or by running <1>flatpak update</1> in your terminal.",
     "markup--linux-p2": "For more information about this update, see <1 />.",
     "markup--macos-p1": "Please update by downloading and installing the latest release from <1 />.",
     "markup--other-os-p1": "Please update {name}.",
@@ -63,29 +63,29 @@
   "dialog--change-password": {
     "action--cancel": "Cancel",
     "action--confirm": "Confirm",
-    "error--current-password-incorrect": "Your current password is incorrect",
+    "error--current-password-incorrect": "The current password is incorrect",
     "error--current-password-present": "Please enter your current password",
-    "error--new-password-must-be-different": "New password must be different from the old one.",
+    "error--new-password-must-be-different": "The new password must be different from the old one",
     "error--password-equality": "Passwords do not match",
     "error--password-length": "Please enter at least {n, plural, =1 {1 character} other {# characters}}",
     "label--current-password": "Current Password",
     "label--new-password": "New Password",
     "label--repeat-new-password": "Repeat New Password",
     "label--title": "Change Password",
-    "prose--intro": "The password protects your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again.",
+    "prose--intro": "The password protects your messages, Threema ID, and other data on this computer. You have to enter it when opening Threema for desktop. Please note that there is no way to recover this password. If you forget it, you will have to link this device again.",
     "success--password-changed": "Successfully changed password"
   },
   "dialog--compose-media-message": {
-    "hint--drop-files-to-add": "Drop files here to add",
-    "label--media-message-caption": "Add a caption to this media format",
+    "hint--drop-files-to-add": "Drop files to send",
+    "label--media-message-caption": "Add a Caption",
     "label--send-as-file-option": "Send as File (Original Size)",
     "label--title": "Send File to {name}"
   },
   "dialog--delete-contact": {
     "action--cancel": "Cancel",
     "action--confirm": "Delete Contact + Chat History",
-    "label--title": "Delete \"{name}\"",
-    "prose--prompt": "Do you really want to delete this contact and the associated chat history?"
+    "label--title": "Delete “{name}”",
+    "prose--prompt": "Do you really want to delete this contact and the corresponding chat?"
   },
   "dialog--delete-message": {
     "action--cancel": "Cancel",
@@ -95,8 +95,8 @@
   "dialog--discard-media-message": {
     "action--cancel": "Cancel",
     "action--confirm": "Discard",
-    "label--title": "Discard Message Draft",
-    "prose--prompt": "Discard current media message draft?"
+    "label--title": "Discard Media",
+    "prose--prompt": "Discard unsent media messages?"
   },
   "dialog--edit-contact": {
     "action--cancel": "Cancel",
@@ -116,30 +116,30 @@
   "dialog--empty-conversation": {
     "action--cancel": "Cancel",
     "action--contact-conversation-confirm": "Empty Chat",
-    "action--distribution-list-conversation-confirm": "Empty Distribution List",
+    "action--distribution-list-conversation-confirm": "Empty Chat",
     "action--group-conversation-confirm": "Empty Group Chat",
     "label--title": "Empty Chat",
-    "prose--contact-conversation-prompt": "This will delete the {n, plural, =1 {only message} other {# messages}} of this chat with {name} on this device. Your linked devices won't be affected.",
-    "prose--distribution-list-conversation-prompt": "This will delete the {n, plural, =1 {only message} other {# messages}} of this \"{name}\" distribution list on this device. Your linked devices won't be affected.",
-    "prose--group-conversation-prompt": "This will delete the {n, plural, =1 {only message} other {# messages}} of this \"{name}\" group chat on this device. Your linked devices won't be affected."
+    "prose--contact-conversation-prompt": "This will delete {n, plural, =1 {the only message} other {all # messages}} in this chat with {name} on this device (but not on your linked devices).",
+    "prose--distribution-list-conversation-prompt": "This will delete {n, plural, =1 {the only message} other {all # messages}} in the “{name}” distribution list on this device (but not on your linked devices).",
+    "prose--group-conversation-prompt": "This will delete the {n, plural, =1 {the only message} other {all # messages}} in the “{name}” group chat on this device (but not on your linked devices)."
   },
   "dialog--error-connection": {
     "action--client-was-dropped-cancel": "OK",
-    "action--client-was-dropped-confirm": "Remove local profile and relink",
+    "action--client-was-dropped-confirm": "Remove Local Profile and Relink Device",
     "action--default-cancel": "OK",
-    "action--default-confirm": "Reconnect",
-    "label--title": "Connection Failed",
-    "markup--client-update-required-p1": "This version of Threema is no longer supported (outdated protocol version).",
-    "markup--client-update-required-p2": "To continue using Threema, please <1>update to the latest version</1>.",
-    "markup--client-was-dropped-p1": "This device has been unlinked. This means that you cannot currently send or receive new messages.",
-    "markup--client-was-dropped-p2": "If this was not triggered by you, please note that this might happen for technical reasons during the Beta phase. We apologize for the inconvience.",
-    "markup--client-was-dropped-p3": "For more information, see the <1>FAQ</1>.",
-    "prose--mediator-update-required-p1": "This version of Threema is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.",
+    "action--default-confirm": "Relink",
+    "label--title": "Relinking Failed",
+    "markup--client-update-required-p1": "This Threema version is no longer supported (outdated protocol version).",
+    "markup--client-update-required-p2": "Please <1>update to the latest version</1> to continue using Threema.",
+    "markup--client-was-dropped-p1": "This device has been unlinked, which is why you currently can’t send or receive new messages.",
+    "markup--client-was-dropped-p2": "If unlinking was not triggered by you, please note that this might happen during the beta phase for technical reasons. We apologize for the inconvience.",
+    "markup--client-was-dropped-p3": "For more information, see <1>this FAQ entry</1>.",
+    "prose--mediator-update-required-p1": "This Threema version is not compatible with your mediator server. The server uses an outdated protocol version and must be updated first.",
     "prose--mediator-update-required-p2": "Please contact your Threema server administrator."
   },
   "dialog--error-delete-contact": {
     "action--confirm": "OK",
-    "error--is-group-member": "\"{name}\" is still member of a group. Remove contact from group, or delete group.",
+    "error--is-group-member": "“{name}” is still member of a group. Remove the contact from the group or delete the group.",
     "label--title": "Unable to Delete Contact"
   },
   "dialog--forward-message": {
@@ -153,19 +153,19 @@
   "dialog--id-information": {
     "label--public-key": "Public Key",
     "label--title": "Threema ID",
-    "prose--threema-id-description-p1": "Each Threema user gets a randomly generated, 8-digit Threema ID when starting the app for the first time. This ID is your unique address in Threema and makes it possible to use Threema completely anonymously, without disclosing any personal information.",
-    "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema's servers to be distributed to your chat partners, the private key remains on your device where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender's device. They can only be decrypted with your personal private key."
+    "prose--threema-id-description-p1": "When starting the app for the first time, each Threema user gets a randomly generated 8-digit Threema ID. This ID is your unique address in Threema and makes it possible to use Threema completely anonymously, i.e., without having to disclose any personal information.",
+    "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so-called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema’s servers to be distributed to your chat partners, the private key remains on your device, where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender’s device and can only be decrypted with your personal private key."
   },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Need help?",
-    "label--title": "Confirm images on your mobile device"
+    "label--title": "Confirm Images on Your Mobile Device"
   },
   "dialog--linking-error": {
     "action--confirm": "Retry",
     "hint--expand-full-error-message": "Show full error",
-    "label--technical-details": "Technical details (click to expand)",
+    "label--technical-details": "Show Technical Details",
     "label--title": "Linking Unsuccessful",
-    "prose--description-connection-error": "The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.",
+    "prose--description-connection-error": "Connection to the server was lost before linking was complete. Please check your Internet connection and try again.",
     "prose--description-generic-error": "An error occurred during linking. Please try again."
   },
   "dialog--linking-scan": {
@@ -175,10 +175,10 @@
     "label--step-2": "Step 2:",
     "label--step-3": "Step 3:",
     "label--title": "Link Your iOS Device",
-    "markup--intro": "This beta works together with {threema} for iOS. Please note that some features are not yet available. <1>Learn more</1>",
+    "markup--intro": "This beta version can be used in connection with {threema} for iOS. Please note that some features are not yet available. <1>Learn more</1>",
     "markup--step-1": "Open the {threema} app on your mobile device",
-    "markup--step-2": "In the app, go to <1>Settings</1> → <1>Desktop/Web</1> → <1>Linked Device</1> and tap <1>Add Device</1>",
-    "markup--step-3": "Scan this QR Code"
+    "markup--step-2": "In the app, go to “<1>Settings</1> > <1>Desktop/Web</1> > <1>Linked Device</1>,” and tap “<1>Add Device</1>”",
+    "markup--step-3": "Scan this QR code"
   },
   "dialog--linking-set-password": {
     "action--confirm": "Next",
@@ -188,19 +188,19 @@
     "label--password": "Password",
     "label--repeat-password": "Repeat Password",
     "label--title": "Set Password",
-    "prose--intro": "The password will protect your messages, Threema ID and other data on this computer. You have to enter it when starting Threema for Desktop."
+    "prose--intro": "The password will protect your messages, Threema ID, and other data on this computer. You have to enter it when starting the desktop app."
   },
   "dialog--linking-success": {
-    "action--confirm": "Start using Threema",
+    "action--confirm": "Start Using Threema",
     "label--title": "Device Linked Successfully",
-    "markup--description-consumer": "You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).",
-    "markup--description-work": "You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off)."
+    "markup--description-consumer": "Threema can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet).",
+    "markup--description-work": "Threema Work can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet)."
   },
   "dialog--linking-sync": {
     "action--need-help": "Need help?",
-    "label--title-encrypting": "Encrypting keys with your password",
-    "label--title-receiving": "Receiving data",
-    "label--title-restoring": "Restoring data"
+    "label--title-encrypting": "Encrypting Keys with Your Password",
+    "label--title-receiving": "Receiving Data",
+    "label--title-restoring": "Restoring Data"
   },
   "dialog--message-details": {
     "label--created-date": "Created",
@@ -220,23 +220,23 @@
     "error--incorrect-password": "The entered password is incorrect. Please try again.",
     "label--password": "Password",
     "label--title": "Enter Password",
-    "markup--password-hint": "Forgot password? Please consult the <1>FAQ</1>."
+    "markup--password-hint": "Forgot password? Please consult <1>this FAQ entry</1>."
   },
   "dialog--unrecoverable-state": {
-    "action--cancel": "Continue with invalid state",
-    "action--confirm": "Reset and relink",
+    "action--cancel": "OK",
+    "action--confirm": "Reset and Relink",
     "label--title": "Unrecoverable State Detected",
-    "prose--description-p1": "We have detected that your local data is in an unrecoverable state. To prevent data loss, you cannot currently send or receive new messages. We apologize for the inconvience.",
-    "prose--description-p2": "To continue using Threema, you have to remove your local profile and relink.",
-    "prose--description-p3": "Please report this error to Threema Support from Threema on your mobile device (Settings > Beta Feedback). Note: Remember to save your logs before relinking, as they will be cleared."
+    "prose--description-p1": "We have detected that your local data is in an unrecoverable state. To prevent data loss, you currently can’t send or receive new messages. We apologize for the inconvience.",
+    "prose--description-p2": "To continue using Threema, you need to remove your local profile and relink the device.",
+    "prose--description-p3": "Please report this error to Threema’s support from the app on your mobile device (“Settings > Beta Feedback”). Note: Remember to save your logs before relinking, as they will be cleared."
   },
   "dialog--unsupported-feature-protected-conversation": {
     "label--title": "Private Chat",
-    "prose--description": "Private chats are not supported in {appName}."
+    "prose--description": "Private chats are not yet supported in {appName}."
   },
   "dialog--verification-levels": {
     "label--title": "Verification Levels",
-    "prose--intro": "The dots are an indicator for a contact`s verification level.",
+    "prose--intro": "The dots are an indicator for a contact’s verification level.",
     "prose--level-fully-verified-default": "You have personally verified the ID and public key of the person by scanning their QR code. Assuming their device has not been hijacked, you can be very sure that messages from this contact were really written by the person that they indicate.",
     "prose--level-fully-verified-work": "This verification level is only available in Threema Work; it indicates that the Threema ID belongs to an internal contact whose ID and public key you have verified by scanning their QR code.",
     "prose--level-server-verified-default": "The ID has been matched with a contact in your address book (by phone number or email). Since the server verifies phone numbers and email addresses, you can be reasonably sure that the person is who they claim to be.",
@@ -245,7 +245,7 @@
   },
   "locale": {
     "cimode": "Developer Mode",
-    "debug": "Debug Language",
+    "de": "German",
     "en": "English"
   },
   "messaging": {
@@ -253,9 +253,9 @@
     "action--conversation-option-more": "More",
     "action--conversation-option-unpin": "Unpin",
     "action--empty-conversation": "Empty Chat",
-    "action--file-sync-download": "Click to download file",
-    "action--file-sync-unknown-direction": "Unknown sync direction",
-    "action--file-sync-upload": "Click to upload file",
+    "action--file-sync-download": "Click to Download File",
+    "action--file-sync-unknown-direction": "Unknown Sync Direction",
+    "action--file-sync-upload": "Click to Upload File",
     "action--message-option-agree": "Agree",
     "action--message-option-copy": "Copy Message",
     "action--message-option-copy-link": "Copy Link",
@@ -265,14 +265,14 @@
     "action--message-option-forward": "Forward",
     "action--message-option-quote": "Quote",
     "action--message-option-save-as-file": "Save as File",
-    "error--add-files-empty": "Files couldn't be added",
-    "error--add-files-inaccessible": "Files couldn't be accessed",
-    "error--add-files-partially-inaccessible": "Some files couldn't be accessed",
+    "error--add-files-empty": "Files couldn’t be added",
+    "error--add-files-inaccessible": "Files couldn’t be accessed",
+    "error--add-files-partially-inaccessible": "Some files couldn’t be accessed",
     "error--blocked-contact": "You cannot send a message to this contact because it is blocked.",
     "error--conversation-not-found": "Conversation not found",
-    "error--copy-message-content": "Could not copy message content to clipboard",
+    "error--copy-message-content": "Could not copy message to clipboard",
     "error--copy-message-link": "Could not copy link to clipboard",
-    "error--copy-undefined-message-content": "Nothing to copy",
+    "error--copy-undefined-message-content": "There’s nothing to copy",
     "error--delete-message": "Could not delete message",
     "error--group-membership": "You are no longer part of this group.",
     "error--image-message-image-not-loaded": "The image could not be loaded.",
@@ -283,11 +283,11 @@
     "error--send-file-caption-too-long": "Caption is too long",
     "error--send-file-file-too-large": "File is too big",
     "error--send-file-miscellaneous-errors": "Some files contain errors",
-    "error--unsupported-message-type": "Unsupported message type \"{type}\"",
+    "error--unsupported-message-type": "Unsupported message type “{type}”",
     "hint--drop-files-to-send": "Drop files here to send",
-    "label--compose-area": "Write a message...",
+    "label--compose-area": "Write a message…",
     "label--default-file-message-preview": "File",
-    "label--default-filename": "(no name)",
+    "label--default-filename": "(no file name)",
     "label--default-image-message-preview": "Image",
     "label--default-sender-self": "Me: {text}",
     "label--mention-all": "All",
@@ -297,7 +297,7 @@
     "label--search-conversation": "Find Chat",
     "label--unread-messages-count": "{n, plural, =0 {} =1 {1 New Message} other {# New Messages}}",
     "markup--chat-empty-state": "This chat is linked with your mobile device. <1/>All future messages will appear here.",
-    "success--copy-message-content": "Message content copied to clipboard",
+    "success--copy-message-content": "Message copied to clipboard",
     "success--copy-message-link": "Link copied to clipboard"
   },
   "settings": {
@@ -314,6 +314,6 @@
   },
   "system": {
     "error--connection": "No server connection. Try reconnecting to Wi-Fi, or check your modem and router.",
-    "error--connection-unrecoverable-state": "This device was disconnected from the server due to an unrecoverable error. Please restart and relink."
+    "error--connection-unrecoverable-state": "This device was disconnected from the server due to an unexpected error. Please restart the app, and relink the device."
   }
 }

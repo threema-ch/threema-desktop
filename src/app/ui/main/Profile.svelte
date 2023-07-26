@@ -74,8 +74,8 @@
    * Hints for `npm run i18n:parse`:
    *
    * t('locale.cimode', 'Developer Mode');
-   * t('locale.debug', 'Debug Language');
    * t('locale.en', 'English');
+   * t('locale.de', 'Deutsch');
    *
    * DOC: https://github.com/i18next/i18next-parser#caveats
    */
