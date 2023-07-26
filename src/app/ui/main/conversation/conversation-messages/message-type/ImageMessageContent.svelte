@@ -16,6 +16,7 @@
   import {onDestroy} from 'svelte';
 
   import {globals} from '~/app/globals';
+  import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import Text from '~/app/ui/generic/form/Text.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {getExpectedDisplayDimensions} from '~/app/ui/main/conversation/conversation-messages';
@@ -57,6 +58,13 @@
     if (isImageModalVisible) {
       isImageModalVisible = false;
     }
+  }
+
+  function handleContextMenuAction(event: MouseEvent): void {
+    event.preventDefault();
+
+    // Prevent ancestor elements from receiving the `contextmenu` event.
+    event.stopPropagation();
   }
 
   function getThumbnail(controller: Remote<ConversationMessageViewModelController>): void {
@@ -151,7 +159,7 @@
     </div>
   {/if}
   {#if isImageModalVisible}
-    <div class="modal">
+    <div class="modal" use:contextMenuAction={handleContextMenuAction}>
       <ImageDetail
         {messageViewModelController}
         dimensions={message.body.dimensions}

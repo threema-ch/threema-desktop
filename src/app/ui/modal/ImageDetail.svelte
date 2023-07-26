@@ -195,6 +195,7 @@
 
     &::before {
       content: '';
+      pointer-events: none;
       display: block;
       position: absolute;
       width: calc(100% + rem(256px));
