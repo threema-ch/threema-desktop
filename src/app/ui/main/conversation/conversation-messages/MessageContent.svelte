@@ -62,11 +62,6 @@
   @use 'component' as *;
 
   .container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: rem(8px);
-
     &.is-quoted {
       .text,
       .unsupported-message {
