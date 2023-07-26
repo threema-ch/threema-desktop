@@ -4,6 +4,7 @@ import {
     type CryptoBoxBackend,
     type EncryptedData,
     type EncryptedDataWithNonceAhead,
+    isNonce,
     NACL_CONSTANTS,
     type Nonce,
     NONCE_UNGUARDED_SCOPE,
@@ -137,7 +138,7 @@ export class CryptoBoxEncryptor<
         return this._plain;
     }
 
-    public encryptWithNonce(nonce: Nonce): EncryptedData {
+    public encryptWithDangerousUnguardedNonce(nonce: Nonce): EncryptedData {
         // Encrypt data in-place
         this._encrypt(nonce);
 
@@ -164,7 +165,14 @@ export class CryptoBoxEncryptor<
 
     public encryptWithRandomNonce(): [nonce: Nonce, encrypted: EncryptedData] {
         // Generate cryptographically secure random nonce and encrypt data in-place
-        const nonce = this._encryptInPlaceWithRandomNonce();
+        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce();
+        let nonce;
+        if (isNonce(nonceOrNonceGuard)) {
+            nonce = nonceOrNonceGuard;
+        } else {
+            nonce = nonceOrNonceGuard.nonce;
+            nonceOrNonceGuard.commit();
+        }
 
         // Return nonce and cipher-text view
         const encrypted = this._array.subarray(
@@ -175,7 +183,14 @@ export class CryptoBoxEncryptor<
 
     public encryptWithRandomNonceAhead(): EncryptedDataWithNonceAhead {
         // Generate cryptographically secure random nonce and encrypt data in-place
-        const nonce = this._encryptInPlaceWithRandomNonce();
+        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce();
+        let nonce;
+        if (isNonce(nonceOrNonceGuard)) {
+            nonce = nonceOrNonceGuard;
+        } else {
+            nonce = nonceOrNonceGuard.nonce;
+            nonceOrNonceGuard.commit();
+        }
 
         // Move the nonce just ahead of the encrypted data
         const encryptedWithNonceAhead = this._array.subarray(this._box.crypto.encryptedHeadroom);
@@ -185,36 +200,44 @@ export class CryptoBoxEncryptor<
         return encryptedWithNonceAhead as EncryptedDataWithNonceAhead;
     }
 
-    private _encryptInPlaceWithRandomNonce(): Nonce {
+    private _encryptInPlaceWithRandomNonce(): TNonceScope extends NonceUnguardedScope
+        ? Nonce
+        : INonceGuard {
         // Generate cryptographically secure random nonce
-        const nonce = this._box.crypto.randomBytes(
-            this._array.subarray(0, NACL_CONSTANTS.NONCE_LENGTH),
-        ) as Nonce;
 
-        // Encrypt data in-place
-        this._encrypt(nonce);
+        if (this._box.nonceScope === NONCE_UNGUARDED_SCOPE) {
+            const nonce = this._box.crypto.randomBytes(
+                this._array.subarray(0, NACL_CONSTANTS.NONCE_LENGTH),
+            ) as Nonce;
 
-        // Done
-        return nonce;
-    }
+            // Encrypt data in-place
+            this._encrypt(nonce);
 
-    private _encrypt(
-        nonce: Nonce,
-    ): TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard {
-        // Ensure we haven't already encrypted
-        if (this._plain === undefined) {
-            throw new CryptoError('Cannot encrypt, data already encrypted');
-        }
-
-        // Ensure the nonce is unique
-        const {nonceScope} = this._box;
-        let nonceGuard = undefined;
-        if (nonceScope !== NONCE_UNGUARDED_SCOPE) {
+            // Done
+            return nonce as TNonceScope extends NonceUnguardedScope ? Nonce : INonceGuard;
+        } else {
             assert(
                 this._box.nonceService !== undefined,
                 'NonceService must be defined since nonceScope is not NonceUnguardedScope',
             );
-            nonceGuard = this._box.nonceService.checkNonce(nonceScope, nonce);
+
+            const nonceGuard = this._box.nonceService.getRandomNonce(this._box.nonceScope);
+
+            const arrayHeadroom = this._array.subarray(0, NACL_CONSTANTS.NONCE_LENGTH);
+            arrayHeadroom.set(nonceGuard.nonce);
+
+            // Encrypt data in-place
+            this._encrypt(nonceGuard.nonce);
+
+            // Done
+            return nonceGuard as TNonceScope extends NonceUnguardedScope ? Nonce : INonceGuard;
+        }
+    }
+
+    private _encrypt(nonce: Nonce): void {
+        // Ensure we haven't already encrypted
+        if (this._plain === undefined) {
+            throw new CryptoError('Cannot encrypt, data already encrypted');
         }
 
         // Encrypt data in-place
@@ -223,7 +246,6 @@ export class CryptoBoxEncryptor<
 
         // Remove plain-text view
         this._plain = undefined;
-        return nonceGuard as TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard;
     }
 }
 

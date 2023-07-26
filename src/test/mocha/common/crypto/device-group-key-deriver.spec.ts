@@ -45,7 +45,9 @@ export function run(): void {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             box: CryptoBox<never, never, never, never, any>,
         ): EncryptedData {
-            return box.encryptor(CREATE_BUFFER_TOKEN, plaintext).encryptWithNonce(nonce);
+            return box
+                .encryptor(CREATE_BUFFER_TOKEN, plaintext)
+                .encryptWithDangerousUnguardedNonce(nonce);
         }
 
         function encryptTestDataForAllKeys(

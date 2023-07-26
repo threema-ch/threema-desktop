@@ -40,7 +40,7 @@ export function run(): void {
                             crypto
                                 .getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                                 .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                                .encryptWithNonce(nonce),
+                                .encryptWithDangerousUnguardedNonce(nonce),
                         ),
                         encryptedWithPublicKeyEncryption: bytesToHex(
                             crypto
@@ -53,7 +53,7 @@ export function run(): void {
                                     undefined,
                                 )
                                 .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                                .encryptWithNonce(nonce),
+                                .encryptWithDangerousUnguardedNonce(nonce),
                         ),
                     },
                 };
@@ -80,7 +80,7 @@ export function run(): void {
                         const encryptedWithGivenNonce = crypto
                             .getSharedBox(publicKey, secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithNonce(nonce);
+                            .encryptWithDangerousUnguardedNonce(nonce);
 
                         expect(encryptedWithRandomNonce).to.eql(encryptedWithGivenNonce);
                     }
@@ -106,7 +106,7 @@ export function run(): void {
                         const encryptedWithGivenNonce = crypto
                             .getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithNonce(nonce);
+                            .encryptWithDangerousUnguardedNonce(nonce);
 
                         expect(encryptedWithRandomNonce).to.eql(encryptedWithGivenNonce);
                     }
@@ -130,12 +130,12 @@ export function run(): void {
                         const encryptedWithKey1 = crypto
                             .getSecretBox(key1, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithNonce(nonce1);
+                            .encryptWithDangerousUnguardedNonce(nonce1);
 
                         const encryptedWithKey2 = crypto
                             .getSecretBox(key2, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithNonce(nonce1);
+                            .encryptWithDangerousUnguardedNonce(nonce1);
 
                         expect(bytesToHex(encryptedWithKey1)).not.to.eql(
                             bytesToHex(encryptedWithKey2),
@@ -148,12 +148,12 @@ export function run(): void {
                         const encryptedWithKey1 = crypto
                             .getSecretBox(key1, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithNonce(nonce1);
+                            .encryptWithDangerousUnguardedNonce(nonce1);
 
                         const encryptedWithKey2 = crypto
                             .getSecretBox(key1, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithNonce(nonce2);
+                            .encryptWithDangerousUnguardedNonce(nonce2);
 
                         expect(bytesToHex(encryptedWithKey1)).not.to.eql(
                             bytesToHex(encryptedWithKey2),

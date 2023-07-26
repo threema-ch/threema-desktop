@@ -244,7 +244,7 @@ export async function encryptAndUploadBlobWithEncryptionKey(
     const box = crypto.getSecretBox(key, NONCE_UNGUARDED_SCOPE, undefined);
     const encryptedBytes = box
         .encryptor(CREATE_BUFFER_TOKEN, bytes as PlainData)
-        .encryptWithNonce(nonce);
+        .encryptWithDangerousUnguardedNonce(nonce);
 
     // Upload encrypted data
     const blobId = await blob.upload(uploadScope, encryptedBytes);

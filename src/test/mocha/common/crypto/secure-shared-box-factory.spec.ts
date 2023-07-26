@@ -42,7 +42,7 @@ export function run(): void {
                             boxFactory
                                 .getSharedBox(ensurePublicKey(hexToBytes(testCase.publicKey)))
                                 .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                                .encryptWithNonce(nonce),
+                                .encryptWithDangerousUnguardedNonce(nonce),
                         ),
                     },
                 };

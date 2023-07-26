@@ -113,7 +113,7 @@ function createMessage(
                 ),
             }),
         )
-        .encryptWithNonce(messageAndMetadataNonce);
+        .encryptWithDangerousUnguardedNonce(messageAndMetadataNonce);
     return {
         senderIdentity: sender.identity.bytes,
         receiverIdentity: UTF8.encode(receiver),
@@ -540,11 +540,11 @@ export function run(): void {
                 const plainThumbnailBlobBytes = new Uint8Array([9, 8, 9]) as PlainData;
                 const encryptedFileBlobBytes = encryptionSecretBox
                     .encryptor(CREATE_BUFFER_TOKEN, plainFileBlobBytes)
-                    .encryptWithNonce(BLOB_FILE_NONCE);
+                    .encryptWithDangerousUnguardedNonce(BLOB_FILE_NONCE);
                 await blob.upload('public', encryptedFileBlobBytes);
                 const encryptedThumbnailBlobBytes = encryptionSecretBox
                     .encryptor(CREATE_BUFFER_TOKEN, plainThumbnailBlobBytes)
-                    .encryptWithNonce(BLOB_THUMBNAIL_NONCE);
+                    .encryptWithDangerousUnguardedNonce(BLOB_THUMBNAIL_NONCE);
                 const fileBlobId = await blob.upload('public', encryptedFileBlobBytes);
                 const thumbnailBlobId = await blob.upload('public', encryptedThumbnailBlobBytes);
 

@@ -358,7 +358,7 @@ export class OutgoingCspMessageTask<
                         createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     }),
                 )
-                .encryptWithRandomNonce();
+                .encryptWithDangerousUnguardedNonce(messageAndMetadataNonce);
 
             // Encrypt message and use the same nonce as used for the metadata
             const messageBox = device.csp.ck
@@ -374,7 +374,7 @@ export class OutgoingCspMessageTask<
                         ),
                     }),
                 )
-                .encryptWithNonce(messageAndMetadataNonce);
+                .encryptWithDangerousUnguardedNonce(messageAndMetadataNonce);
 
             // Send message
             await handle.write({
