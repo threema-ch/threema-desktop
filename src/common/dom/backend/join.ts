@@ -3,6 +3,7 @@
  */
 
 import {type ServicesForBackend} from '~/common/backend';
+import {type NonceHash} from '~/common/crypto';
 import {randomU64} from '~/common/crypto/random';
 import {type DeviceIds} from '~/common/device';
 import {type RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
@@ -47,6 +48,8 @@ export interface DeviceJoinResult {
     readonly serverGroup: ServerGroup;
     readonly deviceIds: DeviceIds;
     readonly dgk: RawDeviceGroupKey;
+    readonly cspHashedNonces: Set<NonceHash>;
+    readonly d2dHashedNonces: Set<NonceHash>;
 }
 
 /**
@@ -456,6 +459,8 @@ export class DeviceJoinProtocol {
         const rawCk = essentialData.identityData.ck;
         const serverGroup = essentialData.identityData.cspServerGroup;
         const dgk = essentialData.deviceGroupData.dgk;
+        const cspHashedNonces = essentialData.cspHashedNonces;
+        const d2dHashedNonces = essentialData.d2dHashedNonces;
 
         // Generate random device IDs
         const deviceIds = {
@@ -466,6 +471,6 @@ export class DeviceJoinProtocol {
         // Cache essential data
         this._essentialData.set(essentialData);
 
-        return {identity, rawCk, serverGroup, deviceIds, dgk};
+        return {identity, rawCk, serverGroup, deviceIds, dgk, cspHashedNonces, d2dHashedNonces};
     }
 }

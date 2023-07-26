@@ -1,5 +1,6 @@
 import * as v from '@badrap/valita';
 
+import {ensureNonceHash, type NonceHash} from '~/common/crypto';
 import {common, join, sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import * as DeltaImage from '~/common/network/protobuf/validate/common/delta-image';
@@ -11,17 +12,18 @@ import {profilePictureShareWithFromSchema} from '~/common/network/protobuf/valid
 import {ensureIdentityString, ensureServerGroup} from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
+import {bytesToHex} from '~/common/utils/byte';
 import {unixTimestampToDateMs} from '~/common/utils/number';
-import {instanceOf, nullOptional, unsignedLongAsU64} from '~/common/utils/valita-helpers';
+import {instanceOf, nullOptional, unsignedLongAsU64, validate} from '~/common/utils/valita-helpers';
 
 const SCHEMA_IDENTITY_DATA = validator(
     join.EssentialData.IdentityData,
     v
         .object({
-            identity: v.string().map(ensureIdentityString),
+            identity: validate(v.string(), ensureIdentityString),
             ck: instanceOf(Uint8Array).map(wrapRawClientKey),
             cspDeviceCookie: nullOptional(instanceOf<ReadonlyUint8Array>(Uint8Array)), // TODO(DESK-999)
-            cspServerGroup: v.string().map(ensureServerGroup),
+            cspServerGroup: validate(v.string(), ensureServerGroup),
         })
         .rest(v.unknown()),
 );
@@ -100,6 +102,19 @@ export const SCHEMA_USER_PROFILE = validator(
         .rest(v.unknown()),
 );
 
+function validatedHashedNoncesSet(): v.Type<Set<NonceHash>> {
+    return v.array(validate(instanceOf(Uint8Array), ensureNonceHash)).chain((array) => {
+        const hashSet = new Set(array);
+        const hashStringSet = new Set(array.map((hash) => bytesToHex(hash)));
+
+        if (hashSet.size !== hashStringSet.size) {
+            v.err('Hash set contains duplicate hashes');
+        }
+
+        return v.ok(hashSet);
+    });
+}
+
 /** Validates {@link join.EssentialData} */
 export const SCHEMA = validator(
     join.EssentialData,
@@ -114,8 +129,8 @@ export const SCHEMA = validator(
             contacts: v.array(SCHEMA_AUGMENTED_CONTACT),
             groups: v.array(SCHEMA_AUGMENTED_GROUP),
             distributionLists: v.array(SCHEMA_AUGMENTED_DISTRIBUTION_LIST),
-            cspHashedNonces: v.array(instanceOf(Uint8Array)), // TODO(DESK-1064)
-            d2dHashedNonces: v.array(instanceOf(Uint8Array)), // TODO(DESK-1064)
+            cspHashedNonces: validatedHashedNoncesSet(),
+            d2dHashedNonces: validatedHashedNoncesSet(),
         })
         .rest(v.unknown()),
 );

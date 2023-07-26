@@ -8,6 +8,7 @@ import Long from 'long';
 import * as Unit from '~/common/network/protobuf/validate/common/unit';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {type u53, type u64} from '~/common/types';
+import {ensureError} from '~/common/utils/assert';
 import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
 
 /**
@@ -57,6 +58,22 @@ export function unsignedLongAsU64(): v.Type<u64> {
             );
         })
         .map(intoU64);
+}
+
+/**
+ * Validate and cast a value with a `ensure`-function which throws an error if the validation fails.
+ */
+export function validate<TIn, TOut>(
+    schema: v.Type<TIn>,
+    ensureFunction: (value: TIn) => TOut,
+): v.Type<TOut> {
+    return schema.chain((inValue) => {
+        try {
+            return v.ok(ensureFunction(inValue));
+        } catch (e) {
+            return v.err(ensureError(e));
+        }
+    });
 }
 
 /**

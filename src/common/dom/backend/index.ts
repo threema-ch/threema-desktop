@@ -836,11 +836,15 @@ export class Backend implements ProxyMarked {
         // Create database
         const db = factories.db({config}, logging.logger('db'), databaseKey, false);
 
-        // Create nonces service
+        // Create nonces service and import nonces from joinResult
         const nonces = new NonceService(
             {crypto: services.crypto, db, logging},
             new Identity(joinResult.identity),
         );
+        log.info(`Importing ${joinResult.cspHashedNonces.size} CSP nonces.`);
+        nonces.importNonces(NonceScope.CSP, joinResult.cspHashedNonces);
+        log.info(`Importing ${joinResult.d2dHashedNonces.size} D2D nonces.`);
+        nonces.importNonces(NonceScope.D2D, joinResult.d2dHashedNonces);
 
         // Wrap the client key (but keep a copy for the key storage)
         const rawCkForKeyStorage = wrapRawClientKey(joinResult.rawCk.unwrap().slice());
