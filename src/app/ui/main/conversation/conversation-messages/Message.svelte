@@ -80,6 +80,8 @@
   } else {
     messageFooterStatus = undefined;
   }
+
+  $: isQuoted = quote !== undefined && quote !== 'not-found';
 </script>
 
 <template>
@@ -112,6 +114,7 @@
         {message}
         messageViewModelController={viewModelBundle.viewModelController}
         mentions={$viewModelStore.mentions}
+        {isQuoted}
         on:saveFile={() => dispatch('saveFile')}
       />
     </span>
