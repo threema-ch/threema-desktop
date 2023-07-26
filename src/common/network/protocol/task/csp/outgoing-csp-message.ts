@@ -1,6 +1,7 @@
 /**
  * Outgoing message task.
  */
+import {type Nonce} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
@@ -13,6 +14,7 @@ import {
     CspE2eGroupConversationTypeUtils,
     type CspE2eStatusUpdateType,
     MessageFilterInstruction,
+    NonceScope,
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
@@ -41,7 +43,7 @@ import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d
 import * as structbuf from '~/common/network/structbuf';
 import {conversationIdForReceiver, type MessageId} from '~/common/network/types';
 import {type u53} from '~/common/types';
-import {assert, debugAssert, unreachable} from '~/common/utils/assert';
+import {assert, assertUnreachable, debugAssert, unreachable} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {
@@ -121,6 +123,12 @@ export interface IOutgoingCspMessageTaskConstructor {
 }
 
 /**
+ * Array with Nonces that may only be accessed with {@link Array.pop} or {@link Array.map} for
+ * processing.
+ */
+type NonceList = Pick<Nonce[], 'pop' | 'length' | 'map'>;
+
+/**
  * The outgoing message task has the following responsibilities:
  *
  * - Potentially reflect message via D2D
@@ -162,6 +170,7 @@ export class OutgoingCspMessageTask<
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<Date | undefined> {
+        const {nonces} = this._services;
         this._log.debug('Run task');
 
         // Unpack message properties
@@ -196,14 +205,6 @@ export class OutgoingCspMessageTask<
         // Construct encrypted message box
         const messageBytes = encoder.encode(new Uint8Array(encoder.byteLength()));
 
-        // Reflect message to other devices
-        if (this._reflect) {
-            this._log.info(`Reflecting outgoing ${messageTypeDebug} message`);
-            await this._reflectMessage(handle, messageBytes);
-        } else {
-            this._log.debug(`Skip reflecting outgoing ${messageTypeDebug} message`);
-        }
-
         // Get message receiver contacts
         const allReceivers = this._getReceiverContacts();
 
@@ -231,11 +232,36 @@ export class OutgoingCspMessageTask<
             receivers = allReceivers;
         }
 
+        /**
+         * List of unique nonce per receiver from {@link receivers}.
+         * Commits the prepared nonces directly when generated.
+         */
+        const preparedNonces: NonceList = [...receivers].map(() => {
+            const nonceGuard = nonces.getRandomNonce(NonceScope.CSP);
+            const nonce = nonceGuard.nonce;
+            nonceGuard.commit();
+            return nonce;
+        });
+
+        // Reflect message to other devices
+        if (this._reflect) {
+            this._log.info(`Reflecting outgoing ${messageTypeDebug} message`);
+            await this._reflectMessage(handle, messageBytes, preparedNonces);
+        } else {
+            this._log.debug(`Skip reflecting outgoing ${messageTypeDebug} message`);
+        }
+
         // Send message to receivers
         let sentMessagesCount = 0;
         if (receivers.size !== 0) {
             this._log.info(`Sending ${messageTypeDebug} message`);
-            sentMessagesCount = await this._encryptAndSendMessages(handle, receivers, messageBytes);
+            sentMessagesCount = await this._encryptAndSendMessages(
+                handle,
+                receivers,
+                preparedNonces,
+                messageBytes,
+            );
+            assert(preparedNonces.length === 0, 'All prepared nonces must have been consumed');
             this._log.info(`Sent ${sentMessagesCount} outgoing CSP messages`);
         } else {
             this._log.info(`Skip sending ${messageTypeDebug} message as it has no receivers`);
@@ -272,6 +298,7 @@ export class OutgoingCspMessageTask<
     private async _reflectMessage(
         handle: InternalActiveTaskCodecHandle,
         messageBytes: Uint8Array,
+        preparedNonces: NonceList,
     ): Promise<void> {
         const {createdAt, messageId, type} = this._messageProperties;
         await handle.reflect([
@@ -283,7 +310,7 @@ export class OutgoingCspMessageTask<
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type,
                     body: messageBytes,
-                    nonces: [], // TODO(DESK-826)
+                    nonces: preparedNonces as Nonce[] as Uint8Array[],
                 }),
             },
         ]);
@@ -298,6 +325,7 @@ export class OutgoingCspMessageTask<
     private async _encryptAndSendMessages(
         handle: InternalActiveTaskCodecHandle,
         receivers: Set<Contact>,
+        preparedNonces: NonceList,
         messageBytes: Uint8Array,
     ): Promise<u53> {
         const {device, crypto, model} = this._services;
@@ -328,6 +356,7 @@ export class OutgoingCspMessageTask<
                         `Sending message to blocked contact ${receiver.view.identity}, because the type ${type} is exempt from blocking`,
                     );
                 } else {
+                    preparedNonces.pop(); // Discard the nonce for this receiver
                     this._log.info(
                         `Not sending message to blocked contact ${receiver.view.identity}`,
                     );
@@ -344,7 +373,15 @@ export class OutgoingCspMessageTask<
             const metadataPadding = new Uint8Array(
                 Math.max(0, 16 - (encodedLegacyNickname?.encoded.byteLength ?? 0)),
             );
-            const [messageAndMetadataNonce, metadataContainer] = deriveMessageMetadataKey(
+
+            // Get a nonce for the metadataContainer and messageBox. The use of the nonce for two
+            // encryption operations is safe here (as designed in the protocol), since the metadata
+            // container is encrypted with a derived key, so the nonce is only used once for every
+            // key.
+            const messageAndMetadataNonce =
+                preparedNonces.pop() ?? assertUnreachable('Missing prepared nonce');
+
+            const metadataContainer = deriveMessageMetadataKey(
                 this._services,
                 device.csp.ck,
                 receiver.view.publicKey,
@@ -358,6 +395,7 @@ export class OutgoingCspMessageTask<
                         createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     }),
                 )
+                // See {@link messageAndMetadataNonce} on how the unguarded nonce is used here.
                 .encryptWithDangerousUnguardedNonce(messageAndMetadataNonce);
 
             // Encrypt message and use the same nonce as used for the metadata
@@ -374,6 +412,7 @@ export class OutgoingCspMessageTask<
                         ),
                     }),
                 )
+                // See {@link messageAndMetadataNonce} on how the unguarded nonce is used here.
                 .encryptWithDangerousUnguardedNonce(messageAndMetadataNonce);
 
             // Send message

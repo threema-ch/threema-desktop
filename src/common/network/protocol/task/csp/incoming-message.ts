@@ -230,13 +230,14 @@ type D2dIncomingMessageFragment = Omit<
 function getD2dIncomingReflectFragment(
     d2dMessageType: D2dCspMessageType,
     cspMessageBody: ReadonlyUint8Array,
+    nonceGuard: INonceGuard,
     createdAt: Date,
 ): D2dIncomingMessageFragment {
     return {
         createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
         type: d2dMessageType,
         body: cspMessageBody as Uint8Array,
-        nonce: new Uint8Array([]), // TODO(DESK-826): Include nonce
+        nonce: nonceGuard.nonce,
     };
 }
 
@@ -484,8 +485,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Decrypt and decode the message
         let container;
+        let nonceGuard;
         try {
-            [, container] = this._decodeAndDecryptContainer(senderPublicKey);
+            [nonceGuard, container] = this._decodeAndDecryptContainer(senderPublicKey);
         } catch (error) {
             this._log.warn(
                 `Discarding message because we could not decrypt or decode data: ${error}`,
@@ -529,6 +531,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 cspMessageBody,
                 senderContactOrInit,
                 metadata,
+                nonceGuard,
             );
         } catch (error) {
             this._log.info(`Discarding ${messageTypeDebug} message with invalid content: ${error}`);
@@ -973,6 +976,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         cspMessageBody: ReadonlyUint8Array,
         senderContactOrInit: ContactOrInit,
         metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
+        nonceGuard: INonceGuard,
     ): MessageProcessingInstructions | 'forward' | 'discard' {
         const message = this._message;
         const clampedCreatedAt = getClampedCreatedAt(
@@ -993,7 +997,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         };
 
         function reflectFragmentFor(d2dMessageType: D2dCspMessageType): D2dIncomingMessageFragment {
-            return getD2dIncomingReflectFragment(d2dMessageType, cspMessageBody, clampedCreatedAt);
+            return getD2dIncomingReflectFragment(
+                d2dMessageType,
+                cspMessageBody,
+                nonceGuard,
+                clampedCreatedAt,
+            );
         }
 
         function unhandled(

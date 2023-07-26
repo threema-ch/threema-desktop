@@ -6,6 +6,7 @@ import {
     ActivityState,
     CspE2eGroupControlType,
     GroupUserState,
+    NonceScope,
     TransactionScope,
 } from '~/common/enum';
 import * as protobuf from '~/common/network/protobuf';
@@ -390,6 +391,7 @@ async function runTask(
         innerData: new Uint8Array(0),
     };
     const messageId = randomMessageId(services.crypto);
+    const nonceGuard = services.nonces.getRandomNonce(NonceScope.CSP);
 
     const reflectIncomingGroupSetup = protobuf.utils.creator(protobuf.d2d.IncomingMessage, {
         type: CspE2eGroupControlType.GROUP_SETUP,
@@ -397,8 +399,9 @@ async function runTask(
         body: new Uint8Array([0x42, 0x42, 0x42]), // Fake data is OK for testing
         senderIdentity,
         messageId: intoUnsignedLong(randomMessageId(services.crypto)),
-        nonce: undefined, // TODO(DESK-826)
+        nonce: nonceGuard.nonce as Uint8Array,
     });
+    nonceGuard.commit();
 
     // Run task
     const task =
