@@ -213,7 +213,7 @@ export class OutgoingCspMessageTask<
 
         // Send message to receivers
         let sentMessagesCount = 0;
-        if (receivers.length !== 0) {
+        if (receivers.size !== 0) {
             this._log.info(`Sending ${messageTypeDebug} message`);
             sentMessagesCount = await this._encryptAndSendMessages(
                 handle,
@@ -282,7 +282,7 @@ export class OutgoingCspMessageTask<
      */
     private async _encryptAndSendMessages(
         handle: InternalActiveTaskCodecHandle,
-        receivers: Contact[],
+        receivers: Set<Contact>,
         messageBytes: Uint8Array,
         messageType: ValidGroupMessages | ValidContactMessages,
     ): Promise<u53> {
@@ -413,18 +413,18 @@ export class OutgoingCspMessageTask<
     }
 
     /**
-     * Get receiver(s) for this message.
+     * Get unique receiver(s) for this message.
      *
-     * If the receivers is an empty list, it means we are sending a message to a group we are the
+     * If the receivers is an empty set, it means we are sending a message to a group we are the
      * creator of and has no members - a notes group.
      *
      * @returns Contact Models of receiver.
      */
-    private _getReceiverContacts(): Contact[] {
+    private _getReceiverContacts(): Set<Contact> {
         const {model} = this._services;
         switch (this._receiver.type) {
             case ReceiverType.CONTACT:
-                return [this._receiver];
+                return new Set([this._receiver as Contact]);
 
             case ReceiverType.GROUP: {
                 const receivers: Contact[] = [];
@@ -452,7 +452,7 @@ export class OutgoingCspMessageTask<
                 // Sort contacts to have a deterministic message sending order
                 receivers.sort((a, b) => a.view.identity.localeCompare(b.view.identity));
 
-                return receivers;
+                return new Set(receivers);
             }
 
             case ReceiverType.DISTRIBUTION_LIST:
