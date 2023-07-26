@@ -106,6 +106,8 @@ $brandings: (
       --mc-message-hover-background-color: -g($mc, message-hover-background-color),
       --mc-message-background-color-incoming: -g($mc, message-background-color-incoming),
       --mc-message-background-color-outgoing: -g($mc, message-background-color-outgoing),
+      --mc-message-badge-color: -g($mc, message-badge-color),
+      --mc-message-badge-background-color: -g($mc, message-badge-background-color),
       --mc-message-overlay-background-color: -g($mc, message-overlay-background-color),
       --mc-message-overlay-button-color: -g($mc, message-overlay-button-color),
       --mc-message-overlay-button-background-color: -g($mc, message-overlay-button-background-color),

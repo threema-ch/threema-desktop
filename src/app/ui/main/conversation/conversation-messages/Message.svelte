@@ -8,6 +8,7 @@
   import IconButtonProgressBarOverlay from '#3sc/components/blocks/Button/IconButtonProgressBarOverlay.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import MessageBadge from '~/app/ui/main/conversation/conversation-messages/MessageBadge.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageContent from '~/app/ui/main/conversation/conversation-messages/MessageContent.svelte';
   import MessageFooter from '~/app/ui/main/conversation/conversation-messages/MessageFooter.svelte';
@@ -120,7 +121,17 @@
       />
     </span>
 
-    {#if !isImageWithoutCaption}
+    {#if isImageWithoutCaption}
+      <span class="badge">
+        <MessageBadge
+          direction={message.direction}
+          date={message.updatedAt}
+          status={messageFooterStatus}
+          receiverType={receiver.type}
+          reaction={message.lastReaction?.type}
+        />
+      </span>
+    {:else}
       <span class="footer">
         <MessageFooter
           direction={message.direction}
@@ -214,6 +225,13 @@
     .footer {
       grid-area: footer;
     }
+  }
+
+  .badge {
+    position: absolute;
+    display: flex;
+    right: rem(8px);
+    bottom: rem(8px);
   }
 
   .overlay {

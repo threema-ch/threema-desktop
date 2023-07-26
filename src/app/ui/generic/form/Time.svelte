@@ -6,8 +6,15 @@
    */
   export let date: Date;
 
+  /**
+   * Format variant:
+   *  - `datetime`: Display date and time.
+   *  - `time`: only display time.
+   */
+  export let format: 'datetime' | 'time' = 'datetime';
+
   function formatDate(dateParam: Date): string {
-    if (new Date().toDateString() === dateParam.toDateString()) {
+    if (new Date().toDateString() === dateParam.toDateString() || format === 'time') {
       // Display only the time for same day dates
       return getTimeIsoString(dateParam);
     } else {
