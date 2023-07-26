@@ -67,12 +67,8 @@ const translationDe: StrictPartial<typeof translationDeJson, BaseTranslationName
 
 // Consider keeping the locales in sync in the config/i18next-parser.config.js file.
 export const resources = {
-    en: {
-        translation: translationEn,
-    },
-    de: {
-        translation: translationDe,
-    },
+    de: {translation: translationDe},
+    en: {translation: translationEn},
 } as const;
 
 /**
@@ -85,6 +81,17 @@ const LOCALES_WITH_TRANSLATIONS = keys(resources);
 export const LOCALES = import.meta.env.DEBUG
     ? ([...LOCALES_WITH_TRANSLATIONS, 'cimode'] as const)
     : LOCALES_WITH_TRANSLATIONS;
+
+/**
+ * Mapping from locale identifier to name in that language.
+ */
+export const LOCALE_NAMES: {[Locale in keyof typeof resources]: string} & {
+    readonly cimode: string;
+} = {
+    cimode: 'Translation Keys',
+    de: 'Deutsch',
+    en: 'English',
+};
 
 export type Locale = (typeof LOCALES)[u53];
 
@@ -107,6 +114,7 @@ function getClosestAvailableLocale(locale: string): Locale {
         return locale;
     }
 
+    // TODO(DESK-1122): This is somewhat naive. Use a more intelligent algorithm.
     try {
         const minimizedLocale = new Intl.Locale(locale).language;
         if (isLocale(minimizedLocale)) {

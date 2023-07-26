@@ -162,6 +162,7 @@ export async function main(appState: AppState): Promise<App> {
 
     // Get system info
     const systemInfo = await window.app.getSystemInfo();
+    log.info(`System info: os=${systemInfo.os} (${systemInfo.arch}), locale=${systemInfo.locale}`);
 
     // Instantiate global hotkeys manager
     const hotkeyManager = new GlobalHotkeyManager(logging.logger('hotkey-manager'), systemInfo, {

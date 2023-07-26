@@ -581,6 +581,7 @@ function main(
                 return {
                     os: operatingSystem,
                     arch: process.arch,
+                    // TODO(DESK-1122): Improve this
                     locale: electron.app.getLocale(),
                 };
             },

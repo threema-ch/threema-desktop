@@ -243,11 +243,6 @@
     "prose--level-server-verified-work": "Diese Vertrauensstufe ist nur in Threema Work verfügbar und zeigt an, dass es sich um einen internen Firmenkontakt handelt.",
     "prose--level-unverified": "ID und öffentlicher Schlüssel wurden vom Server geholt, weil zum ersten Mal von diesem Kontakt eine Nachricht eingetroffen ist (oder der Kontakt manuell hinzugefügt wurde). Da kein passender Kontakt im Adressbuch gefunden wurde (mit Handynummer oder E-Mail-Adresse), kann man sich nicht sicher sein, ob die Person wirklich die ist, die sie in ihren Nachrichten vorgibt zu sein."
   },
-  "locale": {
-    "cimode": "Developer Mode",
-    "de": "Deutsch",
-    "en": "Englisch"
-  },
   "messaging": {
     "action--conversation-option-archive": "Archivieren",
     "action--conversation-option-more": "Mehr",
