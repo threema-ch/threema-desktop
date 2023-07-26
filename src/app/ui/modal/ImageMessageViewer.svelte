@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {createEventDispatcher, onDestroy} from 'svelte/internal';
+  import {createEventDispatcher, onDestroy, onMount} from 'svelte/internal';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
@@ -13,6 +13,8 @@
   import {type Remote, type RemoteProxy} from '~/common/utils/endpoint';
   import {GlobalTimer} from '~/common/utils/timer';
   import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
+
+  const FALLBACK_PLACEHOLDER_SIZE = 120;
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.modal.image-detail`);
 
@@ -34,6 +36,9 @@
   let image: ConversationMessageImageState = {
     status: 'loading',
   };
+  // Allow `null` here due to Svelte sometimes setting binds to null.
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let previewElement: HTMLElement | SVGSVGElement | undefined | null = undefined;
 
   // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
   // until displaying the image.
@@ -70,7 +75,6 @@
         if (bytes !== undefined) {
           // Revoke previous image URL.
           revokeImageUrl();
-
           // Generate new image URL.
           image = {
             status: 'loaded',
@@ -89,42 +93,53 @@
       });
   }
 
+  function handleOutsideClick(event: MouseEvent): void {
+    if (
+      previewElement !== null &&
+      previewElement !== undefined &&
+      !previewElement.contains(event.target as Node)
+    ) {
+      handleClose();
+    }
+  }
+
   $: if (messageViewModelController !== undefined) {
     getImage(messageViewModelController);
   }
 
+  onMount(() => {
+    window.addEventListener('click', handleOutsideClick);
+  });
+
   onDestroy(() => {
     revokeImageUrl();
+    window.removeEventListener('click', handleOutsideClick);
   });
 </script>
 
 <template>
   <div class="image-detail">
     <ModalWrapper visible={true}>
-      <ModalDialog
-        visible={true}
-        on:clickoutside={handleClose}
-        on:close={handleClose}
-        on:cancel={handleClose}
-      >
-        <div
-          class="body"
-          slot="body"
-          style={dimensions === undefined
-            ? ''
-            : `${
-                dimensions.width > dimensions.height
-                  ? `width: min(calc(100vw - 2.4rem), ${dimensions.width}px);`
-                  : `height: min(calc(100vh - 2.4rem), ${dimensions.height}px);`
-              } aspect-ratio: ${dimensions.width} / ${dimensions.height};`}
-        >
+      <ModalDialog visible={true} on:close={handleClose} on:cancel={handleClose}>
+        <div class="container" slot="body">
           {#if image.status === 'loading' || !minimalConnectTimerElapsed}
             <div class="progress">
               <CircularProgress variant="indeterminate" />
             </div>
+
+            <!-- SVG is used here to mimic the aspect-ratio-related behavior of an `img`. -->
+            <svg
+              bind:this={previewElement}
+              class="placeholder"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 {dimensions?.width ?? FALLBACK_PLACEHOLDER_SIZE} {dimensions?.height ??
+                FALLBACK_PLACEHOLDER_SIZE}"
+              preserveAspectRatio="xMidYMid meet"
+              width={dimensions?.width ?? FALLBACK_PLACEHOLDER_SIZE}
+              height={dimensions?.height ?? FALLBACK_PLACEHOLDER_SIZE}
+            />
           {:else if image.status === 'loaded'}
-            <!-- svelte-ignore a11y-img-redundant-alt -->
-            <img src={image.url} alt="Image message" on:click />
+            <img bind:this={previewElement} src={image.url} alt="Image message" on:click />
           {:else if image.status === 'failed'}
             <p class="error">
               {$i18n.t(
@@ -155,26 +170,36 @@
 
   .image-detail {
     --c-modal-dialog-padding: 0px;
+    --c-modal-dialog-background-color: transparent;
   }
 
-  .body {
+  .container {
+    display: block;
+    position: relative;
     display: grid;
-    place-content: center;
-    border-radius: rem(8px);
+    place-items: center;
     overflow: hidden;
-    min-width: rem(140px);
-    min-height: rem(140px);
-    max-width: calc(100vw - 2.4rem);
-    max-height: calc(100vh - 2.4rem);
+    max-width: 100vw;
+    max-height: 100vh;
+    padding: rem(18px);
 
+    .placeholder,
     img {
+      grid-area: 1 / 1;
+      border-radius: rem(8px);
       display: block;
-      width: 100%;
-      height: 100%;
       object-fit: contain;
+      min-width: rem(16px);
+      min-height: rem(16px);
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      background-color: var(--t-main-background-color);
     }
 
     .progress {
+      grid-area: 1 / 1;
       width: rem(32px);
       height: rem(32px);
     }

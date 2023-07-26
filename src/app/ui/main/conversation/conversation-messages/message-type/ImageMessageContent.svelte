@@ -20,7 +20,7 @@
   import Text from '~/app/ui/generic/form/Text.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {getExpectedDisplayDimensions} from '~/app/ui/main/conversation/conversation-messages';
-  import ImageDetail from '~/app/ui/modal/ImageDetail.svelte';
+  import ImageMessageViewer from '~/app/ui/modal/ImageMessageViewer.svelte';
   import {type Dimensions} from '~/common/types';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
@@ -60,7 +60,9 @@
 
   let isImageModalVisible = false;
 
-  function handleImageClick(): void {
+  function handleImageClick(event: MouseEvent): void {
+    event.stopPropagation();
+
     if (!isImageModalVisible && !isQuoted) {
       isImageModalVisible = true;
     }
@@ -192,7 +194,7 @@
     {/if}
     {#if isImageModalVisible}
       <div class="modal" use:contextMenuAction={handleContextMenuAction}>
-        <ImageDetail
+        <ImageMessageViewer
           {messageViewModelController}
           dimensions={message.body.dimensions}
           on:close={handleCloseModal}
