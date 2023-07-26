@@ -4,6 +4,7 @@
 import {type EncryptedData, type Nonce, type PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
+import {type INonceGuard} from '~/common/crypto/nonce';
 import {type DbContact, type UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
@@ -363,6 +364,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     public readonly transaction = undefined;
     private readonly _log: Logger;
     private readonly _id: MessageId;
+    private _nonceGuard: undefined | INonceGuard;
 
     public constructor(
         private readonly _services: ServicesForTasks,
@@ -374,7 +376,13 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
-        const result = await this._processIncomingCspMessage(handle);
+        let result;
+        try {
+            result = await this._processIncomingCspMessage(handle);
+        } catch (e) {
+            this._discardUnprocessedNonce();
+            throw ensureError(e);
+        }
         this._log.debug(`Task processing result: ${result}`);
         return undefined;
     }
@@ -453,9 +461,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // Decrypt and decode the metadata, if any
         //
         // If there is metadata, ensure the message IDs match
+        let metadataNonceGuard;
         let metadata;
         try {
-            metadata = this._decodeAndDecryptMetadata(senderPublicKey);
+            [metadataNonceGuard, metadata] = this._decodeAndDecryptMetadata(senderPublicKey);
         } catch (error) {
             this._log.warn(
                 `Discarding message because we could not decrypt or decode metadata: ${error}`,
@@ -467,14 +476,21 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             return await this._discard(handle);
         }
 
+        // Discard the metadata nonce since the same nonce is reused for the main container.
+        if (metadataNonceGuard !== undefined) {
+            metadataNonceGuard.discard();
+            this._nonceGuard = undefined;
+        }
+
         // Decrypt and decode the message
         let container;
         try {
-            container = this._decodeAndDecryptContainer(senderPublicKey);
+            [, container] = this._decodeAndDecryptContainer(senderPublicKey);
         } catch (error) {
             this._log.warn(
                 `Discarding message because we could not decrypt or decode data: ${error}`,
             );
+
             return await this._discard(handle);
         }
         const type = container.type;
@@ -765,8 +781,26 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }).run(handle);
         }
 
+        this._commitNonce();
+
         // Done
         return 'processed';
+    }
+
+    private _commitNonce(nonceOptional = false): void {
+        assert(
+            nonceOptional || this._nonceGuard !== undefined,
+            'A nonceguard should have been set prior to commiting',
+        );
+        this._nonceGuard?.commit();
+        this._nonceGuard = undefined;
+    }
+
+    private _discardUnprocessedNonce(): void {
+        if (this._nonceGuard?.processed.value === false) {
+            this._nonceGuard.discard();
+        }
+        this._nonceGuard = undefined;
     }
 
     /**
@@ -783,6 +817,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._log.warn(`Failed to acknowledge discarded message: ${error}`);
                 throw ensureError(error);
             }
+            this._commitNonce(true);
         }
         return 'discarded';
     }
@@ -792,6 +827,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         handle: ActiveTaskCodecHandle<'volatile'>,
         container: structbuf.csp.e2e.Container,
     ): Promise<'forwarded'> {
+        this._discardUnprocessedNonce();
         this._log.error(
             `TODO(DESK-194): Forwarding of message with unknown inbound CSP E2E type ${
                 container.type
@@ -850,10 +886,12 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
     private _decodeAndDecryptMetadata(
         senderPublicKey: PublicKey,
-    ): protobuf.validate.csp_e2e.MessageMetadata.Type | undefined {
+    ):
+        | [nonceGuard: INonceGuard, metadata: protobuf.validate.csp_e2e.MessageMetadata.Type]
+        | [nonceGuard: undefined, metadata: undefined] {
         const {device} = this._services;
         if (this._message.metadataLength === 0) {
-            return undefined;
+            return [undefined, undefined];
         }
         const {plainData, nonceGuard} = deriveMessageMetadataKey(
             this._services,
@@ -866,14 +904,17 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._message.metadataContainer as EncryptedData,
             )
             .decrypt();
-        // TODO: This will fail since the nonce has been taken before...
-        return protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
+        const parsedMessageMetadata = protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
             protobuf.csp_e2e.MessageMetadata.decode(plainData),
         );
-        // TODO: Handle nonce guard
+        assert(this._nonceGuard === undefined, 'No nonceguard should have been set prior.');
+        this._nonceGuard = nonceGuard;
+        return [nonceGuard, parsedMessageMetadata];
     }
 
-    private _decodeAndDecryptContainer(senderPublicKey: PublicKey): structbuf.csp.e2e.Container {
+    private _decodeAndDecryptContainer(
+        senderPublicKey: PublicKey,
+    ): [nonceGuard: INonceGuard, container: structbuf.csp.e2e.Container] {
         const {device} = this._services;
         const {nonceGuard, plainData} = device.csp.ck
             .getSharedBox(senderPublicKey)
@@ -883,8 +924,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._message.messageBox as EncryptedData,
             )
             .decrypt();
-        return structbuf.csp.e2e.Container.decode(plainData);
-        // TODO: Implement nonceguard handling
+
+        assert(this._nonceGuard === undefined, 'No nonceguard should have been set prior.');
+        this._nonceGuard = nonceGuard;
+
+        return [nonceGuard, structbuf.csp.e2e.Container.decode(plainData)];
     }
 
     private _getContactOrInit(

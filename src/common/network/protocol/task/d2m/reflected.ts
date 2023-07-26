@@ -1,6 +1,7 @@
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
+import {type INonceGuard} from '~/common/crypto/nonce';
 import {type Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {D2mPayloadType} from '~/common/network/protocol';
@@ -13,7 +14,7 @@ import {
 } from '~/common/network/protocol/task';
 import {getTaskForIncomingD2dMessage} from '~/common/network/protocol/task/d2d';
 import * as structbuf from '~/common/network/structbuf';
-import {ensureError} from '~/common/utils/assert';
+import {assert, ensureError} from '~/common/utils/assert';
 
 const REFLECT_ACK_RESERVED_BYTES = new Uint8Array(4);
 
@@ -23,6 +24,7 @@ export class ReflectedTask implements PassiveTask<void> {
     private readonly _log: Logger;
     private readonly _message: structbuf.d2m.payload.Reflected;
     private readonly _reflectedIdHex: string;
+    private _nonceGuard: INonceGuard | undefined;
 
     public constructor(
         private readonly _services: ServicesForTasks,
@@ -34,8 +36,19 @@ export class ReflectedTask implements PassiveTask<void> {
         );
         this._message = message;
     }
-
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
+        try {
+            return await this._processMessage(handle);
+        } catch (e) {
+            if (this._nonceGuard?.processed.value === false) {
+                this._nonceGuard.discard();
+            }
+            this._nonceGuard = undefined;
+            throw ensureError(e);
+        }
+    }
+
+    private async _processMessage(handle: PassiveTaskCodecHandle): Promise<void> {
         // Validate Reflected Message
         let validatedReflectedMessage;
         try {
@@ -44,7 +57,7 @@ export class ReflectedTask implements PassiveTask<void> {
             );
         } catch (error) {
             this._log.error(`Discarding reflected message due to validation error.`);
-            return await this._discard(handle);
+            return await this._discard(handle, true);
         }
 
         // Decrypt envelope
@@ -56,7 +69,7 @@ export class ReflectedTask implements PassiveTask<void> {
             );
         } catch (error) {
             this._log.error(`Discarding reflected message due to decryption error.`);
-            return await this._discard(handle);
+            return await this._discard(handle, true);
         }
 
         // Validate the Protobuf message
@@ -85,18 +98,31 @@ export class ReflectedTask implements PassiveTask<void> {
 
         // Send a D2M acknowledgement
         try {
-            return await this._acknowledgeMessage(handle);
+            await this._acknowledgeMessage(handle);
         } catch (error) {
             this._log.error(`Failed to acknowledge the message: ${error}`);
             throw ensureError(error);
         }
+
+        // Persist Nonces
+        return this._commitNonce();
     }
 
-    private async _discard(handle: PassiveTaskCodecHandle): Promise<void> {
+    private _commitNonce(nonceOptional = false): void {
+        assert(
+            this._nonceGuard !== undefined || nonceOptional,
+            'No nonce was set prior to committing.',
+        );
+        this._nonceGuard?.commit();
+        this._nonceGuard = undefined;
+    }
+
+    private async _discard(handle: PassiveTaskCodecHandle, nonceOptional = false): Promise<void> {
         // Send a D2M acknowledgement
         this._log.debug('Acknowledging discarded message');
         try {
             await this._acknowledgeMessage(handle);
+            this._commitNonce(nonceOptional);
         } catch (error) {
             this._log.warn(`Failed to acknowledge discarded message: ${error}`);
             throw ensureError(error);
@@ -119,9 +145,11 @@ export class ReflectedTask implements PassiveTask<void> {
         const decryptor = dgrk.decryptorWithNonceAhead(CREATE_BUFFER_TOKEN, encryptedEnvelope);
         const {plainData, nonceGuard} = decryptor.decrypt();
 
+        assert(this._nonceGuard === undefined, 'No prior nonceguard may be set.');
+        this._nonceGuard = nonceGuard;
+
         // Decode protobuf Envelop
         return protobuf.d2d.Envelope.decode(plainData);
-        // TODO: Handle nonce guard
     }
 
     private async _acknowledgeMessage(handle: PassiveTaskCodecHandle): Promise<void> {

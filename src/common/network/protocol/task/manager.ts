@@ -523,20 +523,33 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
     private _getTransactionScopeName(
         messagePayload: protobuf.d2m.TransactionRejected | protobuf.d2m.TransactionEnded,
     ): string {
-        const {plainData, nonceGuard} = this._services.device.d2d.dgtsk
-            .decryptorWithNonceAhead(
-                this._buffer.reset(),
-                ensureEncryptedDataWithNonceAhead(messagePayload.encryptedScope),
-            )
-            .decrypt();
-        const transactionScope = protobuf.d2d.TransactionScope.decode(plainData);
+        let nonceGuard;
+        let transactionScope;
+        try {
+            const encodedMessage = this._services.device.d2d.dgtsk
+                .decryptorWithNonceAhead(
+                    this._buffer.reset(),
+                    ensureEncryptedDataWithNonceAhead(messagePayload.encryptedScope),
+                )
+                .decrypt();
+            nonceGuard = encodedMessage.nonceGuard;
+            transactionScope = protobuf.d2d.TransactionScope.decode(encodedMessage.plainData);
+            nonceGuard.commit();
+        } catch (e) {
+            if (nonceGuard?.processed.value === false) {
+                nonceGuard.discard();
+            }
+            this._log.error(
+                `Transaction scope could not be decrypted with error '${ensureError(e).message}'.`,
+            );
+            return 'unknown (decryption error)';
+        }
         const transactionScopeName = TransactionScopeUtils.nameOf(transactionScope.scope);
         if (transactionScopeName === undefined) {
             this._log.debug(`Unexpected transaction scope: '${transactionScope.scope}'`);
             return 'UNKNOWN';
         }
         return transactionScopeName;
-        // TODO: Handle nonceguard
     }
 
     private async _write(message: OutboundL4Message): Promise<void> {
