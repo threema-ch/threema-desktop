@@ -82,6 +82,7 @@
   }
 
   $: isQuoted = quote !== undefined && quote !== 'not-found';
+  $: isImageWithoutCaption = message.type === 'image' && message.body.caption === undefined;
 </script>
 
 <template>
@@ -119,7 +120,7 @@
       />
     </span>
 
-    {#if !(message.type === 'image')}
+    {#if !isImageWithoutCaption}
       <span class="footer">
         <MessageFooter
           direction={message.direction}
