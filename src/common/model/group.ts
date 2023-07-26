@@ -210,7 +210,21 @@ function create(
 
     // Add members
     addGroupMembers(services, uid, memberUids);
+    if (init.creatorIdentity !== services.device.identity.string) {
+        // Ensure that admin is part of members as well
+        // TODO(DESK-558): Remove this block
+        const creatorUid = db.hasContactByIdentity(init.creatorIdentity);
+        assert(creatorUid !== undefined, 'Creator UID not found when adding group');
+        addGroupMember(services, uid, creatorUid);
+    }
     const memberIdentities = getGroupMemberIdentities(services, uid);
+    if (init.creatorIdentity !== services.device.identity.string) {
+        // TODO(DESK-558): Remove this block
+        assert(
+            memberIdentities.includes(init.creatorIdentity),
+            'Admin is not part of group members',
+        );
+    }
     const view = {
         ...group,
         displayName: getDisplayName({...group}, memberIdentities, services),
