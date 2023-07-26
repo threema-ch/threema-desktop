@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 
+import {NACL_CONSTANTS} from '~/common/crypto';
 import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
@@ -102,7 +103,7 @@ export function run(): void {
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eConversationType.TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
-                    nonce: new Uint8Array([]), // TODO(DESK-826)
+                    nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
                 };
                 const task = new ReflectedIncomingMessageTask(
                     services,
@@ -143,13 +144,14 @@ export function run(): void {
                         }),
                     },
                 );
+
                 const reflectedMessage: d2d.IncomingMessage = {
                     senderIdentity: user1.identity.string,
                     messageId: intoUnsignedLong(messageId),
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type: CspE2eGroupConversationType.GROUP_TEXT,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
-                    nonce: new Uint8Array([]), // TODO(DESK-826)
+                    nonce: services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
                 };
                 const task = new ReflectedIncomingMessageTask(
                     services,
@@ -209,6 +211,7 @@ export function run(): void {
                 } else {
                     messageEncoder = textMessageEncoder;
                 }
+
                 const reflectedMessage: d2d.OutgoingMessage = {
                     conversation: d2dConversationId,
                     messageId: intoUnsignedLong(messageId),
@@ -216,7 +219,9 @@ export function run(): void {
                     createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
                     type,
                     body: messageEncoder.encode(new Uint8Array(messageEncoder.byteLength())),
-                    nonces: [], // TODO(DESK-826)
+                    nonces: [
+                        services.crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
+                    ],
                 };
                 return reflectedMessage;
             }

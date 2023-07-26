@@ -1,3 +1,4 @@
+import {NONCE_REUSED} from '~/common/crypto/nonce';
 import {
     CspE2eConversationType,
     CspE2eGroupControlType,
@@ -5,6 +6,7 @@ import {
     CspE2eStatusUpdateType,
     MessageDirection,
     type MessageType,
+    NonceScope,
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
@@ -39,6 +41,7 @@ import {
     type MessageId,
 } from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
+import {bytesToHex} from '~/common/utils/byte';
 import {u64ToHexLe} from '~/common/utils/number';
 
 import {ReflectedGroupNameTask} from './reflected-group-name';
@@ -110,7 +113,7 @@ export class ReflectedOutgoingMessageTask
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
-        const {model} = this._services;
+        const {model, nonces} = this._services;
 
         // Validate the Protobuf message
         const validationResult = this._validateProtobuf(
@@ -121,11 +124,33 @@ export class ReflectedOutgoingMessageTask
             return;
         }
         const {validatedMessage, messageTypeDebug} = validationResult;
-        const {type, body, conversation: d2dConversationId} = validatedMessage;
+        const {
+            type,
+            body,
+            conversation: d2dConversationId,
+            nonces: messageNonces,
+        } = validatedMessage;
 
         this._log.info(
             `Received reflected outgoing ${messageTypeDebug} message from ${this._senderDeviceIdString}`,
         );
+
+        // Persist nonces
+        let importedNonces = 0;
+        for (const nonce of messageNonces) {
+            const guard = nonces.checkAndRegisterNonce(NonceScope.CSP, nonce);
+            const nonceHexString = bytesToHex(nonce);
+            if (guard === NONCE_REUSED) {
+                // This might happen due to resending nonces of already sent group messages
+                // (partially finished persisted tasks).
+                this._log.info(`Skip adding preexisting CSP nonce ${nonceHexString}`);
+            } else {
+                importedNonces++;
+                this._log.debug(`Persisting nonce ${nonceHexString}`);
+                guard.commit();
+            }
+        }
+        this._log.debug(`Imported ${importedNonces} nonces`);
 
         // Decode Body
         const validatedBody = this._decodeMessage(type, body, messageTypeDebug);

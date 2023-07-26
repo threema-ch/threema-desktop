@@ -1,3 +1,4 @@
+import {NONCE_REUSED} from '~/common/crypto/nonce';
 import {
     CspE2eConversationType,
     CspE2eGroupControlType,
@@ -5,6 +6,7 @@ import {
     CspE2eStatusUpdateType,
     MessageDirection,
     type MessageType,
+    NonceScope,
     ReceiverType,
 } from '~/common/enum';
 import {type Logger} from '~/common/logging';
@@ -39,6 +41,7 @@ import {
     type MessageId,
 } from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
+import {bytesToHex} from '~/common/utils/byte';
 
 import {ReflectedGroupNameTask} from './reflected-group-name';
 import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
@@ -109,7 +112,7 @@ export class ReflectedIncomingMessageTask
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
-        const {model} = this._services;
+        const {model, nonces} = this._services;
 
         // Validate the Protobuf message
         const validationResult = this._validateProtobuf(
@@ -120,7 +123,19 @@ export class ReflectedIncomingMessageTask
             return;
         }
         const {validatedMessage, messageTypeDebug} = validationResult;
-        const {type, body, senderIdentity} = validatedMessage;
+        const {type, body, senderIdentity, nonce: messageNonce} = validatedMessage;
+
+        // Persist nonce
+        const guard = nonces.checkAndRegisterNonce(NonceScope.CSP, messageNonce);
+        const nonceHexString = bytesToHex(messageNonce);
+        if (guard === NONCE_REUSED) {
+            // This might happen if a messages is being reprocessed, e.g. because it was not acked
+            // the first time due to an interrupted task.
+            this._log.info(`Skip adding preexisting CSP nonce ${nonceHexString}`);
+        } else {
+            this._log.debug(`Persisting nonce ${nonceHexString}`);
+            guard.commit();
+        }
 
         this._log.info(
             `Received reflected incoming ${messageTypeDebug} message from ${this._senderDeviceIdString}`,

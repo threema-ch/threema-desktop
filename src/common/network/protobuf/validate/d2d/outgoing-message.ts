@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 
-import {ensureNonceHash} from '~/common/crypto';
+import {ensureNonce} from '~/common/crypto';
 import {d2d} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
@@ -21,7 +21,7 @@ export const SCHEMA = validator(
             body: instanceOf(Uint8Array),
             createdAt: unsignedLongAsU64().map(unixTimestampToDateMs),
             type: MessageType.SCHEMA,
-            nonces: v.array(instanceOf(Uint8Array).map(ensureNonceHash)),
+            nonces: v.array(instanceOf(Uint8Array).map(ensureNonce)),
         })
         .rest(v.unknown()),
 );
