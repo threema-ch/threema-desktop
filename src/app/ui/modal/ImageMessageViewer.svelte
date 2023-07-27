@@ -8,6 +8,7 @@
   import {globals} from '~/app/globals';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import {nodeContainsTarget} from '~/app/ui/utils/node';
   import {type Dimensions} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {type Remote, type RemoteProxy} from '~/common/utils/endpoint';
@@ -37,8 +38,10 @@
     status: 'loading',
   };
   // Allow `null` here due to Svelte sometimes setting binds to null.
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  /* eslint-disable @typescript-eslint/ban-types */
   let previewElement: HTMLElement | SVGSVGElement | undefined | null = undefined;
+  let actionsContainer: HTMLElement | undefined | null = undefined;
+  /* eslint-enable @typescript-eslint/ban-types */
 
   // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
   // until displaying the image.
@@ -95,9 +98,8 @@
 
   function handleOutsideClick(event: MouseEvent): void {
     if (
-      previewElement !== null &&
-      previewElement !== undefined &&
-      !previewElement.contains(event.target as Node)
+      !nodeContainsTarget(previewElement, event.target) &&
+      !nodeContainsTarget(actionsContainer, event.target)
     ) {
       handleClose();
     }
@@ -152,7 +154,7 @@
           {/if}
         </div>
       </ModalDialog>
-      <div class="actions">
+      <div class="actions" bind:this={actionsContainer}>
         <IconButton flavor="naked" on:click={handleSave}>
           <MdIcon theme="Outlined">download</MdIcon>
         </IconButton>
