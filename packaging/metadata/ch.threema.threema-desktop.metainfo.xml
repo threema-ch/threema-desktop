@@ -21,6 +21,23 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta18" date="2023-07-31">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Add full support for image messages: sending, receiving and in-app display</li>
+                    <li>Add German translations</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Fix performance bug when loading contact list or chat list</li>
+                    <li>Fix bug that occurred during device linking with older Threema installations, related to server group validation</li>
+                    <li>Disable built-in Electron DNS resolver to improve privacy</li>
+                    <li>Various UI fixes</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta17" date="2023-07-13">
             <description>
                 <p>Improvements:</p>
