@@ -28,6 +28,8 @@
    * The last reaction
    */
   export let reaction: MessageReaction | undefined;
+
+  $: showStatus = status !== undefined || reaction !== undefined;
 </script>
 
 <template>
@@ -35,7 +37,7 @@
     <span class="time">
       <Time {date} format="time" />
     </span>
-    {#if status !== undefined}
+    {#if showStatus}
       <span class="status">
         <MessageStatus
           {direction}
