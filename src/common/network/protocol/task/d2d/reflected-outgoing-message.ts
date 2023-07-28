@@ -38,6 +38,7 @@ import {
     type MessageId,
 } from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
 
 import {ReflectedGroupNameTask} from './reflected-group-name';
 import {ReflectedGroupProfilePictureTask} from './reflected-group-profile-picture';
@@ -196,7 +197,9 @@ export class ReflectedOutgoingMessageTask
                 // Discard message if it has been already received
                 if (conversation.get().controller.hasMessage(validatedMessage.messageId)) {
                     this._log.warn(
-                        `Discarding ${this._direction} ${messageTypeDebug} message ${validatedMessage.messageId} as it was already received`,
+                        `Discarding ${this._direction} ${messageTypeDebug} message ${u64ToHexLe(
+                            validatedMessage.messageId,
+                        )} as it was already received`,
                     );
                     return;
                 }

@@ -68,7 +68,7 @@ export abstract class DeliveryReceiptTaskBase<
         for (const messageId of this._validatedDeliveryReceipt.messageIds) {
             const message = conversation.get().controller.getMessage(messageId)?.get();
             if (message === undefined) {
-                this._log.info(`Message with ID ${messageId} not found, ignoring`);
+                this._log.info(`Message with ID ${u64ToHexLe(messageId)} not found, ignoring`);
                 continue;
             }
             if (message.ctx !== this._expectedReferencedMessageDirection) {
