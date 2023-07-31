@@ -1,7 +1,7 @@
+import {downsizeImage} from '~/common/dom/utils/image';
 import {type Logger} from '~/common/logging';
 import {THUMBNAIL_MAX_SIZE} from '~/common/network/protocol/constants';
 import {type Dimensions} from '~/common/types';
-import {debugAssert, unwrap} from '~/common/utils/assert';
 import {type FilenameDetails} from '~/common/utils/file';
 import {type WritableStore} from '~/common/utils/store';
 import {getUtf8ByteLength} from '~/common/utils/string';
@@ -93,60 +93,19 @@ export async function generateThumbnail(
         return undefined;
     }
 
-    // Create image bitmap and wait for it to load
-    let bitmap;
-    try {
-        bitmap = await createImageBitmap(file);
-    } catch (error) {
-        log?.warn(`Could not load bitmap: ${error}`);
-        return undefined;
-    }
-
-    // Extract dimensions
-    const dimensions = {width: bitmap.width, height: bitmap.height};
-
-    // Determine media type and thumbnail scale factor
+    // Determine media type and thumbnail size
     //
     // Note: Chromium does not seem to compress PNGs, so we reduce their size instead to prevent
     //       thumbnails from getting too large
     const thumbnailMediaType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-    const mediaTypeScaleFactor = thumbnailMediaType === 'image/png' ? 0.5 : 1.0;
+    const thumbnailSize =
+        thumbnailMediaType === 'image/png' ? THUMBNAIL_MAX_SIZE / 2 : THUMBNAIL_MAX_SIZE;
 
-    // Downscale image to desired size
-    //
-    // Note: The OffscreenCanvas type has a Promise based API, in contrast to the callback-based
-    //       Canvas API. Thus the `transferControlToOffscreen` call.
-    const canvas = document.createElement('canvas').transferControlToOffscreen();
-    const ctx = unwrap(canvas.getContext('2d'), 'Canvas 2D context is undefined');
-    const scaleFactor =
-        Math.min(THUMBNAIL_MAX_SIZE / Math.max(dimensions.width, dimensions.height), 1.0) *
-        mediaTypeScaleFactor;
-    canvas.width = dimensions.width * scaleFactor;
-    canvas.height = dimensions.height * scaleFactor;
-    debugAssert(
-        canvas.width <= THUMBNAIL_MAX_SIZE,
-        `Thumbnail width ${canvas.width} is larger than max size of ${THUMBNAIL_MAX_SIZE}`,
-    );
-    debugAssert(
-        canvas.height <= THUMBNAIL_MAX_SIZE,
-        `Thumbnail height ${canvas.height} is larger than max size of ${THUMBNAIL_MAX_SIZE}`,
-    );
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'medium';
-    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-
-    // Release bitmap
-    bitmap.close();
-
-    // Extract thumbnail data from canvas
-    const thumbnailBlob = await canvas.convertToBlob({
-        type: thumbnailMediaType,
-        quality: 0.8, // Note: Ignored for PNGs
-    });
-    log?.debug(
-        `Generated thumbnail: ${thumbnailBlob.type}, dimensions=${canvas.width}x${
-            canvas.height
-        }, ${Math.floor(thumbnailBlob.size / 1024)} KiB`,
-    );
-    return {thumbnail: thumbnailBlob, originalDimensions: dimensions};
+    // Resize and return
+    const quality = 0.8;
+    const resized = await downsizeImage(file, thumbnailMediaType, thumbnailSize, quality, log);
+    if (resized === undefined) {
+        return undefined;
+    }
+    return {thumbnail: resized.resized, originalDimensions: resized.originalDimensions};
 }
