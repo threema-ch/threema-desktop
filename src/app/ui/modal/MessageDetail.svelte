@@ -118,11 +118,11 @@
             <ListElement label="Correlation ID">
               {message.view.correlationId}
             </ListElement>
+            <ListElement label="Media Types">
+              File: {message.view.mediaType}, Thumbnail: {message.view.thumbnailMediaType}
+            </ListElement>
           {/if}
           {#if message.type === 'image'}
-            <ListElement label="Media Types">
-              Image: {message.view.mediaType}, Thumbnail: {message.view.thumbnailMediaType}
-            </ListElement>
             <ListElement label="Image Rendering Type">
               {ImageRenderingTypeUtils.nameOf(message.view.renderingType)?.toLowerCase()}
             </ListElement>

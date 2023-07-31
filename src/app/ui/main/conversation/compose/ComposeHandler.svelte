@@ -72,18 +72,14 @@
    * Open the media compose message dialog.
    */
   function openMediaMessageDialog(files: File[], type: MediaFile['type']): void {
-    mediaFiles = files.map((file) => {
-      const thumbnailPromise = generateThumbnail(file, log);
-      return {
-        type,
-        file,
-        thumbnail: thumbnailPromise.then((result) => result?.thumbnail),
-        dimensions: thumbnailPromise.then((result) => result?.originalDimensions),
-        caption: new WritableStore<string | undefined>(undefined),
-        sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
-        sendAsFile: new WritableStore(false),
-      };
-    });
+    mediaFiles = files.map((file) => ({
+      type,
+      file,
+      thumbnail: generateThumbnail(file, log),
+      caption: new WritableStore<string | undefined>(undefined),
+      sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
+      sendAsFile: new WritableStore(false),
+    }));
 
     // If there is only one file, move the current compose text to the caption.
     if (mediaFiles.length === 1) {

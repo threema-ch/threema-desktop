@@ -20,6 +20,7 @@
   import {
     generateThumbnail,
     type MediaFile,
+    resizeImage,
     validateMediaFiles,
   } from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
@@ -27,9 +28,10 @@
   import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {ensureU53, type u53} from '~/common/types';
+  import {type Dimensions, ensureU53, type u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
+  import {isSupportedImageType} from '~/common/utils/image';
   import {WritableStore} from '~/common/utils/store';
   import {
     type SendFileBasedMessagesEventDetail,
@@ -135,21 +137,42 @@
 
     visible = false;
 
+    // Prepare files to be sent
     const files: SendFileBasedMessagesEventDetail['files'] = await Promise.all(
       mediaFiles.map(async (mediaFile) => {
+        const isImage = isSupportedImageType(mediaFile.file.type);
+
+        // If file is an image, downsize it to save bandwidth and strip metadata
+        let fileBlob: Blob;
+        let dimensions: Dimensions | undefined;
+        let sendAsFile = mediaFile.sendAsFile.get();
+        if (isImage && !sendAsFile) {
+          const resizeResult = await resizeImage(mediaFile.file);
+          if (resizeResult === undefined) {
+            log.warn(`Could not resize image with type ${mediaFile.file.type}, sending as file`);
+            fileBlob = mediaFile.file;
+            sendAsFile = true;
+          } else {
+            fileBlob = resizeResult.blob;
+            dimensions = resizeResult.dimensions;
+          }
+        } else {
+          fileBlob = mediaFile.file;
+        }
+
         const thumbnailBlob = await mediaFile.thumbnail;
         return {
-          bytes: new Uint8Array(await mediaFile.file.arrayBuffer()),
+          bytes: new Uint8Array(await fileBlob.arrayBuffer()),
           thumbnailBytes:
             thumbnailBlob !== undefined
               ? new Uint8Array(await thumbnailBlob.arrayBuffer())
               : undefined,
           caption: mediaFile.caption.get(),
           fileName: mediaFile.file.name,
-          fileSize: ensureU53(mediaFile.file.size),
-          mediaType: mediaFile.file.type,
-          dimensions: await mediaFile.dimensions,
-          sendAsFile: mediaFile.sendAsFile.get(),
+          fileSize: ensureU53(fileBlob.size),
+          mediaType: fileBlob.type,
+          dimensions,
+          sendAsFile,
         };
       }),
     );
@@ -179,18 +202,16 @@
     }
 
     const currentCount = mediaFiles.length;
-    const newMediaFiles = fileResult.files.map((file): MediaFile => {
-      const thumbnailPromise = generateThumbnail(file, log);
-      return {
+    const newMediaFiles = fileResult.files.map(
+      (file): MediaFile => ({
         type: 'local',
         file,
-        thumbnail: thumbnailPromise.then((result) => result?.thumbnail),
-        dimensions: thumbnailPromise.then((result) => result?.originalDimensions),
+        thumbnail: generateThumbnail(file, log),
         caption: new WritableStore<string | undefined>(undefined),
         sanitizedFilenameDetails: getSanitizedFileNameDetails(file),
         sendAsFile: new WritableStore(false),
-      };
-    });
+      }),
+    );
 
     mediaFiles = [...mediaFiles, ...newMediaFiles];
 

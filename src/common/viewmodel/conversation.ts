@@ -22,6 +22,7 @@ import {
     type Remote,
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
+import {isSupportedImageType} from '~/common/utils/image';
 import {type LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
@@ -155,7 +156,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
 
             // Determine message type based on media type
             let messageType: MessageType;
-            if (fileInfo.mediaType.startsWith('image/') && !fileInfo.sendAsFile) {
+            if (isSupportedImageType(fileInfo.mediaType) && !fileInfo.sendAsFile) {
                 messageType = MessageType.IMAGE;
             } else {
                 messageType = MessageType.FILE;

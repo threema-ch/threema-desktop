@@ -1,23 +1,41 @@
 import {type Logger} from '~/common/logging';
 import {type Dimensions, type f64, type u53} from '~/common/types';
 import {debugAssert, unwrap} from '~/common/utils/assert';
+import {isSupportedImageType} from '~/common/utils/image';
 
 /**
- * Resize the specified image. Return it, along with the original dimensions of the image.
+ * Return the dimensions of the specified image blob (or undefined if dimensions could not be
+ * determined).
+ */
+export async function getImageDimensions(image: Blob): Promise<Dimensions | undefined> {
+    // Create image bitmap and wait for it to load
+    try {
+        const bitmap = await createImageBitmap(image);
+        const dimensions = {width: bitmap.width, height: bitmap.height};
+        bitmap.close();
+        return dimensions;
+    } catch (error) {
+        return undefined;
+    }
+}
+
+/**
+ * Resize the specified image. Return it, along with the original and resized dimensions of the
+ * image.
  *
  * If the image is smaller than the specified {@link maxSize}, then the dimensions will remain
  * unchanged. (But the image is always re-encoded.)
  *
  * All metadata of the image will be removed.
  *
- * @param file The file to be resized. Must have the media type `image/*`, otherwise an error is
+ * @param file The file to be resized. Must have a supported image media type, otherwise an error is
  *   thrown.
  * @param outputMediaType The desired media type of the resized image.
  * @param maxSize The max side length of the image.
  * @param quality The output quality (0.0 for lowest quality, 1.0 for highest quality). Will only be
  *   used for JPEG images.
  * @param logger An optional logger instance
- * @returns resized image and original dimensions, or `undefined` if something went wrong
+ * @returns resized image and dimensions, or `undefined` if something went wrong
  * @throws {@link Error} If file media type does not start with `image/`
  */
 export async function downsizeImage(
@@ -26,9 +44,11 @@ export async function downsizeImage(
     maxSize: u53,
     quality: f64,
     log?: Logger,
-): Promise<{resized: Blob; originalDimensions: Dimensions} | undefined> {
-    // Check if file is an image
-    if (!file.type.startsWith('image/')) {
+): Promise<
+    {resized: Blob; originalDimensions: Dimensions; resizedDimensions: Dimensions} | undefined
+> {
+    // Check if file is a supported image
+    if (!isSupportedImageType(file.type)) {
         throw new Error(`Cannot generate thumbnail for file of type ${file.type}`);
     }
 
@@ -54,16 +74,20 @@ export async function downsizeImage(
         maxSize / Math.max(originalDimensions.width, originalDimensions.height),
         1.0,
     );
-    canvas.width = originalDimensions.width * scaleFactor;
-    canvas.height = originalDimensions.height * scaleFactor;
+    const resizedDimensions: Dimensions = {
+        width: Math.round(originalDimensions.width * scaleFactor),
+        height: Math.round(originalDimensions.height * scaleFactor),
+    };
     debugAssert(
-        canvas.width <= maxSize,
+        resizedDimensions.width <= maxSize,
         `Resized image width ${canvas.width} is larger than max size of ${maxSize}`,
     );
     debugAssert(
-        canvas.height <= maxSize,
+        resizedDimensions.height <= maxSize,
         `Resized image height ${canvas.height} is larger than max size of ${maxSize}`,
     );
+    canvas.width = resizedDimensions.width;
+    canvas.height = resizedDimensions.height;
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'medium';
     ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
@@ -81,5 +105,5 @@ export async function downsizeImage(
             canvas.height
         }, ${Math.floor(resizedBlob.size / 1024)} KiB`,
     );
-    return {resized: resizedBlob, originalDimensions};
+    return {resized: resizedBlob, originalDimensions, resizedDimensions};
 }

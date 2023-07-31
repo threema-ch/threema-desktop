@@ -8,6 +8,7 @@
   import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
   import {unreachable} from '~/common/utils/assert';
+  import {isSupportedImageType} from '~/common/utils/image';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
 
   export let mediaFile: MediaFile;
@@ -39,7 +40,7 @@
       {/if}
     </div>
     <div class="preview">
-      {#if mediaFile.file.type.startsWith('image/')}
+      {#if isSupportedImageType(mediaFile.file.type)}
         <Image
           src={mediaFile.file}
           alt={mediaFile.sanitizedFilenameDetails.name}
@@ -54,7 +55,7 @@
     <div class="options">
       <div class="left">
         <div class="send-option">
-          {#if mediaFile.file.type.startsWith('image/')}
+          {#if isSupportedImageType(mediaFile.file.type)}
             <Checkbox id="send-as-file-checkbox" bind:checked={$sendAsFile} />
             <label class="label" for="send-as-file-checkbox"
               >{$i18n.t(

@@ -4,6 +4,7 @@
   import {globals} from '~/app/globals';
   import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
+  import {isSupportedImageType} from '~/common/utils/image';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.modal.media-message.miniature');
 
@@ -35,7 +36,7 @@
       </div>
     {/if}
     <div class="overlay" />
-    {#if mediaFile.file.type.startsWith('image/') && thumbnail !== undefined && !$sendAsFile}
+    {#if isSupportedImageType(mediaFile.file.type) && thumbnail !== undefined && !$sendAsFile}
       <Image class="thumbnail-image" src={thumbnail} alt={mediaFile.file.name} />
     {:else}
       <div class="type">

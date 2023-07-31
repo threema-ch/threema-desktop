@@ -724,3 +724,12 @@ export enum ImageRenderingType {
      */
     STICKER = 2,
 }
+
+/**
+ * All supported image types.
+ */
+export enum ImageType {
+    JPEG = 1,
+    PNG = 2,
+    GIF = 3,
+}
