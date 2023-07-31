@@ -171,6 +171,7 @@
           fileName: mediaFile.file.name,
           fileSize: ensureU53(fileBlob.size),
           mediaType: fileBlob.type,
+          thumbnailMediaType: thumbnailBlob?.type,
           dimensions,
           sendAsFile,
         };

@@ -47,6 +47,7 @@ export interface SendFileBasedMessagesEventDetail {
         readonly fileName: string;
         readonly fileSize: u53;
         readonly mediaType: string;
+        readonly thumbnailMediaType?: string;
         readonly dimensions?: Dimensions;
         readonly sendAsFile: boolean;
     }[];
@@ -170,6 +171,7 @@ export class ConversationViewModelController implements IConversationViewModelCo
                 fileName: fileInfo.fileName,
                 fileSize: fileInfo.fileSize,
                 mediaType: fileInfo.mediaType,
+                thumbnailMediaType: fileInfo.thumbnailMediaType,
                 fileData,
                 thumbnailFileData,
             };
