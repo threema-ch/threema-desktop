@@ -732,4 +732,6 @@ export enum ImageType {
     JPEG = 1,
     PNG = 2,
     GIF = 3,
+    WEBP = 4,
+    AVIF = 5,
 }

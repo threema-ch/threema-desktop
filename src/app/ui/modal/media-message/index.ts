@@ -100,6 +100,7 @@ export async function resizeImage(
     }
 
     // Certain image types should not be resized
+    let outputMediaType = file.type;
     switch (imageType) {
         case ImageType.GIF: {
             log?.debug('Not resizing GIF, fetching original dimensions');
@@ -111,19 +112,22 @@ export async function resizeImage(
         }
         case ImageType.JPEG:
         case ImageType.PNG:
+        case ImageType.WEBP:
+            break;
+        case ImageType.AVIF:
+            outputMediaType = 'image/jpeg';
             break;
         default:
             unreachable(imageType);
     }
 
-    // Determine media type and size
-    const resizedMediaType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    // Determine media size
     // TODO(DESK-1129): Allow configuring image size
     const imageSize = 2000;
 
     // Resize and return
     const quality = 0.85;
-    const result = await downsizeImage(file, resizedMediaType, imageSize, quality, log);
+    const result = await downsizeImage(file, outputMediaType, imageSize, quality, log);
     if (result === undefined) {
         return undefined;
     }
@@ -147,13 +151,13 @@ export async function generateThumbnail(file: File, log?: Logger): Promise<Blob 
     let thumbnailMediaType;
     switch (imageType) {
         case ImageType.JPEG:
+        case ImageType.GIF:
+        case ImageType.WEBP:
+        case ImageType.AVIF:
             thumbnailMediaType = 'image/jpeg';
             break;
         case ImageType.PNG:
             thumbnailMediaType = 'image/png';
-            break;
-        case ImageType.GIF:
-            thumbnailMediaType = 'image/jpeg';
             break;
         default:
             unreachable(imageType);

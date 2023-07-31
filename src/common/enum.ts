@@ -2165,6 +2165,10 @@ export namespace ImageType {
     export type PNG = typeof PNG;
     export const GIF = 3;
     export type GIF = typeof GIF;
+    export const WEBP = 4;
+    export type WEBP = typeof WEBP;
+    export const AVIF = 5;
+    export type AVIF = typeof AVIF;
 }
 /**
  * All supported image types.

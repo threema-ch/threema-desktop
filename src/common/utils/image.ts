@@ -6,13 +6,16 @@ import {ImageType} from '~/common/enum';
  */
 export function mediaTypeToImageType(mediaType: string): ImageType | undefined {
     switch (mediaType) {
-        case 'image/jpe':
         case 'image/jpeg':
             return ImageType.JPEG;
         case 'image/png':
             return ImageType.PNG;
         case 'image/gif':
             return ImageType.GIF;
+        case 'image/webp':
+            return ImageType.WEBP;
+        case 'image/avif':
+            return ImageType.AVIF;
         default:
             return undefined;
     }
