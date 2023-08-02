@@ -48,7 +48,12 @@
     "structbuf:generate": "npm run structbuf:generate:module && npm run structbuf:generate:prettify",
     "structbuf:generate:module": "structbuf-typescript threema-protocols/*.yml -o src/common/network/structbuf --new-type true --byte-length true --snapshot true --clone true --base-class Struct=~/common/network/structbuf/base --external-import types=~/common/types",
     "structbuf:generate:prettify": "prettier --write \"src/common/network/structbuf/**/*.ts\"",
-    "i18n:parse": "i18next 'src/app/**/*.{ts,svelte}' -o 'src/translations/$LOCALE/$NAMESPACE.json' -c config/i18next-parser.config.js"
+    "i18n:parse": "i18next 'src/app/**/*.{ts,svelte}' -o 'src/translations/$LOCALE/$NAMESPACE.json' -c config/i18next-parser.config.js",
+    "assets:generate:icons:macos": "tools/generate-icons-macos.sh",
+    "assets:generate:icons:windows": "tools/generate-icons-windows.sh",
+    "assets:generate:icons:flatpak": "tools/generate-icons-flatpak.sh",
+    "assets:generate:icons:web": "tools/generate-icons-web.sh",
+    "assets:generate:icons": "npm run assets:generate:icons:macos && npm run assets:generate:icons:windows && npm run assets:generate:icons:flatpak && npm run assets:generate:icons:web"
   },
   "engines": {
     "node": "18.15.0",
