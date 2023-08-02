@@ -66,28 +66,31 @@ async function packageApp(variant, environment) {
     switch (process.platform) {
         case 'darwin': {
             let appBundleId;
-            let iconFilename;
             switch (`${variant}-${environment}`) {
                 case 'consumer-live':
                     appBundleId = 'ch.threema.threema-desktop';
-                    iconFilename = 'icon-consumer.icns';
                     break;
                 case 'consumer-sandbox':
                     appBundleId = 'ch.threema.threema-sandbox-desktop';
-                    iconFilename = 'icon-consumer.icns';
                     break;
                 case 'work-live':
                     appBundleId = 'ch.threema.threema-work-desktop';
-                    iconFilename = 'icon-work.icns';
                     break;
                 case 'work-sandbox':
                     appBundleId = 'ch.threema.threema-red-desktop';
-                    iconFilename = 'icon-red.icns';
                     break;
                 default:
                     throw new Error(`Invalid variant or environment: ${variant}-${environment}`);
             }
-            icon = resolve(__dirname, '..', 'packaging', 'assets', 'icons', 'mac', iconFilename);
+            icon = resolve(
+                __dirname,
+                '..',
+                'packaging',
+                'assets',
+                'icons',
+                'mac',
+                `${variant}-${environment}.icns`,
+            );
             platformSpecificOptions = {
                 // Will be used as CFBundleIdentifier in Info.plist
                 appBundleId,
@@ -106,7 +109,7 @@ async function packageApp(variant, environment) {
                 'assets',
                 'icons',
                 'win',
-                'threema-desktop.ico',
+                `${variant}-${environment}.ico`,
             );
             platformSpecificOptions = {
                 // DOC: https://electron.github.io/electron-packager/v16.0.0/interfaces/electronpackager.win32metadataoptions.html
@@ -144,19 +147,37 @@ async function packageApp(variant, environment) {
         },
         icon,
         extraResource: [
-            // Extra resources that are placed in the "resources" directory
-            ...['icon-512.png', 'icon-150-flat.png', 'icon-44-flat.png'].map((filename) =>
-                resolve(
-                    __dirname,
-                    '..',
-                    'src',
-                    'public',
-                    'res',
-                    'icons',
-                    `${variant}-${environment}`,
-                    `${filename}`,
-                ),
+            resolve(
+                __dirname,
+                '..',
+                'src',
+                'public',
+                'res',
+                'icons',
+                `${variant}-${environment}`,
+                'icon-512.png',
             ),
+            ...[16, 20, 24, 30, 32, 36, 40, 44, 48, 60, 64, 72, 80, 96, 256]
+                .flatMap((size) => {
+                    const base = `Square44x44Logo.targetsize-${size}`;
+                    const modifiers = ['', '_altform-unplated', '_altform-lightunplated'];
+
+                    return modifiers.map((mod) => `${base}${mod}.png`);
+                })
+                .concat(['StoreLogo.png', 'Square150x150Logo.png', 'Square44x44Logo.png'])
+                .map((filename) =>
+                    resolve(
+                        __dirname,
+                        '..',
+                        'src',
+                        'public',
+                        'res',
+                        'icons',
+                        'msix',
+                        `${variant}-${environment}`,
+                        `${filename}`,
+                    ),
+                ),
         ],
         derefSymlinks: true,
         ignore: (path) => {

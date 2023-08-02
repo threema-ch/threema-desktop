@@ -94,10 +94,11 @@ modules:
       - mkdir -p /app/share/icons/hicolor/{512x512,scalable}/apps/
       - |
         case {{flavor}} in
-          consumer-live) icon_base=icon-consumer ;;
-          work-sandbox) icon_base=icon-red ;;
-          work-live) icon_base=icon-work ;;
+          consumer-sandbox) icon_base=consumer-sandbox ;;
+          consumer-live) icon_base=consumer-live ;;
+          work-sandbox) icon_base=work-sandbox ;;
+          work-live) icon_base=work-live ;;
           *) echo "Invalid flavor: {{flavor}}"; exit 1 ;;
         esac
-        install -Dm644 packaging/assets/icons/${icon_base}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
-        install -Dm644 packaging/assets/icons/${icon_base}-512.png /app/share/icons/hicolor/512x512/apps/{{app-id}}.png
+        install -Dm644 packaging/assets/icons/flatpak/${icon_base}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg
+        install -Dm644 packaging/assets/icons/flatpak/${icon_base}.png /app/share/icons/hicolor/512x512/apps/{{app-id}}.png

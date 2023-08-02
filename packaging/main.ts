@@ -46,11 +46,12 @@ const TARGETS: Target[] = [
     'flatpak',
 ];
 
-type Flavor = 'work-sandbox' | 'consumer-live' | 'work-live';
-const FLAVORS: Flavor[] = ['work-sandbox', 'consumer-live', 'work-live'];
+const FLAVORS = ['consumer-sandbox', 'consumer-live', 'work-sandbox', 'work-live'] as const;
+// eslint-disable-next-line no-restricted-syntax
+type Flavor = (typeof FLAVORS)[number];
 
 function isFlavor(flavor: string): flavor is Flavor {
-    return (FLAVORS as string[]).includes(flavor);
+    return (FLAVORS as unknown as string[]).includes(flavor);
 }
 
 /**
@@ -146,6 +147,9 @@ function determineAppName(flavor: Flavor): string {
     switch (flavor) {
         case 'consumer-live':
             break;
+        case 'consumer-sandbox':
+            name += ' Sandbox';
+            break;
         case 'work-live':
             name += ' Work';
             break;
@@ -166,10 +170,12 @@ function determineAppRdn(flavor: Flavor): string {
     switch (flavor) {
         case 'consumer-live':
             return 'ch.threema.threema-desktop';
-        case 'work-sandbox':
-            return 'ch.threema.threema-red-desktop';
+        case 'consumer-sandbox':
+            return 'ch.threema.threema-sandbox-desktop';
         case 'work-live':
             return 'ch.threema.threema-work-desktop';
+        case 'work-sandbox':
+            return 'ch.threema.threema-red-desktop';
         default:
             return unreachable(flavor);
     }
@@ -182,6 +188,8 @@ function determineAppIdentifier(flavor: Flavor): string {
     switch (flavor) {
         case 'consumer-live':
             return 'threema-desktop';
+        case 'consumer-sandbox':
+            return 'threema-sandbox-desktop';
         case 'work-live':
             return 'threema-work-desktop';
         case 'work-sandbox':
@@ -615,20 +623,25 @@ async function buildDmg(
     let installerBackgroundFilename;
     let iconFilename;
     switch (flavor) {
+        case 'consumer-sandbox':
+            dmgName = 'ThreemaSandbox';
+            installerBackgroundFilename = 'consumer.png';
+            iconFilename = 'consumer-sandbox.icns';
+            break;
         case 'consumer-live':
             dmgName = 'Threema';
             installerBackgroundFilename = 'consumer.png';
-            iconFilename = 'icon-consumer.icns';
-            break;
-        case 'work-live':
-            dmgName = 'ThreemaWork';
-            installerBackgroundFilename = 'work.png';
-            iconFilename = 'icon-work.icns';
+            iconFilename = 'consumer-live.icns';
             break;
         case 'work-sandbox':
             dmgName = 'ThreemaRed';
             installerBackgroundFilename = 'red.png';
-            iconFilename = 'icon-red.icns';
+            iconFilename = 'work-sandbox.icns';
+            break;
+        case 'work-live':
+            dmgName = 'ThreemaWork';
+            installerBackgroundFilename = 'work.png';
+            iconFilename = 'work-live.icns';
             break;
         default:
             unreachable(flavor);
@@ -801,6 +814,10 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
         process.env.WIN_MAKEAPPX_EXE_PATH,
         'Missing WIN_MAKEAPPX_EXE_PATH env var',
     );
+    const makepriPath = unwrap(
+        process.env.WIN_MAKEPRI_EXE_PATH,
+        'Missing WIN_MAKEPRI_EXE_PATH env var',
+    );
     const certificateSubject = unwrap(
         process.env.WIN_SIGN_CERT_SUBJECT,
         'Missing WIN_SIGN_CERT_SUBJECT env var',
@@ -822,19 +839,18 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
     // Variables depending on build flavor
     const displayName = determineAppName(flavor);
     let identityName;
-    let backgroundColor;
     switch (flavor) {
         case 'consumer-live':
             identityName = 'Threema.Desktop.Consumer';
-            backgroundColor = '#05a63f';
+            break;
+        case 'consumer-sandbox':
+            identityName = 'Threema.Desktop.Sandbox';
             break;
         case 'work-live':
             identityName = 'Threema.Desktop.Work';
-            backgroundColor = '#0096ff';
             break;
         case 'work-sandbox':
             identityName = 'Threema.Desktop.Red';
-            backgroundColor = '#b94137';
             break;
         default:
             unreachable(flavor);
@@ -848,8 +864,7 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
         .replaceAll('{{identityVersion}}', appVersion)
         .replaceAll('{{identityPublisher}}', certificateSubject)
         .replaceAll('{{displayName}}', displayName)
-        .replaceAll('{{applicationId}}', applicationId)
-        .replaceAll('{{backgroundColor}}', backgroundColor);
+        .replaceAll('{{applicationId}}', applicationId);
     const manifestPath = path.join(binaryDirPath, 'AppxManifest.xml');
     log.minor(`Writing Manifest to ${manifestPath}`);
     fs.writeFileSync(manifestPath, manifest, {encoding: 'utf8'});
@@ -860,6 +875,35 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
         encoding: 'utf8' as const,
         shell: false,
     };
+
+    // Generate package resource index (PRI) config
+    const priConfigPath = path.join(binaryDirPath, `priconfig.xml`);
+    log.minor(`Writing PRI config file to ${priConfigPath}`);
+    execFileSync(
+        makepriPath,
+        // prettier-ignore
+        [
+            'createconfig',
+            '/ConfigXml', priConfigPath,
+            '/Default', 'en-US'
+        ],
+        options,
+    );
+
+    const priPath = path.join(binaryDirPath, `resources.pri`);
+    log.minor(`Writing PRI resources file to ${priPath}`);
+    execFileSync(
+        makepriPath,
+        // prettier-ignore
+        [
+            'new',
+            '/ConfigXml', priConfigPath,
+            '/ProjectRoot', binaryDirPath,
+            '/Manifest', manifestPath,
+            '/OutputFile', priPath
+        ],
+        options,
+    );
 
     // Generate unsigned .msix file
     const appId = determineAppIdentifier(flavor);

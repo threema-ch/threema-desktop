@@ -20,7 +20,8 @@
         <PublisherDisplayName>Threema GmbH</PublisherDisplayName>
         <Description
         >Threema for desktop is a desktop client for Threema, a privacy-focused end-to-end encrypted mobile messenger hosted and developed in Switzerland.</Description>
-        <Logo>resources\icon-150-flat.png</Logo>
+        <!-- Will be used as the icon inside the installer-->
+        <Logo>resources\StoreLogo.png</Logo>
     </Properties>
     <Resources>
         <Resource Language="en-us" />
@@ -47,10 +48,11 @@
         >
             <uap:VisualElements
                 DisplayName="{{displayName}}"
+                AppListEntry="default"
                 Description="Use {{displayName}} from your desktop"
-                Square150x150Logo="resources\icon-150-flat.png"
-                Square44x44Logo="resources\icon-44-flat.png"
-                BackgroundColor="{{backgroundColor}}"
+                Square150x150Logo="resources\Square150x150Logo.png"
+                Square44x44Logo="resources\Square44x44Logo.png"
+                BackgroundColor="transparent"
             />
         </Application>
     </Applications>
