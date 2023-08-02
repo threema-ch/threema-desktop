@@ -18,3 +18,4 @@
 - [File Storage](./file-storage.md)
 - [Electron](./electron.md)
 - [Generated Code](./generated.md)
+- [Building](./building.md)
