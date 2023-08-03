@@ -96,7 +96,7 @@
 
 <template>
   <div class="container" class:active class:conversation-active={conversationActive}>
-    <SwipeArea group={swipeGroup}>
+    <SwipeArea enabled={false} group={swipeGroup}>
       <section slot="main" class:selectable on:click={handleClick}>
         <Receiver
           {selectable}

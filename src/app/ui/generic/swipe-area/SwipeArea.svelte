@@ -10,6 +10,11 @@
    */
   export let group: SwipeAreaGroup | undefined = undefined;
 
+  /**
+   * Whether the swipe area can be interacted with.
+   */
+  export let enabled = true;
+
   // Recalculate origin and reset back to it on resize
   const observer = new ElementResizeObserver(() => {
     origin = left?.getBoundingClientRect().width ?? 0;
@@ -32,6 +37,12 @@
         behavior,
         left: origin,
       });
+    }
+  }
+
+  function replaceGroup(): void {
+    if (enabled) {
+      group?.replace(reset);
     }
   }
 
@@ -62,9 +73,10 @@
   <div
     bind:this={container}
     class="container"
+    class:disabled={!enabled}
     data-swipe-area={area}
-    on:wheel={() => group?.replace(reset)}
-    on:pointerdown={() => group?.replace(reset)}
+    on:wheel={replaceGroup}
+    on:pointerdown={replaceGroup}
   >
     <div on:click={() => reset('smooth')} class="main">
       <slot name="main" />
@@ -95,6 +107,10 @@
     scrollbar-width: none;
     &::-webkit-scrollbar {
       display: none;
+    }
+
+    &.disabled {
+      overflow: unset;
     }
 
     &[data-swipe-area='left'] {

@@ -177,7 +177,7 @@
 
 <template>
   <div class="container" class:active>
-    <SwipeArea {group}>
+    <SwipeArea enabled={false} {group}>
       <a
         href={getConversationFragment()}
         slot="main"
