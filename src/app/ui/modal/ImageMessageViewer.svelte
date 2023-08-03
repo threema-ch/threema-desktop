@@ -122,7 +122,7 @@
 <template>
   <div class="image-detail">
     <ModalWrapper visible={true}>
-      <ModalDialog visible={true} on:close={handleClose} on:cancel={handleClose}>
+      <ModalDialog visible={true} elevated={false} on:close={handleClose} on:cancel={handleClose}>
         <div class="container" slot="body">
           {#if image.status === 'loading' || !minimalConnectTimerElapsed}
             <div class="progress">
@@ -180,10 +180,9 @@
     position: relative;
     display: grid;
     place-items: center;
-    overflow: hidden;
     max-width: 100vw;
     max-height: 100vh;
-    padding: rem(18px);
+    padding: rem(41px);
 
     .placeholder,
     img {
@@ -198,6 +197,7 @@
       max-width: 100%;
       max-height: 100%;
       background-color: var(--t-main-background-color);
+      @extend %elevation-160;
     }
 
     .progress {
