@@ -256,6 +256,7 @@
     "action--file-sync-upload": "Click to Upload File",
     "action--message-option-agree": "Agree",
     "action--message-option-copy": "Copy Message",
+    "action--message-option-copy-image": "Copy Image",
     "action--message-option-copy-link": "Copy Link",
     "action--message-option-delete": "Delete",
     "action--message-option-details": "Message Details",
@@ -269,6 +270,7 @@
     "error--blocked-contact": "You cannot send a message to this contact because it is blocked.",
     "error--conversation-not-found": "Conversation not found",
     "error--copy-message-content": "Could not copy message to clipboard",
+    "error--copy-message-image": "Could not copy image to clipboard",
     "error--copy-message-link": "Could not copy link to clipboard",
     "error--copy-undefined-message-content": "There’s nothing to copy",
     "error--delete-message": "Could not delete message",
@@ -296,6 +298,7 @@
     "label--unread-messages-count": "{n, plural, =0 {} =1 {1 New Message} other {# New Messages}}",
     "markup--chat-empty-state": "This chat is linked with your mobile device. <1/>All future messages will appear here.",
     "success--copy-message-content": "Message copied to clipboard",
+    "success--copy-message-image": "Image copied to clipboard",
     "success--copy-message-link": "Link copied to clipboard"
   },
   "settings": {

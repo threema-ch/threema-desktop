@@ -17,6 +17,7 @@
       readonly quote: boolean;
       readonly copyLink: boolean;
       readonly copyMessage: boolean;
+      readonly copyImage: boolean;
       readonly forward: boolean;
     };
   }
@@ -32,6 +33,7 @@
       quote: true,
       copyLink: false,
       copyMessage: true,
+      copyImage: false,
       forward: true,
     },
   };
@@ -80,6 +82,14 @@
             <MdIcon theme="Outlined">download</MdIcon>
           </span>
           <span>{$i18n.t('messaging.action--message-option-save-as-file', 'Save as File')}</span>
+        </MenuItem>
+      {/if}
+      {#if options.showAction.copyImage}
+        <MenuItem on:click={() => dispatchEvent('copyImage')}>
+          <span class="icon" slot="icon">
+            <MdIcon theme="Outlined">photo_library</MdIcon>
+          </span>
+          <span>{$i18n.t('messaging.action--message-option-copy-image', 'Copy Image')}</span>
         </MenuItem>
       {/if}
       {#if options.showAction.quote}

@@ -256,6 +256,7 @@
     "action--file-sync-upload": "Zum Hochladen einer Datei klicken",
     "action--message-option-agree": "Zustimmen",
     "action--message-option-copy": "Nachricht kopieren",
+    "action--message-option-copy-image": "Bild kopieren",
     "action--message-option-copy-link": "Link kopieren",
     "action--message-option-delete": "Löschen",
     "action--message-option-details": "Nachrichtendetails",
@@ -269,6 +270,7 @@
     "error--blocked-contact": "Sie können keine Nachricht an diesen Kontakt senden, weil er blockiert wurde.",
     "error--conversation-not-found": "Konversation nicht gefunden",
     "error--copy-message-content": "Nachricht konnte nicht in die Zwischenablage kopiert werden",
+    "error--copy-message-image": "Bild konnte nicht in die Zwischenablage kopiert werden",
     "error--copy-message-link": "Link konnte nicht in die Zwischenablage kopiert werden",
     "error--copy-undefined-message-content": "Es gibt nichts zu kopieren",
     "error--delete-message": "Nachricht konnte nicht gelöscht werden",
@@ -296,6 +298,7 @@
     "label--unread-messages-count": "{n, plural, =0 {} =1 {1 neue Nachricht} other {# neue Nachrichten}}",
     "markup--chat-empty-state": "Dieser Chat ist mit Ihrem Mobilgerät verknüpft. <1/>Alle künftigen Nachrichten werden hier erscheinen.",
     "success--copy-message-content": "Nachricht in die Zwischenablage kopiert",
+    "success--copy-message-image": "Bild in die Zwischenablage kopiert",
     "success--copy-message-link": "Link in die Zwischenablage kopiert"
   },
   "settings": {

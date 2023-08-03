@@ -24,6 +24,7 @@
   import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
+  import {convertImage} from '~/common/dom/utils/image';
   import {
     MessageDirection,
     MessageDirectionUtils,
@@ -38,7 +39,7 @@
   } from '~/common/model';
   import {type MessageId} from '~/common/network/types';
   import {type ReadonlyUint8Array} from '~/common/types';
-  import {assert, ensureError, unreachable} from '~/common/utils/assert';
+  import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {
     type ConversationMessageViewModelBundle,
@@ -104,14 +105,14 @@
   let isMessageDetailModalVisible = false;
 
   let hrefToCopy: string | undefined = undefined;
-  let messageContentToCopy: string | undefined = undefined;
+  let messageTextContentToCopy: string | undefined = undefined;
 
   function extractHrefFromEventTarget(event: MouseEvent): string | undefined {
     const href = (event.target as HTMLElement)?.getAttribute('href') ?? undefined;
     return href === undefined || href.length === 0 ? undefined : href;
   }
 
-  function extractMessageContent(): string | undefined {
+  function extractMessageTextContent(): string | undefined {
     let content: string | undefined;
     switch (messageBody.type) {
       case 'text':
@@ -140,7 +141,7 @@
       return;
     }
 
-    messageContentToCopy = extractMessageContent();
+    messageTextContentToCopy = extractMessageTextContent();
     hrefToCopy = extractHrefFromEventTarget(event);
 
     if (event.type === 'contextmenu') {
@@ -165,7 +166,7 @@
     }
 
     contextMenuVirtualTrigger = undefined;
-    messageContentToCopy = extractMessageContent();
+    messageTextContentToCopy = extractMessageTextContent();
   }
 
   function handleContextMenuEvent(type: ConversationMessageContextMenuEvent): void {
@@ -194,6 +195,9 @@
         break;
       case 'copyLink':
         copyLink();
+        break;
+      case 'copyImage':
+        void copyImage();
         break;
       case 'delete':
         isDeleteMessageConfirmationModalVisible = true;
@@ -236,10 +240,44 @@
     }
   }
 
+  async function copyImage(): Promise<void> {
+    log.debug('Copying image content');
+
+    if (messageBody.type !== 'image') {
+      return;
+    }
+    const {mediaType} = messageBody.body;
+
+    try {
+      const bytes = unwrap(
+        await viewModelBundle.viewModelController.getBlob(),
+        'Could not retrieve blob bytes',
+      );
+
+      let blob = new Blob([bytes], {type: mediaType});
+      if (mediaType !== 'image/png') {
+        // Convert other image subtypes to png for clipboard compatibility.
+        blob = await convertImage(blob, 'image/png');
+      }
+
+      await navigator.clipboard.write([new ClipboardItem({[blob.type]: blob})]);
+
+      toast.addSimpleSuccess(
+        i18n.get().t('messaging.success--copy-message-image', 'Image copied to clipboard'),
+      );
+      log.debug('Image successfully copied to clipboard');
+    } catch (error) {
+      log.error('Could not copy image to clipboard:', error);
+      toast.addSimpleFailure(
+        i18n.get().t('messaging.error--copy-message-image', 'Could not copy image to clipboard'),
+      );
+    }
+  }
+
   function copyMessageContent(): void {
-    if (messageContentToCopy !== undefined) {
+    if (messageTextContentToCopy !== undefined) {
       navigator.clipboard
-        .writeText(messageContentToCopy)
+        .writeText(messageTextContentToCopy)
         .then(() =>
           toast.addSimpleSuccess(
             i18n
@@ -258,7 +296,7 @@
               ),
           );
         });
-      messageContentToCopy = undefined;
+      messageTextContentToCopy = undefined;
     } else {
       log.warn('Attempting to copy undefined message content');
       toast.addSimpleFailure(
@@ -440,7 +478,7 @@
           on:hasclosed={() => {
             isContextMenuVisible = false;
             hrefToCopy = undefined;
-            messageContentToCopy = undefined;
+            messageTextContentToCopy = undefined;
           }}
         >
           <button slot="trigger" class="caret" class:visible={isContextMenuVisible}>
@@ -457,12 +495,14 @@
                 save: ['file', 'image'].includes(messageBody.type),
                 quote: !isReceiverBlocked,
                 copyLink: hrefToCopy !== undefined,
-                copyMessage: messageContentToCopy !== undefined,
+                copyMessage: messageTextContentToCopy !== undefined,
+                copyImage: messageBody.type === 'image',
                 forward: messageBody.type === 'text',
               },
             }}
             on:copy={() => handleContextMenuEvent('copy')}
             on:copyLink={() => handleContextMenuEvent('copyLink')}
+            on:copyImage={() => handleContextMenuEvent('copyImage')}
             on:delete={() => handleContextMenuEvent('delete')}
             on:save={() => handleContextMenuEvent('save')}
             on:showMessageDetails={() => handleContextMenuEvent('showMessageDetails')}

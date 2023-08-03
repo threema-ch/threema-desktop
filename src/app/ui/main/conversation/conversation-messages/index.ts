@@ -10,6 +10,7 @@ export type ConversationMessageContextMenuEvent =
     | 'forward'
     | 'copy'
     | 'copyLink'
+    | 'copyImage'
     | 'save'
     | 'showMessageDetails'
     | 'delete';

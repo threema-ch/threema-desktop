@@ -107,3 +107,32 @@ export async function downsizeImage(
     );
     return {resized: resizedBlob, originalDimensions, resizedDimensions};
 }
+
+/**
+ * Converts an image from one media type to another.
+ *
+ * @param image The image blob to convert.
+ * @param type The target media type to convert the image to.
+ */
+export async function convertImage(image: Blob, type: 'image/png'): Promise<Blob> {
+    return await new Promise((resolve, reject) => {
+        createImageBitmap(image)
+            .then((bitmap) => {
+                const canvas = document.createElement('canvas').transferControlToOffscreen();
+                const ctx = unwrap(canvas.getContext('2d'), 'Canvas 2D context is undefined');
+
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                ctx.drawImage(bitmap, 0, 0);
+
+                canvas
+                    .convertToBlob({type})
+                    .then((blob) => {
+                        bitmap.close();
+                        resolve(blob);
+                    })
+                    .catch((error) => reject(new Error(`Failed to convert image: ${error}`)));
+            })
+            .catch((error) => reject(new Error(`Failed to create ImageBitmap: ${error}`)));
+    });
+}
