@@ -61,3 +61,15 @@ export function truncate(text: string, length: u53): string {
     }
     return text;
 }
+
+/**
+ * A true string literal, but not a plain string.
+ */
+type StringLiteral<T extends string> = string extends T ? never : T;
+
+/**
+ * A ".toLowerCase()" implementation that fully supports TypeScript string literal types.
+ */
+export function literalToLowercase<S extends string>(string: StringLiteral<S>): Lowercase<S> {
+    return string.toLowerCase() as Lowercase<S>;
+}

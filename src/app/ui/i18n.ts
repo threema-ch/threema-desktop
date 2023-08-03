@@ -11,8 +11,15 @@ import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
-import translationDeJson from '../../translations/de/translation.json';
-import translationEnJson from '../../translations/en/translation.json';
+// Import all translation files
+import translationDeRendezvousEmojiJson from '../../translations/de/rendezvous-emoji.json';
+import translationDeMainJson from '../../translations/de/translation.json';
+import translationEnRendezvousEmojiJson from '../../translations/en/rendezvous-emoji.json';
+import translationEnMainJson from '../../translations/en/translation.json';
+
+// Merge translation files
+const translationDeJson = {...translationDeMainJson, ...translationDeRendezvousEmojiJson};
+const translationEnJson = {...translationEnMainJson, ...translationEnRendezvousEmojiJson};
 
 /**
  * Define English as the base translation. All other translations will only be able to (optionally)
