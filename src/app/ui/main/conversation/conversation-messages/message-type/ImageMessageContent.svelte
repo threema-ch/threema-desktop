@@ -255,6 +255,10 @@
           object-fit: cover;
         }
       }
+
+      .text {
+        opacity: 0.6;
+      }
     }
 
     .modal {

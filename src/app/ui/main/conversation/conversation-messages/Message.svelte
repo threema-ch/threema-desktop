@@ -82,7 +82,6 @@
     messageFooterStatus = undefined;
   }
 
-  $: isQuoted = quote !== undefined && quote !== 'not-found';
   $: isImageWithoutCaption = message.type === 'image' && message.body.caption === undefined;
 </script>
 
@@ -116,7 +115,6 @@
         {message}
         messageViewModelController={viewModelBundle.viewModelController}
         mentions={$viewModelStore.mentions}
-        {isQuoted}
         on:saveFile={() => dispatch('saveFile')}
       />
     </span>
