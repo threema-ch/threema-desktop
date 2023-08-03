@@ -16,16 +16,16 @@
   const buildVariant = import.meta.env.BUILD_VARIANT;
   const tabs = [
     {
-      id: 'work-contacts',
-      icon: 'work_outline',
-    },
-    {
       id: 'private-contacts',
       icon: 'person',
     },
     {
       id: 'groups',
       icon: 'group',
+    },
+    {
+      id: 'work-contacts',
+      icon: 'work_outline',
     },
     {
       id: 'distribution-lists',
