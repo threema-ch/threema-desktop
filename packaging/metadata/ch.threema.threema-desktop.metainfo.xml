@@ -21,6 +21,24 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta19" date="2023-08-04">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Scale down large images before sending</li>
+                    <li>Better error messages when trying to link a private Threema ID to a Threema Work app, or vice versa</li>
+                    <li>Screen reader support: set proper alt text for confirmation images that are shown when adding a linked device</li>
+                    <li>Improve app icons on Windows</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Do not include image metadata when sending images</li>
+                    <li>Fix text color when quoting image messages</li>
+                    <li>Fix border around image in image viewer</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta18" date="2023-07-31">
             <description>
                 <p>Improvements:</p>
