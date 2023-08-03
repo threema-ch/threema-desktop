@@ -34,6 +34,7 @@ function makeResponse(
     body: Record<string, unknown>,
     authMode: 'none' | 'challenge' | 'success' | 'failure',
     challengePayload?: ChallengePayload,
+    errorMessage?: string,
 ): Response {
     let responseBody;
     switch (authMode) {
@@ -55,7 +56,7 @@ function makeResponse(
         case 'failure':
             responseBody = {
                 success: false,
-                error: 'Mocked failure',
+                error: errorMessage ?? 'Mocked failure',
                 ...body,
             };
             break;
@@ -76,9 +77,12 @@ function makeResponse(
  */
 interface MockOptions {
     /**
-     * Force authentication to always fail (success = false).
+     * Override authentication result
+     *
+     * Defaults to `{success: true}`.
      */
-    authFails?: boolean;
+    authResult?: {success: true} | {success: false; message?: string};
+
     /**
      * Override the challenge payload.
      */
@@ -111,7 +115,9 @@ function mockFetchResponse(
                 return makeResponse(
                     status,
                     responseBody,
-                    options?.authFails ?? false ? 'failure' : 'success',
+                    options?.authResult?.success ?? true ? 'success' : 'failure',
+                    undefined,
+                    options?.authResult?.success === false ? options.authResult.message : undefined,
                 );
             } else {
                 // Unauthenticated request
@@ -262,13 +268,36 @@ export function run(): void {
             });
 
             it('failed authentication', async function () {
-                mockFetchResponse(200, {}, {authFails: true});
+                mockFetchResponse(200, {}, {authResult: {success: false}});
                 await assertDirectoryError(
                     backend.privateData(ensureIdentityString('ECHOECHO'), ck),
                     'authentication',
                     'Private data fetch authentication failed: Mocked failure',
                 );
             });
+
+            for (const apiErrorMessage of [
+                'This is not a Threema Work identity.',
+                'This identity is attached to a Threema Work account.',
+            ]) {
+                it(`wrong build variant ("${apiErrorMessage}")`, async function () {
+                    mockFetchResponse(
+                        200,
+                        {},
+                        {
+                            authResult: {
+                                success: false,
+                                message: apiErrorMessage,
+                            },
+                        },
+                    );
+                    await assertDirectoryError(
+                        backend.privateData(ensureIdentityString('ECHOECHO'), ck),
+                        'wrong-build-variant',
+                        apiErrorMessage,
+                    );
+                });
+            }
         });
     });
 }

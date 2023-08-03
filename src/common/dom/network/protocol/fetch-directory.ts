@@ -318,10 +318,21 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             );
         }
         if (responsePayload.success !== true) {
-            throw new DirectoryError(
-                'authentication',
-                `${description} fetch authentication failed: ${responsePayload.error}`,
-            );
+            const message = `${description} fetch authentication failed: ${responsePayload.error}`;
+
+            // TODO(CS-125): Replace this ugly error-sniffing with proper error types (and maybe
+            //               some Valita schema parsing).
+            if ('error' in responsePayload && typeof responsePayload.error === 'string') {
+                const error = responsePayload.error;
+                if (
+                    error.includes('This is not a Threema Work identity') ||
+                    error.includes('This identity is attached to a Threema Work account')
+                ) {
+                    throw new DirectoryError('wrong-build-variant', message);
+                }
+            }
+
+            throw new DirectoryError('authentication', message);
         }
         try {
             return schema.parse(responsePayload);
