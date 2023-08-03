@@ -166,7 +166,10 @@
     "label--technical-details": "Show Technical Details",
     "label--title": "Linking Unsuccessful",
     "prose--description-connection-error": "Connection to the server was lost before linking was complete. Please check your Internet connection and try again.",
-    "prose--description-generic-error": "An error occurred during linking. Please try again."
+    "prose--description-generic-error": "An error occurred during linking. Please try again.",
+    "prose--description-wrong-app-variant": "It is not possible to link your Threema ID with this app.",
+    "prose--description-wrong-app-variant-private": "If you use Threema privately, download the desktop app from <1 />.",
+    "prose--description-wrong-app-variant-work": "If you use Threema Work, download the desktop app from <1 />."
   },
   "dialog--linking-scan": {
     "action--need-help": "Need help?",

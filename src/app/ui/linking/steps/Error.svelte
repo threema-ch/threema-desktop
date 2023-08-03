@@ -4,6 +4,8 @@
   import {i18n} from '~/app/ui/i18n';
   import {type LinkingWizardStateError} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
+  import {unreachable} from '~/common/utils/assert';
 
   export let linkingWizardState: LinkingWizardStateError;
 </script>
@@ -21,6 +23,36 @@
             'dialog--linking-error.prose--description-connection-error',
             'The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.',
           )}
+        {:else if linkingWizardState.errorType === 'wrong-app-variant'}
+          {$i18n.t(
+            'dialog--linking-error.prose--description-wrong-app-variant',
+            'It is not possible to link your Threema ID with this app.',
+          )}
+          {#if import.meta.env.BUILD_VARIANT === 'consumer'}
+            <SubstitutableText
+              text={$i18n.t(
+                'dialog--linking-error.prose--description-wrong-app-variant-work',
+                'If you use Threema Work, download the desktop app from <1 />.',
+              )}
+            >
+              <a slot="1" href="https://three.ma/mdw" target="_blank" rel="noreferrer noopener"
+                >three.ma/mdw</a
+              >
+            </SubstitutableText>
+          {:else if import.meta.env.BUILD_VARIANT === 'work'}
+            <SubstitutableText
+              text={$i18n.t(
+                'dialog--linking-error.prose--description-wrong-app-variant-private',
+                'If you use Threema privately, download the desktop app from <1 />.',
+              )}
+            >
+              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
+                >three.ma/md</a
+              >
+            </SubstitutableText>
+          {:else}
+            {unreachable(import.meta.env.BUILD_VARIANT)}
+          {/if}
         {:else}
           {$i18n.t(
             'dialog--linking-error.prose--description-generic-error',

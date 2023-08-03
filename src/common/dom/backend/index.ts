@@ -60,7 +60,7 @@ import {
     type RawPacket,
 } from '~/common/network/protocol/capture';
 import {type ConnectionHandle, ProtocolController} from '~/common/network/protocol/controller';
-import {type DirectoryBackend} from '~/common/network/protocol/directory';
+import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/directory';
 import {
     ConnectionState,
     ConnectionStateUtils,
@@ -247,6 +247,8 @@ export interface SafeCredentialsAndDeviceIds {
  * - rendezvous-error: The rendezvous protocol did not succeed.
  * - join-error: The device join protocol did not succeed.
  * - restore-error: Restoring essential data did not succeed.
+ * - wrong-app-variant: Restoring failed because user tried to link a Threema Work ID with the
+ *   consumer build variant, or vice versa
  * - registration-error: Initial registration at Mediator server failed.
  * - generic-error: Some other error during linking.
  */
@@ -255,6 +257,7 @@ export type LinkingStateErrorType =
     | 'rendezvous-error'
     | 'join-error'
     | 'restore-error'
+    | 'wrong-app-variant'
     | 'registration-error'
     | 'generic-error';
 
@@ -789,11 +792,11 @@ export class Backend implements ProxyMarked {
         try {
             privateData = await services.directory.privateData(joinResult.identity, ck);
         } catch (error) {
-            return await throwLinkingError(
-                `Fetching information about identity failed: ${error}`,
-                'generic-error',
-                ensureError(error),
-            );
+            const message = `Fetching information about identity failed: ${error}`;
+            if (error instanceof DirectoryError && error.type === 'wrong-build-variant') {
+                return await throwLinkingError(message, 'wrong-app-variant', error);
+            }
+            return await throwLinkingError(message, 'generic-error', ensureError(error));
         }
         if (privateData.serverGroup !== joinResult.serverGroup) {
             // Because the server group entropy was reduced from 8 to 4 bits a few years ago, it's
