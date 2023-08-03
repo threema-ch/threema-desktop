@@ -133,9 +133,8 @@
 
     {#if group$ !== undefined && $profilePicture !== undefined}
       <div class="profile-picture">
-        <span>
+        <button on:click={() => (groupProfilePictureDialogVisible = true)}>
           <ProfilePicture
-            on:click={() => (groupProfilePictureDialogVisible = true)}
             img={transformProfilePicture($profilePicture.view.picture)}
             alt={$i18n.t('contacts.hint--profile-picture', {
               name: group$.displayName,
@@ -144,7 +143,7 @@
             color={$profilePicture.view.color}
             shape="circle"
           />
-        </span>
+        </button>
       </div>
       <div class="name" class:inactive={group$.isInactive}>
         {group$.name}
@@ -264,7 +263,8 @@
       margin: rem(8px) 0;
       --c-profile-picture-size: #{rem(120px)};
 
-      span {
+      button {
+        @extend %neutral-input;
         cursor: pointer;
       }
     }
