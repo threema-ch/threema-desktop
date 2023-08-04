@@ -24,17 +24,17 @@
 </script>
 
 <template>
-  <div>
+  <span>
     <!-- Note: Safe because we run `escapeHtmlUnsafeChars` above. -->
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html processedText}
-  </div>
+  </span>
 </template>
 
 <style lang="scss">
   @use 'component' as *;
 
-  div {
+  span {
     overflow: hidden;
     overflow-wrap: anywhere;
     white-space: pre-wrap;

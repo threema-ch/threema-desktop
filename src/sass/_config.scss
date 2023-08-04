@@ -70,9 +70,9 @@ $config: config-merge(components.$config, (
 
     message-components: (
       // Message footer
-      --mc-message-footer-time,
-      --mc-message-footer-column-gap,
-      --mc-message-footer-icon-size,
+      --mc-message-indicator-time,
+      --mc-message-indicator-column-gap,
+      --mc-message-indicator-icon-size,
 
       // General message container
       --mc-message-hover-background-color,
@@ -92,6 +92,7 @@ $config: config-merge(components.$config, (
       --mc-message-mention-me-background-color,
       --mc-message-mention-me-color,
       --mc-message-quote-border-width,
+      --mc-message-quote-text-color,
 
       // File Message
       --mc-message-file-icon-background-image,
@@ -102,6 +103,9 @@ $config: config-merge(components.$config, (
       --mc-message-file-icon-font-size,
       --mc-message-file-icon-font-color,
       --mc-message-file-size-color,
+
+      // Image message
+      --mc-message-image-placeholder-background-color,
 
       // Message status
       --mc-message-status-acknowledged-color,

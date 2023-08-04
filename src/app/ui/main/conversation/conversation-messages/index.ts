@@ -1,4 +1,11 @@
-import {type Dimensions} from '~/common/types';
+import {MessageDirection, ReceiverType} from '~/common/enum';
+import {unreachable} from '~/common/utils/assert';
+import {
+    type AnyMessageBody,
+    type IncomingMessage,
+    type Message,
+    type MessageStatus,
+} from '~/common/viewmodel/types';
 
 /**
  * Context menu selection events which may be dispatched by the message context menu.
@@ -16,51 +23,67 @@ export type ConversationMessageContextMenuEvent =
     | 'delete';
 
 /**
- * Calculate the dimensions the thumbnail should be displayed with. Note: Only the height can be
- * constrained currently, and the width will be calculated from the aspect ratio.
- *
- * @param dimensions Known dimensions (either of the full-size image or the thumbnail itself).
- * @returns the dimensions the thumbnail should be displayed with.
+ * Returns whether a message is inbound, and narrows the type accordingly.
  */
-export function getExpectedDisplayDimensions({
-    originalDimensions,
-    constraints,
-}: {
-    readonly originalDimensions: Dimensions | undefined;
-    readonly constraints: {
-        min: Omit<Dimensions, 'width'>;
-        max: Omit<Dimensions, 'width'>;
-    };
-}): Dimensions | undefined {
-    // If no dimensions are known, the expected thumbnail size cannot be calculated.
-    if (originalDimensions === undefined) {
-        return undefined;
+export function isIncoming(
+    message: Message<AnyMessageBody>,
+): message is IncomingMessage<AnyMessageBody> {
+    return message.direction === MessageDirection.INBOUND;
+}
+
+/**
+ * Returns whether a conversation is in a multi-user setting (as opposed to a 1:1 conversation).
+ */
+export function isMultiUserConversation(receiverType: ReceiverType): boolean {
+    switch (receiverType) {
+        case ReceiverType.GROUP:
+        case ReceiverType.DISTRIBUTION_LIST:
+            return true;
+
+        case ReceiverType.CONTACT:
+            return false;
+
+        default:
+            return unreachable(receiverType);
+    }
+}
+
+/**
+ * Extracts the main text content from a message. Note: This can vary by message type (e.g. an image
+ * message's text content is the caption). Note: Will not traverse the content of quotes, which
+ * means only the text of the quote itself will be extracted.
+ */
+export function extractTextContent(message: Message<AnyMessageBody>): string | undefined {
+    switch (message.type) {
+        case 'text':
+        case 'quote':
+            return message.body.text === '' ? undefined : message.body.text;
+
+        case 'audio':
+        case 'file':
+        case 'image':
+        case 'video':
+            return message.body.caption;
+
+        case 'location':
+            return message.body.description;
+
+        default:
+            return unreachable(message);
+    }
+}
+
+/**
+ * Extracts the {@link MessageStatus} of an (outbound) message.
+ */
+export function extractMessageStatus(message: Message<AnyMessageBody>): MessageStatus | undefined {
+    if (message.state.type === 'failed') {
+        return 'error';
     }
 
-    // Use full size image dimensions to determine aspect ratio.
-    const aspectRatio = originalDimensions.width / originalDimensions.height;
-
-    const thumbnailWidthAtMinHeight = constraints.min.height * aspectRatio;
-    const thumbnailWidthAtMaxHeight = constraints.max.height * aspectRatio;
-
-    // If the full size image is smaller than our minimum thumbnail render size, the actual
-    // thumbnail will probably be smaller as well, which means we can just use our minimum size.
-    if (originalDimensions.height <= constraints.min.height) {
-        return {
-            width: thumbnailWidthAtMinHeight,
-            height: constraints.min.height,
-        };
+    if (message.direction === MessageDirection.OUTBOUND) {
+        return message.status;
     }
 
-    // If the full size image is larger than our maximum thumbnail render size, the actual thumbnail
-    // will probably be larger as well, which means we can just use our maximum size.
-    if (originalDimensions.height >= constraints.max.height) {
-        return {
-            width: thumbnailWidthAtMaxHeight,
-            height: constraints.max.height,
-        };
-    }
-
-    // In all other cases we use the original dimensions.
-    return originalDimensions;
+    return undefined;
 }

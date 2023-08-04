@@ -45,10 +45,10 @@
 
   // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
   // until displaying the image.
-  let minimalConnectTimerElapsed = false;
+  let minimalLoadTimerElapsed = false;
   new GlobalTimer()
     .sleep(250)
-    .then(() => (minimalConnectTimerElapsed = true))
+    .then(() => (minimalLoadTimerElapsed = true))
     .catch((e) => log.error('Sleep timer failed'));
 
   // Component event dispatcher.
@@ -124,7 +124,7 @@
     <ModalWrapper visible={true}>
       <ModalDialog visible={true} elevated={false} on:close={handleClose} on:cancel={handleClose}>
         <div class="container" slot="body">
-          {#if image.status === 'loading' || !minimalConnectTimerElapsed}
+          {#if image.status === 'loading' || !minimalLoadTimerElapsed}
             <div class="progress">
               <CircularProgress variant="indeterminate" />
             </div>
@@ -144,6 +144,7 @@
             <img bind:this={previewElement} src={image.url} alt="Image message" on:click />
           {:else if image.status === 'failed'}
             <p class="error">
+              <MdIcon theme="Filled">error</MdIcon>
               {$i18n.t(
                 'messaging.error--image-message-image-not-loaded',
                 'The image could not be loaded.',
@@ -207,7 +208,11 @@
     }
 
     .error {
+      display: flex;
+      gap: rem(8px);
+      align-items: center;
       padding: rem(24px);
+      font-size: medium;
     }
   }
 

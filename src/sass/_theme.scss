@@ -97,9 +97,9 @@ $brandings: (
   // prettier-ignore
   @return (
       // Message footer
-      --mc-message-footer-time: -g($mc, message-footer-time),
-      --mc-message-footer-column-gap: rem(4px),
-      --mc-message-footer-icon-size: rem(12px),
+      --mc-message-indicator-time: -g($mc, message-indicator-time),
+      --mc-message-indicator-column-gap: rem(4px),
+      --mc-message-indicator-icon-size: rem(12px),
 
       // General message container
       --mc-message-border-radius: rem(8px),
@@ -119,6 +119,7 @@ $brandings: (
       --mc-message-mention-me-background-color: -g($mc, message-mention-me-background-color),
       --mc-message-mention-me-color: -g($mc, message-mention-me-color),
       --mc-message-quote-border-width: rem(2px),
+      --mc-message-quote-text-color: -g($mc, message-quote-text-color),
 
       // File Message
       --mc-message-file-icon-background-image: -g($mc, message-file-icon-background-image),
@@ -129,6 +130,9 @@ $brandings: (
       --mc-message-file-icon-font-size: -g($mc, message-file-icon-font-size),
       --mc-message-file-icon-font-color: -g($mc, message-file-icon-font-color),
       --mc-message-file-size-color: -g($mc, message-file-size-color),
+
+      // Image message
+      --mc-message-image-placeholder-background-color: -g($mc, message-image-placeholder-background-color),
 
       // Message status
       --mc-message-status-acknowledged-color: -g($mc, message-status-acknowledged),

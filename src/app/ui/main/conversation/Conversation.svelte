@@ -14,7 +14,7 @@
   import {type ComposeData} from '~/app/ui/main/conversation/compose';
   import ComposeHandler from '~/app/ui/main/conversation/compose/ComposeHandler.svelte';
   import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
-  import MessageQuote from '~/app/ui/main/conversation/conversation-messages/MessageQuote.svelte';
+  import MessageBody from '~/app/ui/main/conversation/conversation-messages/MessageBody.svelte';
   import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
@@ -425,7 +425,13 @@
           {#if $composeData.mode === 'quote'}
             <div class="quote">
               {#key $composeData.quotedMessageViewModelBundle}
-                <MessageQuote viewModelBundle={$composeData.quotedMessageViewModelBundle} />
+                <div class="body">
+                  <MessageBody
+                    viewModelBundle={$composeData.quotedMessageViewModelBundle}
+                    {receiver}
+                    isQuoted={true}
+                  />
+                </div>
               {/key}
               <IconButton flavor="naked" on:click={removeQuote}>
                 <MdIcon theme="Filled">close</MdIcon>
@@ -510,6 +516,11 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      gap: rem(24px);
+
+      .body {
+        flex-grow: 1;
+      }
     }
 
     > * {

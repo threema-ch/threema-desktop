@@ -17,7 +17,7 @@
   import {i18n} from '~/app/ui/i18n';
   import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import ConversationMessageContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
-  import MessageComponent from '~/app/ui/main/conversation/conversation-messages/Message.svelte';
+  import MessageBubble from '~/app/ui/main/conversation/conversation-messages/MessageBubble.svelte';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
   import MessageDetail from '~/app/ui/modal/MessageDetail.svelte';
   import MessageForward from '~/app/ui/modal/MessageForward.svelte';
@@ -433,14 +433,7 @@
       {/if}
 
       <div class="message" use:contextMenuAction={handleContextMenuAction}>
-        <MessageComponent
-          {viewModelBundle}
-          {receiver}
-          on:saveFile={saveFile}
-          on:abortSync={() => {
-            /* TODO(DESK-948): Implement cancellation */
-          }}
-        />
+        <MessageBubble {viewModelBundle} {receiver} />
         <div class="hover" class:visible={isContextMenuVisible} />
       </div>
       <div class="options">

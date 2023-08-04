@@ -50,8 +50,7 @@
     ),
     message-components: (
       // Message footer
-      message-footer-time: theme.$light-text-e2,
-
+      message-indicator-time: rgb(120, 120, 120),
       // Message status
       message-status-acknowledged: theme.$consumer-green-600,
       message-status-declined: theme.$warning-orange,
@@ -73,7 +72,7 @@
       message-mention-color: rgba(#000000, 88%),
       message-mention-me-background-color: -g($branding, primary-color-600),
       message-mention-me-color: #ffffff,
-
+      message-quote-text-color: rgb(120, 120, 120),
       // File Message
       message-file-icon-background-image: url('/res/theme/light/icon/file.svg'),
       message-file-icon-width: em(32px),
@@ -83,6 +82,9 @@
       message-file-icon-font-size: em(8px),
       message-file-icon-font-color: theme.$light-text-e1,
       message-file-size-color: theme.$light-text-e2,
+
+      // Image message
+      message-image-placeholder-background-color: rgba(#000000, 4%),
     ),
     compound-components: (
       // Profile picture upload

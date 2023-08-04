@@ -4,8 +4,7 @@
     MessageDirection,
     MessageReaction,
     MessageReactionUtils,
-    type ReceiverType,
-    ReceiverTypeUtils,
+    ReceiverType,
   } from '~/common/enum';
   import {type MessageStatus} from '~/common/viewmodel/types';
 
@@ -14,33 +13,37 @@
   export let reaction: MessageReaction | undefined = undefined;
   export let outgoingReactionDisplay: 'thumb' | 'arrow';
   export let receiverType: ReceiverType;
+
+  // Hide status for group messages, except for pending state.
+  $: isVisible = receiverType !== ReceiverType.GROUP || status === 'pending' || status === 'error';
 </script>
 
 <template>
-  <span
-    data-direction={direction}
-    data-reaction={reaction === undefined ? undefined : MessageReactionUtils.NAME_OF[reaction]}
-    data-status={status}
-    data-receiver-type={ReceiverTypeUtils.NAME_OF[receiverType]}
-  >
-    {#if direction === MessageDirection.INBOUND && outgoingReactionDisplay === 'arrow'}
-      <MdIcon theme="Filled">reply</MdIcon>
-    {:else if reaction === MessageReaction.ACKNOWLEDGE}
-      <MdIcon theme="Filled">thumb_up</MdIcon>
-    {:else if reaction === MessageReaction.DECLINE}
-      <MdIcon theme="Filled">thumb_down</MdIcon>
-    {:else if status === 'pending'}
-      <MdIcon theme="Filled">file_upload</MdIcon>
-    {:else if status === 'sent'}
-      <MdIcon theme="Filled">email</MdIcon>
-    {:else if status === 'delivered'}
-      <MdIcon theme="Filled">move_to_inbox</MdIcon>
-    {:else if status === 'read'}
-      <MdIcon theme="Filled">visibility</MdIcon>
-    {:else if status === 'error'}
-      <MdIcon theme="Filled">report_problem</MdIcon>
-    {/if}
-  </span>
+  {#if isVisible}
+    <span
+      data-direction={direction}
+      data-reaction={reaction === undefined ? undefined : MessageReactionUtils.NAME_OF[reaction]}
+      data-status={status}
+    >
+      {#if direction === MessageDirection.INBOUND && outgoingReactionDisplay === 'arrow'}
+        <MdIcon theme="Filled">reply</MdIcon>
+      {:else if reaction === MessageReaction.ACKNOWLEDGE}
+        <MdIcon theme="Filled">thumb_up</MdIcon>
+      {:else if reaction === MessageReaction.DECLINE}
+        <MdIcon theme="Filled">thumb_down</MdIcon>
+      {:else if status === 'pending'}
+        <MdIcon theme="Filled">file_upload</MdIcon>
+      {:else if status === 'sent'}
+        <MdIcon theme="Filled">email</MdIcon>
+      {:else if status === 'delivered'}
+        <MdIcon theme="Filled">move_to_inbox</MdIcon>
+      {:else if status === 'read'}
+        <MdIcon theme="Filled">visibility</MdIcon>
+      {:else if status === 'error'}
+        <MdIcon theme="Filled">report_problem</MdIcon>
+      {/if}
+    </span>
+  {/if}
 </template>
 
 <style lang="scss">
@@ -59,13 +62,6 @@
 
     &[data-reaction='DECLINE'] {
       color: var(--mc-message-status-declined-color);
-    }
-
-    // On Group conversations, only show pending state
-    &[data-receiver-type='GROUP'] {
-      &:not([data-status='pending']):not([data-status='error']) {
-        display: none;
-      }
     }
   }
 </style>

@@ -7,15 +7,15 @@
 </script>
 
 <template>
-  <span style="color: var(--c-profile-picture-initials-{color});">
+  <div style="color: var(--c-profile-picture-initials-{color});">
     {name}
-  </span>
+  </div>
 </template>
 
 <style lang="scss">
   @use 'component' as *;
 
-  span {
+  div {
     @extend %font-small-700;
   }
 </style>

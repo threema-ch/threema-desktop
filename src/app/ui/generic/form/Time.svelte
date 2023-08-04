@@ -25,7 +25,5 @@
 </script>
 
 <template>
-  <div>
-    {formatDate(date)}
-  </div>
+  {formatDate(date)}
 </template>
