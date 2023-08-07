@@ -248,6 +248,20 @@
         Dump data to debug console</span
       >
     </Button>
+
+    <h3>Screenshots</h3>
+
+    <Button
+      flavor="filled"
+      on:click={() => {
+        void backend.debug.generateScreenshotData();
+      }}
+    >
+      <span class="icon-and-text"
+        ><MdIcon theme="Filled">auto_fix_normal</MdIcon>
+        Generate screenshot data</span
+      >
+    </Button>
   </section>
 </template>
 

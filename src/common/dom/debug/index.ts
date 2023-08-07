@@ -3,7 +3,9 @@ import {type BackendHandle} from '~/common/dom/backend';
 import {
     generateFakeContactConversation,
     generateFakeGroupConversation,
+    generateScreenshotData,
 } from '~/common/dom/debug/fake';
+import {type Logger} from '~/common/logging';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
@@ -12,10 +14,14 @@ import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/
 export class DebugBackend implements ProxyMarked {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
 
+    private readonly _log: Logger;
+
     public constructor(
         private readonly _services: ServicesForBackend,
         private readonly _backend: BackendHandle,
-    ) {}
+    ) {
+        this._log = _services.logging.logger('debug-backend');
+    }
 
     /**
      * Generate a fake contact conversation with fake data. The generated conversation is persistent but
@@ -31,5 +37,12 @@ export class DebugBackend implements ProxyMarked {
      */
     public async generateFakeGroupConversation(): Promise<void> {
         await generateFakeGroupConversation(this._services, this._backend);
+    }
+
+    /**
+     * Generate fake conversations and messages for making screenshots.
+     */
+    public async generateScreenshotData(): Promise<void> {
+        await generateScreenshotData(this._services, this._backend, this._log);
     }
 }
