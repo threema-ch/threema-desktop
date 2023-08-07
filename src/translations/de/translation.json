@@ -128,7 +128,7 @@
     "action--client-was-dropped-confirm": "Lokales Profil entfernen und Gerät erneut verknüpfen",
     "action--default-cancel": "OK",
     "action--default-confirm": "Erneut verknüpfen",
-    "label--title": "Erneute Verknüpfung fehlgeschlagen",
+    "label--title": "Verbindung fehlgeschlagen",
     "markup--client-update-required-p1": "Diese Version von Threema wird nicht mehr unterstützt (veraltete Protokollversion).",
     "markup--client-update-required-p2": "Bitte <1>installieren Sie die neueste Version</1>, um Threema weiterhin zu nutzen.",
     "markup--client-was-dropped-p1": "Die Verknüpfung mit diesem Gerät wurde aufgehoben, weshalb im Moment keine neuen Nachrichten mehr gesendet oder empfangen werden können.",

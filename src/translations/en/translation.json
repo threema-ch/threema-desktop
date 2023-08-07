@@ -128,7 +128,7 @@
     "action--client-was-dropped-confirm": "Remove Local Profile and Relink Device",
     "action--default-cancel": "OK",
     "action--default-confirm": "Relink",
-    "label--title": "Relinking Failed",
+    "label--title": "Connection Failed",
     "markup--client-update-required-p1": "This Threema version is no longer supported (outdated protocol version).",
     "markup--client-update-required-p2": "Please <1>update to the latest version</1> to continue using Threema.",
     "markup--client-was-dropped-p1": "This device has been unlinked, which is why you currently can’t send or receive new messages.",
