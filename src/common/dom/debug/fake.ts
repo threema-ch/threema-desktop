@@ -33,6 +33,7 @@ import {type Contact} from '~/common/model';
 import {type ContactModelStore} from '~/common/model/contact';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
+import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {
     ensureFeatureMask,
@@ -429,6 +430,7 @@ async function addConversationMessages(
     for (const message of messages) {
         let content;
 
+        const messageId = randomMessageId(crypto);
         const messageDate = new Date(+new Date() - message.secondsAgo * 1000);
         const lastReaction =
             message.lastReaction === undefined
@@ -436,12 +438,15 @@ async function addConversationMessages(
                 : {type: message.lastReaction, at: messageDate};
 
         switch (message.type) {
-            case 'TEXT':
+            case 'TEXT': {
+                const quoteInfo = parsePossibleTextQuote(message.content.default, log, messageId);
                 content = {
                     type: 'text',
-                    text: message.content.default,
+                    text: quoteInfo?.comment ?? message.content.default,
+                    quotedMessageId: quoteInfo?.quotedMessageId,
                 } as const;
                 break;
+            }
             case 'FILE': {
                 const fileData = await file.store(message.content.fileBytes);
                 content = {
@@ -482,7 +487,7 @@ async function addConversationMessages(
         switch (message.direction) {
             case MessageDirection.INBOUND:
                 conversation.controller.addMessage.fromSync({
-                    id: randomMessageId(crypto),
+                    id: messageId,
                     direction: message.direction,
                     sender: contact.ctx,
                     createdAt: messageDate,
@@ -495,7 +500,7 @@ async function addConversationMessages(
                 break;
             case MessageDirection.OUTBOUND:
                 conversation.controller.addMessage.fromSync({
-                    id: randomMessageId(crypto),
+                    id: messageId,
                     direction: message.direction,
                     createdAt: messageDate,
                     readAt: messageDate,
