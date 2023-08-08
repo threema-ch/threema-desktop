@@ -347,24 +347,14 @@ export async function generateScreenshotData(
     log.info('generateScreenshotData: Starting');
 
     // Import JSON data (but only in debug and/or sandbox builds)
-    let data: ScreenshotDataJson;
+    let data: ScreenshotDataJson = {contacts: [], groups: []};
     if (import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-        switch (import.meta.env.BUILD_VARIANT) {
-            case 'consumer':
-                data = SCREENSHOT_DATA_JSON_SCHEMA.parse(
-                    await import(`./screenshot-data-consumer.json`),
-                );
-                break;
-            case 'work':
-                data = SCREENSHOT_DATA_JSON_SCHEMA.parse(
-                    await import(`./screenshot-data-work.json`),
-                );
-                break;
-            default:
-                unreachable(import.meta.env.BUILD_VARIANT);
+        const jsonFiles = import.meta.globEager('./screenshot-data-*.json');
+        const filename = `./screenshot-data-${import.meta.env.BUILD_VARIANT}.json`;
+        if (filename in jsonFiles) {
+            const json = jsonFiles[filename];
+            data = SCREENSHOT_DATA_JSON_SCHEMA.parse(json);
         }
-    } else {
-        data = {contacts: [], groups: []};
     }
 
     // Add contacts
