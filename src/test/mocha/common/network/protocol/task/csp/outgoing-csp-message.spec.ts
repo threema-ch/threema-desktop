@@ -18,6 +18,7 @@ import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     type MessageProperties,
     OutgoingCspMessageTask,
+    type ValidCspMessageTypeForReceiver,
 } from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -347,7 +348,7 @@ export function run(): void {
             readonly creator: TestUser | 'self';
             readonly members: TestUser[];
             readonly messageProperties?: Omit<
-                MessageProperties<unknown, CspE2eGroupConversationType>,
+                MessageProperties<unknown, ValidCspMessageTypeForReceiver<Group>>,
                 'messageId'
             >;
             readonly testExpectations?: (
@@ -358,7 +359,10 @@ export function run(): void {
                     DbGroupUid,
                     2
                 >,
-                messageProperties: MessageProperties<unknown, CspE2eGroupConversationType>,
+                messageProperties: MessageProperties<
+                    unknown,
+                    ValidCspMessageTypeForReceiver<Group>
+                >,
             ) => NetworkExpectation[];
         }
 
@@ -561,6 +565,38 @@ export function run(): void {
                         getExpectedD2dOutgoingReflectedMessageUpdate(
                             gateway.identity.string,
                             groupStore.get().view.groupId,
+                        ),
+                    ],
+                });
+            });
+
+            it('should send group leave messages to gateway group creators', async function () {
+                await runSendGroupMessageTest({
+                    name: 'Hornusser Vorderthal',
+                    creator: gateway,
+                    members: [user2],
+                    messageProperties: {
+                        type: CspE2eGroupControlType.GROUP_LEAVE,
+                        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupLeave, {}),
+                        cspMessageFlags: CspMessageFlags.none(),
+                        createdAt: new Date(),
+                        allowUserProfileDistribution: false,
+                    },
+                    testExpectations: (groupStore, messageProperties) => [
+                        // First, the outgoing message must be reflected.
+                        getExpectedD2dOutgoingReflectedMessage(messageProperties),
+
+                        // Note: This expects that the messages were sent in a synchronous manner in the order of
+                        // the users in the database.
+                        ...getExpectedCspMessagesForGroupMember(
+                            gateway,
+                            messageProperties.messageId,
+                            messageProperties.type,
+                        ),
+                        ...getExpectedCspMessagesForGroupMember(
+                            user2,
+                            messageProperties.messageId,
+                            messageProperties.type,
                         ),
                     ],
                 });

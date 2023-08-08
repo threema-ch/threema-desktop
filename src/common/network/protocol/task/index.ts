@@ -2,9 +2,13 @@ import {type ServicesForBackend} from '~/common/backend';
 import {type NonceGuard} from '~/common/crypto';
 import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {
+    CspE2eContactControlType,
     CspE2eConversationType,
+    CspE2eForwardSecurityType,
     CspE2eGroupControlType,
     CspE2eGroupConversationType,
+    CspE2eGroupStatusUpdateType,
+    CspE2eStatusUpdateType,
     type D2dCspMessageType,
     type MessageFilterInstruction,
     type TransactionScope,
@@ -27,6 +31,7 @@ import {
 import {type IdentityString} from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
 import {type WeakOpaque} from '~/common/types';
+import {unreachable} from '~/common/utils/assert';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {type QueueConsumer, type QueueProducer} from '~/common/utils/queue';
 import {type QueryablePromise, type ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -381,16 +386,58 @@ export function shouldSendGroupMessageToCreator(
     groupCreatorIdentity: IdentityString,
     messageType: CspE2eType,
 ): boolean {
+    // Non-gateway group creators always receive all messages
     const isGroupManagedByGateway = groupCreatorIdentity.startsWith('*');
-    const isGroupMonitoredByGateway = isGroupManagedByGateway && groupName.startsWith('☁');
-    const isMessageEssential = [
-        CspE2eGroupControlType.GROUP_REQUEST_SYNC,
-        CspE2eGroupControlType.GROUP_LEAVE,
-    ].includes(messageType);
-
-    if (isGroupManagedByGateway && !isGroupMonitoredByGateway && !isMessageEssential) {
-        return false;
+    if (!isGroupManagedByGateway) {
+        return true;
     }
 
-    return true;
+    // Gateway group creators prefixed with cloud emoji always receive all messages
+    const isGroupMonitoredByGateway = groupName.startsWith('☁');
+    if (isGroupMonitoredByGateway) {
+        return true;
+    }
+
+    // For gateway groups not prefixed with cloud emoji, it depends on the message type
+    switch (messageType) {
+        case CspE2eGroupControlType.GROUP_REQUEST_SYNC:
+        case CspE2eGroupControlType.GROUP_LEAVE:
+            return true;
+        case CspE2eConversationType.TEXT:
+        case CspE2eConversationType.DEPRECATED_IMAGE:
+        case CspE2eConversationType.LOCATION:
+        case CspE2eConversationType.DEPRECATED_AUDIO:
+        case CspE2eConversationType.DEPRECATED_VIDEO:
+        case CspE2eConversationType.FILE:
+        case CspE2eConversationType.POLL_SETUP:
+        case CspE2eConversationType.POLL_VOTE:
+        case CspE2eConversationType.CALL_OFFER:
+        case CspE2eConversationType.CALL_ANSWER:
+        case CspE2eConversationType.CALL_ICE_CANDIDATE:
+        case CspE2eConversationType.CALL_HANGUP:
+        case CspE2eConversationType.CALL_RINGING:
+        case CspE2eStatusUpdateType.DELIVERY_RECEIPT:
+        case CspE2eStatusUpdateType.TYPING_INDICATOR:
+        case CspE2eGroupControlType.GROUP_SETUP:
+        case CspE2eGroupControlType.GROUP_NAME:
+        case CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE:
+        case CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE:
+        case CspE2eGroupControlType.GROUP_CALL_START:
+        case CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE:
+        case CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE:
+        case CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE:
+        case CspE2eGroupConversationType.GROUP_TEXT:
+        case CspE2eGroupConversationType.GROUP_LOCATION:
+        case CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE:
+        case CspE2eGroupConversationType.GROUP_AUDIO:
+        case CspE2eGroupConversationType.GROUP_VIDEO:
+        case CspE2eGroupConversationType.GROUP_FILE:
+        case CspE2eGroupConversationType.GROUP_POLL_SETUP:
+        case CspE2eGroupConversationType.GROUP_POLL_VOTE:
+        case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT:
+        case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE:
+            return false;
+        default:
+            return unreachable(messageType);
+    }
 }

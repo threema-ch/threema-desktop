@@ -80,15 +80,23 @@ const NO_REFLECT = [
     CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
 ];
 
+/**
+ * Messages that are sent to all group members.
+ */
 type ValidGroupMessages =
     | CspE2eGroupConversationType
+    // Note: GROUP_REQUEST_SYNC is excluded, because it is only sent to the creator, not to all members
     | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_REQUEST_SYNC>;
 
+/**
+ * Messages that are sent to single contacts.
+ */
 type ValidContactMessages =
     | CspE2eConversationType
     | CspE2eStatusUpdateType
     | CspE2eContactControlType
-    | CspE2eGroupControlType
+    // Note: GROUP_CALL_START is always sent to the whole group, not to a single contact
+    | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_CALL_START>
     | CspE2eForwardSecurityType;
 
 // Set of E2EE message types that may not be blocked under any circumstance
@@ -267,7 +275,7 @@ export class OutgoingCspMessageTask<
             ]);
             reflectDate = await task.run(handle);
         } else {
-            this._log.debug(`Skip reflecting ${messageTypeDebug} message.`);
+            this._log.debug(`Skip reflecting sent state of ${messageTypeDebug} message.`);
         }
 
         // Done
