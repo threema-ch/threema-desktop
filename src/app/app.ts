@@ -316,18 +316,26 @@ export async function main(appState: AppState): Promise<App> {
     // Initialize global dialog component
     attachSystemDialogs(CONFIG, logging, elements.systemDialogs);
 
-    // Create services
+    // Instantiate early services
+    const config = CONFIG;
     const timer = new GlobalTimer();
     const notification = new FrontendNotificationCreator();
     const systemDialog = new FrontendSystemDialogService();
-    const endpoint = createEndpointService({config: CONFIG, logging});
+    const endpoint = createEndpointService({config, logging});
+
+    // Check for updates in the background, if this is an Electron release build
+    if (!import.meta.env.DEBUG) {
+        void updateCheck({config, logging, timer, systemDialog}, systemInfo);
+    }
+
+    // Instantiate backend
     const [backend, isNewIdentity] = await BackendController.create(
         {
             notification,
             systemDialog,
         },
         {
-            config: CONFIG,
+            config,
             crypto: {randomBytes},
             endpoint,
             logging,
@@ -337,6 +345,8 @@ export async function main(appState: AppState): Promise<App> {
         showLinkingWizard,
         requestUserPassword,
     );
+
+    // Create app services
     const services: AppServices = {
         config: CONFIG,
         crypto: {randomBytes},
@@ -351,11 +361,6 @@ export async function main(appState: AppState): Promise<App> {
     // If this is an existing identity, resolve `identityReady` promise
     if (!isNewIdentity) {
         identityReady.resolve();
-    }
-
-    // Check for updates in the background, if this is an Electron release build
-    if (!import.meta.env.DEBUG) {
-        void updateCheck(services, systemInfo);
     }
 
     // Subscribe to unread message count changes and update all counters.
