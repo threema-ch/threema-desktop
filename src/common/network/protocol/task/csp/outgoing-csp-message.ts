@@ -9,7 +9,6 @@ import {
     CspE2eConversationTypeUtils,
     CspE2eForwardSecurityType,
     type CspE2eGroupControlType,
-    CspE2eGroupControlTypeUtils,
     type CspE2eGroupConversationType,
     CspE2eGroupConversationTypeUtils,
     CspE2eStatusUpdateType,
@@ -27,6 +26,7 @@ import {
     CspPayloadType,
     D2mPayloadType,
     type LayerEncoder,
+    MESSAGE_TYPE_PROPERTIES,
 } from '~/common/network/protocol';
 import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
 import {type CspMessageFlags} from '~/common/network/protocol/flags';
@@ -98,9 +98,6 @@ type ValidContactMessages =
     // Note: GROUP_CALL_START is always sent to the whole group, not to a single contact
     | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_CALL_START>
     | CspE2eForwardSecurityType;
-
-// Set of E2EE message types that may not be blocked under any circumstance
-const BLOCK_EXEMPTION_TYPES: ReadonlySet<u53> = CspE2eGroupControlTypeUtils.ALL;
 
 /**
  * All valid {@link CspE2eType} types that may be sent for a specific receiver.
@@ -228,7 +225,7 @@ export class OutgoingCspMessageTask<
             !shouldSendGroupMessageToCreator(
                 this._receiver.view.name,
                 this._receiver.view.creatorIdentity,
-                this._messageProperties.type,
+                type,
             )
         ) {
             const creatorIdentity = this._receiver.view.creatorIdentity;
@@ -248,12 +245,7 @@ export class OutgoingCspMessageTask<
         let sentMessagesCount = 0;
         if (receivers.size !== 0) {
             this._log.info(`Sending ${messageTypeDebug} message`);
-            sentMessagesCount = await this._encryptAndSendMessages(
-                handle,
-                receivers,
-                messageBytes,
-                type,
-            );
+            sentMessagesCount = await this._encryptAndSendMessages(handle, receivers, messageBytes);
             this._log.info(`Sent ${sentMessagesCount} outgoing CSP messages`);
         } else {
             this._log.info(`Skip sending ${messageTypeDebug} message as it has no receivers`);
@@ -317,7 +309,6 @@ export class OutgoingCspMessageTask<
         handle: InternalActiveTaskCodecHandle,
         receivers: Set<Contact>,
         messageBytes: Uint8Array,
-        messageType: ValidGroupMessages | ValidContactMessages,
     ): Promise<u53> {
         const {device, crypto, model} = this._services;
         const {createdAt, messageId, type} = this._messageProperties;
@@ -339,14 +330,19 @@ export class OutgoingCspMessageTask<
 
         // TODO(DESK-573): Bundle sending of group messages
         for (const receiver of receivers) {
-            if (
-                !BLOCK_EXEMPTION_TYPES.has(messageType) &&
-                model.user.privacySettings.get().controller.isContactBlocked(receiver.view.identity)
-            ) {
-                this._log.info(
-                    `Discarding sending message to blocked contact ${receiver.view.identity}`,
-                );
-                continue;
+            // Handle blocked receivers
+            const privacySettings = model.user.privacySettings.get();
+            if (privacySettings.controller.isContactBlocked(receiver.view.identity)) {
+                if (MESSAGE_TYPE_PROPERTIES[type].exemptFromBlocking) {
+                    this._log.debug(
+                        `Sending message to blocked contact ${receiver.view.identity}, because the type ${type} is exempt from blocking`,
+                    );
+                } else {
+                    this._log.info(
+                        `Not sending message to blocked contact ${receiver.view.identity}`,
+                    );
+                    continue;
+                }
             }
 
             const receiverIdentity = UTF8.encode(receiver.view.identity);

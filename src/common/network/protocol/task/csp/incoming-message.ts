@@ -15,7 +15,6 @@ import {
     CspE2eDeliveryReceiptStatus,
     CspE2eForwardSecurityType,
     CspE2eGroupControlType,
-    CspE2eGroupControlTypeUtils,
     CspE2eGroupConversationType,
     CspE2eGroupStatusUpdateType,
     CspE2eStatusUpdateType,
@@ -44,6 +43,8 @@ import {
     CspMessageFlag,
     CspPayloadType,
     D2mPayloadType,
+    isCspE2eType,
+    MESSAGE_TYPE_PROPERTIES,
 } from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
@@ -249,9 +250,6 @@ function getD2dIncomingMessage(
         messageId: intoUnsignedLong(id),
     });
 }
-
-// Set of E2EE message types that may not be blocked under any circumstance
-const BLOCK_EXEMPTION_TYPES: ReadonlySet<u53> = CspE2eGroupControlTypeUtils.ALL;
 
 /** An existing contact or almost everything we need to create a contact. */
 type ContactOrInitFragment = LocalModelStore<Contact> | Omit<ContactInit, 'nickname'>;
@@ -483,12 +481,15 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Check if the message should be discarded due to the contact being
         // implicitly or explicitly blocked.
-        if (
-            !BLOCK_EXEMPTION_TYPES.has(type) &&
-            model.user.privacySettings.get().controller.isContactBlocked(sender.string)
-        ) {
-            this._log.info(`Discarding message from blocked contact ${sender.string}`);
-            return await this._discard(handle);
+        if (model.user.privacySettings.get().controller.isContactBlocked(sender.string)) {
+            if (isCspE2eType(type) && MESSAGE_TYPE_PROPERTIES[type].exemptFromBlocking) {
+                this._log.debug(
+                    `Processing message from blocked contact ${sender.string}, because the type ${type} is exempt from blocking`,
+                );
+            } else {
+                this._log.info(`Discarding message from blocked contact ${sender.string}`);
+                return await this._discard(handle);
+            }
         }
 
         // Decode message and flags (default for the message) according to type
