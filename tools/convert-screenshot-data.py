@@ -24,6 +24,9 @@ def convert_conversation_messages(messages, current_dir, conversation_type, own_
             'direction': 'OUTGOING' if message['out'] else 'INCOMING',
         }
 
+        if message.get('messageId') != None:
+            converted_message['messageId'] = message['messageId']
+
         if conversation_type == 'group' and converted_message['direction'] == 'INCOMING':
             converted_message['identity'] = message['identity']
 
@@ -63,6 +66,8 @@ def convert_conversation_messages(messages, current_dir, conversation_type, own_
             }
         elif 'content' in message:
             converted_message['content'] = message['content']
+            if 'contentQuoteV2' in message:
+                converted_message['contentQuoteV2'] = message['contentQuoteV2']
 
         if converted_message['direction'] == 'INCOMING':
             converted_message['isRead'] = message.get('read', True)

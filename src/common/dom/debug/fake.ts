@@ -483,7 +483,7 @@ async function addConversationMessages(
     for (const message of messages) {
         let content;
 
-        const messageId = randomMessageId(crypto);
+        const messageId = message.messageId ?? randomMessageId(crypto);
         const messageDate = new Date(+new Date() - message.secondsAgo * 1000);
         const lastReaction =
             message.lastReaction === undefined
@@ -492,10 +492,11 @@ async function addConversationMessages(
 
         switch (message.type) {
             case 'TEXT': {
-                const quoteInfo = parsePossibleTextQuote(message.content.default, log, messageId);
+                const messageText = message.contentQuoteV2?.default ?? message.content.default;
+                const quoteInfo = parsePossibleTextQuote(messageText, log, messageId);
                 content = {
                     type: 'text',
-                    text: quoteInfo?.comment ?? message.content.default,
+                    text: quoteInfo?.comment ?? messageText,
                     quotedMessageId: quoteInfo?.quotedMessageId,
                 } as const;
                 break;

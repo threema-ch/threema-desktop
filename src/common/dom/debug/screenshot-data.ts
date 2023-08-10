@@ -8,7 +8,12 @@ import {
     MessageReaction,
     VerificationLevelUtils,
 } from '~/common/enum';
-import {ensureGroupId, ensureIdentityString, type IdentityString} from '~/common/network/types';
+import {
+    ensureGroupId,
+    ensureIdentityString,
+    ensureMessageId,
+    type IdentityString,
+} from '~/common/network/types';
 import {type f64} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {base64ToU8a} from '~/common/utils/base64';
@@ -38,6 +43,7 @@ const TRANSLATED_VALUE_SCHEMA = v
     .rest(v.unknown());
 
 const TEST_MESSAGE_BASE = {
+    messageId: v.string().map(hexLeToU64).map(ensureMessageId).optional(),
     secondsAgo: v.number(),
     direction: v.union(v.literal('INCOMING'), v.literal('OUTGOING')).map((direction) => {
         switch (direction) {
@@ -73,6 +79,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
             ...TEST_MESSAGE_BASE,
             type: v.literal('TEXT'),
             content: TRANSLATED_VALUE_SCHEMA,
+            contentQuoteV2: TRANSLATED_VALUE_SCHEMA.optional(),
         })
         .rest(v.unknown()),
     v
