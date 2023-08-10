@@ -941,7 +941,7 @@ export const common = $root.common = (() => {
      * CspE2eMessageType enum.
      * @name common.CspE2eMessageType
      * @enum {number}
-     * @property {number} _=0 _ value
+     * @property {number} _INVALID_TYPE=0 _INVALID_TYPE value
      * @property {number} TEXT=1 TEXT value
      * @property {number} DEPRECATED_IMAGE=2 DEPRECATED_IMAGE value
      * @property {number} LOCATION=16 LOCATION value
@@ -982,7 +982,7 @@ export const common = $root.common = (() => {
      */
     common.CspE2eMessageType = (function() {
         const valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "_"] = 0;
+        values[valuesById[0] = "_INVALID_TYPE"] = 0;
         values[valuesById[1] = "TEXT"] = 1;
         values[valuesById[2] = "DEPRECATED_IMAGE"] = 2;
         values[valuesById[16] = "LOCATION"] = 16;
@@ -1035,29 +1035,41 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
      */
     const csp_e2e_fs = {};
 
-    csp_e2e_fs.ForwardSecurityEnvelope = (function() {
+    /**
+     * Version enum.
+     * @name csp_e2e_fs.Version
+     * @enum {number}
+     * @property {number} UNSPECIFIED=0 UNSPECIFIED value
+     * @property {number} V1_0=256 V1_0 value
+     * @property {number} V1_1=257 V1_1 value
+     */
+    csp_e2e_fs.Version = (function() {
+        const valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "UNSPECIFIED"] = 0;
+        values[valuesById[256] = "V1_0"] = 256;
+        values[valuesById[257] = "V1_1"] = 257;
+        return values;
+    })();
+
+    csp_e2e_fs.VersionRange = (function() {
 
         /**
-         * Properties of a ForwardSecurityEnvelope.
+         * Properties of a VersionRange.
          * @memberof csp_e2e_fs
-         * @interface IForwardSecurityEnvelope
-         * @property {Uint8Array|null} [sessionId] ForwardSecurityEnvelope sessionId
-         * @property {csp_e2e_fs.ForwardSecurityEnvelope.Init|null} [init] ForwardSecurityEnvelope init
-         * @property {csp_e2e_fs.ForwardSecurityEnvelope.Accept|null} [accept] ForwardSecurityEnvelope accept
-         * @property {csp_e2e_fs.ForwardSecurityEnvelope.Reject|null} [reject] ForwardSecurityEnvelope reject
-         * @property {csp_e2e_fs.ForwardSecurityEnvelope.Terminate|null} [terminate] ForwardSecurityEnvelope terminate
-         * @property {csp_e2e_fs.ForwardSecurityEnvelope.Message|null} [message] ForwardSecurityEnvelope message
+         * @interface IVersionRange
+         * @property {number|null} [min] VersionRange min
+         * @property {number|null} [max] VersionRange max
          */
 
         /**
-         * Constructs a new ForwardSecurityEnvelope.
+         * Constructs a new VersionRange.
          * @memberof csp_e2e_fs
-         * @classdesc Represents a ForwardSecurityEnvelope.
-         * @implements IForwardSecurityEnvelope
+         * @classdesc Represents a VersionRange.
+         * @implements IVersionRange
          * @constructor
-         * @param {csp_e2e_fs.IForwardSecurityEnvelope=} [properties] Properties to set
+         * @param {csp_e2e_fs.IVersionRange=} [properties] Properties to set
          */
-        function ForwardSecurityEnvelope(properties) {
+        function VersionRange(properties) {
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -1065,134 +1077,64 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
         }
 
         /**
-         * ForwardSecurityEnvelope sessionId.
-         * @member {Uint8Array} sessionId
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
+         * VersionRange min.
+         * @member {number} min
+         * @memberof csp_e2e_fs.VersionRange
          * @instance
          */
-        ForwardSecurityEnvelope.prototype.sessionId = $util.newBuffer([]);
+        VersionRange.prototype.min = 0;
 
         /**
-         * ForwardSecurityEnvelope init.
-         * @member {csp_e2e_fs.ForwardSecurityEnvelope.Init|null|undefined} init
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
+         * VersionRange max.
+         * @member {number} max
+         * @memberof csp_e2e_fs.VersionRange
          * @instance
          */
-        ForwardSecurityEnvelope.prototype.init = null;
+        VersionRange.prototype.max = 0;
 
         /**
-         * ForwardSecurityEnvelope accept.
-         * @member {csp_e2e_fs.ForwardSecurityEnvelope.Accept|null|undefined} accept
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-         * @instance
-         */
-        ForwardSecurityEnvelope.prototype.accept = null;
-
-        /**
-         * ForwardSecurityEnvelope reject.
-         * @member {csp_e2e_fs.ForwardSecurityEnvelope.Reject|null|undefined} reject
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-         * @instance
-         */
-        ForwardSecurityEnvelope.prototype.reject = null;
-
-        /**
-         * ForwardSecurityEnvelope terminate.
-         * @member {csp_e2e_fs.ForwardSecurityEnvelope.Terminate|null|undefined} terminate
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-         * @instance
-         */
-        ForwardSecurityEnvelope.prototype.terminate = null;
-
-        /**
-         * ForwardSecurityEnvelope message.
-         * @member {csp_e2e_fs.ForwardSecurityEnvelope.Message|null|undefined} message
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-         * @instance
-         */
-        ForwardSecurityEnvelope.prototype.message = null;
-
-        // OneOf field names bound to virtual getters and setters
-        let $oneOfFields;
-
-        /**
-         * ForwardSecurityEnvelope content.
-         * @member {"init"|"accept"|"reject"|"terminate"|"message"|undefined} content
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-         * @instance
-         */
-        Object.defineProperty(ForwardSecurityEnvelope.prototype, "content", {
-            get: $util.oneOfGetter($oneOfFields = ["init", "accept", "reject", "terminate", "message"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Encodes the specified ForwardSecurityEnvelope message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.verify|verify} messages.
+         * Encodes the specified VersionRange message. Does not implicitly {@link csp_e2e_fs.VersionRange.verify|verify} messages.
          * @function encode
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
+         * @memberof csp_e2e_fs.VersionRange
          * @static
-         * @param {csp_e2e_fs.ForwardSecurityEnvelope} message ForwardSecurityEnvelope message or plain object to encode
+         * @param {csp_e2e_fs.VersionRange} message VersionRange message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ForwardSecurityEnvelope.encode = function encode(message, writer) {
+        VersionRange.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.sessionId != null && Object.hasOwnProperty.call(message, "sessionId"))
-                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.sessionId);
-            if (message.init != null && Object.hasOwnProperty.call(message, "init"))
-                $root.csp_e2e_fs.ForwardSecurityEnvelope.Init.encode(message.init, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-            if (message.accept != null && Object.hasOwnProperty.call(message, "accept"))
-                $root.csp_e2e_fs.ForwardSecurityEnvelope.Accept.encode(message.accept, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-            if (message.reject != null && Object.hasOwnProperty.call(message, "reject"))
-                $root.csp_e2e_fs.ForwardSecurityEnvelope.Reject.encode(message.reject, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-            if (message.terminate != null && Object.hasOwnProperty.call(message, "terminate"))
-                $root.csp_e2e_fs.ForwardSecurityEnvelope.Terminate.encode(message.terminate, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
-            if (message.message != null && Object.hasOwnProperty.call(message, "message"))
-                $root.csp_e2e_fs.ForwardSecurityEnvelope.Message.encode(message.message, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+            if (message.min != null && Object.hasOwnProperty.call(message, "min"))
+                writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.min);
+            if (message.max != null && Object.hasOwnProperty.call(message, "max"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.max);
             return writer;
         };
 
         /**
-         * Decodes a ForwardSecurityEnvelope message from the specified reader or buffer.
+         * Decodes a VersionRange message from the specified reader or buffer.
          * @function decode
-         * @memberof csp_e2e_fs.ForwardSecurityEnvelope
+         * @memberof csp_e2e_fs.VersionRange
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {csp_e2e_fs.ForwardSecurityEnvelope} ForwardSecurityEnvelope
+         * @returns {csp_e2e_fs.VersionRange} VersionRange
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ForwardSecurityEnvelope.decode = function decode(reader, length) {
+        VersionRange.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.ForwardSecurityEnvelope();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.VersionRange();
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1: {
-                        message.sessionId = reader.bytes();
+                        message.min = reader.uint32();
                         break;
                     }
                 case 2: {
-                        message.init = $root.csp_e2e_fs.ForwardSecurityEnvelope.Init.decode(reader, reader.uint32());
-                        break;
-                    }
-                case 3: {
-                        message.accept = $root.csp_e2e_fs.ForwardSecurityEnvelope.Accept.decode(reader, reader.uint32());
-                        break;
-                    }
-                case 4: {
-                        message.reject = $root.csp_e2e_fs.ForwardSecurityEnvelope.Reject.decode(reader, reader.uint32());
-                        break;
-                    }
-                case 5: {
-                        message.terminate = $root.csp_e2e_fs.ForwardSecurityEnvelope.Terminate.decode(reader, reader.uint32());
-                        break;
-                    }
-                case 6: {
-                        message.message = $root.csp_e2e_fs.ForwardSecurityEnvelope.Message.decode(reader, reader.uint32());
+                        message.max = reader.uint32();
                         break;
                     }
                 default:
@@ -1203,475 +1145,726 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
             return message;
         };
 
-        ForwardSecurityEnvelope.Init = (function() {
+        return VersionRange;
+    })();
 
-            /**
-             * Properties of an Init.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @interface IInit
-             * @property {Uint8Array|null} [fssk] Init fssk
-             */
+    csp_e2e_fs.Envelope = (function() {
 
-            /**
-             * Constructs a new Init.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @classdesc Represents an Init.
-             * @implements IInit
-             * @constructor
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.IInit=} [properties] Properties to set
-             */
-            function Init(properties) {
-                if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
+        /**
+         * Properties of an Envelope.
+         * @memberof csp_e2e_fs
+         * @interface IEnvelope
+         * @property {Uint8Array|null} [sessionId] Envelope sessionId
+         * @property {csp_e2e_fs.Init|null} [init] Envelope init
+         * @property {csp_e2e_fs.Accept|null} [accept] Envelope accept
+         * @property {csp_e2e_fs.Reject|null} [reject] Envelope reject
+         * @property {csp_e2e_fs.Terminate|null} [terminate] Envelope terminate
+         * @property {csp_e2e_fs.Encapsulated|null} [encapsulated] Envelope encapsulated
+         */
 
-            /**
-             * Init fssk.
-             * @member {Uint8Array} fssk
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Init
-             * @instance
-             */
-            Init.prototype.fssk = $util.newBuffer([]);
+        /**
+         * Constructs a new Envelope.
+         * @memberof csp_e2e_fs
+         * @classdesc Represents an Envelope.
+         * @implements IEnvelope
+         * @constructor
+         * @param {csp_e2e_fs.IEnvelope=} [properties] Properties to set
+         */
+        function Envelope(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
 
-            /**
-             * Encodes the specified Init message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Init.verify|verify} messages.
-             * @function encode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Init
-             * @static
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.Init} message Init message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Init.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.fssk != null && Object.hasOwnProperty.call(message, "fssk"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.fssk);
-                return writer;
-            };
+        /**
+         * Envelope sessionId.
+         * @member {Uint8Array} sessionId
+         * @memberof csp_e2e_fs.Envelope
+         * @instance
+         */
+        Envelope.prototype.sessionId = $util.newBuffer([]);
 
-            /**
-             * Decodes an Init message from the specified reader or buffer.
-             * @function decode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Init
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {csp_e2e_fs.ForwardSecurityEnvelope.Init} Init
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Init.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.ForwardSecurityEnvelope.Init();
-                while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.fssk = reader.bytes();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
+        /**
+         * Envelope init.
+         * @member {csp_e2e_fs.Init|null|undefined} init
+         * @memberof csp_e2e_fs.Envelope
+         * @instance
+         */
+        Envelope.prototype.init = null;
+
+        /**
+         * Envelope accept.
+         * @member {csp_e2e_fs.Accept|null|undefined} accept
+         * @memberof csp_e2e_fs.Envelope
+         * @instance
+         */
+        Envelope.prototype.accept = null;
+
+        /**
+         * Envelope reject.
+         * @member {csp_e2e_fs.Reject|null|undefined} reject
+         * @memberof csp_e2e_fs.Envelope
+         * @instance
+         */
+        Envelope.prototype.reject = null;
+
+        /**
+         * Envelope terminate.
+         * @member {csp_e2e_fs.Terminate|null|undefined} terminate
+         * @memberof csp_e2e_fs.Envelope
+         * @instance
+         */
+        Envelope.prototype.terminate = null;
+
+        /**
+         * Envelope encapsulated.
+         * @member {csp_e2e_fs.Encapsulated|null|undefined} encapsulated
+         * @memberof csp_e2e_fs.Envelope
+         * @instance
+         */
+        Envelope.prototype.encapsulated = null;
+
+        // OneOf field names bound to virtual getters and setters
+        let $oneOfFields;
+
+        /**
+         * Envelope content.
+         * @member {"init"|"accept"|"reject"|"terminate"|"encapsulated"|undefined} content
+         * @memberof csp_e2e_fs.Envelope
+         * @instance
+         */
+        Object.defineProperty(Envelope.prototype, "content", {
+            get: $util.oneOfGetter($oneOfFields = ["init", "accept", "reject", "terminate", "encapsulated"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Encodes the specified Envelope message. Does not implicitly {@link csp_e2e_fs.Envelope.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e_fs.Envelope
+         * @static
+         * @param {csp_e2e_fs.Envelope} message Envelope message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Envelope.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.sessionId != null && Object.hasOwnProperty.call(message, "sessionId"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.sessionId);
+            if (message.init != null && Object.hasOwnProperty.call(message, "init"))
+                $root.csp_e2e_fs.Init.encode(message.init, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.accept != null && Object.hasOwnProperty.call(message, "accept"))
+                $root.csp_e2e_fs.Accept.encode(message.accept, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+            if (message.reject != null && Object.hasOwnProperty.call(message, "reject"))
+                $root.csp_e2e_fs.Reject.encode(message.reject, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+            if (message.terminate != null && Object.hasOwnProperty.call(message, "terminate"))
+                $root.csp_e2e_fs.Terminate.encode(message.terminate, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+            if (message.encapsulated != null && Object.hasOwnProperty.call(message, "encapsulated"))
+                $root.csp_e2e_fs.Encapsulated.encode(message.encapsulated, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Decodes an Envelope message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e_fs.Envelope
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e_fs.Envelope} Envelope
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Envelope.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.Envelope();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.sessionId = reader.bytes();
                         break;
                     }
-                }
-                return message;
-            };
-
-            return Init;
-        })();
-
-        ForwardSecurityEnvelope.Accept = (function() {
-
-            /**
-             * Properties of an Accept.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @interface IAccept
-             * @property {Uint8Array|null} [fssk] Accept fssk
-             */
-
-            /**
-             * Constructs a new Accept.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @classdesc Represents an Accept.
-             * @implements IAccept
-             * @constructor
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.IAccept=} [properties] Properties to set
-             */
-            function Accept(properties) {
-                if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * Accept fssk.
-             * @member {Uint8Array} fssk
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Accept
-             * @instance
-             */
-            Accept.prototype.fssk = $util.newBuffer([]);
-
-            /**
-             * Encodes the specified Accept message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Accept.verify|verify} messages.
-             * @function encode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Accept
-             * @static
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.Accept} message Accept message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Accept.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.fssk != null && Object.hasOwnProperty.call(message, "fssk"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.fssk);
-                return writer;
-            };
-
-            /**
-             * Decodes an Accept message from the specified reader or buffer.
-             * @function decode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Accept
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {csp_e2e_fs.ForwardSecurityEnvelope.Accept} Accept
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Accept.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.ForwardSecurityEnvelope.Accept();
-                while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.fssk = reader.bytes();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
+                case 2: {
+                        message.init = $root.csp_e2e_fs.Init.decode(reader, reader.uint32());
                         break;
                     }
-                }
-                return message;
-            };
-
-            return Accept;
-        })();
-
-        ForwardSecurityEnvelope.Reject = (function() {
-
-            /**
-             * Properties of a Reject.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @interface IReject
-             * @property {Long|null} [rejectedMessageId] Reject rejectedMessageId
-             * @property {csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause|null} [cause] Reject cause
-             */
-
-            /**
-             * Constructs a new Reject.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @classdesc Represents a Reject.
-             * @implements IReject
-             * @constructor
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.IReject=} [properties] Properties to set
-             */
-            function Reject(properties) {
-                if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * Reject rejectedMessageId.
-             * @member {Long} rejectedMessageId
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Reject
-             * @instance
-             */
-            Reject.prototype.rejectedMessageId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
-            /**
-             * Reject cause.
-             * @member {csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause} cause
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Reject
-             * @instance
-             */
-            Reject.prototype.cause = 0;
-
-            /**
-             * Encodes the specified Reject message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Reject.verify|verify} messages.
-             * @function encode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Reject
-             * @static
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.Reject} message Reject message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Reject.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.rejectedMessageId != null && Object.hasOwnProperty.call(message, "rejectedMessageId"))
-                    writer.uint32(/* id 1, wireType 1 =*/9).fixed64(message.rejectedMessageId);
-                if (message.cause != null && Object.hasOwnProperty.call(message, "cause"))
-                    writer.uint32(/* id 2, wireType 0 =*/16).int32(message.cause);
-                return writer;
-            };
-
-            /**
-             * Decodes a Reject message from the specified reader or buffer.
-             * @function decode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Reject
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {csp_e2e_fs.ForwardSecurityEnvelope.Reject} Reject
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Reject.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.ForwardSecurityEnvelope.Reject();
-                while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.rejectedMessageId = reader.fixed64();
-                            break;
-                        }
-                    case 2: {
-                            message.cause = reader.int32();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
+                case 3: {
+                        message.accept = $root.csp_e2e_fs.Accept.decode(reader, reader.uint32());
                         break;
                     }
-                }
-                return message;
-            };
-
-            /**
-             * Cause enum.
-             * @name csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause
-             * @enum {number}
-             * @property {number} STATE_MISMATCH=0 STATE_MISMATCH value
-             * @property {number} UNKNOWN_SESSION=1 UNKNOWN_SESSION value
-             */
-            Reject.Cause = (function() {
-                const valuesById = {}, values = Object.create(valuesById);
-                values[valuesById[0] = "STATE_MISMATCH"] = 0;
-                values[valuesById[1] = "UNKNOWN_SESSION"] = 1;
-                return values;
-            })();
-
-            return Reject;
-        })();
-
-        ForwardSecurityEnvelope.Terminate = (function() {
-
-            /**
-             * Properties of a Terminate.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @interface ITerminate
-             */
-
-            /**
-             * Constructs a new Terminate.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @classdesc Represents a Terminate.
-             * @implements ITerminate
-             * @constructor
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.ITerminate=} [properties] Properties to set
-             */
-            function Terminate(properties) {
-                if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * Encodes the specified Terminate message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Terminate.verify|verify} messages.
-             * @function encode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Terminate
-             * @static
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.Terminate} message Terminate message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Terminate.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                return writer;
-            };
-
-            /**
-             * Decodes a Terminate message from the specified reader or buffer.
-             * @function decode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Terminate
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {csp_e2e_fs.ForwardSecurityEnvelope.Terminate} Terminate
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Terminate.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.ForwardSecurityEnvelope.Terminate();
-                while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    default:
-                        reader.skipType(tag & 7);
+                case 4: {
+                        message.reject = $root.csp_e2e_fs.Reject.decode(reader, reader.uint32());
                         break;
                     }
-                }
-                return message;
-            };
-
-            return Terminate;
-        })();
-
-        ForwardSecurityEnvelope.Message = (function() {
-
-            /**
-             * Properties of a Message.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @interface IMessage
-             * @property {csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType|null} [dhType] Message dhType
-             * @property {Long|null} [counter] Message counter
-             * @property {Uint8Array|null} [encryptedMessage] Message encryptedMessage
-             */
-
-            /**
-             * Constructs a new Message.
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope
-             * @classdesc Represents a Message.
-             * @implements IMessage
-             * @constructor
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.IMessage=} [properties] Properties to set
-             */
-            function Message(properties) {
-                if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * Message dhType.
-             * @member {csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType} dhType
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Message
-             * @instance
-             */
-            Message.prototype.dhType = 0;
-
-            /**
-             * Message counter.
-             * @member {Long} counter
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Message
-             * @instance
-             */
-            Message.prototype.counter = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-
-            /**
-             * Message encryptedMessage.
-             * @member {Uint8Array} encryptedMessage
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Message
-             * @instance
-             */
-            Message.prototype.encryptedMessage = $util.newBuffer([]);
-
-            /**
-             * Encodes the specified Message message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Message.verify|verify} messages.
-             * @function encode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Message
-             * @static
-             * @param {csp_e2e_fs.ForwardSecurityEnvelope.Message} message Message message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Message.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.dhType != null && Object.hasOwnProperty.call(message, "dhType"))
-                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.dhType);
-                if (message.counter != null && Object.hasOwnProperty.call(message, "counter"))
-                    writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.counter);
-                if (message.encryptedMessage != null && Object.hasOwnProperty.call(message, "encryptedMessage"))
-                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.encryptedMessage);
-                return writer;
-            };
-
-            /**
-             * Decodes a Message message from the specified reader or buffer.
-             * @function decode
-             * @memberof csp_e2e_fs.ForwardSecurityEnvelope.Message
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {csp_e2e_fs.ForwardSecurityEnvelope.Message} Message
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Message.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.ForwardSecurityEnvelope.Message();
-                while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.dhType = reader.int32();
-                            break;
-                        }
-                    case 2: {
-                            message.counter = reader.uint64();
-                            break;
-                        }
-                    case 3: {
-                            message.encryptedMessage = reader.bytes();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
+                case 5: {
+                        message.terminate = $root.csp_e2e_fs.Terminate.decode(reader, reader.uint32());
                         break;
                     }
+                case 6: {
+                        message.encapsulated = $root.csp_e2e_fs.Encapsulated.decode(reader, reader.uint32());
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
                 }
-                return message;
-            };
+            }
+            return message;
+        };
 
-            /**
-             * DHType enum.
-             * @name csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType
-             * @enum {number}
-             * @property {number} TWODH=0 TWODH value
-             * @property {number} FOURDH=1 FOURDH value
-             */
-            Message.DHType = (function() {
-                const valuesById = {}, values = Object.create(valuesById);
-                values[valuesById[0] = "TWODH"] = 0;
-                values[valuesById[1] = "FOURDH"] = 1;
-                return values;
-            })();
+        return Envelope;
+    })();
 
-            return Message;
+    csp_e2e_fs.Init = (function() {
+
+        /**
+         * Properties of an Init.
+         * @memberof csp_e2e_fs
+         * @interface IInit
+         * @property {csp_e2e_fs.VersionRange|null} [supportedVersion] Init supportedVersion
+         * @property {Uint8Array|null} [fssk] Init fssk
+         */
+
+        /**
+         * Constructs a new Init.
+         * @memberof csp_e2e_fs
+         * @classdesc Represents an Init.
+         * @implements IInit
+         * @constructor
+         * @param {csp_e2e_fs.IInit=} [properties] Properties to set
+         */
+        function Init(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Init supportedVersion.
+         * @member {csp_e2e_fs.VersionRange|null|undefined} supportedVersion
+         * @memberof csp_e2e_fs.Init
+         * @instance
+         */
+        Init.prototype.supportedVersion = null;
+
+        /**
+         * Init fssk.
+         * @member {Uint8Array} fssk
+         * @memberof csp_e2e_fs.Init
+         * @instance
+         */
+        Init.prototype.fssk = $util.newBuffer([]);
+
+        /**
+         * Encodes the specified Init message. Does not implicitly {@link csp_e2e_fs.Init.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e_fs.Init
+         * @static
+         * @param {csp_e2e_fs.Init} message Init message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Init.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.fssk != null && Object.hasOwnProperty.call(message, "fssk"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.fssk);
+            if (message.supportedVersion != null && Object.hasOwnProperty.call(message, "supportedVersion"))
+                $root.csp_e2e_fs.VersionRange.encode(message.supportedVersion, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Decodes an Init message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e_fs.Init
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e_fs.Init} Init
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Init.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.Init();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 2: {
+                        message.supportedVersion = $root.csp_e2e_fs.VersionRange.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 1: {
+                        message.fssk = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return Init;
+    })();
+
+    csp_e2e_fs.Accept = (function() {
+
+        /**
+         * Properties of an Accept.
+         * @memberof csp_e2e_fs
+         * @interface IAccept
+         * @property {csp_e2e_fs.VersionRange|null} [supportedVersion] Accept supportedVersion
+         * @property {Uint8Array|null} [fssk] Accept fssk
+         */
+
+        /**
+         * Constructs a new Accept.
+         * @memberof csp_e2e_fs
+         * @classdesc Represents an Accept.
+         * @implements IAccept
+         * @constructor
+         * @param {csp_e2e_fs.IAccept=} [properties] Properties to set
+         */
+        function Accept(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Accept supportedVersion.
+         * @member {csp_e2e_fs.VersionRange|null|undefined} supportedVersion
+         * @memberof csp_e2e_fs.Accept
+         * @instance
+         */
+        Accept.prototype.supportedVersion = null;
+
+        /**
+         * Accept fssk.
+         * @member {Uint8Array} fssk
+         * @memberof csp_e2e_fs.Accept
+         * @instance
+         */
+        Accept.prototype.fssk = $util.newBuffer([]);
+
+        /**
+         * Encodes the specified Accept message. Does not implicitly {@link csp_e2e_fs.Accept.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e_fs.Accept
+         * @static
+         * @param {csp_e2e_fs.Accept} message Accept message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Accept.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.fssk != null && Object.hasOwnProperty.call(message, "fssk"))
+                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.fssk);
+            if (message.supportedVersion != null && Object.hasOwnProperty.call(message, "supportedVersion"))
+                $root.csp_e2e_fs.VersionRange.encode(message.supportedVersion, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Decodes an Accept message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e_fs.Accept
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e_fs.Accept} Accept
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Accept.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.Accept();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 2: {
+                        message.supportedVersion = $root.csp_e2e_fs.VersionRange.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 1: {
+                        message.fssk = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return Accept;
+    })();
+
+    csp_e2e_fs.Reject = (function() {
+
+        /**
+         * Properties of a Reject.
+         * @memberof csp_e2e_fs
+         * @interface IReject
+         * @property {Long|null} [rejectedEncapsulatedMessageId] Reject rejectedEncapsulatedMessageId
+         * @property {csp_e2e_fs.Reject.Cause|null} [cause] Reject cause
+         */
+
+        /**
+         * Constructs a new Reject.
+         * @memberof csp_e2e_fs
+         * @classdesc Represents a Reject.
+         * @implements IReject
+         * @constructor
+         * @param {csp_e2e_fs.IReject=} [properties] Properties to set
+         */
+        function Reject(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Reject rejectedEncapsulatedMessageId.
+         * @member {Long} rejectedEncapsulatedMessageId
+         * @memberof csp_e2e_fs.Reject
+         * @instance
+         */
+        Reject.prototype.rejectedEncapsulatedMessageId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+        /**
+         * Reject cause.
+         * @member {csp_e2e_fs.Reject.Cause} cause
+         * @memberof csp_e2e_fs.Reject
+         * @instance
+         */
+        Reject.prototype.cause = 0;
+
+        /**
+         * Encodes the specified Reject message. Does not implicitly {@link csp_e2e_fs.Reject.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e_fs.Reject
+         * @static
+         * @param {csp_e2e_fs.Reject} message Reject message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Reject.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.rejectedEncapsulatedMessageId != null && Object.hasOwnProperty.call(message, "rejectedEncapsulatedMessageId"))
+                writer.uint32(/* id 1, wireType 1 =*/9).fixed64(message.rejectedEncapsulatedMessageId);
+            if (message.cause != null && Object.hasOwnProperty.call(message, "cause"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.cause);
+            return writer;
+        };
+
+        /**
+         * Decodes a Reject message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e_fs.Reject
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e_fs.Reject} Reject
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Reject.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.Reject();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.rejectedEncapsulatedMessageId = reader.fixed64();
+                        break;
+                    }
+                case 2: {
+                        message.cause = reader.int32();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Cause enum.
+         * @name csp_e2e_fs.Reject.Cause
+         * @enum {number}
+         * @property {number} STATE_MISMATCH=0 STATE_MISMATCH value
+         * @property {number} UNKNOWN_SESSION=1 UNKNOWN_SESSION value
+         * @property {number} DISABLED_BY_LOCAL=2 DISABLED_BY_LOCAL value
+         */
+        Reject.Cause = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "STATE_MISMATCH"] = 0;
+            values[valuesById[1] = "UNKNOWN_SESSION"] = 1;
+            values[valuesById[2] = "DISABLED_BY_LOCAL"] = 2;
+            return values;
         })();
 
-        return ForwardSecurityEnvelope;
+        return Reject;
+    })();
+
+    csp_e2e_fs.Terminate = (function() {
+
+        /**
+         * Properties of a Terminate.
+         * @memberof csp_e2e_fs
+         * @interface ITerminate
+         * @property {csp_e2e_fs.Terminate.Cause|null} [cause] Terminate cause
+         */
+
+        /**
+         * Constructs a new Terminate.
+         * @memberof csp_e2e_fs
+         * @classdesc Represents a Terminate.
+         * @implements ITerminate
+         * @constructor
+         * @param {csp_e2e_fs.ITerminate=} [properties] Properties to set
+         */
+        function Terminate(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Terminate cause.
+         * @member {csp_e2e_fs.Terminate.Cause} cause
+         * @memberof csp_e2e_fs.Terminate
+         * @instance
+         */
+        Terminate.prototype.cause = 0;
+
+        /**
+         * Encodes the specified Terminate message. Does not implicitly {@link csp_e2e_fs.Terminate.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e_fs.Terminate
+         * @static
+         * @param {csp_e2e_fs.Terminate} message Terminate message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Terminate.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.cause != null && Object.hasOwnProperty.call(message, "cause"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.cause);
+            return writer;
+        };
+
+        /**
+         * Decodes a Terminate message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e_fs.Terminate
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e_fs.Terminate} Terminate
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Terminate.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.Terminate();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.cause = reader.int32();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Cause enum.
+         * @name csp_e2e_fs.Terminate.Cause
+         * @enum {number}
+         * @property {number} UNKNOWN_SESSION=0 UNKNOWN_SESSION value
+         * @property {number} RESET=1 RESET value
+         * @property {number} DISABLED_BY_LOCAL=2 DISABLED_BY_LOCAL value
+         * @property {number} DISABLED_BY_REMOTE=3 DISABLED_BY_REMOTE value
+         */
+        Terminate.Cause = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "UNKNOWN_SESSION"] = 0;
+            values[valuesById[1] = "RESET"] = 1;
+            values[valuesById[2] = "DISABLED_BY_LOCAL"] = 2;
+            values[valuesById[3] = "DISABLED_BY_REMOTE"] = 3;
+            return values;
+        })();
+
+        return Terminate;
+    })();
+
+    csp_e2e_fs.Encapsulated = (function() {
+
+        /**
+         * Properties of an Encapsulated.
+         * @memberof csp_e2e_fs
+         * @interface IEncapsulated
+         * @property {csp_e2e_fs.Encapsulated.DHType|null} [dhType] Encapsulated dhType
+         * @property {Long|null} [counter] Encapsulated counter
+         * @property {number|null} [appliedVersion] Encapsulated appliedVersion
+         * @property {Uint8Array|null} [encryptedInner] Encapsulated encryptedInner
+         */
+
+        /**
+         * Constructs a new Encapsulated.
+         * @memberof csp_e2e_fs
+         * @classdesc Represents an Encapsulated.
+         * @implements IEncapsulated
+         * @constructor
+         * @param {csp_e2e_fs.IEncapsulated=} [properties] Properties to set
+         */
+        function Encapsulated(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Encapsulated dhType.
+         * @member {csp_e2e_fs.Encapsulated.DHType} dhType
+         * @memberof csp_e2e_fs.Encapsulated
+         * @instance
+         */
+        Encapsulated.prototype.dhType = 0;
+
+        /**
+         * Encapsulated counter.
+         * @member {Long} counter
+         * @memberof csp_e2e_fs.Encapsulated
+         * @instance
+         */
+        Encapsulated.prototype.counter = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * Encapsulated appliedVersion.
+         * @member {number} appliedVersion
+         * @memberof csp_e2e_fs.Encapsulated
+         * @instance
+         */
+        Encapsulated.prototype.appliedVersion = 0;
+
+        /**
+         * Encapsulated encryptedInner.
+         * @member {Uint8Array} encryptedInner
+         * @memberof csp_e2e_fs.Encapsulated
+         * @instance
+         */
+        Encapsulated.prototype.encryptedInner = $util.newBuffer([]);
+
+        /**
+         * Encodes the specified Encapsulated message. Does not implicitly {@link csp_e2e_fs.Encapsulated.verify|verify} messages.
+         * @function encode
+         * @memberof csp_e2e_fs.Encapsulated
+         * @static
+         * @param {csp_e2e_fs.Encapsulated} message Encapsulated message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Encapsulated.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.dhType != null && Object.hasOwnProperty.call(message, "dhType"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.dhType);
+            if (message.counter != null && Object.hasOwnProperty.call(message, "counter"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.counter);
+            if (message.encryptedInner != null && Object.hasOwnProperty.call(message, "encryptedInner"))
+                writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.encryptedInner);
+            if (message.appliedVersion != null && Object.hasOwnProperty.call(message, "appliedVersion"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.appliedVersion);
+            return writer;
+        };
+
+        /**
+         * Decodes an Encapsulated message from the specified reader or buffer.
+         * @function decode
+         * @memberof csp_e2e_fs.Encapsulated
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {csp_e2e_fs.Encapsulated} Encapsulated
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Encapsulated.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.csp_e2e_fs.Encapsulated();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.dhType = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.counter = reader.uint64();
+                        break;
+                    }
+                case 4: {
+                        message.appliedVersion = reader.uint32();
+                        break;
+                    }
+                case 3: {
+                        message.encryptedInner = reader.bytes();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * DHType enum.
+         * @name csp_e2e_fs.Encapsulated.DHType
+         * @enum {number}
+         * @property {number} TWODH=0 TWODH value
+         * @property {number} FOURDH=1 FOURDH value
+         */
+        Encapsulated.DHType = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "TWODH"] = 0;
+            values[valuesById[1] = "FOURDH"] = 1;
+            return values;
+        })();
+
+        return Encapsulated;
     })();
 
     return csp_e2e_fs;
@@ -9111,6 +9304,7 @@ export const d2d = $root.d2d = (() => {
          * @memberof d2d
          * @interface IEnvelope
          * @property {Uint8Array|null} [padding] Envelope padding
+         * @property {Long|null} [deviceId] Envelope deviceId
          * @property {d2d.OutgoingMessage|null} [outgoingMessage] Envelope outgoingMessage
          * @property {d2d.OutgoingMessageUpdate|null} [outgoingMessageUpdate] Envelope outgoingMessageUpdate
          * @property {d2d.IncomingMessage|null} [incomingMessage] Envelope incomingMessage
@@ -9145,6 +9339,14 @@ export const d2d = $root.d2d = (() => {
          * @instance
          */
         Envelope.prototype.padding = $util.newBuffer([]);
+
+        /**
+         * Envelope deviceId.
+         * @member {Long} deviceId
+         * @memberof d2d.Envelope
+         * @instance
+         */
+        Envelope.prototype.deviceId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
         /**
          * Envelope outgoingMessage.
@@ -9274,6 +9476,8 @@ export const d2d = $root.d2d = (() => {
                 $root.d2d.IncomingMessageUpdate.encode(message.incomingMessageUpdate, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
             if (message.mdmParameterSync != null && Object.hasOwnProperty.call(message, "mdmParameterSync"))
                 $root.d2d.MdmParameterSync.encode(message.mdmParameterSync, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
+            if (message.deviceId != null && Object.hasOwnProperty.call(message, "deviceId"))
+                writer.uint32(/* id 13, wireType 1 =*/105).fixed64(message.deviceId);
             return writer;
         };
 
@@ -9297,6 +9501,10 @@ export const d2d = $root.d2d = (() => {
                 switch (tag >>> 3) {
                 case 1: {
                         message.padding = reader.bytes();
+                        break;
+                    }
+                case 13: {
+                        message.deviceId = reader.fixed64();
                         break;
                     }
                 case 2: {
@@ -12134,6 +12342,9 @@ export const sync = $root.sync = (() => {
          * Properties of a MdmParameters.
          * @memberof sync
          * @interface IMdmParameters
+         * @property {Object.<string,sync.MdmParameters.Parameter>|null} [externalParameters] MdmParameters externalParameters
+         * @property {Object.<string,sync.MdmParameters.Parameter>|null} [threemaParameters] MdmParameters threemaParameters
+         * @property {sync.MdmParameters.ParameterPrecedence|null} [parameterPrecedence] MdmParameters parameterPrecedence
          */
 
         /**
@@ -12145,11 +12356,37 @@ export const sync = $root.sync = (() => {
          * @param {sync.IMdmParameters=} [properties] Properties to set
          */
         function MdmParameters(properties) {
+            this.externalParameters = {};
+            this.threemaParameters = {};
             if (properties)
                 for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
                         this[keys[i]] = properties[keys[i]];
         }
+
+        /**
+         * MdmParameters externalParameters.
+         * @member {Object.<string,sync.MdmParameters.Parameter>} externalParameters
+         * @memberof sync.MdmParameters
+         * @instance
+         */
+        MdmParameters.prototype.externalParameters = $util.emptyObject;
+
+        /**
+         * MdmParameters threemaParameters.
+         * @member {Object.<string,sync.MdmParameters.Parameter>} threemaParameters
+         * @memberof sync.MdmParameters
+         * @instance
+         */
+        MdmParameters.prototype.threemaParameters = $util.emptyObject;
+
+        /**
+         * MdmParameters parameterPrecedence.
+         * @member {sync.MdmParameters.ParameterPrecedence} parameterPrecedence
+         * @memberof sync.MdmParameters
+         * @instance
+         */
+        MdmParameters.prototype.parameterPrecedence = 0;
 
         /**
          * Encodes the specified MdmParameters message. Does not implicitly {@link sync.MdmParameters.verify|verify} messages.
@@ -12163,6 +12400,18 @@ export const sync = $root.sync = (() => {
         MdmParameters.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
+            if (message.externalParameters != null && Object.hasOwnProperty.call(message, "externalParameters"))
+                for (let keys = Object.keys(message.externalParameters), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.sync.MdmParameters.Parameter.encode(message.externalParameters[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                }
+            if (message.threemaParameters != null && Object.hasOwnProperty.call(message, "threemaParameters"))
+                for (let keys = Object.keys(message.threemaParameters), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.sync.MdmParameters.Parameter.encode(message.threemaParameters[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                }
+            if (message.parameterPrecedence != null && Object.hasOwnProperty.call(message, "parameterPrecedence"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.parameterPrecedence);
             return writer;
         };
 
@@ -12180,10 +12429,60 @@ export const sync = $root.sync = (() => {
         MdmParameters.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sync.MdmParameters();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sync.MdmParameters(), key, value;
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
+                case 1: {
+                        if (message.externalParameters === $util.emptyObject)
+                            message.externalParameters = {};
+                        let end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            let tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.sync.MdmParameters.Parameter.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7);
+                                break;
+                            }
+                        }
+                        message.externalParameters[key] = value;
+                        break;
+                    }
+                case 2: {
+                        if (message.threemaParameters === $util.emptyObject)
+                            message.threemaParameters = {};
+                        let end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            let tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.sync.MdmParameters.Parameter.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7);
+                                break;
+                            }
+                        }
+                        message.threemaParameters[key] = value;
+                        break;
+                    }
+                case 3: {
+                        message.parameterPrecedence = reader.int32();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -12191,6 +12490,131 @@ export const sync = $root.sync = (() => {
             }
             return message;
         };
+
+        MdmParameters.Parameter = (function() {
+
+            /**
+             * Properties of a Parameter.
+             * @memberof sync.MdmParameters
+             * @interface IParameter
+             * @property {string|null} [stringValue] Parameter stringValue
+             * @property {boolean|null} [booleanValue] Parameter booleanValue
+             */
+
+            /**
+             * Constructs a new Parameter.
+             * @memberof sync.MdmParameters
+             * @classdesc Represents a Parameter.
+             * @implements IParameter
+             * @constructor
+             * @param {sync.MdmParameters.IParameter=} [properties] Properties to set
+             */
+            function Parameter(properties) {
+                if (properties)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+
+            /**
+             * Parameter stringValue.
+             * @member {string|null|undefined} stringValue
+             * @memberof sync.MdmParameters.Parameter
+             * @instance
+             */
+            Parameter.prototype.stringValue = null;
+
+            /**
+             * Parameter booleanValue.
+             * @member {boolean|null|undefined} booleanValue
+             * @memberof sync.MdmParameters.Parameter
+             * @instance
+             */
+            Parameter.prototype.booleanValue = null;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * Parameter value.
+             * @member {"stringValue"|"booleanValue"|undefined} value
+             * @memberof sync.MdmParameters.Parameter
+             * @instance
+             */
+            Object.defineProperty(Parameter.prototype, "value", {
+                get: $util.oneOfGetter($oneOfFields = ["stringValue", "booleanValue"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
+
+            /**
+             * Encodes the specified Parameter message. Does not implicitly {@link sync.MdmParameters.Parameter.verify|verify} messages.
+             * @function encode
+             * @memberof sync.MdmParameters.Parameter
+             * @static
+             * @param {sync.MdmParameters.Parameter} message Parameter message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            Parameter.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.stringValue != null && Object.hasOwnProperty.call(message, "stringValue"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.stringValue);
+                if (message.booleanValue != null && Object.hasOwnProperty.call(message, "booleanValue"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).bool(message.booleanValue);
+                return writer;
+            };
+
+            /**
+             * Decodes a Parameter message from the specified reader or buffer.
+             * @function decode
+             * @memberof sync.MdmParameters.Parameter
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {sync.MdmParameters.Parameter} Parameter
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            Parameter.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sync.MdmParameters.Parameter();
+                while (reader.pos < end) {
+                    let tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1: {
+                            message.stringValue = reader.string();
+                            break;
+                        }
+                    case 2: {
+                            message.booleanValue = reader.bool();
+                            break;
+                        }
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+
+            return Parameter;
+        })();
+
+        /**
+         * ParameterPrecedence enum.
+         * @name sync.MdmParameters.ParameterPrecedence
+         * @enum {number}
+         * @property {number} THREEMA=0 THREEMA value
+         * @property {number} EXTERNAL=1 EXTERNAL value
+         */
+        MdmParameters.ParameterPrecedence = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "THREEMA"] = 0;
+            values[valuesById[1] = "EXTERNAL"] = 1;
+            return values;
+        })();
 
         return MdmParameters;
     })();

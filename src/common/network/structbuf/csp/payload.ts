@@ -194,17 +194,19 @@ export interface ContainerLike {
      *   [`message-with-metadata-box`](ref:payload.message-with-metadata-box)
      * - `0x82`: incoming [`message-ack`](ref:payload.message-ack)
      * - `0x03`: [`unblock-incoming-messages`](ref:payload.unblock-incoming-messages)
-     * - `0x20`: `set-push-notification-token`
-     * - `0x21`: `set-push-filter`
-     * - `0x22`: (obsolete)
-     * - `0x23`: (obsolete)
+     * - `0x20`: [`set-push-notification-token`](ref:payload.set-push-notification-token)
+     * - `0x21`: (obsolete, formerly used by iOS to set a push filter)
+     * - `0x22`: (obsolete, formerly used by iOS to set a push sound for contacts)
+     * - `0x23`: (obsolete, formerly used by iOS to set a push sound for groups)
      * - `0x24`: high-priority token for notifications that require
      *   immediate delivery (e.g. for calls) using the same struct as
-     *   `set-push-notification-token`
+     *   [`set-push-notification-token`](ref:payload.set-push-notification-token)
      * - `0x30`: [`set-connection-idle-timeout`](ref:payload.set-connection-idle-timeout)
-     * - `0x31`: (obsolete)
+     * - `0x31`: (obsolete, formerly used to ensure that a push message is
+     *    sent for all messages, regardless of the flag)
      * - `0xd0`: [`queue-send-complete`](ref:payload.queue-send-complete)
-     * - `0xd1`: (obsolete)
+     * - `0xd1`: (obsolete, formerly used for a function similar to the
+     *    device cookie)
      * - `0xd2`: [`device-cookie-change-indication`](ref:payload.device-cookie-change-indication)
      * - `0xd3`: [`clear-device-cookie-change-indication`](ref:payload.clear-device-cookie-change-indication)
      * - `0xe0`: [`close-error`](ref:payload.close-error)
@@ -1056,6 +1058,139 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  * - Copy all other fields of `message-with-metadata-box` to their
  *   respective counterparts in `legacy-message`
  *
+ * When receiving this payload:
+ *
+ * 1. (MD) If the device is currently not declared _leader_, exceptionally
+ *    abort these steps and the connection.
+ * 2. If the nonce of `message-and-metadata-nonce` has been used before, log
+ *    a warning, _Acknowledge_ and discard the message and abort these steps.
+ * 3. If `receiver-identity` does not equal the user's Threema ID, log a
+ *    warning, _Acknowledge_ and discard the message and abort these steps.
+ * 4. If `sender-identity` equals the user's Threema ID, log a warning,
+ *    _Acknowledge_ and discard the message and abort these steps.
+ * 5. Lookup the contact associated to `sender-identity` and let
+ *    `contact-or-init` be the result.
+ * 6. If no contact could be found, lookup the Threema ID on the Directory
+ *    Server:
+ *    1. If the server could not be reached or the status code is not `200`
+ *       or not `404`, exceptionally abort these steps and the connection.
+ *    2. If the status code is `404` or the contact is marked as _invalid_
+ *       (never existed or has been revoked), log a warning, _Acknowledge_
+ *       and discard the message and abort these steps.
+ *    3. Assign `contact-or-init` all necessary information to create a new
+ *       contact.
+ * 7. If `contact-or-init` contains an existing contact and the associated
+ *    Threema ID is marked as _invalid_ (has been revoked), log a warning,
+ *    _Acknowledge_ and discard the message and abort these steps.
+ * 8. If `metadata-length` is greater zero, decrypt the `metadata-container`
+ *    and let `outer-metadata` be the result. If this fails, log a warning,
+ *    _Acknowledge_ and discard the message and abort these steps.
+ * 9. Decrypt the `message-box`, decode it to a
+ *    [`container`](ref:payload.container) struct and let `outer` be the
+ *    result. If this fails, log a warning, _Acknowledge_ and discard the
+ *    message and abort these steps.
+ * 10. If `outer.type` is `0xff`, log a warning, _Acknowledge_ and
+ *     discard the message and abort these steps. (Legacy logic, may be
+ *     removed in the future.)
+ * 11. If `outer.type` is unknown, log a notice, _Acknowledge_ and
+ *     discard the message and abort these steps.
+ * 12. Decode `outer.padded-data` into the message type associated to
+ *     `outer.type` and let `outer-message` be the result. If this fails, log
+ *     a warning, _Acknowledge_ and discard the message and abort these
+ *     steps.
+ * 13. If `outer.type` is not `0xa0`, let `inner-metadata` be
+ *     `outer-metadata`, let `inner-type` be `outer.type` and let
+ *     `inner-message` be `outer-message`.
+ * 14. If `outer.type` is `0xa0`, run the receive steps associated to
+ *     `csp-e2e-fs.ForwardSecurityEnvelope` with the decoded `outer-message`:
+ *     and let `inner-metadata`, `inner-type`, `inner-message` and
+ *     `xdhk-commit-fn` be the result. If this fails, exceptionally abort
+ *     these steps and the connection. If the message has been discarded,
+ *     _Acknowledge_ and abort these steps.
+ * 15. If `inner-metadata` is not defined, set `inner-metadata` to
+ *     `outer-metadata`.
+ * 16. If `inner-metadata` is defined and `message-id` does not equal
+ *     `inner-metadata.message_id`, log a warning, _Acknowledge_ and discard
+ *     the message and abort these steps.
+ * 17. If `message-id` refers to a message that has been received previously
+ *     from `sender-identity` (including group messages), log a warning,
+ *     _Acknowledge_ and discard the message and abort these steps.
+ * 18. If `sender-identity` is blocked¹ and `inner-type` is not exempted
+ *     from blocking, _Acknowledge_ and  discard the message and abort these
+ *     steps.
+ * 19. If `inner-type` is not `0xa0` (and thereby `inner-message` contains a
+ *     message):
+ *     1. Let `nickname` be the value of `inner-metadata.nickname`. If
+ *       `nickname` is empty, fall back to decoding the plaintext
+ *       `legacy-sender-nickname` and assign it to `nickname`.
+ *     2. Trim any excess whitespaces from the beginning and the end of
+ *        `nickname`.
+ *     3. If `nickname` is not empty and `contact-or-init` contains an
+ *        existing contact:
+ *        1. Update the contact's nickname with `nickname`.
+ *        2. (MD) If the contact's nickname has been changed, reflect the
+ *           contact in a transaction (scope: `CONTACT_SYNC`, precondition: a
+ *           contact for `sender-identity` exists). If this fails,
+ *           exceptionally abort these steps and the connection.
+ *        3. (MD) If a contact for `sender-identity` no longer exists, log a
+ *           warning, _Acknowledge_ and discard the message and abort these
+ *           steps.²
+ *     4. If `contact-or-init` does not contain an existing contact:
+ *        1. If `inner-type` does not require to create an implicit
+ *           _direct_ contact, log a notice, _Acknowledge_ and discard the
+ *           message and abort these steps.
+ *        2. Create a new contact with acquaintance level based on the
+ *           information provided in `contact-or-init` and the provided
+ *           `nickname`. If this fails, exceptionally abort these steps and
+ *           the connection.
+ *        3. (MD) Reflect the contact in a transaction (precondition: a
+ *           contact for `sender-identity` does not exist). If this fails,
+ *           exceptionally abort these steps and the connection.
+ *     5. Run the receive steps associated to `inner-type` with
+ *        `inner-message`. If this fails, exceptionally abort these steps and
+ *        the connection. If the message has been discarded, _Acknowledge_
+ *        the message and abort these steps.
+ * 20. (MD) If the properties associated to `inner-type` require
+ *     reflecting incoming messages, reflect `outer-type` and `outer-message`
+ *     to other devices and wait for reflection acknowledgement.³ If this
+ *     fails, exceptionally abort these steps and the connection.
+ * 21. _Acknowledge_ the message.
+ * 22. If the properties associated to `type` require sending
+ *     automatic delivery receipts and `flags` does not contain the _no
+ *     automatic delivery receipts_ (`0x80`) flag, enqueue a persistent task
+ *     that runs the following steps:
+ *     1. Let `delivery-receipt` be a
+ *        [`delivery-receipt`](ref:e2e.delivery-receipt) message towards
+ *        `sender-identity` with status _received_ (`0x01`) and the
+ *        respective `message-id`.
+ *     1. (MD) Reflect `delivery-receipt` to other devices and
+ *        wait for reflection acknowledgement. If this fails, exceptionally
+ *        abort these sub-steps and the connection.
+ *     2. Send a `delivery-receipt` to `sender-identity` with status
+ *        _received_ (`0x01`) and the respective `message-id`.
+ *
+ * ¹: A sender can be blocked implicitly or explicitly, see
+ * [Blocking](#Blocking).
+ *
+ * ²: This a bailout mechanism that handles the extremely unlikely case that
+ * another device removed the contact associated to `sender-identity` while
+ * we are still processing the message sent from that contact. It is
+ * intentionally handled crudely because of its unlikelyness.
+ *
+ * ³: We reflect the **outer** message container depending on the unwrapped
+ * **inner** message type, so the forward security properties are untouched
+ * and all other devices need to go through the same process.
+ *
+ * The following steps are defined as _Acknowledge_ steps for an incoming
+ * message:
+ *
+ * 1. If `flags` does not contain the _no server acknowledgement_ (`0x04`)
+ *    flag, send a [`message-ack`](ref:payload.message-ack) payload to the
+ *    chat server with the respective `message-id`.
+ * 2. If the properties associated to `inner-type` require protection against
+ *    replay, mark the nonce of `message-and-metadata-nonce` as used.
+ * 3. If `xdhk-commit-fn` is defined, run it.
+ *
  * [//]: # "TODO(SE-128)"
  */
 export interface MessageWithMetadataBoxLike {
@@ -1730,6 +1865,167 @@ export class UnblockIncomingMessages extends base.Struct implements UnblockIncom
         const array = new Uint8Array(this._array.byteLength);
         array.set(this._array);
         return new UnblockIncomingMessages(array);
+    }
+}
+
+/**
+ * Sets the push notification token to be used when sending a push message.
+ *
+ * Direction: Client --> Server
+ */
+export interface SetPushNotificationTokenLike {
+    /**
+     * Type of the push token:
+     *
+     * - `0x00`: No push
+     * - `0x01`: APNs Production
+     * - `0x02`: APNs Development
+     * - `0x03`: APNs Production with `content-available` key
+     * - `0x04`: APNs Development with `content-available` key
+     * - `0x05`: APNs Production with `mutable-content` key
+     * - `0x06`: APNs Development with `mutable-content` key
+     * - `0x11`: FCM with empty payload
+     * - `0x12`: FCM with encrypted payload
+     * - `0x13`: HMS with empty payload
+     * - `0x21`: (obsolete) Microsoft MPNS
+     * - `0x22`: (obsolete) Microsoft WNS
+     */
+    readonly type: types.u8;
+
+    /**
+     * Push token, maximum 255 bytes.
+     */
+    readonly token: Uint8Array;
+}
+
+/**
+ * Encodable of {@link SetPushNotificationTokenLike}.
+ */
+interface SetPushNotificationTokenEncodable_ {
+    /**
+     * 'type' field value or encoder. See {@link SetPushNotificationTokenLike#type} for
+     * the field's description.
+     */
+    readonly type: types.u8;
+
+    /**
+     * 'token' field value or encoder. See {@link SetPushNotificationTokenLike#token} for
+     * the field's description.
+     */
+    readonly token: Uint8Array | types.ByteLengthEncoder;
+}
+
+/**
+ * New-type for SetPushNotificationTokenEncodable.
+ */
+export type SetPushNotificationTokenEncodable = types.WeakOpaque<
+    SetPushNotificationTokenEncodable_,
+    {readonly SetPushNotificationTokenEncodable: unique symbol}
+>;
+
+/** @inheritdoc */
+export class SetPushNotificationToken extends base.Struct implements SetPushNotificationTokenLike {
+    private readonly _array: Uint8Array;
+
+    /**
+     * Create a SetPushNotificationToken from an array for accessing properties.
+     *
+     * Note: When accessing, attributes will be decoded on-the-fly which may be expensive.
+     */
+    private constructor(array: Uint8Array) {
+        super();
+        this._array = array;
+    }
+
+    /**
+     * Decode a set-push-notification-token struct from an array.
+     *
+     * @param array Array to decode from.
+     * @returns SetPushNotificationToken instance.
+     */
+    public static decode(array: Uint8Array): SetPushNotificationToken {
+        return new SetPushNotificationToken(array);
+    }
+
+    /**
+     * Encode a set-push-notification-token struct into an array.
+     *
+     * @param struct SetPushNotificationTokenEncodable to encode.
+     * @param array Array to encode into.
+     * @returns A subarray of array containing the encoded struct.
+     */
+    public static encode(
+        struct: types.EncoderPick<SetPushNotificationTokenEncodable, 'encode'>,
+        array: Uint8Array,
+    ): Uint8Array {
+        let offset = 1;
+
+        // Encode `type`
+        array[0] = struct.type;
+
+        // Encode `token`
+        offset += utils.encodeBytes(struct.token, array, offset);
+
+        return array.subarray(0, offset);
+    }
+
+    /**
+     * Get the amount of bytes that would be written when encoding a set-push-notification-token struct into an
+     * array.
+     *
+     * @param struct SetPushNotificationTokenEncodable to encode.
+     * @returns The amount of bytes that would be required to encode the struct.
+     */
+    public static byteLength(
+        struct: types.EncoderPick<SetPushNotificationTokenEncodable, 'byteLength'>,
+    ): types.u53 {
+        let offset = 1;
+        offset += utils.getByteLength(struct.token);
+        return offset;
+    }
+
+    /**
+     * 'type' field accessor. See {@link SetPushNotificationTokenLike#type} for the
+     * field's description.
+     */
+    public get type(): types.u8 {
+        return this._array[0];
+    }
+
+    /**
+     * 'token' field accessor. See {@link SetPushNotificationTokenLike#token} for the
+     * field's description.
+     */
+    public get token(): Uint8Array {
+        return this._array.subarray(1);
+    }
+
+    /**
+     * Create a snapshot of SetPushNotificationTokenLike.
+     *
+     * Note: This is **not** a deep-copy, so byte arrays will still be views of the underlying
+     *       buffer.
+     *
+     * @returns SetPushNotificationTokenLike snapshot.
+     */
+    public snapshot(): SetPushNotificationTokenLike {
+        return {
+            type: this.type,
+            token: this.token,
+        };
+    }
+
+    /**
+     * Create a clone of SetPushNotificationTokenLike.
+     *
+     * Note: This is a deep-copy that will copy the underlying buffer.
+     *
+     * @returns SetPushNotificationTokenLike clone.
+     */
+    public clone(): SetPushNotificationToken {
+        const array = new Uint8Array(this._array.byteLength);
+        array.set(this._array);
+        return new SetPushNotificationToken(array);
     }
 }
 

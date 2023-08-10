@@ -1328,7 +1328,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             // Forward security messages (not currently supported)
             case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE: {
                 // TODO(DESK-887): Implement support for PFS
-                const fsEnvelope = protobuf.csp_e2e_fs.ForwardSecurityEnvelope.decode(
+                const fsEnvelope = protobuf.csp_e2e_fs.Envelope.decode(
                     cspMessageBody as Uint8Array,
                     cspMessageBody.byteLength,
                 );

@@ -37,9 +37,6 @@ import * as utils from '../utils';
  * - Distribution Lists: The message ID with an artificial distribution list
  *   ID.
  *
- * If a message ID is received that already exists within the conversation,
- * the received message must be discarded.
- *
  * When a message is being quoted, it may only be looked up within the
  * associated conversation.
  *
@@ -91,22 +88,6 @@ import * as utils from '../utils';
  * contacts as implicitly blocked contacts are already part of the contact list
  * when the conversation is being opened.
  *
- * In case a message is being received from a blocked sender, the message
- * should genereally be ignored. However, the following exceptions apply:
- *
- * - All group control messages must be handled as if the sender was not
- *   blocked.
- * - `csp-e2e.GroupJoinRequest` must be handled as if the sender was not
- *   blocked.
- *
- * Likewise, messages should not be sent to blocked receivers with the
- * following exceptions:
- *
- * - All group control messages must be sent as if the receiver was not
- *   blocked.
- * - `csp-e2e.GroupJoinResponse` must be sent as if the receiver was not
- *   blocked.
- *
  * ### Groups
  *
  * Groups are handled in a decentralised manner. Messages are sent to each
@@ -130,17 +111,6 @@ import * as utils from '../utils';
  * [`group-setup`](ref:e2e.group-setup) message and continuously updated by
  * any following [`group-leave`](ref:e2e.group-leave) messages. Any following
  * [`group-setup`](ref:e2e.group-setup) overrides the previous member state.
- *
- * Note that, unlike normal group messages, all group control messages must be
- * processed even if the sender has been [blocked](ref:e2e#blocking).
- * Analogous to that, all group control messages must be sent to
- * [blocked](ref:e2e#blocking) group members as well. This logic must always
- * be applied even if it's not explicitly mentioned by the description of a
- * group control message.
- *
- * Group control messages are not reflected to other devices in a device
- * group. Instead, the side effects of that message (the updated group) must
- * be reflected.
  *
  * ### Implicit Contact Creation
  *
@@ -938,14 +908,33 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
 /**
  * A text message.
  *
- * **Flags:**
+ * **Properties (1:1)**:
+ * - Flags:
  *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: Yes
+ *   - Manual: Yes
  *
- * **Delivery receipts:** Automatic: Yes. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags:
+ *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: Yes
  *
  * When receiving this message as a 1:1 conversation message:
  *
@@ -1083,14 +1072,19 @@ export class Text extends base.Struct implements TextLike {
  *       sending images, use the [`file`](ref:e2e.file) message with the
  *       rendering type `0x01` (media).
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x01`: Send push notification.
- *
- * **Delivery receipts:** Automatic: Yes. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: Yes
+ *   - Manual: Yes
  *
  * The image must be in JPEG format, is uploaded to the blob server and
  * encrypted by:
@@ -1281,14 +1275,19 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  *       sending images, use the [`file`](ref:e2e.file) message with the
  *       rendering type `0x01` (media).
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x01`: Send push notification.
- *
- * **Delivery receipts:** Automatic: No. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: Yes
  *
  * The image must be in JPEG format, is uploaded to the blob server and
  * encrypted by:
@@ -1475,14 +1474,33 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
 /**
  * A location message.
  *
- * **Flags:**
+ * **Properties (1:1)**:
+ * - Flags:
  *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: Yes
+ *   - Manual: Yes
  *
- * **Delivery receipts:** Automatic: Yes. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags:
+ *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: Yes
  *
  * When receiving this message as a group message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
@@ -1654,14 +1672,33 @@ export class Location extends base.Struct implements LocationLike {
  *       sending audio, use the [`file`](ref:e2e.file) message with the
  *       rendering type `0x01` (media).
  *
- * **Flags:**
+ * **Properties (1:1)**:
+ * - Flags:
  *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: Yes
+ *   - Manual: Yes
  *
- * **Delivery receipts:** Automatic: Yes. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags:
+ *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: Yes
  *
  * The audio is uploaded to the blob server and encrypted by:
  *
@@ -1880,14 +1917,33 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  *       sending video, use the [`file`](ref:e2e.file) message with the
  *       rendering type `0x01` (media).
  *
- * **Flags:**
+ * **Properties (1:1)**:
+ * - Flags:
  *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: Yes
+ *   - Manual: Yes
  *
- * **Delivery receipts:** Automatic: Yes. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags:
+ *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: Yes
  *
  * The video is uploaded to the blob server and encrypted by:
  *
@@ -2154,14 +2210,33 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
 /**
  * A file or media message.
  *
- * **Flags:**
+ * **Properties (1:1)**:
+ * - Flags:
  *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: Yes
+ *   - Manual: Yes
  *
- * **Delivery receipts:** Automatic: Yes. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags:
+ *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: Yes
  *
  * The file is uploaded to the blob server and encrypted by:
  *
@@ -2365,14 +2440,33 @@ export class File extends base.Struct implements FileLike {
  * During the lifecycle of a poll, this message will be used exactly twice:
  * Once to create the poll, and once to close it.
  *
- * **Flags**:
+ * **Properties (1:1)**:
+ * - Flags:
  *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: Yes
+ *   - Manual: Yes
  *
- * **Delivery receipts:** Automatic: Yes. Manual: Yes.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags:
+ *   - `0x01`: Send push notification.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: Yes
  *
  * When receiving this message as a 1:1 conversation message:
  *
@@ -2605,13 +2699,31 @@ export class PollSetup extends base.Struct implements PollSetupLike {
 /**
  * Cast a vote on a poll.
  *
- * **Flags:** None.
+ * **Properties (1:1)**:
+ * - Flags: None
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags: None
+ * - User profile distribution: Yes
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: No
  *
  * When receiving this message as a 1:1 conversation message:
  *
@@ -2814,15 +2926,20 @@ export class PollVote extends base.Struct implements PollVoteLike {
 /**
  * Initiates a call.
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * - User profile distribution: Yes
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -2962,15 +3079,20 @@ export class CallOffer extends base.Struct implements CallOfferLike {
 /**
  * Answer or reject a call.
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** Only if accepting (action=1).
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * - User profile distribution: Only if accepting (`action`: `1`)
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -3122,15 +3244,26 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
 /**
  * An ICE candidate for an ongoing call.
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
+ * - User profile distribution: No
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: No¹
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes (unused)
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
- * **Delivery receipts:** Automatic: No. Manual: No.
+ * ¹: This message does not trigger any kind of reaction and adding ICE
+ * candidates again has no ill-effect.
  *
- * **User profile distribution:** No.
- *
- * **Reflect:** Incoming: Yes. Outgoing: No.
+ * [//]: # "When sending: TODO(SE-102)"
+ * [//]: # "When receiving: TODO(SE-102)"
  */
 export interface CallIceCandidateLike {
     /**
@@ -3272,14 +3405,19 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
 /**
  * Hang up a call.
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x01`: Send push notification.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * - User profile distribution: No
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -3412,15 +3550,20 @@ export class CallHangup extends base.Struct implements CallHangupLike {
 /**
  * Sent by the callee to indicate that the call is ringing.
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * - User profile distribution: No
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -3553,16 +3696,33 @@ export class CallRinging extends base.Struct implements CallRingingLike {
 /**
  * Confirms reception or delivers detailed status updates of a message.
  *
- * **Flags:** None.
+ * **Properties (1:1)**:
+ * - Flags: None
+ * - User profile distribution: Only for reactions
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Only for reactions¹
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes, with the following exception: When the message is being
+ *     _read_ and _read_ receipts are disabled, reflect an
+ *     `IncomingMessageUpdate`.
+ * - Delivery receipts: No, that would be silly!
  *
- * **Delivery receipts:** No, that would be silly!
+ * **Properties (Group)**:
+ * - Flags: None
+ * - User profile distribution: Only for reactions
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Only for reactions¹
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes. When the message is being _read_ and _read_ receipts
+ *     are disabled, reflect an `IncomingMessageUpdate` (since no
+ *     `delivery-receipt` is sent in this case).
+ * - Delivery receipts: No, that would be silly!
  *
- * **User profile distribution:** Only for reactions.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
- *
- * Note: When outgoing delivery receipts are turned off, reflect an
- * `IncomingMessageUpdate` instead.
+ * ¹: Repeating a status of type _received_ or _read_ has no ill-effects.
  *
  * When receiving this message as a 1:1 conversation status update message:
  *
@@ -3749,15 +3909,23 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
 /**
  * Indicates whether a contact is currently typing.
  *
- * **Flags:**
+ * **Properties**:
+ * - Flags:
  *   - `0x02`: No server queuing.
  *   - `0x04`: No server acknowledgement.
+ * - User profile distribution: No
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: No¹
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: No
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect:** Incoming: Yes, with ephemeral marker. Outgoing: No.
+ * ¹: It is deemed acceptable if the _typing_ indicator in the UI is replayed
+ * since there is no further consequence.
  *
  * When the user is currently typing in the compose area of an associated
  * conversation:
@@ -3776,10 +3944,9 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  *
  * When receiving this message:
  *
- * 1. If the sender is blocked, discard the message and abort these steps.
- * 2. If `is-typing` is `1`, start a timer to display that the sender is
+ * 1. If `is-typing` is `1`, start a timer to display that the sender is
  *    typing in the associated conversation for the next 15s.
- * 3. If `is-typing` is `0`, cancel any running timer displaying that the
+ * 2. If `is-typing` is `0`, cancel any running timer displaying that the
  *    sender is typing in the associated conversation.
  */
 export interface TypingIndicatorLike {
@@ -3902,15 +4069,31 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
 /**
  * Set the profile picture of a contact or a group.
  *
- * **Flags:** None.
+ * **Properties (1:1)**:
+ * - Flags: None
+ * - User profile distribution: No (obviously)
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes (unused)
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect (contacts):** Incoming: No. Outgoing: No.
- *
- * **Reflect (groups):** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags: None
+ * - User profile distribution: No (obviously)
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: No
  *
  * The profile picture must be in JPEG format, is uploaded to the blob
  * server and encrypted by:
@@ -4109,15 +4292,31 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
 /**
  * Delete the profile picture of a contact.
  *
- * **Flags:** None.
+ * **Properties (1:1)**:
+ * - Flags: None
+ * - User profile distribution: No (obviously)
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes (unused)
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect (contacts):** Incoming: No. Outgoing: No.
- *
- * **Reflect (groups):** Incoming: Yes. Outgoing: Yes.
+ * **Properties (Group)**:
+ * - Flags: None
+ * - User profile distribution: No (obviously)
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: No
  *
  * When receiving this message as a contact control message:
  *
@@ -4231,13 +4430,18 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  * time that contact sends a message to the user (if one is set, and if the
  * user is eligible for receiving the profile picture).
  *
- * **Flags:** None.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect:** Incoming: Yes. Outgoing: No.
+ * **Properties**:
+ * - Flags: None
+ * - User profile distribution: No
+ * - Exempt from blocking: No
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: No
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
  *
  * Send this when restoring a contact from a backup.
  *
@@ -4359,13 +4563,18 @@ export class ContactRequestProfilePicture
  * for it to stop being a member is by sending a `group-setup` with an
  * empty members list and thereby disbanding the group.
  *
- * **Flags:** None.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties**:
+ * - Flags: None
+ * - User profile distribution: Yes
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: Yes
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: No
  *
  * When sending this message as a response to a single receiver, see the
  * handling logic that triggered this message for details. No further
@@ -4579,13 +4788,18 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  * be sent to a single receiver as a response to a
  * [`group-sync-request`](ref:e2e.group-sync-request) message.
  *
- * **Flags:** None.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** Yes.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties**:
+ * - Flags: None
+ * - User profile distribution: No
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: No
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -4724,13 +4938,18 @@ export class GroupName extends base.Struct implements GroupNameLike {
  *
  * Note: The group creator is not allowed to leave the group.
  *
- * **Flags:** None.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties**:
+ * - Flags: None
+ * - User profile distribution: No
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes
+ *   - Outgoing: Yes
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: No
  *
  * When sending this message:
  *
@@ -4856,13 +5075,18 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * Sent by a group member (or a device assuming to be part of the group) to
  * the group creator.
  *
- * **Flags:** None.
- *
- * **Delivery receipts:** Automatic: No. Manual: No.
- *
- * **User profile distribution:** No.
- *
- * **Reflect:** Incoming: Yes. Outgoing: Yes.
+ * **Properties**:
+ * - Flags: None
+ * - User profile distribution: No
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: Yes (unused)
+ *   - Outgoing: Yes (unused)
+ * - Delivery receipts:
+ *   - Automatic: N/A
+ *   - Manual: No
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):

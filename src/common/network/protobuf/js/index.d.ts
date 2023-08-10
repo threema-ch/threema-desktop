@@ -364,7 +364,7 @@ export namespace common {
     }
     /** CspE2eMessageType enum. */
     enum CspE2eMessageType {
-        _ = 0,
+        _INVALID_TYPE = 0,
         TEXT = 1,
         DEPRECATED_IMAGE = 2,
         LOCATION = 16,
@@ -406,254 +406,322 @@ export namespace common {
 }
 /** Namespace csp_e2e_fs. */
 export namespace csp_e2e_fs {
-    /** Properties of a ForwardSecurityEnvelope. */
-    interface IForwardSecurityEnvelope {
-        /** ForwardSecurityEnvelope sessionId */
-        sessionId?: (Uint8Array | null);
-        /** ForwardSecurityEnvelope init */
-        init?: (csp_e2e_fs.ForwardSecurityEnvelope.Init | null);
-        /** ForwardSecurityEnvelope accept */
-        accept?: (csp_e2e_fs.ForwardSecurityEnvelope.Accept | null);
-        /** ForwardSecurityEnvelope reject */
-        reject?: (csp_e2e_fs.ForwardSecurityEnvelope.Reject | null);
-        /** ForwardSecurityEnvelope terminate */
-        terminate?: (csp_e2e_fs.ForwardSecurityEnvelope.Terminate | null);
-        /** ForwardSecurityEnvelope message */
-        message?: (csp_e2e_fs.ForwardSecurityEnvelope.Message | null);
+    /** Version enum. */
+    enum Version {
+        UNSPECIFIED = 0,
+        V1_0 = 256,
+        V1_1 = 257
     }
-    type ForwardSecurityEnvelopeEncodable = types.WeakOpaque<IForwardSecurityEnvelope, {
-        readonly ForwardSecurityEnvelopeEncodable: unique symbol;
+    /** Properties of a VersionRange. */
+    interface IVersionRange {
+        /** VersionRange min */
+        min?: (number | null);
+        /** VersionRange max */
+        max?: (number | null);
+    }
+    type VersionRangeEncodable = types.WeakOpaque<IVersionRange, {
+        readonly VersionRangeEncodable: unique symbol;
     } & tag.ProtobufMessage>;
-    /** Represents a ForwardSecurityEnvelope. */
-    class ForwardSecurityEnvelope implements IForwardSecurityEnvelope {
+    /** Represents a VersionRange. */
+    class VersionRange implements IVersionRange {
         /**
-         * Constructs a new ForwardSecurityEnvelope.
+         * Constructs a new VersionRange.
          * @param [properties] Properties to set
          */
-        constructor(properties?: csp_e2e_fs.IForwardSecurityEnvelope);
-        /** ForwardSecurityEnvelope sessionId. */
-        public sessionId: Uint8Array;
-        /** ForwardSecurityEnvelope init. */
-        public init?: (csp_e2e_fs.ForwardSecurityEnvelope.Init | null);
-        /** ForwardSecurityEnvelope accept. */
-        public accept?: (csp_e2e_fs.ForwardSecurityEnvelope.Accept | null);
-        /** ForwardSecurityEnvelope reject. */
-        public reject?: (csp_e2e_fs.ForwardSecurityEnvelope.Reject | null);
-        /** ForwardSecurityEnvelope terminate. */
-        public terminate?: (csp_e2e_fs.ForwardSecurityEnvelope.Terminate | null);
-        /** ForwardSecurityEnvelope message. */
-        public message?: (csp_e2e_fs.ForwardSecurityEnvelope.Message | null);
-        /** ForwardSecurityEnvelope content. */
-        public content?: ("init" | "accept" | "reject" | "terminate" | "message");
+        constructor(properties?: csp_e2e_fs.IVersionRange);
+        /** VersionRange min. */
+        public min: number;
+        /** VersionRange max. */
+        public max: number;
         /**
-         * Encodes the specified ForwardSecurityEnvelope message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.verify|verify} messages.
-         * @param message ForwardSecurityEnvelope message or plain object to encode
+         * Encodes the specified VersionRange message. Does not implicitly {@link csp_e2e_fs.VersionRange.verify|verify} messages.
+         * @param message VersionRange message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
-        public static encode(message: csp_e2e_fs.ForwardSecurityEnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        public static encode(message: csp_e2e_fs.VersionRangeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
         /**
-         * Decodes a ForwardSecurityEnvelope message from the specified reader or buffer.
+         * Decodes a VersionRange message from the specified reader or buffer.
          * @param reader Reader or buffer to decode from
          * @param [length] Message length if known beforehand
-         * @returns ForwardSecurityEnvelope
+         * @returns VersionRange
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.ForwardSecurityEnvelope;
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.VersionRange;
     }
-    namespace ForwardSecurityEnvelope {
-        /** Properties of an Init. */
-        interface IInit {
-            /** Init fssk */
-            fssk?: (Uint8Array | null);
+    /** Properties of an Envelope. */
+    interface IEnvelope {
+        /** Envelope sessionId */
+        sessionId?: (Uint8Array | null);
+        /** Envelope init */
+        init?: (csp_e2e_fs.Init | null);
+        /** Envelope accept */
+        accept?: (csp_e2e_fs.Accept | null);
+        /** Envelope reject */
+        reject?: (csp_e2e_fs.Reject | null);
+        /** Envelope terminate */
+        terminate?: (csp_e2e_fs.Terminate | null);
+        /** Envelope encapsulated */
+        encapsulated?: (csp_e2e_fs.Encapsulated | null);
+    }
+    type EnvelopeEncodable = types.WeakOpaque<IEnvelope, {
+        readonly EnvelopeEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents an Envelope. */
+    class Envelope implements IEnvelope {
+        /**
+         * Constructs a new Envelope.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e_fs.IEnvelope);
+        /** Envelope sessionId. */
+        public sessionId: Uint8Array;
+        /** Envelope init. */
+        public init?: (csp_e2e_fs.Init | null);
+        /** Envelope accept. */
+        public accept?: (csp_e2e_fs.Accept | null);
+        /** Envelope reject. */
+        public reject?: (csp_e2e_fs.Reject | null);
+        /** Envelope terminate. */
+        public terminate?: (csp_e2e_fs.Terminate | null);
+        /** Envelope encapsulated. */
+        public encapsulated?: (csp_e2e_fs.Encapsulated | null);
+        /** Envelope content. */
+        public content?: ("init" | "accept" | "reject" | "terminate" | "encapsulated");
+        /**
+         * Encodes the specified Envelope message. Does not implicitly {@link csp_e2e_fs.Envelope.verify|verify} messages.
+         * @param message Envelope message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e_fs.EnvelopeEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes an Envelope message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Envelope
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.Envelope;
+    }
+    /** Properties of an Init. */
+    interface IInit {
+        /** Init supportedVersion */
+        supportedVersion?: (csp_e2e_fs.VersionRange | null);
+        /** Init fssk */
+        fssk?: (Uint8Array | null);
+    }
+    type InitEncodable = types.WeakOpaque<IInit, {
+        readonly InitEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents an Init. */
+    class Init implements IInit {
+        /**
+         * Constructs a new Init.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e_fs.IInit);
+        /** Init supportedVersion. */
+        public supportedVersion?: (csp_e2e_fs.VersionRange | null);
+        /** Init fssk. */
+        public fssk: Uint8Array;
+        /**
+         * Encodes the specified Init message. Does not implicitly {@link csp_e2e_fs.Init.verify|verify} messages.
+         * @param message Init message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e_fs.InitEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes an Init message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Init
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.Init;
+    }
+    /** Properties of an Accept. */
+    interface IAccept {
+        /** Accept supportedVersion */
+        supportedVersion?: (csp_e2e_fs.VersionRange | null);
+        /** Accept fssk */
+        fssk?: (Uint8Array | null);
+    }
+    type AcceptEncodable = types.WeakOpaque<IAccept, {
+        readonly AcceptEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents an Accept. */
+    class Accept implements IAccept {
+        /**
+         * Constructs a new Accept.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e_fs.IAccept);
+        /** Accept supportedVersion. */
+        public supportedVersion?: (csp_e2e_fs.VersionRange | null);
+        /** Accept fssk. */
+        public fssk: Uint8Array;
+        /**
+         * Encodes the specified Accept message. Does not implicitly {@link csp_e2e_fs.Accept.verify|verify} messages.
+         * @param message Accept message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e_fs.AcceptEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes an Accept message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Accept
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.Accept;
+    }
+    /** Properties of a Reject. */
+    interface IReject {
+        /** Reject rejectedEncapsulatedMessageId */
+        rejectedEncapsulatedMessageId?: (Long | null);
+        /** Reject cause */
+        cause?: (csp_e2e_fs.Reject.Cause | null);
+    }
+    type RejectEncodable = types.WeakOpaque<IReject, {
+        readonly RejectEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a Reject. */
+    class Reject implements IReject {
+        /**
+         * Constructs a new Reject.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e_fs.IReject);
+        /** Reject rejectedEncapsulatedMessageId. */
+        public rejectedEncapsulatedMessageId: Long;
+        /** Reject cause. */
+        public cause: csp_e2e_fs.Reject.Cause;
+        /**
+         * Encodes the specified Reject message. Does not implicitly {@link csp_e2e_fs.Reject.verify|verify} messages.
+         * @param message Reject message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e_fs.RejectEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a Reject message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Reject
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.Reject;
+    }
+    namespace Reject {
+        /** Cause enum. */
+        enum Cause {
+            STATE_MISMATCH = 0,
+            UNKNOWN_SESSION = 1,
+            DISABLED_BY_LOCAL = 2
         }
-        type InitEncodable = types.WeakOpaque<IInit, {
-            readonly InitEncodable: unique symbol;
-        } & tag.ProtobufMessage>;
-        /** Represents an Init. */
-        class Init implements IInit {
-            /**
-             * Constructs a new Init.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.IInit);
-            /** Init fssk. */
-            public fssk: Uint8Array;
-            /**
-             * Encodes the specified Init message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Init.verify|verify} messages.
-             * @param message Init message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: csp_e2e_fs.ForwardSecurityEnvelope.InitEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-            /**
-             * Decodes an Init message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Init
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.ForwardSecurityEnvelope.Init;
+    }
+    /** Properties of a Terminate. */
+    interface ITerminate {
+        /** Terminate cause */
+        cause?: (csp_e2e_fs.Terminate.Cause | null);
+    }
+    type TerminateEncodable = types.WeakOpaque<ITerminate, {
+        readonly TerminateEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a Terminate. */
+    class Terminate implements ITerminate {
+        /**
+         * Constructs a new Terminate.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e_fs.ITerminate);
+        /** Terminate cause. */
+        public cause: csp_e2e_fs.Terminate.Cause;
+        /**
+         * Encodes the specified Terminate message. Does not implicitly {@link csp_e2e_fs.Terminate.verify|verify} messages.
+         * @param message Terminate message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e_fs.TerminateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a Terminate message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Terminate
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.Terminate;
+    }
+    namespace Terminate {
+        /** Cause enum. */
+        enum Cause {
+            UNKNOWN_SESSION = 0,
+            RESET = 1,
+            DISABLED_BY_LOCAL = 2,
+            DISABLED_BY_REMOTE = 3
         }
-        /** Properties of an Accept. */
-        interface IAccept {
-            /** Accept fssk */
-            fssk?: (Uint8Array | null);
-        }
-        type AcceptEncodable = types.WeakOpaque<IAccept, {
-            readonly AcceptEncodable: unique symbol;
-        } & tag.ProtobufMessage>;
-        /** Represents an Accept. */
-        class Accept implements IAccept {
-            /**
-             * Constructs a new Accept.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.IAccept);
-            /** Accept fssk. */
-            public fssk: Uint8Array;
-            /**
-             * Encodes the specified Accept message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Accept.verify|verify} messages.
-             * @param message Accept message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: csp_e2e_fs.ForwardSecurityEnvelope.AcceptEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-            /**
-             * Decodes an Accept message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Accept
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.ForwardSecurityEnvelope.Accept;
-        }
-        /** Properties of a Reject. */
-        interface IReject {
-            /** Reject rejectedMessageId */
-            rejectedMessageId?: (Long | null);
-            /** Reject cause */
-            cause?: (csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause | null);
-        }
-        type RejectEncodable = types.WeakOpaque<IReject, {
-            readonly RejectEncodable: unique symbol;
-        } & tag.ProtobufMessage>;
-        /** Represents a Reject. */
-        class Reject implements IReject {
-            /**
-             * Constructs a new Reject.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.IReject);
-            /** Reject rejectedMessageId. */
-            public rejectedMessageId: Long;
-            /** Reject cause. */
-            public cause: csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause;
-            /**
-             * Encodes the specified Reject message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Reject.verify|verify} messages.
-             * @param message Reject message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: csp_e2e_fs.ForwardSecurityEnvelope.RejectEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-            /**
-             * Decodes a Reject message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Reject
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.ForwardSecurityEnvelope.Reject;
-        }
-        namespace Reject {
-            /** Cause enum. */
-            enum Cause {
-                STATE_MISMATCH = 0,
-                UNKNOWN_SESSION = 1
-            }
-        }
-        /** Properties of a Terminate. */
-        interface ITerminate {
-        }
-        type TerminateEncodable = types.WeakOpaque<ITerminate, {
-            readonly TerminateEncodable: unique symbol;
-        } & tag.ProtobufMessage>;
-        /** Represents a Terminate. */
-        class Terminate implements ITerminate {
-            /**
-             * Constructs a new Terminate.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.ITerminate);
-            /**
-             * Encodes the specified Terminate message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Terminate.verify|verify} messages.
-             * @param message Terminate message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: csp_e2e_fs.ForwardSecurityEnvelope.TerminateEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-            /**
-             * Decodes a Terminate message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Terminate
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.ForwardSecurityEnvelope.Terminate;
-        }
-        /** Properties of a Message. */
-        interface IMessage {
-            /** Message dhType */
-            dhType?: (csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType | null);
-            /** Message counter */
-            counter?: (Long | null);
-            /** Message encryptedMessage */
-            encryptedMessage?: (Uint8Array | null);
-        }
-        type MessageEncodable = types.WeakOpaque<IMessage, {
-            readonly MessageEncodable: unique symbol;
-        } & tag.ProtobufMessage>;
-        /** Represents a Message. */
-        class Message implements IMessage {
-            /**
-             * Constructs a new Message.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: csp_e2e_fs.ForwardSecurityEnvelope.IMessage);
-            /** Message dhType. */
-            public dhType: csp_e2e_fs.ForwardSecurityEnvelope.Message.DHType;
-            /** Message counter. */
-            public counter: Long;
-            /** Message encryptedMessage. */
-            public encryptedMessage: Uint8Array;
-            /**
-             * Encodes the specified Message message. Does not implicitly {@link csp_e2e_fs.ForwardSecurityEnvelope.Message.verify|verify} messages.
-             * @param message Message message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: csp_e2e_fs.ForwardSecurityEnvelope.MessageEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-            /**
-             * Decodes a Message message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Message
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.ForwardSecurityEnvelope.Message;
-        }
-        namespace Message {
-            /** DHType enum. */
-            enum DHType {
-                TWODH = 0,
-                FOURDH = 1
-            }
+    }
+    /** Properties of an Encapsulated. */
+    interface IEncapsulated {
+        /** Encapsulated dhType */
+        dhType?: (csp_e2e_fs.Encapsulated.DHType | null);
+        /** Encapsulated counter */
+        counter?: (Long | null);
+        /** Encapsulated appliedVersion */
+        appliedVersion?: (number | null);
+        /** Encapsulated encryptedInner */
+        encryptedInner?: (Uint8Array | null);
+    }
+    type EncapsulatedEncodable = types.WeakOpaque<IEncapsulated, {
+        readonly EncapsulatedEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents an Encapsulated. */
+    class Encapsulated implements IEncapsulated {
+        /**
+         * Constructs a new Encapsulated.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: csp_e2e_fs.IEncapsulated);
+        /** Encapsulated dhType. */
+        public dhType: csp_e2e_fs.Encapsulated.DHType;
+        /** Encapsulated counter. */
+        public counter: Long;
+        /** Encapsulated appliedVersion. */
+        public appliedVersion: number;
+        /** Encapsulated encryptedInner. */
+        public encryptedInner: Uint8Array;
+        /**
+         * Encodes the specified Encapsulated message. Does not implicitly {@link csp_e2e_fs.Encapsulated.verify|verify} messages.
+         * @param message Encapsulated message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: csp_e2e_fs.EncapsulatedEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes an Encapsulated message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Encapsulated
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): csp_e2e_fs.Encapsulated;
+    }
+    namespace Encapsulated {
+        /** DHType enum. */
+        enum DHType {
+            TWODH = 0,
+            FOURDH = 1
         }
     }
 }
@@ -3494,6 +3562,8 @@ export namespace d2d {
     interface IEnvelope {
         /** Envelope padding */
         padding?: (Uint8Array | null);
+        /** Envelope deviceId */
+        deviceId?: (Long | null);
         /** Envelope outgoingMessage */
         outgoingMessage?: (d2d.OutgoingMessage | null);
         /** Envelope outgoingMessageUpdate */
@@ -3527,6 +3597,8 @@ export namespace d2d {
         constructor(properties?: d2d.IEnvelope);
         /** Envelope padding. */
         public padding: Uint8Array;
+        /** Envelope deviceId. */
+        public deviceId: Long;
         /** Envelope outgoingMessage. */
         public outgoingMessage?: (d2d.OutgoingMessage | null);
         /** Envelope outgoingMessageUpdate. */
@@ -4638,6 +4710,16 @@ export namespace sync {
     }
     /** Properties of a MdmParameters. */
     interface IMdmParameters {
+        /** MdmParameters externalParameters */
+        externalParameters?: ({
+            [k: string]: sync.MdmParameters.Parameter;
+        } | null);
+        /** MdmParameters threemaParameters */
+        threemaParameters?: ({
+            [k: string]: sync.MdmParameters.Parameter;
+        } | null);
+        /** MdmParameters parameterPrecedence */
+        parameterPrecedence?: (sync.MdmParameters.ParameterPrecedence | null);
     }
     type MdmParametersEncodable = types.WeakOpaque<IMdmParameters, {
         readonly MdmParametersEncodable: unique symbol;
@@ -4649,6 +4731,16 @@ export namespace sync {
          * @param [properties] Properties to set
          */
         constructor(properties?: sync.IMdmParameters);
+        /** MdmParameters externalParameters. */
+        public externalParameters: {
+            [k: string]: sync.MdmParameters.Parameter;
+        };
+        /** MdmParameters threemaParameters. */
+        public threemaParameters: {
+            [k: string]: sync.MdmParameters.Parameter;
+        };
+        /** MdmParameters parameterPrecedence. */
+        public parameterPrecedence: sync.MdmParameters.ParameterPrecedence;
         /**
          * Encodes the specified MdmParameters message. Does not implicitly {@link sync.MdmParameters.verify|verify} messages.
          * @param message MdmParameters message or plain object to encode
@@ -4665,6 +4757,53 @@ export namespace sync {
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): sync.MdmParameters;
+    }
+    namespace MdmParameters {
+        /** Properties of a Parameter. */
+        interface IParameter {
+            /** Parameter stringValue */
+            stringValue?: (string | null);
+            /** Parameter booleanValue */
+            booleanValue?: (boolean | null);
+        }
+        type ParameterEncodable = types.WeakOpaque<IParameter, {
+            readonly ParameterEncodable: unique symbol;
+        } & tag.ProtobufMessage>;
+        /** Represents a Parameter. */
+        class Parameter implements IParameter {
+            /**
+             * Constructs a new Parameter.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: sync.MdmParameters.IParameter);
+            /** Parameter stringValue. */
+            public stringValue?: (string | null);
+            /** Parameter booleanValue. */
+            public booleanValue?: (boolean | null);
+            /** Parameter value. */
+            public value?: ("stringValue" | "booleanValue");
+            /**
+             * Encodes the specified Parameter message. Does not implicitly {@link sync.MdmParameters.Parameter.verify|verify} messages.
+             * @param message Parameter message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: sync.MdmParameters.ParameterEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+            /**
+             * Decodes a Parameter message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Parameter
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): sync.MdmParameters.Parameter;
+        }
+        /** ParameterPrecedence enum. */
+        enum ParameterPrecedence {
+            THREEMA = 0,
+            EXTERNAL = 1
+        }
     }
     /** Properties of a UserProfile. */
     interface IUserProfile {

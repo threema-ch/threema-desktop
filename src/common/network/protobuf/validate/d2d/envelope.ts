@@ -3,11 +3,13 @@ import * as v from '@badrap/valita';
 import {d2d} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {instanceOf} from '~/common/utils/valita-helpers';
+import {ensureD2mDeviceId} from '~/common/network/types';
+import {instanceOf, unsignedLongAsU64} from '~/common/utils/valita-helpers';
 
 /** Base schema for an {@link d2d.Envelope} oneof instance */
 const BASE_SCHEMA = {
     padding: instanceOf(Uint8Array),
+    deviceId: unsignedLongAsU64().map(ensureD2mDeviceId),
     outgoingMessage: NULL_OR_UNDEFINED_SCHEMA,
     outgoingMessageUpdate: NULL_OR_UNDEFINED_SCHEMA,
     incomingMessage: NULL_OR_UNDEFINED_SCHEMA,
@@ -162,16 +164,16 @@ const USER_PROFILE_SYNC_SCHEMA = validator(
 export const SCHEMA = validator(
     d2d.Envelope,
     v.union(
-        CONTACT_SYNC_SCHEMA,
         OUTGOING_MESSAGE_SCHEMA,
         OUTGOING_MESSAGE_UPDATE_SCHEMA,
         INCOMING_MESSAGE_SCHEMA,
         INCOMING_MESSAGE_UPDATE_SCHEMA,
+        USER_PROFILE_SYNC_SCHEMA,
+        CONTACT_SYNC_SCHEMA,
         GROUP_SYNC_SCHEMA,
         DISTRIBUTION_LIST_SYNC_SCHEMA,
         SETTINGS_SYNC_SCHEMA,
         MDM_PARAMETER_SYNC_SCHEMA,
-        USER_PROFILE_SYNC_SCHEMA,
     ),
 );
 

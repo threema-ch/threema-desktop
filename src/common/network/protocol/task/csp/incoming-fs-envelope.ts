@@ -30,7 +30,7 @@ export class IncomingForwardSecurityEnvelopeTask
         private readonly _services: ServicesForTasks,
         private readonly _messageId: MessageId,
         private readonly _senderContactOrInit: LocalModelStore<Contact> | ContactInit,
-        private readonly _fsEnvelope: protobuf.csp_e2e_fs.ForwardSecurityEnvelope,
+        private readonly _fsEnvelope: protobuf.csp_e2e_fs.Envelope,
     ) {
         const messageIdHex = u64ToHexLe(_messageId);
         this._log = _services.logging.logger(
@@ -50,7 +50,7 @@ export class IncomingForwardSecurityEnvelopeTask
 
         // Only reject certain content types
         switch (this._fsEnvelope.content) {
-            case 'message':
+            case 'encapsulated':
                 await this._rejectFsMessage(handle);
                 break;
             default:
@@ -72,16 +72,16 @@ export class IncomingForwardSecurityEnvelopeTask
         }
 
         // Create reject envelope
-        const encoder = protobuf.utils.encoder(protobuf.csp_e2e_fs.ForwardSecurityEnvelope, {
+        const encoder = protobuf.utils.encoder(protobuf.csp_e2e_fs.Envelope, {
             sessionId: this._fsEnvelope.sessionId,
             init: undefined,
             accept: undefined,
-            reject: protobuf.utils.creator(protobuf.csp_e2e_fs.ForwardSecurityEnvelope.Reject, {
-                rejectedMessageId: intoUnsignedLong(this._messageId),
-                cause: protobuf.csp_e2e_fs.ForwardSecurityEnvelope.Reject.Cause.UNKNOWN_SESSION, // TODO(DESK-1050): Switch to UNSUPPORTED_BY_LOCAL
+            reject: protobuf.utils.creator(protobuf.csp_e2e_fs.Reject, {
+                rejectedEncapsulatedMessageId: intoUnsignedLong(this._messageId),
+                cause: protobuf.csp_e2e_fs.Reject.Cause.DISABLED_BY_LOCAL,
             }),
             terminate: undefined,
-            message: undefined,
+            encapsulated: undefined,
         });
 
         // Send message
