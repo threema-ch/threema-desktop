@@ -262,12 +262,12 @@ export abstract class ReflectedMessageTaskBase<
                         container,
                     };
                 }
-                case CspE2eGroupControlType.GROUP_REQUEST_SYNC: {
+                case CspE2eGroupControlType.GROUP_SYNC_REQUEST: {
                     const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupCreatorContainer.decode(body),
                     );
                     return {
-                        type: CspE2eGroupControlType.GROUP_REQUEST_SYNC,
+                        type: CspE2eGroupControlType.GROUP_SYNC_REQUEST,
                         message: undefined,
                         container,
                     };

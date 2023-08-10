@@ -125,7 +125,7 @@ export function groupLeaveTests(
                       NetworkExpectationFactory.reflectSingle((payload) => {
                           expect(payload.content).to.equal('outgoingMessage');
                           expect(payload.outgoingMessage?.type).to.equal(
-                              CspE2eGroupControlType.GROUP_REQUEST_SYNC,
+                              CspE2eGroupControlType.GROUP_SYNC_REQUEST,
                           );
                       }),
                       // Send a CSP group sync request
@@ -141,7 +141,7 @@ export function groupLeaveTests(
                               user2.ck,
                           );
                           expect(messageContainer.type).to.equal(
-                              CspE2eGroupControlType.GROUP_REQUEST_SYNC,
+                              CspE2eGroupControlType.GROUP_SYNC_REQUEST,
                           );
                           groupSyncRequestMessageId.set(ensureMessageId(message.messageId));
                       }),

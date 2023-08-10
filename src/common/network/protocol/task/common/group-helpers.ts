@@ -207,7 +207,7 @@ export async function sendGroupSyncRequest<TPersistence extends ActiveTaskPersis
     services: ServicesForTasks,
 ): Promise<void> {
     await new OutgoingCspMessageTask(services, receiver, {
-        type: CspE2eGroupControlType.GROUP_REQUEST_SYNC,
+        type: CspE2eGroupControlType.GROUP_SYNC_REQUEST,
         encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
             groupId,
             innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSyncRequest, {}),

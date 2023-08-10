@@ -93,7 +93,7 @@ export type ValidatedCspE2eTypes =
           GroupMemberContainer.Type
       >
     | ValidatedCspE2eMessageType<
-          CspE2eGroupControlType.GROUP_REQUEST_SYNC,
+          CspE2eGroupControlType.GROUP_SYNC_REQUEST,
           void,
           GroupCreatorContainer.Type
       >

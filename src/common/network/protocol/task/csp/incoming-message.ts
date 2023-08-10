@@ -1276,7 +1276,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
-            case CspE2eGroupControlType.GROUP_REQUEST_SYNC: {
+            case CspE2eGroupControlType.GROUP_SYNC_REQUEST: {
                 // A group-sync-request message is wrapped in a group-creator-container
                 const validatedContainer =
                     structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(

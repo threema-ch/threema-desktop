@@ -416,7 +416,7 @@ export class ReflectedOutgoingMessageTask
                 };
                 return instructions;
             }
-            case CspE2eGroupControlType.GROUP_REQUEST_SYNC:
+            case CspE2eGroupControlType.GROUP_SYNC_REQUEST:
                 // Ignore for now
                 return 'discard';
 

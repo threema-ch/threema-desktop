@@ -400,7 +400,7 @@ export function shouldSendGroupMessageToCreator(
 
     // For gateway groups not prefixed with cloud emoji, it depends on the message type
     switch (messageType) {
-        case CspE2eGroupControlType.GROUP_REQUEST_SYNC:
+        case CspE2eGroupControlType.GROUP_SYNC_REQUEST:
         case CspE2eGroupControlType.GROUP_LEAVE:
             return true;
         case CspE2eConversationType.TEXT:

@@ -85,8 +85,8 @@ const NO_REFLECT = [
  */
 type ValidGroupMessages =
     | CspE2eGroupConversationType
-    // Note: GROUP_REQUEST_SYNC is excluded, because it is only sent to the creator, not to all members
-    | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_REQUEST_SYNC>;
+    // Note: GROUP_SYNC_REQUEST is excluded, because it is only sent to the creator, not to all members
+    | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_SYNC_REQUEST>;
 
 /**
  * Messages that are sent to single contacts.
