@@ -43,6 +43,6 @@ export class DebugBackend implements ProxyMarked {
      * Generate fake conversations and messages for making screenshots.
      */
     public async generateScreenshotData(): Promise<void> {
-        await generateScreenshotData(this._services, this._backend, this._log);
+        await generateScreenshotData(this._services, this._log);
     }
 }

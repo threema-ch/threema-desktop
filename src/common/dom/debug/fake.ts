@@ -5,9 +5,11 @@ import {type DbContactUid} from '~/common/db';
 import {type BackendHandle} from '~/common/dom/backend';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {
+    OWN_IDENTITY,
     SCREENSHOT_DATA_JSON_SCHEMA,
     type ScreenshotDataJson,
     type ScreenshotDataJsonContact,
+    type ScreenshotDataJsonGroup,
 } from '~/common/dom/debug/screenshot-data';
 import {TEST_IMAGE, TEST_THUMBNAIL} from '~/common/dom/debug/testdata';
 import {
@@ -31,6 +33,7 @@ import {
 import {type Logger} from '~/common/logging';
 import {type Contact} from '~/common/model';
 import {type ContactModelStore} from '~/common/model/contact';
+import {type GroupModelStore} from '~/common/model/group';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
@@ -44,7 +47,7 @@ import {
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
 import {type u53} from '~/common/types';
-import {unreachable, unwrap} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 
 const CONSONANTS = Array.from('bcdfghjklmnpqrstvwxyz');
@@ -340,11 +343,11 @@ export async function generateFakeGroupConversation(
  * Generate data for screenshots from JSON file.
  */
 export async function generateScreenshotData(
-    services: Pick<ServicesForBackend, 'crypto' | 'file'>,
-    backend: BackendHandle,
+    services: Pick<ServicesForBackend, 'crypto' | 'device' | 'file' | 'model'>,
     log: Logger,
 ): Promise<void> {
     log.info('generateScreenshotData: Starting');
+    const {device, model} = services;
 
     // Import JSON data (but only in debug and/or sandbox builds)
     let data: ScreenshotDataJson = {contacts: [], groups: []};
@@ -361,13 +364,13 @@ export async function generateScreenshotData(
     for (const contact of data.contacts) {
         // Create contact
         const identity = ensureIdentityString(contact.identity);
-        if (backend.model.contacts.getByIdentity(identity) !== undefined) {
+        if (model.contacts.getByIdentity(identity) !== undefined) {
             // Contact already exists
             log.warn(`Skipping contact ${identity}, already exists`);
             continue;
         }
         log.info(`Adding contact with ID ${identity}`);
-        const contactModel = backend.model.contacts.add.fromSync({
+        const contactModel = model.contacts.add.fromSync({
             identity,
             publicKey: contact.publicKey,
             createdAt: new Date(),
@@ -406,17 +409,77 @@ export async function generateScreenshotData(
         }
     }
 
+    // Add groups
+    for (const group of data.groups) {
+        const isCreator = group.creator === OWN_IDENTITY;
+        const creatorIdentity =
+            group.creator === OWN_IDENTITY ? device.identity.string : group.creator;
+
+        // Look up group contacts
+        const groupMemberUids = [];
+        let isMember = false;
+        for (const member of group.members) {
+            if (member === OWN_IDENTITY) {
+                isMember = true;
+                continue;
+            }
+            const contact = model.contacts.getByIdentity(member);
+            assert(contact !== undefined, `Group contact not found for identity ${member}`);
+            groupMemberUids.push(contact.ctx);
+        }
+
+        // Create group
+        if (model.groups.getByGroupIdAndCreator(group.id, creatorIdentity)) {
+            // Group already exists
+            log.warn(`Skipping group ${group.name.default}, already exists`);
+            continue;
+        }
+        log.info(`Adding group with name ${group.name.default}`);
+        const groupModel = model.groups.add.fromSync(
+            {
+                groupId: group.id,
+                creatorIdentity,
+                name: group.name.default,
+                createdAt: new Date(+new Date() - group.createdSecondsAgo * 1000),
+                colorIndex: idColorIndex({
+                    type: ReceiverType.GROUP,
+                    groupId: group.id,
+                    creatorIdentity,
+                }),
+                userState: isMember || isCreator ? GroupUserState.MEMBER : GroupUserState.LEFT,
+                category: ConversationCategory.DEFAULT,
+                visibility: ConversationVisibility.SHOW,
+            },
+            groupMemberUids,
+        );
+
+        // Set profile picture
+        if (group.avatar !== undefined) {
+            groupModel
+                .get()
+                .controller.profilePicture.get()
+                .controller.setPicture.fromSync(group.avatar, 'admin-defined');
+        }
+
+        // Create conversation
+        if (group.conversation.length > 0) {
+            await addConversationMessages(groupModel, group.conversation, services, log);
+        }
+    }
+
     log.info('generateScreenshotData: Done');
 }
 
+/**
+ * Add conversation messages from screenshot data.
+ */
 async function addConversationMessages(
-    contact: ContactModelStore,
-    messages: ScreenshotDataJsonContact['conversation'],
-    {crypto, file}: Pick<ServicesForBackend, 'crypto' | 'file'>,
+    receiver: ContactModelStore | GroupModelStore,
+    messages: ScreenshotDataJsonContact['conversation'] | ScreenshotDataJsonGroup['conversation'],
+    {crypto, file, model}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>,
     log: Logger,
 ): Promise<void> {
-    const identity = contact.get().view.identity;
-    const conversation = contact.get().controller.conversation().get();
+    const conversation = receiver.get().controller.conversation().get();
     for (const message of messages) {
         let content;
 
@@ -475,11 +538,26 @@ async function addConversationMessages(
         }
 
         switch (message.direction) {
-            case MessageDirection.INBOUND:
+            case MessageDirection.INBOUND: {
+                let senderUid;
+                switch (receiver.type) {
+                    case ReceiverType.CONTACT:
+                        senderUid = receiver.ctx;
+                        break;
+                    case ReceiverType.GROUP: {
+                        const senderContact = model.contacts.getByIdentity(
+                            unwrap(message.identity, 'Group message sender not found'),
+                        );
+                        senderUid = unwrap(senderContact).ctx;
+                        break;
+                    }
+                    default:
+                        unreachable(receiver);
+                }
                 conversation.controller.addMessage.fromSync({
                     id: messageId,
                     direction: message.direction,
-                    sender: contact.ctx,
+                    sender: senderUid,
                     createdAt: messageDate,
                     receivedAt: messageDate,
                     readAt: unwrap(message.isRead) ? messageDate : undefined,
@@ -488,6 +566,7 @@ async function addConversationMessages(
                     ...content,
                 });
                 break;
+            }
             case MessageDirection.OUTBOUND:
                 conversation.controller.addMessage.fromSync({
                     id: messageId,
@@ -499,9 +578,7 @@ async function addConversationMessages(
                 });
                 break;
             default:
-                throw new Error(
-                    `Invalid message direction for identity ${identity}: ${message.direction}`,
-                );
+                throw new Error(`Invalid message direction: ${message.direction}`);
         }
     }
 }
