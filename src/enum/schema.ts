@@ -240,7 +240,7 @@ export enum CspMessageFlag {
 }
 
 /**
- * E2EE conversation message type.
+ * E2EE 1:1 conversation message type.
  *
  * @generate name convert
  */
@@ -261,7 +261,7 @@ export enum CspE2eConversationType {
 }
 
 /**
- * E2EE status update type.
+ * E2EE 1:1 status update type.
  *
  * @generate name
  */
@@ -279,21 +279,6 @@ export enum CspE2eContactControlType {
     CONTACT_SET_PROFILE_PICTURE = 0x18,
     CONTACT_DELETE_PROFILE_PICTURE = 0x19,
     CONTACT_REQUEST_PROFILE_PICTURE = 0x1a,
-}
-
-/**
- * E2EE group control type.
- *
- * @generate name convert
- */
-export enum CspE2eGroupControlType {
-    GROUP_SETUP = 0x4a,
-    GROUP_NAME = 0x4b,
-    GROUP_LEAVE = 0x4c,
-    GROUP_SET_PROFILE_PICTURE = 0x50,
-    GROUP_DELETE_PROFILE_PICTURE = 0x54,
-    GROUP_SYNC_REQUEST = 0x51,
-    GROUP_CALL_START = 0x4f,
 }
 
 /**
@@ -319,6 +304,21 @@ export enum CspE2eGroupConversationType {
  */
 export enum CspE2eGroupStatusUpdateType {
     GROUP_DELIVERY_RECEIPT = 0x81,
+}
+
+/**
+ * E2EE group control type.
+ *
+ * @generate name convert
+ */
+export enum CspE2eGroupControlType {
+    GROUP_SETUP = 0x4a,
+    GROUP_NAME = 0x4b,
+    GROUP_LEAVE = 0x4c,
+    GROUP_SET_PROFILE_PICTURE = 0x50,
+    GROUP_DELETE_PROFILE_PICTURE = 0x54,
+    GROUP_SYNC_REQUEST = 0x51,
+    GROUP_CALL_START = 0x4f,
 }
 
 /**

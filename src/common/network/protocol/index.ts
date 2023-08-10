@@ -1,17 +1,17 @@
 import {
-    type CspE2eContactControlType,
+    CspE2eContactControlType,
     CspE2eContactControlTypeUtils,
-    type CspE2eConversationType,
+    CspE2eConversationType,
     CspE2eConversationTypeUtils,
-    type CspE2eForwardSecurityType,
+    CspE2eForwardSecurityType,
     CspE2eForwardSecurityTypeUtils,
-    type CspE2eGroupControlType,
+    CspE2eGroupControlType,
     CspE2eGroupControlTypeUtils,
-    type CspE2eGroupConversationType,
+    CspE2eGroupConversationType,
     CspE2eGroupConversationTypeUtils,
-    type CspE2eGroupStatusUpdateType,
+    CspE2eGroupStatusUpdateType,
     CspE2eGroupStatusUpdateTypeUtils,
-    type CspE2eStatusUpdateType,
+    CspE2eStatusUpdateType,
     CspE2eStatusUpdateTypeUtils,
     CspExtensionType,
     CspMessageFlag,
@@ -274,18 +274,18 @@ export type OutboundPassiveTaskMessage =
 export type CspE2eType =
     | CspE2eConversationType
     | CspE2eStatusUpdateType
-    | CspE2eGroupControlType
     | CspE2eContactControlType
     | CspE2eGroupConversationType
     | CspE2eGroupStatusUpdateType
+    | CspE2eGroupControlType
     | CspE2eForwardSecurityType;
 export const CSP_E2E_TYPE_NAME_OF = {
     ...CspE2eConversationTypeUtils.NAME_OF,
     ...CspE2eStatusUpdateTypeUtils.NAME_OF,
-    ...CspE2eGroupControlTypeUtils.NAME_OF,
     ...CspE2eContactControlTypeUtils.NAME_OF,
     ...CspE2eGroupConversationTypeUtils.NAME_OF,
     ...CspE2eGroupStatusUpdateTypeUtils.NAME_OF,
+    ...CspE2eGroupControlTypeUtils.NAME_OF,
     ...CspE2eForwardSecurityTypeUtils.NAME_OF,
 } as const;
 export function cspE2eTypeNameOf<T extends u53>(value: T): string | undefined {
@@ -315,3 +315,141 @@ export function ensureCspE2eType(value: u53): CspE2eType {
  * Right now, this is identical to {@link CspE2eType} because we reflect all message types.
  */
 export type ReflectedE2eType = CspE2eType;
+
+/**
+ * Properties for a CSP E2E message.
+ */
+export interface MessageTypeProperties {
+    /**
+     * Should this message be sent or processed even if the sender or receiver is blocked?
+     */
+    readonly exemptFromBlocking: boolean;
+}
+
+type MessageTypePropertiesMap = {
+    [K in CspE2eType]: MessageTypeProperties;
+};
+
+/**
+ * A map of all message types along with their {@link MessageTypeProperties}
+ */
+export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
+    // Contact conversation messages
+    [CspE2eConversationType.TEXT]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.DEPRECATED_IMAGE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.LOCATION]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.DEPRECATED_AUDIO]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.DEPRECATED_VIDEO]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.FILE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.POLL_SETUP]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.POLL_VOTE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.CALL_OFFER]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.CALL_ANSWER]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.CALL_ICE_CANDIDATE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.CALL_HANGUP]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eConversationType.CALL_RINGING]: {
+        exemptFromBlocking: false,
+    },
+
+    // Contact status updates
+    [CspE2eStatusUpdateType.DELIVERY_RECEIPT]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eStatusUpdateType.TYPING_INDICATOR]: {
+        exemptFromBlocking: false,
+    },
+
+    // Contact control messages
+    [CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE]: {
+        exemptFromBlocking: false,
+    },
+
+    // Group conversation messages
+    [CspE2eGroupConversationType.GROUP_TEXT]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eGroupConversationType.GROUP_LOCATION]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eGroupConversationType.GROUP_AUDIO]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eGroupConversationType.GROUP_VIDEO]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eGroupConversationType.GROUP_FILE]: {
+        exemptFromBlocking: false,
+    },
+    [CspE2eGroupConversationType.GROUP_POLL_SETUP]: {
+        exemptFromBlocking: true,
+    },
+    [CspE2eGroupConversationType.GROUP_POLL_VOTE]: {
+        exemptFromBlocking: true,
+    },
+
+    // Group status updates
+    [CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT]: {
+        exemptFromBlocking: false,
+    },
+
+    // Group control messages
+    [CspE2eGroupControlType.GROUP_SETUP]: {
+        exemptFromBlocking: true,
+    },
+    [CspE2eGroupControlType.GROUP_NAME]: {
+        exemptFromBlocking: true,
+    },
+    [CspE2eGroupControlType.GROUP_LEAVE]: {
+        exemptFromBlocking: true,
+    },
+    [CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE]: {
+        exemptFromBlocking: true,
+    },
+    [CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE]: {
+        exemptFromBlocking: true,
+    },
+    [CspE2eGroupControlType.GROUP_SYNC_REQUEST]: {
+        exemptFromBlocking: true,
+    },
+    [CspE2eGroupControlType.GROUP_CALL_START]: {
+        exemptFromBlocking: true,
+    },
+
+    // Forward security messages
+    [CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE]: {
+        exemptFromBlocking: false,
+    },
+};

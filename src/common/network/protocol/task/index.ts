@@ -399,6 +399,7 @@ export function shouldSendGroupMessageToCreator(
     }
 
     // For gateway groups not prefixed with cloud emoji, it depends on the message type
+    // TODO(DESK-1059): Refactor this to use message properties as well
     switch (messageType) {
         case CspE2eGroupControlType.GROUP_SYNC_REQUEST:
         case CspE2eGroupControlType.GROUP_LEAVE:

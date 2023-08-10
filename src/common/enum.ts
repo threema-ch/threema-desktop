@@ -550,7 +550,7 @@ export namespace CspE2eConversationType {
     export type CALL_RINGING = typeof CALL_RINGING;
 }
 /**
- * E2EE conversation message type.
+ * E2EE 1:1 conversation message type.
  *
  * @generate name convert
  */
@@ -616,7 +616,7 @@ export namespace CspE2eStatusUpdateType {
     export type TYPING_INDICATOR = typeof TYPING_INDICATOR;
 }
 /**
- * E2EE status update type.
+ * E2EE 1:1 status update type.
  *
  * @generate name
  */
@@ -652,70 +652,6 @@ export namespace CspE2eContactControlTypeUtils {
         [CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE]: 'CONTACT_DELETE_PROFILE_PICTURE',
         [CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE]:
             'CONTACT_REQUEST_PROFILE_PICTURE',
-    } as const;
-    export function nameOf<T extends u53>(value: T): string | undefined {
-        return (NAME_OF as Record<u53, string | undefined>)[value];
-    }
-}
-export namespace CspE2eGroupControlType {
-    export const GROUP_SETUP = 74;
-    export type GROUP_SETUP = typeof GROUP_SETUP;
-    export const GROUP_NAME = 75;
-    export type GROUP_NAME = typeof GROUP_NAME;
-    export const GROUP_LEAVE = 76;
-    export type GROUP_LEAVE = typeof GROUP_LEAVE;
-    export const GROUP_SET_PROFILE_PICTURE = 80;
-    export type GROUP_SET_PROFILE_PICTURE = typeof GROUP_SET_PROFILE_PICTURE;
-    export const GROUP_DELETE_PROFILE_PICTURE = 84;
-    export type GROUP_DELETE_PROFILE_PICTURE = typeof GROUP_DELETE_PROFILE_PICTURE;
-    export const GROUP_SYNC_REQUEST = 81;
-    export type GROUP_SYNC_REQUEST = typeof GROUP_SYNC_REQUEST;
-    export const GROUP_CALL_START = 79;
-    export type GROUP_CALL_START = typeof GROUP_CALL_START;
-}
-/**
- * E2EE group control type.
- *
- * @generate name convert
- */
-export type CspE2eGroupControlType =
-    (typeof CspE2eGroupControlType)[keyof typeof CspE2eGroupControlType];
-export namespace CspE2eGroupControlTypeUtils {
-    export const ALL: ReadonlySet<CspE2eGroupControlType> = new Set([
-        CspE2eGroupControlType.GROUP_SETUP,
-        CspE2eGroupControlType.GROUP_NAME,
-        CspE2eGroupControlType.GROUP_LEAVE,
-        CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
-        CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
-        CspE2eGroupControlType.GROUP_SYNC_REQUEST,
-        CspE2eGroupControlType.GROUP_CALL_START,
-    ] as const);
-    export function fromNumber(
-        value: u53,
-        fallback?: CspE2eGroupControlType,
-    ): CspE2eGroupControlType {
-        if ((ALL as ReadonlySet<u53>).has(value)) {
-            return value as CspE2eGroupControlType;
-        }
-        if (fallback !== undefined) {
-            return fallback;
-        }
-        throw new Error(`${value} is not a valid CspE2eGroupControlType`);
-    }
-    export function containsNumber(value: u53): value is CspE2eGroupControlType {
-        return (ALL as ReadonlySet<u53>).has(value);
-    }
-    export function contains(value: unknown): value is CspE2eGroupControlType {
-        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
-    }
-    export const NAME_OF = {
-        [CspE2eGroupControlType.GROUP_SETUP]: 'GROUP_SETUP',
-        [CspE2eGroupControlType.GROUP_NAME]: 'GROUP_NAME',
-        [CspE2eGroupControlType.GROUP_LEAVE]: 'GROUP_LEAVE',
-        [CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE]: 'GROUP_SET_PROFILE_PICTURE',
-        [CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE]: 'GROUP_DELETE_PROFILE_PICTURE',
-        [CspE2eGroupControlType.GROUP_SYNC_REQUEST]: 'GROUP_SYNC_REQUEST',
-        [CspE2eGroupControlType.GROUP_CALL_START]: 'GROUP_CALL_START',
     } as const;
     export function nameOf<T extends u53>(value: T): string | undefined {
         return (NAME_OF as Record<u53, string | undefined>)[value];
@@ -803,6 +739,70 @@ export type CspE2eGroupStatusUpdateType =
 export namespace CspE2eGroupStatusUpdateTypeUtils {
     export const NAME_OF = {
         [CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT]: 'GROUP_DELIVERY_RECEIPT',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
+export namespace CspE2eGroupControlType {
+    export const GROUP_SETUP = 74;
+    export type GROUP_SETUP = typeof GROUP_SETUP;
+    export const GROUP_NAME = 75;
+    export type GROUP_NAME = typeof GROUP_NAME;
+    export const GROUP_LEAVE = 76;
+    export type GROUP_LEAVE = typeof GROUP_LEAVE;
+    export const GROUP_SET_PROFILE_PICTURE = 80;
+    export type GROUP_SET_PROFILE_PICTURE = typeof GROUP_SET_PROFILE_PICTURE;
+    export const GROUP_DELETE_PROFILE_PICTURE = 84;
+    export type GROUP_DELETE_PROFILE_PICTURE = typeof GROUP_DELETE_PROFILE_PICTURE;
+    export const GROUP_SYNC_REQUEST = 81;
+    export type GROUP_SYNC_REQUEST = typeof GROUP_SYNC_REQUEST;
+    export const GROUP_CALL_START = 79;
+    export type GROUP_CALL_START = typeof GROUP_CALL_START;
+}
+/**
+ * E2EE group control type.
+ *
+ * @generate name convert
+ */
+export type CspE2eGroupControlType =
+    (typeof CspE2eGroupControlType)[keyof typeof CspE2eGroupControlType];
+export namespace CspE2eGroupControlTypeUtils {
+    export const ALL: ReadonlySet<CspE2eGroupControlType> = new Set([
+        CspE2eGroupControlType.GROUP_SETUP,
+        CspE2eGroupControlType.GROUP_NAME,
+        CspE2eGroupControlType.GROUP_LEAVE,
+        CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE,
+        CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE,
+        CspE2eGroupControlType.GROUP_SYNC_REQUEST,
+        CspE2eGroupControlType.GROUP_CALL_START,
+    ] as const);
+    export function fromNumber(
+        value: u53,
+        fallback?: CspE2eGroupControlType,
+    ): CspE2eGroupControlType {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as CspE2eGroupControlType;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid CspE2eGroupControlType`);
+    }
+    export function containsNumber(value: u53): value is CspE2eGroupControlType {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is CspE2eGroupControlType {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+    export const NAME_OF = {
+        [CspE2eGroupControlType.GROUP_SETUP]: 'GROUP_SETUP',
+        [CspE2eGroupControlType.GROUP_NAME]: 'GROUP_NAME',
+        [CspE2eGroupControlType.GROUP_LEAVE]: 'GROUP_LEAVE',
+        [CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE]: 'GROUP_SET_PROFILE_PICTURE',
+        [CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE]: 'GROUP_DELETE_PROFILE_PICTURE',
+        [CspE2eGroupControlType.GROUP_SYNC_REQUEST]: 'GROUP_SYNC_REQUEST',
+        [CspE2eGroupControlType.GROUP_CALL_START]: 'GROUP_CALL_START',
     } as const;
     export function nameOf<T extends u53>(value: T): string | undefined {
         return (NAME_OF as Record<u53, string | undefined>)[value];
