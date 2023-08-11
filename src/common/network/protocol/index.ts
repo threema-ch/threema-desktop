@@ -17,6 +17,7 @@ import {
     CspMessageFlag,
     CspPayloadType,
     D2mPayloadType,
+    type ReceiverType,
 } from '~/common/enum';
 import type * as protobuf from '~/common/network/protobuf';
 import type * as structbuf from '~/common/network/structbuf';
@@ -310,6 +311,18 @@ export function ensureCspE2eType(value: u53): CspE2eType {
 }
 
 /**
+ * Return {@link ReceiverType.GROUP} for group message types, and {@link ReceiverType.CONTACT} otherwise.
+ */
+export type ReceiverTypeForCspE2eMessageType<T extends CspE2eType> =
+    T extends CspE2eGroupConversationType
+        ? ReceiverType.GROUP
+        : T extends CspE2eGroupStatusUpdateType
+        ? ReceiverType.GROUP
+        : T extends CspE2eGroupControlType
+        ? ReceiverType.GROUP
+        : ReceiverType.CONTACT;
+
+/**
  * A list of all types in {@link CspE2eType} that are reflected.
  *
  * Right now, this is identical to {@link CspE2eType} because we reflect all message types.
@@ -319,7 +332,7 @@ export type ReflectedE2eType = CspE2eType;
 /**
  * Properties for a CSP E2E message.
  */
-export interface MessageTypeProperties {
+export interface MessageTypeProperties<TReceiverType extends ReceiverType> {
     /**
      * Should this message be sent or processed even if the sender or receiver is blocked?
      */
@@ -332,10 +345,17 @@ export interface MessageTypeProperties {
         readonly incoming: boolean;
         readonly outgoing: boolean;
     };
+
+    /**
+     * Send group messages to Threema Gateway ID group creator?
+     */
+    readonly sendToGatewayGroupCreator: TReceiverType extends ReceiverType.GROUP
+        ? 'if-captured' | 'always' | 'not-applicable'
+        : 'not-applicable';
 }
 
 type MessageTypePropertiesMap = {
-    [K in CspE2eType]: MessageTypeProperties;
+    readonly [K in CspE2eType]: MessageTypeProperties<ReceiverTypeForCspE2eMessageType<K>>;
 };
 
 /**
@@ -349,6 +369,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.DEPRECATED_IMAGE]: {
         exemptFromBlocking: false,
@@ -356,6 +377,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.LOCATION]: {
         exemptFromBlocking: false,
@@ -363,6 +385,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.DEPRECATED_AUDIO]: {
         exemptFromBlocking: false,
@@ -370,6 +393,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.DEPRECATED_VIDEO]: {
         exemptFromBlocking: false,
@@ -377,6 +401,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.FILE]: {
         exemptFromBlocking: false,
@@ -384,6 +409,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.POLL_SETUP]: {
         exemptFromBlocking: false,
@@ -391,6 +417,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.POLL_VOTE]: {
         exemptFromBlocking: false,
@@ -398,6 +425,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_OFFER]: {
         exemptFromBlocking: false,
@@ -405,6 +433,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_ANSWER]: {
         exemptFromBlocking: false,
@@ -412,6 +441,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_ICE_CANDIDATE]: {
         exemptFromBlocking: false,
@@ -419,6 +449,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: false,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_HANGUP]: {
         exemptFromBlocking: false,
@@ -426,6 +457,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_RINGING]: {
         exemptFromBlocking: false,
@@ -433,6 +465,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
 
     // Contact status updates
@@ -442,6 +475,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eStatusUpdateType.TYPING_INDICATOR]: {
         exemptFromBlocking: false,
@@ -449,6 +483,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: false,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
 
     // Contact control messages
@@ -458,6 +493,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE]: {
         exemptFromBlocking: false,
@@ -465,6 +501,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE]: {
         exemptFromBlocking: false,
@@ -472,6 +509,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: false,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
 
     // Group conversation messages
@@ -481,6 +519,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_LOCATION]: {
         exemptFromBlocking: false,
@@ -488,6 +527,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE]: {
         exemptFromBlocking: false,
@@ -495,6 +535,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_AUDIO]: {
         exemptFromBlocking: false,
@@ -502,6 +543,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_VIDEO]: {
         exemptFromBlocking: false,
@@ -509,6 +551,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_FILE]: {
         exemptFromBlocking: false,
@@ -516,6 +559,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_POLL_SETUP]: {
         exemptFromBlocking: true,
@@ -523,6 +567,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_POLL_VOTE]: {
         exemptFromBlocking: true,
@@ -530,6 +575,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
 
     // Group status updates
@@ -539,6 +585,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
 
     // Group control messages
@@ -548,6 +595,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_NAME]: {
         exemptFromBlocking: true,
@@ -555,6 +603,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_LEAVE]: {
         exemptFromBlocking: true,
@@ -562,6 +611,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'always',
     },
     [CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE]: {
         exemptFromBlocking: true,
@@ -569,6 +619,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE]: {
         exemptFromBlocking: true,
@@ -576,6 +627,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_SYNC_REQUEST]: {
         exemptFromBlocking: true,
@@ -583,6 +635,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'always',
     },
     [CspE2eGroupControlType.GROUP_CALL_START]: {
         exemptFromBlocking: true,
@@ -590,6 +643,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: true,
             outgoing: true,
         },
+        sendToGatewayGroupCreator: 'if-captured',
     },
 
     // Forward security messages
@@ -603,5 +657,6 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
             incoming: false,
             outgoing: false,
         },
+        sendToGatewayGroupCreator: 'not-applicable',
     },
 };
