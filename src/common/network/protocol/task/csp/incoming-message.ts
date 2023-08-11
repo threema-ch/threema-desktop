@@ -521,6 +521,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             return await this._forward(handle, container);
         }
 
+        // Since we forward unknown message types, at this point we should only have known CSP E2E
+        // message types remaining. (TODO DESK-194: Review if this is still the case.)
+        assert(isCspE2eType(type), `Message type ${type} is not a known CSP E2E type`);
+
         // Note: At this point we are past the validation phase and further
         //       interactions are infallible (i.e. if they fail, then the
         //       whole connection gets teared down).
@@ -596,8 +600,20 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
         }
 
-        // Reflect the message and wait for D2M acknowledgement
+        // Handle reflection
+        if (MESSAGE_TYPE_PROPERTIES[type].reflect.incoming) {
+            assert(
+                instructions.reflectFragment !== undefined,
+                `Message of type ${type} should be reflected, but reflect fragment is undefined`,
+            );
+        } else {
+            assert(
+                instructions.reflectFragment === undefined,
+                `Message of type ${type} should not be reflected, but reflect fragment is set`,
+            );
+        }
         if (instructions.reflectFragment !== undefined) {
+            // Reflect the message and wait for D2M acknowledgement
             this._log.info(`Reflecting incoming ${messageTypeDebug} message`);
             let incomingMessageReflectedAt;
             try {

@@ -4,14 +4,14 @@
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
-    CspE2eContactControlType,
-    CspE2eConversationType,
+    type CspE2eContactControlType,
+    type CspE2eConversationType,
     CspE2eConversationTypeUtils,
-    CspE2eForwardSecurityType,
+    type CspE2eForwardSecurityType,
     type CspE2eGroupControlType,
     type CspE2eGroupConversationType,
     CspE2eGroupConversationTypeUtils,
-    CspE2eStatusUpdateType,
+    type CspE2eStatusUpdateType,
     MessageFilterInstruction,
     ReceiverType,
     ReceiverTypeUtils,
@@ -70,16 +70,6 @@ export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eTy
     readonly allowUserProfileDistribution: boolean;
 }
 
-// Outgoing message types that should not be reflected.
-const NO_REFLECT = [
-    CspE2eConversationType.CALL_ICE_CANDIDATE,
-    CspE2eStatusUpdateType.TYPING_INDICATOR,
-    CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE,
-    CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE,
-    CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE,
-    CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE,
-];
-
 /**
  * Messages that are sent to all group members.
  */
@@ -137,8 +127,8 @@ export interface IOutgoingCspMessageTaskConstructor {
  * - Send message via CSP
  * - Potentially reflect OutgoingMessageUpdate.Sent via D2D
  *
- * Only message types that are not part of {@link NO_REFLECT} are being reflected. If a message is
- * not reflected, then the return value is `undefined`, otherwise it's the reflection date.
+ * Whether or not a message is reflected is defined in {@link MESSAGE_TYPE_PROPERTIES}. If a message
+ * is not reflected, then the return value is `undefined`, otherwise it's the reflection date.
  */
 export class OutgoingCspMessageTask<
     TMessageEncoder,
@@ -167,7 +157,7 @@ export class OutgoingCspMessageTask<
         this._log = _services.logging.logger(
             `network.protocol.task.out-csp-message.${messageIdHex}`,
         );
-        this._reflect = !NO_REFLECT.includes(_messageProperties.type);
+        this._reflect = MESSAGE_TYPE_PROPERTIES[_messageProperties.type].reflect.outgoing;
         this._log.debug('Created');
     }
 

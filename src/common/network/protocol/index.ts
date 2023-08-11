@@ -324,6 +324,14 @@ export interface MessageTypeProperties {
      * Should this message be sent or processed even if the sender or receiver is blocked?
      */
     readonly exemptFromBlocking: boolean;
+
+    /**
+     * Should this message be reflected to other devices?
+     */
+    readonly reflect: {
+        readonly incoming: boolean;
+        readonly outgoing: boolean;
+    };
 }
 
 type MessageTypePropertiesMap = {
@@ -337,119 +345,263 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
     // Contact conversation messages
     [CspE2eConversationType.TEXT]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.DEPRECATED_IMAGE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.LOCATION]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.DEPRECATED_AUDIO]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.DEPRECATED_VIDEO]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.FILE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.POLL_SETUP]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.POLL_VOTE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.CALL_OFFER]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.CALL_ANSWER]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.CALL_ICE_CANDIDATE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: false,
+        },
     },
     [CspE2eConversationType.CALL_HANGUP]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eConversationType.CALL_RINGING]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
 
     // Contact status updates
     [CspE2eStatusUpdateType.DELIVERY_RECEIPT]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eStatusUpdateType.TYPING_INDICATOR]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: false,
+        },
     },
 
     // Contact control messages
     [CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: false,
+        },
     },
 
     // Group conversation messages
     [CspE2eGroupConversationType.GROUP_TEXT]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupConversationType.GROUP_LOCATION]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupConversationType.GROUP_AUDIO]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupConversationType.GROUP_VIDEO]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupConversationType.GROUP_FILE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupConversationType.GROUP_POLL_SETUP]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupConversationType.GROUP_POLL_VOTE]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
 
     // Group status updates
     [CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
 
     // Group control messages
     [CspE2eGroupControlType.GROUP_SETUP]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupControlType.GROUP_NAME]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupControlType.GROUP_LEAVE]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupControlType.GROUP_SYNC_REQUEST]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
     [CspE2eGroupControlType.GROUP_CALL_START]: {
         exemptFromBlocking: true,
+        reflect: {
+            incoming: true,
+            outgoing: true,
+        },
     },
 
     // Forward security messages
+    //
+    // Note: Properties are not currently specified in the protocol for forward security envelopes!
+    //       Set sensible defaults. Might need to be updated if the protocol changes (probably once
+    //       SE-358 is implemented).
     [CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE]: {
         exemptFromBlocking: false,
+        reflect: {
+            incoming: false,
+            outgoing: false,
+        },
     },
 };
