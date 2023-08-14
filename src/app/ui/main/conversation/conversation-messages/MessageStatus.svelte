@@ -6,6 +6,7 @@
     MessageReactionUtils,
     ReceiverType,
   } from '~/common/enum';
+  import {unreachable} from '~/common/utils/assert';
   import {type MessageStatus} from '~/common/viewmodel/types';
 
   export let direction: MessageDirection;
@@ -14,34 +15,64 @@
   export let outgoingReactionDisplay: 'thumb' | 'arrow';
   export let receiverType: ReceiverType;
 
+  function iconForReaction(value: MessageReaction): string {
+    switch (value) {
+      case MessageReaction.ACKNOWLEDGE:
+        return 'thumb_up';
+
+      case MessageReaction.DECLINE:
+        return 'thumb_down';
+
+      default:
+        return unreachable(value);
+    }
+  }
+
+  function iconForStatus(value: MessageStatus): string {
+    switch (value) {
+      case 'pending':
+        return 'file_upload';
+
+      case 'sent':
+        return 'email';
+
+      case 'delivered':
+        return 'move_to_inbox';
+
+      case 'read':
+        return 'visibility';
+
+      case 'error':
+        return 'report_problem';
+
+      default:
+        return unreachable(value);
+    }
+  }
+
   // Hide status for group messages, except for pending state.
   $: isVisible = receiverType !== ReceiverType.GROUP || status === 'pending' || status === 'error';
+
+  let iconName: string | undefined = undefined;
+  $: if (direction === MessageDirection.INBOUND && outgoingReactionDisplay === 'arrow') {
+    iconName = 'reply';
+  } else if (reaction !== undefined) {
+    iconName = iconForReaction(reaction);
+  } else if (status !== undefined) {
+    iconName = iconForStatus(status);
+  } else {
+    iconName = undefined;
+  }
 </script>
 
 <template>
-  {#if isVisible}
+  {#if isVisible && iconName !== undefined}
     <span
       data-direction={direction}
       data-reaction={reaction === undefined ? undefined : MessageReactionUtils.NAME_OF[reaction]}
       data-status={status}
     >
-      {#if direction === MessageDirection.INBOUND && outgoingReactionDisplay === 'arrow'}
-        <MdIcon theme="Filled">reply</MdIcon>
-      {:else if reaction === MessageReaction.ACKNOWLEDGE}
-        <MdIcon theme="Filled">thumb_up</MdIcon>
-      {:else if reaction === MessageReaction.DECLINE}
-        <MdIcon theme="Filled">thumb_down</MdIcon>
-      {:else if status === 'pending'}
-        <MdIcon theme="Filled">file_upload</MdIcon>
-      {:else if status === 'sent'}
-        <MdIcon theme="Filled">email</MdIcon>
-      {:else if status === 'delivered'}
-        <MdIcon theme="Filled">move_to_inbox</MdIcon>
-      {:else if status === 'read'}
-        <MdIcon theme="Filled">visibility</MdIcon>
-      {:else if status === 'error'}
-        <MdIcon theme="Filled">report_problem</MdIcon>
-      {/if}
+      <MdIcon theme="Filled">{iconName}</MdIcon>
     </span>
   {/if}
 </template>
