@@ -33,16 +33,16 @@
   export let isQuoted = false;
 
   const dispatch = createEventDispatcher<{
-    clickfile: undefined;
-    clickimage: undefined;
+    clickfile: MouseEvent;
+    clickimage: MouseEvent;
   }>();
 
-  function handleClickFileInfo(): void {
-    dispatch('clickfile');
+  function handleClickFileInfo(event: MouseEvent): void {
+    dispatch('clickfile', event);
   }
 
-  function handleClickThumbnail(): void {
-    dispatch('clickimage');
+  function handleClickThumbnail(event: MouseEvent): void {
+    dispatch('clickimage', event);
   }
 
   const viewModelStore = viewModelBundle.viewModel;

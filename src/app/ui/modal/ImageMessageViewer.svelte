@@ -53,16 +53,16 @@
 
   // Component event dispatcher.
   const dispatch = createEventDispatcher<{
-    close: undefined;
-    saveFile: undefined;
+    clickclose: undefined;
+    clicksave: MouseEvent;
   }>();
 
   function handleSave(): void {
-    dispatch('saveFile');
+    dispatch('clicksave');
   }
 
   function handleClose(): void {
-    dispatch('close');
+    dispatch('clickclose');
   }
 
   function revokeImageUrl(): void {
@@ -141,12 +141,19 @@
               height={dimensions?.height ?? FALLBACK_PLACEHOLDER_SIZE}
             />
           {:else if image.status === 'loaded'}
-            <img bind:this={previewElement} src={image.url} alt="Image message" on:click />
+            <img
+              bind:this={previewElement}
+              src={image.url}
+              alt={$i18n.t(
+                'dialog--image-message-viewer.hint--image-preview',
+                'Full-size image preview',
+              )}
+            />
           {:else if image.status === 'failed'}
             <p class="error">
               <MdIcon theme="Filled">error</MdIcon>
               {$i18n.t(
-                'messaging.error--image-message-image-not-loaded',
+                'dialog--image-message-viewer.error--image-message-image-not-loaded',
                 'The image could not be loaded.',
               )}
             </p>

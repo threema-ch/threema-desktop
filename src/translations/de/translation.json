@@ -156,6 +156,10 @@
     "prose--threema-id-description-p1": "Bei der ersten Nutzung vom Threema wird jedem Nutzer eine zufällig erzeugte, achtstellige Threema-ID zugeteilt. Diese Threema-ID ist Ihre eindeutige Adresse bei Threema. Dadurch ist es möglich, Threema komplett anonym zu nutzen, ohne private Daten preisgeben zu müssen.",
     "prose--threema-id-description-p2": "Ihre Threema-ID ist nur eine Komponente Ihrer Identität bei Threema. Die zweite Komponente ist das sogenannte Schlüsselpaar (bestehend aus einem privaten und einem öffentlichen Schlüssel), welches für die sichere Verschlüsselung benötigt wird. Ihre Threema-ID ist untrennbar mit Ihrem Schlüsselpaar verbunden. Der private Schlüssel verbleibt auf Ihrem Handy, während der öffentliche Schlüssel auf die Threema-Server hochgeladen wird, welche diesen an Ihre Gesprächspartner verteilen. Auf dem Handy Ihres Gesprächspartners werden Nachrichten an Sie mit Ihrem öffentlichen Schlüssel verschlüsselt. Diese Nachrichten können ausschliesslich mit Ihrem privaten Schlüssel wieder entschlüsselt werden."
   },
+  "dialog--image-message-viewer": {
+    "error--image-message-image-not-loaded": "Das Bild konnte nicht geladen werden.",
+    "hint--image-preview": "Vollbildvorschau"
+  },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Brauchen Sie Hilfe?",
     "label--title": "Bestätigen Sie die Bilder auf Ihrem Mobilgerät"
@@ -251,9 +255,6 @@
     "action--conversation-option-more": "Mehr",
     "action--conversation-option-unpin": "Entpinnen",
     "action--empty-conversation": "Chat leeren",
-    "action--file-sync-download": "Zum Herunterladen der Datei klicken",
-    "action--file-sync-unknown-direction": "Unbekannte Synchronisierungsrichtung",
-    "action--file-sync-upload": "Zum Hochladen einer Datei klicken",
     "action--message-option-agree": "Zustimmen",
     "action--message-option-copy": "Nachricht kopieren",
     "action--message-option-copy-image": "Bild kopieren",
@@ -264,6 +265,11 @@
     "action--message-option-forward": "Weiterleiten",
     "action--message-option-quote": "Zitieren",
     "action--message-option-save-as-file": "Als Datei speichern",
+    "action--sync-file-download": "Datei herunterladen",
+    "action--sync-file-upload": "Datei hochladen",
+    "action--sync-image-download": "Bild herunterladen",
+    "action--sync-image-upload": "Bild hochladen",
+    "action--sync-unknown-direction": "Unknown sync direction",
     "error--add-files-empty": "Dateien konnten nicht hinzugefügt werden",
     "error--add-files-inaccessible": "Dateien konnten nicht geöffnet werden",
     "error--add-files-partially-inaccessible": "Einige Dateien konnten nicht geöffnet werden",

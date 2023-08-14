@@ -203,7 +203,7 @@
         isDeleteMessageConfirmationModalVisible = true;
         break;
       case 'save':
-        void saveFile();
+        void syncAndSaveFile();
         break;
       case 'forward':
         isForwardMessageModalVisible = true;
@@ -366,27 +366,60 @@
   }
 
   /**
-   * Retrieve the current message data and save it to the file system.
+   * If the blob has not yet been downloaded, the download will be started and the database
+   * will be updated. Once that is done, the promise will resolve with the blob data.
    */
-  async function saveFile(): Promise<void> {
+  async function syncFile(): Promise<
+    | {
+        readonly blobBytes: ReadonlyUint8Array;
+        readonly fileName: string;
+        readonly mediaType: string;
+      }
+    | undefined
+  > {
     if (messageStore.type !== 'file' && messageStore.type !== 'image') {
-      log.warn(`saveFile called for ${messageStore.type} message`);
-      return;
+      log.error(
+        `Attempting blob sync of ${messageStore.type} message, which doesn't support blob data`,
+      );
+      return undefined;
     }
 
     const store = messageStore.get();
-    let blobBytes;
-    try {
-      blobBytes = await store.controller.blob();
-    } catch (error) {
-      log.warn('Could not retrieve file data', extractErrorMessage(ensureError(error), 'short'));
-      toast.addSimpleFailure(
-        i18n.get().t('messaging.error--retrieve-file-data', 'Could not retrieve file data'),
-      );
+
+    return await store.controller
+      .blob()
+      .then((blobBytes) => ({
+        blobBytes,
+        fileName: store.view.fileName ?? 'download',
+        mediaType: store.view.mediaType,
+      }))
+      .catch((error) => {
+        log.error('Could not retrieve file data', extractErrorMessage(ensureError(error), 'short'));
+        toast.addSimpleFailure(
+          i18n.get().t('messaging.error--retrieve-file-data', 'Could not retrieve file data'),
+        );
+        return undefined;
+      });
+  }
+
+  /**
+   * Retrieve the current message data and save it to the file system.
+   */
+  async function syncAndSaveFile(): Promise<void> {
+    const fileProperties = await syncFile();
+    if (fileProperties === undefined) {
       return;
     }
+    const {blobBytes, fileName, mediaType} = fileProperties;
+    saveBytesAsFile(blobBytes, fileName, mediaType);
+  }
 
-    saveBytesAsFile(blobBytes, store.view.fileName ?? 'download', store.view.mediaType);
+  function handleSyncRequest(): void {
+    void syncFile();
+  }
+
+  function handleAbortSyncRequest(): void {
+    /* TODO(DESK-948): Implement cancellation */
   }
 
   const dispatchEvent = createEventDispatcher<{
@@ -433,7 +466,14 @@
       {/if}
 
       <div class="message" use:contextMenuAction={handleContextMenuAction}>
-        <MessageBubble {viewModelBundle} {receiver} />
+        <MessageBubble
+          {viewModelBundle}
+          {receiver}
+          on:clickfile={syncAndSaveFile}
+          on:clicksave={syncAndSaveFile}
+          on:syncrequest={handleSyncRequest}
+          on:abortsyncrequest={handleAbortSyncRequest}
+        />
         <div class="hover" class:visible={isContextMenuVisible} />
       </div>
       <div class="options">

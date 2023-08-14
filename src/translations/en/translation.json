@@ -156,6 +156,10 @@
     "prose--threema-id-description-p1": "When starting the app for the first time, each Threema user gets a randomly generated 8-digit Threema ID. This ID is your unique address in Threema and makes it possible to use Threema completely anonymously, i.e., without having to disclose any personal information.",
     "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so-called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema’s servers to be distributed to your chat partners, the private key remains on your device, where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender’s device and can only be decrypted with your personal private key."
   },
+  "dialog--image-message-viewer": {
+    "error--image-message-image-not-loaded": "The image could not be loaded.",
+    "hint--image-preview": "Full-size image preview"
+  },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Need help?",
     "label--title": "Confirm Images on Your Mobile Device"
@@ -251,9 +255,6 @@
     "action--conversation-option-more": "More",
     "action--conversation-option-unpin": "Unpin",
     "action--empty-conversation": "Empty Chat",
-    "action--file-sync-download": "Click to Download File",
-    "action--file-sync-unknown-direction": "Unknown Sync Direction",
-    "action--file-sync-upload": "Click to Upload File",
     "action--message-option-agree": "Agree",
     "action--message-option-copy": "Copy Message",
     "action--message-option-copy-image": "Copy Image",
@@ -264,6 +265,11 @@
     "action--message-option-forward": "Forward",
     "action--message-option-quote": "Quote",
     "action--message-option-save-as-file": "Save as File",
+    "action--sync-file-download": "Download file",
+    "action--sync-file-upload": "Upload file",
+    "action--sync-image-download": "Download image",
+    "action--sync-image-upload": "Upload image",
+    "action--sync-unknown-direction": "Unknown sync direction",
     "error--add-files-empty": "Files couldn’t be added",
     "error--add-files-inaccessible": "Files couldn’t be accessed",
     "error--add-files-partially-inaccessible": "Some files couldn’t be accessed",

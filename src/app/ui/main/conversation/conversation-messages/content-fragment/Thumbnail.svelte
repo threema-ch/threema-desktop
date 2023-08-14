@@ -159,6 +159,7 @@
 <template>
   <span
     class="container"
+    class:clickable={isClickable}
     style={`--c-t-thumbnail-aspect-ratio: ${preferredDisplay.constrainedSize.width} / ${preferredDisplay.constrainedSize.height};
             --c-t-thumbnail-min-width: ${constraints.min.width}px;
             --c-t-thumbnail-min-height: ${constraints.min.height}px;
