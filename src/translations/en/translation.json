@@ -168,13 +168,19 @@
   "dialog--linking-error": {
     "action--confirm": "Retry",
     "hint--expand-full-error-message": "Show full error",
+    "label--message-connection-error-timeout": "The linking session has expired due to inactivity. Please start the linking process again.",
+    "label--message-rendezvous-error-timeout": "The linking session has expired due to inactivity. Please start the linking process again.",
+    "label--message-restore-error": "There was an error restoring the transferred data from your other device. Please try again.",
     "label--technical-details": "Show Technical Details",
-    "label--title": "Linking Unsuccessful",
-    "prose--description-connection-error": "Connection to the server was lost before linking was complete. Please check your Internet connection and try again.",
-    "prose--description-generic-error": "An error occurred during linking. Please try again.",
-    "prose--description-wrong-app-variant": "It is not possible to link your Threema ID with this app.",
-    "prose--description-wrong-app-variant-private": "If you use Threema privately, download the desktop app from <1 />.",
-    "prose--description-wrong-app-variant-work": "If you use Threema Work, download the desktop app from <1 />."
+    "label--title-connection-error-generic": "Connection Error",
+    "label--title-connection-error-timeout": "Linking Timeout",
+    "label--title-generic": "Linking Unsuccessful",
+    "label--title-rendezvous-error-timeout": "Linking Timeout",
+    "label--title-restore-error": "Data Restore Error",
+    "prose--message-connection-error-generic": "The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.",
+    "prose--message-generic": "An error occurred during linking. Please try again.",
+    "prose--message-wrong-app-variant-consumer-error": "It is not possible to link your Threema ID with this app. If you use Threema Work, download the desktop app from <1 />.",
+    "prose--message-wrong-app-variant-work-error": "It is not possible to link your Threema ID with this app. If you use Threema privately, download the desktop app from <1 />."
   },
   "dialog--linking-scan": {
     "action--need-help": "Need help?",

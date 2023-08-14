@@ -1,3 +1,11 @@
+<script lang="ts" context="module">
+  interface ErrorText {
+    title: string;
+    message: string;
+    details?: string;
+  }
+</script>
+
 <script lang="ts">
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
@@ -8,80 +16,167 @@
   import {unreachable} from '~/common/utils/assert';
 
   export let linkingWizardState: LinkingWizardStateError;
+
+  function translatedTextFor(state: LinkingWizardStateError, t: typeof $i18n.t): ErrorText {
+    let title = t('dialog--linking-error.label--title-generic', 'Linking Unsuccessful');
+    let message = t(
+      'dialog--linking-error.prose--message-generic',
+      'An error occurred during linking. Please try again.',
+    );
+
+    switch (state.errorType.kind) {
+      case 'connection-error':
+        switch (state.errorType.cause) {
+          case 'timeout':
+            title = t(
+              'dialog--linking-error.label--title-connection-error-timeout',
+              'Linking Timeout',
+            );
+            message = t(
+              'dialog--linking-error.label--message-connection-error-timeout',
+              'The linking session has expired due to inactivity. Please start the linking process again.',
+            );
+            break;
+
+          case 'closed':
+          case 'complete':
+          case 'unknown':
+            title = t(
+              'dialog--linking-error.label--title-connection-error-generic',
+              'Connection Error',
+            );
+            message = t(
+              'dialog--linking-error.prose--message-connection-error-generic',
+              'The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.',
+            );
+            break;
+
+          default:
+            unreachable(state.errorType.cause);
+        }
+        break;
+
+      case 'rendezvous-error':
+        switch (state.errorType.cause) {
+          case 'timeout':
+            title = t(
+              'dialog--linking-error.label--title-rendezvous-error-timeout',
+              'Linking Timeout',
+            );
+            message = t(
+              'dialog--linking-error.label--message-rendezvous-error-timeout',
+              'The linking session has expired due to inactivity. Please start the linking process again.',
+            );
+            break;
+
+          case 'closed':
+          case 'complete':
+          case 'unknown':
+            // In these cases, the default generic error message is good enough for now.
+            break;
+
+          default:
+            unreachable(state.errorType.cause);
+        }
+        break;
+
+      case 'wrong-app-variant':
+        switch (import.meta.env.BUILD_VARIANT) {
+          case 'consumer':
+            message = t(
+              'dialog--linking-error.prose--message-wrong-app-variant-consumer-error',
+              'It is not possible to link your Threema ID with this app. If you use Threema Work, download the desktop app from <1 />.',
+            );
+            break;
+
+          case 'work':
+            message = t(
+              'dialog--linking-error.prose--message-wrong-app-variant-work-error',
+              'It is not possible to link your Threema ID with this app. If you use Threema privately, download the desktop app from <1 />.',
+            );
+            break;
+
+          default:
+            unreachable(import.meta.env.BUILD_VARIANT);
+        }
+        break;
+
+      case 'restore-error':
+        title = t('dialog--linking-error.label--title-restore-error', 'Data Restore Error');
+        message = t(
+          'dialog--linking-error.label--message-restore-error',
+          'There was an error restoring the transferred data from your other device. Please try again.',
+        );
+        break;
+
+      case 'join-error':
+      case 'generic-error':
+      case 'registration-error':
+        // In these cases, the default generic error message is good enough for now.
+        break;
+
+      default:
+        unreachable(state.errorType);
+    }
+
+    return {
+      title,
+      message,
+      details: linkingWizardState.errorMessage,
+    };
+  }
+
+  $: errorText = translatedTextFor(linkingWizardState, $i18n.t);
 </script>
 
 <template>
   <Step>
-    <div class="body">
+    <div class="body" class:has-details={errorText.details !== undefined}>
       <h1 class="title">
-        {$i18n.t('dialog--linking-error.label--title', 'Linking Unsuccessful')}
+        {errorText.title}
       </h1>
 
       <p class="description">
-        {#if linkingWizardState.errorType.kind === 'connection-error'}
-          {$i18n.t(
-            'dialog--linking-error.prose--description-connection-error',
-            'The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.',
-          )}
-        {:else if linkingWizardState.errorType.kind === 'wrong-app-variant'}
-          {$i18n.t(
-            'dialog--linking-error.prose--description-wrong-app-variant',
-            'It is not possible to link your Threema ID with this app.',
-          )}
-          {#if import.meta.env.BUILD_VARIANT === 'consumer'}
-            <SubstitutableText
-              text={$i18n.t(
-                'dialog--linking-error.prose--description-wrong-app-variant-work',
-                'If you use Threema Work, download the desktop app from <1 />.',
-              )}
+        {#if import.meta.env.BUILD_VARIANT === 'consumer'}
+          <SubstitutableText text={errorText.message}>
+            <a slot="1" href="https://three.ma/mdw" target="_blank" rel="noreferrer noopener"
+              >three.ma/mdw</a
             >
-              <a slot="1" href="https://three.ma/mdw" target="_blank" rel="noreferrer noopener"
-                >three.ma/mdw</a
-              >
-            </SubstitutableText>
-          {:else if import.meta.env.BUILD_VARIANT === 'work'}
-            <SubstitutableText
-              text={$i18n.t(
-                'dialog--linking-error.prose--description-wrong-app-variant-private',
-                'If you use Threema privately, download the desktop app from <1 />.',
-              )}
+          </SubstitutableText>
+        {:else if import.meta.env.BUILD_VARIANT === 'work'}
+          <SubstitutableText text={errorText.message}>
+            <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
+              >three.ma/md</a
             >
-              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
-                >three.ma/md</a
-              >
-            </SubstitutableText>
-          {:else}
-            {unreachable(import.meta.env.BUILD_VARIANT)}
-          {/if}
+          </SubstitutableText>
         {:else}
-          {$i18n.t(
-            'dialog--linking-error.prose--description-generic-error',
-            'An error occurred during linking. Please try again.',
-          )}
+          {unreachable(import.meta.env.BUILD_VARIANT)}
         {/if}
       </p>
 
-      <div class="technical-details">
-        <input type="checkbox" id="drawer-toggle" />
-        <label class="drawer-toggle" for="drawer-toggle">
-          <span>
-            {$i18n.t(
-              'dialog--linking-error.label--technical-details',
-              'Technical details (click to expand)',
-            )}
-          </span>
-          <MdIcon
-            theme="Filled"
-            title={$i18n.t(
-              'dialog--linking-error.hint--expand-full-error-message',
-              'Show full error',
-            )}>expand_more</MdIcon
-          >
-        </label>
-        <p class="drawer-content">
-          {linkingWizardState.errorMessage}
-        </p>
-      </div>
+      {#if errorText.details !== undefined}
+        <div class="technical-details">
+          <input type="checkbox" id="drawer-toggle" />
+          <label class="drawer-toggle" for="drawer-toggle">
+            <span>
+              {$i18n.t(
+                'dialog--linking-error.label--technical-details',
+                'Technical details (click to expand)',
+              )}
+            </span>
+            <MdIcon
+              theme="Filled"
+              title={$i18n.t(
+                'dialog--linking-error.hint--expand-full-error-message',
+                'Show full error',
+              )}>expand_more</MdIcon
+            >
+          </label>
+          <p class="drawer-content">
+            {linkingWizardState.errorMessage}
+          </p>
+        </div>
+      {/if}
 
       <div class="button">
         <Button flavor="filled" on:click={() => window.location.reload()}
@@ -108,11 +203,20 @@
       '.' rem(16px)
       'description'
       '.' rem(32px)
-      'technical-details'
-      '.' rem(24px)
       'button';
     justify-items: center;
     padding: rem(28px) 0;
+
+    &.has-details {
+      grid-template:
+        'title'
+        '.' rem(16px)
+        'description'
+        '.' rem(32px)
+        'technical-details'
+        '.' rem(24px)
+        'button';
+    }
 
     .title {
       grid-area: title;

@@ -717,8 +717,10 @@ export class Backend implements ProxyMarked {
         try {
             rendezvous = await RendezvousConnection.create({logging}, setup);
         } catch (error) {
+            // Note: This can happen if something with the RendezvousConnection initial setup fails,
+            //       or if the initial WebSocket connection cannot be established.
             return await throwLinkingError(
-                `Rendezvous connection failed: ${error}`,
+                `Could not instantiate RendezvousConnection: ${error}`,
                 {
                     kind: 'connection-error',
                     cause: error instanceof RendezvousCloseError ? error.cause : 'unknown',
