@@ -67,6 +67,11 @@ export function run(): void {
                     7239847298347982734n,
                 );
             });
+
+            it('should convert signed zero to unsigned zero', function () {
+                const validator = unsignedLongAsU64();
+                expect(validator.parse(Long.ZERO)).to.equal(0n);
+            });
         });
 
         describe('nullOptional', function () {

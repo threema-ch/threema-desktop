@@ -44,6 +44,12 @@ export function unsignedLongAsU64(): v.Type<u64> {
         .unknown()
         .chain((value: unknown) => {
             if (Long.isLong(value)) {
+                // When Protobuf falls back to the default value of 0, this is a signed `Long`
+                // value. Convert to unsigned.
+                if (value.isZero()) {
+                    return v.ok(Long.UZERO);
+                }
+
                 return v.ok(value);
             }
             return v.err(

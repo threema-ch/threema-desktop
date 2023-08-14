@@ -64,7 +64,9 @@ export class ReflectedTask implements PassiveTask<void> {
         try {
             validatedEnvelope = protobuf.validate.d2d.Envelope.SCHEMA.parse(envelope);
         } catch (error) {
-            this._log.error(`Discarding reflected message due to validation error: ${error}`);
+            this._log.error(
+                `Discarding reflected ${envelope.content} due to validation error: ${error}`,
+            );
             return await this._discard(handle);
         }
 
