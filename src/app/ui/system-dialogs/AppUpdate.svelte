@@ -99,6 +99,7 @@
       <CancelAndConfirm
         slot="footer"
         confirmText={$i18n.t('dialog--app-update.action--confirm', 'OK')}
+        focusOnMount="confirm"
         let:modal
         {modal}
       />
