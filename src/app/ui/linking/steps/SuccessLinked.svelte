@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {onMount} from 'svelte';
+
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
   import {i18n} from '~/app/ui/i18n';
@@ -7,6 +9,13 @@
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
 
   export let linkingWizardState: LinkingWizardStateSuccess;
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let buttonComponent: Button | null = null;
+
+  onMount(() => {
+    buttonComponent?.focus();
+  });
 </script>
 
 <template>
@@ -41,7 +50,10 @@
         {/if}
       </p>
       <div class="button">
-        <Button flavor="filled" on:click={() => linkingWizardState.identityReady.resolve()}
+        <Button
+          bind:this={buttonComponent}
+          flavor="filled"
+          on:click={() => linkingWizardState.identityReady.resolve()}
           >{$i18n.t('dialog--linking-success.action--confirm', 'Start using Threema')}</Button
         >
       </div>
