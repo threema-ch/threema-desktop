@@ -22,6 +22,7 @@
   // Reset the value
   function reset(): void {
     value = '';
+    input.focus();
   }
 
   // Reset the value when the ESC key is pressed
