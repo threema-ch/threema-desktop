@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {onMount} from 'svelte';
+
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import Password from '#3sc/components/blocks/Input/Password.svelte';
   import {APP_CONFIG} from '~/app/config';
@@ -7,6 +9,9 @@
   import Step from '~/app/ui/linking/Step.svelte';
 
   export let linkingWizardState: LinkingWizardStateSetPassword;
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let passwordComponent: Password | null = null;
 
   let password = '';
   let confirmation = '';
@@ -45,6 +50,10 @@
             'Passwords do not match',
           ),
   };
+
+  onMount(() => {
+    passwordComponent?.focus();
+  });
 </script>
 
 <template>
@@ -62,6 +71,7 @@
     <div class="body">
       <div class="form">
         <Password
+          bind:this={passwordComponent}
           bind:value={password}
           label={$i18n.t('dialog--linking-set-password.label--password', 'Password')}
           error={showErrors ? errors.minPasswordLength : undefined}
