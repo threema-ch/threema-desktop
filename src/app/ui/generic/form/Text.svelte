@@ -18,6 +18,7 @@
     text: escapeHtmlUnsafeChars(text),
     mentions,
     highlights: undefined,
+    shouldLinkMentions: true,
     shouldParseMarkup: true,
     shouldParseLinks: true,
   });

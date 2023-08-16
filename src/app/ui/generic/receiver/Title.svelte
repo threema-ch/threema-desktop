@@ -40,6 +40,8 @@
             text={subtitle instanceof Object ? subtitle.text ?? '' : subtitle}
             mentions={subtitle instanceof Object ? subtitle.mentions ?? [] : []}
             highlights={filter}
+            shouldLinkMentions={false}
+            shouldParseLinks={false}
             shouldParseMarkup={true}
           />
         {/if}

@@ -55,7 +55,12 @@ export function run(): void {
             props:
                 | {type: 'all'}
                 | {type: 'self'; name: string; identityString: string}
-                | {type: 'other'; name: string; lookup: Pick<DbContact, 'type' | 'uid'>},
+                | {
+                      type: 'other';
+                      name: string;
+                      lookup: Pick<DbContact, 'type' | 'uid'>;
+                      linkMentions?: boolean;
+                  },
         ): string {
             switch (props.type) {
                 case 'all':
@@ -65,7 +70,9 @@ export function run(): void {
                         props.name === props.identityString ? 'Me' : props.name
                     }</span>`;
                 case 'other':
-                    return `<a href="#/conversation/${props.lookup.type}/${props.lookup.uid}/" draggable="false" class="mention">@${props.name}</a>`;
+                    return props.linkMentions === false
+                        ? `<span class="mention">@${props.name}</span>`
+                        : `<a href="#/conversation/${props.lookup.type}/${props.lookup.uid}/" draggable="false" class="mention">@${props.name}</a>`;
                 default:
                     return unreachable(props);
             }
@@ -85,6 +92,7 @@ export function run(): void {
                     mockedT,
                     `Hello, @[${testContactId}]!`,
                     testMentions.self,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentions.self)}!`;
 
@@ -100,6 +108,7 @@ export function run(): void {
                     mockedT,
                     `Hello, @[${testContactId}]!`,
                     testMentionWithoutName,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentionWithoutName)}!`;
 
@@ -111,6 +120,7 @@ export function run(): void {
                     mockedT,
                     `Hello, @[${testAllId}]!`,
                     testMentions.all,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate({type: 'all'})}!`;
 
@@ -122,6 +132,7 @@ export function run(): void {
                     mockedT,
                     `Hello, @[${testContactId}]!`,
                     testMentions.other,
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate(testMentions.other)}!`;
 
@@ -133,6 +144,7 @@ export function run(): void {
                     mockedT,
                     `Hello, @[${testAllId}] and @[${testContactId}]!`,
                     [testMentions.all, testMentions.other],
+                    true,
                 );
                 const expected = `Hello, ${mentionHtmlTemplate({
                     type: 'all',
@@ -202,6 +214,7 @@ export function run(): void {
                     mentions: Mention | Mention[] | false;
                     highlights: string | false;
                     links: boolean;
+                    linkMentions?: boolean;
                 };
                 expected: string;
             }[] = [
@@ -350,18 +363,39 @@ export function run(): void {
                         name: 'https://threema.ch',
                     })}!`,
                 },
+                {
+                    description:
+                        'should ignore links in mention names (type "other"), even when mention is not linked',
+                    input: 'Hello, @[ECHOECHO]!',
+                    features: {
+                        markup: false,
+                        mentions: {
+                            ...testMentions.other,
+                            name: 'https://threema.ch',
+                        },
+                        highlights: false,
+                        links: true,
+                        linkMentions: false,
+                    },
+                    expected: `Hello, ${mentionHtmlTemplate({
+                        ...testMentions.other,
+                        name: 'https://threema.ch',
+                        linkMentions: false,
+                    })}!`,
+                },
             ];
 
             for (const {
                 skipped,
                 description,
                 input,
-                features: {markup, mentions, highlights, links},
+                features: {markup, mentions, highlights, links, linkMentions},
                 expected,
             } of testCases) {
                 const extraArgs = {
                     mentions: mentions === false ? undefined : mentions,
                     highlights: highlights === false ? undefined : highlights,
+                    shouldLinkMentions: linkMentions,
                     shouldParseMarkup: markup,
                     shouldParseLinks: links,
                 } as const;

@@ -6,6 +6,7 @@
   export let text: string;
   export let mentions: Mention | Mention[] | undefined = undefined;
   export let highlights: string | string[] | undefined = undefined;
+  export let shouldLinkMentions = false;
   export let shouldParseMarkup = false;
   export let shouldParseLinks = false;
 
@@ -13,6 +14,7 @@
     text: escapeHtmlUnsafeChars(text),
     mentions,
     highlights,
+    shouldLinkMentions,
     shouldParseMarkup,
     shouldParseLinks,
   });

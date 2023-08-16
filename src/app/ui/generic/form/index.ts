@@ -263,9 +263,10 @@ export function getTimeIsoString(date: Date): string {
  *
  * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param mention The mention to generate HTML code for.
+ * @param enableLinks Whether to format mentions of contacts as links.
  * @returns A string containing a HTML tag which represents the supplied `Mention`.
  */
-function getMentionHtml(t: I18nTLikeFunction, mention: Mention): string {
+function getMentionHtml(t: I18nTLikeFunction, mention: Mention, enableLinks: boolean): string {
     if (mention.type === 'all') {
         const text = t('messaging.label--mention-all', 'All');
 
@@ -282,8 +283,12 @@ function getMentionHtml(t: I18nTLikeFunction, mention: Mention): string {
         return `<span class="mention me">@${text}</span>`;
     }
 
-    const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
-    return `<a href="${href}" draggable="false" class="mention">@${mentionDisplay}</a>`;
+    if (enableLinks) {
+        const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
+        return `<a href="${href}" draggable="false" class="mention">@${mentionDisplay}</a>`;
+    }
+
+    return `<span class="mention">@${mentionDisplay}</span>`;
 }
 
 function getHighlightHtml(highlight: string): string {
@@ -316,18 +321,20 @@ export function parseMarkup(text: string): string {
  * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param text The text to parse.
  * @param mentions An array of mentions to search for and replace in the text.
+ * @param enableLinks Whether to format mentions of contacts as links.
  * @returns The text containing the mentions replaced with HTML.
  */
 export function parseMentions(
     t: I18nTLikeFunction,
     text: string,
     mentions: Mention | Mention[],
+    enableLinks: boolean,
 ): string {
     let parsedText = text;
     for (const mention of mentions instanceof Array ? mentions : [mentions]) {
         parsedText = parsedText.replaceAll(
             `@[${mention.identityString}]`,
-            getMentionHtml(t, mention),
+            getMentionHtml(t, mention, enableLinks),
         );
     }
 
@@ -372,6 +379,12 @@ export function parseLinks(text: string): string {
             ipV4Matches: false,
         },
         replaceFn: (match) => {
+            // Autolinker sometimes matches text starting with a double-slash (e.g. "//threema.ch"),
+            // which shouldn't be permitted.
+            if (match.type === 'url' && match.getMatchedText().startsWith('//')) {
+                return false;
+            }
+
             if (match.type === 'url' && match.getUrlMatchType() === 'tld') {
                 // If no scheme was given use `https://` instead of `http://`
                 // See https://github.com/gregjacobs/Autolinker.js/issues/319
@@ -391,6 +404,8 @@ export interface ParseTextParams {
     readonly mentions?: Mention | Mention[];
     /** The highlights to search for and replace in the text. */
     readonly highlights?: string | string[];
+    /** If mentions should link to the conversation with the respective contact. */
+    readonly shouldLinkMentions?: boolean;
     /** If simple markup tokens (bold, italic, strikethrough) should be replaced. */
     readonly shouldParseMarkup?: boolean;
     /** If links should be detected and replaced. */
@@ -414,6 +429,7 @@ export function parseText(
         text,
         mentions,
         highlights,
+        shouldLinkMentions = true,
         shouldParseMarkup = false,
         shouldParseLinks = false,
     }: ParseTextParams,
@@ -427,7 +443,7 @@ export function parseText(
     }
 
     if (mentions !== undefined) {
-        text = parseMentions(t, text, mentions);
+        text = parseMentions(t, text, mentions, shouldLinkMentions);
     }
 
     if (highlights !== undefined) {
