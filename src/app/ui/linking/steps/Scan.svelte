@@ -64,71 +64,67 @@
     </header>
 
     <div class="body">
-      <ol class="steps">
-        <li>
-          <h2 class="label">
-            {$i18n.t('dialog--linking-scan.label--step-1', 'Step 1:')}
-          </h2>
-          <p class="content">
-            <SubstitutableText
-              text={$i18n.t(
-                'dialog--linking-scan.markup--step-1',
-                'Open the {threema} app on your mobile device',
-                {threema: import.meta.env.MOBILE_APP_NAME},
-              )}
-            />
-          </p>
-        </li>
-        <li>
-          <h2 class="label">
-            {$i18n.t('dialog--linking-scan.label--step-2', 'Step 2:')}
-          </h2>
-          <p class="content">
-            <SubstitutableText
-              text={$i18n.t(
-                'dialog--linking-scan.markup--step-2',
-                'In the app, go to <1>Settings</1> → <1>Desktop/Web</1> → <1>Linked Device</1> and tap <1>Add Device</1>',
-              )}
-            >
-              <strong slot="1" class="bold" let:text>{text}</strong>
-            </SubstitutableText>
-          </p>
-        </li>
-        <li>
-          <h2 class="label">
-            {$i18n.t('dialog--linking-scan.label--step-3', 'Step 3:')}
-          </h2>
-          <p class="content">
+      <div class="steps">
+        <h2 class="label label-1">
+          {$i18n.t('dialog--linking-scan.label--step-1', 'Step 1:')}
+        </h2>
+        <p class="content content-1">
+          <SubstitutableText
+            text={$i18n.t(
+              'dialog--linking-scan.markup--step-1',
+              'Open the {threema} app on your mobile device',
+              {threema: import.meta.env.MOBILE_APP_NAME},
+            )}
+          />
+        </p>
+        <h2 class="label label-2">
+          {$i18n.t('dialog--linking-scan.label--step-2', 'Step 2:')}
+        </h2>
+        <p class="content content-2">
+          <SubstitutableText
+            text={$i18n.t(
+              'dialog--linking-scan.markup--step-2',
+              'In the app, go to <1>Settings</1> → <1>Desktop/Web</1> → <1>Linked Device</1> and tap <1>Add Device</1>',
+            )}
+          >
+            <strong slot="1" class="bold" let:text>{text}</strong>
+          </SubstitutableText>
+        </p>
+        <h2 class="label label-3">
+          {$i18n.t('dialog--linking-scan.label--step-3', 'Step 3:')}
+        </h2>
+        <div class="content content-3">
+          <p>
             <SubstitutableText
               text={$i18n.t('dialog--linking-scan.markup--step-3', 'Scan this QR Code')}
             />
           </p>
-        </li>
-      </ol>
-      <div class="linking">
-        {#if linkingWizardState.joinUri === undefined || !minimalConnectTimerElapsed}
-          <div class="qr-code">
-            <div class="progress">
-              <CircularProgress variant="indeterminate" />
-            </div>
-            <span>{$i18n.t('dialog--linking-scan.label--connecting', 'Connecting')}</span>
+          <div class="linking">
+            {#if linkingWizardState.joinUri === undefined || !minimalConnectTimerElapsed}
+              <div class="qr-code">
+                <div class="progress">
+                  <CircularProgress variant="indeterminate" />
+                </div>
+                <span>{$i18n.t('dialog--linking-scan.label--connecting', 'Connecting')}</span>
+              </div>
+            {:else}
+              <!-- TODO(DESK-1067): Get rid of forced border and invert QR code -->
+              <div class="qr-code">
+                <QrCode
+                  data={linkingWizardState.joinUri}
+                  options={{
+                    width: 240,
+                  }}
+                />
+              </div>
+            {/if}
+            {#if import.meta.env.DEBUG}
+              <IconButton flavor="naked" on:click={copyLinkingUri}>
+                <MdIcon theme="Filled">content_copy</MdIcon>
+              </IconButton>
+            {/if}
           </div>
-        {:else}
-          <!-- TODO(DESK-1067): Get rid of forced border and invert QR code -->
-          <div class="qr-code">
-            <QrCode
-              data={linkingWizardState.joinUri}
-              options={{
-                width: 240,
-              }}
-            />
-          </div>
-        {/if}
-        {#if import.meta.env.DEBUG}
-          <IconButton flavor="naked" on:click={copyLinkingUri}>
-            <MdIcon theme="Filled">content_copy</MdIcon>
-          </IconButton>
-        {/if}
+        </div>
       </div>
     </div>
 
@@ -143,14 +139,9 @@
 <style lang="scss">
   @use 'component' as *;
 
-  $steps-offset: rem(54px);
-  $steps-column-gap: rem(16px);
-
   h1,
   h2,
-  p,
-  ol,
-  li {
+  p {
     padding: 0;
     margin: 0;
   }
@@ -175,65 +166,76 @@
   }
 
   .body {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template:
-      'steps steps' min-content
-      'offset linking' min-content /
-      $steps-offset auto;
-    gap: rem(8px) $steps-column-gap;
-
-    ol.steps {
-      grid-area: steps;
-      display: grid;
-      gap: rem(8px);
-      list-style-type: none;
-
-      li {
-        display: grid;
-        grid-template:
-          'label content' auto
-          / $steps-offset auto;
-        column-gap: $steps-column-gap;
-        @extend %font-large-400;
-
-        .label {
-          @extend %font-large-400;
-          grid-area: label;
-        }
-
-        .content {
-          grid-area: content;
-        }
-      }
-    }
-
-    .linking {
-      grid-area: linking;
+    .steps {
       display: grid;
       grid-auto-flow: column;
       grid-template:
-        'qr-code button' auto /
-        min-content min-content;
-      align-items: start;
-      gap: rem(16px);
+        'label-1 content-1' min-content
+        'label-2 content-2' min-content
+        'label-3 content-3' min-content /
+        minmax(min-content, max-content) minmax(min-content, auto);
+      gap: rem(8px) rem(16px);
+      list-style-type: none;
+      @extend %font-large-400;
 
-      .qr-code {
-        display: grid;
-        align-content: center;
-        place-items: center;
-        gap: rem(8px);
-        width: rem(240px);
-        height: rem(240px);
-        overflow: hidden;
-        border-radius: rem(8px);
+      .label {
+        @extend %font-large-400;
 
-        color: black;
-        background-color: white;
+        &.label-1 {
+          grid-area: label-1;
+        }
 
-        .progress {
-          width: rem(32px);
-          height: rem(32px);
+        &.label-2 {
+          grid-area: label-2;
+        }
+
+        &.label-3 {
+          grid-area: label-3;
+        }
+      }
+
+      .content {
+        &.content-1 {
+          grid-area: content-1;
+        }
+
+        &.content-2 {
+          grid-area: content-2;
+        }
+
+        &.content-3 {
+          grid-area: content-3;
+        }
+
+        .linking {
+          grid-area: linking;
+          display: grid;
+          grid-auto-flow: column;
+          grid-template:
+            'qr-code button' auto /
+            min-content min-content;
+          align-items: start;
+          gap: rem(16px);
+
+          .qr-code {
+            display: grid;
+            align-content: center;
+            place-items: center;
+            gap: rem(8px);
+            width: rem(240px);
+            height: rem(240px);
+            overflow: hidden;
+            border-radius: rem(8px);
+            margin-top: rem(8px);
+
+            color: black;
+            background-color: white;
+
+            .progress {
+              width: rem(32px);
+              height: rem(32px);
+            }
+          }
         }
       }
     }
