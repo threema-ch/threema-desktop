@@ -484,13 +484,17 @@ function main(
             log.error(
                 `Error: Moving profile directory ${appPath} to ${unlinkedAppPath} failed:\n  ${error.message}`,
             );
-            electron.dialog.showMessageBoxSync({
+            const selection = electron.dialog.showMessageBoxSync({
                 title: 'Removing Old Profile Failed',
                 message: `Removing profile directory failed:\n\n  ${appPath} \n\nError:\n\n  ${error.message}\n\nThis application will now close. You should manually delete the profile directory '${appPath}' before restarting the app.`,
                 type: 'error',
-                buttons: ['OK'],
-                defaultId: 0,
+                buttons: ['Show Instructions', 'OK'],
+                defaultId: 1,
             });
+
+            if (selection === 0) {
+                void electron.shell.openExternal('https://threema.ch/faq/md_reset');
+            }
         }
     }
 
