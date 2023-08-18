@@ -196,7 +196,7 @@ function releaseRemoteSetValues({
 }): void {
     set.endpoint.postMessage(undefined);
     set.endpoint.close?.();
-    set.releaser?.raise();
+    set.releaser?.raise(undefined);
 }
 
 type SerializedSetStoreWireValue =

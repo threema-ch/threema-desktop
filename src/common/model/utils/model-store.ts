@@ -146,7 +146,7 @@ function releaseRemoteModelStore({
 }): void {
     view.endpoint.postMessage(undefined);
     view.endpoint.close?.();
-    view.releaser?.raise();
+    view.releaser?.raise(undefined);
     controller[RELEASE_PROXY]();
 }
 

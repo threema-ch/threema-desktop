@@ -214,7 +214,7 @@ export class DeviceJoinProtocol {
 
         // Close connection
         this._reader.releaseLock();
-        this._rendezvousConnection.abort.raise();
+        this._rendezvousConnection.abort.raise(undefined);
     }
 
     /**

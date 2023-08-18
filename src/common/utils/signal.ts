@@ -1,7 +1,7 @@
 import {type Logger} from '~/common/logging';
-
-import {EventController, type EventUnsubscriber} from './event';
-import {type QueryablePromise, ResolvablePromise} from './resolvable-promise';
+import {assertUnreachable, unreachable} from '~/common/utils/assert';
+import {EventController, type EventUnsubscriber} from '~/common/utils/event';
+import {type QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';
 
 /**
  * This must be compatible with DOM's {@link AbortController}.
@@ -22,54 +22,47 @@ interface DomAbortSignal {
 /**
  * An abort subscriber.
  */
-export type AbortSubscriber = () => void;
+export type AbortSubscriber<TEvent = undefined> = (event: TEvent) => void;
 
 /**
  * An abort listener allows to subscribe to abort events.
  */
-export interface AbortListener {
+export interface AbortListener<TEvent = undefined> {
     readonly aborted: boolean;
-    readonly subscribe: (subscriber: AbortSubscriber) => EventUnsubscriber;
+    readonly subscribe: (subscriber: AbortSubscriber<TEvent>) => EventUnsubscriber;
 }
 
 /**
- * An abort signal raiser that raises the abort event **synchronously**.
+ * An abort signal raiser that raises the abort event **synchronously** but also supports
+ * subscribing to it as a {@link QueryablePromise}.
  */
-export class AbortRaiser {
-    private readonly _controller: EventController<undefined>;
+export class AbortRaiser<TEvent = undefined> {
+    // IMPORTANT: This promise is not allowed to be rejected!
+    private readonly _promise = new ResolvablePromise<TEvent>();
+    private readonly _controller: EventController<TEvent>;
     private readonly _unsubscribers = new Set<EventUnsubscriber>();
-    private _aborted = false;
 
     public constructor(private readonly _log?: Logger) {
         this._controller = new EventController(_log);
     }
 
-    public get listener(): AbortListener {
+    public get listener(): AbortListener<TEvent> {
         return this;
     }
 
     /**
-     * Return whether the abort event was already raised.
+     * Whether the abort signal has been fired.
      */
     public get aborted(): boolean {
-        return this._aborted;
+        return this._promise.done;
     }
 
     /**
      * Return a promise that resolves when the abort event is raised.
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    public abortedPromise(): QueryablePromise<void> {
-        // If already aborted, resolve immediately
-        if (this.aborted) {
-            return ResolvablePromise.resolve();
-        }
-
-        // Otherwise, subscribe
-        const promise = new ResolvablePromise<void>();
-        const unsubscribe = this.subscribe(() => promise.resolve(undefined));
-        void promise.then(unsubscribe);
-        return promise;
+    public get promise(): QueryablePromise<TEvent> {
+        return this._promise;
     }
 
     /**
@@ -78,36 +71,44 @@ export class AbortRaiser {
      * @param subscriber An abort signal subscriber.
      * @returns An unsubscriber for this specific subscriber.
      */
-    public subscribe(subscriber: AbortSubscriber): EventUnsubscriber {
-        // If already aborted, only notify and don't subscribe
-        if (this._aborted) {
-            try {
-                subscriber();
-            } catch (error) {
-                this._log?.error('Uncaught error in abort subscriber', error);
+    public subscribe(subscriber: AbortSubscriber<TEvent>): EventUnsubscriber {
+        const state = this._promise.state;
+        switch (state.type) {
+            case 'pending': {
+                // Not yet aborted, subscribe
+                const unsubscribe = this._controller.subscribe(subscriber);
+                this._unsubscribers.add(unsubscribe);
+                return unsubscribe;
             }
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            return (): void => {};
+            case 'resolved':
+                // Already aborted, only notify and don't subscribe
+                try {
+                    subscriber(state.result);
+                } catch (error) {
+                    this._log?.error('Uncaught error in abort subscriber', error);
+                }
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                return (): void => {};
+            case 'rejected':
+                // Considered unreachable
+                return assertUnreachable('AbortRaiser promise may not be rejected!');
+            default:
+                return unreachable(state);
         }
-
-        // Not yet aborted, subscribe
-        const unsubscribe = this._controller.subscribe(subscriber);
-        this._unsubscribers.add(unsubscribe);
-        return unsubscribe;
     }
 
     /**
      * Raise the abort event event and dispatch it to all subscribers.
      * Do nothing if the abort event was already raised.
      */
-    public raise(): void {
-        if (this._aborted) {
+    public raise(event: TEvent): void {
+        if (this._promise.done) {
             return;
         }
 
         // Raise and unsubscribe all
-        this._aborted = true;
-        this._controller.raise(undefined);
+        this._promise.resolve(event);
+        this._controller.raise(event);
         for (const unsubscribe of this._unsubscribers) {
             unsubscribe();
         }

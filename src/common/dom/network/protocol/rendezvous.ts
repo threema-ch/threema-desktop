@@ -136,7 +136,7 @@ class MultiplexedPath
         abort.subscribe(() => queue.error(new Error('Abort raised')));
         queue.aborted.catch((error) => {
             _log.debug('Queue aborted', error);
-            abort.raise();
+            abort.raise(undefined);
         });
 
         // Forward read (poll's) to the queue
@@ -147,7 +147,7 @@ class MultiplexedPath
             },
             cancel: (reason) => {
                 _log.debug('Multiplexed path reader cancelled, reason:', reason);
-                abort.raise();
+                abort.raise(undefined);
             },
         });
 
@@ -163,11 +163,11 @@ class MultiplexedPath
             },
             close: () => {
                 _log.debug('Multiplexed path writer closed');
-                abort.raise();
+                abort.raise(undefined);
             },
             abort: (reason) => {
                 _log.debug('Multiplexed path writer aborted, reason:', reason);
-                abort.raise();
+                abort.raise(undefined);
             },
         });
 
@@ -201,7 +201,7 @@ class MultiplexedPath
                         if (this._paths !== undefined && this._paths.size === 0) {
                             _log.warn('All paths closed, aborting protocol');
                             this._paths = undefined;
-                            abort.raise();
+                            abort.raise(undefined);
                         }
                     });
 
@@ -411,7 +411,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
         // Return function handle that establishes a connection.
         return {
             connect: async () => await RendezvousConnection._connect(setup, abort, log, paths),
-            abort: () => abort.raise(),
+            abort: () => abort.raise(undefined),
             joinUri: getJoinUri(setup),
         };
     }

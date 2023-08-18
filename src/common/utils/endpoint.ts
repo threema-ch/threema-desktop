@@ -567,7 +567,7 @@ function getEndpointDebugContext(): EndpointDebugContext {
         counter: 0,
         tap: (endpoint: Endpoint, log: Logger): AbortRaiser => {
             // Detach if we're already listening this endpoint
-            endpoints.get(endpoint)?.raise();
+            endpoints.get(endpoint)?.raise(undefined);
 
             // Attach listener and log data
             function listener({data}: MessageEvent): void {
@@ -683,7 +683,7 @@ export class EndpointService {
             const newCount = (this._proxy.counter.get(ep) ?? 0) - 1;
             this._proxy.counter.set(ep, newCount);
             if (newCount === 0) {
-                releaser?.raise();
+                releaser?.raise(undefined);
                 ep.close?.();
             }
         }),
@@ -1031,7 +1031,7 @@ export class EndpointService {
                     if (type === MessageType.RELEASE) {
                         // Detach and deactive after sending release response above.
                         ep.removeEventListener('message', listener);
-                        releaser?.raise();
+                        releaser?.raise(undefined);
                         maybeCloseEndpoint(ep);
                     }
                 });
@@ -1171,7 +1171,7 @@ export class EndpointService {
         return this._requestResponseMessage(ep, {
             type: MessageType.RELEASE,
         }).then(() => {
-            release?.raise();
+            release?.raise(undefined);
             maybeCloseEndpoint(ep);
         });
     }

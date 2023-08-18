@@ -772,7 +772,7 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
 function releaseRemote({endpoint, releaser}: {endpoint: Endpoint; releaser?: AbortRaiser}): void {
     endpoint.postMessage(undefined);
     endpoint.close?.();
-    releaser?.raise();
+    releaser?.raise(undefined);
 }
 
 /**
