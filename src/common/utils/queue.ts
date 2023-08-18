@@ -1,6 +1,6 @@
 import {type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
-import {ResolvablePromise} from '~/common/utils/resolvable-promise';
+import {type QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';
 
 export interface QueueValue<V> {
     value: V;
@@ -15,16 +15,16 @@ export interface QueueValue<V> {
 
 export interface QueueProducer<V, E extends Error = Error> {
     put: (value: V) => Promise<void>;
-    error: (reason?: E) => void;
+    error: (reason: E) => void;
 }
 
 export interface QueueConsumer<V, E extends Error = Error> {
     get: () => Promise<QueueValue<V>>;
-    error: (reason?: E) => void;
+    error: (reason: E) => void;
 }
 
 export class Queue<V, E extends Error = Error> {
-    private readonly _error: ResolvablePromise<never>;
+    private readonly _error: ResolvablePromise<never, E>;
     private _promise: ResolvablePromise<[value: V, promise: ResolvablePromise<void>]>;
 
     public constructor() {
@@ -32,7 +32,7 @@ export class Queue<V, E extends Error = Error> {
         this._promise = new ResolvablePromise();
     }
 
-    public get aborted(): Promise<never> {
+    public get aborted(): QueryablePromise<never, E> {
         return this._error;
     }
 
@@ -85,7 +85,7 @@ export class Queue<V, E extends Error = Error> {
      *
      * Subsequent calls to this will be ignored.
      */
-    public error(reason?: E): void {
+    public error(reason: E): void {
         if (this._error.done) {
             return;
         }
@@ -201,7 +201,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
      *
      * Subsequent calls to this will be ignored.
      */
-    public error(reason?: E): void {
+    public error(reason: E): void {
         if (this._error !== undefined) {
             return;
         }

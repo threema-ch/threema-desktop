@@ -2,14 +2,23 @@ import {ensureError} from '~/common/utils/assert';
 
 export interface PromiseFn<V, E extends Error = Error> {
     resolve: (value: V) => void;
-    reject: (reason?: E) => void;
+    reject: (reason: E) => void;
 }
+
+/**
+ * Current state of a QueryablePromise.
+ */
+export type QueryablePromiseState<V, E extends Error = Error> =
+    | {readonly type: 'pending'}
+    | {readonly type: 'resolved'; readonly result: V}
+    | {readonly type: 'rejected'; readonly result: E};
 
 /**
  * A {Promise} that allows to query the current status.
  */
-export interface QueryablePromise<V> extends Promise<V> {
+export interface QueryablePromise<V, E extends Error = Error> extends Promise<V> {
     readonly done: boolean;
+    readonly state: QueryablePromiseState<V, E>;
 }
 
 /**
@@ -20,22 +29,19 @@ export class ResolvablePromise<V, E extends Error = Error>
     extends Promise<V>
     implements QueryablePromise<V>
 {
-    private _done: boolean;
-    private readonly _inner: PromiseFn<V | PromiseLike<V>, E>;
+    private _state: QueryablePromiseState<V, E>;
+    private readonly _inner: PromiseFn<V, E>;
 
     public constructor(
-        executor?: (
-            resolve: (value: V | PromiseLike<V>) => void,
-            reject: (reason?: E) => void,
-        ) => void,
+        executor?: (resolve: (value: V) => void, reject: (reason: E) => void) => void,
     ) {
         // We have to do this little dance here since `this` cannot be used
         // prior to having called `super`.
-        const inner: PromiseFn<V | PromiseLike<V>, E> = {
+        const inner: PromiseFn<V, E> = {
             resolve: ResolvablePromise._fail,
             reject: ResolvablePromise._fail,
         };
-        const outer: PromiseFn<V | PromiseLike<V>, E> = {
+        const outer: PromiseFn<V, E> = {
             resolve: (value) => this.resolve(value),
             reject: (reason) => this.reject(reason),
         };
@@ -56,7 +62,7 @@ export class ResolvablePromise<V, E extends Error = Error>
             resolve: inner.resolve,
             reject: inner.reject,
         };
-        this._done = false;
+        this._state = {type: 'pending'};
     }
 
     /**
@@ -66,9 +72,9 @@ export class ResolvablePromise<V, E extends Error = Error>
     public static resolve<V, E extends Error = Error>(value: V): ResolvablePromise<V, E>;
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     public static resolve<V, E extends Error = Error>(value?: V): ResolvablePromise<V, E> {
-        const promise = new ResolvablePromise();
-        promise.resolve(value);
-        return promise as ResolvablePromise<V, E>;
+        const promise = new ResolvablePromise<V, E>();
+        promise.resolve(value as V);
+        return promise;
     }
 
     /**
@@ -99,22 +105,29 @@ export class ResolvablePromise<V, E extends Error = Error>
      * Return whether the promise is done (resolved or rejected).
      */
     public get done(): boolean {
-        return this._done;
+        return this._state.type !== 'pending';
+    }
+
+    /**
+     * Get the current state of the promise.
+     */
+    public get state(): QueryablePromiseState<V, E> {
+        return this._state;
     }
 
     /**
      * Resolve the promise from the outside.
      */
-    public resolve(value: V | PromiseLike<V>): void {
-        this._done = true;
+    public resolve(value: V): void {
+        this._state = {type: 'resolved', result: value};
         this._inner.resolve(value);
     }
 
     /**
      * Reject the promise from the outside.
      */
-    public reject(reason?: E): void {
-        this._done = true;
+    public reject(reason: E): void {
+        this._state = {type: 'rejected', result: reason};
         this._inner.reject(reason);
     }
 }
