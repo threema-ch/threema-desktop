@@ -29,10 +29,11 @@
   export let receiver: Receiver;
 
   let title: string;
-  let titleLineThrough: boolean | undefined;
-  let subTitle: string | undefined;
+  let subtitle: string | undefined;
+  let isDisabled: boolean | undefined;
 
   let isInactive = false;
+  let isInvalid = false;
   let isCreator = false;
   let isArchived = false;
   let isDraft = false;
@@ -41,12 +42,13 @@
 
   function extractDetails(receiverParam: Receiver): void {
     title = receiverParam.title.text;
-    titleLineThrough = receiverParam.title.lineThrough;
-    subTitle = receiverParam.subtitle?.text;
+    isDisabled = receiverParam.title.isDisabled;
+    subtitle = receiverParam.subtitle?.text;
 
     switch (receiverParam.type) {
       case 'contact':
         isInactive = receiverParam.subtitle?.badges?.isInactive ?? false;
+        isInvalid = receiverParam.subtitle?.badges?.isInvalid ?? false;
         isCreator = receiverParam.subtitle?.badges?.isCreator ?? false;
         isArchived = receiverParam.subtitle?.badges?.isArchived ?? false;
         isDraft = receiverParam.subtitle?.badges?.isDraft ?? false;
@@ -54,6 +56,7 @@
         break;
       default:
         isInactive = false;
+        isInvalid = false;
         isCreator = false;
         isArchived = false;
         isDraft = false;
@@ -61,7 +64,7 @@
         break;
     }
 
-    hasBadge = isInactive || isCreator || isArchived || isDraft;
+    hasBadge = isInactive || isInvalid || isCreator || isArchived || isDraft;
   }
 
   $: extractDetails(receiver);
@@ -78,8 +81,8 @@
     <RecipientProfilePicture {...receiver.profilePicture} />
 
     <div class="name">
-      {#if subTitle !== undefined || hasBadge}
-        <div class="title" class:line-through={titleLineThrough}>
+      {#if subtitle !== undefined || hasBadge}
+        <div class="title" class:disabled={isDisabled} class:inactive={isInactive}>
           <ProcessedText text={title} highlights={filter} />
         </div>
         {#if receiver.type === 'group'}
@@ -100,6 +103,10 @@
               >{$i18n.t('contacts.label--status-inactive', 'Inactive')}</span
             >
           {/if}
+          {#if isInvalid}
+            <span class="badge invalid">{$i18n.t('contacts.label--status-invalid', 'Invalid')}</span
+            >
+          {/if}
           {#if isCreator}
             <span class="badge creator">{$i18n.t('contacts.label--status-creator', 'Creator')}</span
             >
@@ -112,12 +119,12 @@
           {#if isDraft}
             <span class="draft">{$i18n.t('messaging.label--prefix-draft', 'Draft:')}</span>
           {/if}
-          {#if subTitle !== undefined}
-            <ProcessedText text={subTitle} highlights={filter} />
+          {#if subtitle !== undefined}
+            <ProcessedText text={subtitle} highlights={filter} />
           {/if}
         </div>
       {:else}
-        <div class="display-title" class:line-through={titleLineThrough}>
+        <div class="display-title" class:disabled={isDisabled} class:inactive={isInactive}>
           <ProcessedText text={title} highlights={filter} />
         </div>
       {/if}
@@ -262,48 +269,48 @@
         align-self: center;
         place-items: center start;
 
-        &.line-through {
+        &.disabled {
           text-decoration: line-through;
+        }
+
+        &.inactive {
+          color: var(--t-text-e2-color);
         }
       }
 
       .subtitle {
         @extend %shortened-text;
-        height: rem(20px);
         grid-area: subtitle;
         justify-self: start;
         align-self: center;
         color: var(--t-text-e2-color);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: rem(4px);
+
+        .badge {
+          @extend %font-meta-400;
+          line-height: rem(12px);
+          padding: rem(2px) rem(4px);
+          border-radius: rem(4px);
+          color: var(--cc-contact-status-tag-text-color);
+          background-color: var(--cc-contact-status-tag-background-color);
+        }
       }
 
       .display-title {
         @extend %shortened-text;
         grid-area: 1 / 1 / 3 / 2;
-
         align-self: center;
-        &.line-through {
+
+        &.disabled {
           text-decoration: line-through;
         }
-      }
-
-      .badge {
-        @extend %font-meta-400;
-        padding: rem(2px) rem(4px);
-        border-radius: rem(4px);
 
         &.inactive {
-          color: var(--cc-contact-preview-inactive-text-color);
-          background-color: var(--cc-contact-preview-inactive-background-color);
-        }
-
-        &.creator {
-          color: var(--cc-contact-preview-creator-text-color);
-          background-color: var(--cc-contact-preview-creator-background-color);
-        }
-
-        &.archived {
-          color: var(--cc-conversation-preview-archived-text-color);
-          background-color: var(--cc-conversation-preview-archived-background-color);
+          color: var(--t-text-e2-color);
         }
       }
 

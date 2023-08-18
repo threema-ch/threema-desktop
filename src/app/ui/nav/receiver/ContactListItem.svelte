@@ -84,12 +84,13 @@
       },
       title: {
         text: title,
-        lineThrough: viewModel.activityState === ActivityState.INVALID,
+        isDisabled: viewModel.activityState === ActivityState.INVALID,
       },
       subtitle: {
         text: subtitle,
         badges: {
           isInactive: viewModel.activityState === ActivityState.INACTIVE,
+          isInvalid: viewModel.activityState === ActivityState.INVALID,
         },
       },
       verificationDot: {

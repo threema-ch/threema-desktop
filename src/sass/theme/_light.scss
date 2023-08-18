@@ -99,10 +99,6 @@
       // Conversation
       conversation-message-options-caret-color: rgba(#000000, 88%),
       // Conversation preview
-      conversation-preview-archived-background: rgba(#000000, 88%),
-      conversation-preview-archived-text: theme.$dark-text-e1,
-      conversation-preview-inactive-background: rgba(#000000, 88%),
-      conversation-preview-inactive-text: theme.$dark-text-e1,
       conversation-preview-draft-text: theme.$alert-red,
       conversation-preview-properties-background: theme.$light-background,
       conversation-preview-properties-icon: theme.$light-text-e2,
@@ -110,16 +106,14 @@
       conversation-preview-message-text: theme.$light-text-e2,
       conversation-preview-status-text: theme.$light-text-e2,
       conversation-preview-swipe-area-gap-lightness: -12%,
-      // Contact preview
-      contact-preview-inactive-background: rgba(#ffffff, 88%),
-      contact-preview-inactive-text: theme.$light-text-e1,
-      contact-preview-creator-background: theme.$light-text-e1,
-      contact-preview-creator-text: rgba(#ffffff, 88%),
       // Contact details
       contact-details-badge-consumer-text: rgba(#ffffff, 0.88),
       contact-details-badge-consumer-background: theme.$consumer-green-600,
       contact-details-badge-work-text: rgba(#ffffff, 0.88),
       contact-details-badge-work-background: theme.$work-blue-800,
+      // Receiver
+      contact-status-tag-background: rgba(#000000, 88%),
+      contact-status-tag-text: theme.$dark-text-e1,
       // Search input
       search-input-background: rgba(#000000, 4%),
       search-input-background--hover: rgba(#000000, 8%),

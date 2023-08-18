@@ -4,12 +4,7 @@ import {
     transformNotificationPolicyFromGroup,
 } from '~/app/ui/generic/receiver';
 import {type DbConversationUid, type DbReceiverLookup} from '~/common/db';
-import {
-    type ConversationCategory,
-    type ConversationVisibility,
-    GroupUserState,
-    ReceiverType,
-} from '~/common/enum';
+import {type ConversationCategory, type ConversationVisibility, ReceiverType} from '~/common/enum';
 import {
     type AnyReceiver,
     type AnyReceiverStore,
@@ -158,13 +153,6 @@ export function transformReceiver(
         default:
             return unreachable(receiver);
     }
-}
-
-export function isInactiveGroup(receiver: RemoteModelFor<AnyReceiver> | undefined): boolean {
-    if (receiver === undefined || receiver.type !== ReceiverType.GROUP) {
-        return false;
-    }
-    return receiver.view.userState !== GroupUserState.MEMBER;
 }
 
 /**

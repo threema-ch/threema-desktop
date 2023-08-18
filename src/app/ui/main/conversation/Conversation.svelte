@@ -8,7 +8,7 @@
   import {globals} from '~/app/globals';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices, type SvelteAction} from '~/app/types';
-  import {isInactiveGroup} from '~/app/ui/generic/receiver';
+  import {isDisabledReceiver, isInactiveContact} from '~/app/ui/generic/receiver';
   import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts, conversationListEvent} from '~/app/ui/main/conversation';
   import {type ComposeData} from '~/app/ui/main/conversation/compose';
@@ -20,7 +20,7 @@
   import {type DbReceiverLookup} from '~/common/db';
   import {display, layout} from '~/common/dom/ui/state';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
-  import {ConversationCategory} from '~/common/enum';
+  import {ConversationCategory, ReceiverType} from '~/common/enum';
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type MessageId} from '~/common/network/types';
@@ -365,7 +365,8 @@
     <div class="top-bar">
       <ConversationTopBar
         receiver={$innerConversationViewModel.receiver}
-        isInactiveGroup={isInactiveGroup($receiver)}
+        isDisabled={isDisabledReceiver($receiver)}
+        isInactive={isInactiveContact($receiver)}
         {conversation}
         {receiverLookup}
         {services}
@@ -410,14 +411,28 @@
         <div class="anchor" class:active={anchorActive} use:scrollSnap />
       </div>
       <div class="bottom-bar">
-        {#if isInactiveGroup($receiver)}
-          <div class="deleted-group-message">
-            {$i18n.t('messaging.error--group-membership', 'You are no longer part of this group.')}
+        {#if isDisabledReceiver($receiver)}
+          <div class="disabled-input-area">
+            {#if $receiver.type === ReceiverType.CONTACT}
+              {$i18n.t(
+                'messaging.error--contact-invalid',
+                'You cannot send a message to this contact because it is invalid.',
+              )}
+            {:else if $receiver.type === ReceiverType.GROUP}
+              {$i18n.t(
+                'messaging.error--group-membership',
+                'You are no longer part of this group.',
+              )}
+            {:else if $receiver.type === ReceiverType.DISTRIBUTION_LIST}
+              <!-- TODO(DESK-771): Support distribution lists -->
+            {:else}
+              {unreachable($receiver)}
+            {/if}
           </div>
         {:else if $isReceiverBlockedStore}
-          <div class="blocked-contact-message">
+          <div class="disabled-input-area">
             {$i18n.t(
-              'messaging.error--blocked-contact',
+              'messaging.error--contact-blocked',
               'You cannot send a message to this contact because it is blocked.',
             )}
           </div>
@@ -557,8 +572,7 @@
     .bottom-bar {
       grid-area: bottom-bar;
 
-      .blocked-contact-message,
-      .deleted-group-message {
+      .disabled-input-area {
         text-align: center;
         margin: 1.5rem;
         opacity: 0.5;

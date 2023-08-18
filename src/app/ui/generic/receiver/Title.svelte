@@ -4,11 +4,14 @@
   import {i18n} from '~/app/ui/i18n';
 
   export let title: string;
-  export let titleLineThrough = false;
   export let subtitle: ReceiverTitle['subtitle'] = {text: undefined};
   export let filter: string | undefined = undefined;
 
+  // Whether to display this title as disabled (strikethrough).
+  export let isDisabled = false;
+
   export let isInactive = false;
+  export let isInvalid = false;
   export let isCreator = false;
   export let isArchived = false;
   export let isDraft = false;
@@ -19,12 +22,15 @@
 <template>
   <div class="name">
     {#if subtitle !== undefined || hasBadge}
-      <div class="title" class:line-through={titleLineThrough}>
+      <div class="title" class:disabled={isDisabled} class:inactive={isInactive}>
         <ProcessedText text={title} highlights={filter} />
       </div>
       <div class="subtitle">
         {#if isInactive}
           <span class="badge inactive">{$i18n.t('contacts.label--status-inactive')}</span>
+        {/if}
+        {#if isInvalid}
+          <span class="badge invalid">{$i18n.t('contacts.label--status-invalid')}</span>
         {/if}
         {#if isCreator}
           <span class="badge creator">{$i18n.t('contacts.label--status-creator')}</span>
@@ -47,7 +53,7 @@
         {/if}
       </div>
     {:else}
-      <div class="display-title" class:line-through={titleLineThrough}>
+      <div class="display-title" class:disabled={isDisabled} class:inactive={isInactive}>
         <ProcessedText text={title} highlights={filter} />
       </div>
     {/if}
@@ -98,46 +104,43 @@
       align-self: center;
       place-items: center start;
 
-      &.line-through {
+      &.disabled {
         text-decoration: line-through;
+      }
+
+      &.inactive {
+        color: var(--t-text-e2-color);
       }
     }
 
     .subtitle {
       @extend %shortened-text;
-      height: rem(20px);
       justify-self: start;
       align-self: center;
       color: var(--t-text-e2-color);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: rem(4px);
+
+      .badge {
+        @extend %font-meta-400;
+        padding: rem(2px) rem(4px);
+        border-radius: rem(4px);
+        line-height: rem(12px);
+        color: var(--cc-contact-status-tag-text-color);
+        background-color: var(--cc-contact-status-tag-background-color);
+      }
     }
 
     .display-title {
       @extend %shortened-text;
       grid-area: title;
       align-self: center;
-      &.line-through {
+
+      &.disabled {
         text-decoration: line-through;
-      }
-    }
-
-    .badge {
-      @extend %font-meta-400;
-      padding: rem(2px) rem(4px);
-      border-radius: rem(4px);
-
-      &.inactive {
-        color: var(--cc-contact-preview-inactive-text-color);
-        background-color: var(--cc-contact-preview-inactive-background-color);
-      }
-
-      &.creator {
-        color: var(--cc-contact-preview-creator-text-color);
-        background-color: var(--cc-contact-preview-creator-background-color);
-      }
-
-      &.archived {
-        color: var(--cc-conversation-preview-archived-text-color);
-        background-color: var(--cc-conversation-preview-archived-background-color);
       }
     }
 

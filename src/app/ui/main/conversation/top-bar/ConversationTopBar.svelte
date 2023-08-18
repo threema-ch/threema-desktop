@@ -63,12 +63,17 @@
   const {router} = services;
 
   /**
-   * Determine if this is an inactive group
+   * Whether to display this receiver as disabled (strikethrough).
    */
-  export let isInactiveGroup: boolean;
+  export let isDisabled: boolean;
 
   /**
-   * Determine if this is a blocked contact
+   * Whether to display this receiver as inactive.
+   */
+  export let isInactive: boolean;
+
+  /**
+   * Determine if this is a blocked contact.
    */
   export let isReceiverBlocked: boolean;
 
@@ -161,7 +166,7 @@
             </div>
           </div>
         </div>
-        <div class="title" class:group-inactive={isInactiveGroup}>
+        <div class="title" class:disabled={isDisabled} class:inactive={isInactive}>
           <span on:click={openAside}>{receiver.name}</span>
         </div>
         <div class="details">
@@ -301,8 +306,12 @@
         color: var(--t-text-e1-color);
         grid-area: title;
 
-        &.group-inactive {
+        &.disabled {
           text-decoration: line-through;
+        }
+
+        &.inactive {
+          color: var(--t-text-e2-color);
         }
 
         > span {

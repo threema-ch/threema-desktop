@@ -76,7 +76,7 @@
       },
       title: {
         text: viewModel.displayName,
-        lineThrough: viewModel.userState !== GroupUserState.MEMBER,
+        isDisabled: viewModel.userState !== GroupUserState.MEMBER,
       },
       subtitle: {
         text: viewModel.memberNames.join(', '),

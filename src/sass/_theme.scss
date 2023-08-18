@@ -183,14 +183,6 @@ $brandings: (
         color.scale(-g($t, nav-background), $lightness: -g($t, background-lightness--active)),
       $alpha: false
     ),
-    --cc-conversation-preview-archived-background-color:
-    -g($cc, conversation-preview-archived-background),
-    --cc-conversation-preview-archived-text-color:
-    -g($cc, conversation-preview-archived-text),
-    --cc-conversation-preview-inactive-background-color:
-    -g($cc, conversation-preview-archived-background),
-    --cc-conversation-preview-inactive-text-color:
-    -g($cc, conversation-preview-archived-text),
     --cc-conversation-preview-draft-text-color: -g($cc, conversation-preview-draft-text),
     --cc-conversation-preview-properties-background-color:
     color-conforms(-g($cc, conversation-preview-properties-background), $alpha: false),
@@ -208,21 +200,15 @@ $brandings: (
       $lightness: -g($cc, conversation-preview-swipe-area-gap-lightness)
     ),
 
-    // Contact preview
-    --cc-contact-preview-inactive-background-color:
-    -g($cc, contact-preview-inactive-background),
-    --cc-contact-preview-inactive-text-color:
-    -g($cc, contact-preview-inactive-text),
-    --cc-contact-preview-creator-background-color:
-    -g($cc, contact-preview-creator-background),
-    --cc-contact-preview-creator-text-color:
-    -g($cc, contact-preview-creator-text),
-
     // Contact details
     --cc-contact-details-badge-consumer-text-color: -g($cc, contact-details-badge-consumer-text),
     --cc-contact-details-badge-consumer-background-color: -g($cc, contact-details-badge-consumer-background),
     --cc-contact-details-badge-work-text-color: -g($cc, contact-details-badge-work-text),
     --cc-contact-details-badge-work-background-color: -g($cc, contact-details-badge-work-background),
+
+    // Receiver
+    --cc-contact-status-tag-background-color: -g($cc, contact-status-tag-background),
+    --cc-contact-status-tag-text-color: -g($cc, contact-status-tag-text),
 
     // Search input
     --cc-search-input-background-color: -g($cc, search-input-background),

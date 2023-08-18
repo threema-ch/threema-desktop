@@ -5,6 +5,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Time from '~/app/ui/generic/form/Time.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
+  import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
@@ -15,7 +16,6 @@
   import {
     type ConversationPreviewData,
     conversationPreviewListFilter,
-    isInactiveGroup,
     transformConversation,
     transformReceiver,
   } from '~/app/ui/nav/conversation';
@@ -195,47 +195,48 @@
             }}
             title={{
               title: receiver$.name,
-              titleLineThrough: isInactiveGroup($receiver),
               subtitle: {
                 text: previewText,
                 mentions: $lastMessageViewModelStore?.mentions,
               },
+              isDisabled: isDisabledReceiver($receiver),
+              isInactive: isInactiveContact($receiver),
+              isInvalid: isInvalidContact($receiver),
               isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
               // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
               isDraft: conversationDraft !== undefined,
             }}
             filter={$conversationPreviewListFilter}
           >
-            <div class="properties" slot="additional-top">
-              {#if $isReceiverBlockedStore}
-                <span class="property" data-property="blocked">
-                  <BlockedIcon />
-                </span>
-              {/if}
-
-              {#if receiver$.notifications !== 'default'}
-                <span class="property" data-property="notifications">
-                  {#if receiver$.notifications === 'muted'}
-                    <MdIcon theme="Filled">notifications_off</MdIcon>
-                  {:else if receiver$.notifications === 'mentioned'}
-                    <MdIcon theme="Filled">alternate_email</MdIcon>
-                  {:else if receiver$.notifications === 'never'}
-                    <MdIcon theme="Filled">remove_circle</MdIcon>
-                  {/if}
-                </span>
-              {/if}
-
-              {#if conversation$.category === ConversationCategory.PROTECTED}
-                <span class="property" data-property="protected">
-                  <ThreemaIcon theme="Filled">incognito</ThreemaIcon>
-                </span>
-              {/if}
-
-              {#if conversation$.visibility === ConversationVisibility.PINNED}
-                <span class="property" data-property="pinned">
-                  <MdIcon theme="Filled">push_pin</MdIcon>
-                </span>
-              {/if}
+            <div class="labels" slot="additional-top">
+              <div class="properties">
+                {#if $isReceiverBlockedStore}
+                  <span class="property" data-property="blocked">
+                    <BlockedIcon />
+                  </span>
+                {/if}
+                {#if receiver$.notifications !== 'default'}
+                  <span class="property" data-property="notifications">
+                    {#if receiver$.notifications === 'muted'}
+                      <MdIcon theme="Filled">notifications_off</MdIcon>
+                    {:else if receiver$.notifications === 'mentioned'}
+                      <MdIcon theme="Filled">alternate_email</MdIcon>
+                    {:else if receiver$.notifications === 'never'}
+                      <MdIcon theme="Filled">remove_circle</MdIcon>
+                    {/if}
+                  </span>
+                {/if}
+                {#if conversation$.category === ConversationCategory.PROTECTED}
+                  <span class="property" data-property="protected">
+                    <ThreemaIcon theme="Filled">incognito</ThreemaIcon>
+                  </span>
+                {/if}
+                {#if conversation$.visibility === ConversationVisibility.PINNED}
+                  <span class="property" data-property="pinned">
+                    <MdIcon theme="Filled">push_pin</MdIcon>
+                  </span>
+                {/if}
+              </div>
             </div>
 
             <div class="status" slot="additional-bottom">
@@ -326,41 +327,46 @@
   .conversation {
     @include clicktarget-link-rect;
 
-    .properties {
-      height: rem(20px);
-      grid-area: properties;
-      justify-self: end;
-      padding-left: rem(5px);
+    .labels {
       display: flex;
-      flex-direction: row-reverse;
+      flex-direction: row;
+      gap: rem(8px);
+      align-items: stretch;
+      justify-content: flex-end;
 
-      .property {
-        width: rem(20px);
-        height: rem(20px);
-        display: grid;
-        place-items: center;
-        margin-left: rem(-5px);
-        color: var(--cc-conversation-preview-properties-icon-color);
-        background-color: var(--cc-conversation-preview-properties-background-color);
-        border: rem(1px) solid var($-temp-vars, --cc-t-background-color);
-        border-radius: 50%;
-        font-size: rem(12px);
+      .properties {
+        padding-left: rem(5px);
+        display: flex;
+        flex-direction: row-reverse;
 
-        &[data-property='blocked'] {
-          order: 4;
-        }
+        .property {
+          width: rem(20px);
+          height: rem(20px);
+          display: grid;
+          place-items: center;
+          margin-left: rem(-5px);
+          color: var(--cc-conversation-preview-properties-icon-color);
+          background-color: var(--cc-conversation-preview-properties-background-color);
+          border: rem(1px) solid var($-temp-vars, --cc-t-background-color);
+          border-radius: 50%;
+          font-size: rem(12px);
 
-        &[data-property='notifications'] {
-          order: 3;
-        }
+          &[data-property='blocked'] {
+            order: 4;
+          }
 
-        &[data-property='protected'] {
-          order: 2;
-        }
+          &[data-property='notifications'] {
+            order: 3;
+          }
 
-        &[data-property='pinned'] {
-          order: 1;
-          color: var(--cc-conversation-preview-properties-icon-pin-color);
+          &[data-property='protected'] {
+            order: 2;
+          }
+
+          &[data-property='pinned'] {
+            order: 1;
+            color: var(--cc-conversation-preview-properties-icon-pin-color);
+          }
         }
       }
     }

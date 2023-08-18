@@ -134,10 +134,6 @@ $config: config-merge(components.$config, (
       --cc-conversation-preview-background-color,
       --cc-conversation-preview-background-color--hover,
       --cc-conversation-preview-background-color--active,
-      --cc-conversation-preview-archived-background-color,
-      --cc-conversation-preview-archived-text-color,
-      --cc-conversation-preview-inactive-background-color,
-      --cc-conversation-preview-inactive-text-color,
       --cc-conversation-preview-draft-text-color,
       --cc-conversation-preview-properties-background-color,
       --cc-conversation-preview-properties-icon-color,
@@ -146,17 +142,15 @@ $config: config-merge(components.$config, (
       --cc-conversation-preview-status-text-color,
       --cc-conversation-preview-swipe-area-button-gap,
 
-      // Contact preview
-      --cc-contact-preview-inactive-background-color,
-      --cc-contact-preview-inactive-text-color,
-      --cc-contact-preview-creator-background-color,
-      --cc-contact-preview-creator-text-color,
-
       // Contact details
       --cc-contact-details-badge-consumer-text-color,
       --cc-contact-details-badge-consumer-background-color,
       --cc-contact-details-badge-work-text-color,
       --cc-contact-details-badge-work-background-color,
+
+      // Receiver
+      --cc-contact-status-tag-background-color,
+      --cc-contact-status-tag-text-color,
 
       // Search input
       --cc-search-input-background-color,

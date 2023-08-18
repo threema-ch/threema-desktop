@@ -1,6 +1,7 @@
 <script lang="ts">
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {type AppServices} from '~/app/types';
+  import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -79,7 +80,9 @@
                 ? transformedContact.nickname
                 : undefined,
             },
-            isInactive: transformedContact.activityState === 'inactive',
+            isDisabled: isDisabledReceiver($contact),
+            isInactive: isInactiveContact($contact),
+            isInvalid: isInvalidContact($contact),
           }}
         >
           <div class="verification-dots" slot="additional-top">
