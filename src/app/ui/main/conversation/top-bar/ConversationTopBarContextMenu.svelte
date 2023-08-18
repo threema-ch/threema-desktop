@@ -37,7 +37,7 @@
   @use 'component' as *;
 
   div {
-    --c-menu-container-width: #{rem(180px)};
+    --c-menu-container-min-width: #{rem(180px)};
     @extend %elevation-060;
   }
 </style>

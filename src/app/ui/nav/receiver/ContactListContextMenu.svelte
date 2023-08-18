@@ -29,11 +29,3 @@
     </MenuContainer>
   </div>
 </template>
-
-<style lang="scss">
-  @use 'component' as *;
-
-  div {
-    --c-menu-container-width: auto;
-  }
-</style>
