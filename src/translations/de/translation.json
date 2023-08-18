@@ -201,7 +201,7 @@
   },
   "dialog--linking-sync": {
     "action--need-help": "Brauchen Sie Hilfe?",
-    "label--title-encrypting": "Schlüssel mit Ihrem Passwort verschlüsseln",
+    "label--title-encrypting": "Daten werden mit Ihrem Passwort verschlüsselt",
     "label--title-receiving": "Daten werden empfangen",
     "label--title-restoring": "Daten werden wiederhergestellt"
   },

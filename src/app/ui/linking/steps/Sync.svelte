@@ -16,13 +16,13 @@
       </div>
       <h1>
         {#if linkingWizardState.phase === 'receiving'}
-          {$i18n.t('dialog--linking-sync.label--title-receiving', 'Receiving data')}
+          {$i18n.t('dialog--linking-sync.label--title-receiving', 'Receiving Data')}
         {:else if linkingWizardState.phase === 'restoring'}
-          {$i18n.t('dialog--linking-sync.label--title-restoring', 'Restoring data')}
+          {$i18n.t('dialog--linking-sync.label--title-restoring', 'Restoring Data')}
         {:else if linkingWizardState.phase === 'encrypting'}
           {$i18n.t(
             'dialog--linking-sync.label--title-encrypting',
-            'Encrypting keys with your password',
+            'Encrypting Data with Your Password',
           )}
         {:else}
           {unreachable(linkingWizardState.phase)}
