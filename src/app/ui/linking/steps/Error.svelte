@@ -18,12 +18,12 @@
       </h1>
 
       <p class="description">
-        {#if linkingWizardState.errorType === 'connection-error'}
+        {#if linkingWizardState.errorType.kind === 'connection-error'}
           {$i18n.t(
             'dialog--linking-error.prose--description-connection-error',
             'The server connection was closed before linking was complete. If you did not abort the process yourself, please check your internet connection and try again.',
           )}
-        {:else if linkingWizardState.errorType === 'wrong-app-variant'}
+        {:else if linkingWizardState.errorType.kind === 'wrong-app-variant'}
           {$i18n.t(
             'dialog--linking-error.prose--description-wrong-app-variant',
             'It is not possible to link your Threema ID with this app.',

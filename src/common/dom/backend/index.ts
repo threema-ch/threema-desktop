@@ -39,6 +39,8 @@ import {
     type BaseErrorOptions,
     DeviceJoinError,
     extractErrorTraceback,
+    type RendezvousCloseCause,
+    RendezvousCloseError,
 } from '~/common/error';
 import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
@@ -253,13 +255,13 @@ export interface SafeCredentialsAndDeviceIds {
  * - generic-error: Some other error during linking.
  */
 export type LinkingStateErrorType =
-    | 'connection-error'
-    | 'rendezvous-error'
-    | 'join-error'
-    | 'restore-error'
-    | 'wrong-app-variant'
-    | 'registration-error'
-    | 'generic-error';
+    | {readonly kind: 'connection-error'; readonly cause: RendezvousCloseCause}
+    | {readonly kind: 'rendezvous-error'; readonly cause: RendezvousCloseCause}
+    | {readonly kind: 'join-error'}
+    | {readonly kind: 'restore-error'}
+    | {readonly kind: 'wrong-app-variant'}
+    | {readonly kind: 'registration-error'}
+    | {readonly kind: 'generic-error'};
 
 export type SyncingPhase = 'receiving' | 'restoring' | 'encrypting';
 
@@ -270,35 +272,35 @@ export type LinkingState =
     /**
      * Initial state.
      */
-    | {state: 'initializing'}
+    | {readonly state: 'initializing'}
     /**
      * Rendezvous WebSocket connection is established.
      */
-    | {state: 'waiting-for-handshake'; joinUri: string}
+    | {readonly state: 'waiting-for-handshake'; joinUri: string}
     /**
      * Rendezvous protocol is complete. The rendezvous path hash is included.
      */
-    | {state: 'nominated'; rph: ReadonlyUint8Array}
+    | {readonly state: 'nominated'; rph: ReadonlyUint8Array}
     /**
      * The "Begin" join message was received, blobs and essential data are being processed.
      */
-    | {state: 'syncing'; phase: SyncingPhase}
+    | {readonly state: 'syncing'; phase: SyncingPhase}
     /**
      * Essential data is fully processed, we are waiting for the user's password in order to write
      * the key storage.
      */
-    | {state: 'waiting-for-password'}
+    | {readonly state: 'waiting-for-password'}
     /**
      * We are registered at the Mediator server and the device join protocol is complete.
      */
-    | {state: 'registered'}
+    | {readonly state: 'registered'}
     /**
      * An error occurred, device join did not succeed.
      */
     | {
-          state: 'error';
-          type: LinkingStateErrorType;
-          message: string;
+          readonly state: 'error';
+          readonly type: LinkingStateErrorType;
+          readonly message: string;
       };
 
 export interface DeviceLinkingSetup extends ProxyMarked {
@@ -706,7 +708,10 @@ export class Backend implements ProxyMarked {
         } catch (error) {
             return await throwLinkingError(
                 `Rendezvous connection failed: ${error}`,
-                'connection-error',
+                {
+                    kind: 'connection-error',
+                    cause: error instanceof RendezvousCloseError ? error.cause : 'unknown',
+                },
                 ensureError(error),
             );
         }
@@ -722,7 +727,10 @@ export class Backend implements ProxyMarked {
         } catch (error) {
             return await throwLinkingError(
                 `Rendezvous handshake failed: ${error}`,
-                'rendezvous-error',
+                {
+                    kind: 'rendezvous-error',
+                    cause: error instanceof RendezvousCloseError ? error.cause : 'unknown',
+                },
                 ensureError(error),
             );
         }
@@ -767,16 +775,16 @@ export class Backend implements ProxyMarked {
         try {
             joinResult = await joinProtocol.join();
         } catch (error) {
-            if (error instanceof DeviceJoinError && error.type === 'connection') {
+            if (error instanceof DeviceJoinError && error.type.kind === 'connection') {
                 return await throwLinkingError(
                     `Device join protocol failed: ${error.message}`,
-                    'connection-error',
+                    {kind: 'connection-error', cause: error.type.cause},
                     error,
                 );
             } else {
                 return await throwLinkingError(
                     `Device join protocol failed: ${error}`,
-                    'join-error',
+                    {kind: 'join-error'},
                     ensureError(error),
                 );
             }
@@ -794,9 +802,9 @@ export class Backend implements ProxyMarked {
         } catch (error) {
             const message = `Fetching information about identity failed: ${error}`;
             if (error instanceof DirectoryError && error.type === 'wrong-build-variant') {
-                return await throwLinkingError(message, 'wrong-app-variant', error);
+                return await throwLinkingError(message, {kind: 'wrong-app-variant'}, error);
             }
-            return await throwLinkingError(message, 'generic-error', ensureError(error));
+            return await throwLinkingError(message, {kind: 'generic-error'}, ensureError(error));
         }
         if (privateData.serverGroup !== joinResult.serverGroup) {
             // Because the server group entropy was reduced from 8 to 4 bits a few years ago, it's
@@ -837,7 +845,7 @@ export class Backend implements ProxyMarked {
         } catch (error) {
             return await throwLinkingError(
                 `Failed to restore essential data: ${error}`,
-                'restore-error',
+                {kind: 'restore-error'},
                 ensureError(error),
             );
         }
@@ -854,12 +862,12 @@ export class Backend implements ProxyMarked {
             // the rendezvous connection was aborted in the meantime.
             return await throwLinkingError(
                 `Device join protocol was aborted while waiting for user password`,
-                'connection-error',
+                {kind: 'connection-error', cause: userPasswordResult.value},
             );
         }
         const userPassword = userPasswordResult.value;
         if (userPassword.length === 0) {
-            return await throwLinkingError(`Received empty user password`, 'generic-error');
+            return await throwLinkingError(`Received empty user password`, {kind: 'generic-error'});
         }
 
         /**
@@ -899,10 +907,9 @@ export class Backend implements ProxyMarked {
             if (closeCodeName !== undefined) {
                 errorInfo += ` (${closeCodeName})`;
             }
-            return await throwLinkingError(
-                `Initial connection with server failed: ${errorInfo} `,
-                'registration-error',
-            );
+            return await throwLinkingError(`Initial connection with server failed: ${errorInfo} `, {
+                kind: 'registration-error',
+            });
         }
 
         // Expose the backend on a new channel

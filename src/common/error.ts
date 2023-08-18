@@ -266,6 +266,16 @@ export class SafeError extends BaseError {
     }
 }
 
+/** A rendezvous connection close cause. */
+export type RendezvousCloseCause = 'unknown' | 'closed' | 'timeout' | 'complete';
+
+/** An error wrapping a {@link RendezvousCloseCause}. */
+export class RendezvousCloseError extends Error {
+    public constructor(public readonly cause: RendezvousCloseCause, message?: string) {
+        super(message ?? `Rendezvous connection closed, cause: '${cause}'`);
+    }
+}
+
 /**
  * Error types that can happen in connection with the Device Join Protocol.
  *
@@ -276,11 +286,11 @@ export class SafeError extends BaseError {
  * - internal: An internal implementation error occurred.
  */
 export type DeviceJoinErrorType =
-    | 'connection'
-    | 'encoding'
-    | 'validation'
-    | 'protocol'
-    | 'internal';
+    | {readonly kind: 'connection'; readonly cause: RendezvousCloseCause}
+    | {readonly kind: 'encoding'}
+    | {readonly kind: 'validation'}
+    | {readonly kind: 'protocol'}
+    | {readonly kind: 'internal'};
 
 const DEVICE_JOIN_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     DeviceJoinError,

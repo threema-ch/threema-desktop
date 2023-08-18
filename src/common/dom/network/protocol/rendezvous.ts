@@ -13,13 +13,13 @@ import {
     type WritableStreamDefaultWriter,
 } from '~/common/dom/streams';
 import {TransferTag} from '~/common/enum';
-import {BaseError} from '~/common/error';
+import {BaseError, type RendezvousCloseCause, RendezvousCloseError} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {UNIT_MESSAGE} from '~/common/network/protobuf';
 import {type RendezvousAuthenticationKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array, type u32} from '~/common/types';
-import {assert, ensureError, unreachable} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
 import {byteSplit} from '~/common/utils/byte';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -39,7 +39,7 @@ interface SinglePath extends BidirectionalStream<Uint8Array, ReadonlyUint8Array>
     /**
      * Close this path.
      */
-    readonly close: (reason?: Error) => void;
+    readonly close: (cause?: RendezvousCloseCause) => void;
 }
 
 /** The single path nominated by the Rendezvous Protocol */
@@ -68,10 +68,6 @@ class WebSocketPath implements SinglePath {
             }),
         );
         this.writable = connection.writable;
-        ws.closed.catch((error) => {
-            // Ignore, in order to prevent unhandled rejection error. The connection closing event
-            // is already handled via the stream closing.
-        });
         this.close = () => ws.close();
     }
 
@@ -86,7 +82,7 @@ class WebSocketPath implements SinglePath {
     public static async create(
         pid: PathId,
         url: string,
-        abort: AbortRaiser,
+        abort: AbortRaiser<RendezvousCloseCause>,
     ): Promise<WebSocketPath> {
         const options: WebSocketEventWrapperStreamOptions = {
             signal: abort.attach(new AbortController()),
@@ -97,6 +93,17 @@ class WebSocketPath implements SinglePath {
             pollIntervalMs: 20, // Poll every 20ms until the low water mark has been reached
         };
         const ws = createWebSocketStream(url, options);
+        ws.closed
+            .then((info) => {
+                // TODO(SE-366): Specify close codes. Currently hard-coded. We will likely only
+                // specify a subset of what the implementation of the rendezvous server currently
+                // sends to keep it simple.
+                abort.raise(info.code === 4003 ? 'timeout' : 'closed');
+            })
+            .catch((error) => {
+                // Ignore, in order to prevent unhandled rejection error. The connection closing event
+                // is already handled via the stream closing.
+            });
         return new WebSocketPath(pid, ws, await ws.connection);
     }
 }
@@ -125,18 +132,18 @@ class MultiplexedPath
     >;
 
     public constructor(
-        abort: AbortRaiser,
+        abort: AbortRaiser<RendezvousCloseCause>,
         private readonly _log: Logger,
         paths: readonly SinglePath[],
     ) {
         // Queue for incoming frames
-        const queue = new Queue<readonly [pid: PathId, frame: Uint8Array]>();
+        const queue = new Queue<readonly [pid: PathId, frame: Uint8Array], RendezvousCloseError>();
 
         // Abort the queue when the protocol is aborted and vice versa.
-        abort.subscribe(() => queue.error(new Error('Abort raised')));
+        abort.subscribe((cause) => queue.error(new RendezvousCloseError(cause)));
         queue.aborted.catch((error) => {
             _log.debug('Queue aborted', error);
-            abort.raise(undefined);
+            abort.raise(error instanceof RendezvousCloseError ? error.cause : 'unknown');
         });
 
         // Forward read (poll's) to the queue
@@ -147,7 +154,7 @@ class MultiplexedPath
             },
             cancel: (reason) => {
                 _log.debug('Multiplexed path reader cancelled, reason:', reason);
-                abort.raise(undefined);
+                abort.raise(reason instanceof RendezvousCloseError ? reason.cause : 'closed');
             },
         });
 
@@ -163,11 +170,11 @@ class MultiplexedPath
             },
             close: () => {
                 _log.debug('Multiplexed path writer closed');
-                abort.raise(undefined);
+                abort.raise('closed');
             },
             abort: (reason) => {
                 _log.debug('Multiplexed path writer aborted, reason:', reason);
-                abort.raise(undefined);
+                abort.raise('closed');
             },
         });
 
@@ -183,9 +190,17 @@ class MultiplexedPath
                         // abort only if it was the last path
                         new WritableStream({
                             write: async (frame) => await queue.put([path.pid, frame]),
-                            close: () => queue.error(new Error('Path reader closed')),
+                            close: () =>
+                                queue.error(
+                                    new RendezvousCloseError('closed', 'Path reader closed'),
+                                ),
                             abort: (reason) => {
-                                queue.error(new Error(`Path reader aborted: ${reason}`));
+                                queue.error(
+                                    new RendezvousCloseError(
+                                        'closed',
+                                        `Path reader aborted: ${reason}`,
+                                    ),
+                                );
                             },
                         }),
                     )
@@ -201,16 +216,15 @@ class MultiplexedPath
                         if (this._paths !== undefined && this._paths.size === 0) {
                             _log.warn('All paths closed, aborting protocol');
                             this._paths = undefined;
-                            abort.raise(undefined);
+                            abort.raise('closed');
                         }
                     });
 
                 // Abort the path when the queue aborted.
                 //
                 // Note: This implicitly catches protocol aborts because those abort the queue.
-                queue.aborted.catch((error_) => {
-                    const error = ensureError(error_);
-                    path.close(error);
+                queue.aborted.catch((error) => {
+                    path.close(error instanceof RendezvousCloseError ? error.cause : 'unknown');
                 });
 
                 return [path.pid, {path, writer: path.writable.getWriter()}];
@@ -302,7 +316,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
 
     private constructor(
         log: Logger,
-        public readonly abort: AbortRaiser,
+        public readonly abort: AbortRaiser<RendezvousCloseCause>,
         protocol: libthreema.RendezvousProtocol,
         path: NominatedPath,
     ) {
@@ -393,11 +407,11 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
         setup: RendezvousProtocolSetup,
     ): Promise<{
         readonly connect: () => Promise<RendezvousConnectResult>;
-        readonly abort: () => void;
+        readonly abort: (cause: RendezvousCloseCause) => void;
         readonly joinUri: string;
     }> {
         const log = services.logging.logger(`rendezvous.${setup.role}`);
-        const abort = new AbortRaiser();
+        const abort = new AbortRaiser<RendezvousCloseCause>();
 
         // Create and connect to all relevant (transport) paths simultaneously
         const paths: readonly SinglePath[] = [
@@ -411,7 +425,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
         // Return function handle that establishes a connection.
         return {
             connect: async () => await RendezvousConnection._connect(setup, abort, log, paths),
-            abort: () => abort.raise(undefined),
+            abort: (cause: RendezvousCloseCause) => abort.raise(cause),
             joinUri: getJoinUri(setup),
         };
     }
@@ -422,7 +436,7 @@ export class RendezvousConnection implements BidirectionalStream<Uint8Array, Rea
      */
     private static async _connect(
         setup: RendezvousProtocolSetup,
-        abort: AbortRaiser,
+        abort: AbortRaiser<RendezvousCloseCause>,
         log: Logger,
         paths: readonly SinglePath[],
     ): Promise<RendezvousConnectResult> {

@@ -7,7 +7,7 @@ import {randomU64} from '~/common/crypto/random';
 import {type DeviceIds} from '~/common/device';
 import {type RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
 import {ReceiverType} from '~/common/enum';
-import {DeviceJoinError} from '~/common/error';
+import {DeviceJoinError, type RendezvousCloseCause, RendezvousCloseError} from '~/common/error';
 import {FileStorageError, type StoredFileHandle} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {type Repositories} from '~/common/model';
@@ -69,15 +69,19 @@ export interface DeviceJoinResult {
  *    the message
  */
 export class DeviceJoinProtocol {
-    public abort: AbortRaiser;
+    public abort: AbortRaiser<RendezvousCloseCause>;
 
     private _state: JoinState = 'wait-for-begin';
 
     private readonly _reader: ReadableStreamDefaultReader<Uint8Array>;
     private readonly _writer: WritableStreamDefaultWriter<ReadonlyUint8Array>;
     private readonly _essentialData: Delayed<EssentialData.Type> = new Delayed(
-        () => new DeviceJoinError('internal', 'Delayed essential data was read before it was set'),
-        () => new DeviceJoinError('internal', 'Delayed essential data was set twice'),
+        () =>
+            new DeviceJoinError(
+                {kind: 'internal'},
+                'Delayed essential data was read before it was set',
+            ),
+        () => new DeviceJoinError({kind: 'internal'}, 'Delayed essential data was set twice'),
     );
 
     /**
@@ -111,7 +115,10 @@ export class DeviceJoinProtocol {
                 readResult = await this._reader.read();
             } catch (error) {
                 throw new DeviceJoinError(
-                    'connection',
+                    {
+                        kind: 'connection',
+                        cause: error instanceof RendezvousCloseError ? error.cause : 'unknown',
+                    },
                     'Rendezvous connection stream ended before device join was complete',
                     {from: error},
                 );
@@ -119,7 +126,7 @@ export class DeviceJoinProtocol {
             if (readResult.done) {
                 this._log.info('ULP stream done');
                 throw new DeviceJoinError(
-                    'connection',
+                    {kind: 'connection', cause: 'closed'},
                     'Rendezvous connection stream ended before device join was complete',
                 );
             }
@@ -130,9 +137,13 @@ export class DeviceJoinProtocol {
             try {
                 parsed = join.EdToNd.decode(readResult.value);
             } catch (error) {
-                throw new DeviceJoinError('encoding', 'Could not decode ULP message with EdToNd', {
-                    from: error,
-                });
+                throw new DeviceJoinError(
+                    {kind: 'encoding'},
+                    'Could not decode ULP message with EdToNd',
+                    {
+                        from: error,
+                    },
+                );
             }
 
             // Validate message
@@ -141,7 +152,7 @@ export class DeviceJoinProtocol {
                 validated = validate.join.EdToNd.SCHEMA.parse(parsed);
             } catch (error) {
                 throw new DeviceJoinError(
-                    'validation',
+                    {kind: 'validation'},
                     `Could not validate EdToNd message: ${error}`,
                     {
                         from: error,
@@ -214,7 +225,7 @@ export class DeviceJoinProtocol {
 
         // Close connection
         this._reader.releaseLock();
-        this._rendezvousConnection.abort.raise(undefined);
+        this._rendezvousConnection.abort.raise('complete');
     }
 
     /**
@@ -223,7 +234,7 @@ export class DeviceJoinProtocol {
     private async _loadFileContents(blobId: BlobId, subject: string): Promise<ReadonlyUint8Array> {
         const fileHandle = this._blobIdToFileId.get(blobIdToString(blobId));
         if (fileHandle === undefined) {
-            throw new DeviceJoinError('protocol', `No blob data found for ${subject}`);
+            throw new DeviceJoinError({kind: 'protocol'}, `No blob data found for ${subject}`);
         }
 
         let bytes;
@@ -234,7 +245,7 @@ export class DeviceJoinProtocol {
             if (error instanceof FileStorageError) {
                 msg += `: ${error.type}`;
             }
-            throw new DeviceJoinError('internal', msg, {from: error});
+            throw new DeviceJoinError({kind: 'internal'}, msg, {from: error});
         }
 
         await this._services.file.delete(fileHandle.fileId);
@@ -326,14 +337,14 @@ export class DeviceJoinProtocol {
                 // Sanity check: Our own identity must not be part of the members list
                 if (member === ownIdentity) {
                     throw new DeviceJoinError(
-                        'protocol',
+                        {kind: 'protocol'},
                         `Group ${groupDebugString} contained user's own identity as member`,
                     );
                 }
                 const contact = repositories.contacts.getByIdentity(member);
                 if (contact === undefined) {
                     throw new DeviceJoinError(
-                        'protocol',
+                        {kind: 'protocol'},
                         `Group ${groupDebugString} could not be imported, member ${member} not found in database`,
                     );
                 }
@@ -351,7 +362,7 @@ export class DeviceJoinProtocol {
                 );
                 if (creator === undefined) {
                     throw new DeviceJoinError(
-                        'protocol',
+                        {kind: 'protocol'},
                         `Group ${groupDebugString} could not be imported, creator ${group.groupIdentity.creatorIdentity} not found in database`,
                     );
                 }
@@ -406,7 +417,10 @@ export class DeviceJoinProtocol {
     private async _handleBegin(): Promise<void> {
         this._log.debug(`Received Begin message`);
         if (this._state !== 'wait-for-begin') {
-            throw new DeviceJoinError('protocol', `Received Begin message in state ${this._state}`);
+            throw new DeviceJoinError(
+                {kind: 'protocol'},
+                `Received Begin message in state ${this._state}`,
+            );
         }
         await this._onBegin();
         this._setState('sync-blob-data');
@@ -416,7 +430,7 @@ export class DeviceJoinProtocol {
         this._log.debug(`Received BlobData message`);
         if (this._state !== 'sync-blob-data') {
             throw new DeviceJoinError(
-                'protocol',
+                {kind: 'protocol'},
                 `Received BlobData message in state ${this._state}`,
             );
         }
@@ -431,7 +445,7 @@ export class DeviceJoinProtocol {
         this._log.debug(`Received EssentialData message`);
         if (this._state !== 'sync-blob-data') {
             throw new DeviceJoinError(
-                'protocol',
+                {kind: 'protocol'},
                 `Received EssentialData message in state ${this._state}`,
             );
         }
