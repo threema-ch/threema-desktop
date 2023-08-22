@@ -30,7 +30,7 @@ import {
 import {type u32, type u53, type WeakOpaque} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
-import {u64ToHexLe} from '~/common/utils/number';
+import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 import {
     Queue,
     type QueueConsumer,
@@ -265,7 +265,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
         payloads: T,
     ): Promise<{readonly [P in keyof T]: Date}> {
         const {d2d} = this.controller;
-        const {crypto} = this._services;
+        const {crypto, device} = this._services;
 
         // We assume that at least one envelope is present after this point
         if (payloads.length === 0) {
@@ -310,6 +310,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                     ...(payload as protobuf.utils.ProtobufInstanceOf<
                                         typeof protobuf.d2d.Envelope
                                     >),
+                                    deviceId: intoUnsignedLong(device.d2m.deviceId),
                                     padding: new Uint8Array(randomU8(crypto)),
                                 }).encode,
                             )
