@@ -7,18 +7,20 @@ import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {FetchDirectoryBackend} from '~/common/dom/network/protocol/fetch-directory';
+import {type Logger, type LoggerFactory, NOOP_LOGGER} from '~/common/logging';
 import {DirectoryError, type DirectoryErrorType} from '~/common/network/protocol/directory';
 import {ensureIdentityString} from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
 import {type u53} from '~/common/types';
-import {assertError, unreachable} from '~/common/utils/assert';
+import {assert, assertError} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
 
 const {expect} = chai.use(sinonChai);
 
-interface ChallengePayload {
-    token: string;
-    tokenRespKeyPub: string;
+class NoopLoggerFactory implements LoggerFactory {
+    public logger(tag: string, style?: string): Logger {
+        return NOOP_LOGGER;
+    }
 }
 
 /**
@@ -26,44 +28,9 @@ interface ChallengePayload {
  *
  * @param status The response status code
  * @param body The response body
- * @param authMode What authentication mode to use
- * @param challengePayload An optional challenge payload to use
  */
-function makeResponse(
-    status: u53,
-    body: Record<string, unknown>,
-    authMode: 'none' | 'challenge' | 'success' | 'failure',
-    challengePayload?: ChallengePayload,
-    errorMessage?: string,
-): Response {
-    let responseBody;
-    switch (authMode) {
-        case 'none':
-            responseBody = body;
-            break;
-        case 'challenge':
-            responseBody = challengePayload ?? {
-                token: u8aToBase64(Uint8Array.of(0xff, 1, 2, 3, 4, 5, 6)),
-                tokenRespKeyPub: u8aToBase64(randomBytes(new Uint8Array(32))),
-            };
-            break;
-        case 'success':
-            responseBody = {
-                success: true,
-                ...body,
-            };
-            break;
-        case 'failure':
-            responseBody = {
-                success: false,
-                error: errorMessage ?? 'Mocked failure',
-                ...body,
-            };
-            break;
-        default:
-            unreachable(authMode);
-    }
-    return new Response(JSON.stringify(responseBody), {
+function makeResponse(status: u53, body: Record<string, unknown>): Response {
+    return new Response(JSON.stringify(body), {
         status,
         headers: new Headers({
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -73,55 +40,34 @@ function makeResponse(
 }
 
 /**
- * Options that influence how the responses are mocked.
- */
-interface MockOptions {
-    /**
-     * Override authentication result
-     *
-     * Defaults to `{success: true}`.
-     */
-    authResult?: {success: true} | {success: false; message?: string};
-
-    /**
-     * Override the challenge payload.
-     */
-    challengePayload?: ChallengePayload;
-}
-
-/**
  * Mock a `fetch()`-response.
  *
  * @param status The mocked response status code.
- * @param responseBody The response body.
+ * @param authResponseBody The response body of the authentication request.
+ * @param responseBody The response body of the final request.
  */
 function mockFetchResponse(
     status: u53,
+    authResponseBody: Record<string, unknown> | 'unauthenticated',
     responseBody: Record<string, unknown>,
-    options?: MockOptions,
 ): void {
     const fakeFetch = sinon.fake(
         // eslint-disable-next-line @typescript-eslint/require-await
         async (input: RequestInfo | URL, init?: RequestInit | undefined) => {
             // GET: No authentication
             if (init?.method === 'GET') {
-                return makeResponse(status, responseBody, 'none');
+                return makeResponse(status, responseBody);
             }
 
             // POST: Authentication
             const requestBody = (init?.body as string | undefined) ?? '';
             if (requestBody.includes('"response":')) {
                 // Authenticated request
-                return makeResponse(
-                    status,
-                    responseBody,
-                    options?.authResult?.success ?? true ? 'success' : 'failure',
-                    undefined,
-                    options?.authResult?.success === false ? options.authResult.message : undefined,
-                );
+                return makeResponse(status, responseBody);
             } else {
                 // Unauthenticated request
-                return makeResponse(status, responseBody, 'challenge', options?.challengePayload);
+                assert(authResponseBody !== 'unauthenticated');
+                return makeResponse(status, authResponseBody);
             }
         },
     );
@@ -158,7 +104,10 @@ async function assertDirectoryError(
  */
 export function run(): void {
     describe('FetchDirectoryBackend', function () {
-        const backend = new FetchDirectoryBackend({config: CONFIG});
+        const backend = new FetchDirectoryBackend({
+            config: CONFIG,
+            logging: new NoopLoggerFactory(),
+        });
         const crypto = new TweetNaClBackend(randomBytes);
 
         const ck = SecureSharedBoxFactory.consume(
@@ -177,6 +126,7 @@ export function run(): void {
             it('successful fetch', async function () {
                 // Mock response
                 const responseBody = {
+                    success: true,
                     identity: 'ECHOECHO',
                     publicKey: 'A77r4XgCosybW/RS11FXtJqkYn8yap8yaw/JvNX1RhI=',
                     featureLevel: 3,
@@ -184,7 +134,7 @@ export function run(): void {
                     state: 0,
                     type: 0,
                 } as const;
-                mockFetchResponse(200, responseBody);
+                mockFetchResponse(200, 'unauthenticated', responseBody);
 
                 // Fetch identity
                 const validIdentity = await backend.identity(
@@ -196,12 +146,12 @@ export function run(): void {
 
             it('error response', async function () {
                 // Mock response
-                mockFetchResponse(500, {info: 'Server error'});
+                mockFetchResponse(500, 'unauthenticated', {success: false, error: 'Server error'});
 
                 // Fetch identity
                 await assertDirectoryError(
                     backend.identity(ensureIdentityString('ECHOECHO')),
-                    'invalid',
+                    'invalid-response',
                     'Identity data fetch request returned status 500',
                 );
             });
@@ -224,7 +174,12 @@ export function run(): void {
         });
 
         describe('private data (authenticated)', function () {
+            const authResponseBody = {
+                token: u8aToBase64(Uint8Array.of(0xff, 1, 2, 3, 4, 5, 6)),
+                tokenRespKeyPub: u8aToBase64(randomBytes(new Uint8Array(32))),
+            };
             const responseBody = {
+                success: true,
                 identity: 'ECHOECHO',
                 serverGroup: 'f7',
                 mobileNo: '41790001122',
@@ -232,7 +187,7 @@ export function run(): void {
 
             it('successful fetch', async function () {
                 // Mock response
-                mockFetchResponse(200, responseBody);
+                mockFetchResponse(200, authResponseBody, responseBody);
 
                 // Fetch data
                 const privateData = await backend.privateData(
@@ -246,7 +201,7 @@ export function run(): void {
             });
 
             it('error response before auth', async function () {
-                mockFetchResponse(500, {info: 'Server error'});
+                mockFetchResponse(500, {success: false, error: 'Server error'}, {});
                 await assertDirectoryError(
                     backend.privateData(ensureIdentityString('ECHOECHO'), ck),
                     'authentication',
@@ -268,11 +223,28 @@ export function run(): void {
             });
 
             it('failed authentication', async function () {
-                mockFetchResponse(200, {}, {authResult: {success: false}});
+                mockFetchResponse(200, {success: false, error: 'Mocked failure'}, {});
                 await assertDirectoryError(
                     backend.privateData(ensureIdentityString('ECHOECHO'), ck),
                     'authentication',
-                    'Private data fetch authentication failed: Mocked failure',
+                    'Private data authentication fetch failed: Mocked failure',
+                );
+            });
+
+            it('invalid identity', async function () {
+                mockFetchResponse(
+                    200,
+                    {
+                        success: false,
+                        errorType: 'invalid-identity',
+                        error: 'Identity not found or revoked',
+                    },
+                    {},
+                );
+                await assertDirectoryError(
+                    backend.privateData(ensureIdentityString('ECHOECHO'), ck),
+                    'invalid-identity',
+                    'Identity not found or revoked',
                 );
             });
 
@@ -281,19 +253,14 @@ export function run(): void {
                 'This identity is attached to a Threema Work account.',
             ]) {
                 it(`wrong build variant ("${apiErrorMessage}")`, async function () {
-                    mockFetchResponse(
-                        200,
-                        {},
-                        {
-                            authResult: {
-                                success: false,
-                                message: apiErrorMessage,
-                            },
-                        },
-                    );
+                    mockFetchResponse(200, authResponseBody, {
+                        success: false,
+                        error: apiErrorMessage,
+                        errorType: 'identity-transfer-prohibited',
+                    });
                     await assertDirectoryError(
                         backend.privateData(ensureIdentityString('ECHOECHO'), ck),
-                        'wrong-build-variant',
+                        'identity-transfer-prohibited',
                         apiErrorMessage,
                     );
                 });

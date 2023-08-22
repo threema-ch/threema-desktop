@@ -80,7 +80,7 @@
         }
         break;
 
-      case 'wrong-app-variant':
+      case 'identity-transfer-prohibited':
         switch (import.meta.env.BUILD_VARIANT) {
           case 'consumer':
             message = t(
@@ -98,6 +98,20 @@
 
           default:
             unreachable(import.meta.env.BUILD_VARIANT);
+        }
+        break;
+
+      case 'invalid-identity':
+        title = t(
+          'dialog--linking-error.label--title-invalid-identity',
+          'Revoked or Unknown Threema ID',
+        );
+        message = t(
+          'dialog--linking-error.prose--message-invalid-identity',
+          'The Threema ID used for linking is unknown to the server or has been revoked.',
+        );
+        if (import.meta.env.DEBUG) {
+          message += '<br>Did you use a sandbox ID with a live app, or vice versa?';
         }
         break;
 

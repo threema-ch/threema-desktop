@@ -250,8 +250,9 @@ export interface SafeCredentialsAndDeviceIds {
  * - rendezvous-error: The rendezvous protocol did not succeed.
  * - join-error: The device join protocol did not succeed.
  * - restore-error: Restoring essential data did not succeed.
- * - wrong-app-variant: Restoring failed because user tried to link a Threema Work ID with the
- *   consumer build variant, or vice versa
+ * - identity-transfer-prohibited: Restoring failed because user tried to link a Threema Work ID
+ *   with the consumer build variant, or vice versa
+ * - invalid-identity: Restoring failed because user identity is unknown or revoked
  * - registration-error: Initial registration at Mediator server failed.
  * - generic-error: Some other error during linking.
  */
@@ -260,7 +261,8 @@ export type LinkingStateErrorType =
     | {readonly kind: 'rendezvous-error'; readonly cause: RendezvousCloseCause}
     | {readonly kind: 'join-error'}
     | {readonly kind: 'restore-error'}
-    | {readonly kind: 'wrong-app-variant'}
+    | {readonly kind: 'identity-transfer-prohibited'}
+    | {readonly kind: 'invalid-identity'}
     | {readonly kind: 'registration-error'}
     | {readonly kind: 'generic-error'};
 
@@ -350,7 +352,7 @@ function initBackendServicesWithoutIdentity(
 
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
     const compressor = factories.compressor();
-    const directory = new FetchDirectoryBackend({config});
+    const directory = new FetchDirectoryBackend({config, logging});
     const timer = new GlobalTimer();
     const notification = createNotificationService(endpoint, notificationEndpoint, logging);
     const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
@@ -814,8 +816,11 @@ export class Backend implements ProxyMarked {
             privateData = await services.directory.privateData(joinResult.identity, ck);
         } catch (error) {
             const message = `Fetching information about identity failed: ${error}`;
-            if (error instanceof DirectoryError && error.type === 'wrong-build-variant') {
-                return await throwLinkingError(message, {kind: 'wrong-app-variant'}, error);
+            if (
+                error instanceof DirectoryError &&
+                (error.type === 'identity-transfer-prohibited' || error.type === 'invalid-identity')
+            ) {
+                return await throwLinkingError(message, {kind: error.type}, error);
             }
             return await throwLinkingError(message, {kind: 'generic-error'}, ensureError(error));
         }

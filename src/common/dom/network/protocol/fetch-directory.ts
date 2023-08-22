@@ -5,6 +5,7 @@ import {ensurePublicKey} from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
 import {deriveDirectoryChallengeResponseKey} from '~/common/crypto/csp-keys';
 import {ActivityState} from '~/common/enum';
+import {type Logger} from '~/common/logging';
 import {
     type DirectoryBackend,
     DirectoryError,
@@ -16,6 +17,7 @@ import {
 import {type IdentityString} from '~/common/network/types';
 import {type ClientKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
+import {unreachable} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
@@ -45,6 +47,31 @@ const BULK_IDENTITIES_SCHEMA = v
     .rest(v.unknown());
 
 /**
+ * Error response validation for the "fetch private data" endpoint.
+ */
+const ERROR_RESPONSE_SCHEMA = v
+    .object({
+        success: v.literal(false),
+        error: v.string().optional(),
+        errorType: v
+            .string()
+            .optional()
+            .map((errorType) => {
+                switch (errorType) {
+                    case 'invalid-identity':
+                    case 'invalid-token':
+                    case 'identity-transfer-prohibited':
+                        return errorType;
+                    default:
+                        return 'unknown';
+                }
+            }),
+    })
+    .rest(v.unknown());
+
+type ErrorResponse = Readonly<v.Infer<typeof ERROR_RESPONSE_SCHEMA>>;
+
+/**
  * Directory backend implementation based on the [Fetch API].
  *
  * [Fetch API]: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
@@ -53,8 +80,9 @@ export class FetchDirectoryBackend implements DirectoryBackend {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     private readonly _base: string;
     private readonly _requestInit: RequestInit;
+    private readonly _log: Logger;
 
-    public constructor(services: Pick<ServicesForBackend, 'config'>) {
+    public constructor(services: Pick<ServicesForBackend, 'config' | 'logging'>) {
         this._base = services.config.DIRECTORY_SERVER_URL;
         this._requestInit = {
             cache: 'no-store',
@@ -66,6 +94,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                 'user-agent': services.config.USER_AGENT,
             },
         };
+        this._log = services.logging.logger('network.protocol.fetch-directory');
     }
 
     /** @inheritdoc */
@@ -94,7 +123,10 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             BULK_IDENTITIES_SCHEMA,
         );
         if (responseData === undefined) {
-            throw new DirectoryError('invalid', `Bulk identity fetch request returned status 404`);
+            throw new DirectoryError(
+                'invalid-response',
+                `Bulk identity fetch request returned status 404`,
+            );
         }
 
         const missingIdentities = new Set(identities);
@@ -130,7 +162,10 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             IDENTITY_PRIVATE_DATA_SCHEMA,
         );
         if (responseData === undefined) {
-            throw new DirectoryError('invalid', `Private data fetch request returned status 404`);
+            throw new DirectoryError(
+                'invalid-response',
+                `Private data fetch request returned status 404`,
+            );
         }
         return responseData;
     }
@@ -184,7 +219,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         }
         if (response.status !== 200) {
             throw new DirectoryError(
-                'invalid',
+                'invalid-response',
                 `${description} fetch request returned status ${response.status}`,
             );
         }
@@ -199,8 +234,8 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             responsePayload = body;
         } catch (error) {
             throw new DirectoryError(
-                'invalid',
-                `${description} fetch request did not return a valid response body`,
+                'invalid-response',
+                `${description} fetch request did not return a valid response body: ${error}`,
                 {from: error},
             );
         }
@@ -208,7 +243,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             return schema.parse(responsePayload);
         } catch (error) {
             throw new DirectoryError(
-                'invalid',
+                'invalid-response',
                 `${description} fetch request response body validation against schema failed`,
                 {from: error},
             );
@@ -239,6 +274,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         // Fetch challenge payload
         let challengePayload;
         {
+            // Send request
             let response: Response;
             try {
                 response = await fetch(url, {
@@ -255,20 +291,46 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                     },
                 );
             }
+
+            // Process response
             if (response.status !== 200) {
                 throw new DirectoryError(
                     'authentication',
                     `${description} authentication fetch request returned status ${response.status}`,
                 );
             }
-            try {
-                challengePayload = CHALLENGE_PAYLOAD.parse(await response.json());
-            } catch (error) {
+            const body = await response.json();
+            if (body === null || body === undefined) {
                 throw new DirectoryError(
-                    'authentication',
-                    `${description} authentication fetch request did not return a valid response body`,
-                    {from: error},
+                    'invalid-response',
+                    `${description} authentication fetch request response body is null or undefined`,
                 );
+            }
+            try {
+                challengePayload = CHALLENGE_PAYLOAD.parse(body);
+            } catch (challengeParseError) {
+                // Not a challenge payload! Check if it's an error payload.
+                let errorPayload: ErrorResponse;
+                try {
+                    errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
+                } catch {
+                    throw new DirectoryError(
+                        'authentication',
+                        `${description} authentication fetch request did not return a valid response body: ${challengeParseError}`,
+                        {from: challengeParseError},
+                    );
+                }
+                const message = `${description} authentication fetch failed: ${errorPayload.error}`;
+                switch (errorPayload.errorType) {
+                    case 'invalid-identity':
+                        throw new DirectoryError('invalid-identity', message);
+                    case 'invalid-token':
+                    case 'identity-transfer-prohibited':
+                    case 'unknown':
+                        throw new DirectoryError('authentication', message);
+                    default:
+                        unreachable(errorPayload.errorType);
+                }
             }
         }
 
@@ -297,12 +359,12 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         }
         if (response.status !== 200) {
             throw new DirectoryError(
-                'invalid',
+                'invalid-response',
                 `${description} fetch request returned status ${response.status}`,
             );
         }
 
-        // Validate response JSON
+        // Get response JSON
         let responsePayload: Record<string, unknown>;
         try {
             const body = await response.json();
@@ -312,33 +374,45 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             responsePayload = body;
         } catch (error) {
             throw new DirectoryError(
-                'invalid',
-                `${description} fetch request did not return a valid response body`,
+                'invalid-response',
+                `${description} fetch request did not return a valid response body: ${error}`,
                 {from: error},
             );
         }
+
+        // Handle errors
         if (responsePayload.success !== true) {
-            const message = `${description} fetch authentication failed: ${responsePayload.error}`;
+            const message = `${description} fetch failed: ${responsePayload.error}`;
 
-            // TODO(CS-125): Replace this ugly error-sniffing with proper error types (and maybe
-            //               some Valita schema parsing).
-            if ('error' in responsePayload && typeof responsePayload.error === 'string') {
-                const error = responsePayload.error;
-                if (
-                    error.includes('This is not a Threema Work identity') ||
-                    error.includes('This identity is attached to a Threema Work account')
-                ) {
-                    throw new DirectoryError('wrong-build-variant', message);
-                }
+            // Try to parse error response with schema
+            let errorResponse: ErrorResponse | undefined;
+            try {
+                errorResponse = ERROR_RESPONSE_SCHEMA.parse(responsePayload);
+            } catch (error) {
+                // Log and ignore error, continue with generic handling
+                this._log.warn(`Invalid ${description} error response: ${error}`);
             }
-
-            throw new DirectoryError('authentication', message);
+            const errorType = errorResponse?.errorType;
+            switch (errorType) {
+                case 'identity-transfer-prohibited':
+                    throw new DirectoryError('identity-transfer-prohibited', message);
+                case 'invalid-token':
+                    throw new DirectoryError('authentication', message);
+                case 'invalid-identity':
+                case 'unknown':
+                case undefined:
+                    throw new DirectoryError('invalid-response', message);
+                default:
+                    unreachable(errorType);
+            }
         }
+
+        // Validate response JSON using schema
         try {
             return schema.parse(responsePayload);
         } catch (error) {
             throw new DirectoryError(
-                'invalid',
+                'invalid-response',
                 `${description} fetch request response body validation against schema failed`,
                 {from: error},
             );

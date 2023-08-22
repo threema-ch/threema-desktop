@@ -106,12 +106,18 @@ export type DirectoryBackend = {
  *
  * - fetch: An error occurred when fetching data from the server (e.g. a network connectivity error)
  * - authentication: An error occurred during authenticating against the server
- * - wrong-build-variant: The user tried to fetch information for a Work identity from a consumer
- *   app, or vice versa
- * - invalid: We got an unexpected or invalid response from the server (e.g. an internal server
- *   error, an empty response or a response that does not validate against the schema)
+ * - identity-transfer-prohibited: The user tried to fetch information for a Work identity from a
+ *   consumer app, or vice versa
+ * - invalid-identity: The identity is unknown or was revoked
+ * - invalid-response: We got an unexpected or invalid response from the server (e.g. an internal
+ *   server error, an empty response or a response that does not validate against the schema)
  */
-export type DirectoryErrorType = 'fetch' | 'authentication' | 'wrong-build-variant' | 'invalid';
+export type DirectoryErrorType =
+    | 'fetch'
+    | 'authentication'
+    | 'identity-transfer-prohibited'
+    | 'invalid-identity'
+    | 'invalid-response';
 
 const DIRECTORY_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     DirectoryError,

@@ -302,7 +302,10 @@ export class TestDirectoryBackend implements DirectoryBackend {
         ck: ClientKey,
     ): Promise<IdentityPrivateData> {
         if (this._privateData === undefined) {
-            throw new DirectoryError('invalid', 'No private data set in TestDirectoryBackend');
+            throw new DirectoryError(
+                'invalid-response',
+                'No private data set in TestDirectoryBackend',
+            );
         }
         return this._privateData;
     }

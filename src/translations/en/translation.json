@@ -175,12 +175,14 @@
     "label--title-connection-error-generic": "Connection Error",
     "label--title-connection-error-timeout": "Linking Timeout",
     "label--title-generic": "Linking Unsuccessful",
+    "label--title-invalid-identity": "Revoked or Unknown Threema ID",
     "label--title-rendezvous-error-timeout": "Linking Timeout",
     "label--title-restore-error": "Restoring Data Failed",
     "prose--message-connection-error-generic": "Connection to the server was lost before linking was complete. If you did not abort the process yourself, please check your Internet connection, and try again.",
     "prose--message-generic": "An error occurred during linking. Please try again.",
-    "prose--message-wrong-app-variant-consumer-error": "It is not possible to link your Threema ID with this app. If you use Threema Work, download the desktop app from <1 />.",
-    "prose--message-wrong-app-variant-work-error": "It is not possible to link your Threema ID with this app. If you use the consumer version of Threema, download the desktop app from <1 />."
+    "prose--message-invalid-identity": "The Threema ID used for linking is unknown to the server or has been revoked.",
+    "prose--message-wrong-app-variant-consumer-error": "It is not possible to link your Threema ID with this app. If you use Threema Work on your mobile device, download the desktop app from <1 />.",
+    "prose--message-wrong-app-variant-work-error": "It is not possible to link your Threema ID with this app. If you use the consumer version of Threema on your mobile device, download the desktop app from <1 />."
   },
   "dialog--linking-scan": {
     "action--need-help": "Need help?",
