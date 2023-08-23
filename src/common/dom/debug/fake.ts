@@ -340,6 +340,16 @@ export async function generateFakeGroupConversation(
 }
 
 /**
+ * Return the screenshot reference timestamp (today 08:15).
+ */
+function getReferenceTimestamp(): Date {
+    const date = new Date();
+    date.setHours(8);
+    date.setMinutes(15);
+    return date;
+}
+
+/**
  * Generate data for screenshots from JSON file.
  */
 export async function generateScreenshotData(
@@ -373,7 +383,7 @@ export async function generateScreenshotData(
         const contactModel = model.contacts.add.fromSync({
             identity,
             publicKey: contact.publicKey,
-            createdAt: new Date(),
+            createdAt: getReferenceTimestamp(),
             firstName: contact.name.first,
             lastName: contact.name.last,
             nickname: undefined,
@@ -435,12 +445,14 @@ export async function generateScreenshotData(
             continue;
         }
         log.info(`Adding group with name ${group.name.default}`);
+        const createdAt = new Date(+getReferenceTimestamp() - group.createdMinutesAgo * 60 * 1000);
         const groupModel = model.groups.add.fromSync(
             {
                 groupId: group.id,
                 creatorIdentity,
                 name: group.name.default,
-                createdAt: new Date(+new Date() - group.createdSecondsAgo * 1000),
+                createdAt,
+                lastUpdate: createdAt,
                 colorIndex: idColorIndex({
                     type: ReceiverType.GROUP,
                     groupId: group.id,
@@ -484,7 +496,7 @@ async function addConversationMessages(
         let content;
 
         const messageId = message.messageId ?? randomMessageId(crypto);
-        const messageDate = new Date(+new Date() - message.secondsAgo * 1000);
+        const messageDate = new Date(+getReferenceTimestamp() - message.minutesAgo * 60 * 1000);
         const lastReaction =
             message.lastReaction === undefined
                 ? undefined

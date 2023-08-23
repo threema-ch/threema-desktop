@@ -44,7 +44,7 @@ const TRANSLATED_VALUE_SCHEMA = v
 
 const TEST_MESSAGE_BASE = {
     messageId: v.string().map(hexLeToU64).map(ensureMessageId).optional(),
-    secondsAgo: v.number(),
+    minutesAgo: v.number(),
     direction: v.union(v.literal('INCOMING'), v.literal('OUTGOING')).map((direction) => {
         switch (direction) {
             case 'INCOMING':
@@ -194,7 +194,7 @@ const TEST_GROUP_SCHEMA = v
         creator: v.string().chain(identityStringOrOwnIdentity),
         name: TRANSLATED_VALUE_SCHEMA,
         members: v.array(v.string().chain(identityStringOrOwnIdentity)),
-        createdSecondsAgo: v.number(),
+        createdMinutesAgo: v.number(),
         avatar: v.string().map(base64ToU8a).optional(),
         conversation: v.array(TEST_MESSAGE_SCHEMA),
     })

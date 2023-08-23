@@ -19,7 +19,7 @@ def convert_conversation_messages(messages, current_dir, conversation_type, own_
 
     for message in messages:
         converted_message = {
-            'secondsAgo': -message['date'],
+            'minutesAgo': -message['date'],
             'type': message['type'],
             'direction': 'OUTGOING' if message['out'] else 'INCOMING',
         }
@@ -126,7 +126,7 @@ def convert_groups(groups, current_dir, contact_list_identities, own_identity):
             'creator': OWN_IDENTITY_TOKEN if data['creator'] in [own_identity, '$'] else data['creator'],
             'name': data['name'],
             'members': [OWN_IDENTITY_TOKEN if id in [own_identity, '$'] else id for id in data['members']],
-            'createdSecondsAgo': -data['created_at'],
+            'createdMinutesAgo': -data['created_at'],
         }
 
         # Inline avatar
