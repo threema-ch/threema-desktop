@@ -91,6 +91,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
                     fileName: v.string(),
                     fileBytes: v.string().map(base64ToU8a),
                     mediaType: v.string(),
+                    caption: TRANSLATED_VALUE_SCHEMA.optional(),
                 })
                 .rest(v.unknown()),
         })
@@ -103,6 +104,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
                 .object({
                     imageBytes: v.string().map(base64ToU8a),
                     mediaType: v.string(),
+                    caption: TRANSLATED_VALUE_SCHEMA.optional(),
                 })
                 .rest(v.unknown()),
         })

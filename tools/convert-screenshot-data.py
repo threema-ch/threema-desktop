@@ -46,6 +46,8 @@ def convert_conversation_messages(messages, current_dir, conversation_type, own_
                     'imageBytes': b64encode(image.read()).decode('ascii'),
                     'mediaType': media_type,
                 }
+                if 'caption' in message:
+                    converted_message['content']['caption'] = message['caption']
         elif converted_message['type'] == 'FILE':
             with open(path.join(current_dir, message['content']['default']), 'rb') as file:
                 converted_message['content'] = {

@@ -523,6 +523,7 @@ async function addConversationMessages(
                     fileSize: message.content.fileBytes.byteLength,
                     blobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                     encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
+                    caption: message.content.caption?.default,
                 } as const;
                 break;
             }
@@ -540,6 +541,7 @@ async function addConversationMessages(
                     thumbnailBlobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                     encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
                     renderingType: ImageRenderingType.REGULAR,
+                    caption: message.content.caption?.default,
                     dimensions: undefined,
                     animated: false,
                 } as const;
