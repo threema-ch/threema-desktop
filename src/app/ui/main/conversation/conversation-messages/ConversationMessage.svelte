@@ -15,7 +15,10 @@
   import {type VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
+  import {
+    type ConversationMessageContextMenuEvent,
+    copyImageBytes,
+  } from '~/app/ui/main/conversation/conversation-messages';
   import ConversationMessageContextMenu from '~/app/ui/main/conversation/conversation-messages/ConversationMessageContextMenu.svelte';
   import MessageBubble from '~/app/ui/main/conversation/conversation-messages/MessageBubble.svelte';
   import MessageDelete from '~/app/ui/modal/MessageDelete.svelte';
@@ -24,7 +27,6 @@
   import {toast} from '~/app/ui/snackbar';
   import {type DbReceiverLookup} from '~/common/db';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
-  import {convertImage} from '~/common/dom/utils/image';
   import {
     MessageDirection,
     MessageDirectionUtils,
@@ -241,37 +243,18 @@
   }
 
   async function copyImage(): Promise<void> {
-    log.debug('Copying image content');
-
     if (messageBody.type !== 'image') {
       return;
     }
     const {mediaType} = messageBody.body;
 
-    try {
-      const bytes = unwrap(
+    async function getImageBytes(): Promise<ReadonlyUint8Array> {
+      return unwrap(
         await viewModelBundle.viewModelController.getBlob(),
         'Could not retrieve blob bytes',
       );
-
-      let blob = new Blob([bytes], {type: mediaType});
-      if (mediaType !== 'image/png') {
-        // Convert other image subtypes to png for clipboard compatibility.
-        blob = await convertImage(blob, 'image/png');
-      }
-
-      await navigator.clipboard.write([new ClipboardItem({[blob.type]: blob})]);
-
-      toast.addSimpleSuccess(
-        i18n.get().t('messaging.success--copy-message-image', 'Image copied to clipboard'),
-      );
-      log.debug('Image successfully copied to clipboard');
-    } catch (error) {
-      log.error('Could not copy image to clipboard:', error);
-      toast.addSimpleFailure(
-        i18n.get().t('messaging.error--copy-message-image', 'Could not copy image to clipboard'),
-      );
     }
+    await copyImageBytes(getImageBytes, mediaType, log);
   }
 
   function copyMessageContent(): void {
@@ -471,6 +454,7 @@
           {receiver}
           on:clickfile={syncAndSaveFile}
           on:clicksave={syncAndSaveFile}
+          on:clickcopy={copyImage}
           on:syncrequest={handleSyncRequest}
           on:abortsyncrequest={handleAbortSyncRequest}
         />

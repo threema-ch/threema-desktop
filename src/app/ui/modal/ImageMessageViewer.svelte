@@ -6,10 +6,16 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {globals} from '~/app/globals';
+  import {contextMenuAction} from '~/app/ui/generic/context-menu';
+  import {type VirtualRect} from '~/app/ui/generic/popover';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import {copyImageBytes} from '~/app/ui/main/conversation/conversation-messages';
+  import {type ImageMessageViewerContextMenuEvent} from '~/app/ui/modal/image-message-viewer';
+  import ImageMessageViewerContextMenu from '~/app/ui/modal/image-message-viewer/ImageMessageViewerContextMenu.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {nodeContainsTarget} from '~/app/ui/utils/node';
-  import {type Dimensions} from '~/common/types';
+  import {type Dimensions, type ReadonlyUint8Array} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {type Remote, type RemoteProxy} from '~/common/utils/endpoint';
   import {GlobalTimer} from '~/common/utils/timer';
@@ -19,7 +25,15 @@
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.modal.image-detail`);
 
+  /**
+   * View model controller of the associated conversation message.
+   */
   export let messageViewModelController: Remote<ConversationMessageViewModelController>;
+
+  /**
+   * The image media type.
+   */
+  export let mediaType: string;
 
   /**
    * The real dimensions of the image.
@@ -32,7 +46,7 @@
   type ConversationMessageImageState =
     | {status: 'loading'}
     | {status: 'failed'}
-    | {status: 'loaded'; url: string};
+    | {status: 'loaded'; bytes: ReadonlyUint8Array; url: string};
 
   let image: ConversationMessageImageState = {
     status: 'loading',
@@ -41,6 +55,12 @@
   /* eslint-disable @typescript-eslint/ban-types */
   let previewElement: HTMLElement | SVGSVGElement | undefined | null = undefined;
   let actionsContainer: HTMLElement | undefined | null = undefined;
+
+  // Context menu
+  let contextMenuPopover: Popover | null;
+  let contextMenuElement: HTMLElement | null | undefined;
+  let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
+  let container: HTMLElement | null;
   /* eslint-enable @typescript-eslint/ban-types */
 
   // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
@@ -53,7 +73,7 @@
 
   // Component event dispatcher.
   const dispatch = createEventDispatcher<{
-    clickclose: undefined;
+    clickclose: MouseEvent;
     clicksave: MouseEvent;
   }>();
 
@@ -81,7 +101,8 @@
           // Generate new image URL.
           image = {
             status: 'loaded',
-            url: URL.createObjectURL(new Blob([bytes])),
+            bytes,
+            url: URL.createObjectURL(new Blob([bytes], {type: mediaType})),
           };
         } else {
           image = {
@@ -99,9 +120,52 @@
   function handleOutsideClick(event: MouseEvent): void {
     if (
       !nodeContainsTarget(previewElement, event.target) &&
-      !nodeContainsTarget(actionsContainer, event.target)
+      !nodeContainsTarget(actionsContainer, event.target) &&
+      !nodeContainsTarget(contextMenuElement, event.target)
     ) {
       handleClose();
+    }
+  }
+
+  function handleContextMenuAction(event: MouseEvent): void {
+    if (event.type === 'contextmenu') {
+      contextMenuVirtualTrigger = {
+        width: 0,
+        height: 0,
+        left: event.clientX,
+        right: 0,
+        top: event.clientY,
+        bottom: 0,
+      };
+    } else {
+      contextMenuVirtualTrigger = undefined;
+    }
+
+    contextMenuPopover?.open();
+  }
+
+  function handleContextMenuEvent(type: ImageMessageViewerContextMenuEvent): void {
+    contextMenuPopover?.close();
+
+    switch (type) {
+      case 'clicksaveimage':
+        dispatch('clicksave');
+        break;
+      case 'clickcopyimage':
+        copyImage();
+        break;
+      default:
+        unreachable(type);
+    }
+  }
+
+  function copyImage(): void {
+    if (image.status === 'loaded') {
+      copyImageBytes(image.bytes, mediaType, log).catch((error) => {
+        // Ignore, already handled and logged by `copyImageBytes`
+      });
+    } else {
+      log.warn("Cannot copy image bytes before they're loaded");
     }
   }
 
@@ -123,7 +187,7 @@
   <div class="image-detail">
     <ModalWrapper visible={true}>
       <ModalDialog visible={true} elevated={false} on:close={handleClose} on:cancel={handleClose}>
-        <div class="container" slot="body">
+        <div bind:this={container} class="container" slot="body">
           {#if image.status === 'loading' || !minimalLoadTimerElapsed}
             <div class="progress">
               <CircularProgress variant="indeterminate" />
@@ -143,12 +207,38 @@
           {:else if image.status === 'loaded'}
             <img
               bind:this={previewElement}
+              use:contextMenuAction={handleContextMenuAction}
               src={image.url}
               alt={$i18n.t(
                 'dialog--image-message-viewer.hint--image-preview',
                 'Full-size image preview',
               )}
             />
+
+            <Popover
+              bind:this={contextMenuPopover}
+              bind:element={contextMenuElement}
+              reference={contextMenuVirtualTrigger}
+              container={container ?? undefined}
+              anchorPoints={{
+                reference: {
+                  horizontal: 'left',
+                  vertical: 'bottom',
+                },
+                popover: {
+                  horizontal: 'left',
+                  vertical: 'top',
+                },
+              }}
+              offset={{left: 0, top: 4}}
+              triggerBehavior="open"
+            >
+              <ImageMessageViewerContextMenu
+                slot="popover"
+                on:clicksaveimage={() => handleContextMenuEvent('clicksaveimage')}
+                on:clickcopyimage={() => handleContextMenuEvent('clickcopyimage')}
+              />
+            </Popover>
           {:else if image.status === 'failed'}
             <p class="error">
               <MdIcon theme="Filled">error</MdIcon>

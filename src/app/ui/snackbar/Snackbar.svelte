@@ -40,7 +40,7 @@
   @use 'component' as *;
 
   .snackbar {
-    z-index: $z-index-plus;
+    z-index: $z-index-alert;
     position: absolute;
     height: 100%;
     overflow-y: auto;

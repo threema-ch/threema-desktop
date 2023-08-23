@@ -69,9 +69,11 @@
     <div class="modal" use:contextMenuAction={handleContextMenuAction}>
       <ImageMessageViewer
         messageViewModelController={viewModelBundle.viewModelController}
+        mediaType={message.body.mediaType}
         dimensions={message.body.dimensions}
         on:clickclose={handleCloseModal}
         on:clicksave
+        on:clickcopy
       />
     </div>
   {/if}

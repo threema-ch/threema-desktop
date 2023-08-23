@@ -1,4 +1,9 @@
+import {i18n} from '~/app/ui/i18n';
+import {toast} from '~/app/ui/snackbar';
+import {convertImage} from '~/common/dom/utils/image';
 import {MessageDirection, ReceiverType} from '~/common/enum';
+import {type Logger} from '~/common/logging';
+import {type ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {
     type AnyMessageBody,
@@ -86,4 +91,38 @@ export function extractMessageStatus(message: Message<AnyMessageBody>): MessageS
     }
 
     return undefined;
+}
+
+/**
+ * Copy image bytes to the system clipboard.
+ */
+export async function copyImageBytes(
+    bytesOrFunction: ReadonlyUint8Array | (() => Promise<ReadonlyUint8Array>),
+    mediaType: string,
+    log: Logger,
+): Promise<void> {
+    log.debug('Copying image content');
+    try {
+        const bytes =
+            typeof bytesOrFunction === 'function' ? await bytesOrFunction() : bytesOrFunction;
+        let blob = new Blob([bytes], {type: mediaType});
+        if (mediaType !== 'image/png') {
+            // Convert other image subtypes to png for clipboard compatibility.
+            blob = await convertImage(blob, 'image/png');
+        }
+
+        await navigator.clipboard.write([new ClipboardItem({[blob.type]: blob})]);
+
+        toast.addSimpleSuccess(
+            i18n.get().t('messaging.success--copy-message-image', 'Image copied to clipboard'),
+        );
+        log.debug('Image successfully copied to clipboard');
+    } catch (error) {
+        log.error('Could not copy image to clipboard:', error);
+        toast.addSimpleFailure(
+            i18n
+                .get()
+                .t('messaging.error--copy-message-image', 'Could not copy image to clipboard'),
+        );
+    }
 }

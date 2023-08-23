@@ -29,6 +29,13 @@
   export let reference: HTMLElement | VirtualRect | undefined = undefined;
 
   /**
+   * The HTML element representing this popover (i.e. its outermost container). Note: don't set this
+   * value from outside, only bind to it.
+   */
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  export let element: HTMLElement | undefined | null = undefined;
+
+  /**
    * The container which the popover is constrained by.
    */
   let constraintContainer: HTMLElement | undefined = undefined;
@@ -93,8 +100,6 @@
 
   // Svelte will set the element explicitly to null, if the element gets deleted.
   // eslint-disable-next-line @typescript-eslint/ban-types
-  let positioningContainer: HTMLElement | null = null;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let trigger: HTMLElement | null = null;
   // eslint-disable-next-line @typescript-eslint/ban-types
   let popover: HTMLElement | null = null;
@@ -155,13 +160,13 @@
   function calculatePosition(): typeof position {
     const currentReference = reference ?? trigger ?? undefined;
 
-    if (!positioningContainer || !currentReference || !popover) {
+    if (!element || !currentReference || !popover) {
       return undefined;
     }
 
     const popoverOffset = getPopoverOffset(
       constraintContainer ?? document.body,
-      positioningContainer,
+      element,
       currentReference,
       popover,
       anchorPoints,
@@ -228,13 +233,13 @@
 
   $: {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-sequences
-    constraintContainer, positioningContainer, reference, trigger, popover;
+    constraintContainer, element, reference, trigger, popover;
     updatePosition();
   }
 </script>
 
 <template>
-  <div class="container" bind:this={positioningContainer}>
+  <div class="container" bind:this={element}>
     {#if $$slots.trigger}
       <div class="trigger" bind:this={trigger} on:click={handleTriggerClick}>
         <slot name="trigger" />
@@ -274,7 +279,7 @@
 
     .popover {
       position: absolute;
-      z-index: 1000;
+      z-index: $z-index-modal;
       left: 0;
       top: 0;
     }
