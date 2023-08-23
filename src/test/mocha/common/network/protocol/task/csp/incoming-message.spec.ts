@@ -132,7 +132,7 @@ function createMessage(
 /**
  * Get a incoming text message task from a specific user.
  *
- * @returns a task for an incomming message
+ * @returns a task for an incoming message
  */
 function createNewIncomingTextMessageTask(
     services: TestServices,

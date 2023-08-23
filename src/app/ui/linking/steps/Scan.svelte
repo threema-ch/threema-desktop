@@ -119,7 +119,7 @@
               </div>
             {/if}
             {#if import.meta.env.DEBUG}
-              <IconButton flavor="naked" on:click={copyLinkingUri}>
+              <IconButton flavor="naked" title="🐞 Copy URI" on:click={copyLinkingUri}>
                 <MdIcon theme="Filled">content_copy</MdIcon>
               </IconButton>
             {/if}

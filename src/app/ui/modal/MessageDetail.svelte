@@ -94,7 +94,7 @@
         </ListElement>
         {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
           <Divider />
-          <ListElement label="Debug Info 🐛">
+          <ListElement label="Debug Info 🐞">
             ℹ️ This section is only shown in DEBUG and SANDBOX builds.
           </ListElement>
           <ListElement label="Direction">
