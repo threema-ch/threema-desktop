@@ -12,6 +12,7 @@ import {
     ensureGroupId,
     ensureIdentityString,
     ensureMessageId,
+    ensureNickname,
     type IdentityString,
 } from '~/common/network/types';
 import {type f64} from '~/common/types';
@@ -204,6 +205,13 @@ const TEST_GROUP_SCHEMA = v
 
 export const SCREENSHOT_DATA_JSON_SCHEMA = v
     .object({
+        profile: v
+            .object({
+                identity: v.string().map(ensureIdentityString),
+                nickname: v.string().map(ensureNickname).optional(),
+                profilePicture: v.string().map(base64ToU8a),
+            })
+            .optional(),
         contacts: v.array(TEST_CONTACT_SCHEMA).default([]),
         groups: v.array(TEST_GROUP_SCHEMA).default([]),
     })

@@ -145,19 +145,25 @@ def convert_groups(groups, current_dir, contact_list_identities, own_identity):
 
 def convert(variant, screenshots_dir, root_dir):
     # Read JSON
-    work_data_dir = path.join(screenshots_dir, 'chat_data', variant)
-    with open(path.join(work_data_dir, 'data.json')) as f:
+    data_dir = path.join(screenshots_dir, 'chat_data', variant)
+    with open(path.join(data_dir, 'data.json')) as f:
         chat_data = json.loads(f.read())
 
     # Determine own identity
     own_identity = chat_data['myIdentity']
+    with open(path.join(data_dir, 'me.jpg'), 'rb') as f:
+        own_profile_picture = b64encode(f.read()).decode('ascii')
 
     # Prepare output JSON
-    contacts = convert_contacts(chat_data['contacts'], work_data_dir, own_identity)
+    contacts = convert_contacts(chat_data['contacts'], data_dir, own_identity)
     contact_list_identities = [c['identity'] for c in contacts]
-    groups = convert_groups(chat_data['groups'], work_data_dir, contact_list_identities, own_identity)
+    groups = convert_groups(chat_data['groups'], data_dir, contact_list_identities, own_identity)
     out = {
-        'identity': own_identity,
+        'profile': {
+            'identity': own_identity,
+            'nickname': chat_data['nickname'],
+            'profilePicture': own_profile_picture,
+        },
         'contacts': contacts,
         'groups': groups,
     }

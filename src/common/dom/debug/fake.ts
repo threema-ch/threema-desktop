@@ -360,7 +360,10 @@ export async function generateScreenshotData(
     const {device, model} = services;
 
     // Import JSON data (but only in debug and/or sandbox builds)
-    let data: ScreenshotDataJson = {contacts: [], groups: []};
+    let data: ScreenshotDataJson = {
+        contacts: [],
+        groups: [],
+    };
     if (import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
         const jsonFiles = import.meta.globEager('./screenshot-data-*.json');
         const filename = `./screenshot-data-${import.meta.env.BUILD_VARIANT}.json`;
@@ -368,6 +371,15 @@ export async function generateScreenshotData(
             const json = jsonFiles[filename];
             data = SCREENSHOT_DATA_JSON_SCHEMA.parse(json);
         }
+    }
+
+    // Set own profile
+    if (data.profile !== undefined) {
+        model.user.profileSettings.get().controller.update({
+            nickname: data.profile.nickname,
+            profilePicture: data.profile.profilePicture,
+            profilePictureShareWith: {group: 'everyone'},
+        });
     }
 
     // Add contacts
