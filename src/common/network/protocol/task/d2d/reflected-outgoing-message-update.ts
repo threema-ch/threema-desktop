@@ -10,6 +10,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
 import {getConversationById} from '~/common/network/protocol/task/message-processing-helpers';
+import {type D2mDeviceId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -17,15 +18,18 @@ export class ReflectedOutgoingMessageUpdateTask implements PassiveTask<void> {
     public readonly type: PassiveTaskSymbol = PASSIVE_TASK;
     public readonly persist = false;
     private readonly _log: Logger;
+    private readonly _senderDeviceIdString: string;
 
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _unvalidatedMessage: protobuf.d2d.OutgoingMessageUpdate,
+        senderDeviceId: D2mDeviceId,
         private readonly _reflectedDate: Date,
     ) {
         this._log = _services.logging.logger(
             `network.protocol.task.reflected-outgoing-message-update`,
         );
+        this._senderDeviceIdString = u64ToHexLe(senderDeviceId);
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -40,13 +44,13 @@ export class ReflectedOutgoingMessageUpdateTask implements PassiveTask<void> {
             );
         } catch (error) {
             this._log.error(
-                `Discarding reflected OutgoingMessageUpdate message due to validation error: ${error}`,
+                `Discarding reflected OutgoingMessageUpdate message from ${this._senderDeviceIdString} due to validation error: ${error}`,
             );
             return;
         }
 
         this._log.info(
-            `Received reflected OutgoingMessageUpdate message referencing ${validatedMessage.updates.length} messages`,
+            `Received reflected OutgoingMessageUpdate message from ${this._senderDeviceIdString} referencing ${validatedMessage.updates.length} messages`,
         );
 
         // Process updates

@@ -27,30 +27,42 @@ export function getTaskForIncomingD2dMessage(
             return new ReflectedOutgoingMessageTask(
                 services,
                 envelope.outgoingMessage,
+                envelope.deviceId,
                 reflected.timestamp,
             );
         case 'incomingMessage':
             return new ReflectedIncomingMessageTask(
                 services,
                 envelope.incomingMessage,
+                envelope.deviceId,
                 reflected.timestamp,
             );
         case 'incomingMessageUpdate':
             return new ReflectedIncomingMessageUpdateTask(
                 services,
                 envelope.incomingMessageUpdate,
+                envelope.deviceId,
                 reflected.timestamp,
             );
         case 'outgoingMessageUpdate':
             return new ReflectedOutgoingMessageUpdateTask(
                 services,
                 envelope.outgoingMessageUpdate,
+                envelope.deviceId,
                 reflected.timestamp,
             );
         case 'userProfileSync':
-            return new ReflectedUserProfileSyncTask(services, envelope.userProfileSync);
+            return new ReflectedUserProfileSyncTask(
+                services,
+                envelope.userProfileSync,
+                envelope.deviceId,
+            );
         case 'settingsSync':
-            return new ReflectedSettingsSyncTask(services, envelope.settingsSync);
+            return new ReflectedSettingsSyncTask(
+                services,
+                envelope.settingsSync,
+                envelope.deviceId,
+            );
         case 'mdmParameterSync':
         case 'distributionListSync':
             return new TechDebtTask(services, `Handle inbound D2D ${envelope.content}`);

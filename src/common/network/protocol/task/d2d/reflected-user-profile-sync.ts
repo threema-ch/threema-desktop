@@ -12,8 +12,10 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
+import {type D2mDeviceId} from '~/common/network/types';
 import {type Mutable} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
 import {VALITA_EMPTY_STRING, VALITA_NULL, VALITA_UNDEFINED} from '~/common/utils/valita-helpers';
 
 /**
@@ -23,20 +25,25 @@ export class ReflectedUserProfileSyncTask implements PassiveTask<void> {
     public readonly type: PassiveTaskSymbol = PASSIVE_TASK;
     public readonly persist = false;
     private readonly _log: Logger;
+    private readonly _senderDeviceIdString: string;
 
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _unvalidatedMessage: protobuf.d2d.UserProfileSync,
+        senderDeviceId: D2mDeviceId,
     ) {
         this._log = _services.logging.logger(
             `network.protocol.task.reflected-user-profile-sync-task`,
         );
+        this._senderDeviceIdString = u64ToHexLe(senderDeviceId);
     }
 
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
         const {model} = this._services;
 
-        this._log.info(`Received reflected UserProfileSync message`);
+        this._log.info(
+            `Received reflected UserProfileSync message from ${this._senderDeviceIdString}`,
+        );
 
         // Validate the Protobuf message
         let validatedMessage;

@@ -34,6 +34,7 @@ import type * as structbuf from '~/common/network/structbuf';
 import {
     type ContactConversationId,
     type ConversationId,
+    type D2mDeviceId,
     type GroupConversationId,
     type MessageId,
 } from '~/common/network/types';
@@ -101,9 +102,10 @@ export class ReflectedOutgoingMessageTask
     public constructor(
         services: ServicesForTasks,
         unvalidatedMessage: protobuf.d2d.OutgoingMessage,
+        senderDeviceId: D2mDeviceId,
         private readonly _reflectedAt: Date,
     ) {
-        super(services, unvalidatedMessage, 'outgoing');
+        super(services, unvalidatedMessage, senderDeviceId, 'outgoing');
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -121,7 +123,9 @@ export class ReflectedOutgoingMessageTask
         const {validatedMessage, messageTypeDebug} = validationResult;
         const {type, body, conversation: d2dConversationId} = validatedMessage;
 
-        this._log.info(`Received reflected outgoing ${messageTypeDebug} message`);
+        this._log.info(
+            `Received reflected outgoing ${messageTypeDebug} message from ${this._senderDeviceIdString}`,
+        );
 
         // Decode Body
         const validatedBody = this._decodeMessage(type, body, messageTypeDebug);

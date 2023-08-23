@@ -9,6 +9,8 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
+import {type D2mDeviceId} from '~/common/network/types';
+import {u64ToHexLe} from '~/common/utils/number';
 import {purgeUndefinedProperties} from '~/common/utils/object';
 
 /**
@@ -18,28 +20,33 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
     public readonly type: PassiveTaskSymbol = PASSIVE_TASK;
     public readonly persist = false;
     private readonly _log: Logger;
+    private readonly _senderDeviceIdString: string;
 
     public constructor(
         private readonly _services: ServicesForTasks,
         private readonly _unvalidatedMessage: protobuf.d2d.SettingsSync,
+        senderDeviceId: D2mDeviceId,
     ) {
         this._log = _services.logging.logger(`network.protocol.task.reflected-settings-sync-task`);
+        this._senderDeviceIdString = u64ToHexLe(senderDeviceId);
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
-        this._log.info(`Received reflected SettingsSync message`);
-
         // Validate the Protobuf message
         let validatedMessage;
         try {
             validatedMessage = d2d.SettingsSync.SCHEMA.parse(this._unvalidatedMessage);
         } catch (error) {
             this._log.error(
-                `Discarding reflected SettingsSync message due to validation error: ${error}`,
+                `Discarding reflected SettingsSync message from ${this._senderDeviceIdString} due to validation error: ${error}`,
             );
             return;
         }
+
+        this._log.info(
+            `Received reflected SettingsSync message from ${this._senderDeviceIdString}`,
+        );
 
         this._processPrivacySettings(validatedMessage.update.settings);
         this._processCallsSettings(validatedMessage.update.settings);

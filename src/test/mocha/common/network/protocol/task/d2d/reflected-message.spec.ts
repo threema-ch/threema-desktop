@@ -15,6 +15,7 @@ import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {
     type ContactConversationId,
+    ensureD2mDeviceId,
     ensureIdentityString,
     type GroupId,
     type IdentityString,
@@ -106,6 +107,7 @@ export function run(): void {
                 const task = new ReflectedIncomingMessageTask(
                     services,
                     reflectedMessage,
+                    ensureD2mDeviceId(42n),
                     reflectedAt,
                 );
                 const handle = new TestHandle(services, []);
@@ -152,6 +154,7 @@ export function run(): void {
                 const task = new ReflectedIncomingMessageTask(
                     services,
                     reflectedMessage,
+                    ensureD2mDeviceId(42n),
                     reflectedAt,
                 );
                 const handle = new TestHandle(services, []);
@@ -233,6 +236,7 @@ export function run(): void {
                         group: undefined,
                         distributionList: undefined,
                     }),
+                    ensureD2mDeviceId(42n),
                     new Date(),
                 );
                 const handle = new TestHandle(services, []);
@@ -275,6 +279,7 @@ export function run(): void {
                         },
                         {creatorIdentity: user1.identity.string, groupId},
                     ),
+                    ensureD2mDeviceId(42n),
                     new Date(),
                 );
                 const handle = new TestHandle(services, []);
@@ -315,6 +320,7 @@ export function run(): void {
                             distributionList: undefined,
                         },
                     ),
+                    ensureD2mDeviceId(42n),
                     new Date(),
                 );
                 const handle = new TestHandle(services, []);
@@ -346,6 +352,7 @@ export function run(): void {
                             distributionList: undefined,
                         },
                     ),
+                    ensureD2mDeviceId(42n),
                     new Date(),
                 );
                 const handle = new TestHandle(services, []);
@@ -384,6 +391,7 @@ export function run(): void {
                         // CSP: Contact
                         undefined,
                     ),
+                    ensureD2mDeviceId(42n),
                     new Date(),
                 );
                 const handle = new TestHandle(services, []);
@@ -419,6 +427,7 @@ export function run(): void {
                         // CSP: Group
                         {creatorIdentity: user1.identity.string, groupId},
                     ),
+                    ensureD2mDeviceId(42n),
                     new Date(),
                 );
                 const handle = new TestHandle(services, []);
@@ -466,6 +475,7 @@ export function run(): void {
                         // CSP: Group 2
                         {creatorIdentity: user1.identity.string, groupId: groupId2},
                     ),
+                    ensureD2mDeviceId(42n),
                     new Date(),
                 );
                 const handle = new TestHandle(services, []);

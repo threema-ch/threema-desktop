@@ -18,7 +18,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import * as structbuf from '~/common/network/structbuf';
-import {isMessageId} from '~/common/network/types';
+import {type D2mDeviceId, isMessageId} from '~/common/network/types';
 import {exhausted} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -69,10 +69,12 @@ export abstract class ReflectedMessageTaskBase<
     TProtoMsg extends protobuf.d2d.IncomingMessage | protobuf.d2d.OutgoingMessage,
 > {
     protected readonly _log: Logger;
+    protected readonly _senderDeviceIdString: string;
 
     public constructor(
         protected readonly _services: ServicesForTasks,
         protected readonly _unvalidatedMessage: TProtoMsg,
+        senderDeviceId: D2mDeviceId,
         protected readonly _direction: 'incoming' | 'outgoing',
     ) {
         const messageId = isMessageId(_unvalidatedMessage.messageId)
@@ -81,6 +83,7 @@ export abstract class ReflectedMessageTaskBase<
         this._log = _services.logging.logger(
             `network.protocol.task.in-${this._direction}-message.${messageId}`,
         );
+        this._senderDeviceIdString = u64ToHexLe(senderDeviceId);
     }
 
     /**
