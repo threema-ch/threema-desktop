@@ -103,6 +103,7 @@ import {
     type TransferredFromRemote,
     type TransferredToRemote,
 } from '~/common/utils/endpoint';
+import {u64ToHexLe} from '~/common/utils/number';
 import {taggedRace} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {AbortRaiser} from '~/common/utils/signal';
@@ -493,6 +494,16 @@ export class Backend implements ProxyMarked {
         this.model = _services.model;
         this.keyStorage = _services.keyStorage;
         this.viewModel = _services.viewModel;
+
+        {
+            // Log IDs
+            const dgid = bytesToHex(_services.device.d2m.dgpk.public);
+            const d2m = u64ToHexLe(_services.device.d2m.deviceId);
+            const csp = u64ToHexLe(this.deviceIds.cspDeviceId);
+            this._log.info(
+                `Backend created.\nDevice IDs:\n  DGID = ${dgid}\n  D2M  = ${d2m}\n  CSP  = ${csp}`,
+            );
+        }
     }
 
     /**
