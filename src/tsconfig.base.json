@@ -13,6 +13,7 @@
       "~/app/*": ["./app/*"],
       "~/test/*": ["./test/*"],
       "~/worker/*": ["./worker/*"],
+      "~/translations/*": ["./translations/*"],
       "#3sc/*": ["../node_modules/threema-svelte-components/src/*"]
     },
     "allowUnreachableCode": false,

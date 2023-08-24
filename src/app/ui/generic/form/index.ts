@@ -1,6 +1,7 @@
 import {markify, TokenType} from '@threema/threema-markup';
 import autolinker from 'autolinker';
 
+import {type I18nType} from '~/app/ui/i18n-types';
 import {MessageDirection} from '~/common/enum';
 import {type Conversation, type RemoteModelFor} from '~/common/model';
 import {type Mutable, type u53} from '~/common/types';
@@ -12,11 +13,6 @@ import {derive} from '~/common/utils/store/derived-store';
 import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 import {type Mention} from '~/common/viewmodel/utils/mentions';
-
-/**
- * A function similar to `i18n.t`, because that can't be imported here.
- */
-type I18nTLikeFunction = (key: string, defaultValue: string) => string;
 
 /**
  * Escape HTML-unsafe characters in the given input string. If the input is
@@ -266,7 +262,7 @@ export function getTimeIsoString(date: Date): string {
  * @param enableLinks Whether to format mentions of contacts as links.
  * @returns A string containing a HTML tag which represents the supplied `Mention`.
  */
-function getMentionHtml(t: I18nTLikeFunction, mention: Mention, enableLinks: boolean): string {
+function getMentionHtml(t: I18nType['t'], mention: Mention, enableLinks: boolean): string {
     if (mention.type === 'all') {
         const text = t('messaging.label--mention-all', 'All');
 
@@ -325,7 +321,7 @@ export function parseMarkup(text: string): string {
  * @returns The text containing the mentions replaced with HTML.
  */
 export function parseMentions(
-    t: I18nTLikeFunction,
+    t: I18nType['t'],
     text: string,
     mentions: Mention | Mention[],
     enableLinks: boolean,
@@ -424,7 +420,7 @@ export interface ParseTextParams {
  * @returns The text containing the specified tokens replaced with HTML.
  */
 export function parseText(
-    t: I18nTLikeFunction,
+    t: I18nType['t'],
     {
         text,
         mentions,

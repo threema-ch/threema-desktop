@@ -1,21 +1,21 @@
 /* eslint '@typescript-eslint/no-misused-promises': 0 */
 // SOURCE: https://github.com/i18next/i18next/issues/1901
 
-import {default as i18next, type i18n as I18nType} from 'i18next';
+import {default as i18next, type i18n as I18nextType} from 'i18next';
 import ICU from 'i18next-icu';
 
+import {type I18nType} from '~/app/ui/i18n-types';
 import {type Logger, type LoggerFactory, type LogRecordFn} from '~/common/logging';
 import {type StrictPartial, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-
 // Import all translation files
-import translationDeRendezvousEmojiJson from '../../translations/de/rendezvous-emoji.json';
-import translationDeMainJson from '../../translations/de/translation.json';
-import translationEnRendezvousEmojiJson from '../../translations/en/rendezvous-emoji.json';
-import translationEnMainJson from '../../translations/en/translation.json';
+import translationDeRendezvousEmojiJson from '~/translations/de/rendezvous-emoji.json';
+import translationDeMainJson from '~/translations/de/translation.json';
+import translationEnRendezvousEmojiJson from '~/translations/en/rendezvous-emoji.json';
+import translationEnMainJson from '~/translations/en/translation.json';
 
 // Merge translation files
 const translationDeJson = {...translationDeMainJson, ...translationDeRendezvousEmojiJson};
@@ -148,10 +148,10 @@ function i18nLogAdapter(logRecordFn: LogRecordFn): (args: unknown[]) => void {
 
 let log: Logger;
 
-// Returning an object `{i18n: i18nType}` instead of directly `i18n: i18nType` is a way to force
+// Returning an object `{i18n: i18nextType}` instead of directly `i18n: i18nextType` is a way to force
 // triggering an update.
-function createI18nStore(i18n: I18nType): WritableStore<{i18n: I18nType}> {
-    const i18nStore = new WritableStore<{i18n: I18nType}>({i18n});
+function createI18nStore(i18n: I18nextType): WritableStore<{i18n: I18nextType}> {
+    const i18nStore = new WritableStore<{i18n: I18nextType}>({i18n});
 
     function forceStoreRefresh(): void {
         i18nStore.set({i18n});
@@ -167,7 +167,7 @@ function createI18nStore(i18n: I18nType): WritableStore<{i18n: I18nType}> {
 
 const i18nStore = createI18nStore(i18next);
 
-function currentI18n(): I18nType {
+function currentI18n(): I18nextType {
     return i18nStore.get().i18n;
 }
 
@@ -222,7 +222,16 @@ async function setLanguage(locale: Locale): Promise<void> {
 
 // Svelte only re-renders the component using the store, when the store is updated.
 // Returning an object is a way to force triggering an update.
+//
 // TODO(DESK-1081): `i18n` should not be a global, but exposed through `globals`.
-export const i18n: IQueryableStore<Pick<I18nType, 't'>> = derive(i18nStore, (updatedI18nStore) => ({
-    t: updatedI18nStore.i18n.t,
-}));
+export const i18n: IQueryableStore<Pick<I18nextType, 't'> & Omit<I18nType, 't'>> = derive(
+    i18nStore,
+    (updatedI18nStore) => {
+        const locale = ensureLocale(updatedI18nStore.i18n.resolvedLanguage);
+
+        return {
+            t: updatedI18nStore.i18n.t,
+            locale: locale === 'cimode' ? 'en' : locale,
+        };
+    },
+);
