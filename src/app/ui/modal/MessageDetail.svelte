@@ -2,6 +2,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import Time from '~/app/ui/generic/form/Time.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
@@ -47,24 +48,36 @@
         title={$i18n.t('dialog--message-details.label--title', 'Message Details')}
       />
       <div class="body" slot="body">
-        <ListElement label={$i18n.t('dialog--message-details.label--created-date', 'Created')}
-          >{message.view.createdAt.toLocaleString()}</ListElement
-        >
+        <ListElement label={$i18n.t('dialog--message-details.label--created-date', 'Created')}>
+          <Time date={message.view.createdAt} format="extended" />
+        </ListElement>
         {#if message.ctx === MessageDirection.INBOUND}
           <ListElement label={$i18n.t('dialog--message-details.label--received-date', 'Received')}
-            >{message.view.receivedAt.toLocaleString()}</ListElement
+            ><Time date={message.view.receivedAt} format="extended" /></ListElement
           >
         {/if}
         {#if message.ctx === MessageDirection.OUTBOUND}
-          <ListElement label={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}
-            >{message.view.sentAt?.toLocaleString() ?? '-'}</ListElement
-          >
+          <ListElement label={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}>
+            {#if message.view.sentAt === undefined}
+              -
+            {:else}
+              <Time date={message.view.sentAt} format="extended" />
+            {/if}
+          </ListElement>
           <ListElement label={$i18n.t('dialog--message-details.label--delivered-date', 'Delivered')}
-            >{message.view.deliveredAt?.toLocaleString() ?? '-'}</ListElement
+            >{#if message.view.deliveredAt === undefined}
+              -
+            {:else}
+              <Time date={message.view.deliveredAt} format="extended" />
+            {/if}</ListElement
           >
         {/if}
         <ListElement label={$i18n.t('dialog--message-details.label--read-date', 'Read')}
-          >{message.view.readAt?.toLocaleString() ?? '-'}</ListElement
+          >{#if message.view.readAt === undefined}
+            -
+          {:else}
+            <Time date={message.view.readAt} format="extended" />
+          {/if}</ListElement
         >
         <Divider />
         <ListElement label={$i18n.t('dialog--message-details.label--message-id', 'Message ID')}

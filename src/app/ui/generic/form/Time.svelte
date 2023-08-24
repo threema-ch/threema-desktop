@@ -12,14 +12,26 @@
    * Format variant:
    *  - `auto`: Shortest representation possible (relative to now).
    *  - `time`: Only display time.
+   *  - `extended`: Longer, more detailed, and unambiguous display of date and time.
    */
-  export let format: 'auto' | 'time' = 'auto';
+  export let format: 'auto' | 'time' | 'extended' = 'auto';
 
   function formatDate(it: Date, i18n: I18nType): string {
     if (format === 'time') {
       return new Intl.DateTimeFormat(i18n.locale, {
         hour: 'numeric',
         minute: '2-digit',
+      }).format(it);
+    }
+
+    if (format === 'extended') {
+      return new Intl.DateTimeFormat(i18n.locale, {
+        year: 'numeric',
+        month: 'long',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
       }).format(it);
     }
 
