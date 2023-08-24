@@ -4,6 +4,7 @@
   import {type AppServices} from '~/app/types';
   import {D2mLeaderState} from '~/common/enum';
   import {ConnectionState, ConnectionStateUtils} from '~/common/network/protocol/state';
+  import {u64ToHexLe} from '~/common/utils/number';
 
   export let services: AppServices;
 
@@ -41,8 +42,8 @@
 
       <p>
         Threema ID: {backend.user.identity}<br />
-        CSP Device ID: {deviceIds.cspDeviceId}<br />
-        D2M Device ID: {deviceIds.d2mDeviceId}<br />
+        CSP Device ID: {u64ToHexLe(deviceIds.cspDeviceId)}<br />
+        D2M Device ID: {u64ToHexLe(deviceIds.d2mDeviceId)}<br />
         Server group: {debugPanel.serverGroup}<br />
         Leader: {#if leaderState$ === D2mLeaderState.LEADER}yes{:else}no{/if}
       </p>
