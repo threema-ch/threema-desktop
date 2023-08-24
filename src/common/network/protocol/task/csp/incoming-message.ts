@@ -288,10 +288,14 @@ interface BaseProcessingInstructions {
      */
     readonly missingContactHandling: 'create' | 'ignore' | 'discard';
     /**
-     * The {@link D2dIncomingMessageFragment} that should be reflected. Set to `undefined` if
-     * nothing should be reflected.
+     * The {@link D2dIncomingMessageFragment} that should be reflected.
+     *
+     * Set to `deferred` if the message should not yet be reflected by the IncomingMessageTask, but
+     * by a subtask.
+     *
+     * Set to 'not-reflected' if the message should not be reflected at all.
      */
-    readonly reflectFragment: D2dIncomingMessageFragment | undefined;
+    readonly reflectFragment: D2dIncomingMessageFragment | 'deferred' | 'not-reflected';
 }
 
 interface ConversationMessageInstructions extends BaseProcessingInstructions {
@@ -329,7 +333,7 @@ interface ForwardSecurityMessageInstructions extends BaseProcessingInstructions 
     readonly messageCategory: 'forward-security';
     readonly deliveryReceipt: false;
     readonly missingContactHandling: 'create';
-    readonly reflectFragment: undefined;
+    readonly reflectFragment: 'not-reflected';
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
 }
 
@@ -603,16 +607,19 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // Handle reflection
         if (MESSAGE_TYPE_PROPERTIES[type].reflect.incoming) {
             assert(
-                instructions.reflectFragment !== undefined,
-                `Message of type ${type} should be reflected, but reflect fragment is undefined`,
+                instructions.reflectFragment !== 'not-reflected',
+                `Message of type ${type} should be reflected, but reflect fragment is 'not-reflected'`,
             );
         } else {
             assert(
-                instructions.reflectFragment === undefined,
+                instructions.reflectFragment === 'not-reflected',
                 `Message of type ${type} should not be reflected, but reflect fragment is set`,
             );
         }
-        if (instructions.reflectFragment !== undefined) {
+        if (
+            instructions.reflectFragment !== 'not-reflected' &&
+            instructions.reflectFragment !== 'deferred'
+        ) {
             // Reflect the message and wait for D2M acknowledgement
             this._log.info(`Reflecting incoming ${messageTypeDebug} message`);
             let incomingMessageReflectedAt;
@@ -1187,7 +1194,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         validatedGroupSetup,
                         reflectGroupSetup,
                     ),
-                    reflectFragment: undefined,
+                    reflectFragment: 'deferred',
                 };
                 return instructions;
             }
@@ -1353,7 +1360,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     messageCategory: 'forward-security',
                     deliveryReceipt: false,
                     missingContactHandling: 'create',
-                    reflectFragment: undefined,
+                    reflectFragment: 'not-reflected',
                     task: new IncomingForwardSecurityEnvelopeTask(
                         this._services,
                         messageId,
