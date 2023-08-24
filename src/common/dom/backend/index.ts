@@ -1520,7 +1520,7 @@ class Connection {
         controller.taskManager
             .run(services, controller, abort.listener)
             .then((v) => unreachable(v))
-            .catch((error) => log.warn('Task manager errored:', error));
+            .catch((error) => log.error('Task manager errored:', error));
 
         const connection = new Connection(mediator, connectionState, leaderState);
         delayedConnection.set(connection);
