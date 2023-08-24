@@ -1,5 +1,7 @@
 <script lang="ts">
-  import {getDateTimeIsoString, getTimeIsoString} from '.';
+  import {formatDateLocalized} from '~/app/ui/generic/form';
+  import {i18n as i18nStore} from '~/app/ui/i18n';
+  import {type I18nType} from '~/app/ui/i18n-types';
 
   /**
    * Date object.
@@ -8,22 +10,23 @@
 
   /**
    * Format variant:
-   *  - `datetime`: Display date and time.
-   *  - `time`: only display time.
+   *  - `auto`: Shortest representation possible (relative to now).
+   *  - `time`: Only display time.
    */
-  export let format: 'datetime' | 'time' = 'datetime';
+  export let format: 'auto' | 'time' = 'auto';
 
-  function formatDate(dateParam: Date): string {
-    if (new Date().toDateString() === dateParam.toDateString() || format === 'time') {
-      // Display only the time for same day dates
-      return getTimeIsoString(dateParam);
-    } else {
-      // Display the date and time if date is not today
-      return getDateTimeIsoString(dateParam);
+  function formatDate(it: Date, i18n: I18nType): string {
+    if (format === 'time') {
+      return new Intl.DateTimeFormat(i18n.locale, {
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(it);
     }
+
+    return formatDateLocalized(date, $i18nStore);
   }
 </script>
 
 <template>
-  {formatDate(date)}
+  {formatDate(date, $i18nStore)}
 </template>

@@ -225,36 +225,6 @@ export function sortMessages(
 }
 
 /**
- * TODO(DESK-536): Temporary solution, which will get replaced after DESK-536 is implemented
- *
- * @param date Date
- * @returns string ISO formatted DateTime
- */
-export function getDateTimeIsoString(date: Date): string {
-    function padStart(number: u53): string {
-        return number.toString().padStart(2, '0');
-    }
-
-    const year = date.getFullYear();
-    const month = padStart(date.getMonth() + 1);
-    const day = padStart(date.getDate());
-    const hour = padStart(date.getHours());
-    const minute = padStart(date.getMinutes());
-
-    return `${year}-${month}-${day} ${hour}:${minute}`;
-}
-
-/**
- * TODO(DESK-536): Temporary solution, which will get replaced after DESK-536 is implemented
- *
- * @param date Date
- * @returns string ISO formatted Time
- */
-export function getTimeIsoString(date: Date): string {
-    return getDateTimeIsoString(date).split(' ')[1];
-}
-
-/**
  * Returns an HTML tag (as a string) that can be used to render a {@link Mention}.
  *
  * @param t The function to use for translating labels of special mentions, such as "@All".
@@ -451,4 +421,123 @@ export function parseText(
     }
 
     return text;
+}
+
+/**
+ * Determine whether `a` and `b` {@link Date}s are on the same day.
+ */
+function isSameDay(a: Date, b: Date): boolean {
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+    );
+}
+
+/**
+ * Determine whether `a` and `b` {@link Date}s are in the same year.
+ */
+function isSameYear(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear();
+}
+
+/**
+ * Determine whether the given {@link Date} lies within the last week (including today).
+ */
+function isWithinLastWeek(date: Date): boolean {
+    const tomorrowLastWeek = new Date();
+    tomorrowLastWeek.setDate(tomorrowLastWeek.getDate() - 6);
+    tomorrowLastWeek.setHours(0, 0, 0, 0);
+
+    return date <= new Date() && date > tomorrowLastWeek;
+}
+
+/**
+ * Determine whether the given {@link Date} lies in the current year.
+ */
+function isWithinCurrentYear(date: Date): boolean {
+    return isSameYear(date, new Date());
+}
+
+/**
+ * Determine whether the given {@link Date} is today.
+ */
+function isToday(date: Date): boolean {
+    return isSameDay(date, new Date());
+}
+
+/**
+ * Determine whether the given {@link Date} is yesterday.
+ */
+function isYesterday(date: Date): boolean {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    return isSameDay(date, yesterday);
+}
+
+/**
+ * Format a date as a "fluent", localized string.
+ *
+ * @param date Date to format.
+ * @param i18n Translation provider.
+ * @returns Formatted date.
+ */
+export function formatDateLocalized(date: Date, i18n: I18nType): string {
+    const timeOptions: Intl.DateTimeFormatOptions = {
+        hour: 'numeric',
+        minute: '2-digit',
+    };
+
+    if (isToday(date)) {
+        const formatter = new Intl.DateTimeFormat(i18n.locale, timeOptions);
+
+        // Example EN: "1:44 PM"
+        // Example DE: "13:44"
+        return formatter.format(date);
+    }
+
+    if (isYesterday(date)) {
+        const formatter = new Intl.DateTimeFormat(i18n.locale, timeOptions);
+
+        // Example EN: "Yesterday 1:44 PM"
+        // Example DE: "Gestern, 13:44"
+        return i18n.t('messaging.label--timestamp-yesterday', 'Yesterday {time}', {
+            time: formatter.format(date),
+        });
+    }
+
+    if (isWithinLastWeek(date)) {
+        const formatter = new Intl.DateTimeFormat(i18n.locale, {
+            weekday: 'long',
+            ...timeOptions,
+        });
+
+        // Example EN: "Monday 1:44 PM"
+        // Example DE: "Montag, 13:44"
+        return formatter.format(date);
+    }
+
+    if (isWithinCurrentYear(date)) {
+        const formatter = new Intl.DateTimeFormat(i18n.locale, {
+            month: 'short',
+            day: 'numeric',
+            ...timeOptions,
+        });
+
+        // Example EN: "Jul 7, 1:44 PM"
+        // Example DE: "7. Jul 13:44"
+        return formatter.format(date);
+    }
+
+    const formatter = new Intl.DateTimeFormat(i18n.locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        ...timeOptions,
+    });
+
+    // Example EN: "Jul 7, 2023, 1:44 PM"
+    // Example DE: "7. Jul 2023, 13:44"
+    return formatter.format(date);
 }

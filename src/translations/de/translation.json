@@ -310,6 +310,7 @@
     "label--prefix-draft": "Entwurf:",
     "label--protected-conversation": "Privat",
     "label--search-conversation": "Chat suchen",
+    "label--timestamp-yesterday": "Gestern, {time}",
     "label--unread-messages-count": "{n, plural, =0 {} =1 {1 neue Nachricht} other {# neue Nachrichten}}",
     "markup--chat-empty-state": "Dieser Chat ist mit Ihrem Mobilgerät verknüpft. <1/>Alle künftigen Nachrichten werden hier erscheinen.",
     "success--copy-message-content": "Nachricht in die Zwischenablage kopiert",

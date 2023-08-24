@@ -149,7 +149,7 @@
     {#if !isQuoted}
       <span class="indicators" class:badge={isCaptionlessImage}>
         <span class="time">
-          <Time date={message.updatedAt} format={isCaptionlessImage ? 'time' : 'datetime'} />
+          <Time date={message.updatedAt} format={isCaptionlessImage ? 'time' : 'auto'} />
         </span>
         <MessageStatus
           direction={message.direction}
