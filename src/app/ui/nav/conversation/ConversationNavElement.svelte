@@ -3,7 +3,7 @@
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
   import {getFragmentForRoute, type Router} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import Time from '~/app/ui/generic/form/Time.svelte';
+  import DateTime from '~/app/ui/generic/form/DateTime.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
@@ -241,7 +241,7 @@
 
             <div class="status" slot="additional-bottom">
               {#if $lastMessageStore !== undefined && receiver !== undefined}
-                <Time date={$lastMessageStore?.view.createdAt} />
+                <DateTime date={$lastMessageStore?.view.createdAt} />
                 <span class="icon">
                   {#if isGroupConversation}
                     <MdIcon theme="Filled">group</MdIcon>

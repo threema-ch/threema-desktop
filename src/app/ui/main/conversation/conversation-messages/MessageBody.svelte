@@ -1,8 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte/internal';
 
+  import DateTime from '~/app/ui/generic/form/DateTime.svelte';
   import Text from '~/app/ui/generic/form/Text.svelte';
-  import Time from '~/app/ui/generic/form/Time.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {
     extractMessageStatus,
@@ -149,7 +149,7 @@
     {#if !isQuoted}
       <span class="indicators" class:badge={isCaptionlessImage}>
         <span class="time">
-          <Time date={message.updatedAt} format={isCaptionlessImage ? 'time' : 'auto'} />
+          <DateTime date={message.updatedAt} format={isCaptionlessImage ? 'time' : 'auto'} />
         </span>
         <MessageStatus
           direction={message.direction}

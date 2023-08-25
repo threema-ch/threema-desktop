@@ -2,7 +2,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import Time from '~/app/ui/generic/form/Time.svelte';
+  import DateTime from '~/app/ui/generic/form/DateTime.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
@@ -49,11 +49,11 @@
       />
       <div class="body" slot="body">
         <ListElement label={$i18n.t('dialog--message-details.label--created-date', 'Created')}>
-          <Time date={message.view.createdAt} format="extended" />
+          <DateTime date={message.view.createdAt} format="extended" />
         </ListElement>
         {#if message.ctx === MessageDirection.INBOUND}
           <ListElement label={$i18n.t('dialog--message-details.label--received-date', 'Received')}
-            ><Time date={message.view.receivedAt} format="extended" /></ListElement
+            ><DateTime date={message.view.receivedAt} format="extended" /></ListElement
           >
         {/if}
         {#if message.ctx === MessageDirection.OUTBOUND}
@@ -61,14 +61,14 @@
             {#if message.view.sentAt === undefined}
               -
             {:else}
-              <Time date={message.view.sentAt} format="extended" />
+              <DateTime date={message.view.sentAt} format="extended" />
             {/if}
           </ListElement>
           <ListElement label={$i18n.t('dialog--message-details.label--delivered-date', 'Delivered')}
             >{#if message.view.deliveredAt === undefined}
               -
             {:else}
-              <Time date={message.view.deliveredAt} format="extended" />
+              <DateTime date={message.view.deliveredAt} format="extended" />
             {/if}</ListElement
           >
         {/if}
@@ -76,7 +76,7 @@
           >{#if message.view.readAt === undefined}
             -
           {:else}
-            <Time date={message.view.readAt} format="extended" />
+            <DateTime date={message.view.readAt} format="extended" />
           {/if}</ListElement
         >
         <Divider />

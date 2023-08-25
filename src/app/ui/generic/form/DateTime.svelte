@@ -1,7 +1,10 @@
 <script lang="ts">
+  import {globals} from '~/app/globals';
   import {formatDateLocalized} from '~/app/ui/generic/form';
   import {i18n as i18nStore} from '~/app/ui/i18n';
   import {type I18nType} from '~/app/ui/i18n-types';
+
+  const systemTime = globals.unwrap().systemTime;
 
   /**
    * Date object.
@@ -37,8 +40,26 @@
 
     return formatDateLocalized(date, $i18nStore);
   }
+
+  let formattedDate: string;
+  $: {
+    // Re-evaluate this block on system time changes.
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    $systemTime.current;
+
+    formattedDate = formatDate(date, $i18nStore);
+  }
 </script>
 
 <template>
-  {formatDate(date, $i18nStore)}
+  <span class="time">{formattedDate}</span>
 </template>
+
+<style lang="scss">
+  @use 'component' as *;
+
+  // Try to prevent layout shifts caused by relative time updates.
+  .time {
+    white-space: nowrap;
+  }
+</style>
