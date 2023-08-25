@@ -13,6 +13,7 @@ import {type LinkingParams} from '~/app/ui/linking';
 import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
+import {SystemTimeStore} from '~/app/ui/time';
 import {CONFIG} from '~/common/config';
 import {type LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
@@ -171,12 +172,16 @@ export async function main(appState: AppState): Promise<App> {
         },
     });
 
+    // Instantiate global time keeper
+    const systemTimeStore = new SystemTimeStore(logging.logger('system-time'));
+
     // Initialize globals
     globals.set({
         // Note: It is important that this logger is initialized before we initialize the backend,
         // because the logger is used in components that are part of the linking process.
         uiLogging: logging,
         hotkeyManager,
+        systemTime: systemTimeStore,
     });
 
     const elements: Elements = {

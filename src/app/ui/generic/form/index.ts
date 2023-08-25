@@ -5,6 +5,7 @@ import {type I18nType} from '~/app/ui/i18n-types';
 import {MessageDirection} from '~/common/enum';
 import {type Conversation, type RemoteModelFor} from '~/common/model';
 import {type Mutable, type u53} from '~/common/types';
+import {isToday, isWithinCurrentYear, isWithinLastWeek, isYesterday} from '~/common/utils/date';
 import {type Remote} from '~/common/utils/endpoint';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
 import {escapeRegExp} from '~/common/utils/regex';
@@ -421,59 +422,6 @@ export function parseText(
     }
 
     return text;
-}
-
-/**
- * Determine whether `a` and `b` {@link Date}s are on the same day.
- */
-function isSameDay(a: Date, b: Date): boolean {
-    return (
-        a.getFullYear() === b.getFullYear() &&
-        a.getMonth() === b.getMonth() &&
-        a.getDate() === b.getDate()
-    );
-}
-
-/**
- * Determine whether `a` and `b` {@link Date}s are in the same year.
- */
-function isSameYear(a: Date, b: Date): boolean {
-    return a.getFullYear() === b.getFullYear();
-}
-
-/**
- * Determine whether the given {@link Date} lies within the last week (including today).
- */
-function isWithinLastWeek(date: Date): boolean {
-    const tomorrowLastWeek = new Date();
-    tomorrowLastWeek.setDate(tomorrowLastWeek.getDate() - 6);
-    tomorrowLastWeek.setHours(0, 0, 0, 0);
-
-    return date <= new Date() && date > tomorrowLastWeek;
-}
-
-/**
- * Determine whether the given {@link Date} lies in the current year.
- */
-function isWithinCurrentYear(date: Date): boolean {
-    return isSameYear(date, new Date());
-}
-
-/**
- * Determine whether the given {@link Date} is today.
- */
-function isToday(date: Date): boolean {
-    return isSameDay(date, new Date());
-}
-
-/**
- * Determine whether the given {@link Date} is yesterday.
- */
-function isYesterday(date: Date): boolean {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    return isSameDay(date, yesterday);
 }
 
 /**
