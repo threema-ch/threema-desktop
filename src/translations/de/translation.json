@@ -168,8 +168,8 @@
   "dialog--linking-error": {
     "action--confirm": "Erneut versuchen",
     "hint--expand-full-error-message": "Vollständigen Fehler anzeigen",
-    "label--message-connection-error-timeout": "Die Verknüpfung ist wegen Inaktivität abgelaufen. Bitte starten Sie den Verknüpfungsvorgang erneut.",
-    "label--message-rendezvous-error-timeout": "Die Verknüpfung ist wegen Inaktivität abgelaufen. Bitte starten Sie den Verknüpfungsvorgang erneut.",
+    "label--message-connection-error-timeout": "Aufgrund Inaktivität wurde der Verknüpfungsvorgang abgebrochen. Bitte starten Sie den Vorgang erneut.",
+    "label--message-rendezvous-error-timeout": "Aufgrund Inaktivität wurde der Verknüpfungsvorgang abgebrochen. Bitte starten Sie den Vorgang erneut.",
     "label--message-restore-error": "Bei der Wiederherstellung der übertragenen Daten ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "label--technical-details": "Technische Details anzeigen",
     "label--title-connection-error-generic": "Verbindungsfehler",
@@ -177,10 +177,10 @@
     "label--title-generic": "Verknüpfung nicht erfolgreich",
     "label--title-rendezvous-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-restore-error": "Datenwiederherstellung fehlgeschlagen",
-    "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
     "prose--message-generic": "Während der Verknüpfung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "prose--message-wrong-app-variant-consumer-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Wenn Sie Threema Work nutzen, laden Sie die Desktop-App von <1 /> herunter.",
-    "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Wenn Sie Threema privat nutzen, laden Sie die Desktop-App von <1 /> herunter."
+    "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Wenn Sie Threema als Privatanwender nutzen, laden Sie die Desktop-App von <1 /> herunter."
   },
   "dialog--linking-scan": {
     "action--need-help": "Brauchen Sie Hilfe?",
