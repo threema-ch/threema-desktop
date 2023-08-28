@@ -184,10 +184,10 @@
 </script>
 
 <template>
-  <div class="image-detail">
+  <div bind:this={container} class="image-detail">
     <ModalWrapper visible={true}>
       <ModalDialog visible={true} elevated={false} on:close={handleClose} on:cancel={handleClose}>
-        <div bind:this={container} class="container" slot="body">
+        <div class="container" slot="body">
           {#if image.status === 'loading' || !minimalLoadTimerElapsed}
             <div class="progress">
               <CircularProgress variant="indeterminate" />
@@ -214,31 +214,6 @@
                 'Full-size image preview',
               )}
             />
-
-            <Popover
-              bind:this={contextMenuPopover}
-              bind:element={contextMenuElement}
-              reference={contextMenuVirtualTrigger}
-              container={container ?? undefined}
-              anchorPoints={{
-                reference: {
-                  horizontal: 'left',
-                  vertical: 'bottom',
-                },
-                popover: {
-                  horizontal: 'left',
-                  vertical: 'top',
-                },
-              }}
-              offset={{left: 0, top: 4}}
-              triggerBehavior="open"
-            >
-              <ImageMessageViewerContextMenu
-                slot="popover"
-                on:clicksaveimage={() => handleContextMenuEvent('clicksaveimage')}
-                on:clickcopyimage={() => handleContextMenuEvent('clickcopyimage')}
-              />
-            </Popover>
           {:else if image.status === 'failed'}
             <p class="error">
               <MdIcon theme="Filled">error</MdIcon>
@@ -262,6 +237,31 @@
         </IconButton>
       </div>
     </ModalWrapper>
+
+    <Popover
+      bind:this={contextMenuPopover}
+      bind:element={contextMenuElement}
+      container={container ?? undefined}
+      reference={contextMenuVirtualTrigger}
+      anchorPoints={{
+        reference: {
+          horizontal: 'left',
+          vertical: 'bottom',
+        },
+        popover: {
+          horizontal: 'left',
+          vertical: 'top',
+        },
+      }}
+      offset={{left: 0, top: 4}}
+      triggerBehavior="open"
+    >
+      <ImageMessageViewerContextMenu
+        slot="popover"
+        on:clicksaveimage={() => handleContextMenuEvent('clicksaveimage')}
+        on:clickcopyimage={() => handleContextMenuEvent('clickcopyimage')}
+      />
+    </Popover>
   </div>
 </template>
 
@@ -271,6 +271,8 @@
   .image-detail {
     --c-modal-dialog-padding: 0px;
     --c-modal-dialog-background-color: transparent;
+    width: 100%;
+    height: 100%;
   }
 
   .container {
