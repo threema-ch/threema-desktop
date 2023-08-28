@@ -9,7 +9,6 @@
   import MessageSyncProvider from '~/app/ui/main/conversation/conversation-messages/MessageSyncProvider.svelte';
   import ImageMessageViewer from '~/app/ui/modal/ImageMessageViewer.svelte';
   import {type AnyReceiverStore} from '~/common/model';
-  import {assert} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
@@ -64,8 +63,7 @@
     </div>
   </MessageSyncProvider>
 
-  {#if isImageModalVisible}
-    {assert(message.type === 'image')}
+  {#if isImageModalVisible && message.type === 'image'}
     <div class="modal" use:contextMenuAction={handleContextMenuAction}>
       <ImageMessageViewer
         messageViewModelController={viewModelBundle.viewModelController}
