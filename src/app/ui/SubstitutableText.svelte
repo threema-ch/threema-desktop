@@ -24,7 +24,7 @@
   // eslint-disable-next-line threema/ban-stateful-regex-flags
   const TAG_SPLITTER_REGEX = new RegExp(
     [SELF_CLOSING_TAG_PATTERN, TAG_PATTERN, PLAIN_TEXT_PATTERN].join('|'),
-    'gu',
+    'gum',
   );
 
   type Fragment =
