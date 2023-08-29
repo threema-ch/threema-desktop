@@ -7,6 +7,7 @@
   import {type RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
+  import {formatDateLocalized} from '~/app/ui/generic/form';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -18,12 +19,20 @@
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
   import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
+  import Subheader from '~/app/ui/nav/receiver/detail/Subheader.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
-  import {ReceiverType} from '~/common/enum';
+  import {
+    ContactNotificationTriggerPolicy,
+    NotificationSoundPolicy,
+    ReadReceiptPolicy,
+    ReceiverType,
+    TypingIndicatorPolicy,
+  } from '~/common/enum';
   import {type ContactController, type ProfilePicture} from '~/common/model';
   import {type RemoteModelController} from '~/common/model/types/common';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
+  import {unreachable} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {type LocalStore} from '~/common/utils/store';
   import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
@@ -204,6 +213,74 @@
       <ListElement label={$i18n.t('contacts.label--nickname', 'Nickname')}
         >{$contactViewModel.nickname ?? '-'}</ListElement
       >
+      <Divider />
+      {#if import.meta.env.DEBUG}
+        <Subheader label={$i18n.t('settings.label--notifications', 'Notifications')} />
+        <ListElement label={`🐞 ${$i18n.t('settings.label--do-not-disturb', 'Do Not Disturb')}`}>
+          {#if $contactViewModel.notificationTriggerPolicyOverride === undefined}
+            {$i18n.t('settings.action--do-not-disturb-default', 'Off')}
+          {:else if $contactViewModel.notificationTriggerPolicyOverride.policy === ContactNotificationTriggerPolicy.NEVER}
+            {#if $contactViewModel.notificationTriggerPolicyOverride.expiresAt === undefined}
+              {$i18n.t('settings.action--do-not-disturb-indefinite', 'Indefinitely')}
+            {:else}
+              {$i18n.t('settings.action--do-not-disturb-until', 'Until {date}', {
+                date: formatDateLocalized(
+                  $contactViewModel.notificationTriggerPolicyOverride.expiresAt,
+                  $i18n,
+                ),
+              })}
+            {/if}
+          {:else}
+            {unreachable($contactViewModel.notificationTriggerPolicyOverride.policy)}
+          {/if}
+        </ListElement>
+        <!-- TODO(DESK-1163):  When notification policies are respected by the system, show the
+      current setting for each contact. -->
+        <ListElement
+          label={`🐞 ${$i18n.t(
+            'settings.label--play-notification-sound',
+            'Play Notification Sound',
+          )}`}
+        >
+          {#if $contactViewModel.notificationSoundPolicyOverride === undefined}
+            {$i18n.t('settings.action--play-notification-sound-default', 'On')}
+          {:else if $contactViewModel.notificationSoundPolicyOverride === NotificationSoundPolicy.MUTED}
+            {$i18n.t('settings.action--play-notification-sound-off', 'Off')}
+          {:else}
+            {unreachable($contactViewModel.notificationSoundPolicyOverride)}
+          {/if}
+        </ListElement>
+        <Divider />
+      {/if}
+      <Subheader label={$i18n.t('settings.label--privacy', 'Privacy')} />
+      <ListElement label={$i18n.t('settings.label--read-receipts', 'Read Receipts')}>
+        {#if $contactViewModel.readReceiptPolicyOverride === undefined}
+          {$i18n.t('settings.action--control-message-default-send', 'Default (Send)')}
+        {:else if $contactViewModel.readReceiptPolicyOverride === ReadReceiptPolicy.SEND_READ_RECEIPT}
+          {$i18n.t('settings.action--control-message-send', 'Send')}
+        {:else if $contactViewModel.readReceiptPolicyOverride === ReadReceiptPolicy.DONT_SEND_READ_RECEIPT}
+          {$i18n.t('settings.action--control-message-do-not-send', "Don't Send")}
+        {:else}
+          {unreachable($contactViewModel.readReceiptPolicyOverride)}
+        {/if}
+      </ListElement>
+      <!-- TODO(DESK-209): When sending of typing indicators is implemented, show the current
+      setting for each contact. -->
+      {#if import.meta.env.DEBUG}
+        <ListElement
+          label={`🐞 ${$i18n.t('settings.label--typing-indicator', 'Typing Indicator')}`}
+        >
+          {#if $contactViewModel.typingIndicatorPolicyOverride === undefined}
+            {$i18n.t('settings.action--control-message-default-send')}
+          {:else if $contactViewModel.typingIndicatorPolicyOverride === TypingIndicatorPolicy.SEND_TYPING_INDICATOR}
+            {$i18n.t('settings.action--control-message-send')}
+          {:else if $contactViewModel.typingIndicatorPolicyOverride === TypingIndicatorPolicy.DONT_SEND_TYPING_INDICATOR}
+            {$i18n.t('settings.action--control-message-do-not-send')}
+          {:else}
+            {unreachable($contactViewModel.typingIndicatorPolicyOverride)}
+          {/if}
+        </ListElement>
+      {/if}
       <Divider />
       <!-- <div class="gallery">
         <LinkElement wip label="Media Gallery">

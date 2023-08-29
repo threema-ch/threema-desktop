@@ -130,7 +130,7 @@
         bind:this={threemaIdTextField}
         bind:value={identity}
         error={identityFieldError}
-        label={$i18n.t('contacts.label--threema-id', 'Threema ID')}
+        label={$i18n.t('contacts.label--threema-id')}
         spellcheck={false}
       />
     </div>

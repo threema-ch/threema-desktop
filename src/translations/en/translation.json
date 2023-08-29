@@ -318,16 +318,30 @@
     "success--copy-message-link": "Link copied to clipboard"
   },
   "settings": {
+    "action--control-message-default-send": "Default (Send)",
+    "action--control-message-do-not-send": "Don't Send",
+    "action--control-message-send": "Send",
+    "action--do-not-disturb-default": "Off",
+    "action--do-not-disturb-indefinite": "Indefinitely",
+    "action--do-not-disturb-until": "Until {date}",
+    "action--play-notification-sound-default": "On",
+    "action--play-notification-sound-off": "Off",
     "hint--own-profile-picture": "My profile picture",
     "label--application-name": "Application Name",
     "label--application-version": "Application Version",
     "label--copyright": "Copyright",
+    "label--do-not-disturb": "Do Not Disturb",
     "label--git-revision": "Git Revision",
     "label--language": "Language",
     "label--nickname": "Nickname",
+    "label--notifications": "Notifications",
+    "label--play-notification-sound": "Play Notification Sound",
+    "label--privacy": "Privacy",
     "label--public-key": "Public Key",
+    "label--read-receipts": "Read Receipts",
     "label--theme": "Theme",
-    "label--threema-id": "Threema ID"
+    "label--threema-id": "Threema ID",
+    "label--typing-indicator": "Typing Indicator"
   },
   "system": {
     "error--connection": "No server connection. Try reconnecting to Wi-Fi, or check your modem and router.",

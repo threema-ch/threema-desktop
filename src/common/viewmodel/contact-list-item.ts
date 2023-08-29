@@ -3,6 +3,10 @@ import {type DbContactUid} from '~/common/db';
 import {
     AcquaintanceLevel,
     type ActivityState,
+    type ContactNotificationTriggerPolicy,
+    type NotificationSoundPolicy,
+    type ReadReceiptPolicy,
+    type TypingIndicatorPolicy,
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
@@ -102,6 +106,15 @@ export interface ContactListItemViewModel extends PropertiesMarked {
     readonly showInContactList: boolean;
     readonly activityState: ActivityState;
     readonly isBlocked: boolean;
+    readonly readReceiptPolicyOverride: ReadReceiptPolicy | undefined;
+    readonly typingIndicatorPolicyOverride: TypingIndicatorPolicy | undefined;
+    readonly notificationTriggerPolicyOverride:
+        | {
+              readonly policy: ContactNotificationTriggerPolicy;
+              readonly expiresAt?: Date;
+          }
+        | undefined;
+    readonly notificationSoundPolicyOverride: NotificationSoundPolicy | undefined;
 }
 
 /**
@@ -133,6 +146,10 @@ function getViewModelStore(
             isBlocked: getAndSubscribe(
                 model.user.privacySettings,
             ).controller.isIdentityExplicitlyBlocked(contact.view.identity),
+            readReceiptPolicyOverride: contact.view.readReceiptPolicyOverride,
+            typingIndicatorPolicyOverride: contact.view.typingIndicatorPolicyOverride,
+            notificationTriggerPolicyOverride: contact.view.notificationTriggerPolicyOverride,
+            notificationSoundPolicyOverride: contact.view.notificationSoundPolicyOverride,
         } as const),
     );
 }

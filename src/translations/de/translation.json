@@ -318,16 +318,30 @@
     "success--copy-message-link": "Link in die Zwischenablage kopiert"
   },
   "settings": {
+    "action--control-message-default-send": "Standard (Senden)",
+    "action--control-message-do-not-send": "Nicht senden",
+    "action--control-message-send": "Senden",
+    "action--do-not-disturb-default": "Aus",
+    "action--do-not-disturb-indefinite": "Ein",
+    "action--do-not-disturb-until": "Bis {date}",
+    "action--play-notification-sound-default": "Ein",
+    "action--play-notification-sound-off": "Aus",
     "hint--own-profile-picture": "Mein Profilbild",
     "label--application-name": "Name der Applikation",
     "label--application-version": "Version der Applikation",
     "label--copyright": "Copyright",
+    "label--do-not-disturb": "Nicht stören",
     "label--git-revision": "Git-Revision",
     "label--language": "Sprache",
     "label--nickname": "Nickname",
+    "label--notifications": "Benachrichtigungen",
+    "label--play-notification-sound": "Benachrichtigungston abspielen",
+    "label--privacy": "Privatsphäre",
     "label--public-key": "Öffentlicher Schlüssel",
+    "label--read-receipts": "Lesebestätigungen",
     "label--theme": "Theme",
-    "label--threema-id": "Threema-ID"
+    "label--threema-id": "Threema-ID",
+    "label--typing-indicator": "Melden, wenn ich tippe"
   },
   "system": {
     "error--connection": "Keine Serververbindung. Versuchen Sie, sich erneut mit dem Wifi zu verbinden, oder prüfen Sie Ihr Modem oder Router.",
