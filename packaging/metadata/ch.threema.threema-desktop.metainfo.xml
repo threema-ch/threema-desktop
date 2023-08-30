@@ -21,6 +21,25 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta20" date="2023-09-01">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Improved linking wizard</li>
+                    <li>Many improvements for image messages</li>
+                    <li>Add context menu to the image viewer</li>
+                    <li>Localized and optimized date and time display</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Proper handling of Threema Broadcast groups</li>
+                    <li>When pressing tab in the chat list, mentions aren't highlighted anymore</li>
+                    <li>Properly render inactive or revoked contacts</li>
+                    <li>Make context menu adapt to the size of its content</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta19" date="2023-08-04">
             <description>
                 <p>Improvements:</p>
