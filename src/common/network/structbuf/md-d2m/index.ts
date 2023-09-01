@@ -14,7 +14,7 @@ export {payload};
  *
  * ## General Information
  *
- * Encryption cipher: XSalsa20-Poly1305, unless otherwise specified.
+ * **Encryption cipher:** XSalsa20-Poly1305, unless otherwise specified.
  *
  * All strings are UTF-8 encoded.
  *
@@ -100,6 +100,11 @@ export {payload};
  *   before a reconnect attempt may be made.
  * - Any other close code should result in a warning in the log, but automatic
  *   reconnects are allowed.
+ *
+ * Important: Whenever a `close-error` message is being received from the Chat
+ * Server, the reconnect policy solely depends on the
+ * `close-error.can-reconnect` field and the (following) Close Code must be
+ * ignored.
  *
  * When automatically reconnecting, linear backoff should be applied. In case
  * the connection fails repeatedly, user interaction should be required to

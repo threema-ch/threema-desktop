@@ -1102,11 +1102,11 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  *     `outer-metadata`, let `inner-type` be `outer.type` and let
  *     `inner-message` be `outer-message`.
  * 14. If `outer.type` is `0xa0`, run the receive steps associated to
- *     `csp-e2e-fs.ForwardSecurityEnvelope` with the decoded `outer-message`:
- *     and let `inner-metadata`, `inner-type`, `inner-message` and
- *     `xdhk-commit-fn` be the result. If this fails, exceptionally abort
- *     these steps and the connection. If the message has been discarded,
- *     _Acknowledge_ and abort these steps.
+ *     `csp-e2e-fs.Envelope` with the decoded `outer-message`: and let
+ *     `inner-metadata`, `inner-type`, `inner-message` and `xdhk-commit-fn`
+ *     be the result. If this fails, exceptionally abort these steps and the
+ *     connection. If the message has been discarded, _Acknowledge_ and abort
+ *     these steps.
  * 15. If `inner-metadata` is not defined, set `inner-metadata` to
  *     `outer-metadata`.
  * 16. If `inner-metadata` is defined and `message-id` does not equal

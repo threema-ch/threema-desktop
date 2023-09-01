@@ -979,6 +979,7 @@ export const common = $root.common = (() => {
      * @property {number} GROUP_POLL_VOTE=83 GROUP_POLL_VOTE value
      * @property {number} GROUP_DELIVERY_RECEIPT=129 GROUP_DELIVERY_RECEIPT value
      * @property {number} FORWARD_SECURITY_ENVELOPE=160 FORWARD_SECURITY_ENVELOPE value
+     * @property {number} WEB_SESSION_RESUME=254 WEB_SESSION_RESUME value
      */
     common.CspE2eMessageType = (function() {
         const valuesById = {}, values = Object.create(valuesById);
@@ -1020,6 +1021,7 @@ export const common = $root.common = (() => {
         values[valuesById[83] = "GROUP_POLL_VOTE"] = 83;
         values[valuesById[129] = "GROUP_DELIVERY_RECEIPT"] = 129;
         values[valuesById[160] = "FORWARD_SECURITY_ENVELOPE"] = 160;
+        values[valuesById[254] = "WEB_SESSION_RESUME"] = 254;
         return values;
     })();
 
@@ -1734,6 +1736,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
          * @interface IEncapsulated
          * @property {csp_e2e_fs.Encapsulated.DHType|null} [dhType] Encapsulated dhType
          * @property {Long|null} [counter] Encapsulated counter
+         * @property {number|null} [offeredVersion] Encapsulated offeredVersion
          * @property {number|null} [appliedVersion] Encapsulated appliedVersion
          * @property {Uint8Array|null} [encryptedInner] Encapsulated encryptedInner
          */
@@ -1770,6 +1773,14 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
         Encapsulated.prototype.counter = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
 
         /**
+         * Encapsulated offeredVersion.
+         * @member {number} offeredVersion
+         * @memberof csp_e2e_fs.Encapsulated
+         * @instance
+         */
+        Encapsulated.prototype.offeredVersion = 0;
+
+        /**
          * Encapsulated appliedVersion.
          * @member {number} appliedVersion
          * @memberof csp_e2e_fs.Encapsulated
@@ -1803,8 +1814,10 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.counter);
             if (message.encryptedInner != null && Object.hasOwnProperty.call(message, "encryptedInner"))
                 writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.encryptedInner);
+            if (message.offeredVersion != null && Object.hasOwnProperty.call(message, "offeredVersion"))
+                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.offeredVersion);
             if (message.appliedVersion != null && Object.hasOwnProperty.call(message, "appliedVersion"))
-                writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.appliedVersion);
+                writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.appliedVersion);
             return writer;
         };
 
@@ -1835,6 +1848,10 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                         break;
                     }
                 case 4: {
+                        message.offeredVersion = reader.uint32();
+                        break;
+                    }
+                case 5: {
                         message.appliedVersion = reader.uint32();
                         break;
                     }
@@ -12619,6 +12636,103 @@ export const sync = $root.sync = (() => {
         return MdmParameters;
     })();
 
+    sync.ThreemaWorkCredentials = (function() {
+
+        /**
+         * Properties of a ThreemaWorkCredentials.
+         * @memberof sync
+         * @interface IThreemaWorkCredentials
+         * @property {string|null} [username] ThreemaWorkCredentials username
+         * @property {string|null} [password] ThreemaWorkCredentials password
+         */
+
+        /**
+         * Constructs a new ThreemaWorkCredentials.
+         * @memberof sync
+         * @classdesc Represents a ThreemaWorkCredentials.
+         * @implements IThreemaWorkCredentials
+         * @constructor
+         * @param {sync.IThreemaWorkCredentials=} [properties] Properties to set
+         */
+        function ThreemaWorkCredentials(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * ThreemaWorkCredentials username.
+         * @member {string} username
+         * @memberof sync.ThreemaWorkCredentials
+         * @instance
+         */
+        ThreemaWorkCredentials.prototype.username = "";
+
+        /**
+         * ThreemaWorkCredentials password.
+         * @member {string} password
+         * @memberof sync.ThreemaWorkCredentials
+         * @instance
+         */
+        ThreemaWorkCredentials.prototype.password = "";
+
+        /**
+         * Encodes the specified ThreemaWorkCredentials message. Does not implicitly {@link sync.ThreemaWorkCredentials.verify|verify} messages.
+         * @function encode
+         * @memberof sync.ThreemaWorkCredentials
+         * @static
+         * @param {sync.ThreemaWorkCredentials} message ThreemaWorkCredentials message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ThreemaWorkCredentials.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.username != null && Object.hasOwnProperty.call(message, "username"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.username);
+            if (message.password != null && Object.hasOwnProperty.call(message, "password"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.password);
+            return writer;
+        };
+
+        /**
+         * Decodes a ThreemaWorkCredentials message from the specified reader or buffer.
+         * @function decode
+         * @memberof sync.ThreemaWorkCredentials
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {sync.ThreemaWorkCredentials} ThreemaWorkCredentials
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ThreemaWorkCredentials.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sync.ThreemaWorkCredentials();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.username = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.password = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        return ThreemaWorkCredentials;
+    })();
+
     sync.UserProfile = (function() {
 
         /**
@@ -15835,8 +15949,8 @@ export const join = $root.join = (() => {
          * Properties of an EssentialData.
          * @memberof join
          * @interface IEssentialData
-         * @property {join.EssentialData.MediatorServer|null} [mediatorServer] EssentialData mediatorServer
          * @property {join.EssentialData.IdentityData|null} [identityData] EssentialData identityData
+         * @property {sync.ThreemaWorkCredentials|null} [workCredentials] EssentialData workCredentials
          * @property {join.EssentialData.DeviceGroupData|null} [deviceGroupData] EssentialData deviceGroupData
          * @property {sync.UserProfile|null} [userProfile] EssentialData userProfile
          * @property {sync.Settings|null} [settings] EssentialData settings
@@ -15869,20 +15983,20 @@ export const join = $root.join = (() => {
         }
 
         /**
-         * EssentialData mediatorServer.
-         * @member {join.EssentialData.MediatorServer|null|undefined} mediatorServer
-         * @memberof join.EssentialData
-         * @instance
-         */
-        EssentialData.prototype.mediatorServer = null;
-
-        /**
          * EssentialData identityData.
          * @member {join.EssentialData.IdentityData|null|undefined} identityData
          * @memberof join.EssentialData
          * @instance
          */
         EssentialData.prototype.identityData = null;
+
+        /**
+         * EssentialData workCredentials.
+         * @member {sync.ThreemaWorkCredentials|null|undefined} workCredentials
+         * @memberof join.EssentialData
+         * @instance
+         */
+        EssentialData.prototype.workCredentials = null;
 
         /**
          * EssentialData deviceGroupData.
@@ -15968,8 +16082,6 @@ export const join = $root.join = (() => {
         EssentialData.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.mediatorServer != null && Object.hasOwnProperty.call(message, "mediatorServer"))
-                $root.join.EssentialData.MediatorServer.encode(message.mediatorServer, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
             if (message.identityData != null && Object.hasOwnProperty.call(message, "identityData"))
                 $root.join.EssentialData.IdentityData.encode(message.identityData, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
             if (message.deviceGroupData != null && Object.hasOwnProperty.call(message, "deviceGroupData"))
@@ -15995,6 +16107,8 @@ export const join = $root.join = (() => {
             if (message.d2dHashedNonces != null && message.d2dHashedNonces.length)
                 for (let i = 0; i < message.d2dHashedNonces.length; ++i)
                     writer.uint32(/* id 11, wireType 2 =*/90).bytes(message.d2dHashedNonces[i]);
+            if (message.workCredentials != null && Object.hasOwnProperty.call(message, "workCredentials"))
+                $root.sync.ThreemaWorkCredentials.encode(message.workCredentials, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
             return writer;
         };
 
@@ -16016,12 +16130,12 @@ export const join = $root.join = (() => {
             while (reader.pos < end) {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1: {
-                        message.mediatorServer = $root.join.EssentialData.MediatorServer.decode(reader, reader.uint32());
-                        break;
-                    }
                 case 2: {
                         message.identityData = $root.join.EssentialData.IdentityData.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 12: {
+                        message.workCredentials = $root.sync.ThreemaWorkCredentials.decode(reader, reader.uint32());
                         break;
                     }
                 case 3: {
@@ -16077,117 +16191,6 @@ export const join = $root.join = (() => {
             }
             return message;
         };
-
-        EssentialData.MediatorServer = (function() {
-
-            /**
-             * Properties of a MediatorServer.
-             * @memberof join.EssentialData
-             * @interface IMediatorServer
-             * @property {Uint8Array|null} [publicKey] MediatorServer publicKey
-             * @property {string|null} [webSocketHostname] MediatorServer webSocketHostname
-             */
-
-            /**
-             * Constructs a new MediatorServer.
-             * @memberof join.EssentialData
-             * @classdesc Represents a MediatorServer.
-             * @implements IMediatorServer
-             * @constructor
-             * @param {join.EssentialData.IMediatorServer=} [properties] Properties to set
-             */
-            function MediatorServer(properties) {
-                if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * MediatorServer publicKey.
-             * @member {Uint8Array} publicKey
-             * @memberof join.EssentialData.MediatorServer
-             * @instance
-             */
-            MediatorServer.prototype.publicKey = $util.newBuffer([]);
-
-            /**
-             * MediatorServer webSocketHostname.
-             * @member {string|null|undefined} webSocketHostname
-             * @memberof join.EssentialData.MediatorServer
-             * @instance
-             */
-            MediatorServer.prototype.webSocketHostname = null;
-
-            // OneOf field names bound to virtual getters and setters
-            let $oneOfFields;
-
-            /**
-             * MediatorServer address.
-             * @member {"webSocketHostname"|undefined} address
-             * @memberof join.EssentialData.MediatorServer
-             * @instance
-             */
-            Object.defineProperty(MediatorServer.prototype, "address", {
-                get: $util.oneOfGetter($oneOfFields = ["webSocketHostname"]),
-                set: $util.oneOfSetter($oneOfFields)
-            });
-
-            /**
-             * Encodes the specified MediatorServer message. Does not implicitly {@link join.EssentialData.MediatorServer.verify|verify} messages.
-             * @function encode
-             * @memberof join.EssentialData.MediatorServer
-             * @static
-             * @param {join.EssentialData.MediatorServer} message MediatorServer message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            MediatorServer.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.publicKey != null && Object.hasOwnProperty.call(message, "publicKey"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.publicKey);
-                if (message.webSocketHostname != null && Object.hasOwnProperty.call(message, "webSocketHostname"))
-                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.webSocketHostname);
-                return writer;
-            };
-
-            /**
-             * Decodes a MediatorServer message from the specified reader or buffer.
-             * @function decode
-             * @memberof join.EssentialData.MediatorServer
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {join.EssentialData.MediatorServer} MediatorServer
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            MediatorServer.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.join.EssentialData.MediatorServer();
-                while (reader.pos < end) {
-                    let tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1: {
-                            message.publicKey = reader.bytes();
-                            break;
-                        }
-                    case 2: {
-                            message.webSocketHostname = reader.string();
-                            break;
-                        }
-                    default:
-                        reader.skipType(tag & 7);
-                        break;
-                    }
-                }
-                return message;
-            };
-
-            return MediatorServer;
-        })();
 
         EssentialData.IdentityData = (function() {
 
@@ -18157,11 +18160,11 @@ export const d2m = $root.d2m = (() => {
 
         /**
          * ClientHello expectedDeviceSlotState.
-         * @member {d2m.DeviceSlotState|null|undefined} expectedDeviceSlotState
+         * @member {d2m.DeviceSlotState} expectedDeviceSlotState
          * @memberof d2m.ClientHello
          * @instance
          */
-        ClientHello.prototype.expectedDeviceSlotState = null;
+        ClientHello.prototype.expectedDeviceSlotState = 0;
 
         /**
          * ClientHello encryptedDeviceInfo.
@@ -18170,20 +18173,6 @@ export const d2m = $root.d2m = (() => {
          * @instance
          */
         ClientHello.prototype.encryptedDeviceInfo = $util.newBuffer([]);
-
-        // OneOf field names bound to virtual getters and setters
-        let $oneOfFields;
-
-        /**
-         * ClientHello _expectedDeviceSlotState.
-         * @member {"expectedDeviceSlotState"|undefined} _expectedDeviceSlotState
-         * @memberof d2m.ClientHello
-         * @instance
-         */
-        Object.defineProperty(ClientHello.prototype, "_expectedDeviceSlotState", {
-            get: $util.oneOfGetter($oneOfFields = ["expectedDeviceSlotState"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
 
         /**
          * Encodes the specified ClientHello message. Does not implicitly {@link d2m.ClientHello.verify|verify} messages.
@@ -18295,6 +18284,7 @@ export const d2m = $root.d2m = (() => {
          * @property {number|null} [maxDeviceSlots] ServerInfo maxDeviceSlots
          * @property {d2m.DeviceSlotState|null} [deviceSlotState] ServerInfo deviceSlotState
          * @property {Uint8Array|null} [encryptedSharedDeviceData] ServerInfo encryptedSharedDeviceData
+         * @property {number|null} [reflectionQueueLength] ServerInfo reflectionQueueLength
          */
 
         /**
@@ -18345,6 +18335,14 @@ export const d2m = $root.d2m = (() => {
         ServerInfo.prototype.encryptedSharedDeviceData = $util.newBuffer([]);
 
         /**
+         * ServerInfo reflectionQueueLength.
+         * @member {number} reflectionQueueLength
+         * @memberof d2m.ServerInfo
+         * @instance
+         */
+        ServerInfo.prototype.reflectionQueueLength = 0;
+
+        /**
          * Encodes the specified ServerInfo message. Does not implicitly {@link d2m.ServerInfo.verify|verify} messages.
          * @function encode
          * @memberof d2m.ServerInfo
@@ -18364,6 +18362,8 @@ export const d2m = $root.d2m = (() => {
                 writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.encryptedSharedDeviceData);
             if (message.currentTime != null && Object.hasOwnProperty.call(message, "currentTime"))
                 writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.currentTime);
+            if (message.reflectionQueueLength != null && Object.hasOwnProperty.call(message, "reflectionQueueLength"))
+                writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.reflectionQueueLength);
             return writer;
         };
 
@@ -18399,6 +18399,10 @@ export const d2m = $root.d2m = (() => {
                     }
                 case 3: {
                         message.encryptedSharedDeviceData = reader.bytes();
+                        break;
+                    }
+                case 5: {
+                        message.reflectionQueueLength = reader.uint32();
                         break;
                     }
                 default:

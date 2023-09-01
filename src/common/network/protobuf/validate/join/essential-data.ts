@@ -26,6 +26,16 @@ const SCHEMA_IDENTITY_DATA = validator(
         .rest(v.unknown()),
 );
 
+const SCHEMA_WORK_CREDENTIALS = validator(
+    sync.ThreemaWorkCredentials,
+    v
+        .object({
+            username: v.string(),
+            password: v.string(),
+        })
+        .rest(v.unknown()),
+);
+
 const SCHEMA_DEVICE_GROUP_DATA = validator(
     join.EssentialData.DeviceGroupData,
     v
@@ -95,8 +105,8 @@ export const SCHEMA = validator(
     join.EssentialData,
     v
         .object({
-            mediatorServer: v.unknown(), // TODO(SE-337)
             identityData: SCHEMA_IDENTITY_DATA,
+            workCredentials: SCHEMA_WORK_CREDENTIALS.optional(),
             deviceGroupData: SCHEMA_DEVICE_GROUP_DATA,
             userProfile: SCHEMA_USER_PROFILE,
             settings: Settings.SCHEMA,

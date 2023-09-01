@@ -401,7 +401,8 @@ export namespace common {
         GROUP_POLL_SETUP = 82,
         GROUP_POLL_VOTE = 83,
         GROUP_DELIVERY_RECEIPT = 129,
-        FORWARD_SECURITY_ENVELOPE = 160
+        FORWARD_SECURITY_ENVELOPE = 160,
+        WEB_SESSION_RESUME = 254
     }
 }
 /** Namespace csp_e2e_fs. */
@@ -677,6 +678,8 @@ export namespace csp_e2e_fs {
         dhType?: (csp_e2e_fs.Encapsulated.DHType | null);
         /** Encapsulated counter */
         counter?: (Long | null);
+        /** Encapsulated offeredVersion */
+        offeredVersion?: (number | null);
         /** Encapsulated appliedVersion */
         appliedVersion?: (number | null);
         /** Encapsulated encryptedInner */
@@ -696,6 +699,8 @@ export namespace csp_e2e_fs {
         public dhType: csp_e2e_fs.Encapsulated.DHType;
         /** Encapsulated counter. */
         public counter: Long;
+        /** Encapsulated offeredVersion. */
+        public offeredVersion: number;
         /** Encapsulated appliedVersion. */
         public appliedVersion: number;
         /** Encapsulated encryptedInner. */
@@ -4805,6 +4810,44 @@ export namespace sync {
             EXTERNAL = 1
         }
     }
+    /** Properties of a ThreemaWorkCredentials. */
+    interface IThreemaWorkCredentials {
+        /** ThreemaWorkCredentials username */
+        username?: (string | null);
+        /** ThreemaWorkCredentials password */
+        password?: (string | null);
+    }
+    type ThreemaWorkCredentialsEncodable = types.WeakOpaque<IThreemaWorkCredentials, {
+        readonly ThreemaWorkCredentialsEncodable: unique symbol;
+    } & tag.ProtobufMessage>;
+    /** Represents a ThreemaWorkCredentials. */
+    class ThreemaWorkCredentials implements IThreemaWorkCredentials {
+        /**
+         * Constructs a new ThreemaWorkCredentials.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: sync.IThreemaWorkCredentials);
+        /** ThreemaWorkCredentials username. */
+        public username: string;
+        /** ThreemaWorkCredentials password. */
+        public password: string;
+        /**
+         * Encodes the specified ThreemaWorkCredentials message. Does not implicitly {@link sync.ThreemaWorkCredentials.verify|verify} messages.
+         * @param message ThreemaWorkCredentials message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: sync.ThreemaWorkCredentialsEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
+        /**
+         * Decodes a ThreemaWorkCredentials message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ThreemaWorkCredentials
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): sync.ThreemaWorkCredentials;
+    }
     /** Properties of a UserProfile. */
     interface IUserProfile {
         /** UserProfile nickname */
@@ -5876,10 +5919,10 @@ export namespace join {
     }
     /** Properties of an EssentialData. */
     interface IEssentialData {
-        /** EssentialData mediatorServer */
-        mediatorServer?: (join.EssentialData.MediatorServer | null);
         /** EssentialData identityData */
         identityData?: (join.EssentialData.IdentityData | null);
+        /** EssentialData workCredentials */
+        workCredentials?: (sync.ThreemaWorkCredentials | null);
         /** EssentialData deviceGroupData */
         deviceGroupData?: (join.EssentialData.DeviceGroupData | null);
         /** EssentialData userProfile */
@@ -5909,10 +5952,10 @@ export namespace join {
          * @param [properties] Properties to set
          */
         constructor(properties?: join.IEssentialData);
-        /** EssentialData mediatorServer. */
-        public mediatorServer?: (join.EssentialData.MediatorServer | null);
         /** EssentialData identityData. */
         public identityData?: (join.EssentialData.IdentityData | null);
+        /** EssentialData workCredentials. */
+        public workCredentials?: (sync.ThreemaWorkCredentials | null);
         /** EssentialData deviceGroupData. */
         public deviceGroupData?: (join.EssentialData.DeviceGroupData | null);
         /** EssentialData userProfile. */
@@ -5949,46 +5992,6 @@ export namespace join {
         public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData;
     }
     namespace EssentialData {
-        /** Properties of a MediatorServer. */
-        interface IMediatorServer {
-            /** MediatorServer publicKey */
-            publicKey?: (Uint8Array | null);
-            /** MediatorServer webSocketHostname */
-            webSocketHostname?: (string | null);
-        }
-        type MediatorServerEncodable = types.WeakOpaque<IMediatorServer, {
-            readonly MediatorServerEncodable: unique symbol;
-        } & tag.ProtobufMessage>;
-        /** Represents a MediatorServer. */
-        class MediatorServer implements IMediatorServer {
-            /**
-             * Constructs a new MediatorServer.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: join.EssentialData.IMediatorServer);
-            /** MediatorServer publicKey. */
-            public publicKey: Uint8Array;
-            /** MediatorServer webSocketHostname. */
-            public webSocketHostname?: (string | null);
-            /** MediatorServer address. */
-            public address?: "webSocketHostname";
-            /**
-             * Encodes the specified MediatorServer message. Does not implicitly {@link join.EssentialData.MediatorServer.verify|verify} messages.
-             * @param message MediatorServer message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: join.EssentialData.MediatorServerEncodable, writer?: $protobuf.Writer): $protobuf.Writer;
-            /**
-             * Decodes a MediatorServer message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns MediatorServer
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): join.EssentialData.MediatorServer;
-        }
         /** Properties of an IdentityData. */
         interface IIdentityData {
             /** IdentityData identity */
@@ -6776,11 +6779,9 @@ export namespace d2m {
         /** ClientHello deviceSlotExpirationPolicy. */
         public deviceSlotExpirationPolicy: d2m.DeviceSlotExpirationPolicy;
         /** ClientHello expectedDeviceSlotState. */
-        public expectedDeviceSlotState?: (d2m.DeviceSlotState | null);
+        public expectedDeviceSlotState: d2m.DeviceSlotState;
         /** ClientHello encryptedDeviceInfo. */
         public encryptedDeviceInfo: Uint8Array;
-        /** ClientHello _expectedDeviceSlotState. */
-        public _expectedDeviceSlotState?: "expectedDeviceSlotState";
         /**
          * Encodes the specified ClientHello message. Does not implicitly {@link d2m.ClientHello.verify|verify} messages.
          * @param message ClientHello message or plain object to encode
@@ -6815,6 +6816,8 @@ export namespace d2m {
         deviceSlotState?: (d2m.DeviceSlotState | null);
         /** ServerInfo encryptedSharedDeviceData */
         encryptedSharedDeviceData?: (Uint8Array | null);
+        /** ServerInfo reflectionQueueLength */
+        reflectionQueueLength?: (number | null);
     }
     type ServerInfoEncodable = types.WeakOpaque<IServerInfo, {
         readonly ServerInfoEncodable: unique symbol;
@@ -6834,6 +6837,8 @@ export namespace d2m {
         public deviceSlotState: d2m.DeviceSlotState;
         /** ServerInfo encryptedSharedDeviceData. */
         public encryptedSharedDeviceData: Uint8Array;
+        /** ServerInfo reflectionQueueLength. */
+        public reflectionQueueLength: number;
         /**
          * Encodes the specified ServerInfo message. Does not implicitly {@link d2m.ServerInfo.verify|verify} messages.
          * @param message ServerInfo message or plain object to encode

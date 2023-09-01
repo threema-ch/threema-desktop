@@ -35,16 +35,16 @@ export {e2e, handshake, payload};
  *
  * ## General Information
  *
- * Endianness: All integers use little-endian encoding.
+ * **Endianness:** All integers use little-endian encoding.
  *
- * Encryption cipher: XSalsa20-Poly1305, unless otherwise specified.
+ * **Encryption cipher:** XSalsa20-Poly1305, unless otherwise specified.
  *
- * Nonce format:
+ * **Nonce format:**
  *
  * - a 16 byte cookie (CCK/SCK), followed by
  * - a monotonically increasing sequence number (CSN/SSN, u64-le).
  *
- * Sequence number: The sequence number starts with `1` and is counted
+ * **Sequence number:** The sequence number starts with `1` and is counted
  * separately for each direction (i.e. there is one sequence number counter for
  * the client and one for the server). We will use `CSN+` and `SSN+` in this
  * document to denote that the counter should be increased **after** the value

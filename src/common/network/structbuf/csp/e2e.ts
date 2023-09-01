@@ -921,6 +921,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags:
@@ -935,6 +936,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
  *
@@ -1085,6 +1087,7 @@ export class Text extends base.Struct implements TextLike {
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * The image must be in JPEG format, is uploaded to the blob server and
  * encrypted by:
@@ -1288,6 +1291,7 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The image must be in JPEG format, is uploaded to the blob server and
  * encrypted by:
@@ -1487,6 +1491,7 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags:
@@ -1501,6 +1506,7 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a group message (wrapped by
  * [`group-member-container`](ref:e2e.group-member-container)):
@@ -1685,6 +1691,7 @@ export class Location extends base.Struct implements LocationLike {
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags:
@@ -1699,6 +1706,7 @@ export class Location extends base.Struct implements LocationLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The audio is uploaded to the blob server and encrypted by:
  *
@@ -1930,6 +1938,7 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags:
@@ -1944,6 +1953,7 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The video is uploaded to the blob server and encrypted by:
  *
@@ -2223,6 +2233,7 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags:
@@ -2237,6 +2248,7 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The file is uploaded to the blob server and encrypted by:
  *
@@ -2453,6 +2465,7 @@ export class File extends base.Struct implements FileLike {
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags:
@@ -2467,6 +2480,7 @@ export class File extends base.Struct implements FileLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
  *
@@ -2711,6 +2725,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags: None
@@ -2724,6 +2739,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
  *
@@ -2940,6 +2956,7 @@ export class PollVote extends base.Struct implements PollVoteLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -3093,6 +3110,7 @@ export class CallOffer extends base.Struct implements CallOfferLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -3254,10 +3272,11 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
  * - Protect against replay: No¹
  * - Reflect:
  *   - Incoming: Yes
- *   - Outgoing: Yes (unused)
+ *   - Outgoing: No
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: This message does not trigger any kind of reaction and adding ICE
  * candidates again has no ill-effect.
@@ -3418,6 +3437,7 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -3564,6 +3584,7 @@ export class CallHangup extends base.Struct implements CallHangupLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
  * [//]: # "When receiving: TODO(SE-102)"
@@ -3704,10 +3725,12 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  * - Protect against replay: Only for reactions¹
  * - Reflect:
  *   - Incoming: Yes
- *   - Outgoing: Yes, with the following exception: When the message is being
- *     _read_ and _read_ receipts are disabled, reflect an
- *     `IncomingMessageUpdate`.
+ *   - Outgoing: Yes¹
  * - Delivery receipts: No, that would be silly!
+ * - Send to Threema Gateway ID group creator: N/A
+ *
+ * ¹: When the message is being _read_ and _read_ receipts are disabled, an
+ * `IncomingMessageUpdate` will be reflected instead.
  *
  * **Properties (Group)**:
  * - Flags: None
@@ -3721,6 +3744,7 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  *     are disabled, reflect an `IncomingMessageUpdate` (since no
  *     `delivery-receipt` is sent in this case).
  * - Delivery receipts: No, that would be silly!
+ * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * ¹: Repeating a status of type _received_ or _read_ has no ill-effects.
  *
@@ -3923,6 +3947,7 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: It is deemed acceptable if the _typing_ indicator in the UI is replayed
  * since there is no further consequence.
@@ -4081,6 +4106,7 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags: None
@@ -4094,6 +4120,7 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * The profile picture must be in JPEG format, is uploaded to the blob
  * server and encrypted by:
@@ -4304,6 +4331,7 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
  * - Flags: None
@@ -4317,6 +4345,7 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * When receiving this message as a contact control message:
  *
@@ -4442,6 +4471,7 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * Send this when restoring a contact from a backup.
  *
@@ -4575,6 +4605,7 @@ export class ContactRequestProfilePicture
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * When sending this message as a response to a single receiver, see the
  * handling logic that triggered this message for details. No further
@@ -4800,6 +4831,7 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -4950,6 +4982,7 @@ export class GroupName extends base.Struct implements GroupNameLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: Yes
  *
  * When sending this message:
  *
@@ -5087,6 +5120,7 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - Send to Threema Gateway ID group creator: Yes
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -5200,5 +5234,162 @@ export class GroupSyncRequest extends base.Struct implements GroupSyncRequestLik
         const array = new Uint8Array(this._array.byteLength);
         array.set(this._array);
         return new GroupSyncRequest(array);
+    }
+}
+
+/**
+ * A control message from Threema Web, requesting a session to be resumed.
+ *
+ * **Properties (1:1)**:
+ * - Flags:
+ *   - `0x20`: Short-lived server queuing.
+ * - User profile distribution: N/A (not sent by apps)
+ * - Exempt from blocking: Yes
+ * - Implicit _direct_ contact creation: No
+ * - Protect against replay: Yes
+ * - Reflect:
+ *   - Incoming: No
+ *   - Outgoing: No
+ * - Delivery receipts:
+ *   - Automatic: No
+ *   - Manual: No
+ * - Send to Threema Gateway ID group creator: N/A
+ *
+ * When receiving this message:
+ *
+ * 1. If the sender is not `*3MAPUSH`, discard the message and abort these
+ *    steps.
+ * 2. Lookup the web client session associated to `wcs` and attempt to resume
+ *    it.
+ */
+export interface WebSessionResumeLike {
+    /**
+     * UTF-8, JSON-encoded object with the following fields:
+     *
+     * - Webclient session (`'wcs'`): SHA256 hash (hex encoded) of the
+     *   public permanent key of the session initiator, string.
+     * - Affiliation ID (`'wca'`): An optional identifier for affiliating
+     *   consecutive pushes, `string` or `null`.
+     * - Affiliation ID (`'wct'`): Unix epoch timestamp of the request in
+     *   seconds, `i64`.
+     * - Protocol version (`'wcv'`): Version of the Threema Web protocol,
+     *   `u16`.
+     *
+     * All fields must be part of the JSON object, even if their values are
+     * nullable.
+     */
+    readonly pushPayload: Uint8Array;
+}
+
+/**
+ * Encodable of {@link WebSessionResumeLike}.
+ */
+interface WebSessionResumeEncodable_ {
+    /**
+     * 'push-payload' field value or encoder. See {@link WebSessionResumeLike#pushPayload} for
+     * the field's description.
+     */
+    readonly pushPayload: Uint8Array | types.ByteLengthEncoder;
+}
+
+/**
+ * New-type for WebSessionResumeEncodable.
+ */
+export type WebSessionResumeEncodable = types.WeakOpaque<
+    WebSessionResumeEncodable_,
+    {readonly WebSessionResumeEncodable: unique symbol}
+>;
+
+/** @inheritdoc */
+export class WebSessionResume extends base.Struct implements WebSessionResumeLike {
+    private readonly _array: Uint8Array;
+
+    /**
+     * Create a WebSessionResume from an array for accessing properties.
+     *
+     * Note: When accessing, attributes will be decoded on-the-fly which may be expensive.
+     */
+    private constructor(array: Uint8Array) {
+        super();
+        this._array = array;
+    }
+
+    /**
+     * Decode a web-session-resume struct from an array.
+     *
+     * @param array Array to decode from.
+     * @returns WebSessionResume instance.
+     */
+    public static decode(array: Uint8Array): WebSessionResume {
+        return new WebSessionResume(array);
+    }
+
+    /**
+     * Encode a web-session-resume struct into an array.
+     *
+     * @param struct WebSessionResumeEncodable to encode.
+     * @param array Array to encode into.
+     * @returns A subarray of array containing the encoded struct.
+     */
+    public static encode(
+        struct: types.EncoderPick<WebSessionResumeEncodable, 'encode'>,
+        array: Uint8Array,
+    ): Uint8Array {
+        let offset = 0;
+
+        // Encode `push-payload`
+        offset += utils.encodeBytes(struct.pushPayload, array, offset);
+
+        return array.subarray(0, offset);
+    }
+
+    /**
+     * Get the amount of bytes that would be written when encoding a web-session-resume struct into an
+     * array.
+     *
+     * @param struct WebSessionResumeEncodable to encode.
+     * @returns The amount of bytes that would be required to encode the struct.
+     */
+    public static byteLength(
+        struct: types.EncoderPick<WebSessionResumeEncodable, 'byteLength'>,
+    ): types.u53 {
+        let offset = 0;
+        offset += utils.getByteLength(struct.pushPayload);
+        return offset;
+    }
+
+    /**
+     * 'push-payload' field accessor. See {@link WebSessionResumeLike#pushPayload} for the
+     * field's description.
+     */
+    public get pushPayload(): Uint8Array {
+        return this._array.subarray(0);
+    }
+
+    /**
+     * Create a snapshot of WebSessionResumeLike.
+     *
+     * Note: This is **not** a deep-copy, so byte arrays will still be views of the underlying
+     *       buffer.
+     *
+     * @returns WebSessionResumeLike snapshot.
+     */
+    public snapshot(): WebSessionResumeLike {
+        return {
+            pushPayload: this.pushPayload,
+        };
+    }
+
+    /**
+     * Create a clone of WebSessionResumeLike.
+     *
+     * Note: This is a deep-copy that will copy the underlying buffer.
+     *
+     * @returns WebSessionResumeLike clone.
+     */
+    public clone(): WebSessionResume {
+        const array = new Uint8Array(this._array.byteLength);
+        array.set(this._array);
+        return new WebSessionResume(array);
     }
 }
