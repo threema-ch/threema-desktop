@@ -879,6 +879,39 @@ export class Backend implements ProxyMarked {
             );
         }
 
+        // Validate Threema Work credentials depending on build variant. The consumer app may not
+        // receive credentials, the work app must receive credentials.
+        switch (import.meta.env.BUILD_VARIANT) {
+            case 'consumer':
+                if (joinResult.workCredentials !== undefined) {
+                    return await throwLinkingError(
+                        `This is a consumer app, but essential data contains Threema Work credentials for ${joinResult.workCredentials.username}.`,
+                        {kind: 'generic-error'},
+                    );
+                }
+                break;
+            case 'work':
+                if (joinResult.workCredentials === undefined) {
+                    return await throwLinkingError(
+                        `This is a work app, but essential data did not include Threema Work credentials. Ensure that you're using the latest mobile app version.`,
+                        {kind: 'generic-error'},
+                    );
+                }
+                if (joinResult.workCredentials.username === '') {
+                    return await throwLinkingError(`Work credentials username is empty.`, {
+                        kind: 'generic-error',
+                    });
+                }
+                if (joinResult.workCredentials.password === '') {
+                    return await throwLinkingError(`Work credentials password is empty.`, {
+                        kind: 'generic-error',
+                    });
+                }
+                break;
+            default:
+                unreachable(import.meta.env.BUILD_VARIANT);
+        }
+
         // Set identity data
         const identityData: IdentityData = {
             identity: joinResult.identity,

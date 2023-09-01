@@ -4,7 +4,7 @@
 import type {ServicesForBackend} from '~/common/backend';
 import type {NonceHash} from '~/common/crypto';
 import {randomU64} from '~/common/crypto/random';
-import type {DeviceIds} from '~/common/device';
+import type {DeviceIds, ThreemaWorkCredentials} from '~/common/device';
 import type {RendezvousConnection} from '~/common/dom/network/protocol/rendezvous';
 import {ReceiverType} from '~/common/enum';
 import {DeviceJoinError, type RendezvousCloseCause, RendezvousCloseError} from '~/common/error';
@@ -49,6 +49,7 @@ export interface DeviceJoinResult {
     readonly dgk: RawDeviceGroupKey;
     readonly cspHashedNonces: Set<NonceHash>;
     readonly d2dHashedNonces: Set<NonceHash>;
+    readonly workCredentials?: ThreemaWorkCredentials;
 }
 
 /**
@@ -490,6 +491,7 @@ export class DeviceJoinProtocol {
         const dgk = essentialData.deviceGroupData.dgk;
         const cspHashedNonces = essentialData.cspHashedNonces;
         const d2dHashedNonces = essentialData.d2dHashedNonces;
+        const workCredentials = essentialData.workCredentials;
 
         // Generate random device IDs
         const deviceIds = {
@@ -500,6 +502,15 @@ export class DeviceJoinProtocol {
         // Cache essential data
         this._essentialData.set(essentialData);
 
-        return {identity, rawCk, serverGroup, deviceIds, dgk, cspHashedNonces, d2dHashedNonces};
+        return {
+            identity,
+            rawCk,
+            serverGroup,
+            deviceIds,
+            dgk,
+            cspHashedNonces,
+            d2dHashedNonces,
+            workCredentials,
+        };
     }
 }

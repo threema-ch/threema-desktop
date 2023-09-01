@@ -23,6 +23,11 @@ export type D2mData = {
 
 export type D2dData = Pick<DeviceGroupBoxes, 'dgrk' | 'dgsddk' | 'dgtsk'>;
 
+export interface ThreemaWorkCredentials {
+    readonly username: string;
+    readonly password: string;
+}
+
 export interface Device {
     readonly identity: Identity;
     readonly serverGroup: ServerGroup;
