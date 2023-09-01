@@ -97,7 +97,7 @@ $brandings: (
   // prettier-ignore
   @return (
       // Message footer
-      --mc-message-indicator-time: -g($mc, message-indicator-time),
+      --mc-message-indicator-label: -g($mc, message-indicator-label),
       --mc-message-indicator-column-gap: rem(4px),
       --mc-message-indicator-icon-size: rem(12px),
 

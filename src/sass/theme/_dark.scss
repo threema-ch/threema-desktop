@@ -50,7 +50,7 @@
     ),
     message-components: (
       // Message footer
-      message-indicator-time: rgb(170, 170, 170),
+      message-indicator-label: rgb(170, 170, 170),
       // Message status
       message-status-acknowledged: theme.$consumer-green-600,
       message-status-declined: theme.$warning-orange,
@@ -63,11 +63,11 @@
       message-badge-color: rgba(#ffffff, 88%),
       message-badge-background-color: rgba(#000000, 72%),
       message-overlay-background-color: rgba(#000000, 62%),
-      message-overlay-button-color: theme.$light-text-e2,
-      message-overlay-button-background-color: #ffffff,
-      message-overlay-button-background-color--hover: #eeeeee,
-      message-overlay-button-background-color--focus: #eeeeee,
-      message-overlay-button-background-color--active: #dddddd,
+      message-overlay-button-color: rgba(#ffffff, 88%),
+      message-overlay-button-background-color: rgba(#000000, 72%),
+      message-overlay-button-background-color--hover: rgba(#000000, 78%),
+      message-overlay-button-background-color--focus: rgba(#000000, 78%),
+      message-overlay-button-background-color--active: rgba(#000000, 92%),
       message-mention-background-color: rgba(#000000, 26%),
       message-mention-color: rgba(#ffffff, 88%),
       message-mention-me-background-color: -g($branding, primary-color-600),
@@ -133,7 +133,7 @@
       emoji-picker-background-color: #2e2e2e,
       // Modal dialog
       modal-dialog-background-color-rgb-triplet: (0, 0, 0),
-      modal-dialog-background-color: rgba(0, 0, 0, 74%),
+      modal-dialog-background-color: rgba(0, 0, 0, 85%),
       // MediaMessage Modal
       media-message-background-color: theme.$grey-900,
       media-message-active-file-chip-background-color: rgba(#ffffff, 54%),

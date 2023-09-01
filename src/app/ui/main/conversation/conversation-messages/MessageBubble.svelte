@@ -7,7 +7,7 @@
   import MessageBody from '~/app/ui/main/conversation/conversation-messages/MessageBody.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageSyncProvider from '~/app/ui/main/conversation/conversation-messages/MessageSyncProvider.svelte';
-  import ImageMessageViewer from '~/app/ui/modal/ImageMessageViewer.svelte';
+  import MediaViewer from '~/app/ui/modal/media-message-viewer/MediaViewer.svelte';
   import {type AnyReceiverStore} from '~/common/model';
   import {type Remote} from '~/common/utils/endpoint';
   import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
@@ -24,19 +24,19 @@
 
   const viewModelStore = viewModelBundle.viewModel;
 
-  let isImageModalVisible = false;
+  let isMediaViewerVisible = false;
 
-  function handleClickImage({detail: event}: CustomEvent<MouseEvent>): void {
+  function handleClickThumbnail({detail: event}: CustomEvent<MouseEvent>): void {
     event.stopPropagation();
 
-    if (!isImageModalVisible) {
-      isImageModalVisible = true;
+    if (!isMediaViewerVisible) {
+      isMediaViewerVisible = true;
     }
   }
 
   function handleCloseModal(): void {
-    if (isImageModalVisible) {
-      isImageModalVisible = false;
+    if (isMediaViewerVisible) {
+      isMediaViewerVisible = false;
     }
   }
 
@@ -52,27 +52,28 @@
 
 <template>
   <MessageSyncProvider {viewModelBundle} on:syncrequest on:abortsyncrequest>
-    <div class="container" class:contains-thumbnail={message.type === 'image'}>
+    <div
+      class="container"
+      class:contains-thumbnail={message.type === 'image' || message.type === 'video'}
+    >
       <!-- Sender name (only displayed for incoming messages in a multi-user conversation) -->
       {#if isIncoming(message) && isMultiUserConversation(receiver.type)}
         <div class="sender">
           <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
         </div>
       {/if}
-      <MessageBody {viewModelBundle} {receiver} on:clickfile on:clickimage={handleClickImage} />
+      <MessageBody
+        {viewModelBundle}
+        {receiver}
+        on:clickfile
+        on:clickthumbnail={handleClickThumbnail}
+      />
     </div>
   </MessageSyncProvider>
 
-  {#if isImageModalVisible && message.type === 'image'}
+  {#if isMediaViewerVisible && (message.type === 'image' || message.type === 'video')}
     <div class="modal" use:contextMenuAction={handleContextMenuAction}>
-      <ImageMessageViewer
-        messageViewModelController={viewModelBundle.viewModelController}
-        mediaType={message.body.mediaType}
-        dimensions={message.body.dimensions}
-        on:clickclose={handleCloseModal}
-        on:clicksave
-        on:clickcopy
-      />
+      <MediaViewer {viewModelBundle} {message} on:clickclose={handleCloseModal} on:clicksave />
     </div>
   {/if}
 </template>

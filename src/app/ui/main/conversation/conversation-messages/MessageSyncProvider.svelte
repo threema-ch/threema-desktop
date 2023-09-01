@@ -56,13 +56,14 @@
         switch (messageType) {
           case 'file':
           case 'audio':
-          case 'video':
             // TODO(DESK-144): Separate label for audio messages.
-            // TODO(DESK-140): Separate label for video messages.
             return t('messaging.action--sync-file-download', 'Click to download file');
 
           case 'image':
             return t('messaging.action--sync-image-download', 'Click to download image');
+
+          case 'video':
+            return t('messaging.action--sync-video-download', 'Click to download video');
 
           default:
             return unreachable(messageType);
@@ -72,13 +73,14 @@
         switch (messageType) {
           case 'file':
           case 'audio':
-          case 'video':
             // TODO(DESK-144): Separate label for audio messages.
-            // TODO(DESK-140): Separate label for video messages.
             return t('messaging.action--sync-file-upload', 'Click to upload file');
 
           case 'image':
             return t('messaging.action--sync-image-upload', 'Click to upload image');
+
+          case 'video':
+            return t('messaging.action--sync-video-upload', 'Click to upload video');
 
           default:
             return unreachable(messageType);
@@ -144,6 +146,7 @@
 
     .overlay {
       position: absolute;
+      z-index: $z-index-plus;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -160,7 +163,6 @@
         align-items: center;
         color: var(--mc-message-overlay-button-color);
         background-color: var(--mc-message-overlay-button-background-color);
-        opacity: 54%;
         width: rem(44px);
         height: rem(44px);
         font-size: rem(22px);

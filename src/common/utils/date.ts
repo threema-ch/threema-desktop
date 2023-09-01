@@ -1,3 +1,5 @@
+import {type u53} from '~/common/types';
+
 /**
  * Determine whether `a` and `b` {@link Date}s are in the same minute.
  */
@@ -62,4 +64,50 @@ export function isYesterday(date: Date): boolean {
     yesterday.setDate(yesterday.getDate() - 1);
 
     return isSameDay(date, yesterday);
+}
+
+/**
+ * Convert a duration of seconds to hours, minutes, and seconds.
+ */
+export function durationToUnits(seconds: u53): {
+    readonly hours: u53;
+    readonly minutes: u53;
+    readonly seconds: u53;
+} {
+    if (seconds < 0) {
+        seconds = 0;
+    }
+    return {
+        seconds: Math.floor(seconds % 60),
+        minutes: Math.floor((seconds / 60) % 60),
+        hours: Math.floor(seconds / (60 * 60)),
+    };
+}
+
+/**
+ * Convert a number to a string and (left-)pad it to a certain length using zeroes.
+ *
+ * @example
+ * ```ts
+ * const a = pad(5) // "05"
+ * const b = pad(30, 3) // "030"
+ * ```
+ * @param value The number to convert to a string and pad with zeroes.
+ * @param digits Optional total count of digits the resulting string should have. `2` by default.
+ */
+function pad(value: u53, digits: u53 = 2): string {
+    return value.toString().padStart(digits, '0');
+}
+
+/**
+ * Convert a duration of seconds to a padded string in the form `mm:mm` or `HH:mm:ss`.
+ */
+export function durationToString(seconds: u53): string {
+    const {hours: h, minutes: m, seconds: s} = durationToUnits(seconds);
+
+    if (h > 0) {
+        return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    return `${pad(m)}:${pad(s)}`;
 }

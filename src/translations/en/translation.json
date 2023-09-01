@@ -158,8 +158,7 @@
     "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so-called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema’s servers to be distributed to your chat partners, the private key remains on your device, where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender’s device and can only be decrypted with your personal private key."
   },
   "dialog--image-message-viewer": {
-    "error--image-message-image-not-loaded": "The image could not be loaded.",
-    "hint--image-preview": "Full-size image preview"
+    "error--image-message-image-not-loaded": "The image could not be loaded."
   },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Need help?",
@@ -217,6 +216,9 @@
     "label--title-encrypting": "Encrypting Data with Your Password",
     "label--title-receiving": "Receiving Data",
     "label--title-restoring": "Restoring Data"
+  },
+  "dialog--media-message-viewer": {
+    "hint--image-preview": "Full-size image preview"
   },
   "dialog--message-details": {
     "label--created-date": "Created",
@@ -279,6 +281,8 @@
     "action--sync-image-download": "Download image",
     "action--sync-image-upload": "Upload image",
     "action--sync-unknown-direction": "Unknown sync direction",
+    "action--sync-video-download": "Click to download video",
+    "action--sync-video-upload": "Click to upload video",
     "error--add-files-empty": "Files couldn’t be added",
     "error--add-files-inaccessible": "Files couldn’t be accessed",
     "error--add-files-partially-inaccessible": "Some files couldn’t be accessed",

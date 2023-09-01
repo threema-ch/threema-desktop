@@ -42,7 +42,7 @@
   /**
    * The message to be parsed and displayed with the requested features.
    */
-  export let message: Message<MessageBody<'image'>>;
+  export let message: Message<MessageBody<'image'>> | Message<MessageBody<'video'>>;
 
   /**
    * Size constraints to control the thumbnail's display.

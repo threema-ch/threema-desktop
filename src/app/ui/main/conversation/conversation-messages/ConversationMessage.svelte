@@ -360,7 +360,11 @@
       }
     | undefined
   > {
-    if (messageStore.type !== 'file' && messageStore.type !== 'image') {
+    if (
+      messageStore.type !== 'file' &&
+      messageStore.type !== 'image' &&
+      messageStore.type !== 'video'
+    ) {
       log.error(
         `Attempting blob sync of ${messageStore.type} message, which doesn't support blob data`,
       );
@@ -509,7 +513,7 @@
             options={{
               showReactions: !isReceiverBlocked,
               showAction: {
-                save: ['file', 'image'].includes(messageBody.type),
+                save: ['file', 'image', 'video'].includes(messageBody.type),
                 quote: !isReceiverBlocked,
                 copyLink: hrefToCopy !== undefined,
                 copyMessage: messageTextContentToCopy !== undefined,

@@ -228,6 +228,8 @@
       return;
     }
 
+    event.preventDefault();
+    event.stopPropagation();
     close();
   }
 

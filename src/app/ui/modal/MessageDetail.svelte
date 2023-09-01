@@ -113,7 +113,7 @@
           <ListElement label="Direction">
             {MessageDirectionUtils.nameOf(message.view.direction)?.toLowerCase()}
           </ListElement>
-          {#if message.type === 'file' || message.type === 'image'}
+          {#if message.type === 'file' || message.type === 'image' || message.type === 'video'}
             <ListElement label="File Message Data State">
               {message.view.state}
             </ListElement>
@@ -142,6 +142,17 @@
             <ListElement label="Animated">
               {message.view.animated}
             </ListElement>
+          {/if}
+          {#if message.type === 'video'}
+            <ListElement label="Duration">
+              {#if message.view.duration}
+                {message.view.duration} s
+              {:else}
+                undefined
+              {/if}
+            </ListElement>
+          {/if}
+          {#if message.type === 'image' || message.type === 'video'}
             <ListElement label="Dimensions">
               {#if message.view.dimensions}
                 {message.view.dimensions.width}x{message.view.dimensions.height}

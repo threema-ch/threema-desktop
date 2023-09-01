@@ -6,61 +6,52 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {globals} from '~/app/globals';
-  import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import {type VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {copyImageBytes} from '~/app/ui/main/conversation/conversation-messages';
-  import {type ImageMessageViewerContextMenuEvent} from '~/app/ui/modal/image-message-viewer';
-  import ImageMessageViewerContextMenu from '~/app/ui/modal/image-message-viewer/ImageMessageViewerContextMenu.svelte';
+  import {
+    fetchMedia,
+    type MediaState,
+    type MediaViewerContextMenuEvent,
+    type MediaViewerMessage,
+  } from '~/app/ui/modal/media-message-viewer';
+  import ImagePreview from '~/app/ui/modal/media-message-viewer/ImagePreview.svelte';
+  import MediaViewerContextMenu from '~/app/ui/modal/media-message-viewer/MediaViewerContextMenu.svelte';
+  import VideoPreview from '~/app/ui/modal/media-message-viewer/VideoPreview.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {nodeContainsTarget} from '~/app/ui/utils/node';
-  import {type Dimensions, type ReadonlyUint8Array} from '~/common/types';
-  import {unreachable} from '~/common/utils/assert';
+  import {ensureError, unreachable} from '~/common/utils/assert';
   import {type Remote, type RemoteProxy} from '~/common/utils/endpoint';
   import {GlobalTimer} from '~/common/utils/timer';
-  import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
+  import {
+    type ConversationMessageViewModelBundle,
+    type ConversationMessageViewModelController,
+  } from '~/common/viewmodel/conversation-message';
 
-  const FALLBACK_PLACEHOLDER_SIZE = 120;
-
-  const log = globals.unwrap().uiLogging.logger(`ui.component.modal.image-detail`);
-
-  /**
-   * View model controller of the associated conversation message.
-   */
-  export let messageViewModelController: Remote<ConversationMessageViewModelController>;
+  const log = globals.unwrap().uiLogging.logger(`ui.component.modal.media-message-viewer`);
 
   /**
-   * The image media type.
+   * Bundle containing the viewModel and viewModelController.
    */
-  export let mediaType: string;
+  export let viewModelBundle: Remote<ConversationMessageViewModelBundle>;
 
   /**
-   * The real dimensions of the image.
+   * The message whose media to display in the viewer.
    */
-  export let dimensions: Dimensions | undefined;
+  export let message: MediaViewerMessage;
 
-  /**
-   * States used to describe the progress when loading the image.
-   */
-  type ConversationMessageImageState =
-    | {status: 'loading'}
-    | {status: 'failed'}
-    | {status: 'loaded'; bytes: ReadonlyUint8Array; url: string};
+  let mediaState: MediaState = {status: 'loading'};
 
-  let image: ConversationMessageImageState = {
-    status: 'loading',
-  };
   // Allow `null` here due to Svelte sometimes setting binds to null.
   /* eslint-disable @typescript-eslint/ban-types */
-  let previewElement: HTMLElement | SVGSVGElement | undefined | null = undefined;
-  let actionsContainer: HTMLElement | undefined | null = undefined;
+  let containerElement: HTMLElement | null;
+  let previewElement: HTMLElement | undefined | null = undefined;
+  let actionsContainerElement: HTMLElement | undefined | null = undefined;
 
-  // Context menu
   let contextMenuPopover: Popover | null;
   let contextMenuElement: HTMLElement | null | undefined;
   let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
-  let container: HTMLElement | null;
   /* eslint-enable @typescript-eslint/ban-types */
 
   // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
@@ -69,9 +60,8 @@
   new GlobalTimer()
     .sleep(250)
     .then(() => (minimalLoadTimerElapsed = true))
-    .catch((e) => log.error('Sleep timer failed'));
+    .catch((error) => log.error(`Sleep timer failed: ${ensureError(error).message}`));
 
-  // Component event dispatcher.
   const dispatch = createEventDispatcher<{
     clickclose: MouseEvent;
     clicksave: MouseEvent;
@@ -85,73 +75,48 @@
     dispatch('clickclose');
   }
 
-  function revokeImageUrl(): void {
-    if ('url' in image) {
-      URL.revokeObjectURL(image.url);
+  function revokeLoadedMediaUrl(): void {
+    if (mediaState.status === 'loaded') {
+      URL.revokeObjectURL(mediaState.url);
     }
-  }
-
-  function getImage(controller: RemoteProxy<ConversationMessageViewModelController>): void {
-    controller
-      ?.getBlob()
-      .then((bytes) => {
-        if (bytes !== undefined) {
-          // Revoke previous image URL.
-          revokeImageUrl();
-          // Generate new image URL.
-          image = {
-            status: 'loaded',
-            bytes,
-            url: URL.createObjectURL(new Blob([bytes], {type: mediaType})),
-          };
-        } else {
-          image = {
-            status: 'failed',
-          };
-        }
-      })
-      .catch((error) => {
-        image = {
-          status: 'failed',
-        };
-      });
   }
 
   function handleOutsideClick(event: MouseEvent): void {
     if (
       !nodeContainsTarget(previewElement, event.target) &&
-      !nodeContainsTarget(actionsContainer, event.target) &&
+      !nodeContainsTarget(actionsContainerElement, event.target) &&
       !nodeContainsTarget(contextMenuElement, event.target)
     ) {
       handleClose();
     }
   }
 
-  function handleContextMenuAction(event: MouseEvent): void {
-    if (event.type === 'contextmenu') {
-      contextMenuVirtualTrigger = {
-        width: 0,
-        height: 0,
-        left: event.clientX,
-        right: 0,
-        top: event.clientY,
-        bottom: 0,
-      };
-    } else {
-      contextMenuVirtualTrigger = undefined;
-    }
+  function handleContextMenu(event: MouseEvent): void {
+    event.preventDefault();
+    // Prevent ancestor elements from receiving the `contextmenu` event.
+    event.stopPropagation();
+
+    // Create `VirtualElement` at click position.
+    contextMenuVirtualTrigger = {
+      width: 0,
+      height: 0,
+      left: event.clientX,
+      right: 0,
+      top: event.clientY,
+      bottom: 0,
+    };
 
     contextMenuPopover?.open();
   }
 
-  function handleContextMenuEvent(type: ImageMessageViewerContextMenuEvent): void {
+  function handleContextMenuEvent(type: MediaViewerContextMenuEvent): void {
     contextMenuPopover?.close();
 
     switch (type) {
-      case 'clicksaveimage':
+      case 'clicksave':
         dispatch('clicksave');
         break;
-      case 'clickcopyimage':
+      case 'clickcopy':
         copyImage();
         break;
       default:
@@ -160,61 +125,70 @@
   }
 
   function copyImage(): void {
-    if (image.status === 'loaded') {
-      copyImageBytes(image.bytes, mediaType, log).catch((error) => {
-        // Ignore, already handled and logged by `copyImageBytes`
-      });
+    if (mediaState.status === 'loaded') {
+      if (mediaState.type === 'image') {
+        copyImageBytes(mediaState.originalImageBytes, message.body.mediaType, log).catch(
+          (error) => {
+            // Ignore, already handled and logged by `copyImageBytes`
+          },
+        );
+      } else {
+        log.error(`Cannot copy image bytes of media type "${mediaState.type}"`);
+      }
     } else {
-      log.warn("Cannot copy image bytes before they're loaded");
+      log.error('Cannot copy image bytes before they are loaded');
     }
   }
 
-  $: if (messageViewModelController !== undefined) {
-    getImage(messageViewModelController);
+  function updateMediaState(
+    currentController: RemoteProxy<ConversationMessageViewModelController>,
+    currentMessage: MediaViewerMessage,
+  ): void {
+    // `catch` is not necessary here, as `fetchMedia` will always be fulfilled.
+    void fetchMedia(currentController, currentMessage).then((state) => {
+      revokeLoadedMediaUrl();
+      mediaState = state;
+    });
   }
+
+  $: updateMediaState(viewModelBundle.viewModelController, message);
 
   onMount(() => {
     window.addEventListener('click', handleOutsideClick);
   });
 
   onDestroy(() => {
-    revokeImageUrl();
+    revokeLoadedMediaUrl();
     window.removeEventListener('click', handleOutsideClick);
   });
 </script>
 
 <template>
-  <div bind:this={container} class="image-detail">
+  <div bind:this={containerElement} class="image-detail">
     <ModalWrapper visible={true}>
       <ModalDialog visible={true} elevated={false} on:close={handleClose} on:cancel={handleClose}>
         <div class="container" slot="body">
-          {#if image.status === 'loading' || !minimalLoadTimerElapsed}
+          {#if mediaState.status === 'loading' || !minimalLoadTimerElapsed}
             <div class="progress">
               <CircularProgress variant="indeterminate" />
             </div>
-
-            <!-- SVG is used here to mimic the aspect-ratio-related behavior of an `img`. -->
-            <svg
-              bind:this={previewElement}
-              class="placeholder"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 {dimensions?.width ?? FALLBACK_PLACEHOLDER_SIZE} {dimensions?.height ??
-                FALLBACK_PLACEHOLDER_SIZE}"
-              preserveAspectRatio="xMidYMid meet"
-              width={dimensions?.width ?? FALLBACK_PLACEHOLDER_SIZE}
-              height={dimensions?.height ?? FALLBACK_PLACEHOLDER_SIZE}
-            />
-          {:else if image.status === 'loaded'}
-            <img
-              bind:this={previewElement}
-              use:contextMenuAction={handleContextMenuAction}
-              src={image.url}
-              alt={$i18n.t(
-                'dialog--image-message-viewer.hint--image-preview',
-                'Full-size image preview',
-              )}
-            />
-          {:else if image.status === 'failed'}
+          {:else if mediaState.status === 'loaded'}
+            {#if mediaState.type === 'image'}
+              <ImagePreview
+                bind:element={previewElement}
+                {mediaState}
+                on:contextmenu={handleContextMenu}
+              />
+            {:else if mediaState.type === 'video'}
+              <VideoPreview
+                bind:element={previewElement}
+                {mediaState}
+                on:contextmenu={handleContextMenu}
+              />
+            {:else}
+              {unreachable(mediaState)}
+            {/if}
+          {:else if mediaState.status === 'failed'}
             <p class="error">
               <MdIcon theme="Filled">error</MdIcon>
               {$i18n.t(
@@ -223,11 +197,11 @@
               )}
             </p>
           {:else}
-            {unreachable(image)}
+            {unreachable(mediaState)}
           {/if}
         </div>
       </ModalDialog>
-      <div class="actions" bind:this={actionsContainer}>
+      <div class="actions" bind:this={actionsContainerElement}>
         <IconButton flavor="naked" on:click={handleSave}>
           <MdIcon theme="Outlined">download</MdIcon>
         </IconButton>
@@ -241,7 +215,7 @@
     <Popover
       bind:this={contextMenuPopover}
       bind:element={contextMenuElement}
-      container={container ?? undefined}
+      container={containerElement ?? undefined}
       reference={contextMenuVirtualTrigger}
       anchorPoints={{
         reference: {
@@ -256,10 +230,11 @@
       offset={{left: 0, top: 4}}
       triggerBehavior="open"
     >
-      <ImageMessageViewerContextMenu
+      <MediaViewerContextMenu
         slot="popover"
-        on:clicksaveimage={() => handleContextMenuEvent('clicksaveimage')}
-        on:clickcopyimage={() => handleContextMenuEvent('clickcopyimage')}
+        {message}
+        on:clicksave={() => handleContextMenuEvent('clicksave')}
+        on:clickcopy={() => handleContextMenuEvent('clickcopy')}
       />
     </Popover>
   </div>
@@ -280,25 +255,9 @@
     position: relative;
     display: grid;
     place-items: center;
-    max-width: 100vw;
-    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
     padding: rem(41px);
-
-    .placeholder,
-    img {
-      grid-area: 1 / 1;
-      border-radius: rem(8px);
-      display: block;
-      object-fit: contain;
-      min-width: rem(16px);
-      min-height: rem(16px);
-      width: auto;
-      height: auto;
-      max-width: 100%;
-      max-height: 100%;
-      background-color: var(--t-main-background-color);
-      @extend %elevation-160;
-    }
 
     .progress {
       grid-area: 1 / 1;
