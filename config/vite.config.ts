@@ -81,6 +81,7 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 DIRECTORY_SERVER_URL: 'https://ds-apip.threema.ch',
                 BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.threema.ch/{prefix8}',
                 RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.threema.ch/{prefix8}',
+                WORK_API_SERVER_URL: 'https://ds-apip-work.threema.ch',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
 
                 // We don't do any automatic crash reporting for our live (consumer) builds
@@ -100,6 +101,7 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 DIRECTORY_SERVER_URL: 'https://ds-apip.test.threema.ch',
                 BLOB_SERVER_URL: 'https://blob-mirror-{prefix4}.test.threema.ch/{prefix8}',
                 RENDEZVOUS_SERVER_URL: 'wss://rendezvous-{prefix4}.test.threema.ch/{prefix8}',
+                WORK_API_SERVER_URL: 'https://ds-apip-work.test.threema.ch',
                 UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
 
                 // Only enabled for internal test builds on sandbox, if set through env variable

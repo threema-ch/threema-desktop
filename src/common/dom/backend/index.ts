@@ -920,6 +920,7 @@ export class Backend implements ProxyMarked {
                         kind: 'generic-error',
                     });
                 }
+
                 break;
             default:
                 unreachable(import.meta.env.BUILD_VARIANT);

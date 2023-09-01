@@ -50,6 +50,7 @@ export interface BuildConfig {
     readonly DIRECTORY_SERVER_URL: string;
     readonly BLOB_SERVER_URL: string;
     readonly RENDEZVOUS_SERVER_URL: string;
+    readonly WORK_API_SERVER_URL: string;
     readonly UPDATE_SERVER_URL: string;
     readonly SENTRY_DSN: string | undefined;
     readonly MINIDUMP_ENDPOINT: string | undefined;
