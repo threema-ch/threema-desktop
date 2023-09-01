@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
+  import {onDestroy, onMount, tick} from 'svelte';
 
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -34,10 +34,22 @@
       log.error('Loading profile view model failed', error);
     });
 
-  let searchInput: SearchInput;
+  /* eslint-disable @typescript-eslint/ban-types */
+  let searchInput: SearchInput | null | undefined;
+  let conversationList: ConversationNavList | null | undefined;
+  /* eslint-enable @typescript-eslint/ban-types */
 
   function handleHotkeyControlF(): void {
-    searchInput.select();
+    searchInput?.select();
+  }
+
+  async function scrollToActiveConversation(): Promise<void> {
+    /*
+     * Wait for any pending state changes to be applied before scrolling to the active conversation,
+     * because it might not be rendered before that (e.g., if a filter has been applied).
+     */
+    await tick();
+    conversationList?.scrollToActiveConversation();
   }
 
   // TODO(DESK-1082): This translation should be entirely in the backend and not passed in.
@@ -90,11 +102,12 @@
         bind:this={searchInput}
         placeholder={$i18n.t('messaging.label--search-conversation', 'Find Chat')}
         bind:value={$conversationPreviewListFilter}
+        on:reset={scrollToActiveConversation}
       />
     </div>
     <div class="conversation-preview-list">
       {#await viewModel.conversationPreviews(translationsForBackend) then conversationPreviews}
-        <ConversationNavList {conversationPreviews} {router} />
+        <ConversationNavList bind:this={conversationList} {conversationPreviews} {router} />
       {/await}
     </div>
   </div>

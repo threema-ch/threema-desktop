@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte';
+
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
 
   /**
@@ -13,6 +15,10 @@
   // Input element
   let input: HTMLInputElement;
 
+  const dispatch = createEventDispatcher<{
+    reset: undefined;
+  }>();
+
   // Reset the value, then blur
   function back(): void {
     value = '';
@@ -23,6 +29,7 @@
   function reset(): void {
     value = '';
     input.focus();
+    dispatch('reset');
   }
 
   // Reset the value when the ESC key is pressed

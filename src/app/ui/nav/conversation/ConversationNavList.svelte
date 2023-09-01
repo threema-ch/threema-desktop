@@ -152,10 +152,7 @@
       }
     });
 
-    const receiverLookup = $router.main.params?.receiverLookup;
-    if (receiverLookup !== undefined) {
-      conversationListEvent.post({action: 'scroll-to-receiver', receiverLookup});
-    }
+    scrollToActiveConversation();
 
     return () => conversationListEvent.detach();
   });
@@ -164,6 +161,16 @@
     `${DbReceiverLookup['type']}:${DbReceiverLookup['uid']}`,
     HTMLElement
   > = {};
+
+  /**
+   * Scroll list to bring the currently active conversation into view.
+   */
+  export function scrollToActiveConversation(): void {
+    const receiverLookup = $router.main.params?.receiverLookup;
+    if (receiverLookup !== undefined) {
+      conversationListEvent.post({action: 'scroll-to-receiver', receiverLookup});
+    }
+  }
 
   function rememberNodeForReceiver(node: HTMLElement, receiverLookup: DbReceiverLookup): void {
     nodesByReceiverLookup[`${receiverLookup.type}:${receiverLookup.uid}`] = node;
