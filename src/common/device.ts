@@ -28,12 +28,27 @@ export interface ThreemaWorkCredentials {
     readonly password: string;
 }
 
+/**
+ * Data related to Threema Work.
+ *
+ * (Not used in the consumer version of the app.)
+ */
+export interface ThreemaWorkData {
+    readonly workCredentials: ThreemaWorkCredentials;
+}
+
+/**
+ * Information related to this device.
+ *
+ * This includes the own identity, server group, keys, credentials, etc.
+ */
 export interface Device {
     readonly identity: Identity;
     readonly serverGroup: ServerGroup;
     readonly csp: CspData;
     readonly d2m: D2mData;
     readonly d2d: D2dData;
+    readonly workData?: ThreemaWorkData;
 }
 
 /**
@@ -66,6 +81,7 @@ export class DeviceBackend implements Device {
         identityData: IdentityData,
         deviceIds: DeviceIds,
         dgk: RawDeviceGroupKey,
+        public readonly workData?: ThreemaWorkData,
     ) {
         const {crypto, nonces} = services;
 

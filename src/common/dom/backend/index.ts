@@ -396,6 +396,7 @@ function initBackendServices(
     deviceIds: DeviceIds,
     dgk: RawDeviceGroupKey,
     nonces: NonceService,
+    workCredentials: ThreemaWorkCredentials | undefined,
 ): ServicesForBackend {
     const {
         config,
@@ -410,7 +411,15 @@ function initBackendServices(
         timer,
     } = simpleServices;
 
-    const device = new DeviceBackend({crypto, db, logging, nonces}, identityData, deviceIds, dgk);
+    const workData = workCredentials === undefined ? undefined : {workCredentials};
+
+    const device = new DeviceBackend(
+        {crypto, db, logging, nonces},
+        identityData,
+        deviceIds,
+        dgk,
+        workData,
+    );
     const blob = new FetchBlobBackend({config, device});
     const model = new ModelRepositories({
         blob,
@@ -657,6 +666,7 @@ export class Backend implements ProxyMarked {
             deviceIds,
             dgk,
             nonces,
+            keyStorageContents.workCredentials,
         );
         const backend = new Backend(backendServices);
 
@@ -933,6 +943,7 @@ export class Backend implements ProxyMarked {
             deviceIds,
             dgk,
             nonces,
+            joinResult.workCredentials,
         );
         const backend = new Backend(backendServices);
 
