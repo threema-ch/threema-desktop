@@ -396,7 +396,7 @@ export enum MessageType {
     TEXT = 'text',
     FILE = 'file',
     IMAGE = 'image',
-    // VIDEO = 'video',
+    VIDEO = 'video',
     // AUDIO = 'audio',
     // POLL = 'poll',
     // LOCATION = 'location',

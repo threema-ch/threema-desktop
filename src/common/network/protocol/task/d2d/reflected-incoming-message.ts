@@ -22,7 +22,10 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {getFileBasedMessageTypeAndExtraProperties} from '~/common/network/protocol/task/common/file';
+import {
+    getFileBasedMessageTypeAndExtraProperties,
+    messageStoreHasThumbnail,
+} from '~/common/network/protocol/task/common/file';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
@@ -32,6 +35,7 @@ import {
     type InboundFileMessageInitFragment,
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
+    type InboundVideoMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import type * as structbuf from '~/common/network/structbuf';
 import {
@@ -206,8 +210,8 @@ export class ReflectedIncomingMessageTask
                     id: validatedMessage.messageId,
                 });
 
-                // If this is a file message, trigger the downloading of the thumbnail
-                if (messageStore.type === 'file') {
+                // If this message type has a thumbnail, automatically trigger its download
+                if (messageStoreHasThumbnail(messageStore)) {
                     messageStore
                         .get()
                         .controller.thumbnailBlob()
@@ -478,7 +482,10 @@ function getFileMessageInitFragment(
     message: structbuf.validate.csp.e2e.File.Type,
     commonFragment: CommonInboundMessageInitFragment,
     log: Logger,
-): InboundFileMessageInitFragment | InboundImageMessageInitFragment {
+):
+    | InboundFileMessageInitFragment
+    | InboundImageMessageInitFragment
+    | InboundVideoMessageInitFragment {
     const fileData = message.file;
 
     return {

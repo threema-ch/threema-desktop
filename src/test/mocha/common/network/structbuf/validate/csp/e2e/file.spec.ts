@@ -136,6 +136,40 @@ export function run(): void {
             expect(validated.caption).to.equal('Bildli');
         });
 
+        it('video message as sent by android 5.1.2', function () {
+            const json = `{
+                "b":"2597ad3148a11e51bb8d819d4a5ede56",
+                "t":"220665f6f7b1091028cc2024c4602fb5",
+                "k":"d8c72c899456fde2f9650e60194524f8eefff7be3811a5c6f5bf26d3a810ffe1",
+                "m":"video/mp4",
+                "p":"image/jpeg",
+                "n":"threema-20230908-171410067.mp4",
+                "s":960121,
+                "i":1,
+                "d":"another caption",
+                "c":"dae004d2cf89f10219ca46e52a786c9a",
+                "x":{"d":4.167},
+                "j":1
+            }`;
+            const validated = File.SCHEMA.parse({
+                file: UTF8.encode(json),
+            }).file;
+            expect(validated.renderingType).to.equal('media');
+            expect(bytesToHex(validated.file.blobId)).to.equal('2597ad3148a11e51bb8d819d4a5ede56');
+            expect(validated.file.mediaType).to.equal('video/mp4');
+            assert(validated.thumbnail !== undefined, 'Thumbnail should not be undefined');
+            expect(bytesToHex(validated.thumbnail.blobId)).to.equal(
+                '220665f6f7b1091028cc2024c4602fb5',
+            );
+            expect(validated.thumbnail.mediaType).to.equal('image/jpeg');
+            expect(validated.fileName).to.equal('threema-20230908-171410067.mp4');
+            expect(validated.fileSize).to.equal(960121);
+            expect(validated.caption).to.equal('another caption');
+            expect(validated.metadata?.d).to.equal(4.167);
+            expect(validated.metadata?.h).to.be.undefined;
+            expect(validated.metadata?.w).to.be.undefined;
+        });
+
         it('audio message as sent by android 5.0.3.1', function () {
             const json = `{
                 "b":"33df2fd37b54ee397dcb9e2f7c742048",

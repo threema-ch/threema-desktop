@@ -117,7 +117,8 @@ function getViewModel(
         let syncDirection: ConversationMessageViewModel['syncDirection'];
         switch (message.type) {
             case MessageType.FILE:
-            case MessageType.IMAGE: {
+            case MessageType.IMAGE:
+            case MessageType.VIDEO: {
                 if (message.view.state === 'unsynced' || message.view.state === 'syncing') {
                     const fileData = message.view.fileData;
                     const blobId = message.view.blobId;
@@ -322,6 +323,38 @@ function getConversationMessageBody(
             }
             break;
         }
+        case 'video': {
+            const type = 'video';
+            const body: MessageBodyFor<typeof type> = {
+                mediaType: messageModel.view.mediaType,
+                size: messageModel.view.fileSize,
+                caption: messageModel.view.caption,
+                duration: messageModel.view.duration,
+                dimensions: messageModel.view.dimensions,
+            };
+            if (messageModel.ctx === MessageDirection.INBOUND) {
+                messageData = {
+                    ...(baseMessage as Omit<
+                        IncomingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
+                    type,
+                    body,
+                    state: convertFileMessageDataState(messageModel.view),
+                };
+            } else {
+                messageData = {
+                    ...(baseMessage as Omit<
+                        OutgoingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
+                    type,
+                    body,
+                    state: convertFileMessageDataState(messageModel.view),
+                };
+            }
+            break;
+        }
         default:
             unreachable(messageModel);
     }
@@ -421,6 +454,7 @@ export class ConversationMessageViewModelController
         switch (this._message.type) {
             case MessageType.FILE:
             case MessageType.IMAGE:
+            case MessageType.VIDEO:
                 return await this._message.get().controller.blob();
 
             case MessageType.TEXT:
@@ -435,6 +469,7 @@ export class ConversationMessageViewModelController
         switch (this._message.type) {
             case MessageType.FILE:
             case MessageType.IMAGE:
+            case MessageType.VIDEO:
                 return await this._message.get().controller.thumbnailBlob();
 
             case MessageType.TEXT:

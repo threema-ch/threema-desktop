@@ -40,6 +40,8 @@ import {
     type DbTextMessageFragment,
     type DbUnreadMessageCountMixin,
     type DbUpdate,
+    type DbVideoMessage,
+    type DbVideoMessageFragment,
     type RawDatabaseKey,
 } from '~/common/db';
 import {
@@ -75,15 +77,18 @@ import {
     tMessageFileData,
     tMessageImageData,
     tMessageTextData,
+    tMessageVideoData,
     tNonce,
     tSettings,
 } from './tables';
 
-type UpdateSetsForDbMessage<TDbMessage extends DbFileMessage | DbImageMessage> =
+type UpdateSetsForDbMessage<TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage> =
     TDbMessage extends DbFileMessage
         ? UpdateSets<typeof tMessageFileData, typeof tMessageFileData>
         : TDbMessage extends DbImageMessage
         ? UpdateSets<typeof tMessageImageData, typeof tMessageImageData>
+        : TDbMessage extends DbVideoMessage
+        ? UpdateSets<typeof tMessageVideoData, typeof tMessageVideoData>
         : never;
 
 /**
@@ -1160,6 +1165,27 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public createVideoMessage(message: DbCreate<DbVideoMessage>): DbCreated<DbVideoMessage> {
+        return this._createFileBasedMessage(message, (sharedFields) => {
+            sync(
+                this._db
+                    .insertInto(tMessageVideoData)
+                    .set({
+                        // Fields shared among all file-based message types
+                        ...this._getBaseFileMessageFragmentInsertSet(message),
+                        ...sharedFields,
+
+                        // Fields specific to this message type
+                        duration: message.duration,
+                        height: message.dimensions?.height,
+                        width: message.dimensions?.width,
+                    })
+                    .executeInsert(),
+            );
+        });
+    }
+
+    /** @inheritdoc */
     public hasMessageByUid(uid: DbMessageUid): boolean {
         return (
             sync(
@@ -1321,7 +1347,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 const tFileDataJoinable = tFileData.forUseInLeftJoinAs('fileData');
                 const tThumbnailFileDataJoinable =
                     tFileData.forUseInLeftJoinAs('thumbnailFileData');
-                const file = sync(
+                const image = sync(
                     this._db
                         // Main table
                         .selectFrom(tMessageImageData)
@@ -1370,7 +1396,62 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ...common,
                     lastReaction,
                     type: MessageType.IMAGE,
-                    ...file,
+                    ...image,
+                };
+            }
+            case MessageType.VIDEO: {
+                const tFileDataJoinable = tFileData.forUseInLeftJoinAs('fileData');
+                const tThumbnailFileDataJoinable =
+                    tFileData.forUseInLeftJoinAs('thumbnailFileData');
+                const video = sync(
+                    this._db
+                        // Main table
+                        .selectFrom(tMessageVideoData)
+                        // Join for fileData
+                        .leftJoin(tFileDataJoinable)
+                        .on(tMessageVideoData.fileDataUid.equals(tFileDataJoinable.uid))
+                        // Join for thumbnailFileData
+                        .leftJoin(tThumbnailFileDataJoinable)
+                        .on(
+                            tMessageVideoData.thumbnailFileDataUid.equals(
+                                tThumbnailFileDataJoinable.uid,
+                            ),
+                        )
+                        // Select data
+                        .select({
+                            // File data columns
+                            ...this._getFileDataSelectColumns(
+                                tFileDataJoinable,
+                                tThumbnailFileDataJoinable,
+                            ),
+                            // Base file message fields
+                            blobId: tMessageVideoData.blobId,
+                            thumbnailBlobId: tMessageVideoData.thumbnailBlobId,
+                            blobDownloadState: tMessageVideoData.blobDownloadState,
+                            thumbnailBlobDownloadState:
+                                tMessageVideoData.thumbnailBlobDownloadState,
+                            encryptionKey: tMessageVideoData.encryptionKey,
+                            mediaType: tMessageVideoData.mediaType,
+                            thumbnailMediaType: tMessageVideoData.thumbnailMediaType,
+                            fileName: tMessageVideoData.fileName,
+                            fileSize: tMessageVideoData.fileSize,
+                            caption: tMessageVideoData.caption,
+                            correlationId: tMessageVideoData.correlationId,
+                            // Video-specific fields
+                            duration: tMessageVideoData.duration,
+                            dimensions: {
+                                height: tMessageVideoData.height.asRequiredInOptionalObject(),
+                                width: tMessageVideoData.width.asRequiredInOptionalObject(),
+                            },
+                        })
+                        .where(tMessageVideoData.messageUid.equals(common.uid))
+                        .executeSelectOne(),
+                );
+                return {
+                    ...common,
+                    lastReaction,
+                    type: MessageType.VIDEO,
+                    ...video,
                 };
             }
             default:
@@ -1533,13 +1614,55 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
                     return {deletedFileIds};
                 }
+                case MessageType.VIDEO: {
+                    // Prepare update
+                    const update: UpdateSets<typeof tMessageVideoData, typeof tMessageVideoData> =
+                        pick<DbVideoMessageFragment>(message, [
+                            'blobId',
+                            'thumbnailBlobId',
+                            'blobDownloadState',
+                            'thumbnailBlobDownloadState',
+                            'encryptionKey',
+                            'mediaType',
+                            'thumbnailMediaType',
+                            'fileName',
+                            'fileSize',
+                            'caption',
+                            'correlationId',
+                            'duration',
+                            'dimensions',
+                        ]);
+
+                    // Add, update or remove associated file data entries
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
+
+                    // Update message file data
+                    sync(
+                        this._db
+                            .update(tMessageVideoData)
+                            .set(update)
+                            .where(tMessageVideoData.messageUid.equals(message.uid))
+                            .executeUpdate(),
+                    );
+
+                    // Delete file data rows that are now unreferenced
+                    //
+                    // NOTE: This must be called after the db update query! Otherwise rows are still
+                    //       referenced and aren't removed.
+                    const deletedFileIds =
+                        this._deleteFromMessageDataIfUnreferenced(removedFileDataUids);
+
+                    return {deletedFileIds};
+                }
                 default:
                     return unreachable(message);
             }
         }, this._log);
     }
 
-    private _processFileDataChanges<TDbMessage extends DbFileMessage | DbImageMessage>(
+    private _processFileDataChanges<
+        TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage,
+    >(
         message: Partial<TDbMessage> & {uid: DbMessageUid},
         update: UpdateSetsForDbMessage<TDbMessage>,
     ): DbFileDataUid[] {

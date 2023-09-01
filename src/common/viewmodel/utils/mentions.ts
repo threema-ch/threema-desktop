@@ -49,6 +49,7 @@ function getMentionedIdentityStrings(
         }
         case 'file':
         case 'image':
+        case 'video':
             text = messageModel.view.caption ?? '';
             break;
         default:

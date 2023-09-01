@@ -11,6 +11,7 @@ import {type NO_SENDER} from '~/common/model/message/common';
 import {createFileMessage, getFileMessageModelStore} from '~/common/model/message/file-message';
 import {createImageMessage, getImageMessageModelStore} from '~/common/model/message/image-message';
 import {createTextMessage, getTextMessageModelStore} from '~/common/model/message/text-message';
+import {createVideoMessage, getVideoMessageModelStore} from '~/common/model/message/video-message';
 import {type ConversationControllerHandle} from '~/common/model/types/conversation';
 import {type BaseMessageView} from '~/common/model/types/message';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
@@ -54,6 +55,14 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     common,
                     sender,
                 ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+            case 'video':
+                return getVideoMessageModelStore(
+                    services,
+                    conversation,
+                    message,
+                    common,
+                    sender,
+                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
             default:
                 return unreachable(message);
         }
@@ -84,6 +93,12 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     services,
                     common,
                     init as DirectedMessageFor<TDirection, MessageType.IMAGE, 'init'>,
+                ) as DbMessageFor<TType>;
+            case 'video':
+                return createVideoMessage(
+                    services,
+                    common,
+                    init as DirectedMessageFor<TDirection, MessageType.VIDEO, 'init'>,
                 ) as DbMessageFor<TType>;
             default:
                 return unreachable(init);

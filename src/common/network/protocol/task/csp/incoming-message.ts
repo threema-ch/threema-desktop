@@ -57,7 +57,10 @@ import {
     placeholderTextForUnhandledMessage,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {getFileBasedMessageTypeAndExtraProperties} from '~/common/network/protocol/task/common/file';
+import {
+    getFileBasedMessageTypeAndExtraProperties,
+    messageStoreHasThumbnail,
+} from '~/common/network/protocol/task/common/file';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
@@ -66,6 +69,7 @@ import {
     type InboundFileMessageInitFragment,
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
+    type InboundVideoMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -146,7 +150,10 @@ function getFileMessageInitFragment(
     createdAt: Date,
     cspFileMessageBody: ReadonlyUint8Array,
     log: Logger,
-): InboundFileMessageInitFragment | InboundImageMessageInitFragment {
+):
+    | InboundFileMessageInitFragment
+    | InboundImageMessageInitFragment
+    | InboundVideoMessageInitFragment {
     // Decode file message
     const fileData = structbuf.validate.csp.e2e.File.SCHEMA.parse(
         structbuf.csp.e2e.File.decode(cspFileMessageBody as Uint8Array),
@@ -214,6 +221,19 @@ function getDirectedImageMessageInit(
     sender: UidOf<DbContact>,
     fragment: InboundImageMessageInitFragment,
 ): DirectedMessageFor<MessageDirection.INBOUND, MessageType.IMAGE, 'init'> {
+    return {
+        ...fragment,
+        direction: MessageDirection.INBOUND,
+        sender,
+        id,
+    };
+}
+
+function getDirectedVideoMessageInit(
+    id: MessageId,
+    sender: UidOf<DbContact>,
+    fragment: InboundVideoMessageInitFragment,
+): DirectedMessageFor<MessageDirection.INBOUND, MessageType.VIDEO, 'init'> {
     return {
         ...fragment,
         direction: MessageDirection.INBOUND,
@@ -724,8 +744,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                             ),
                         );
 
-                    // If this is a file message, trigger the downloading of the thumbnail
-                    if (messageStore.type === 'image') {
+                    // If this message type has a thumbnail, automatically trigger its download
+                    if (messageStoreHasThumbnail(messageStore)) {
                         messageStore
                             .get()
                             .controller.thumbnailBlob()
@@ -1508,6 +1528,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return getDirectedFileMessageInit(this._id, contact.get().ctx, initFragment);
             case MessageType.IMAGE:
                 return getDirectedImageMessageInit(this._id, contact.get().ctx, initFragment);
+            case MessageType.VIDEO:
+                return getDirectedVideoMessageInit(this._id, contact.get().ctx, initFragment);
             default:
                 return unreachable(initFragment);
         }

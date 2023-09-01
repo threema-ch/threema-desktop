@@ -305,6 +305,7 @@
     "label--default-filename": "(kein Dateiname)",
     "label--default-image-message-preview": "Bild",
     "label--default-sender-self": "Ich: {text}",
+    "label--default-video-message-preview": "Video",
     "label--mention-all": "Alle",
     "label--mention-me": "Ich",
     "label--prefix-draft": "Entwurf:",

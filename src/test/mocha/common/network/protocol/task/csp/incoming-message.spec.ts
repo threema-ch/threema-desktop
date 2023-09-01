@@ -39,7 +39,7 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {type RawBlobKey} from '~/common/network/types/keys';
-import {type ByteLengthEncoder, type Dimensions, type u8, type u53} from '~/common/types';
+import {type ByteLengthEncoder, type Dimensions, type f64, type u8, type u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
@@ -753,6 +753,75 @@ export function run(): void {
                         dimensions === undefined ? 'without' : 'with'
                     } dimensions from a known contact`, async function () {
                         await imageMessageTest(animated, dimensions);
+                    });
+                }
+            }
+
+            async function videoMessageTest(
+                duration: f64 | undefined,
+                dimensions: Dimensions | undefined,
+            ): Promise<void> {
+                const {fileBlobId, thumbnailBlobId, encryptionKey, conversation} =
+                    await setupFileMessageTest();
+
+                // Create incoming image message
+                const fileMediaType = 'video/mp4';
+                const thumbnailMediaType = 'image/png';
+                const fileName = 'hello.mp4';
+                const fileSizeBytes = 23523;
+                const fileMessage = createFileBasedMessage(
+                    encryptionKey,
+                    fileBlobId,
+                    thumbnailBlobId,
+                    {
+                        fileMediaType,
+                        thumbnailMediaType,
+                        fileName,
+                        fileSizeBytes,
+                        renderingType: 'media',
+                        metadata: {
+                            d: duration,
+                            ...(dimensions === undefined
+                                ? {}
+                                : {
+                                      w: dimensions.width,
+                                      h: dimensions.height,
+                                  }),
+                        },
+                    },
+                );
+
+                // Run task
+                await runIncomingFileMessageTask(fileMessage);
+
+                // Video message should be part of the 1:1 conversation
+                const messages = [...conversation.get().controller.getAllMessages().get()];
+                expect(messages.length).to.equal(1);
+                const message = messages[0];
+                assert(
+                    message.type === MessageType.VIDEO,
+                    `Expected message type to be video, but was ${message.type}`,
+                );
+                const view = message.get().view;
+                expect(view.blobId).to.deep.equal(fileBlobId);
+                expect(view.thumbnailBlobId).to.deep.equal(thumbnailBlobId);
+                expect(view.encryptionKey).to.deep.equal(encryptionKey);
+                expect(view.mediaType).to.equal(fileMediaType);
+                expect(view.thumbnailMediaType).to.equal(thumbnailMediaType);
+                expect(view.fileName).to.equal(fileName);
+                expect(view.fileSize).to.equal(fileSizeBytes);
+                expect(view.duration).to.equal(duration);
+                expect(view.dimensions).to.deep.equal(dimensions);
+            }
+
+            for (const duration of [0.123, undefined]) {
+                for (const dimensions of [{width: 123, height: 35}, undefined]) {
+                    it(`stores a video message ${
+                        duration === undefined ? 'without' : 'with'
+                    } duration and ${
+                        dimensions === undefined ? 'without' : 'with'
+                    } dimensions from a known contact`, async function () {
+                        await videoMessageTest(duration, dimensions);
                     });
                 }
             }

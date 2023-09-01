@@ -84,6 +84,7 @@
 
               case 'file':
               case 'image':
+              case 'video':
                 lastMessageText = lastMessageModel.view.caption ?? '';
                 break;
 

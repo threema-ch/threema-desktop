@@ -28,6 +28,7 @@ export interface ConversationPreviewTranslations {
     /* eslint-disable @typescript-eslint/naming-convention */
     readonly 'messaging.label--default-file-message-preview': string;
     readonly 'messaging.label--default-image-message-preview': string;
+    readonly 'messaging.label--default-video-message-preview': string;
     /* eslint-enable @typescript-eslint/naming-convention */
 }
 
@@ -195,7 +196,8 @@ export function deriveLastMessagePreview(
                     return lastMessage.view.text;
 
                 case 'file':
-                case 'image': {
+                case 'image':
+                case 'video': {
                     const caption = lastMessage.view.caption;
                     if (caption !== undefined && caption !== '') {
                         return caption;

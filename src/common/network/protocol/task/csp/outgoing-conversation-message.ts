@@ -118,6 +118,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         switch (messageType) {
             case 'file':
             case 'image':
+            case 'video':
                 await this._messageModelStore.get().controller.uploadBlobs();
                 break;
             case 'text':
@@ -189,12 +190,9 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 break;
             }
             case 'file':
-            case 'image': {
-                const fileJson = getFileJsonData(
-                    messageModel.type === 'file'
-                        ? {type: messageModel.type, view: messageModel.view}
-                        : {type: messageModel.type, view: messageModel.view},
-                );
+            case 'image':
+            case 'video': {
+                const fileJson = getFileJsonData(messageModel);
                 encoder = structbuf.bridge.encoder(structbuf.csp.e2e.File, {
                     file: UTF8.encode(JSON.stringify(fileJson)),
                 });
@@ -228,6 +226,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                     return CspE2eGroupConversationType.GROUP_TEXT;
                 case 'file':
                 case 'image':
+                case 'video':
                     return CspE2eGroupConversationType.GROUP_FILE;
                 default:
                     return unreachable(this._messageModelStore);
@@ -238,6 +237,7 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                     return CspE2eConversationType.TEXT;
                 case 'file':
                 case 'image':
+                case 'video':
                     return CspE2eConversationType.FILE;
                 default:
                     return unreachable(this._messageModelStore);

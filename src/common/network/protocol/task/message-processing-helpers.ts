@@ -10,6 +10,10 @@ import {
     type OutboundImageMessage,
 } from '~/common/model/types/message/image';
 import {type InboundTextMessage, type OutboundTextMessage} from '~/common/model/types/message/text';
+import {
+    type InboundVideoMessage,
+    type OutboundVideoMessage,
+} from '~/common/model/types/message/video';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type ConversationId} from '~/common/network/types';
 import {type Mutable} from '~/common/types';
@@ -33,17 +37,24 @@ export type InboundImageMessageInitFragment = Mutable<
     Omit<InboundImageMessage['init'], OmittedInitKeys>,
     'receivedAt'
 >;
+export type InboundVideoMessageInitFragment = Mutable<
+    Omit<InboundVideoMessage['init'], OmittedInitKeys>,
+    'receivedAt'
+>;
 export type OutboundTextMessageInitFragment = Omit<OutboundTextMessage['init'], OmittedInitKeys>;
 export type OutboundFileMessageInitFragment = Omit<OutboundFileMessage['init'], OmittedInitKeys>;
 export type OutboundImageMessageInitFragment = Omit<OutboundImageMessage['init'], OmittedInitKeys>;
+export type OutboundVideoMessageInitFragment = Omit<OutboundVideoMessage['init'], OmittedInitKeys>;
 export type AnyInboundMessageInitFragment =
     | InboundTextMessageInitFragment
     | InboundFileMessageInitFragment
-    | InboundImageMessageInitFragment;
+    | InboundImageMessageInitFragment
+    | InboundVideoMessageInitFragment;
 export type AnyOutboundMessageInitFragment =
     | OutboundTextMessageInitFragment
     | OutboundFileMessageInitFragment
-    | OutboundImageMessageInitFragment;
+    | OutboundImageMessageInitFragment
+    | OutboundVideoMessageInitFragment;
 
 /**
  * Get a conversation.

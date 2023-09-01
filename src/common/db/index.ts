@@ -36,6 +36,7 @@ import {
 import {type RawBlobKey} from '~/common/network/types/keys';
 import {type Settings} from '~/common/settings';
 import {
+    type f64,
     type ReadonlyUint8Array,
     type u8,
     type u53,
@@ -435,6 +436,18 @@ export interface DbImageMessageFragment extends DbBaseFileMessageFragment {
 export type DbImageMessage = DbImageMessageFragment & DbMessageCommon<MessageType.IMAGE>;
 
 /**
+ * Fields of the database video message data table.
+ */
+export interface DbVideoMessageFragment extends DbBaseFileMessageFragment {
+    readonly duration?: f64;
+    readonly dimensions?: {
+        readonly height: u53;
+        readonly width: u53;
+    };
+}
+export type DbVideoMessage = DbVideoMessageFragment & DbMessageCommon<MessageType.VIDEO>;
+
+/**
  * A file data UID.
  */
 export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique symbol}>;
@@ -442,7 +455,7 @@ export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique sy
 /**
  * Any database message.
  */
-export type DbAnyMessage = DbTextMessage | DbFileMessage | DbImageMessage;
+export type DbAnyMessage = DbTextMessage | DbFileMessage | DbImageMessage | DbVideoMessage;
 
 /**
  * Map from message type to a specific database message type.
@@ -453,6 +466,8 @@ export type DbMessageFor<TType extends MessageType> = TType extends 'text'
     ? DbFileMessage
     : TType extends 'image'
     ? DbImageMessage
+    : TType extends 'video'
+    ? DbVideoMessage
     : never;
 
 /**
@@ -629,6 +644,11 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Create a new image message.
      */
     readonly createImageMessage: (message: DbCreate<DbImageMessage>) => DbCreated<DbImageMessage>;
+
+    /**
+     * Create a new video message.
+     */
+    readonly createVideoMessage: (message: DbCreate<DbVideoMessage>) => DbCreated<DbVideoMessage>;
 
     /**
      * If the message ID exists in the conversation, return its UID.

@@ -17,6 +17,12 @@ import {
     type IOutboundTextMessageModelStore,
     type OutboundTextMessage,
 } from '~/common/model/types/message/text';
+import {
+    type IInboundVideoMessageModelStore,
+    type InboundVideoMessage,
+    type IOutboundVideoMessageModelStore,
+    type OutboundVideoMessage,
+} from '~/common/model/types/message/video';
 import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
 import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
@@ -32,6 +38,8 @@ export type InboundMessageFor<TType extends MessageType> = TType extends Message
     ? InboundFileMessage
     : TType extends MessageType.IMAGE
     ? InboundImageMessage
+    : TType extends MessageType.VIDEO
+    ? InboundVideoMessage
     : never;
 
 /**
@@ -43,6 +51,8 @@ export type OutboundMessageFor<TType extends MessageType> = TType extends Messag
     ? OutboundFileMessage
     : TType extends MessageType.IMAGE
     ? OutboundImageMessage
+    : TType extends MessageType.VIDEO
+    ? OutboundVideoMessage
     : never;
 
 type BundleProperty = 'view' | 'init' | 'controller' | 'model';
@@ -84,20 +94,24 @@ export type AnyMessageModel = AnyInboundMessageModel | AnyOutboundMessageModel;
 export type AnyInboundMessageModel =
     | InboundTextMessage['model']
     | InboundFileMessage['model']
-    | InboundImageMessage['model'];
+    | InboundImageMessage['model']
+    | InboundVideoMessage['model'];
 export type AnyOutboundMessageModel =
     | OutboundTextMessage['model']
     | OutboundFileMessage['model']
-    | OutboundImageMessage['model'];
+    | OutboundImageMessage['model']
+    | OutboundVideoMessage['model'];
 export type AnyMessageModelStore = AnyInboundMessageModelStore | AnyOutboundMessageModelStore;
 export type AnyInboundMessageModelStore =
     | IInboundTextMessageModelStore
     | IInboundFileMessageModelStore
-    | IInboundImageMessageModelStore;
+    | IInboundImageMessageModelStore
+    | IInboundVideoMessageModelStore;
 export type AnyOutboundMessageModelStore =
     | IOutboundTextMessageModelStore
     | IOutboundFileMessageModelStore
-    | IOutboundImageMessageModelStore;
+    | IOutboundImageMessageModelStore
+    | IOutboundVideoMessageModelStore;
 export type AnyTextMessageModelStore =
     | IInboundTextMessageModelStore
     | IOutboundTextMessageModelStore;
@@ -107,6 +121,9 @@ export type AnyFileMessageModelStore =
 export type AnyImageMessageModelStore =
     | IInboundImageMessageModelStore
     | IOutboundImageMessageModelStore;
+export type AnyVideoMessageModelStore =
+    | IInboundVideoMessageModelStore
+    | IOutboundVideoMessageModelStore;
 
 export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundTextMessage['model']>>
@@ -114,7 +131,9 @@ export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundFileMessage['model']>>
     | ReadonlySet<RemoteModelStore<OutboundFileMessage['model']>>
     | ReadonlySet<RemoteModelStore<InboundImageMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundImageMessage['model']>>;
+    | ReadonlySet<RemoteModelStore<OutboundImageMessage['model']>>
+    | ReadonlySet<RemoteModelStore<InboundVideoMessage['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundVideoMessage['model']>>;
 export type SetOfAnyLocalMessageModelStore = LocalSetStore<
     | LocalModelStore<InboundTextMessage['model']>
     | LocalModelStore<OutboundTextMessage['model']>
@@ -122,6 +141,8 @@ export type SetOfAnyLocalMessageModelStore = LocalSetStore<
     | LocalModelStore<OutboundFileMessage['model']>
     | LocalModelStore<InboundImageMessage['model']>
     | LocalModelStore<OutboundImageMessage['model']>
+    | LocalModelStore<InboundVideoMessage['model']>
+    | LocalModelStore<OutboundVideoMessage['model']>
 >;
 export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<InboundTextMessage['model']>
@@ -130,14 +151,18 @@ export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<OutboundFileMessage['model']>
     | RemoteModelStore<InboundImageMessage['model']>
     | RemoteModelStore<OutboundImageMessage['model']>
+    | RemoteModelStore<InboundVideoMessage['model']>
+    | RemoteModelStore<OutboundVideoMessage['model']>
 >;
 
 export type AnyFileBasedInboundMessageModelLifetimeGuard =
     | ModelLifetimeGuard<InboundFileMessage['view']>
-    | ModelLifetimeGuard<InboundImageMessage['view']>;
+    | ModelLifetimeGuard<InboundImageMessage['view']>
+    | ModelLifetimeGuard<InboundVideoMessage['view']>;
 export type AnyFileBasedOutboundMessageModelLifetimeGuard =
     | ModelLifetimeGuard<OutboundFileMessage['view']>
-    | ModelLifetimeGuard<OutboundImageMessage['view']>;
+    | ModelLifetimeGuard<OutboundImageMessage['view']>
+    | ModelLifetimeGuard<OutboundVideoMessage['view']>;
 export type AnyFileBasedMessageModelLifetimeGuard =
     | AnyFileBasedInboundMessageModelLifetimeGuard
     | AnyFileBasedOutboundMessageModelLifetimeGuard;

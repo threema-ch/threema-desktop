@@ -145,24 +145,10 @@ interface TextMessageBody {
 }
 
 interface ImageMessageBody {
-    /**
-     * Media type of the file.
-     */
     readonly mediaType: string;
-
-    /**
-     * File size in bytes.
-     */
+    /** Image file size in bytes. */
     readonly size: u53;
-
-    /**
-     * Optional caption of the file.
-     */
     readonly caption?: string;
-
-    /**
-     * Optional dimensions of the image.
-     */
     readonly dimensions?: Dimensions;
 }
 
@@ -205,63 +191,26 @@ interface AudioMessageBody {
     readonly duration?: u53;
 
     /**
-     * Optional caption of the audio.
+     * Optional caption.
      */
     readonly caption?: string;
 }
 
 interface VideoMessageBody {
-    /**
-     * Video URL to be used.
-     */
-    readonly video: Promise<string>;
-
-    /**
-     * Video file size in bytes.
-     */
+    readonly mediaType: string;
+    /** Video file size in bytes. */
     readonly size: u53;
-
-    /**
-     * Thumbnail URL to be used. If not set, should fall back to an
-     * appropriate video placeholder.
-     */
-    readonly thumbnail?: Promise<string>;
-
-    /**
-     * Optional duration in seconds.
-     */
-    readonly duration?: u53;
-
-    /**
-     * Optional caption of the video.
-     */
     readonly caption?: string;
-
-    /**
-     * Optional dimensions of the video.
-     */
+    /** Optional duration in seconds. */
+    readonly duration?: u53;
     readonly dimensions?: Dimensions;
 }
 
 interface FileMessageBody {
-    /**
-     * Media type of the file.
-     */
     readonly mediaType: string;
-
-    /**
-     * File size in bytes.
-     */
+    /** File size in bytes. */
     readonly size: u53;
-
-    /**
-     * Optional filename to be displayed.
-     */
     readonly filename?: string;
-
-    /**
-     * Optional caption of the file.
-     */
     readonly caption?: string;
 }
 

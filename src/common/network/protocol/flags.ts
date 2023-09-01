@@ -131,6 +131,7 @@ export class CspMessageFlags implements CspMessageFlagsInterface {
             case MessageType.TEXT:
             case MessageType.FILE:
             case MessageType.IMAGE:
+            case MessageType.VIDEO:
                 return CspMessageFlags.fromPartial({sendPushNotification: true});
             default:
                 return unreachable(messageType);
