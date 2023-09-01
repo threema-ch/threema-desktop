@@ -33,7 +33,9 @@ export function run(): void {
             });
 
             it('should allow undefined when chained with .optional()', function () {
-                expect(() => instanceOf(Date).optional().parse(undefined)).not.to.throw();
+                expect(() =>
+                    v.object({value: instanceOf(Date).optional()}).parse({value: undefined}),
+                ).not.to.throw();
             });
         });
 
@@ -76,38 +78,38 @@ export function run(): void {
 
         describe('nullOptional', function () {
             it('should accept undefined as input', function () {
-                const validator = nullOptional(v.number());
-                expect(validator.parse(undefined)).to.be.undefined;
+                const validator = v.object({value: nullOptional(v.number())});
+                expect(validator.parse({value: undefined})).to.deep.equal({value: undefined});
             });
 
             it('should map null to undefined', function () {
-                const validator = nullOptional(v.number());
-                expect(validator.parse(null)).to.be.undefined;
+                const validator = v.object({value: nullOptional(v.number())});
+                expect(validator.parse({value: null})).to.deep.equal({value: undefined});
             });
 
             it('should accept the correct value as input', function () {
-                const validator = nullOptional(v.number());
-                expect(validator.parse(123)).to.equal(123);
+                const validator = v.object({value: nullOptional(v.number())});
+                expect(validator.parse({value: 123})).to.deep.equal({value: 123});
             });
 
             it('should reject an invalid value as input', function () {
-                const validator = nullOptional(v.number());
-                expect(() => validator.parse('hi')).to.throw('expected null or number');
+                const validator = v.object({value: nullOptional(v.number())});
+                expect(() => validator.parse({value: 'hi'})).to.throw('expected null or number');
             });
 
             it('should be chainable with instanceOf(Uint8Array)', function () {
-                const validator = nullOptional(instanceOf(Uint8Array));
-                expect(validator.parse(undefined)).to.be.undefined;
-                expect(validator.parse(null)).to.be.undefined;
+                const validator = v.object({value: nullOptional(instanceOf(Uint8Array))});
+                expect(validator.parse({value: undefined})).to.deep.equal({value: undefined});
+                expect(validator.parse({value: null})).to.deep.equal({value: undefined});
                 const array = Uint8Array.of(1, 2, 3);
-                expect(validator.parse(array)).to.deep.equal(array);
+                expect(validator.parse({value: array})).to.deep.equal({value: array});
             });
 
             it('should be chainable with unsignedLongAsU64()', function () {
-                const validator = nullOptional(unsignedLongAsU64());
-                expect(validator.parse(undefined)).to.be.undefined;
-                expect(validator.parse(null)).to.be.undefined;
-                expect(validator.parse(Long.UONE)).to.equal(1n);
+                const validator = v.object({value: nullOptional(unsignedLongAsU64())});
+                expect(validator.parse({value: undefined})).to.deep.equal({value: undefined});
+                expect(validator.parse({value: null})).to.deep.equal({value: undefined});
+                expect(validator.parse({value: Long.UONE})).to.deep.equal({value: 1n});
             });
         });
     });

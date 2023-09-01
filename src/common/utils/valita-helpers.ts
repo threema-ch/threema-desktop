@@ -81,8 +81,8 @@ export function validate<TIn, TOut>(
  */
 export function nullOptional<T>(schema: v.Type<T>): v.Optional<T | undefined> {
     return (
-        v
-            .union(v.null(), schema)
+        schema
+            .nullable()
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             .map((value) => (value === null ? undefined : value))
             .optional()
