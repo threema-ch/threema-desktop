@@ -105,6 +105,13 @@
         <pre><code>{publicKeyGrid($profile.publicKey)}</code></pre>
       </div>
 
+      {#if import.meta.env.BUILD_VARIANT === 'work'}
+        <Text
+          label={$i18n.t('settings.label--threema-work-username', 'Threema Work Username')}
+          value={$profile.workUsername ?? '-'}
+        />
+      {/if}
+
       <Text
         label={$i18n.t('settings.label--application-name', 'Application Name')}
         value={import.meta.env.APP_NAME}

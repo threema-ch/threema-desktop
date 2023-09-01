@@ -353,6 +353,7 @@
     "label--read-receipts": "Read Receipts",
     "label--theme": "Theme",
     "label--threema-id": "Threema ID",
+    "label--threema-work-username": "Threema Work Username",
     "label--typing-indicator": "Typing Indicator"
   },
   "system": {

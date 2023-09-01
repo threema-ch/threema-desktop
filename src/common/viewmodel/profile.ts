@@ -16,6 +16,7 @@ export interface ProfileViewModel extends PropertiesMarked {
     readonly identity: IdentityString;
     readonly displayName: string;
     readonly publicKey: PublicKey;
+    readonly workUsername: string | undefined;
 }
 
 export function getProfileViewModelStore(services: ServicesForViewModel): ProfileViewModelStore {
@@ -30,6 +31,7 @@ export function getProfileViewModelStore(services: ServicesForViewModel): Profil
             identity: device.identity.string,
             displayName,
             publicKey: device.csp.ck.public,
+            workUsername: device.workData?.workCredentials.username,
         });
     });
 }
