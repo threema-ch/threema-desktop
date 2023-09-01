@@ -248,6 +248,10 @@ export const KEY_STORAGE_CONTENTS_SCHEMA = v
                 cspDeviceId: unsignedLongAsU64().map(ensureCspDeviceId),
             })
             .rest(v.unknown()),
+        workCredentials: v
+            .object({username: v.string(), password: v.string()})
+            .rest(v.unknown())
+            .optional(),
     })
     .rest(v.unknown());
 

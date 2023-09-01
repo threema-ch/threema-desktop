@@ -81,6 +81,11 @@ message DeviceIds {
     uint64 cspDeviceId = 2;
 }
 
+message ThreemaWorkCredentials {
+    string username = 1;
+    string password = 2;
+}
+
 message DecryptedKeyStorage {
     // The key storage schema version. Used for being able to migrate the storage format.
     uint32 schema_version = 5;
@@ -96,4 +101,7 @@ message DecryptedKeyStorage {
 
     // Device IDs
     DeviceIds device_ids = 4;
+
+    // Threema Work Credentials (if any)
+    ThreemaWorkCredentials work_credentials = 6;
 }

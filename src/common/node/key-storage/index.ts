@@ -519,6 +519,7 @@ export class FileSystemKeyStorage implements KeyStorage {
                         d2mDeviceId: intoUnsignedLong(decryptedKeyStorage.deviceIds.d2mDeviceId),
                         cspDeviceId: intoUnsignedLong(decryptedKeyStorage.deviceIds.cspDeviceId),
                     },
+                    workCredentials: decryptedKeyStorage.workCredentials,
                 }).finish() as PlainData,
             )
             .encryptWithRandomNonceAhead(undefined);

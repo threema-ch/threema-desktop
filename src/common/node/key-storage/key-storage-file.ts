@@ -78,6 +78,11 @@ export interface DeviceIds {
     cspDeviceId: Long;
 }
 
+export interface ThreemaWorkCredentials {
+    username: string;
+    password: string;
+}
+
 export interface DecryptedKeyStorage {
     /** The key storage schema version. Used for being able to migrate the storage format. */
     schemaVersion: number;
@@ -89,6 +94,8 @@ export interface DecryptedKeyStorage {
     databaseKey: Uint8Array;
     /** Device IDs */
     deviceIds: DeviceIds | undefined;
+    /** Threema Work Credentials (if any) */
+    workCredentials: ThreemaWorkCredentials | undefined;
 }
 
 function createBaseEncryptedKeyStorage(): EncryptedKeyStorage {
@@ -352,6 +359,52 @@ export const DeviceIds = {
     },
 };
 
+function createBaseThreemaWorkCredentials(): ThreemaWorkCredentials {
+    return {username: '', password: ''};
+}
+
+export const ThreemaWorkCredentials = {
+    encode(message: ThreemaWorkCredentials, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+        if (message.username !== '') {
+            writer.uint32(10).string(message.username);
+        }
+        if (message.password !== '') {
+            writer.uint32(18).string(message.password);
+        }
+        return writer;
+    },
+
+    decode(input: _m0.Reader | Uint8Array, length?: number): ThreemaWorkCredentials {
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseThreemaWorkCredentials();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
+                    message.username = reader.string();
+                    continue;
+                case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
+                    message.password = reader.string();
+                    continue;
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
+        }
+        return message;
+    },
+};
+
 function createBaseDecryptedKeyStorage(): DecryptedKeyStorage {
     return {
         schemaVersion: 0,
@@ -359,6 +412,7 @@ function createBaseDecryptedKeyStorage(): DecryptedKeyStorage {
         dgk: new Uint8Array(0),
         databaseKey: new Uint8Array(0),
         deviceIds: undefined,
+        workCredentials: undefined,
     };
 }
 
@@ -378,6 +432,12 @@ export const DecryptedKeyStorage = {
         }
         if (message.deviceIds !== undefined) {
             DeviceIds.encode(message.deviceIds, writer.uint32(34).fork()).ldelim();
+        }
+        if (message.workCredentials !== undefined) {
+            ThreemaWorkCredentials.encode(
+                message.workCredentials,
+                writer.uint32(50).fork(),
+            ).ldelim();
         }
         return writer;
     },
@@ -423,6 +483,16 @@ export const DecryptedKeyStorage = {
                     }
 
                     message.deviceIds = DeviceIds.decode(reader, reader.uint32());
+                    continue;
+                case 6:
+                    if (tag !== 50) {
+                        break;
+                    }
+
+                    message.workCredentials = ThreemaWorkCredentials.decode(
+                        reader,
+                        reader.uint32(),
+                    );
                     continue;
             }
             if ((tag & 7) === 4 || tag === 0) {

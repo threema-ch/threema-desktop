@@ -342,6 +342,7 @@ export function run(): void {
                                     d2mDeviceId: intoUnsignedLong(1337n),
                                     cspDeviceId: intoUnsignedLong(2448n),
                                 },
+                                workCredentials: undefined,
                             }).finish() as PlainData,
                         )
                         .encryptWithRandomNonceAhead(undefined),
@@ -481,6 +482,10 @@ export function run(): void {
                     d2mDeviceId: intoUnsignedLong(1337n),
                     cspDeviceId: intoUnsignedLong(2448n),
                 },
+                workCredentials: {
+                    username: 'peter',
+                    password: 'passwörtli',
+                },
             }).finish() as PlainData;
             const encryptedKeyStorageBytes = crypto
                 .getSecretBox(
@@ -519,6 +524,8 @@ export function run(): void {
             expect(keyStorageContents.databaseKey.unwrap()).to.byteEqual(keys.databaseKey);
             expect(keyStorageContents.deviceIds.d2mDeviceId).to.equal(1337n);
             expect(keyStorageContents.deviceIds.cspDeviceId).to.equal(2448n);
+            expect(keyStorageContents.workCredentials?.username).to.equal('peter');
+            expect(keyStorageContents.workCredentials?.password).to.equal('passwörtli');
         });
     });
 }

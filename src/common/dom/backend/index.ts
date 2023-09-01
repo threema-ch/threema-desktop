@@ -83,6 +83,7 @@ import {
     wrapRawClientKey,
     wrapRawDeviceGroupKey,
 } from '~/common/network/types/keys';
+import type {ThreemaWorkCredentials} from '~/common/node/key-storage/key-storage-file';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
@@ -452,6 +453,7 @@ async function writeKeyStorage(
     ck: RawClientKey,
     dgk: RawDeviceGroupKey,
     databaseKey: RawDatabaseKey,
+    workCredentials?: ThreemaWorkCredentials,
 ): Promise<void> {
     try {
         await keyStorage.write(password, {
@@ -464,6 +466,7 @@ async function writeKeyStorage(
             dgk,
             databaseKey,
             deviceIds: {...deviceIds},
+            workCredentials: workCredentials === undefined ? undefined : {...workCredentials},
         });
     } catch (error) {
         throw new BackendCreationError(
@@ -987,6 +990,7 @@ export class Backend implements ProxyMarked {
                 rawCkForKeyStorage,
                 dgkForKeyStorage,
                 databaseKeyForKeyStorage,
+                joinResult.workCredentials,
             );
             purgeSensitiveData();
 
