@@ -449,6 +449,17 @@ export function run(): void {
                 });
             });
 
+            it('should reflect a message to other devices even if the group has no members', async function () {
+                await runSendGroupMessageTest({
+                    name: 'Elefantestreichler Rapperswil',
+                    creator: 'self',
+                    members: [],
+                    testExpectations: (groupStore, messageProperties) => [
+                        getExpectedD2dOutgoingReflectedMessage(messageProperties),
+                    ],
+                });
+            });
+
             it('should also send a message to the creator, if it is not us', async function () {
                 await runSendGroupMessageTest({
                     name: 'Chrüütlisammler Altendorf',
