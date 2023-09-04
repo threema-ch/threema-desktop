@@ -718,6 +718,11 @@ function main(
                 return allow();
             }
 
+            // Allow fullscreen (e.g. for video playback)
+            if (permission === 'fullscreen') {
+                return allow();
+            }
+
             // Deny all other permissions
             return deny(`Denied permission request: ${permission}`);
         }
@@ -766,6 +771,7 @@ function main(
                         "font-src 'self' https://static.threema.ch",
                         "frame-src 'none'",
                         "img-src 'self' data: blob:",
+                        "media-src 'self' data: blob:",
                         "object-src 'none'",
                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // TODO(DESK-81): Remove unsafe-inline and unsafe-eval
                         // "style-src 'self' https://static.threema.ch",
