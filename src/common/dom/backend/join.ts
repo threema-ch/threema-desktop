@@ -1,7 +1,6 @@
 /**
  * Device join protocol.
  */
-
 import {type ServicesForBackend} from '~/common/backend';
 import {type NonceHash} from '~/common/crypto';
 import {randomU64} from '~/common/crypto/random';
@@ -29,7 +28,7 @@ import {
 } from '~/common/network/types';
 import {type RawClientKey, type RawDeviceGroupKey} from '~/common/network/types/keys';
 import {type ReadonlyUint8Array} from '~/common/types';
-import {unreachable} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {idColorIndex} from '~/common/utils/id-color';
 import {type AbortRaiser} from '~/common/utils/signal';
@@ -170,8 +169,34 @@ export class DeviceJoinProtocol {
                 case 'blobData':
                     await this._handleBlobData(validated.blobData);
                     break;
-                case 'essentialData':
+                case 'essentialData': {
+                    // If nonces were deduplicated during validation, log an error
+                    assert(parsed.essentialData !== null && parsed.essentialData !== undefined);
+                    if (
+                        parsed.essentialData.cspHashedNonces.length >
+                        validated.essentialData.cspHashedNonces.size
+                    ) {
+                        this._log.error(
+                            `Essential data contained ${
+                                parsed.essentialData.cspHashedNonces.length -
+                                validated.essentialData.cspHashedNonces.size
+                            } duplicate CSP nonces`,
+                        );
+                    }
+                    if (
+                        parsed.essentialData.d2dHashedNonces.length >
+                        validated.essentialData.d2dHashedNonces.size
+                    ) {
+                        this._log.error(
+                            `Essential data contained ${
+                                parsed.essentialData.d2dHashedNonces.length -
+                                validated.essentialData.d2dHashedNonces.size
+                            } duplicate D2D nonces`,
+                        );
+                    }
+
                     return this._handleEssentialData(validated.essentialData);
+                }
                 default:
                     unreachable(validated);
             }

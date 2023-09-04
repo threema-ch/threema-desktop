@@ -103,15 +103,12 @@ export const SCHEMA_USER_PROFILE = validator(
 );
 
 function validatedHashedNoncesSet(): v.Type<Set<NonceHash>> {
-    return v.array(validate(instanceOf(Uint8Array), ensureNonceHash)).chain((array) => {
-        const hashSet = new Set(array);
-        const hashStringSet = new Set(array.map((hash) => bytesToHex(hash)));
-
-        if (hashSet.size !== hashStringSet.size) {
-            v.err('Hash set contains duplicate hashes');
-        }
-
-        return v.ok(hashSet);
+    return v.array(validate(instanceOf(Uint8Array), ensureNonceHash)).map((array) => {
+        // To ensure that duplicate hashes are filtered out, pass all hashes through a map, where
+        // the key is a string (and thus properly implements equality comparison, in contrast to a
+        // Uint8Array).
+        const hashes = new Map(array.map((value) => [bytesToHex(value), value]));
+        return new Set(hashes.values());
     });
 }
 
