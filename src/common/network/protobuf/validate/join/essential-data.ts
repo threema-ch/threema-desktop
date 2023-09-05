@@ -118,7 +118,7 @@ export const SCHEMA = validator(
     v
         .object({
             identityData: SCHEMA_IDENTITY_DATA,
-            workCredentials: SCHEMA_WORK_CREDENTIALS.optional(),
+            workCredentials: nullOptional(SCHEMA_WORK_CREDENTIALS),
             deviceGroupData: SCHEMA_DEVICE_GROUP_DATA,
             userProfile: SCHEMA_USER_PROFILE,
             settings: Settings.SCHEMA,
