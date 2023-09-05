@@ -58,6 +58,7 @@ import {type Logger} from '~/common/logging';
 import {type GroupId, type IdentityString, type MessageId} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
 import {type u53, type u64} from '~/common/types';
+import {groupArray} from '~/common/utils/array';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {hasProperty, pick} from '~/common/utils/object';
@@ -2095,7 +2096,18 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             scope,
             nonce,
         }));
-        sync(this._db.insertInto(tNonce).values(values).executeInsert());
+
+        // Insert nonces in chunks of 5000 to avoid running into the limit imposed by SQLite's
+        // SQLITE_MAX_VARIABLE_NUMBER parameter.
+        const chunks = groupArray(values, 5000);
+
+        for (const [index, chunk] of chunks.entries()) {
+            this._log.debug(
+                `Inserting chunk ${index} with ${chunk.length} entries into the nonce database`,
+            );
+
+            sync(this._db.insertInto(tNonce).values(chunk).executeInsert());
+        }
     }
 
     /** @inheritdoc */
