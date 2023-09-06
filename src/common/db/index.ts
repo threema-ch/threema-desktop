@@ -448,6 +448,14 @@ export interface DbVideoMessageFragment extends DbBaseFileMessageFragment {
 export type DbVideoMessage = DbVideoMessageFragment & DbMessageCommon<MessageType.VIDEO>;
 
 /**
+ * Fields of the database audio message data table.
+ */
+export interface DbAudioMessageFragment extends DbBaseFileMessageFragment {
+    readonly duration?: f64;
+}
+export type DbAudioMessage = DbAudioMessageFragment & DbMessageCommon<MessageType.AUDIO>;
+
+/**
  * A file data UID.
  */
 export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique symbol}>;
@@ -455,7 +463,12 @@ export type DbFileDataUid = WeakOpaque<DbUid, {readonly DbFileDataUid: unique sy
 /**
  * Any database message.
  */
-export type DbAnyMessage = DbTextMessage | DbFileMessage | DbImageMessage | DbVideoMessage;
+export type DbAnyMessage =
+    | DbTextMessage
+    | DbFileMessage
+    | DbImageMessage
+    | DbVideoMessage
+    | DbAudioMessage;
 
 /**
  * Map from message type to a specific database message type.
@@ -468,6 +481,8 @@ export type DbMessageFor<TType extends MessageType> = TType extends 'text'
     ? DbImageMessage
     : TType extends 'video'
     ? DbVideoMessage
+    : TType extends 'audio'
+    ? DbAudioMessage
     : never;
 
 /**
@@ -649,6 +664,11 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Create a new video message.
      */
     readonly createVideoMessage: (message: DbCreate<DbVideoMessage>) => DbCreated<DbVideoMessage>;
+
+    /**
+     * Create a new audio message.
+     */
+    readonly createAudioMessage: (message: DbCreate<DbAudioMessage>) => DbCreated<DbAudioMessage>;
 
     /**
      * If the message ID exists in the conversation, return its UID.

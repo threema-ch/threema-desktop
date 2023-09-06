@@ -1,5 +1,11 @@
 import {type MessageDirection, type MessageType} from '~/common/enum';
 import {
+    type IInboundAudioMessageModelStore,
+    type InboundAudioMessage,
+    type IOutboundAudioMessageModelStore,
+    type OutboundAudioMessage,
+} from '~/common/model/types/message/audio';
+import {
     type IInboundFileMessageModelStore,
     type InboundFileMessage,
     type IOutboundFileMessageModelStore,
@@ -40,6 +46,8 @@ export type InboundMessageFor<TType extends MessageType> = TType extends Message
     ? InboundImageMessage
     : TType extends MessageType.VIDEO
     ? InboundVideoMessage
+    : TType extends MessageType.AUDIO
+    ? InboundAudioMessage
     : never;
 
 /**
@@ -53,6 +61,8 @@ export type OutboundMessageFor<TType extends MessageType> = TType extends Messag
     ? OutboundImageMessage
     : TType extends MessageType.VIDEO
     ? OutboundVideoMessage
+    : TType extends MessageType.AUDIO
+    ? OutboundAudioMessage
     : never;
 
 type BundleProperty = 'view' | 'init' | 'controller' | 'model';
@@ -95,23 +105,27 @@ export type AnyInboundMessageModel =
     | InboundTextMessage['model']
     | InboundFileMessage['model']
     | InboundImageMessage['model']
-    | InboundVideoMessage['model'];
+    | InboundVideoMessage['model']
+    | InboundAudioMessage['model'];
 export type AnyOutboundMessageModel =
     | OutboundTextMessage['model']
     | OutboundFileMessage['model']
     | OutboundImageMessage['model']
-    | OutboundVideoMessage['model'];
+    | OutboundVideoMessage['model']
+    | OutboundAudioMessage['model'];
 export type AnyMessageModelStore = AnyInboundMessageModelStore | AnyOutboundMessageModelStore;
 export type AnyInboundMessageModelStore =
     | IInboundTextMessageModelStore
     | IInboundFileMessageModelStore
     | IInboundImageMessageModelStore
-    | IInboundVideoMessageModelStore;
+    | IInboundVideoMessageModelStore
+    | IInboundAudioMessageModelStore;
 export type AnyOutboundMessageModelStore =
     | IOutboundTextMessageModelStore
     | IOutboundFileMessageModelStore
     | IOutboundImageMessageModelStore
-    | IOutboundVideoMessageModelStore;
+    | IOutboundVideoMessageModelStore
+    | IOutboundAudioMessageModelStore;
 export type AnyTextMessageModelStore =
     | IInboundTextMessageModelStore
     | IOutboundTextMessageModelStore;
@@ -124,6 +138,9 @@ export type AnyImageMessageModelStore =
 export type AnyVideoMessageModelStore =
     | IInboundVideoMessageModelStore
     | IOutboundVideoMessageModelStore;
+export type AnyAudioMessageModelStore =
+    | IInboundAudioMessageModelStore
+    | IOutboundAudioMessageModelStore;
 
 export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundTextMessage['model']>>
@@ -133,7 +150,9 @@ export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<InboundImageMessage['model']>>
     | ReadonlySet<RemoteModelStore<OutboundImageMessage['model']>>
     | ReadonlySet<RemoteModelStore<InboundVideoMessage['model']>>
-    | ReadonlySet<RemoteModelStore<OutboundVideoMessage['model']>>;
+    | ReadonlySet<RemoteModelStore<OutboundVideoMessage['model']>>
+    | ReadonlySet<RemoteModelStore<InboundAudioMessage['model']>>
+    | ReadonlySet<RemoteModelStore<OutboundAudioMessage['model']>>;
 export type SetOfAnyLocalMessageModelStore = LocalSetStore<
     | LocalModelStore<InboundTextMessage['model']>
     | LocalModelStore<OutboundTextMessage['model']>
@@ -143,6 +162,8 @@ export type SetOfAnyLocalMessageModelStore = LocalSetStore<
     | LocalModelStore<OutboundImageMessage['model']>
     | LocalModelStore<InboundVideoMessage['model']>
     | LocalModelStore<OutboundVideoMessage['model']>
+    | LocalModelStore<InboundAudioMessage['model']>
+    | LocalModelStore<OutboundAudioMessage['model']>
 >;
 export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<InboundTextMessage['model']>
@@ -153,16 +174,20 @@ export type SetOfAnyRemoteMessageModelStore = RemoteSetStore<
     | RemoteModelStore<OutboundImageMessage['model']>
     | RemoteModelStore<InboundVideoMessage['model']>
     | RemoteModelStore<OutboundVideoMessage['model']>
+    | RemoteModelStore<InboundAudioMessage['model']>
+    | RemoteModelStore<OutboundAudioMessage['model']>
 >;
 
 export type AnyFileBasedInboundMessageModelLifetimeGuard =
     | ModelLifetimeGuard<InboundFileMessage['view']>
     | ModelLifetimeGuard<InboundImageMessage['view']>
-    | ModelLifetimeGuard<InboundVideoMessage['view']>;
+    | ModelLifetimeGuard<InboundVideoMessage['view']>
+    | ModelLifetimeGuard<InboundAudioMessage['view']>;
 export type AnyFileBasedOutboundMessageModelLifetimeGuard =
     | ModelLifetimeGuard<OutboundFileMessage['view']>
     | ModelLifetimeGuard<OutboundImageMessage['view']>
-    | ModelLifetimeGuard<OutboundVideoMessage['view']>;
+    | ModelLifetimeGuard<OutboundVideoMessage['view']>
+    | ModelLifetimeGuard<OutboundAudioMessage['view']>;
 export type AnyFileBasedMessageModelLifetimeGuard =
     | AnyFileBasedInboundMessageModelLifetimeGuard
     | AnyFileBasedOutboundMessageModelLifetimeGuard;

@@ -1,3 +1,4 @@
+import {type OutboundAudioMessage} from '~/common/model/types/message/audio';
 import {type OutboundFileMessage} from '~/common/model/types/message/file';
 import {type OutboundImageMessage} from '~/common/model/types/message/image';
 import {type OutboundVideoMessage} from '~/common/model/types/message/video';
@@ -14,7 +15,8 @@ export function getFileJsonData<
     TMessageModel extends
         | Pick<OutboundFileMessage['model'], 'type' | 'view'>
         | Pick<OutboundImageMessage['model'], 'type' | 'view'>
-        | Pick<OutboundVideoMessage['model'], 'type' | 'view'>,
+        | Pick<OutboundVideoMessage['model'], 'type' | 'view'>
+        | Pick<OutboundAudioMessage['model'], 'type' | 'view'>,
 >(message: TMessageModel): Record<string, unknown> {
     const {type, view} = message;
 
@@ -46,6 +48,12 @@ export function getFileJsonData<
                 d: view.duration,
                 h: view.dimensions?.height,
                 w: view.dimensions?.width,
+            });
+            break;
+        case 'audio':
+            renderingType = deprecatedRenderingType = 1; // Media
+            metadata = purgeUndefinedProperties({
+                d: view.duration,
             });
             break;
         default:

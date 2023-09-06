@@ -5,11 +5,13 @@ import {
     type AnyImageMessageModelStore,
     type AnyVideoMessageModelStore,
 } from '~/common/model/types/message';
+import {type CommonAudioMessageInit} from '~/common/model/types/message/audio';
 import {type CommonFileMessageInit} from '~/common/model/types/message/file';
 import {type CommonImageMessageInit} from '~/common/model/types/message/image';
 import {type CommonVideoMessageInit} from '~/common/model/types/message/video';
 import {
     type FileJson,
+    RAW_AUDIO_METADATA_SCHEMA,
     RAW_IMAGE_METADATA_SCHEMA,
     RAW_VIDEO_METADATA_SCHEMA,
 } from '~/common/network/structbuf/validate/csp/e2e/file';
@@ -24,7 +26,8 @@ export function getFileBasedMessageTypeAndExtraProperties(
 ):
     | Pick<CommonFileMessageInit, 'type'>
     | Pick<CommonImageMessageInit, 'type' | 'renderingType' | 'animated' | 'dimensions'>
-    | Pick<CommonVideoMessageInit, 'type' | 'duration' | 'dimensions'> {
+    | Pick<CommonVideoMessageInit, 'type' | 'duration' | 'dimensions'>
+    | Pick<CommonAudioMessageInit, 'type' | 'duration'> {
     const isMediaOrSticker =
         fileData.renderingType === 'media' || fileData.renderingType === 'sticker';
     if (fileData.file.mediaType.startsWith('image/') && isMediaOrSticker) {
@@ -80,6 +83,21 @@ export function getFileBasedMessageTypeAndExtraProperties(
                 type: MessageType.VIDEO,
             } as const;
         }
+    } else if (fileData.file.mediaType.startsWith('audio/') && isMediaOrSticker) {
+        try {
+            const parsedMetadata = RAW_AUDIO_METADATA_SCHEMA.parse(fileData.metadata ?? {});
+
+            return {
+                type: MessageType.AUDIO,
+                duration: parsedMetadata.d,
+            } as const;
+        } catch (error) {
+            log.warn(`Audio metadata did not pass validation: ${error}`);
+
+            return {
+                type: MessageType.AUDIO,
+            } as const;
+        }
     } else {
         return {
             type: MessageType.FILE,
@@ -100,6 +118,7 @@ export function messageStoreHasThumbnail(
             return true;
         case 'text':
         case 'file':
+        case 'audio':
             return false;
         default:
             return unreachable(messageStore);

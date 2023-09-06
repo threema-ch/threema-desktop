@@ -7,6 +7,7 @@ import {
     type ServicesForModel,
 } from '~/common/model';
 import {type MessageFactory} from '~/common/model/message';
+import {createAudioMessage, getAudioMessageModelStore} from '~/common/model/message/audio-message';
 import {type NO_SENDER} from '~/common/model/message/common';
 import {createFileMessage, getFileMessageModelStore} from '~/common/model/message/file-message';
 import {createImageMessage, getImageMessageModelStore} from '~/common/model/message/image-message';
@@ -63,6 +64,14 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     common,
                     sender,
                 ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
+            case 'audio':
+                return getAudioMessageModelStore(
+                    services,
+                    conversation,
+                    message,
+                    common,
+                    sender,
+                ) as TLocalModelStore; // Trivially true as message.type === TLocalModelStore['type']
             default:
                 return unreachable(message);
         }
@@ -99,6 +108,12 @@ export const MESSAGE_FACTORY: MessageFactory = {
                     services,
                     common,
                     init as DirectedMessageFor<TDirection, MessageType.VIDEO, 'init'>,
+                ) as DbMessageFor<TType>;
+            case 'audio':
+                return createAudioMessage(
+                    services,
+                    common,
+                    init as DirectedMessageFor<TDirection, MessageType.AUDIO, 'init'>,
                 ) as DbMessageFor<TType>;
             default:
                 return unreachable(init);

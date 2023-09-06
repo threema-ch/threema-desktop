@@ -309,6 +309,7 @@
     "hint--drop-files-to-send": "Dateien zum Senden hier ablegen",
     "hint--image-message": "Bildnachricht",
     "label--compose-area": "Neue Nachricht...",
+    "label--default-audio-message-preview": "Audio",
     "label--default-file-message-preview": "Datei",
     "label--default-filename": "(kein Dateiname)",
     "label--default-image-message-preview": "Bild",

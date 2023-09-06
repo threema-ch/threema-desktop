@@ -67,6 +67,10 @@
         'messaging.label--default-video-message-preview',
         'Video',
       ),
+      'messaging.label--default-audio-message-preview': t(
+        'messaging.label--default-audio-message-preview',
+        'Audio',
+      ),
       /* eslint-enable @typescript-eslint/naming-convention */
     }),
   );

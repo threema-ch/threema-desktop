@@ -175,25 +175,12 @@ interface LocationMessageBody {
 }
 
 interface AudioMessageBody {
-    /**
-     * Audio URL to be used.
-     */
-    readonly audio: Promise<string>;
-
-    /**
-     * Audio file size in bytes.
-     */
+    readonly mediaType: string;
+    /** Audio file size in bytes. */
     readonly size: u53;
-
-    /**
-     * Optional duration in seconds.
-     */
-    readonly duration?: u53;
-
-    /**
-     * Optional caption.
-     */
     readonly caption?: string;
+    /** Optional duration in seconds. */
+    readonly duration?: u53;
 }
 
 interface VideoMessageBody {

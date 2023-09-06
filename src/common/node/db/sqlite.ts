@@ -10,6 +10,8 @@ import {type NonceHash} from '~/common/crypto';
 import {
     type DatabaseBackend,
     type DbAnyMessage,
+    type DbAudioMessage,
+    type DbAudioMessageFragment,
     type DbBaseFileMessageFragment,
     type DbContact,
     type DbContactUid,
@@ -75,6 +77,7 @@ import {
     tGroup,
     tGroupMember,
     tMessage,
+    tMessageAudioData,
     tMessageFileData,
     tMessageImageData,
     tMessageTextData,
@@ -83,14 +86,17 @@ import {
     tSettings,
 } from './tables';
 
-type UpdateSetsForDbMessage<TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage> =
-    TDbMessage extends DbFileMessage
-        ? UpdateSets<typeof tMessageFileData, typeof tMessageFileData>
-        : TDbMessage extends DbImageMessage
-        ? UpdateSets<typeof tMessageImageData, typeof tMessageImageData>
-        : TDbMessage extends DbVideoMessage
-        ? UpdateSets<typeof tMessageVideoData, typeof tMessageVideoData>
-        : never;
+type UpdateSetsForDbMessage<
+    TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage | DbAudioMessage,
+> = TDbMessage extends DbFileMessage
+    ? UpdateSets<typeof tMessageFileData, typeof tMessageFileData>
+    : TDbMessage extends DbImageMessage
+    ? UpdateSets<typeof tMessageImageData, typeof tMessageImageData>
+    : TDbMessage extends DbVideoMessage
+    ? UpdateSets<typeof tMessageVideoData, typeof tMessageVideoData>
+    : TDbMessage extends DbAudioMessage
+    ? UpdateSets<typeof tMessageAudioData, typeof tMessageAudioData>
+    : never;
 
 /**
  * Database backend backed by SQLite (with SQLCipher), using the BetterSqlCipher driver.
@@ -1187,6 +1193,25 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public createAudioMessage(message: DbCreate<DbAudioMessage>): DbCreated<DbAudioMessage> {
+        return this._createFileBasedMessage(message, (sharedFields) => {
+            sync(
+                this._db
+                    .insertInto(tMessageAudioData)
+                    .set({
+                        // Fields shared among all file-based message types
+                        ...this._getBaseFileMessageFragmentInsertSet(message),
+                        ...sharedFields,
+
+                        // Fields specific to this message type
+                        duration: message.duration,
+                    })
+                    .executeInsert(),
+            );
+        });
+    }
+
+    /** @inheritdoc */
     public hasMessageByUid(uid: DbMessageUid): boolean {
         return (
             sync(
@@ -1455,6 +1480,57 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     ...video,
                 };
             }
+            case MessageType.AUDIO: {
+                const tFileDataJoinable = tFileData.forUseInLeftJoinAs('fileData');
+                const tThumbnailFileDataJoinable =
+                    tFileData.forUseInLeftJoinAs('thumbnailFileData');
+                const audio = sync(
+                    this._db
+                        // Main table
+                        .selectFrom(tMessageAudioData)
+                        // Join for fileData
+                        .leftJoin(tFileDataJoinable)
+                        .on(tMessageAudioData.fileDataUid.equals(tFileDataJoinable.uid))
+                        // Join for thumbnailFileData
+                        .leftJoin(tThumbnailFileDataJoinable)
+                        .on(
+                            tMessageAudioData.thumbnailFileDataUid.equals(
+                                tThumbnailFileDataJoinable.uid,
+                            ),
+                        )
+                        // Select data
+                        .select({
+                            // File data columns
+                            ...this._getFileDataSelectColumns(
+                                tFileDataJoinable,
+                                tThumbnailFileDataJoinable,
+                            ),
+                            // Base file message fields
+                            blobId: tMessageAudioData.blobId,
+                            thumbnailBlobId: tMessageAudioData.thumbnailBlobId,
+                            blobDownloadState: tMessageAudioData.blobDownloadState,
+                            thumbnailBlobDownloadState:
+                                tMessageAudioData.thumbnailBlobDownloadState,
+                            encryptionKey: tMessageAudioData.encryptionKey,
+                            mediaType: tMessageAudioData.mediaType,
+                            thumbnailMediaType: tMessageAudioData.thumbnailMediaType,
+                            fileName: tMessageAudioData.fileName,
+                            fileSize: tMessageAudioData.fileSize,
+                            caption: tMessageAudioData.caption,
+                            correlationId: tMessageAudioData.correlationId,
+                            // Audio-specific fields
+                            duration: tMessageAudioData.duration,
+                        })
+                        .where(tMessageAudioData.messageUid.equals(common.uid))
+                        .executeSelectOne(),
+                );
+                return {
+                    ...common,
+                    lastReaction,
+                    type: MessageType.AUDIO,
+                    ...audio,
+                };
+            }
             default:
                 return unreachable(common.type, new Error(`Unknown message type ${common.type}`));
         }
@@ -1655,6 +1731,45 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
                     return {deletedFileIds};
                 }
+                case MessageType.AUDIO: {
+                    // Prepare update
+                    const update: UpdateSets<typeof tMessageAudioData, typeof tMessageAudioData> =
+                        pick<DbAudioMessageFragment>(message, [
+                            'blobId',
+                            'thumbnailBlobId',
+                            'blobDownloadState',
+                            'thumbnailBlobDownloadState',
+                            'encryptionKey',
+                            'mediaType',
+                            'thumbnailMediaType',
+                            'fileName',
+                            'fileSize',
+                            'caption',
+                            'correlationId',
+                            'duration',
+                        ]);
+
+                    // Add, update or remove associated file data entries
+                    const removedFileDataUids = this._processFileDataChanges(message, update);
+
+                    // Update message file data
+                    sync(
+                        this._db
+                            .update(tMessageAudioData)
+                            .set(update)
+                            .where(tMessageAudioData.messageUid.equals(message.uid))
+                            .executeUpdate(),
+                    );
+
+                    // Delete file data rows that are now unreferenced
+                    //
+                    // NOTE: This must be called after the db update query! Otherwise rows are still
+                    //       referenced and aren't removed.
+                    const deletedFileIds =
+                        this._deleteFromMessageDataIfUnreferenced(removedFileDataUids);
+
+                    return {deletedFileIds};
+                }
                 default:
                     return unreachable(message);
             }
@@ -1662,7 +1777,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     private _processFileDataChanges<
-        TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage,
+        TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage | DbAudioMessage,
     >(
         message: Partial<TDbMessage> & {uid: DbMessageUid},
         update: UpdateSetsForDbMessage<TDbMessage>,

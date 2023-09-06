@@ -563,7 +563,7 @@ export function run(): void {
                 fileProperties: {
                     fileName: string;
                     fileMediaType: string;
-                    thumbnailMediaType: string;
+                    thumbnailMediaType: string | undefined;
                     fileSizeBytes: u53;
                     renderingType: FileRenderingType;
                     metadata: Record<string, unknown>;
@@ -764,7 +764,7 @@ export function run(): void {
                 const {fileBlobId, thumbnailBlobId, encryptionKey, conversation} =
                     await setupFileMessageTest();
 
-                // Create incoming image message
+                // Create incoming video message
                 const fileMediaType = 'video/mp4';
                 const thumbnailMediaType = 'image/png';
                 const fileName = 'hello.mp4';
@@ -824,6 +824,63 @@ export function run(): void {
                         await videoMessageTest(duration, dimensions);
                     });
                 }
+            }
+
+            async function audioMessageTest(duration: f64 | undefined): Promise<void> {
+                const {fileBlobId, thumbnailBlobId, encryptionKey, conversation} =
+                    await setupFileMessageTest();
+
+                // Create incoming audio message
+                const fileMediaType = 'audio/x-m4a';
+                const thumbnailMediaType = undefined;
+                const fileName = 'recordAudio-2023-09-11_11-57-58.m4a';
+                const fileSizeBytes = 23523;
+                const fileMessage = createFileBasedMessage(
+                    encryptionKey,
+                    fileBlobId,
+                    thumbnailBlobId,
+                    {
+                        fileMediaType,
+                        thumbnailMediaType,
+                        fileName,
+                        fileSizeBytes,
+                        renderingType: 'media',
+                        metadata: {
+                            d: duration,
+                        },
+                    },
+                );
+
+                // Run task
+                await runIncomingFileMessageTask(fileMessage);
+
+                // Audio message should be part of the 1:1 conversation
+                const messages = [...conversation.get().controller.getAllMessages().get()];
+                expect(messages.length).to.equal(1);
+                const message = messages[0];
+                assert(
+                    message.type === MessageType.AUDIO,
+                    `Expected message type to be audio, but was ${message.type}`,
+                );
+                const view = message.get().view;
+                expect(view.blobId).to.deep.equal(fileBlobId);
+                expect(view.thumbnailBlobId).to.deep.equal(thumbnailBlobId);
+                expect(view.encryptionKey).to.deep.equal(encryptionKey);
+                expect(view.mediaType).to.equal(fileMediaType);
+                // Protocol expects `image/jpeg` to be assumed when the thumbnail media type is not
+                // defined.
+                expect(view.thumbnailMediaType).to.equal('image/jpeg');
+                expect(view.fileName).to.equal(fileName);
+                expect(view.fileSize).to.equal(fileSizeBytes);
+                expect(view.duration).to.equal(duration);
+            }
+
+            for (const duration of [0.123, undefined]) {
+                it(`stores an audio message ${
+                    duration === undefined ? 'without' : 'with'
+                } duration from a known contact`, async function () {
+                    await audioMessageTest(duration);
+                });
             }
         });
 

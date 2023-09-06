@@ -4,6 +4,10 @@
 
 import {ReceiverType} from '~/common/enum';
 import {type Conversation, type Repositories} from '~/common/model';
+import {
+    type InboundAudioMessage,
+    type OutboundAudioMessage,
+} from '~/common/model/types/message/audio';
 import {type InboundFileMessage, type OutboundFileMessage} from '~/common/model/types/message/file';
 import {
     type InboundImageMessage,
@@ -41,20 +45,27 @@ export type InboundVideoMessageInitFragment = Mutable<
     Omit<InboundVideoMessage['init'], OmittedInitKeys>,
     'receivedAt'
 >;
+export type InboundAudioMessageInitFragment = Mutable<
+    Omit<InboundAudioMessage['init'], OmittedInitKeys>,
+    'receivedAt'
+>;
 export type OutboundTextMessageInitFragment = Omit<OutboundTextMessage['init'], OmittedInitKeys>;
 export type OutboundFileMessageInitFragment = Omit<OutboundFileMessage['init'], OmittedInitKeys>;
 export type OutboundImageMessageInitFragment = Omit<OutboundImageMessage['init'], OmittedInitKeys>;
 export type OutboundVideoMessageInitFragment = Omit<OutboundVideoMessage['init'], OmittedInitKeys>;
+export type OutboundAudioMessageInitFragment = Omit<OutboundAudioMessage['init'], OmittedInitKeys>;
 export type AnyInboundMessageInitFragment =
     | InboundTextMessageInitFragment
     | InboundFileMessageInitFragment
     | InboundImageMessageInitFragment
-    | InboundVideoMessageInitFragment;
+    | InboundVideoMessageInitFragment
+    | InboundAudioMessageInitFragment;
 export type AnyOutboundMessageInitFragment =
     | OutboundTextMessageInitFragment
     | OutboundFileMessageInitFragment
     | OutboundImageMessageInitFragment
-    | OutboundVideoMessageInitFragment;
+    | OutboundVideoMessageInitFragment
+    | OutboundAudioMessageInitFragment;
 
 /**
  * Get a conversation.

@@ -32,6 +32,7 @@ import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/r
 import {
     type AnyInboundMessageInitFragment,
     getConversationById,
+    type InboundAudioMessageInitFragment,
     type InboundFileMessageInitFragment,
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
@@ -485,7 +486,8 @@ function getFileMessageInitFragment(
 ):
     | InboundFileMessageInitFragment
     | InboundImageMessageInitFragment
-    | InboundVideoMessageInitFragment {
+    | InboundVideoMessageInitFragment
+    | InboundAudioMessageInitFragment {
     const fileData = message.file;
 
     return {

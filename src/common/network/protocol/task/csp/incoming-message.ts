@@ -66,6 +66,7 @@ import {getTextForLocation} from '~/common/network/protocol/task/common/location
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {
     type AnyInboundMessageInitFragment,
+    type InboundAudioMessageInitFragment,
     type InboundFileMessageInitFragment,
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
@@ -153,7 +154,8 @@ function getFileMessageInitFragment(
 ):
     | InboundFileMessageInitFragment
     | InboundImageMessageInitFragment
-    | InboundVideoMessageInitFragment {
+    | InboundVideoMessageInitFragment
+    | InboundAudioMessageInitFragment {
     // Decode file message
     const fileData = structbuf.validate.csp.e2e.File.SCHEMA.parse(
         structbuf.csp.e2e.File.decode(cspFileMessageBody as Uint8Array),
@@ -234,6 +236,19 @@ function getDirectedVideoMessageInit(
     sender: UidOf<DbContact>,
     fragment: InboundVideoMessageInitFragment,
 ): DirectedMessageFor<MessageDirection.INBOUND, MessageType.VIDEO, 'init'> {
+    return {
+        ...fragment,
+        direction: MessageDirection.INBOUND,
+        sender,
+        id,
+    };
+}
+
+function getDirectedAudioMessageInit(
+    id: MessageId,
+    sender: UidOf<DbContact>,
+    fragment: InboundAudioMessageInitFragment,
+): DirectedMessageFor<MessageDirection.INBOUND, MessageType.AUDIO, 'init'> {
     return {
         ...fragment,
         direction: MessageDirection.INBOUND,
@@ -1530,6 +1545,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return getDirectedImageMessageInit(this._id, contact.get().ctx, initFragment);
             case MessageType.VIDEO:
                 return getDirectedVideoMessageInit(this._id, contact.get().ctx, initFragment);
+            case MessageType.AUDIO:
+                return getDirectedAudioMessageInit(this._id, contact.get().ctx, initFragment);
             default:
                 return unreachable(initFragment);
         }

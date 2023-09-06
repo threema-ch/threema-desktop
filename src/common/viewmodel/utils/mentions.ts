@@ -50,6 +50,7 @@ function getMentionedIdentityStrings(
         case 'file':
         case 'image':
         case 'video':
+        case 'audio':
             text = messageModel.view.caption ?? '';
             break;
         default:

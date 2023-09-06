@@ -118,7 +118,8 @@ function getViewModel(
         switch (message.type) {
             case MessageType.FILE:
             case MessageType.IMAGE:
-            case MessageType.VIDEO: {
+            case MessageType.VIDEO:
+            case MessageType.AUDIO: {
                 if (message.view.state === 'unsynced' || message.view.state === 'syncing') {
                     const fileData = message.view.fileData;
                     const blobId = message.view.blobId;
@@ -355,6 +356,37 @@ function getConversationMessageBody(
             }
             break;
         }
+        case 'audio': {
+            const type = 'audio';
+            const body: MessageBodyFor<typeof type> = {
+                mediaType: messageModel.view.mediaType,
+                size: messageModel.view.fileSize,
+                caption: messageModel.view.caption,
+                duration: messageModel.view.duration,
+            };
+            if (messageModel.ctx === MessageDirection.INBOUND) {
+                messageData = {
+                    ...(baseMessage as Omit<
+                        IncomingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
+                    type,
+                    body,
+                    state: convertFileMessageDataState(messageModel.view),
+                };
+            } else {
+                messageData = {
+                    ...(baseMessage as Omit<
+                        OutgoingMessage<AnyMessageBody>,
+                        BaseMessageOmittedFields
+                    >),
+                    type,
+                    body,
+                    state: convertFileMessageDataState(messageModel.view),
+                };
+            }
+            break;
+        }
         default:
             unreachable(messageModel);
     }
@@ -455,6 +487,7 @@ export class ConversationMessageViewModelController
             case MessageType.FILE:
             case MessageType.IMAGE:
             case MessageType.VIDEO:
+            case MessageType.AUDIO:
                 return await this._message.get().controller.blob();
 
             case MessageType.TEXT:
@@ -470,6 +503,7 @@ export class ConversationMessageViewModelController
             case MessageType.FILE:
             case MessageType.IMAGE:
             case MessageType.VIDEO:
+            case MessageType.AUDIO:
                 return await this._message.get().controller.thumbnailBlob();
 
             case MessageType.TEXT:
