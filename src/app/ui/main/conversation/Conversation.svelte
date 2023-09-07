@@ -348,7 +348,6 @@
       });
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let messagesContainer: HTMLElement | null = null;
 
   onDestroy(() => {

@@ -36,7 +36,6 @@
   let composeAreaTextByteLength: u53;
 
   // Emoji picker
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let emojiPickerPopover: Popover | null;
 
   /**

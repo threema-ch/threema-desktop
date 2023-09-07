@@ -51,12 +51,10 @@
   export let moreFilesAttachable = true;
 
   // Values bound by Svelte could become null.
-  /* eslint-disable @typescript-eslint/ban-types */
   let sendButtonWrapper: HTMLElement | undefined | null;
   let sendButtonPopover: Popover | undefined | null;
   let emojiPickerPopover: Popover | undefined | null;
   let captionComposeArea: Caption | undefined | null;
-  /* eslint-enable @typescript-eslint/ban-types */
 
   let activeMediaFileIndex: u53 = 0;
   let confirmCloseDialogVisible = false;

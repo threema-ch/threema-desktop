@@ -672,6 +672,16 @@ module.exports = {
             },
             rules: {
                 'no-labels': 'off',
+                '@typescript-eslint/ban-types': [
+                    'error',
+                    {
+                        extendDefaults: true,
+                        types: {
+                            // Note: Null often cannot be avoided when dealing with the Svelte lifecycle
+                            null: false,
+                        },
+                    },
+                ],
                 ...getTypeScriptOnlyRules('svelte'),
             },
         },

@@ -84,7 +84,6 @@
   /**
    * The reference to the element which contains this message element.
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types
   export let container: HTMLElement | null;
 
   let viewModelStore: Remote<ConversationMessageViewModelStore>;
@@ -97,7 +96,6 @@
   $: messageBody = $viewModelStore.body;
 
   // Context menu
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let contextMenuPopover: Popover | null;
   let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
   let isContextMenuVisible = false;

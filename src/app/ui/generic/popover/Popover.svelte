@@ -32,7 +32,6 @@
    * The HTML element representing this popover (i.e. its outermost container). Note: don't set this
    * value from outside, only bind to it.
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types
   export let element: HTMLElement | undefined | null = undefined;
 
   /**
@@ -99,9 +98,7 @@
   }>();
 
   // Svelte will set the element explicitly to null, if the element gets deleted.
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let trigger: HTMLElement | null = null;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let popover: HTMLElement | null = null;
 
   let position: Offset | undefined = undefined;

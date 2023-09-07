@@ -59,7 +59,6 @@
   /**
    * The reference to the element which contains this message list.
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types
   export let container: HTMLElement | null;
 
   /**

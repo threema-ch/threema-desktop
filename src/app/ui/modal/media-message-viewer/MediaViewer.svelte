@@ -44,8 +44,6 @@
 
   let mediaState: MediaState = {status: 'loading'};
 
-  // Allow `null` here due to Svelte sometimes setting binds to null.
-  /* eslint-disable @typescript-eslint/ban-types */
   let containerElement: HTMLElement | null;
   let previewElement: HTMLElement | undefined | null = undefined;
   let actionsContainerElement: HTMLElement | undefined | null = undefined;
@@ -53,7 +51,6 @@
   let contextMenuPopover: Popover | null;
   let contextMenuElement: HTMLElement | null | undefined;
   let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
-  /* eslint-enable @typescript-eslint/ban-types */
 
   // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
   // until displaying the image.

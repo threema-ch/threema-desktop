@@ -34,10 +34,8 @@
       log.error('Loading profile view model failed', error);
     });
 
-  /* eslint-disable @typescript-eslint/ban-types */
   let searchInput: SearchInput | null | undefined;
   let conversationList: ConversationNavList | null | undefined;
-  /* eslint-enable @typescript-eslint/ban-types */
 
   function handleHotkeyControlF(): void {
     searchInput?.select();

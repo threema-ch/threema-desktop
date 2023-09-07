@@ -47,7 +47,6 @@
   const swipeGroup = new SwipeAreaGroup();
 
   // Context menu
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let contextMenuPopover: Popover | null;
   let contextGroup: HTMLElement;
   let contextMenuPosition: VirtualRect | undefined;

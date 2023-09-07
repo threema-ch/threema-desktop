@@ -6,13 +6,10 @@
    */
   export let mediaState: LoadedVideoState;
 
-  // Allow `null` here due to Svelte sometimes setting binds to null.
-  /* eslint-disable @typescript-eslint/ban-types */
   /**
    * The {@link HTMLElement} of the image preview.
    */
   export let element: HTMLElement | null | undefined = undefined;
-  /* eslint-enable @typescript-eslint/ban-types */
 </script>
 
 <template>

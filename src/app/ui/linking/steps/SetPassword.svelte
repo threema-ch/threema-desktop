@@ -10,7 +10,6 @@
 
   export let linkingWizardState: LinkingWizardStateSetPassword;
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let passwordComponent: Password | null = null;
 
   let password = '';

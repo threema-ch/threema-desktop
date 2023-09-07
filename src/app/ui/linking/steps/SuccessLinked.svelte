@@ -10,7 +10,6 @@
 
   export let linkingWizardState: LinkingWizardStateSuccess;
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   let buttonComponent: Button | null = null;
 
   onMount(() => {
