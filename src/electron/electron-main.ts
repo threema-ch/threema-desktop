@@ -733,11 +733,6 @@ function main(
 
         session.setPermissionCheckHandler((contents, permission, origin, details) => {
             if (contents === null) {
-                // Allow 'background-sync' in dev mode
-                if (import.meta.env.DEBUG && permission === 'background-sync') {
-                    return true;
-                }
-
                 // Allow notifications and clipboard write
                 if (['notifications', 'clipboard-sanitized-write'].includes(permission)) {
                     return true;
