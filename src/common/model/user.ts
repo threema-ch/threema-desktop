@@ -36,8 +36,9 @@ export class UserModel implements User {
         this.privacySettings = new PrivacySettingsModelStore(services, {});
         this.callsSettings = new CallsSettingsModelStore(services, {});
 
-        this.displayName = derive(this.profileSettings, ({view: {nickname}}) =>
-            nickname === undefined ? this.identity : nickname,
+        this.displayName = derive(
+            this.profileSettings,
+            ({view: {nickname}}) => nickname ?? this.identity,
         );
 
         // TODO(DESK-624): Get profile picture from DB

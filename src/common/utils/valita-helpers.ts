@@ -80,10 +80,13 @@ export function validate<TIn, TOut>(
  * Parse an optional parameter which also treats null as non-existent.
  */
 export function nullOptional<T>(schema: v.Type<T>): v.Optional<T | undefined> {
-    return v
-        .union(v.null(), schema)
-        .map((value) => (value === null ? undefined : value))
-        .optional();
+    return (
+        v
+            .union(v.null(), schema)
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            .map((value) => (value === null ? undefined : value))
+            .optional()
+    );
 }
 
 /**

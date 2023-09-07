@@ -117,6 +117,7 @@ function getTypeScriptOnlyRules(extension) {
         'require-await': 'off', // @typescript-eslint/require-await
 
         // TypeScript rules
+        '@typescript-eslint/adjacent-overload-signatures': 'error',
         '@typescript-eslint/await-thenable': 'error',
         '@typescript-eslint/consistent-type-exports': [
             'error',
@@ -154,6 +155,7 @@ function getTypeScriptOnlyRules(extension) {
         '@typescript-eslint/non-nullable-type-assertion-style': 'error',
         '@typescript-eslint/prefer-includes': 'error',
         '@typescript-eslint/prefer-nullish-coalescing': 'error',
+        '@typescript-eslint/prefer-optional-chain': 'error',
         '@typescript-eslint/prefer-readonly': 'error',
         '@typescript-eslint/prefer-reduce-type-parameter': 'error',
         '@typescript-eslint/prefer-return-this-type': 'error',
@@ -356,7 +358,7 @@ module.exports = {
         'arrow-parens': 'error',
         'arrow-body-style': ['error', 'as-needed'],
         'no-dupe-class-members': 'off', // @typescript-eslint/no-dupe-class-members
-        'no-duplicate-imports': 'off', // @typescript-eslint/no-duplicate-imports
+        'no-duplicate-imports': 'error',
         'no-useless-constructor': 'off', // @typescript-eslint/no-useless-constructor
         'no-useless-computed-key': 'error',
         'no-useless-rename': 'error',
@@ -534,10 +536,11 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'error',
         '@typescript-eslint/no-extraneous-class': 'error',
         '@typescript-eslint/no-invalid-void-type': 'error',
-        '@typescript-eslint/no-parameter-properties': [
+        '@typescript-eslint/no-require-imports': 'error',
+        '@typescript-eslint/parameter-properties': [
             'error',
             {
-                allows: [
+                allow: [
                     'private',
                     'protected',
                     'public',
@@ -547,17 +550,14 @@ module.exports = {
                 ],
             },
         ],
-        '@typescript-eslint/no-require-imports': 'error',
         '@typescript-eslint/prefer-for-of': 'error',
         '@typescript-eslint/prefer-literal-enum-member': 'error',
-        '@typescript-eslint/prefer-optional-chain': 'error',
         '@typescript-eslint/prefer-ts-expect-error': 'error',
         '@typescript-eslint/unified-signatures': 'error',
 
         // TypeScript eslint extensions
         '@typescript-eslint/default-param-last': 'error',
         '@typescript-eslint/no-dupe-class-members': 'error',
-        '@typescript-eslint/no-duplicate-imports': 'error',
         '@typescript-eslint/no-invalid-this': 'error',
         '@typescript-eslint/no-loss-of-precision': 'error',
         '@typescript-eslint/no-shadow': 'error',

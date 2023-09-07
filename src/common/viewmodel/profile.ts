@@ -22,7 +22,7 @@ export function getProfileViewModelStore(services: ServicesForViewModel): Profil
     const {endpoint, device, model} = services;
 
     return derive(model.user.profileSettings, ({view: {nickname}}, getAndSubscribe) => {
-        const displayName = nickname === undefined ? device.identity.string : nickname;
+        const displayName = nickname ?? device.identity.string;
         return endpoint.exposeProperties({
             profilePicture: getAndSubscribe(model.user.profilePicture),
             nickname,

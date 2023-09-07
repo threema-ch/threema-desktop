@@ -179,15 +179,20 @@ export class Layer4Encoder implements TransformerCodec<OutboundL4Message, Outbou
         // Wait until authenticated towards CSP
         void csp.authenticated.then(() => {
             // Cancel all ongoing echo requests when the connection has been closed
-            connection.unwrap().closed.finally(() => {
-                for (;;) {
-                    const canceller = this._ongoingEchoRequests.shift();
-                    if (canceller === undefined) {
-                        break;
+            connection
+                .unwrap()
+                .closed.finally(() => {
+                    for (;;) {
+                        const canceller = this._ongoingEchoRequests.shift();
+                        if (canceller === undefined) {
+                            break;
+                        }
+                        canceller();
                     }
-                    canceller();
-                }
-            });
+                })
+                .catch(() => {
+                    /* Ignore */
+                });
 
             // Send an echo request in the requested interval with a timestamp to
             // measure RTT.

@@ -272,12 +272,12 @@ export class TestDirectoryBackend implements DirectoryBackend {
     // eslint-disable-next-line @typescript-eslint/require-await
     public async identity(identity: IdentityString): Promise<IdentityData> {
         const data = this._knownUsers[identity];
-        return data !== undefined
-            ? data
-            : {
-                  identity,
-                  state: ActivityState.INVALID,
-              };
+        return (
+            data ?? {
+                identity,
+                state: ActivityState.INVALID,
+            }
+        );
     }
 
     /** @inheritdoc */
@@ -410,8 +410,9 @@ class UserRepository implements User {
         this.privacySettings = new PrivacySettingsModelStore(services, {});
         this.callsSettings = new CallsSettingsModelStore(services, {});
 
-        this.displayName = derive(this.profileSettings, ({view: {nickname}}) =>
-            nickname === undefined ? this.identity : nickname,
+        this.displayName = derive(
+            this.profileSettings,
+            ({view: {nickname}}) => nickname ?? this.identity,
         );
         this.profilePicture = derive(
             this.profileSettings,

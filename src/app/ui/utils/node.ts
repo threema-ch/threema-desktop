@@ -15,6 +15,7 @@ export function nodeContainsTarget(
     target: EventTarget | null | undefined,
     /* eslint-enable @typescript-eslint/ban-types */
 ): boolean {
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     if (node === undefined || node === null || target === null || target === undefined) {
         return false;
     }
