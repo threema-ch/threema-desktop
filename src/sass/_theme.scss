@@ -276,16 +276,30 @@ $brandings: (
 }
 
 @mixin branded-theme($branding-name, $theme-name) {
+  // see https://github.com/prettier/prettier/issues/15369:
+  // prettier-ignore
   $branding: config-merge(-g(theme.$brandings, $branding-name), -g($brandings, $branding-name));
 
   &[data-branding='#{$branding-name}'] {
+    // see https://github.com/prettier/prettier/issues/15369:
+    // prettier-ignore
     $theme: config-merge(-g(theme.$themes, $theme-name), -generate-theme($branding, $theme-name));
 
+    // see https://github.com/prettier/prettier/issues/15369:
+    // prettier-ignore
     @include def-var(-app-theme($theme, $branding)...);
     @include def-var(theme.components-theme($theme, $branding)...);
+    // see https://github.com/prettier/prettier/issues/15369:
+    // prettier-ignore
     @include def-var(-individual-components-theme($theme, $branding)...);
+    // see https://github.com/prettier/prettier/issues/15369:
+    // prettier-ignore
     @include def-var(-message-components-theme($theme, $branding)...);
+    // see https://github.com/prettier/prettier/issues/15369:
+    // prettier-ignore
     @include def-var(-compound-components-theme($theme, $branding)...);
+    // see https://github.com/prettier/prettier/issues/15369:
+    // prettier-ignore
     @include def-var(-debug-components-theme($theme, $branding)...);
   }
 }

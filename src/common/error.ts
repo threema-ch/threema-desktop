@@ -203,7 +203,10 @@ const TYPE_TRANSFORM_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
 export class TypeTransformError extends BaseError {
     public [TRANSFER_HANDLER] = TYPE_TRANSFORM_ERROR_TRANSFER_HANDLER;
 
-    public constructor(public readonly direction: TypeTransformErrorDirection, message: string) {
+    public constructor(
+        public readonly direction: TypeTransformErrorDirection,
+        message: string,
+    ) {
         super(message);
     }
 
@@ -272,7 +275,10 @@ export type RendezvousCloseCause = 'unknown' | 'closed' | 'timeout' | 'complete'
 
 /** An error wrapping a {@link RendezvousCloseCause}. */
 export class RendezvousCloseError extends Error {
-    public constructor(public readonly cause: RendezvousCloseCause, message?: string) {
+    public constructor(
+        public readonly cause: RendezvousCloseCause,
+        message?: string,
+    ) {
         super(message ?? `Rendezvous connection closed, cause: '${cause}'`);
     }
 }

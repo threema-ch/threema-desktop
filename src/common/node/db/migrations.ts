@@ -176,7 +176,10 @@ class MigrationBuilder {
     private _up?: MigrationFile;
     private _down?: MigrationFile;
 
-    public constructor(initialFile: MigrationFile, private readonly _source: MigrationSource) {
+    public constructor(
+        initialFile: MigrationFile,
+        private readonly _source: MigrationSource,
+    ) {
         this._number = initialFile.number;
         if (initialFile.direction === 'up') {
             this._up = initialFile;

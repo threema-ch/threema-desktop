@@ -31,7 +31,10 @@ export class SequenceNumberU64<SNV extends u64> {
 class SequenceNumberUXX<SNV extends u53> {
     private _value: u53;
 
-    public constructor(start: SNV, private readonly _maxValue: SNV) {
+    public constructor(
+        start: SNV,
+        private readonly _maxValue: SNV,
+    ) {
         this._value = start;
     }
 

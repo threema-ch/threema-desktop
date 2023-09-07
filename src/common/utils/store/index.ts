@@ -503,9 +503,10 @@ type ReadableStoresValues<TStores extends readonly IQueryableStore<unknown>[]> =
  * @deprecated this store was deprecated by the new {@link DerivedStore}
  */
 export class DeprecatedDerivedStore<
-    TStores extends readonly IQueryableStore<unknown>[],
-    TTransformed,
-> implements IQueryableStore<TTransformed>, LocalStore<TTransformed>
+        TStores extends readonly IQueryableStore<unknown>[],
+        TTransformed,
+    >
+    implements IQueryableStore<TTransformed>, LocalStore<TTransformed>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly tag: string;

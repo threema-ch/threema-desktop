@@ -419,7 +419,7 @@ class UserRepository implements User {
                 ({
                     color: 'teal',
                     profilePicture: profileSettings.view.profilePicture,
-                } as const),
+                }) as const,
         );
     }
 }

@@ -53,7 +53,10 @@ export type SecretKeyLength = 32 | 64;
 class SecretKey<TLength extends SecretKeyLength> {
     #_key?: Uint8Array;
 
-    private constructor(key: Uint8Array, public readonly length: TLength) {
+    private constructor(
+        key: Uint8Array,
+        public readonly length: TLength,
+    ) {
         if (key.byteLength !== length) {
             throw new CryptoError(
                 `Expected key to be ${length} bytes but has ${key.byteLength} bytes`,

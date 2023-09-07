@@ -154,10 +154,11 @@ export function derive<
  *  The {@param TOutDerivedValue} provides type variance for the output type inference.
  */
 export class DerivedStore<
-    TSourceStore extends IQueryableStore<unknown>,
-    TDerivedValue extends TOutDerivedValue,
-    TOutDerivedValue = TDerivedValue,
-> implements IQueryableStore<TOutDerivedValue>, LocalStore<TOutDerivedValue>
+        TSourceStore extends IQueryableStore<unknown>,
+        TDerivedValue extends TOutDerivedValue,
+        TOutDerivedValue = TDerivedValue,
+    >
+    implements IQueryableStore<TOutDerivedValue>, LocalStore<TOutDerivedValue>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
     public readonly tag: string;

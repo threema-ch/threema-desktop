@@ -461,7 +461,10 @@ export class SharedBoxFactory<
 
     readonly #_secret: ReadonlyRawKey<32>;
 
-    public constructor(private readonly _crypto: CryptoBackend, secret: ReadonlyRawKey<32>) {
+    public constructor(
+        private readonly _crypto: CryptoBackend,
+        secret: ReadonlyRawKey<32>,
+    ) {
         // Store secret key
         this.#_secret = secret;
 

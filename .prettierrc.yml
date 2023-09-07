@@ -1,3 +1,7 @@
+plugins:
+  - '@prettier/plugin-xml'
+  - 'prettier-plugin-svelte'
+
 # Global rules
 arrowParens: always
 bracketSpacing: false
@@ -12,7 +16,7 @@ trailingComma: all
 svelteSortOrder: options-scripts-markup-styles
 
 # Global XML rules
-xmlWhitespaceSensitivity: strict # Note: Change to "preserve" once a new release of @prettier/plugin-xml is out
+xmlWhitespaceSensitivity: preserve
 
 # Overrides
 overrides:

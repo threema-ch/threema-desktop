@@ -13,7 +13,10 @@ export class TechDebtTask implements PassiveTask<void> {
     public readonly persist = false;
     private readonly _log: Logger;
 
-    public constructor(services: ServicesForTasks, private readonly _reminder: string) {
+    public constructor(
+        services: ServicesForTasks,
+        private readonly _reminder: string,
+    ) {
         this._log = services.logging.logger('TODO');
     }
 

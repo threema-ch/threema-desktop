@@ -10,6 +10,8 @@
 }
 
 @function generate-light-theme($branding) {
+  // see https://github.com/prettier/prettier/issues/15369:
+  // prettier-ignore
   @return (
     app: (
       // Scrollbar

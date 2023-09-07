@@ -115,19 +115,19 @@ export const _only_for_testing = {
             token: TRANSACTION_RUNNING_TOKEN,
             id,
             scope,
-        } as TransactionRunning<S>),
+        }) as TransactionRunning<S>,
     transactionComplete: <S extends TransactionScope>(id: u53, scope: S) =>
         ({
             token: TRANSACTION_COMPLETE_TOKEN,
             id,
             scope,
-        } as TransactionComplete<S>),
+        }) as TransactionComplete<S>,
     transactionAborted: <S extends TransactionScope>(id: u53, scope: S) =>
         ({
             token: TRANSACTION_ABORTED_BY_PRECONDITION_TOKEN,
             id,
             scope,
-        } as TransactionAbortedByPrecondition<S>),
+        }) as TransactionAbortedByPrecondition<S>,
 };
 
 const CONTINUE_READING_TOKEN = Symbol('continue-reading-token');
