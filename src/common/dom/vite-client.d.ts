@@ -7,8 +7,10 @@
 // eslint-disable-next-line jsdoc/no-bad-blocks
 /* eslint-disable
    capitalized-comments,
+   @typescript-eslint/consistent-indexed-object-style,
    @typescript-eslint/consistent-type-definitions,
-   @typescript-eslint/triple-slash-reference
+   @typescript-eslint/prefer-function-type,
+   @typescript-eslint/triple-slash-reference,
 */
 /// <reference path="../vite-client.d.ts" />
 

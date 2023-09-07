@@ -11,7 +11,7 @@
   import {MouseEventButtons} from '~/common/enum';
 
   /* eslint-disable @typescript-eslint/naming-convention */
-  const TOOLS: {[key: string]: typeof SvelteComponentDev} = {
+  const TOOLS: Record<string, typeof SvelteComponentDev> = {
     Backend: DebugBackend,
     Redis: DebugRedis,
     Network: DebugNetwork,

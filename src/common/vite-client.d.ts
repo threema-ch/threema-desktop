@@ -9,6 +9,7 @@
    capitalized-comments,
    @typescript-eslint/consistent-type-definitions,
    @typescript-eslint/consistent-type-imports,
+    @typescript-eslint/consistent-indexed-object-style,
    @typescript-eslint/member-ordering,
    @typescript-eslint/method-signature-style,
    @typescript-eslint/no-explicit-any,

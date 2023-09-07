@@ -119,6 +119,7 @@ function getTypeScriptOnlyRules(extension) {
         // TypeScript rules
         '@typescript-eslint/adjacent-overload-signatures': 'error',
         '@typescript-eslint/await-thenable': 'error',
+        '@typescript-eslint/consistent-indexed-object-style': 'error',
         '@typescript-eslint/consistent-type-exports': [
             'error',
             {
@@ -137,6 +138,7 @@ function getTypeScriptOnlyRules(extension) {
         '@typescript-eslint/explicit-member-accessibility': 'error',
         '@typescript-eslint/naming-convention': namingConvention,
         '@typescript-eslint/no-base-to-string': 'error',
+        '@typescript-eslint/no-duplicate-enum-values': 'error',
         '@typescript-eslint/no-throw-literal': [
             'error',
             {
@@ -152,6 +154,7 @@ function getTypeScriptOnlyRules(extension) {
         '@typescript-eslint/no-unnecessary-qualifier': 'error',
         '@typescript-eslint/no-unnecessary-type-arguments': 'error',
         '@typescript-eslint/no-unsafe-argument': extension === 'svelte' ? 'off' : 'error',
+        '@typescript-eslint/no-unsafe-declaration-merging': 'error',
         '@typescript-eslint/non-nullable-type-assertion-style': 'error',
         '@typescript-eslint/prefer-includes': 'error',
         '@typescript-eslint/prefer-nullish-coalescing': 'error',
@@ -551,6 +554,7 @@ module.exports = {
             },
         ],
         '@typescript-eslint/prefer-for-of': 'error',
+        '@typescript-eslint/prefer-function-type': 'error',
         '@typescript-eslint/prefer-literal-enum-member': 'error',
         '@typescript-eslint/prefer-ts-expect-error': 'error',
         '@typescript-eslint/unified-signatures': 'error',

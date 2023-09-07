@@ -110,17 +110,15 @@ export type IOutgoingCspMessageTask = ComposableTask<
 /**
  * Constructor function for a {@link IOutgoingCspMessageTask}
  */
-export interface IOutgoingCspMessageTaskConstructor {
-    new <
-        TMessageEncoder,
-        TReceiver extends AnyReceiver,
-        TMessageType extends ValidCspMessageTypeForReceiver<TReceiver>,
-    >(
-        services: ServicesForTasks,
-        receiver: TReceiver,
-        properties: MessageProperties<TMessageEncoder, TMessageType>,
-    ): IOutgoingCspMessageTask;
-}
+export type IOutgoingCspMessageTaskConstructor = new <
+    TMessageEncoder,
+    TReceiver extends AnyReceiver,
+    TMessageType extends ValidCspMessageTypeForReceiver<TReceiver>,
+>(
+    services: ServicesForTasks,
+    receiver: TReceiver,
+    properties: MessageProperties<TMessageEncoder, TMessageType>,
+) => IOutgoingCspMessageTask;
 
 /**
  * Array with Nonces that may only be accessed with {@link Array.pop} or {@link Array.map} for
