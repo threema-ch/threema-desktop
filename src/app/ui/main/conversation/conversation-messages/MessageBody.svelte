@@ -9,6 +9,7 @@
     extractMessageStatus,
     extractTextContent,
   } from '~/app/ui/main/conversation/conversation-messages';
+  import AudioPlayer from '~/app/ui/main/conversation/conversation-messages/content-fragment/AudioPlayer.svelte';
   import FileInfo from '~/app/ui/main/conversation/conversation-messages/content-fragment/FileInfo.svelte';
   import Thumbnail from '~/app/ui/main/conversation/conversation-messages/content-fragment/Thumbnail.svelte';
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
@@ -94,6 +95,10 @@
         <!-- Don't render here yet, as text is regular content. -->
       {:else if message.type === 'file'}
         <FileInfo on:click={handleClickFileInfo} {message} />
+      {:else if message.type === 'audio'}
+        <div class="audio">
+          <AudioPlayer {message} messageViewModelController={viewModelBundle.viewModelController} />
+        </div>
       {:else if message.type === 'image' || message.type === 'video'}
         <span class="thumbnail">
           {#if message.type === 'video'}
@@ -147,7 +152,7 @@
             </span>
           {/if}
         </span>
-      {:else if message.type === 'audio' || message.type === 'location' || message.type === 'quote'}
+      {:else if message.type === 'location' || message.type === 'quote'}
         <div class="unsupported-message">
           {$i18n.t(
             'messaging.error--unsupported-message-type',
@@ -172,6 +177,14 @@
     <!-- Status indicator -->
     {#if !isQuoted}
       <span class="indicators" class:as-badges={isCaptionlessMedia}>
+        {#if message.type === 'audio'}
+          <span class="indicator">
+            <span class="label">
+              {durationToString(message.body.duration ?? 0)}
+            </span>
+          </span>
+        {/if}
+
         <span class="indicator">
           <span class="label">
             <DateTime date={message.updatedAt} format={isCaptionlessMedia ? 'time' : 'auto'} />
@@ -213,7 +226,7 @@
     }
 
     .content {
-      display: inline-flex;
+      display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: rem(8px);
@@ -250,6 +263,10 @@
           );
         }
       }
+
+      .audio {
+        width: 100%;
+      }
     }
 
     &.quoted {
@@ -269,10 +286,16 @@
             font-size: rem(14px);
           }
         }
+
+        .audio {
+          margin-top: rem(4px);
+          margin-bottom: rem(4px);
+        }
       }
 
       &[data-message-type='image'].has-text,
-      &[data-message-type='video'].has-text {
+      &[data-message-type='video'].has-text,
+      &[data-message-type='audio'].has-text {
         .content {
           display: grid;
           grid-template:
@@ -289,6 +312,10 @@
           .thumbnail {
             grid-area: thumbnail;
             pointer-events: none;
+          }
+
+          .audio {
+            grid-area: thumbnail;
           }
 
           .text {
@@ -341,6 +368,13 @@
       .indicators:not(.as-badges) {
         padding-left: rem(4px);
         padding-right: rem(4px);
+      }
+    }
+
+    &[data-message-type='audio'] {
+      .indicators {
+        justify-content: space-between;
+        padding-left: rem(40px);
       }
     }
 

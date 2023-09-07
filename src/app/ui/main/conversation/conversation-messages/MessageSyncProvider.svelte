@@ -55,8 +55,6 @@
       case 'download':
         switch (messageType) {
           case 'file':
-          case 'audio':
-            // TODO(DESK-144): Separate label for audio messages.
             return t('messaging.action--sync-file-download', 'Click to download file');
 
           case 'image':
@@ -65,6 +63,9 @@
           case 'video':
             return t('messaging.action--sync-video-download', 'Click to download video');
 
+          case 'audio':
+            return t('messaging.action--sync-audio-download', 'Click to download voice message');
+
           default:
             return unreachable(messageType);
         }
@@ -72,8 +73,6 @@
       case 'upload':
         switch (messageType) {
           case 'file':
-          case 'audio':
-            // TODO(DESK-144): Separate label for audio messages.
             return t('messaging.action--sync-file-upload', 'Click to upload file');
 
           case 'image':
@@ -81,6 +80,9 @@
 
           case 'video':
             return t('messaging.action--sync-video-upload', 'Click to upload video');
+
+          case 'audio':
+            return t('messaging.action--sync-audio-upload', 'Click to upload voice message');
 
           default:
             return unreachable(messageType);

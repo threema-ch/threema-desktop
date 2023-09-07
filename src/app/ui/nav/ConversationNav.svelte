@@ -69,7 +69,7 @@
       ),
       'messaging.label--default-audio-message-preview': t(
         'messaging.label--default-audio-message-preview',
-        'Audio',
+        'Voice Message',
       ),
       /* eslint-enable @typescript-eslint/naming-convention */
     }),
