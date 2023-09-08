@@ -21,7 +21,7 @@
     bind:this={element}
     on:contextmenu
     src={mediaState.url}
-    alt={$i18n.t('dialog--media-message-viewer.hint--image-preview', 'Full-size image preview')}
+    alt={$i18n.t('dialog--media-message-viewer.hint--full-size-preview', 'Full-size preview')}
   />
 </template>
 

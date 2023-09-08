@@ -12,7 +12,8 @@ import {
     type MessageType,
     ReceiverType,
 } from '~/common/enum';
-import {deleteFilesInBackground} from '~/common/file-storage';
+import {BlobFetchError} from '~/common/error';
+import {deleteFilesInBackground, FileStorageError} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {type ServicesForModel} from '~/common/model/types/common';
 import {type ConversationControllerHandle} from '~/common/model/types/conversation';
@@ -155,6 +156,8 @@ export async function downloadBlob(
  *
  * If the blob has not yet been downloaded, the download will be started and the database will be
  * updated. Once that is done, the promise will resolve with the blob data.
+ *
+ * On error, the promise will reject with a {@link BlobFetchError}.
  */
 export async function downloadBlob(
     type: BlobType,
@@ -222,7 +225,18 @@ export async function downloadBlob(
             }
         });
         if (existingFileData !== undefined) {
-            return await file.load(existingFileData);
+            try {
+                return await file.load(existingFileData);
+            } catch (error) {
+                const message = `Could not fetch bytes from file system: ${error}`;
+                if (error instanceof FileStorageError) {
+                    throw new BlobFetchError(
+                        {kind: 'file-storage-error', cause: error.type},
+                        message,
+                    );
+                }
+                throw new BlobFetchError({kind: 'file-storage-error'}, message);
+            }
         }
 
         // If blob is marked as permanently failed, don't attempt to download
@@ -240,7 +254,10 @@ export async function downloadBlob(
         if (downloadState === BlobDownloadState.PERMANENT_FAILURE) {
             switch (type) {
                 case 'main':
-                    throw new Error('Blob download is marked as failed');
+                    throw new BlobFetchError(
+                        {kind: 'permanent-download-error'},
+                        'Blob download is marked as permanently failed',
+                    );
                 case 'thumbnail':
                     return undefined;
                 default:
@@ -265,7 +282,10 @@ export async function downloadBlob(
             switch (type) {
                 case 'main':
                     markDownloadAsPermanentlyFailed();
-                    throw new Error('Both file data and blob ID are missing');
+                    throw new BlobFetchError(
+                        {kind: 'internal'},
+                        'Both file data and blob ID are missing',
+                    );
                 case 'thumbnail':
                     // No thumbnail available
                     return undefined;
@@ -291,12 +311,19 @@ export async function downloadBlob(
             if (error instanceof BlobBackendError && error.type === 'not-found') {
                 // Permanent failure, blob not found
                 markDownloadAsPermanentlyFailed();
+                throw new BlobFetchError(
+                    {kind: 'permanent-download-error', cause: error},
+                    'Blob was not found on the server and was marked as permanently failed',
+                );
             } else if (type === 'main') {
                 // Temporary failure. If this is about the file (and not the thumbnail), revert the
                 // state to "unsynced".
                 lifetimeGuard.update((view) => ({state: 'unsynced'}));
             }
-            throw ensureError(error);
+            throw new BlobFetchError(
+                {kind: 'temporary-download-error', cause: ensureError(error)},
+                'Temporary blob download error',
+            );
         }
 
         // Decrypt bytes
@@ -305,12 +332,29 @@ export async function downloadBlob(
             NONCE_UNGUARDED_SCOPE,
             undefined,
         );
-        const decryptedBytes = secretBox
-            .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, downloadResult.data)
-            .decrypt().plainData;
+        let decryptedBytes;
+        try {
+            decryptedBytes = secretBox
+                .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, downloadResult.data)
+                .decrypt().plainData;
+        } catch (error) {
+            throw new BlobFetchError(
+                {kind: 'decryption-error', cause: ensureError(error)},
+                'Decrypting blob bytes failed',
+            );
+        }
 
         // Blob downloaded, store in file storage
-        const storedFile = await file.store(decryptedBytes);
+        let storedFile;
+        try {
+            storedFile = await file.store(decryptedBytes);
+        } catch (error) {
+            const message = `Could not write bytes to file system: ${error}`;
+            if (error instanceof FileStorageError) {
+                throw new BlobFetchError({kind: 'file-storage-error', cause: error.type}, message);
+            }
+            throw new BlobFetchError({kind: 'file-storage-error'}, message);
+        }
         const storedFileData = {
             fileId: storedFile.fileId,
             encryptionKey: storedFile.encryptionKey,

@@ -157,9 +157,6 @@
     "prose--threema-id-description-p1": "When starting the app for the first time, each Threema user gets a randomly generated 8-digit Threema ID. This ID is your unique address in Threema and makes it possible to use Threema completely anonymously, i.e., without having to disclose any personal information.",
     "prose--threema-id-description-p2": "Your Threema ID is just one of two components that make up your identity in Threema. The other one is the so-called key pair (consisting of a public key and a private key) which is essential for the encryption. Your Threema ID is permanently tied to your public key. While the public key is sent to Threema’s servers to be distributed to your chat partners, the private key remains on your device, where it is securely stored. All messages directed to you will be individually encrypted with your public key on the sender’s device and can only be decrypted with your personal private key."
   },
-  "dialog--image-message-viewer": {
-    "error--image-message-image-not-loaded": "The image could not be loaded."
-  },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Need help?",
     "label--title": "Confirm Images on Your Mobile Device"
@@ -218,7 +215,14 @@
     "label--title-restoring": "Restoring Data"
   },
   "dialog--media-message-viewer": {
-    "hint--image-preview": "Full-size image preview"
+    "error--decryption-error": "Media could not be decrypted.",
+    "error--file-storage-read-error": "Could not read media from file storage.",
+    "error--file-storage-write-error": "Downloaded media could not be stored in file storage. Do you have enough free disk space?",
+    "error--internal-error": "Media could not be loaded due to an internal error.",
+    "error--media-not-loaded": "Media could not be loaded.",
+    "error--permanent-download-error": "Media could not be downloaded, the download expired.",
+    "error--temporary-download-error": "Media download failed. Please check your internet connection and try again.",
+    "hint--full-size-preview": "Full-size preview"
   },
   "dialog--message-details": {
     "label--created-date": "Created",

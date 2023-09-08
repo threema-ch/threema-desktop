@@ -265,7 +265,8 @@ type CommonBaseFileMessageController<TView extends CommonBaseFileMessageView> =
          * If the blob has not yet been downloaded, the download will be started and the database
          * will be updated. Once that is done, the promise will resolve with the blob data.
          *
-         * If the download fails (for any reason), then the promise is rejected with an error.
+         * If fetching the blob bytes fails (for any reason), then the promise is rejected with a
+         * {@link BlobFetchError}.
          */
         readonly blob: () => Promise<ReadonlyUint8Array>;
 
@@ -275,7 +276,8 @@ type CommonBaseFileMessageController<TView extends CommonBaseFileMessageView> =
          * If the blob has not yet been downloaded, the download will be started and the database
          * will be updated. Once that is done, the promise will resolve with the blob data.
          *
-         * If the download fails (for any reason), then the promise is rejected with an error.
+         * If fetching the thumbnail blob bytes fails (for any reason), then the promise is rejected
+         * with a {@link BlobFetchError}.
          */
         readonly thumbnailBlob: () => Promise<ReadonlyUint8Array | undefined>;
     };

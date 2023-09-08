@@ -9,6 +9,7 @@
   import {type VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import {type I18nType} from '~/app/ui/i18n-types';
   import {copyImageBytes} from '~/app/ui/main/conversation/conversation-messages';
   import {
     fetchMedia,
@@ -143,15 +144,16 @@
   function updateMediaState(
     currentController: RemoteProxy<ConversationMessageViewModelController>,
     currentMessage: MediaViewerMessage,
+    t: I18nType['t'],
   ): void {
     // `catch` is not necessary here, as `fetchMedia` will always be fulfilled.
-    void fetchMedia(currentController, currentMessage).then((state) => {
+    void fetchMedia(currentController, currentMessage, log, t).then((state) => {
       revokeLoadedMediaUrl();
       mediaState = state;
     });
   }
 
-  $: updateMediaState(viewModelBundle.viewModelController, message);
+  $: updateMediaState(viewModelBundle.viewModelController, message, $i18n.t);
 
   onMount(() => {
     window.addEventListener('click', handleOutsideClick);
@@ -191,10 +193,14 @@
           {:else if mediaState.status === 'failed'}
             <p class="error">
               <MdIcon theme="Filled">error</MdIcon>
-              {$i18n.t(
-                'dialog--image-message-viewer.error--image-message-image-not-loaded',
-                'The image could not be loaded.',
-              )}
+              {#if mediaState.localizedReason !== undefined}
+                {mediaState.localizedReason}
+              {:else}
+                {$i18n.t(
+                  'dialog--media-message-viewer.error--media-not-loaded',
+                  'Media could not be loaded.',
+                )}
+              {/if}
             </p>
           {:else}
             {unreachable(mediaState)}

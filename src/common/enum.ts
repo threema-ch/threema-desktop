@@ -59,6 +59,8 @@ export namespace TransferTag {
     export type DEVICE_JOIN_PROTOCOL_ERROR = typeof DEVICE_JOIN_PROTOCOL_ERROR;
     export const APPLICATION_STATE_ERROR = 24;
     export type APPLICATION_STATE_ERROR = typeof APPLICATION_STATE_ERROR;
+    export const BLOB_FETCH_ERROR = 25;
+    export type BLOB_FETCH_ERROR = typeof BLOB_FETCH_ERROR;
 }
 /**
  * ENDPOINT

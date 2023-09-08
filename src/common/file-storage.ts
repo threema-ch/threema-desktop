@@ -208,7 +208,7 @@ export interface FileStorage {
  * - dir-not-found: File storage directory could not be found.
  * - read-error: File could not be read from the storage.
  * - write-error: File could not be written to the storage.
- * - delete-rror: File could not be deleted from the storage.
+ * - delete-error: File could not be deleted from the storage.
  */
 export type FileStorageErrorType =
     | 'not-found'

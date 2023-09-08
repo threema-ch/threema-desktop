@@ -1,4 +1,5 @@
 import {TransferTag} from '~/common/enum';
+import {type FileStorageErrorType} from '~/common/file-storage';
 import {ensureError} from '~/common/utils/assert';
 import {
     type RegisteredErrorTransferHandler,
@@ -310,6 +311,45 @@ export class DeviceJoinError extends BaseError {
 
     public constructor(
         public readonly type: DeviceJoinErrorType,
+        message: string,
+        options?: BaseErrorOptions,
+    ) {
+        super(message, options);
+    }
+}
+
+/**
+ * Error types that can happen when trying to fetch blob bytes.
+ *
+ * - file-storage-error: The file could not be read from or written to file storage.
+ * - permanent-download-error: Downloading the blob failed and should not be retried. This is
+ *   probably an expired blob download.
+ * - temporary-download-error: Downloading the blob failed, it can be retried at a later stage.
+ * - decryption-error: Decrypting the download failed.
+ * - internal: An internal error, most probably a logic bug.
+ */
+export type BlobFetchErrorType =
+    | {readonly kind: 'file-storage-error'; readonly cause?: FileStorageErrorType}
+    | {readonly kind: 'permanent-download-error'; readonly cause?: Error}
+    | {readonly kind: 'temporary-download-error'; readonly cause: Error}
+    | {readonly kind: 'decryption-error'; readonly cause: Error}
+    | {readonly kind: 'internal'};
+
+const BLOB_FETCH_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
+    BlobFetchError,
+    TransferTag.BLOB_FETCH_ERROR,
+    [type: BlobFetchErrorType]
+>({
+    tag: TransferTag.BLOB_FETCH_ERROR,
+    serialize: (error) => [error.type],
+    deserialize: (message, cause, [type]) => new BlobFetchError(type, message, {from: cause}),
+});
+
+export class BlobFetchError extends BaseError {
+    public [TRANSFER_HANDLER] = BLOB_FETCH_ERROR_TRANSFER_HANDLER;
+
+    public constructor(
+        public readonly type: BlobFetchErrorType,
         message: string,
         options?: BaseErrorOptions,
     ) {

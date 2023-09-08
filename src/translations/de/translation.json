@@ -157,9 +157,6 @@
     "prose--threema-id-description-p1": "Bei der ersten Nutzung vom Threema wird jedem Nutzer eine zufällig erzeugte, achtstellige Threema-ID zugeteilt. Diese Threema-ID ist Ihre eindeutige Adresse bei Threema. Dadurch ist es möglich, Threema komplett anonym zu nutzen, ohne private Daten preisgeben zu müssen.",
     "prose--threema-id-description-p2": "Ihre Threema-ID ist nur eine Komponente Ihrer Identität bei Threema. Die zweite Komponente ist das sogenannte Schlüsselpaar (bestehend aus einem privaten und einem öffentlichen Schlüssel), welches für die sichere Verschlüsselung benötigt wird. Ihre Threema-ID ist untrennbar mit Ihrem Schlüsselpaar verbunden. Der private Schlüssel verbleibt auf Ihrem Handy, während der öffentliche Schlüssel auf die Threema-Server hochgeladen wird, welche diesen an Ihre Gesprächspartner verteilen. Auf dem Handy Ihres Gesprächspartners werden Nachrichten an Sie mit Ihrem öffentlichen Schlüssel verschlüsselt. Diese Nachrichten können ausschliesslich mit Ihrem privaten Schlüssel wieder entschlüsselt werden."
   },
-  "dialog--image-message-viewer": {
-    "error--image-message-image-not-loaded": "Das Bild konnte nicht geladen werden."
-  },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Brauchen Sie Hilfe?",
     "label--title": "Bestätigen Sie die Bilder auf Ihrem Mobilgerät"
@@ -218,7 +215,14 @@
     "label--title-restoring": "Daten werden wiederhergestellt"
   },
   "dialog--media-message-viewer": {
-    "hint--image-preview": "Vollbildvorschau"
+    "error--decryption-error": "Medium konnte nicht entschlüsselt werden.",
+    "error--file-storage-read-error": "Medium konnte nicht aus dem Dateisystem geladen werden.",
+    "error--file-storage-write-error": "Medium konnte nicht aus dem Dateisystem geladen werden. Ist genügend Speicherplatz frei?",
+    "error--internal-error": "Medium konnte aufgrund eines internen Fehlers nicht geladen werden.",
+    "error--media-not-loaded": "Medium konnte nicht geladen werden.",
+    "error--permanent-download-error": "Medium konnte nicht heruntergeladen werden, der Download ist nicht mehr verfügbar.",
+    "error--temporary-download-error": "Medium konnte nicht heruntergeladen werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "hint--full-size-preview": "Vorschau in voller Grösse"
   },
   "dialog--message-details": {
     "label--created-date": "Erstellt",
