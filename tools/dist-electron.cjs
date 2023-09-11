@@ -1,6 +1,8 @@
-const fs = require('fs');
-const {join, resolve} = require('path');
+const fs = require('node:fs');
+const {join, resolve} = require('node:path');
+
 const debug = require('debug');
+const {GotDownloader} = require('@electron/get/dist/cjs/GotDownloader');
 const packager = require('electron-packager');
 const {populateIgnoredPaths} = require('electron-packager/src/copy-filter');
 
@@ -45,6 +47,18 @@ function allow(directory, pattern) {
         return 'continue';
     };
 }
+
+/**
+ * A custom downloader for @electron/get that logs all requests.
+ */
+const LoggingDownloader = {
+    download: (url, targetFilePath, options) => {
+        console.warn(
+            `dist-electron.cjs: @electron/get is downloading artifact: url=${url}, path=${targetFilePath}`,
+        );
+        return new GotDownloader().download(url, targetFilePath, options);
+    },
+};
 
 async function packageApp(variant, environment) {
     const options = {};
@@ -237,6 +251,12 @@ async function packageApp(variant, environment) {
                 done();
             },
         ],
+        download: {
+            // Use checksums provided by the electron package
+            checksums: JSON.parse(fs.readFileSync(resolve(__dirname, '..', 'node_modules', 'electron', 'checksums.json'))),
+            // Override the downloader and log all download requests
+            downloader: LoggingDownloader,
+        },
         ...platformSpecificOptions,
     });
 
