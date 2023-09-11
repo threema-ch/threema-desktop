@@ -12,13 +12,14 @@ import {
 import {type Logger} from '~/common/logging';
 import type * as protobuf from '~/common/network/protobuf';
 import {type IncomingMessage, type OutgoingMessage} from '~/common/network/protobuf/validate/d2d';
+import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {type CspE2eType, cspE2eTypeNameOf, type ReflectedE2eType} from '~/common/network/protocol';
 import {
     placeholderTextForUnhandledMessage,
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import * as structbuf from '~/common/network/structbuf';
-import {type D2mDeviceId, isMessageId} from '~/common/network/types';
+import {type D2mDeviceId} from '~/common/network/types';
 import {exhausted} from '~/common/utils/assert';
 import {intoU64, u64ToHexLe} from '~/common/utils/number';
 
@@ -77,11 +78,16 @@ export abstract class ReflectedMessageTaskBase<
         senderDeviceId: D2mDeviceId,
         protected readonly _direction: 'incoming' | 'outgoing',
     ) {
-        const messageId = isMessageId(_unvalidatedMessage.messageId)
-            ? u64ToHexLe(_unvalidatedMessage.messageId)
-            : 'unknown';
+        let messageIdHex;
+        try {
+            const messageId = MESSAGE_ID_SCHEMA.parse(_unvalidatedMessage.messageId);
+            messageIdHex = u64ToHexLe(messageId);
+        } catch {
+            messageIdHex = 'unknown';
+        }
+
         this._log = _services.logging.logger(
-            `network.protocol.task.in-${this._direction}-message.${messageId}`,
+            `network.protocol.task.in-${this._direction}-message.${messageIdHex}`,
         );
         this._senderDeviceIdString = u64ToHexLe(senderDeviceId);
     }
