@@ -394,6 +394,8 @@ package:source:
         export BUILD_TYPE=nightly
       elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
         export BUILD_TYPE=release
+      elif [[ "$PUBLISH" = "false" ]]; then
+        export BUILD_TYPE=nightly
       else
         echo "Error: Invalid ref"
         exit 1
@@ -476,10 +478,14 @@ package:source:
     - gpg --export --armor $GPG_ID > packaging/flatpak/repo/signkey.pub
     # Sync to server
     - |
-      mkdir -p sync
-      mv packaging/flatpak/repo sync/$REPO
-      echo "Syncing $REPO to FTP server"
-      lftp -e "mirror -R sync/$REPO /$REPO; exit" -u $FTP_USER,"$FTP_PASS" $FTP_HOST
+      if [ "$PUBLISH" = "true" ]; then
+        mkdir -p sync
+        mv packaging/flatpak/repo sync/$REPO
+        echo "Syncing $REPO to FTP server"
+        lftp -e "mirror -R sync/$REPO /$REPO; exit" -u $FTP_USER,"$FTP_PASS" $FTP_HOST
+      else
+        echo "Skipping publication, \$PUBLISH=$PUBLISH"
+      fi
   cache:
     # npm cache
     - key:
@@ -493,6 +499,25 @@ package:source:
       paths:
         - packaging/flatpak/.flatpak-builder/
 
+# An optional, manually-triggered, build-but-not-publish flatpak job
+package:flatpak-buildonly:
+  <<: *flatpak
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: never
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+      when: never
+    - when: manual
+  allow_failure: true # Job is optional
+  variables:
+    REPO: repo
+    REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
+    REMOTE: threema-internal
+    FLAVORS: consumer-live,work-sandbox,work-live
+    GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
+    PUBLISH: 'false'
+
 package:flatpak-internal:
   <<: *flatpak
   rules:
@@ -503,9 +528,10 @@ package:flatpak-internal:
     REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
     REMOTE: threema-internal
     FLAVORS: consumer-live,work-sandbox,work-live
+    GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
+    PUBLISH: 'true'
     FTP_HOST: $FLATPAK_INTERNAL_FTP_HOST
     FTP_USER: flatpak-internal
-    GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
     # Set FTP_PASS variable in CI!
 
 # Note: Public builds are also pushed to the internal fileserver, and are then
@@ -519,9 +545,10 @@ package:flatpak-public:
     REPO: threema-desktop
     REMOTE: threema-desktop
     FLAVORS: consumer-live,work-live
+    GPG_ID: 8BC90B39A3DEA043F88607CA74463EA2AF62F4C6
+    PUBLISH: 'true'
     FTP_HOST: $FLATPAK_PUBLIC_FTP_HOST
     FTP_USER: flatpak-internal
-    GPG_ID: 8BC90B39A3DEA043F88607CA74463EA2AF62F4C6
     # Set FTP_PASS variable in CI!
 
 package:macos:
