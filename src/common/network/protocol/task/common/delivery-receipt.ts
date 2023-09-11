@@ -55,7 +55,11 @@ export abstract class DeliveryReceiptTaskBase<
         const statusName = CspE2eDeliveryReceiptStatusUtils.nameOf(
             this._validatedDeliveryReceipt.status,
         );
-        this._log.info(`Processing delivery receipt of type ${statusName}`);
+        this._log.info(
+            `Processing delivery receipt of type ${statusName} for referenced message(s): ${this._validatedDeliveryReceipt.messageIds
+                .map(u64ToHexLe)
+                .join(', ')}`,
+        );
 
         // Look up conversation
         const conversation = getConversationById(model, this._conversationId);

@@ -71,6 +71,7 @@ import {
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
     type InboundVideoMessageInitFragment,
+    messageReferenceDebugFor,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -583,6 +584,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // message types remaining. (TODO DESK-194: Review if this is still the case.)
         assert(isCspE2eType(type), `Message type ${type} is not a known CSP E2E type`);
 
+        // Debug info: Extract message ids referenced by this message
+        const messageReferenceDebug = messageReferenceDebugFor(type, cspMessageBody);
+
         // Note: At this point we are past the validation phase and further
         //       interactions are infallible (i.e. if they fail, then the
         //       whole connection gets teared down).
@@ -622,7 +626,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     }
                     break;
                 case 'discard':
-                    this._log.info(`Discarding ${messageTypeDebug} message from unknown contact`);
+                    this._log.info(
+                        `Discarding ${messageTypeDebug} message from unknown contact`,
+                        messageReferenceDebug,
+                    );
                     return await this._discard(handle);
                 case 'ignore':
                     // Carry on!
@@ -650,7 +657,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._log,
             );
             if (receiveStepsResult === undefined) {
-                this._log.info(`Discarding ${messageTypeDebug} group message`);
+                this._log.info(
+                    `Discarding ${messageTypeDebug} group message`,
+                    messageReferenceDebug,
+                );
                 return await this._discard(handle);
             } else {
                 group = receiveStepsResult.group;
@@ -675,7 +685,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             instructions.reflectFragment !== 'deferred'
         ) {
             // Reflect the message and wait for D2M acknowledgement
-            this._log.info(`Reflecting incoming ${messageTypeDebug} message`);
+            this._log.info(
+                `Reflecting incoming ${messageTypeDebug} message`,
+                messageReferenceDebug,
+            );
             let incomingMessageReflectedAt;
             try {
                 incomingMessageReflectedAt = await this._reflectMessage(
@@ -684,7 +697,10 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     sender.string,
                 );
             } catch (error) {
-                this._log.warn(`Failed to reflect ${messageTypeDebug} message: ${error}`);
+                this._log.warn(
+                    `Failed to reflect ${messageTypeDebug} message: ${error}`,
+                    messageReferenceDebug,
+                );
                 throw ensureError(error);
             }
 
@@ -742,12 +758,13 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         `Discarding ${messageTypeDebug} message ${u64ToHexLe(
                             this._id,
                         )} as it was already received`,
+                        messageReferenceDebug,
                     );
                     return await this._discard(handle);
                 }
 
                 // Add message to conversation
-                this._log.debug(`Saving ${messageTypeDebug} message`);
+                this._log.debug(`Saving ${messageTypeDebug} message`, messageReferenceDebug);
                 if (instructions.initFragment !== undefined) {
                     const messageStore = await conversation
                         .get()
@@ -786,11 +803,14 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
 
         // Send a CSP acknowledgement, if necessary
         if (!flags.dontAck) {
-            this._log.debug(`Acknowledging ${messageTypeDebug} message`);
+            this._log.debug(`Acknowledging ${messageTypeDebug} message`, messageReferenceDebug);
             try {
                 await this._acknowledgeMessage(handle);
             } catch (error) {
-                this._log.warn(`Failed to acknowledge ${messageTypeDebug} message: ${error}`);
+                this._log.warn(
+                    `Failed to acknowledge ${messageTypeDebug} message: ${error}`,
+                    messageReferenceDebug,
+                );
                 throw ensureError(error);
             }
         }

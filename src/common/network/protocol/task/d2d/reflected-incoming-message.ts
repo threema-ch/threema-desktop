@@ -37,6 +37,7 @@ import {
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
     type InboundVideoMessageInitFragment,
+    messageReferenceDebugFor,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import type * as structbuf from '~/common/network/structbuf';
 import {
@@ -130,6 +131,9 @@ export class ReflectedIncomingMessageTask
         const {validatedMessage, messageTypeDebug} = validationResult;
         const {type, body, senderIdentity, nonce: messageNonce} = validatedMessage;
 
+        // Debug info: Extract message ids referenced by this message
+        const messageReferenceDebug = messageReferenceDebugFor(type, body);
+
         // Persist nonce
         const guard = nonces.checkAndRegisterNonce(NonceScope.CSP, messageNonce);
         const nonceHexString = bytesToHex(messageNonce);
@@ -144,6 +148,7 @@ export class ReflectedIncomingMessageTask
 
         this._log.info(
             `Received reflected incoming ${messageTypeDebug} message from ${this._senderDeviceIdString}`,
+            messageReferenceDebug,
         );
 
         // Decode Body
@@ -157,6 +162,7 @@ export class ReflectedIncomingMessageTask
         if (senderContact === undefined) {
             this._log.error(
                 `Discarding ${this._direction} ${messageTypeDebug} message due to missing sender contact`,
+                messageReferenceDebug,
             );
             return;
         }
@@ -174,11 +180,15 @@ export class ReflectedIncomingMessageTask
         } catch (error) {
             this._log.info(
                 `Discarding reflected incoming ${messageTypeDebug} message with invalid content: ${error}`,
+                messageReferenceDebug,
             );
             return;
         }
         if (instructions === 'discard') {
-            this._log.info(`Discarding reflected incoming ${messageTypeDebug} message`);
+            this._log.info(
+                `Discarding reflected incoming ${messageTypeDebug} message`,
+                messageReferenceDebug,
+            );
             return;
         }
 
@@ -190,6 +200,7 @@ export class ReflectedIncomingMessageTask
                 if (conversation === undefined) {
                     this._log.error(
                         `Discarding ${this._direction} ${messageTypeDebug} message because conversation was not found in database`,
+                        messageReferenceDebug,
                     );
                     return;
                 }
@@ -198,12 +209,16 @@ export class ReflectedIncomingMessageTask
                 if (conversation.get().controller.hasMessage(validatedMessage.messageId)) {
                     this._log.warn(
                         `Discarding ${this._direction} ${messageTypeDebug} message ${validatedMessage.messageId} as it was already received`,
+                        messageReferenceDebug,
                     );
                     return;
                 }
 
                 // Add message to conversation
-                this._log.debug(`Saving ${this._direction} ${messageTypeDebug} message`);
+                this._log.debug(
+                    `Saving ${this._direction} ${messageTypeDebug} message`,
+                    messageReferenceDebug,
+                );
                 const messageStore = conversation.get().controller.addMessage.fromSync({
                     ...instructions.initFragment,
                     direction: MessageDirection.INBOUND,

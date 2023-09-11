@@ -46,7 +46,7 @@ abstract class ReflectMessageUpdateTaskBase {
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<Date> {
         const messageUpdate = this._getEnvelope();
         this._log.info(
-            `Reflecting message update for message(s) ${this._uniqueMessageIds
+            `Reflecting message update for referenced message(s): ${this._uniqueMessageIds
                 .map((msg) => u64ToHexLe(msg.messageId))
                 .join(',')}`,
         );

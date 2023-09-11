@@ -2,7 +2,7 @@
  * Helpers for processing incoming messages.
  */
 
-import {ReceiverType} from '~/common/enum';
+import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
 import {type Conversation, type Repositories} from '~/common/model';
 import {
     type InboundAudioMessage,
@@ -19,9 +19,13 @@ import {
     type OutboundVideoMessage,
 } from '~/common/model/types/message/video';
 import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type ConversationId} from '~/common/network/types';
+import {type CspE2eType} from '~/common/network/protocol';
+import * as structbuf from '~/common/network/structbuf';
+import {type DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
+import {type ConversationId, type MessageId} from '~/common/network/types';
 import {type Mutable} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
+import {u64ToHexLe} from '~/common/utils/number';
 
 // Message init fragments. Message ID and sender are excluded, since those will be extracted from
 // the message header (for incoming messages) or are already known or are generated when sending
@@ -99,4 +103,53 @@ export function getConversationById(
         default:
             return unreachable(conversationId);
     }
+}
+
+/**
+ * Returns an array of {@link MessageId}s referenced by the given message, or `undefined`.
+ */
+function getReferencedMessageIdsForMessage(
+    messageType: CspE2eType,
+    decryptedMessageBody: Uint8Array,
+): MessageId[] | undefined {
+    try {
+        switch (messageType) {
+            case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
+                const validatedMessage = structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
+                    structbuf.csp.e2e.DeliveryReceipt.decode(decryptedMessageBody),
+                );
+                return validatedMessage.messageIds;
+            }
+            default:
+                return undefined;
+        }
+    } catch (error) {
+        return undefined;
+    }
+}
+
+/**
+ * Returns a debug message containing the {@link MessageId}s the given message references, if any.
+ *
+ * As an example, a message of type `DELIVERY_RECEIPT` will return the `MessageId`s of the messages
+ * which the receipt is referring to.
+ */
+export function messageReferenceDebugFor(
+    messageType: CspE2eType,
+    decryptedMessageBody: Uint8Array,
+): string {
+    const referencedMessageIds = getReferencedMessageIdsForMessage(
+        messageType,
+        decryptedMessageBody,
+    );
+
+    if (referencedMessageIds === undefined) {
+        return '';
+    }
+
+    if (referencedMessageIds.length === 0) {
+        return `for unknown message reference`;
+    }
+
+    return `for referenced message(s): ${referencedMessageIds.map(u64ToHexLe).join(', ')}`;
 }

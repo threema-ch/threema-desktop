@@ -31,6 +31,7 @@ import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/r
 import {
     type AnyOutboundMessageInitFragment,
     getConversationById,
+    messageReferenceDebugFor,
     type OutboundAudioMessageInitFragment,
     type OutboundFileMessageInitFragment,
     type OutboundImageMessageInitFragment,
@@ -136,8 +137,12 @@ export class ReflectedOutgoingMessageTask
             nonces: messageNonces,
         } = validatedMessage;
 
+        // Debug info: Extract message ids referenced by this message
+        const messageReferenceDebug = messageReferenceDebugFor(type, body);
+
         this._log.info(
             `Received reflected outgoing ${messageTypeDebug} message from ${this._senderDeviceIdString}`,
+            messageReferenceDebug,
         );
 
         // Persist nonces
@@ -178,6 +183,7 @@ export class ReflectedOutgoingMessageTask
         } catch (error) {
             this._log.info(
                 `Discarding reflected outgoing ${messageTypeDebug} message with invalid content: ${error}`,
+                messageReferenceDebug,
             );
             return;
         }
@@ -200,6 +206,7 @@ export class ReflectedOutgoingMessageTask
                 ) {
                     this._log.error(
                         `Discarding ${this._direction} ${messageTypeDebug}, conversation type mismatch`,
+                        messageReferenceDebug,
                     );
                     return;
                 }
@@ -214,6 +221,7 @@ export class ReflectedOutgoingMessageTask
                     ) {
                         this._log.error(
                             `Discarding ${this._direction} ${messageTypeDebug}, group identity mismatch`,
+                            messageReferenceDebug,
                         );
                         return;
                     }
@@ -224,6 +232,7 @@ export class ReflectedOutgoingMessageTask
                 if (conversation === undefined) {
                     this._log.error(
                         `Discarding ${this._direction} ${messageTypeDebug} message because conversation was not found in database`,
+                        messageReferenceDebug,
                     );
                     return;
                 }
@@ -234,12 +243,16 @@ export class ReflectedOutgoingMessageTask
                         `Discarding ${this._direction} ${messageTypeDebug} message ${u64ToHexLe(
                             validatedMessage.messageId,
                         )} as it was already received`,
+                        messageReferenceDebug,
                     );
                     return;
                 }
 
                 // Add message to conversation
-                this._log.debug(`Saving ${this._direction} ${messageTypeDebug} message`);
+                this._log.debug(
+                    `Saving ${this._direction} ${messageTypeDebug} message`,
+                    messageReferenceDebug,
+                );
                 const messageStore = conversation.get().controller.addMessage.fromSync({
                     ...instructions.initFragment,
                     direction: MessageDirection.OUTBOUND,
