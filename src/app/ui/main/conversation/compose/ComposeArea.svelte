@@ -347,7 +347,12 @@
 <style lang="scss">
   @use 'component' as *;
 
+  $-vars: (compose-area-max-height);
+  $-temp-vars: format-each($-vars, $prefix: --c-t-);
+
   .container {
+    @include def-var($-temp-vars, --c-t-compose-area-max-height, min(50vh, rem(600px)));
+
     position: relative;
     display: flex;
     align-items: center;
@@ -363,7 +368,7 @@
   .spacer {
     position: relative;
     width: 100%;
-    max-height: rem(100px);
+    max-height: var($-temp-vars, --c-t-compose-area-max-height);
     box-sizing: content-box;
   }
 
@@ -376,7 +381,7 @@
 
     outline: 0 solid transparent;
     cursor: text;
-    max-height: rem(100px);
+    max-height: var($-temp-vars, --c-t-compose-area-max-height);
     overflow-y: scroll;
     display: grid;
     align-items: end;
