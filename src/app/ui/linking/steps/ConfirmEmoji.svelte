@@ -3,15 +3,9 @@
   import {type LinkingWizardStateConfirmEmoji} from '~/app/ui/linking';
   import LinkingEmojiLoader from '~/app/ui/linking/LinkingEmojiLoader.svelte';
   import Step from '~/app/ui/linking/Step.svelte';
+  import {unwrap} from '~/common/utils/assert';
 
   export let linkingWizardState: LinkingWizardStateConfirmEmoji;
-
-  // Get emoji indices based on Rendezvous Path Hash (RPH)
-  const emoji = [
-    linkingWizardState.rph[0] % 128,
-    linkingWizardState.rph[1] % 128,
-    linkingWizardState.rph[2] % 128,
-  ] as const;
 </script>
 
 <template>
@@ -27,9 +21,9 @@
 
     <div class="body">
       <div class="emojis">
-        <span class="emoji"><LinkingEmojiLoader index={emoji[0]} /></span>
-        <span class="emoji"><LinkingEmojiLoader index={emoji[1]} /></span>
-        <span class="emoji"><LinkingEmojiLoader index={emoji[2]} /></span>
+        <span class="emoji"><LinkingEmojiLoader byte={unwrap(linkingWizardState.rph[0])} /></span>
+        <span class="emoji"><LinkingEmojiLoader byte={unwrap(linkingWizardState.rph[1])} /></span>
+        <span class="emoji"><LinkingEmojiLoader byte={unwrap(linkingWizardState.rph[2])} /></span>
       </div>
     </div>
 

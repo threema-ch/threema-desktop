@@ -1,37 +1,35 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
-
   import {i18n} from '~/app/ui/i18n';
   import {EMOJI_LIST} from '~/app/ui/linking/emoji-list';
-  import {type u53} from '~/common/types';
+  import {type u8, type u53} from '~/common/types';
   import {joinConstArray} from '~/common/utils/array';
   import {literalToLowercase} from '~/common/utils/string';
 
-  export let index: u53;
+  /**
+   * A single byte that should be mapped to an emoji.
+   */
+  export let byte: u8;
 
-  const emojiNames = EMOJI_LIST.map((emoji) => joinConstArray(emoji, '_'));
-  const emojiLabels = EMOJI_LIST.map(
-    (emoji) => `rendezvous-emoji.label--${literalToLowercase(joinConstArray(emoji, '-'))}` as const,
+  // Note: The source emoji list should be uniformly distributed over 256 indices so that no bias
+  // occurs.
+  const emojis = EMOJI_LIST.map(
+    (codepoints) =>
+      ({
+        codepoint: joinConstArray(codepoints, '_'),
+        label: `rendezvous-emoji.label--${literalToLowercase(joinConstArray(codepoints, '-'))}`,
+      }) as const,
   );
 
-  let url: `./res/linking-emoji/emoji_${(typeof emojiNames)[u53]}.svg` | undefined;
+  let url: `./res/linking-emoji/emoji_${(typeof emojis)[u53]['codepoint']}.svg` | undefined;
   let description: string | undefined;
 
-  function updateUrl(i: u53): void {
-    const emojiName = emojiNames.at(i);
-
-    if (emojiName !== undefined) {
-      url = `./res/linking-emoji/emoji_${emojiName}.svg`;
-      // Note: If emojiName was found, we simply assume that the label is defined as well.
-      description = $i18n.t(emojiLabels[i]);
+  $: {
+    const emoji = emojis[byte % EMOJI_LIST.length];
+    if (emoji !== undefined) {
+      url = `./res/linking-emoji/emoji_${emoji.codepoint}.svg`;
+      description = $i18n.t(emoji.label);
     }
   }
-
-  onMount(() => {
-    updateUrl(index);
-  });
-
-  $: updateUrl(index);
 </script>
 
 <template>
