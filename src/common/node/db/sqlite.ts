@@ -99,6 +99,14 @@ type UpdateSetsForDbMessage<
     : never;
 
 /**
+ * All update sets that include thumbnail data.
+ */
+type UpdateSetWithThumbnail =
+    | UpdateSetsForDbMessage<DbFileMessage>
+    | UpdateSetsForDbMessage<DbImageMessage>
+    | UpdateSetsForDbMessage<DbVideoMessage>;
+
+/**
  * Database backend backed by SQLite (with SQLCipher), using the BetterSqlCipher driver.
  */
 export class SqliteDatabaseBackend implements DatabaseBackend {
@@ -1267,21 +1275,24 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getFileDataSelectColumns(
         tFileDataJoinable: OuterJoinSourceOf<typeof tFileData, 'fileData'>,
+    ) {
+        return {
+            fileId: tFileDataJoinable.fileId,
+            encryptionKey: tFileDataJoinable.encryptionKey,
+            unencryptedByteCount: tFileDataJoinable.unencryptedByteCount,
+            storageFormatVersion: tFileDataJoinable.storageFormatVersion,
+        } as const;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    private _getThumbnailFileDataSelectColumns(
         tThumbnailFileDataJoinable: OuterJoinSourceOf<typeof tFileData, 'thumbnailFileData'>,
     ) {
         return {
-            fileData: {
-                fileId: tFileDataJoinable.fileId,
-                encryptionKey: tFileDataJoinable.encryptionKey,
-                unencryptedByteCount: tFileDataJoinable.unencryptedByteCount,
-                storageFormatVersion: tFileDataJoinable.storageFormatVersion,
-            },
-            thumbnailFileData: {
-                fileId: tThumbnailFileDataJoinable.fileId,
-                encryptionKey: tThumbnailFileDataJoinable.encryptionKey,
-                unencryptedByteCount: tThumbnailFileDataJoinable.unencryptedByteCount,
-                storageFormatVersion: tThumbnailFileDataJoinable.storageFormatVersion,
-            },
+            fileId: tThumbnailFileDataJoinable.fileId,
+            encryptionKey: tThumbnailFileDataJoinable.encryptionKey,
+            unencryptedByteCount: tThumbnailFileDataJoinable.unencryptedByteCount,
+            storageFormatVersion: tThumbnailFileDataJoinable.storageFormatVersion,
         } as const;
     }
 
@@ -1342,8 +1353,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         // Select data
                         .select({
                             // File data columns
-                            ...this._getFileDataSelectColumns(
-                                tFileDataJoinable,
+                            fileData: this._getFileDataSelectColumns(tFileDataJoinable),
+                            thumbnailFileData: this._getThumbnailFileDataSelectColumns(
                                 tThumbnailFileDataJoinable,
                             ),
                             // Base file message fields
@@ -1390,8 +1401,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         // Select data
                         .select({
                             // File data columns
-                            ...this._getFileDataSelectColumns(
-                                tFileDataJoinable,
+                            fileData: this._getFileDataSelectColumns(tFileDataJoinable),
+                            thumbnailFileData: this._getThumbnailFileDataSelectColumns(
                                 tThumbnailFileDataJoinable,
                             ),
                             // Base file message fields
@@ -1446,8 +1457,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         // Select data
                         .select({
                             // File data columns
-                            ...this._getFileDataSelectColumns(
-                                tFileDataJoinable,
+                            fileData: this._getFileDataSelectColumns(tFileDataJoinable),
+                            thumbnailFileData: this._getThumbnailFileDataSelectColumns(
                                 tThumbnailFileDataJoinable,
                             ),
                             // Base file message fields
@@ -1482,8 +1493,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             }
             case MessageType.AUDIO: {
                 const tFileDataJoinable = tFileData.forUseInLeftJoinAs('fileData');
-                const tThumbnailFileDataJoinable =
-                    tFileData.forUseInLeftJoinAs('thumbnailFileData');
                 const audio = sync(
                     this._db
                         // Main table
@@ -1491,29 +1500,15 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         // Join for fileData
                         .leftJoin(tFileDataJoinable)
                         .on(tMessageAudioData.fileDataUid.equals(tFileDataJoinable.uid))
-                        // Join for thumbnailFileData
-                        .leftJoin(tThumbnailFileDataJoinable)
-                        .on(
-                            tMessageAudioData.thumbnailFileDataUid.equals(
-                                tThumbnailFileDataJoinable.uid,
-                            ),
-                        )
                         // Select data
                         .select({
                             // File data columns
-                            ...this._getFileDataSelectColumns(
-                                tFileDataJoinable,
-                                tThumbnailFileDataJoinable,
-                            ),
+                            fileData: this._getFileDataSelectColumns(tFileDataJoinable),
                             // Base file message fields
                             blobId: tMessageAudioData.blobId,
-                            thumbnailBlobId: tMessageAudioData.thumbnailBlobId,
                             blobDownloadState: tMessageAudioData.blobDownloadState,
-                            thumbnailBlobDownloadState:
-                                tMessageAudioData.thumbnailBlobDownloadState,
                             encryptionKey: tMessageAudioData.encryptionKey,
                             mediaType: tMessageAudioData.mediaType,
-                            thumbnailMediaType: tMessageAudioData.thumbnailMediaType,
                             fileName: tMessageAudioData.fileName,
                             fileSize: tMessageAudioData.fileSize,
                             caption: tMessageAudioData.caption,
@@ -1803,7 +1798,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             message.thumbnailFileData !== undefined &&
             previousFileDataUids?.thumbnailFileDataUid === undefined
         ) {
-            update.thumbnailFileDataUid = this._insertFileData(message.thumbnailFileData);
+            (update as UpdateSetWithThumbnail).thumbnailFileDataUid = this._insertFileData(
+                message.thumbnailFileData,
+            );
         }
 
         // If necessary, remove existing file data rows
@@ -1824,7 +1821,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         ) {
             // Thumbnail file data was removed
             removedFileDataUids.push(previousFileDataUids.thumbnailFileDataUid);
-            update.thumbnailFileDataUid = undefined;
+            (update as UpdateSetWithThumbnail).thumbnailFileDataUid = undefined;
         }
 
         // If necessary, update existing file data rows
@@ -1847,7 +1844,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 previousFileDataUids.thumbnailFileDataUid,
             );
             if (updateInfo !== undefined) {
-                update.thumbnailFileDataUid = updateInfo.newUid;
+                (update as UpdateSetWithThumbnail).thumbnailFileDataUid = updateInfo.newUid;
                 removedFileDataUids.push(updateInfo.previousUid);
             }
         }

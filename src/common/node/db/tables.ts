@@ -981,30 +981,12 @@ export const tMessageAudioData = new (class TMessageAudioData extends Table<
      */
     public blobId = this.optionalColumn<BlobId>('blobId', 'custom', CUSTOM_TYPES.BLOB_ID);
     /**
-     * Original thumbnail Blob ID (used for downloading).
-     */
-    public thumbnailBlobId = this.optionalColumn<BlobId>(
-        'thumbnailBlobId',
-        'custom',
-        CUSTOM_TYPES.BLOB_ID,
-    );
-    /**
      * The download state for the file blob.
      *
      * Right now, this can only be 'failed' or undefined.
      */
     public blobDownloadState = this.optionalColumn<BlobDownloadState>(
         'blobDownloadState',
-        'custom',
-        CUSTOM_TYPES.BLOB_DOWNLOAD_STATE,
-    );
-    /**
-     * The download state for the thumbnail blob.
-     *
-     * Right now, this can only be 'failed' or undefined.
-     */
-    public thumbnailBlobDownloadState = this.optionalColumn<BlobDownloadState>(
-        'thumbnailBlobDownloadState',
         'custom',
         CUSTOM_TYPES.BLOB_DOWNLOAD_STATE,
     );
@@ -1025,21 +1007,9 @@ export const tMessageAudioData = new (class TMessageAudioData extends Table<
         CUSTOM_TYPES.FILE_DATA_UID,
     );
     /**
-     * Thumbnail file data UID.
-     */
-    public thumbnailFileDataUid = this.optionalColumn<DbFileDataUid>(
-        'thumbnailFileDataUid',
-        'custom',
-        CUSTOM_TYPES.FILE_DATA_UID,
-    );
-    /**
      * File media type (formerly known as MIME type).
      */
     public mediaType = this.column('mediaType', 'string');
-    /**
-     * Thumbnail media type (formerly known as MIME type).
-     */
-    public thumbnailMediaType = this.optionalColumn('thumbnailMediaType', 'string');
     /**
      * The original file name.
      */
