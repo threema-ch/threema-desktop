@@ -5,7 +5,6 @@ import {ensurePublicKey} from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
 import {deriveDirectoryChallengeResponseKey} from '~/common/crypto/csp-keys';
 import {ActivityState} from '~/common/enum';
-import {type Logger} from '~/common/logging';
 import {
     type DirectoryBackend,
     DirectoryError,
@@ -69,8 +68,6 @@ const ERROR_RESPONSE_SCHEMA = v
     })
     .rest(v.unknown());
 
-type ErrorResponse = Readonly<v.Infer<typeof ERROR_RESPONSE_SCHEMA>>;
-
 /**
  * Directory backend implementation based on the [Fetch API].
  *
@@ -80,7 +77,6 @@ export class FetchDirectoryBackend implements DirectoryBackend {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     private readonly _base: string;
     private readonly _requestInit: RequestInit;
-    private readonly _log: Logger;
 
     public constructor(services: Pick<ServicesForBackend, 'config' | 'logging'>) {
         this._base = services.config.DIRECTORY_SERVER_URL;
@@ -90,11 +86,9 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             referrerPolicy: 'no-referrer',
             headers: {
                 'accept': 'application/json',
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 'user-agent': services.config.USER_AGENT,
             },
         };
-        this._log = services.logging.logger('network.protocol.fetch-directory');
     }
 
     /** @inheritdoc */
@@ -225,13 +219,12 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         }
 
         // Validate response JSON
-        let responsePayload: Record<string, unknown>;
+        let body: unknown;
         try {
-            const body = await response.json();
+            body = await response.json();
             if (body === null || body === undefined) {
-                throw new Error('Response body is null or undefined');
+                throw new Error(`Response body is ${typeof body}`);
             }
-            responsePayload = body;
         } catch (error) {
             throw new DirectoryError(
                 'invalid-response',
@@ -240,7 +233,7 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             );
         }
         try {
-            return schema.parse(responsePayload);
+            return schema.parse(body);
         } catch (error) {
             throw new DirectoryError(
                 'invalid-response',
@@ -299,18 +292,12 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                     `${description} authentication fetch request returned status ${response.status}`,
                 );
             }
-            const body = await response.json();
-            if (body === null || body === undefined) {
-                throw new DirectoryError(
-                    'invalid-response',
-                    `${description} authentication fetch request response body is null or undefined`,
-                );
-            }
+            const body = (await response.json()) as unknown;
             try {
                 challengePayload = CHALLENGE_PAYLOAD.parse(body);
             } catch (challengeParseError) {
                 // Not a challenge payload! Check if it's an error payload.
-                let errorPayload: ErrorResponse;
+                let errorPayload;
                 try {
                     errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
                 } catch {
@@ -320,6 +307,8 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                         {from: challengeParseError},
                     );
                 }
+
+                // Handle error
                 const message = `${description} authentication fetch failed: ${errorPayload.error}`;
                 switch (errorPayload.errorType) {
                     case 'invalid-identity':
@@ -365,13 +354,9 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         }
 
         // Get response JSON
-        let responsePayload: Record<string, unknown>;
+        let body: unknown;
         try {
-            const body = await response.json();
-            if (body === null || body === undefined) {
-                throw new Error('Response body is null or undefined');
-            }
-            responsePayload = body;
+            body = await response.json();
         } catch (error) {
             throw new DirectoryError(
                 'invalid-response',
@@ -380,20 +365,26 @@ export class FetchDirectoryBackend implements DirectoryBackend {
             );
         }
 
-        // Handle errors
-        if (responsePayload.success !== true) {
-            const message = `${description} fetch failed: ${responsePayload.error}`;
-
-            // Try to parse error response with schema
-            let errorResponse: ErrorResponse | undefined;
+        // Validate response JSON using schema
+        try {
+            return schema.parse(body);
+        } catch (error) {
+            // Fallback to parsing it as an error response with schema
+            let errorPayload;
             try {
-                errorResponse = ERROR_RESPONSE_SCHEMA.parse(responsePayload);
-            } catch (error) {
-                // Log and ignore error, continue with generic handling
-                this._log.warn(`Invalid ${description} error response: ${error}`);
+                errorPayload = ERROR_RESPONSE_SCHEMA.parse(body);
+            } catch (fallbackError) {
+                // Not an error payload either
+                throw new DirectoryError(
+                    'invalid-response',
+                    `${description} fetch request response body validation against schema failed`,
+                    {from: error},
+                );
             }
-            const errorType = errorResponse?.errorType;
-            switch (errorType) {
+
+            // Handle error
+            const message = `${description} fetch failed: ${errorPayload.error}`;
+            switch (errorPayload.errorType) {
                 case 'identity-transfer-prohibited':
                     throw new DirectoryError('identity-transfer-prohibited', message);
                 case 'invalid-token':
@@ -403,19 +394,8 @@ export class FetchDirectoryBackend implements DirectoryBackend {
                 case undefined:
                     throw new DirectoryError('invalid-response', message);
                 default:
-                    unreachable(errorType);
+                    return unreachable(errorPayload.errorType);
             }
-        }
-
-        // Validate response JSON using schema
-        try {
-            return schema.parse(responsePayload);
-        } catch (error) {
-            throw new DirectoryError(
-                'invalid-response',
-                `${description} fetch request response body validation against schema failed`,
-                {from: error},
-            );
         }
     }
 
