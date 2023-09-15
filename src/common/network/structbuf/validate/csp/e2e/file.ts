@@ -4,7 +4,7 @@ import {type BlobId, ensureBlobId} from '~/common/network/protocol/blob';
 import * as csp from '~/common/network/structbuf/csp';
 import {validator} from '~/common/network/structbuf/validate/utils';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
-import {ensureU53, type f64, type u53} from '~/common/types';
+import {ensureU53, type u53} from '~/common/types';
 import {hexToBytes} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {instanceOf} from '~/common/utils/valita-helpers';
@@ -23,10 +23,7 @@ export const RAW_IMAGE_METADATA_SCHEMA = v
 export const RAW_AUDIO_METADATA_SCHEMA = v
     .object({
         // The duration as float in seconds
-        d: v
-            .number()
-            .map((val) => val as f64)
-            .optional(),
+        d: v.number().optional(),
     })
     .rest(v.unknown());
 
@@ -37,10 +34,7 @@ export const RAW_VIDEO_METADATA_SCHEMA = v
         // The height as an integer in px
         h: v.number().map(ensureU53).optional(),
         // The duration as float in seconds
-        d: v
-            .number()
-            .map((val) => val as f64)
-            .optional(),
+        d: v.number().optional(),
     })
     .rest(v.unknown());
 

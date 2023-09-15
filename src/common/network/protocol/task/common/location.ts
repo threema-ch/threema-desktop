@@ -1,5 +1,7 @@
 import {ParseError} from '~/common/error';
 import {type f64} from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
+import {split} from '~/common/utils/string';
 
 export interface Coordinates {
     readonly lat: f64;
@@ -13,6 +15,28 @@ export interface Location {
     readonly address?: string;
 }
 
+function parseCoordinates(line: string): Location['coordinates'] {
+    let parts, rest;
+    try {
+        ({items: parts, rest} = split(line.trim(), ',', 2));
+    } catch {
+        throw new ParseError('Could not parse location: Did not find two coordinates');
+    }
+    const lat = parseFloat(parts[0]);
+    const lon = parseFloat(parts[1]);
+    if (isNaN(lat) || isNaN(lon)) {
+        throw new ParseError('Could not parse location: Coordinates are not valid numbers');
+    }
+    let accuracy;
+    if (rest.length > 0) {
+        const parsed = parseFloat(unwrap(rest[0]));
+        if (!isNaN(parsed)) {
+            accuracy = parsed;
+        }
+    }
+    return {lat, lon, accuracy};
+}
+
 /**
  * Parse a location string.
  *
@@ -24,39 +48,20 @@ export function parseLocation(location: string): Location {
     const lines = location.trim().split('\n');
 
     // Parse coordinates
-    const coordParts = lines[0].trim().split(',');
-    if (coordParts.length < 2) {
-        throw new ParseError('Could not parse location: Did not find two coordinates');
-    }
-    const lat = parseFloat(coordParts[0]);
-    const lon = parseFloat(coordParts[1]);
-    if (isNaN(lat) || isNaN(lon)) {
-        throw new ParseError('Could not parse location: Coordinates are not valid numbers');
-    }
-    let accuracy;
-    if (coordParts.length > 2) {
-        const parsed = parseFloat(coordParts[2]);
-        if (!isNaN(parsed)) {
-            accuracy = parsed;
-        }
-    }
+    const coordinates = parseCoordinates(unwrap(lines[0]));
 
     // Parse name and address
     let name;
     let address;
     if (lines.length === 2) {
-        address = lines[1].trim();
+        address = unwrap(lines[1]).trim();
     } else if (lines.length >= 3) {
-        name = lines[1].trim();
-        address = lines[2].trim();
+        name = unwrap(lines[1]).trim();
+        address = unwrap(lines[2]).trim();
     }
 
     return {
-        coordinates: {
-            lat,
-            lon,
-            accuracy,
-        },
+        coordinates,
         name,
         address,
     };

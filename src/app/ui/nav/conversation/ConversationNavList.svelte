@@ -43,7 +43,7 @@
 
     // Activate scroll anchor if it is visible in the viewport and vice versa
     const observer = new IntersectionObserver(([entry]) => {
-      anchorActive = entry.isIntersecting;
+      anchorActive = unwrap(entry).isIntersecting;
     });
     observer.observe(node);
 
@@ -126,13 +126,7 @@
           // Sort by lastUpdate
           const aTime = unwrap(aViewModel.lastUpdate).getTime();
           const bTime = unwrap(bViewModel.lastUpdate).getTime();
-          if (aTime > bTime) {
-            return -1;
-          }
-          if (aTime < bTime) {
-            return 1;
-          }
-          return 0;
+          return bTime - aTime;
         });
 
       return sortedConversations;

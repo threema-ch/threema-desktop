@@ -70,8 +70,8 @@ export function validate<TIn, TOut>(
     return schema.chain((inValue) => {
         try {
             return v.ok(ensureFunction(inValue));
-        } catch (e) {
-            return v.err(ensureError(e));
+        } catch (error) {
+            return v.err(ensureError(error));
         }
     });
 }

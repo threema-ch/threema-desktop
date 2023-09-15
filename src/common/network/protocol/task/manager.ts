@@ -28,7 +28,7 @@ import {
     type ReflectSequenceNumberValue,
 } from '~/common/network/types';
 import {type u32, type u53, type WeakOpaque} from '~/common/types';
-import {assert, ensureError, unreachable} from '~/common/utils/assert';
+import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 import {
@@ -138,8 +138,8 @@ const REFLECT_HEADER_LENGTH = 8;
 type BacklogDecoderQueue = UnboundedQueue<DecoderQueueItem>;
 
 interface DecoderQueues {
-    backlog: BacklogDecoderQueue;
     readonly queue: QueueConsumer<DecoderQueueItem>;
+    backlog: BacklogDecoderQueue;
 }
 
 interface EncoderQueues {
@@ -228,7 +228,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                     }
 
                     // Other cases: Instructions without data
-                    const instruction = inner as MessageFilterInstruction;
+                    const instruction = inner satisfies MessageFilterInstruction;
                     switch (instruction) {
                         case MessageFilterInstruction.ACCEPT:
                             // Note: Safe as the runtime check above for inner being
@@ -275,7 +275,9 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
 
         // Assign each envelope a reflect id (sequence number)
         const data = payloads.map(
-            (payload): [id: ReflectSequenceNumberValue, envelope: protobuf.d2d.IEnvelope] => [
+            (
+                payload,
+            ): readonly [id: ReflectSequenceNumberValue, envelope: protobuf.d2d.IEnvelope] => [
                 this._state.rsn.next(),
                 payload,
             ],
@@ -324,7 +326,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
         // batched and returns the determined dates for each message
         const ack = async (): Promise<{readonly [P in keyof T]: Date}> => {
             const dates = [];
-            const [[firstId]] = data;
+            const [firstId] = unwrap(data[0]);
             for (const [id] of data) {
                 dates.push(
                     await this.read(({type, payload}) => {
@@ -338,12 +340,11 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                         if (payload.reflectId !== id) {
                             if (id === firstId) {
                                 return MessageFilterInstruction.BYPASS_OR_BACKLOG;
-                            } else {
-                                throw new ProtocolError(
-                                    'd2m',
-                                    `Expected reflect id ${id}, got id ${payload.reflectId}`,
-                                );
                             }
+                            throw new ProtocolError(
+                                'd2m',
+                                `Expected reflect id ${id}, got id ${payload.reflectId}`,
+                            );
                         }
                         return [
                             MessageFilterInstruction.ACCEPT,
@@ -535,12 +536,14 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
             nonceGuard = encodedMessage.nonceGuard;
             transactionScope = protobuf.d2d.TransactionScope.decode(encodedMessage.plainData);
             nonceGuard.commit();
-        } catch (e) {
+        } catch (error) {
             if (nonceGuard?.processed.value === false) {
                 nonceGuard.discard();
             }
             this._log.error(
-                `Transaction scope could not be decrypted with error '${ensureError(e).message}'.`,
+                `Transaction scope could not be decrypted with error '${
+                    ensureError(error).message
+                }'.`,
             );
             return 'unknown (decryption error)';
         }
@@ -704,11 +707,10 @@ export class ConnectedTaskManager {
                 if (task.persist) {
                     this._log.debug(`Rescheduling persistent task ${task.constructor.name}`);
                     return true;
-                } else {
-                    this._log.debug(`Aborting non-persistent task ${task.constructor.name}`);
-                    done.reject(new TaskError('aborted', 'Aborting task due to reconnection'));
-                    return false;
                 }
+                this._log.debug(`Aborting non-persistent task ${task.constructor.name}`);
+                done.reject(new TaskError('aborted', 'Aborting task due to reconnection'));
+                return false;
             }),
         );
         const decoder = {
@@ -847,24 +849,23 @@ export class ConnectedTaskManager {
                 value: {task, done},
             } = event as QueueValue<TaskQueueItem<unknown>>;
             return [task, done, consume];
-        } else {
-            // An inbound message has been backlogged or queued. Process the message immediately or
-            // create a task to process the inbound message.
-            assert(this._tasks.empty, 'Expected no tasks to be queued');
-            const {consume} = event as QueueValue<DecoderQueueItem>;
-            const task = consume((message) => {
-                if (message.type === D2mPayloadType.PROXY) {
-                    return this._handleIncomingCspMessage(services, message.payload);
-                } else {
-                    return this._handleIncomingD2mMessage(services, message, controller);
-                }
-            });
-
-            // Note: Tasks created by inbound messages do not need to land in the task queue since
-            //       they will be recreated if the inbound message has not been acknowledged.
-            //       Therefore, we don't need to bother scheduling them.
-            return [task];
         }
+
+        // An inbound message has been backlogged or queued. Process the message immediately or
+        // create a task to process the inbound message.
+        assert(this._tasks.empty, 'Expected no tasks to be queued');
+        const {consume} = event as QueueValue<DecoderQueueItem>;
+        const task = consume((message) => {
+            if (message.type === D2mPayloadType.PROXY) {
+                return this._handleIncomingCspMessage(services, message.payload);
+            }
+            return this._handleIncomingD2mMessage(services, message, controller);
+        });
+
+        // Note: Tasks created by inbound messages do not need to land in the task queue since
+        //       they will be recreated if the inbound message has not been acknowledged.
+        //       Therefore, we don't need to bother scheduling them.
+        return [task];
     }
 
     private _handleIncomingD2mMessage(

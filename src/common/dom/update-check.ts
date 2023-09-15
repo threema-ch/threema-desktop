@@ -48,7 +48,6 @@ export async function checkForUpdate(
     let response: Response;
     try {
         const headers = new Headers({
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             'user-agent': config.USER_AGENT,
             'accept': 'application/json',
         });
@@ -73,7 +72,7 @@ export async function checkForUpdate(
     // Parse response
     let updateInfo: UpdateInfo;
     try {
-        const data = await response.json();
+        const data = (await response.json()) as unknown;
         updateInfo = UPDATE_INFO_SCHEMA.parse(data).latestVersion;
     } catch (error) {
         log.error(`Could not parse update info JSON: ${error}`);
@@ -83,7 +82,6 @@ export async function checkForUpdate(
     // Return update info only if an update is available
     if (updateInfo.versionCode > import.meta.env.BUILD_VERSION_CODE) {
         return updateInfo;
-    } else {
-        return undefined;
     }
+    return undefined;
 }

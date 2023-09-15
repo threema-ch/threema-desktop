@@ -87,7 +87,7 @@ export function getBrowserInfo(userAgent: string): BrowserInfo {
     let match = uagent.match(new RegExp(`(?:${pattern})(?: |/)(?<version>[0-9]+)`, 'u'));
     let versionString;
     if (match?.groups !== undefined) {
-        versionString = match.groups.version;
+        versionString = match.groups.version ?? '';
     } else {
         match = uagent.match(/rv:(?<version>[0-9]+)/u);
         versionString = match?.groups?.version ?? '';

@@ -28,7 +28,6 @@
     if (!hasAnyError) {
       showErrors = false;
       linkingWizardState.userPassword.resolve(password);
-      return;
     }
   }
 

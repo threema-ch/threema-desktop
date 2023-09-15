@@ -123,12 +123,12 @@ export function run(): void {
                 CspE2eConversationType.TEXT
             > {
                 // eslint-disable-next-line @typescript-eslint/require-await
-                public async run(): Promise<Date | undefined> {
+                public override async run(): Promise<Date | undefined> {
                     runCalledPromise.resolve();
                     return new Date();
                 }
 
-                protected _constructorCall(): void {
+                protected override _constructorCall(): void {
                     cspTaskConstructorPromise.resolve();
                 }
             } as IOutgoingCspMessageTaskConstructor;
@@ -318,7 +318,7 @@ export function run(): void {
                     CspE2eConversationType.TEXT
                 > {
                     // eslint-disable-next-line @typescript-eslint/require-await
-                    public async run(): Promise<Date | undefined> {
+                    public override async run(): Promise<Date | undefined> {
                         return reflectionDate;
                     }
                 } as IOutgoingCspMessageTaskConstructor;
@@ -346,7 +346,7 @@ export function run(): void {
                     CspE2eConversationType.TEXT
                 > {
                     // eslint-disable-next-line @typescript-eslint/require-await
-                    public async run(): Promise<Date | undefined> {
+                    public override async run(): Promise<Date | undefined> {
                         return undefined;
                     }
                 } as IOutgoingCspMessageTaskConstructor;

@@ -23,7 +23,7 @@
   export let services: AppServices;
   const {router, backend} = services;
 
-  let searchInput: SearchInput;
+  let searchInput: SearchInput | null | undefined;
   let activeTab: ContactTab = 'private-contacts';
 
   let searchInputPlaceholder: string;
@@ -59,10 +59,8 @@
         unreachable(activeTab);
     }
 
-    if (searchInput !== undefined) {
-      searchInput.focus();
-      searchInput.select();
-    }
+    searchInput?.focus();
+    searchInput?.select();
   }
 
   function navigateBack(): void {
@@ -92,7 +90,7 @@
   }
 
   function handleHotkeyControlF(): void {
-    searchInput.select();
+    searchInput?.select();
   }
 
   onMount(() => {

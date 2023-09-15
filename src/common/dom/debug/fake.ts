@@ -9,7 +9,6 @@ import {
     SCREENSHOT_DATA_JSON_SCHEMA,
     type ScreenshotDataJson,
     type ScreenshotDataJsonContact,
-    type ScreenshotDataJsonGroup,
 } from '~/common/dom/debug/screenshot-data';
 import {TEST_IMAGE, TEST_THUMBNAIL} from '~/common/dom/debug/testdata';
 import {
@@ -42,7 +41,7 @@ import {
     ensureFeatureMask,
     ensureIdentityString,
     ensureMessageId,
-    FeatureMaskFlag,
+    FEATURE_MASK_FLAG,
     type GroupId,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
@@ -145,7 +144,7 @@ export async function generateFakeContactConversation(
         activityState: ActivityState.ACTIVE,
         featureMask: ensureFeatureMask(
             // eslint-disable-next-line no-bitwise
-            FeatureMaskFlag.VOICE_MESSAGE_SUPPORT | FeatureMaskFlag.FILE_MESSAGE_SUPPORT,
+            FEATURE_MASK_FLAG.VOICE_MESSAGE_SUPPORT | FEATURE_MASK_FLAG.FILE_MESSAGE_SUPPORT,
         ),
         syncState: SyncState.INITIAL,
         category: ConversationCategory.DEFAULT,
@@ -153,6 +152,7 @@ export async function generateFakeContactConversation(
     });
 
     // Add message(s)
+    const nowMs = new Date().getTime();
     const messageCount = randomChoice(crypto, [1, 3, 7, 32, 100]);
     let minutesAgo = 240;
     for (let i = 0; i < messageCount; i++) {
@@ -168,14 +168,14 @@ export async function generateFakeContactConversation(
                     id: messageId,
                     direction,
                     sender: contact.ctx,
-                    createdAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
-                    receivedAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                    createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
+                    receivedAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                     type: 'text',
                     text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
                     raw: new Uint8Array(0),
                     lastReaction: generateFakeReaction(
                         crypto,
-                        new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                        new Date(nowMs - minutesAgo-- * 1000 * 60),
                     ),
                 });
                 break;
@@ -186,7 +186,7 @@ export async function generateFakeContactConversation(
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
-                        createdAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                        createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                         type: 'file',
                         fileName: 'fire.jpg',
                         fileSize: TEST_IMAGE.byteLength,
@@ -201,19 +201,19 @@ export async function generateFakeContactConversation(
                         thumbnailFileData,
                         lastReaction: generateFakeReaction(
                             crypto,
-                            new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                            new Date(nowMs - minutesAgo-- * 1000 * 60),
                         ),
                     });
                 } else {
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
-                        createdAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                        createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                         type: 'text',
                         text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
                         lastReaction: generateFakeReaction(
                             crypto,
-                            new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                            new Date(nowMs - minutesAgo-- * 1000 * 60),
                         ),
                     });
                 }
@@ -264,12 +264,12 @@ export async function generateFakeGroupConversation(
     );
 
     // Add message(s)
+    const nowMs = new Date().getTime();
     const messageCount = randomChoice(crypto, [3, 7, 32, 42]);
     let minutesAgo = 240;
-
     for (let i = 0; i < messageCount; i++) {
-        // Set an random group contact
-        const contact = contactObjects[Math.floor(Math.random() * contactObjects.length)];
+        // Set a random group contact
+        const contact = randomChoice(crypto, contactObjects);
 
         const conversation = group.get().controller.conversation().get();
         const messageId = ensureMessageId(randomU64(crypto));
@@ -283,14 +283,14 @@ export async function generateFakeGroupConversation(
                     id: messageId,
                     direction,
                     sender: contact.ctx,
-                    createdAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
-                    receivedAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                    createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
+                    receivedAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                     type: 'text',
                     text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
                     raw: new Uint8Array(0),
                     lastReaction: generateFakeReaction(
                         crypto,
-                        new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                        new Date(nowMs - minutesAgo-- * 1000 * 60),
                     ),
                 });
                 break;
@@ -301,7 +301,7 @@ export async function generateFakeGroupConversation(
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
-                        createdAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                        createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                         type: 'file',
                         fileName: 'fire.jpg',
                         fileSize: TEST_IMAGE.byteLength,
@@ -316,19 +316,19 @@ export async function generateFakeGroupConversation(
                         thumbnailFileData,
                         lastReaction: generateFakeReaction(
                             crypto,
-                            new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                            new Date(nowMs - minutesAgo-- * 1000 * 60),
                         ),
                     });
                 } else {
                     conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
-                        createdAt: new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                        createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                         type: 'text',
                         text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
                         lastReaction: generateFakeReaction(
                             crypto,
-                            new Date(+new Date() - minutesAgo-- * 1000 * 60),
+                            new Date(nowMs - minutesAgo-- * 1000 * 60),
                         ),
                     });
                 }
@@ -342,7 +342,7 @@ export async function generateFakeGroupConversation(
 /**
  * Return the screenshot reference timestamp (today 08:15).
  */
-function getReferenceTimestamp(): Date {
+function getReferenceTimestampMs(): Date {
     const date = new Date();
     date.setHours(8);
     date.setMinutes(15);
@@ -395,7 +395,7 @@ export async function generateScreenshotData(
         const contactModel = model.contacts.add.fromSync({
             identity,
             publicKey: contact.publicKey,
-            createdAt: getReferenceTimestamp(),
+            createdAt: getReferenceTimestampMs(),
             firstName: contact.name.first,
             lastName: contact.name.last,
             nickname: undefined,
@@ -410,7 +410,7 @@ export async function generateScreenshotData(
             activityState: ActivityState.ACTIVE,
             featureMask: ensureFeatureMask(
                 // eslint-disable-next-line no-bitwise
-                FeatureMaskFlag.VOICE_MESSAGE_SUPPORT | FeatureMaskFlag.FILE_MESSAGE_SUPPORT,
+                FEATURE_MASK_FLAG.VOICE_MESSAGE_SUPPORT | FEATURE_MASK_FLAG.FILE_MESSAGE_SUPPORT,
             ),
             syncState: SyncState.INITIAL,
             category: ConversationCategory.DEFAULT,
@@ -457,7 +457,7 @@ export async function generateScreenshotData(
             continue;
         }
         log.info(`Adding group with name ${group.name.default}`);
-        const createdAt = new Date(+getReferenceTimestamp() - group.createdMinutesAgo * 60 * 1000);
+        const createdAt = new Date(getReferenceTimestampMs().getTime() - group.createdMinutesAgo * 60 * 1000);
         const groupModel = model.groups.add.fromSync(
             {
                 groupId: group.id,
@@ -499,7 +499,7 @@ export async function generateScreenshotData(
  */
 async function addConversationMessages(
     receiver: ContactModelStore | GroupModelStore,
-    messages: ScreenshotDataJsonContact['conversation'] | ScreenshotDataJsonGroup['conversation'],
+    messages: ScreenshotDataJsonContact['conversation'],
     {crypto, file, model}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>,
     log: Logger,
 ): Promise<void> {
@@ -508,7 +508,7 @@ async function addConversationMessages(
         let content;
 
         const messageId = message.messageId ?? randomMessageId(crypto);
-        const messageDate = new Date(+getReferenceTimestamp() - message.minutesAgo * 60 * 1000);
+        const messageDate = new Date(getReferenceTimestampMs().getTime() - message.minutesAgo * 60 * 1000);
         const lastReaction =
             message.lastReaction === undefined
                 ? undefined

@@ -11,18 +11,7 @@ import {
     type StoreUnsubscriber,
     WritableStore,
 } from '~/common/utils/store';
-import {
-    ConcentratorStore,
-    type QueryableStores,
-    type States,
-    type StoreValues,
-} from '~/common/utils/store/concentrator-store';
-
-class ExposedStateConcentratorStore<
-    TSourceStores extends QueryableStores,
-> extends ConcentratorStore<TSourceStores> {
-    public declare _state: States<TSourceStores>;
-}
+import {ConcentratorStore, type StoreValues} from '~/common/utils/store/concentrator-store';
 
 type SimpleSourceStores = readonly [
     zero: WritableStore<string>,
@@ -37,7 +26,7 @@ function getSourceStoresValues(sourceStores: SimpleSourceStores): StoreValues<Si
 }
 
 function createSimpleConcentratorStore(): readonly [
-    concentratorStore: ExposedStateConcentratorStore<SimpleSourceStores>,
+    concentratorStore: ConcentratorStore<SimpleSourceStores>,
     sourceStores: SimpleSourceStores,
     sourceStoreValues: StoreValues<SimpleSourceStores>,
 ] {
@@ -46,7 +35,7 @@ function createSimpleConcentratorStore(): readonly [
     const twoo = new WritableStore<{someString: string}>({someString: 'Hello'});
     const sourceStores = [zero, one, twoo] as const;
 
-    const concentratorStore = new ExposedStateConcentratorStore(sourceStores);
+    const concentratorStore = new ConcentratorStore(sourceStores);
     const sourceStoreValues = getSourceStoresValues(sourceStores);
     return [concentratorStore, sourceStores, sourceStoreValues];
 }
@@ -63,6 +52,7 @@ export function run(): void {
             });
             it('should work when store was in disabled state', function () {
                 const [store, , sourceStoreValues] = createSimpleConcentratorStore();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
                 expect(store.get()).to.deep.equal(sourceStoreValues);
             });
@@ -71,15 +61,19 @@ export function run(): void {
                 const unsubscriber = store.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
                 expect(store.get()).to.deep.equal(sourceStoreValues);
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
                 unsubscriber();
             });
             it('should return the store to the disabled state', function () {
                 const [store, , sourceStoreValues] = createSimpleConcentratorStore();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
                 expect(store.get()).to.deep.equal(sourceStoreValues);
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
             });
         });
@@ -89,6 +83,7 @@ export function run(): void {
                 const unsubscriber = store.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(store._state.symbol, 'Store to be enabled after subscriptions').to.equal(
                     LAZY_STORE_ENABLED_STATE,
                 );
@@ -96,6 +91,7 @@ export function run(): void {
             });
             it('should disable the store on last unsubscription', function () {
                 const [store] = createSimpleConcentratorStore();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
 
                 const unsubscribers = [undefined, undefined].map(() =>
@@ -103,17 +99,20 @@ export function run(): void {
                         // No-op
                     }),
                 );
+                // @ts-expect-error: Private property
                 expect(store._state.symbol, 'Store to be enabled after subscriptions').to.equal(
                     LAZY_STORE_ENABLED_STATE,
                 );
 
-                unsubscribers[0]();
+                unsubscribers[0]?.();
                 expect(
+                    // @ts-expect-error: Private property
                     store._state.symbol,
                     'Store to be enabled after first unsubscriptions',
                 ).to.equal(LAZY_STORE_ENABLED_STATE);
-                unsubscribers[1]();
+                unsubscribers[1]?.();
                 expect(
+                    // @ts-expect-error: Private property
                     store._state.symbol,
                     'Store to be disabled after second unsubscriptions',
                 ).to.equal(LAZY_STORE_DISABLED_STATE);
@@ -168,10 +167,12 @@ export function run(): void {
                     },
                 });
 
-                const store = new ExposedStateConcentratorStore([sourceStore] as const);
+                const store = new ConcentratorStore([sourceStore] as const);
 
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
                 expect(store.get()).to.equal('test');
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
             });
             it('should throw when a sourceStore updates values on a disable store', function () {
@@ -189,13 +190,15 @@ export function run(): void {
                     }
                 })();
 
-                const store = new ExposedStateConcentratorStore([faultySourceStore] as const);
+                const store = new ConcentratorStore([faultySourceStore] as const);
                 const concentratorStoreUnsubscriber = store.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
                 expect(sourceStoreSubscriber).to.not.be.undefined;
                 concentratorStoreUnsubscriber();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
 
                 expect(() => {

@@ -226,12 +226,12 @@ interface ImportMetaEnv extends BuildConfig {
 
 interface ImportMeta extends ViteDefaultImportMeta {
     /**
-     * Injects a list of all bundled files.
-     */
-    outputFiles?: readonly string[];
-
-    /**
      * Available environment variables.
      */
     readonly env: ImportMetaEnv;
+
+    /**
+     * Injects a list of all bundled files.
+     */
+    outputFiles?: readonly string[];
 }

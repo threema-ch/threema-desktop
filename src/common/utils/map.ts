@@ -197,7 +197,7 @@ export class AsyncWeakValueMap<TKey, TValue extends object> {
  * Note: Lazily created values will linger until explicitly removed via {@link pop}.
  */
 export class LazyMap<TKey, TValue> {
-    private readonly _map: Map<TKey, TValue> = new Map();
+    private readonly _map = new Map<TKey, TValue>();
 
     public constructor(private readonly _create: () => TValue) {}
 

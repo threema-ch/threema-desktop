@@ -557,14 +557,13 @@ function throwIfProxyReleased(isReleased: boolean): void {
 }
 
 interface EndpointDebugContext {
-    counter: u53;
     readonly tap: (endpoint: Endpoint, log: Logger) => AbortRaiser;
+    counter: u53;
 }
 
 function getEndpointDebugContext(): EndpointDebugContext {
     const endpoints = new Map<Endpoint, AbortRaiser>();
     return {
-        counter: 0,
         tap: (endpoint: Endpoint, log: Logger): AbortRaiser => {
             // Detach if we're already listening this endpoint
             endpoints.get(endpoint)?.raise(undefined);
@@ -589,6 +588,7 @@ function getEndpointDebugContext(): EndpointDebugContext {
             log.debug('(Attached)');
             return releaser;
         },
+        counter: 0,
     };
 }
 
@@ -658,11 +658,11 @@ export interface ObjectCache<
 export class EndpointService {
     /** Shared endpoint state. */
     private static readonly _SHARED: {
-        started: boolean;
         readonly handlers: Map<
             TransferTag,
             RegisteredTransferHandler<any, any, any, any, TransferTag>
         >;
+        started: boolean;
     } = {
         started: false,
         handlers: new Map(),
@@ -867,9 +867,8 @@ export class EndpointService {
             );
         } else if (fallback !== undefined) {
             return fallback(value);
-        } else {
-            return this._toRawWireValue(value);
         }
+        return this._toRawWireValue(value);
     }
 
     /**
@@ -890,7 +889,7 @@ export class EndpointService {
                     handler !== undefined,
                     `Expected transfer handler to be available for wire value marked as a special object`,
                 );
-                return handler.deserialize(value.value, this, root);
+                return handler.deserialize(value.value, this, root) as TResult;
             }
             default:
                 return unreachable(value);
@@ -930,6 +929,7 @@ export class EndpointService {
                             type: MessageType.GET,
                             path: path.map((p) => p.toString()),
                         })
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                         .then((v) => service._fromWireValue(v));
                     return r.then.bind(r);
                 }
@@ -941,17 +941,21 @@ export class EndpointService {
                 // FIXME: ES6 Proxy Handler `set` methods are supposed to return a
                 // boolean. To show good will, we return true asynchronously ¯\_(ツ)_/¯
                 const [value, transfers] = service._toWireValue(rawValue);
-                return service
-                    ._requestResponseMessage(
-                        ep,
-                        {
-                            type: MessageType.SET,
-                            path: [...path, prop].map((p) => p.toString()),
-                            value,
-                        },
-                        transfers,
-                    )
-                    .then((v) => service._fromWireValue(v)) as any;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                return (
+                    service
+                        ._requestResponseMessage(
+                            ep,
+                            {
+                                type: MessageType.SET,
+                                path: [...path, prop].map((p) => p.toString()),
+                                value,
+                            },
+                            transfers,
+                        )
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                        .then((v) => service._fromWireValue(v)) as any
+                );
             },
 
             apply(target_, _, rawArgumentList): any {
@@ -963,20 +967,24 @@ export class EndpointService {
                     return service._createProxy<T>(ep, releaser, path.slice(0, -1));
                 }
                 const [argumentList, transfers] = service._processArguments(rawArgumentList);
-                return service
-                    ._requestResponseMessage(
-                        ep,
-                        {
-                            type: MessageType.APPLY,
-                            path: path.map((p) => p.toString()),
-                            argumentList,
-                        },
-                        transfers,
-                    )
-                    .then((v) => service._fromWireValue(v));
+                return (
+                    service
+                        ._requestResponseMessage(
+                            ep,
+                            {
+                                type: MessageType.APPLY,
+                                path: path.map((p) => p.toString()),
+                                argumentList,
+                            },
+                            transfers,
+                        )
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                        .then((v) => service._fromWireValue(v))
+                );
             },
         });
         this._registerProxy(proxy, ep, releaser);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return proxy as any;
     }
 
@@ -987,20 +995,26 @@ export class EndpointService {
                 path: [] as string[],
                 ...(ev.data as Message),
             };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const argumentList = (ev.data.argumentList ?? []).map((argument: WireValue) =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 service._fromWireValue(argument),
             );
             let returnValue;
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
                 const parent = path.slice(0, -1).reduce((obj_, prop) => obj_[prop], obj);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
                 const rawValue = path.reduce((obj_, prop) => obj_[prop], obj);
                 switch (type) {
                     case MessageType.GET:
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                         returnValue = rawValue;
                         break;
                     case MessageType.SET: {
                         const set = ev.data as SetMessage;
-                        parent[path.slice(-1)[0]] = service._fromWireValue(set.value);
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                        parent[unwrap(path.slice(-1)[0])] = service._fromWireValue(set.value);
                         returnValue = true;
                         break;
                     }
@@ -1008,9 +1022,11 @@ export class EndpointService {
                         if (rawValue === undefined) {
                             const pathString = path.join('.');
                             throw new Error(
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                                 `EndpointService: Cannot find path "${pathString}" on object of type "${obj.constructor?.name}"`,
                             );
                         }
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                         returnValue = rawValue.apply(parent, argumentList);
                         break;
                     case MessageType.RELEASE: {
@@ -1024,6 +1040,7 @@ export class EndpointService {
                 returnValue = {error, [TRANSFER_HANDLER]: THROW_HANDLER};
             }
             void Promise.resolve(returnValue)
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 .catch((error) => ({error, [TRANSFER_HANDLER]: THROW_HANDLER}))
                 .then((returnValue_) => {
                     const [wireValue, transfers] = service._toWireValue(returnValue_);
@@ -1070,9 +1087,8 @@ export class EndpointService {
                     >;
                 },
             );
-        } else {
-            return this._toRawWireValue(value);
         }
+        return this._toRawWireValue(value);
     }
 
     private _toWireValueViaHandler(
@@ -1085,6 +1101,7 @@ export class EndpointService {
         const handler = object[TRANSFER_HANDLER];
 
         // Serialize the object using the handler
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const [serialized, transfers] = handler.serialize(object, this);
         return [
             {
@@ -1142,6 +1159,7 @@ export class EndpointService {
         argumentList: any[],
     ): [arguments: WireValue[], transfers: readonly DomTransferable[]] {
         const processed = argumentList.map((argument) => this._toWireValue(argument));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return [processed.map((v) => v[0]), processed.map((v) => v[1]).flat()];
     }
 
@@ -1240,6 +1258,7 @@ const PROPERTIES_HANDLER: RegisteredTransferHandler<
     },
 
     deserialize: (values, service) =>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         Object.fromEntries([
             ...values.map(([key, serialized]) => [
                 key,
@@ -1291,9 +1310,8 @@ function serializeThrown(
     if (error instanceof Error) {
         // Attempt to serialise more specific error first, fall back to serialising a generic error
         return service.serialize(error, () => serializeError(error, service));
-    } else {
-        return [[error], []];
     }
+    return [[error], []];
 }
 function deserializeError(
     [name, message, stack, cause]: SerializedPlainError,
@@ -1310,6 +1328,7 @@ function deserializeThrown(
     serialized: SerializedThrown,
     service: EndpointService,
     root: boolean,
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 ): Error | unknown {
     // Specific error: attempt to deserialise it
     if (!(serialized instanceof Array)) {
@@ -1321,15 +1340,16 @@ function deserializeThrown(
         // Literal case
         const [literal] = serialized;
         return literal;
-    } else {
-        // Error case
-        return deserializeError(serialized, service);
     }
+
+    // Error case
+    return deserializeError(serialized, service);
 }
 
 // Register throw handler
 const THROW_HANDLER: RegisteredTransferHandler<
     ThrowMarked,
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     Error | unknown | never,
     SerializedThrown,
     SerializedThrown,
@@ -1404,6 +1424,7 @@ export function registerErrorTransferHandler<
     handler: ErrorTransferHandler<TError, TTag, TSerializedAdditionalValues>,
 ): RegisteredTransferHandler<
     TError,
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     TError | never,
     SerializedError<TSerializedAdditionalValues>,
     SerializedError<TSerializedAdditionalValues>,

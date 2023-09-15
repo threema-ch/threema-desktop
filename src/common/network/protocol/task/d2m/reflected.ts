@@ -39,12 +39,12 @@ export class ReflectedTask implements PassiveTask<void> {
     public async run(handle: PassiveTaskCodecHandle): Promise<void> {
         try {
             return await this._processMessage(handle);
-        } catch (e) {
+        } catch (error) {
             if (this._nonceGuard?.processed.value === false) {
                 this._nonceGuard.discard();
             }
             this._nonceGuard = undefined;
-            throw ensureError(e);
+            throw ensureError(error);
         }
     }
 

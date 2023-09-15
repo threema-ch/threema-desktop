@@ -220,7 +220,7 @@ export function run(): void {
 
             const loggedError = new ResolvablePromise<string>();
             const logging = new (class extends FakeLoggingFactory {
-                public error(...data: unknown[]): void {
+                public override error(...data: unknown[]): void {
                     loggedError.resolve(data[0] as string);
                 }
             })();

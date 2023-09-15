@@ -11,7 +11,6 @@
  * - https://stackoverflow.com/a/55459814
  * - https://github.com/microsoft/TypeScript/issues/32690
  */
-export {};
 
 /**
  * ENDPOINT
@@ -131,11 +130,11 @@ export enum CloseCode {
  * @generate name store
  */
 export enum ConnectionState {
-    CONNECTING,
-    HANDSHAKE,
-    PARTIALLY_CONNECTED,
-    CONNECTED,
-    DISCONNECTED,
+    CONNECTING = 0,
+    HANDSHAKE = 1,
+    PARTIALLY_CONNECTED = 2,
+    CONNECTED = 3,
+    DISCONNECTED = 4,
 }
 
 /**
@@ -144,10 +143,10 @@ export enum ConnectionState {
  * @generate name
  */
 export enum CspAuthState {
-    CLIENT_HELLO,
-    SERVER_HELLO,
-    LOGIN_ACK,
-    COMPLETE,
+    CLIENT_HELLO = 0,
+    SERVER_HELLO = 1,
+    LOGIN_ACK = 2,
+    COMPLETE = 3,
 }
 
 /**
@@ -156,8 +155,8 @@ export enum CspAuthState {
  * @generate name
  */
 export enum D2mAuthState {
-    SERVER_HELLO,
-    COMPLETE,
+    SERVER_HELLO = 0,
+    COMPLETE = 1,
 }
 
 /**
@@ -166,8 +165,8 @@ export enum D2mAuthState {
  * @generate name store
  */
 export enum D2mLeaderState {
-    NONLEADER,
-    LEADER,
+    NONLEADER = 0,
+    LEADER = 1,
 }
 
 /**

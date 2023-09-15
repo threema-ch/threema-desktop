@@ -29,7 +29,7 @@
   let group: RemoteModelStore<Group> | undefined;
   let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
   let name = '';
-  let inputName: TextInput;
+  let inputName: TextInput | null | undefined;
 
   function closeModal(): void {
     router.closeModal();
@@ -57,9 +57,7 @@
   }
 
   // Autofocus on name input field
-  $: if (inputName !== undefined && inputName !== null) {
-    inputName.focus();
-  }
+  $: inputName?.focus();
 
   // Validate byte length of group name
   const encoder = new TextEncoder();

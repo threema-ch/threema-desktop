@@ -140,8 +140,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
     /**
      * Control how dates and times are stored in SQLite.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention,consistent-return
-    public getDateTimeFormat(type: SqliteDateTimeFormatType): SqliteDateTimeFormat {
+    public override getDateTimeFormat(type: SqliteDateTimeFormatType): SqliteDateTimeFormat {
         switch (type) {
             case 'date':
                 // Note: Probably not used, we always use timestamps (datetimes).
@@ -154,7 +153,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case 'dateTime':
                 return 'Unix time milliseconds as integer';
             default:
-                unreachable(type, new Error('Invalid date time format type'));
+                return unreachable(type, new Error('Invalid date time format type'));
         }
     }
 
@@ -174,7 +173,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
      * @throws {TypeTransformError} If conversion fails.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public transformValueFromDB(value: unknown, type: string): unknown {
+    public override transformValueFromDB(value: unknown, type: string): unknown {
         if (value === null || value === undefined) {
             return super.transformValueFromDB(value, type);
         }
@@ -370,7 +369,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
      * @throws {TypeTransformError} If conversion fails.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public transformValueToDB(value: unknown, type: string): unknown {
+    public override transformValueToDB(value: unknown, type: string): unknown {
         if (value === null || value === undefined) {
             return super.transformValueToDB(value, type);
         }

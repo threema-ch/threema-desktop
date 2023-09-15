@@ -219,8 +219,7 @@ export class BackendController {
                             unreachable(error.type);
                     }
                 }
-                // eslint-disable-next-line no-labels
-                break loopToCreateBackendWithKeyStorage;
+                break;
             }
         }
 

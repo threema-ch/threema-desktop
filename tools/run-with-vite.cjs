@@ -35,7 +35,6 @@ function parseOption(arg, argv, options) {
         for (let v = argv.shift(); v !== undefined; v = argv.shift()) {
             options.programArgv.push(v);
         }
-        return;
     }
 }
 
@@ -69,9 +68,7 @@ async function main() {
     await server.listen();
 
     // Run program
-    console.info(
-        `Starting ${options.program} ${options.programArgv.join(' ')}`,
-    );
+    console.info(`Starting ${options.program} ${options.programArgv.join(' ')}`);
     const child = childProcess.spawn(options.program, options.programArgv, {
         env: {...process.env},
         stdio: 'inherit',

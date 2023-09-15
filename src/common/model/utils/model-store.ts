@@ -22,7 +22,6 @@ import {
     type RegisteredTransferHandler,
     registerTransferHandler,
     RELEASE_PROXY,
-    type Remote,
     TRANSFER_HANDLER,
     TRANSFERRED_MARKER,
 } from '~/common/utils/endpoint';
@@ -142,7 +141,7 @@ function releaseRemoteModelStore({
         readonly endpoint: Endpoint;
         readonly releaser?: AbortRaiser;
     };
-    readonly controller: Remote<unknown> & ProxyEndpointMethods;
+    readonly controller: ProxyEndpointMethods;
 }): void {
     view.endpoint.postMessage(undefined);
     view.endpoint.close?.();
@@ -298,7 +297,7 @@ export class RemoteModelStore<
             if (initial === NO_STORE_VALUE) {
                 initial = model;
             } else {
-                view.endpoint.postMessage((initial as TModel).view);
+                view.endpoint.postMessage(initial.view);
             }
         });
         assert(initial !== NO_STORE_VALUE, 'Store value must be available after subscription');

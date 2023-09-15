@@ -210,9 +210,8 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
                 creatorIdentity: UTF8.encode(this._receiverModel.view.creatorIdentity),
                 innerData: encoder,
             });
-        } else {
-            return encoder;
         }
+        return encoder;
     }
 
     /**

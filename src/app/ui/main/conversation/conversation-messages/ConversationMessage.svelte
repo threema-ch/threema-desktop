@@ -108,7 +108,7 @@
   let messageTextContentToCopy: string | undefined = undefined;
 
   function extractHrefFromEventTarget(event: MouseEvent): string | undefined {
-    const href = (event.target as HTMLElement)?.getAttribute('href') ?? undefined;
+    const href = (event.target as HTMLElement | null)?.getAttribute('href') ?? undefined;
     return href === undefined || href.length === 0 ? undefined : href;
   }
 

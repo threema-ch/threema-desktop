@@ -58,7 +58,6 @@ export class IncomingForwardSecurityEnvelopeTask
                 this._log.info(
                     `Ignoring incoming forward security envelope of type ${this._fsEnvelope.content} from ${this._senderIdentity}`,
                 );
-                return;
         }
     }
 
@@ -101,14 +100,14 @@ export class IncomingForwardSecurityEnvelopeTask
 
         if (this._senderContactOrInit instanceof LocalModelStore) {
             return this._senderContactOrInit;
-        } else {
-            const store = model.contacts.getByIdentity(this._senderContactOrInit.identity);
-            if (store === undefined) {
-                this._log.warn(
-                    `Did not find contact with identity ${this._senderContactOrInit.identity}`,
-                );
-            }
-            return store;
         }
+
+        const store = model.contacts.getByIdentity(this._senderContactOrInit.identity);
+        if (store === undefined) {
+            this._log.warn(
+                `Did not find contact with identity ${this._senderContactOrInit.identity}`,
+            );
+        }
+        return store;
     }
 }

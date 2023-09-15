@@ -13,7 +13,7 @@ import {
 import {GroupLeaveTaskBase} from '~/common/network/protocol/task/common/group-leave';
 import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {type MessageId} from '~/common/network/types';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 
 /**
  * Receive and process incoming group leave messages.
@@ -62,7 +62,7 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
                 return;
             }
             assert(addedContacts.length === 1, 'addedContacts contained more than one contact');
-            creator = addedContacts[0].get();
+            creator = unwrap(addedContacts[0]).get();
         }
         this._log.info(`Sending group sync request for group ${this._groupDebugString}`);
         await sendGroupSyncRequest(groupId, creatorIdentity, creator, handle, this._services);

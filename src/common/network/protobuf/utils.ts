@@ -75,7 +75,7 @@ function createInPlaceWriter(array: Uint8Array): Writer {
          * @returns The underlying buffer view.
          * @throws {Error} in case the underlying buffer is too small.
          */
-        public static alloc(size: u53): Uint8Array {
+        public static override alloc(size: u53): Uint8Array {
             if (size > array.byteLength) {
                 throw new Error(
                     `Underlying buffer too small for protobuf message of length ${size}`,
@@ -114,18 +114,18 @@ export function encoder<TProto extends ProtobufConstructor>(
             // We never calculcated the byte length, so we encode the data into a temporary buffer.
             encoded = protobuf.encode(data).finish();
             return encoded;
-        } else {
-            // Check if we calculcated the byte length before. If so, we need to copy the data from
-            // the temporary buffer and return the written subarray.
-            if (encoded !== undefined) {
-                array.set(encoded);
-                return array.subarray(0, encoded.byteLength);
-            }
-
-            // We never calculcated the byte length, so we encode the data directly into the final
-            // buffer.
-            return protobuf.encode(data, createInPlaceWriter(array)).finish();
         }
+
+        // Check if we calculcated the byte length before. If so, we need to copy the data from
+        // the temporary buffer and return the written subarray.
+        if (encoded !== undefined) {
+            array.set(encoded);
+            return array.subarray(0, encoded.byteLength);
+        }
+
+        // We never calculcated the byte length, so we encode the data directly into the final
+        // buffer.
+        return protobuf.encode(data, createInPlaceWriter(array)).finish();
     }
 
     return {

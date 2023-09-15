@@ -191,9 +191,7 @@ export class CodecEnqueuerHandle<T> {
 // The globals `TextEncoder` and `TextDecoder` exist in both DOM and Node, so
 // we'll just assume they're always available.
 //
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/method-signature-style */
-/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-restricted-syntax,@typescript-eslint/method-signature-style,@typescript-eslint/naming-convention */
 // Decoder
 interface TextDecoderCommon {
     readonly encoding: string;
@@ -230,9 +228,7 @@ declare const TextEncoder: {
     prototype: TextEncoder;
     new (): TextEncoder;
 };
-/* eslint-enable no-restricted-syntax */
-/* eslint-enable @typescript-eslint/method-signature-style */
-/* eslint-enable @typescript-eslint/naming-convention */
+/* eslint-enable no-restricted-syntax,@typescript-eslint/method-signature-style,@typescript-eslint/naming-convention */
 
 const ENCODING_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     EncodingError,

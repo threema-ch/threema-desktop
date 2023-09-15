@@ -479,7 +479,7 @@ export class OutgoingCspMessageTask<
         const {model} = this._services;
         switch (this._receiver.type) {
             case ReceiverType.CONTACT:
-                return new Set([this._receiver as Contact]);
+                return new Set<Contact>([this._receiver]);
 
             case ReceiverType.GROUP: {
                 const receivers: Contact[] = [];

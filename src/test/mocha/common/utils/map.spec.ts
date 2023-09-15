@@ -14,7 +14,7 @@ export function run(): void {
                 interface Value {
                     callId: u53;
                 }
-                const map: AsyncWeakValueMap<string, Value> = new AsyncWeakValueMap();
+                const map = new AsyncWeakValueMap<string, Value>();
                 const timer = new GlobalTimer();
 
                 // Without a lock, there's potential for async races in getOrCreate:

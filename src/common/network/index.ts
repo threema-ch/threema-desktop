@@ -5,8 +5,10 @@ export {CloseCode};
 export interface CloseInfo {
     /**
      * The close code used to close the connection.
+     *
+     * Note: Usually expected to contain one of the {@link CloseCode}s.
      */
-    code: u16 | CloseCode;
+    code: u16;
 
     /**
      * Optional connection reason string. Only used for documentation reasons.

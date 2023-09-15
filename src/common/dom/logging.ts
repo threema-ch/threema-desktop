@@ -2,7 +2,7 @@ import {handleError} from '~/common/dom/utils/crash-reporting';
 import {ConsoleLogger} from '~/common/logging';
 
 class DomConsoleLogger extends ConsoleLogger {
-    public readonly error = (...data: readonly unknown[]): void => {
+    public override readonly error = (...data: readonly unknown[]): void => {
         // eslint-disable-next-line no-console
         console.error(...data);
 

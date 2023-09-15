@@ -59,7 +59,7 @@ export class BetterSqlCipherQueryRunner extends SqlTransactionQueryRunner {
             return this.promise.reject(e)
         }
     }
-    executeInsertReturningLastInsertedId(query: string, params: any[] = []): Promise<any> {
+    override executeInsertReturningLastInsertedId(query: string, params: any[] = []): Promise<any> {
         if (this.containsInsertReturningClause(query, params)) {
             return super.executeInsertReturningLastInsertedId(query, params)
         }

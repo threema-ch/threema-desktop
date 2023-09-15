@@ -6,7 +6,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {type AppServices} from '~/app/types';
   import {i18n, type Locale, LOCALE_NAMES, LOCALES} from '~/app/ui/i18n';
-  import ProfileComponent from '~/app/ui/main/settings/Profile.svelte';
+  import Profile from '~/app/ui/main/settings/Profile.svelte';
   import Select from '~/app/ui/main/settings/Select.svelte';
   import Text from '~/app/ui/main/settings/Text.svelte';
   import {toast} from '~/app/ui/snackbar';
@@ -27,6 +27,8 @@
   } = services;
   const {debugPanelState, theme, locale} = storage;
 
+  // TODO(DESK-800): This type is incorrect, it's actually ` | undefined`. To prevent this, the
+  // remote store must be passed into this component once loaded, not before.
   let profile: Remote<ProfileViewModelStore>;
   viewModel
     .profile()
@@ -79,6 +81,7 @@
 
 <template>
   <div class="profile">
+    <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
     {#if profile !== undefined}
       {#if $display === 'small'}
         <div class="back">
@@ -88,7 +91,7 @@
         </div>
       {/if}
 
-      <ProfileComponent
+      <Profile
         profilePicture={$profile.profilePicture}
         displayName={$profile.displayName}
         initials={$profile.initials}

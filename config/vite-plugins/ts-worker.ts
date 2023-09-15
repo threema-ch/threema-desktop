@@ -43,10 +43,11 @@ export function tsWorkerPlugin(): Plugin {
                 //       and you wan't to complain, waddle through the pain of parsing the template
                 //       literal to an AST and then back to a string. Good luck!
                 if (url.startsWith('`')) {
+                    const buildTarget = unwrap(config.define)['import.meta.env.BUILD_TARGET'] as unknown;
+                    assert(typeof buildTarget === 'string');
                     url = url.replaceAll(
                         TS_IMPORT_META_ENV_BUILD_TARGET_RE,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                        unwrap(config.define)['import.meta.env.BUILD_TARGET'].slice(1, -1),
+                        buildTarget.slice(1, -1),
                     );
                 }
 

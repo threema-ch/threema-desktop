@@ -106,9 +106,8 @@ You can directly open the built version respectively with:
 - `npm run dist:open:linux`
 - `npm run dist:open:macos`
 
-Note: If you get an error message while building similar to `Error: ENOENT: no
-such file or directory, lstat 'libs/threema-svelte-components/src'`, check out
-the hints about [cloning](#cloning).
+Note: If you get an error message while building similar to `Error: ENOENT: no such file or
+directory, lstat '...'`, check out the hints about [cloning](#cloning).
 
 ### Package
 

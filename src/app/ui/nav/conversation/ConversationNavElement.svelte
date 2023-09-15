@@ -119,14 +119,12 @@
   let conversationDraft: string | undefined;
 
   $: {
-    if (receiver$ !== undefined) {
-      const routeReceiverLookup = $router.main.params?.receiverLookup;
-      active =
-        routeReceiverLookup?.type === receiver$.lookup.type &&
-        routeReceiverLookup?.uid === receiver$.lookup.uid;
-      const conversationDraftStore = conversationDrafts.getOrCreateStore(receiver$.lookup);
-      conversationDraft = active ? undefined : conversationDraftStore.get();
-    }
+    const routeReceiverLookup = $router.main.params?.receiverLookup;
+    active =
+      routeReceiverLookup?.type === receiver$.lookup.type &&
+      routeReceiverLookup.uid === receiver$.lookup.uid;
+    const conversationDraftStore = conversationDrafts.getOrCreateStore(receiver$.lookup);
+    conversationDraft = active ? undefined : conversationDraftStore.get();
   }
 
   // TODO(DESK-1073): Add default preview text for message types other than `text` or `file`.
@@ -184,83 +182,80 @@
         class="conversation"
         on:click|preventDefault={() => switchToConversation(receiver$)}
       >
-        {#if conversation$ !== undefined && receiver$ !== undefined && $profilePicture !== undefined}
-          <DeprecatedReceiver
-            profilePicture={{
-              alt: $i18n.t('contacts.hint--profile-picture', {name: receiver$.name}),
-              profilePicture: $profilePicture.view,
-              initials: $viewModel.receiver.initials,
-              unread: conversation$.unread,
-              badge: receiver$.badge,
-            }}
-            title={{
-              title: receiver$.name,
-              subtitle: {
-                text: previewText,
-                mentions: $lastMessageViewModelStore?.mentions,
-              },
-              isDisabled: isDisabledReceiver($receiver),
-              isInactive: isInactiveContact($receiver),
-              isInvalid: isInvalidContact($receiver),
-              isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
-              // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
-              isDraft: conversationDraft !== undefined,
-            }}
-            filter={$conversationPreviewListFilter}
-          >
-            <div class="labels" slot="additional-top">
-              <div class="properties">
-                {#if $isReceiverBlockedStore}
-                  <span class="property" data-property="blocked">
-                    <BlockedIcon />
-                  </span>
-                {/if}
-                {#if receiver$.notifications !== 'default'}
-                  <span class="property" data-property="notifications">
-                    {#if receiver$.notifications === 'muted'}
-                      <MdIcon theme="Filled">notifications_off</MdIcon>
-                    {:else if receiver$.notifications === 'mentioned'}
-                      <MdIcon theme="Filled">alternate_email</MdIcon>
-                    {:else if receiver$.notifications === 'never'}
-                      <MdIcon theme="Filled">remove_circle</MdIcon>
-                    {/if}
-                  </span>
-                {/if}
-                {#if conversation$.category === ConversationCategory.PROTECTED}
-                  <span class="property" data-property="protected">
-                    <ThreemaIcon theme="Filled">incognito</ThreemaIcon>
-                  </span>
-                {/if}
-                {#if conversation$.visibility === ConversationVisibility.PINNED}
-                  <span class="property" data-property="pinned">
-                    <MdIcon theme="Filled">push_pin</MdIcon>
-                  </span>
-                {/if}
-              </div>
-            </div>
-
-            <div class="status" slot="additional-bottom">
-              {#if $lastMessageStore !== undefined && receiver !== undefined}
-                <DateTime date={$lastMessageStore?.view.createdAt} />
-                <span class="icon">
-                  {#if isGroupConversation}
-                    <MdIcon theme="Filled">group</MdIcon>
-                  {:else if $lastMessageStore !== undefined}
-                    <MessageStatus
-                      direction={$lastMessageStore.view.direction}
-                      status={$lastMessageStore.view.direction === MessageDirection.OUTBOUND
-                        ? statusFromView($lastMessageStore.view)[0]
-                        : 'delivered'}
-                      reaction={$lastMessageStore.view.lastReaction?.type}
-                      outgoingReactionDisplay="arrow"
-                      receiverType={receiver.type}
-                    />
+        <DeprecatedReceiver
+          profilePicture={{
+            alt: $i18n.t('contacts.hint--profile-picture', {name: receiver$.name}),
+            profilePicture: $profilePicture.view,
+            initials: $viewModel.receiver.initials,
+            unread: conversation$.unread,
+            badge: receiver$.badge,
+          }}
+          title={{
+            title: receiver$.name,
+            subtitle: {
+              text: previewText,
+              mentions: $lastMessageViewModelStore?.mentions,
+            },
+            isDisabled: isDisabledReceiver($receiver),
+            isInactive: isInactiveContact($receiver),
+            isInvalid: isInvalidContact($receiver),
+            isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
+            // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
+            isDraft: conversationDraft !== undefined,
+          }}
+          filter={$conversationPreviewListFilter}
+        >
+          <div class="labels" slot="additional-top">
+            <div class="properties">
+              {#if $isReceiverBlockedStore}
+                <span class="property" data-property="blocked">
+                  <BlockedIcon />
+                </span>
+              {/if}
+              {#if receiver$.notifications !== 'default'}
+                <span class="property" data-property="notifications">
+                  {#if receiver$.notifications === 'muted'}
+                    <MdIcon theme="Filled">notifications_off</MdIcon>
+                  {:else if receiver$.notifications === 'mentioned'}
+                    <MdIcon theme="Filled">alternate_email</MdIcon>
+                  {:else if receiver$.notifications === 'never'}
+                    <MdIcon theme="Filled">remove_circle</MdIcon>
                   {/if}
                 </span>
               {/if}
+              {#if conversation$.category === ConversationCategory.PROTECTED}
+                <span class="property" data-property="protected">
+                  <ThreemaIcon theme="Filled">incognito</ThreemaIcon>
+                </span>
+              {/if}
+              {#if conversation$.visibility === ConversationVisibility.PINNED}
+                <span class="property" data-property="pinned">
+                  <MdIcon theme="Filled">push_pin</MdIcon>
+                </span>
+              {/if}
             </div>
-          </DeprecatedReceiver>
-        {/if}
+          </div>
+
+          <div class="status" slot="additional-bottom">
+            {#if $lastMessageStore !== undefined}
+              <DateTime date={$lastMessageStore.view.createdAt} />
+              <span class="icon">
+                {#if isGroupConversation}
+                  <MdIcon theme="Filled">group</MdIcon>
+                  <MessageStatus
+                    direction={$lastMessageStore.view.direction}
+                    status={$lastMessageStore.view.direction === MessageDirection.OUTBOUND
+                      ? statusFromView($lastMessageStore.view)[0]
+                      : 'delivered'}
+                    reaction={$lastMessageStore.view.lastReaction?.type}
+                    outgoingReactionDisplay="arrow"
+                    receiverType={receiver.type}
+                  />
+                {/if}
+              </span>
+            {/if}
+          </div>
+        </DeprecatedReceiver>
       </a>
 
       <aside slot="right" class="buttons">

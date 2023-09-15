@@ -31,14 +31,12 @@
    * Mapping of state steps to the corresponding component.
    */
   const PROCESS_STEPS: {[Key in LinkingWizardState['currentStep']]: typeof SvelteComponentDev} = {
-    /* eslint-disable @typescript-eslint/naming-convention */
     'scan': Scan,
     'confirm-emoji': ConfirmEmoji,
     'set-password': SetPassword,
     'syncing': Sync,
     'success-linked': SuccessLinked,
     'error': Error,
-    /* eslint-enable @typescript-eslint/naming-convention */
   };
 
   let wizardStepComponent: typeof SvelteComponentDev;

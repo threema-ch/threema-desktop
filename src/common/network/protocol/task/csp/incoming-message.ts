@@ -416,9 +416,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         let result;
         try {
             result = await this._processIncomingCspMessage(handle);
-        } catch (e) {
+        } catch (error) {
             this._discardUnprocessedNonce();
-            throw ensureError(e);
+            throw ensureError(error);
         }
         this._log.debug(`Task processing result: ${result}`);
         return undefined;
@@ -662,10 +662,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     messageReferenceDebug,
                 );
                 return await this._discard(handle);
-            } else {
-                group = receiveStepsResult.group;
-                senderContactOrInit = receiveStepsResult.senderContact;
             }
+            group = receiveStepsResult.group;
+            senderContactOrInit = receiveStepsResult.senderContact;
         }
 
         // Handle reflection

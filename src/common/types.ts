@@ -252,7 +252,7 @@ export type ReadonlyUint8Array = {
         ReadonlyUint8Array
     >;
 } & {
-    /* eslint-disable no-restricted-syntax */
+    /* eslint-disable no-restricted-syntax,@typescript-eslint/member-ordering */
     // From lib.es5.d.ts
     readonly [index: number]: number;
     readonly valueOf: () => Uint8Array;
@@ -278,7 +278,7 @@ export type ReadonlyUint8Array = {
     readonly [Symbol.iterator]: () => IterableIterator<u8>;
     // From lib.es2015.symbol.wellknown.d.ts
     readonly [Symbol.toStringTag]: 'Uint8Array';
-    /* eslint-enable no-restricted-syntax */
+    /* eslint-enable no-restricted-syntax,@typescript-eslint/member-ordering */
 };
 
 /**
@@ -327,11 +327,6 @@ export interface BoundedIterable<T> extends Iterable<T> {
     length: u53;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const KiB = 1024;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const MiB = 1024 * KiB;
-
 /**
  * Definition of possible icon sets.
  */
@@ -360,6 +355,14 @@ export type StrictExtract<T, U extends T> = Extract<T, U>;
  */
 export type StrictOmit<T, U extends keyof T> = Omit<T, U>;
 
+/**
+ * A tuple containing `T` exactly `N` times.
+ */
+export type RepeatedTuple<T, N extends u53, R extends readonly T[] = []> = R['length'] extends N
+    ? R
+    : // eslint-disable-next-line no-restricted-syntax
+      RepeatedTuple<T, N, readonly [T, ...R]>;
+
 export interface DomainCertificatePin {
     /** The domain the certificates belong to (e.g. `*.example.com`). */
     readonly domain: string;
@@ -378,3 +381,8 @@ export interface Dimensions {
     readonly height: u53;
     readonly width: u53;
 }
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const KiB = 1024;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const MiB = 1024 * KiB;

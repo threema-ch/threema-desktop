@@ -2,11 +2,7 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["esnext"],
-    "types": ["electron", "node"],
-
-    // Electron types incorrectly requires DOM in main
-    // See: https://github.com/electron/typescript-definitions/issues/160
-    "skipLibCheck": true
+    "types": ["electron", "node"]
   },
 
   "include": ["../common/vite-client.d.ts", "**/*.ts"]

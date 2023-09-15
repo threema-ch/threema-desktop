@@ -145,7 +145,6 @@ export class ReflectedUserProfileSyncTask implements PassiveTask<void> {
                             'short',
                         )}`,
                     );
-                    return;
                 }
                 break;
             }

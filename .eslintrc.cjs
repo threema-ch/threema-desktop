@@ -1,9 +1,9 @@
 /**
- * TypeScript rules that require parsing.
+ * TypeScript config mixin that require parsing.
  *
  * Some special rules apply for 'svelte' vs. 'ts' files.
  */
-function getTypeScriptOnlyRules(extension) {
+function getTypeScriptConfigMixin(extension, override) {
     const namingConvention = [
         'error',
 
@@ -29,7 +29,6 @@ function getTypeScriptOnlyRules(extension) {
         {
             selector: 'property',
             format: ['strictCamelCase'],
-            leadingUnderscore: 'allow', // Required for ES2021 private properties
         },
         {
             selector: 'typeLike',
@@ -39,6 +38,12 @@ function getTypeScriptOnlyRules(extension) {
         // Require an underscore prefix for private and protected members and properties
         {
             selector: 'memberLike',
+            modifiers: ['#private'],
+            format: ['strictCamelCase'],
+            leadingUnderscore: 'require',
+        },
+        {
+            selector: 'memberLike',
             modifiers: ['private'],
             format: ['strictCamelCase'],
             leadingUnderscore: 'require',
@@ -46,6 +51,12 @@ function getTypeScriptOnlyRules(extension) {
         {
             selector: 'memberLike',
             modifiers: ['protected'],
+            format: ['strictCamelCase'],
+            leadingUnderscore: 'require',
+        },
+        {
+            selector: 'property',
+            modifiers: ['#private'],
             format: ['strictCamelCase'],
             leadingUnderscore: 'require',
         },
@@ -84,13 +95,36 @@ function getTypeScriptOnlyRules(extension) {
         {
             selector: 'objectLiteralProperty',
             format: ['strictCamelCase', 'UPPER_CASE'],
-        },
-        // Allow object literal properties to include a dash (for HTTP headers)
-        {
-            selector: 'objectLiteralProperty',
-            format: ['PascalCase'],
             filter: {
                 regex: '[- ]',
+                match: false,
+            },
+        },
+        // Allow object literal properties to include a dash (for HTTP headers and CLI arguments)
+        {
+            selector: 'objectLiteralProperty',
+            format: null,
+            custom: {
+                regex: '[- ]',
+                match: true,
+            },
+        },
+
+        // Allow object literal methods to be of type: `on:*` for supporting Svelte-style event
+        // listeners.
+        {
+            selector: 'typeMethod',
+            format: ['strictCamelCase'],
+            filter: {
+                regex: '^on:',
+                match: false,
+            },
+        },
+        {
+            selector: 'typeMethod',
+            format: null,
+            custom: {
+                regex: '^on:',
                 match: true,
             },
         },
@@ -110,15 +144,17 @@ function getTypeScriptOnlyRules(extension) {
         },
     ];
 
-    return {
+    const rules = {
         // Overrides
         'camelcase': 'off', // @typescript-eslint/naming-convention
+        'dot-notation': 'off', // @typescript-eslint/dot-notation
+        'no-implied-eval': 'off', // @typescript-eslint/no-implied-eval
         'no-return-await': 'off', // @typescript-eslint/return-await
+        'no-throw-literal': 'off', // @typescript-eslint/no-throw-literal
         'require-await': 'off', // @typescript-eslint/require-await
 
         // TypeScript rules
         '@typescript-eslint/adjacent-overload-signatures': 'error',
-        '@typescript-eslint/await-thenable': 'error',
         '@typescript-eslint/consistent-indexed-object-style': 'error',
         '@typescript-eslint/consistent-type-exports': [
             'error',
@@ -126,7 +162,7 @@ function getTypeScriptOnlyRules(extension) {
                 fixMixedExportsWithInlineTypeSpecifier: true,
             },
         ],
-        '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/dot-notation': 'error',
         '@typescript-eslint/explicit-function-return-type': [
             'error',
             {
@@ -137,35 +173,17 @@ function getTypeScriptOnlyRules(extension) {
         ],
         '@typescript-eslint/explicit-member-accessibility': 'error',
         '@typescript-eslint/naming-convention': namingConvention,
-        '@typescript-eslint/no-base-to-string': 'error',
-        '@typescript-eslint/no-duplicate-enum-values': 'error',
-        '@typescript-eslint/no-throw-literal': [
-            'error',
-            {
-                allowThrowingAny: false,
-                allowThrowingUnknown: false,
-            },
-        ],
-        '@typescript-eslint/no-floating-promises': 'error',
-        '@typescript-eslint/no-misused-promises': 'error',
-        '@typescript-eslint/no-non-null-asserted-nullish-coalescing': 'error',
-        '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
-        '@typescript-eslint/no-unnecessary-condition': extension === 'svelte' ? 'off' : 'error',
+        '@typescript-eslint/no-confusing-void-expression': 'off',
         '@typescript-eslint/no-unnecessary-qualifier': 'error',
-        '@typescript-eslint/no-unnecessary-type-arguments': 'error',
-        '@typescript-eslint/no-unsafe-argument': extension === 'svelte' ? 'off' : 'error',
-        '@typescript-eslint/no-unsafe-declaration-merging': 'error',
+        '@typescript-eslint/no-useless-empty-export': 'error',
         '@typescript-eslint/non-nullable-type-assertion-style': 'error',
-        '@typescript-eslint/prefer-includes': 'error',
         '@typescript-eslint/prefer-nullish-coalescing': 'error',
         '@typescript-eslint/prefer-optional-chain': 'error',
         '@typescript-eslint/prefer-readonly': 'error',
-        '@typescript-eslint/prefer-reduce-type-parameter': 'error',
-        '@typescript-eslint/prefer-return-this-type': 'error',
         '@typescript-eslint/prefer-string-starts-ends-with': 'error',
         '@typescript-eslint/promise-function-async': 'error',
         '@typescript-eslint/require-array-sort-compare': 'error',
-        '@typescript-eslint/require-await': 'error',
+        '@typescript-eslint/restrict-template-expressions': 'off',
         '@typescript-eslint/return-await': ['error', 'always'],
         '@typescript-eslint/strict-boolean-expressions': [
             'error',
@@ -183,6 +201,7 @@ function getTypeScriptOnlyRules(extension) {
         ],
 
         // Svelte rules
+        'a11y-click-events-have-key-events': 'off', // TODO(DESK-839): Reenable
         'svelte/valid-compile': 'warn', // Until https://github.com/sveltejs/svelte/issues/8558 is added
 
         // Our custom extensions
@@ -191,6 +210,14 @@ function getTypeScriptOnlyRules(extension) {
         'threema/ban-typed-array-equality-comparison': 'error',
         'threema/no-todo-comments-without-issue': 'error',
         'threema/prefer-inline-type-imports': 'error',
+    };
+
+    return {
+        extends: [
+            ...['plugin:@typescript-eslint/strict-type-checked'],
+            ...(override?.extends ?? []),
+        ],
+        rules: {...rules, ...(override?.rules ?? {})},
     };
 }
 
@@ -203,7 +230,7 @@ module.exports = {
 
     extends: [
         'eslint:recommended',
-        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/strict',
         'plugin:svelte/recommended',
         'plugin:svelte/prettier',
         'plugin:jsdoc/recommended',
@@ -212,11 +239,12 @@ module.exports = {
 
     parser: '@typescript-eslint/parser',
     parserOptions: {
-        sourceType: 'module',
         ecmaFeatures: {
             impliedStrict: true,
         },
+        ecmaVersion: 'latest',
         extraFileExtensions: ['.svelte'],
+        sourceType: 'module',
     },
 
     settings: {
@@ -224,83 +252,28 @@ module.exports = {
     },
 
     env: {
-        es2020: true,
+        es2024: true,
     },
 
     rules: {
-        // Possible errors
-        'no-console': 'error',
-        'no-loss-of-precision': 'off', // @typescript-eslint/no-loss-of-precision
-        'no-promise-executor-return': 'error',
-        'no-template-curly-in-string': 'error',
-        'no-unreachable-loop': 'error',
-        'no-unsafe-optional-chaining': 'error',
-        'require-atomic-updates': 'error',
-
-        // Best practices
-        'a11y-click-events-have-key-events': 'off', // TODO(DESK-839): Reenable
-        'array-callback-return': 'error',
-        'block-scoped-var': 'error',
-        'consistent-return': 'error',
-        'curly': ['error', 'all'],
-        'default-case': 'error',
-        'default-case-last': 'error',
-        'default-param-last': 'off', // @typescript-eslint/default-param-last
-        'eqeqeq': ['error', 'always'],
-        'grouped-accessor-pairs': ['error', 'getBeforeSet'],
-        'guard-for-in': 'error',
-        'no-alert': 'error',
-        'no-caller': 'error',
+        // Possible Problems
+        'no-constant-binary-expression': 'error',
         'no-constructor-return': 'error',
-        'no-eval': 'error',
-        'no-extend-native': 'error',
-        'no-implicit-globals': 'error',
-        'no-implied-eval': 'error',
-        'no-invalid-this': 'off', // @typescript-eslint/no-invalid-this
-        'no-iterator': 'error',
-        'no-labels': 'error',
-        'no-lone-blocks': 'error',
-        'no-loop-func': 'error',
-        'no-multi-str': 'error',
-        'no-new': 'error',
-        'no-new-func': 'error',
-        'no-new-wrappers': 'error',
-        'no-nonoctal-decimal-escape': 'error',
-        'no-octal-escape': 'error',
-        'no-proto': 'error',
-        'no-return-assign': 'error',
-        'no-script-url': 'error',
+        'no-dupe-class-members': 'off', // @typescript-eslint/no-dupe-class-members
+        'no-loss-of-precision': 'off', // @typescript-eslint/no-loss-of-precision
+        'no-promise-executor-return': ['error', {allowVoid: true}],
         'no-self-compare': 'error',
-        'no-sequences': 'error',
-        'no-throw-literal': 'error',
+        'no-template-curly-in-string': 'error',
         'no-unmodified-loop-condition': 'error',
-        'no-unused-expressions': 'off', // @typescript-eslint/no-unused-expressions
-        'no-useless-call': 'error',
-        'no-useless-concat': 'error',
-        'no-void': [
-            'error',
-            {
-                allowAsStatement: true,
-            },
-        ],
-        'prefer-named-capture-group': 'error',
-        'prefer-promise-reject-errors': 'error',
-        'prefer-regex-literals': [
-            'error',
-            {
-                disallowRedundantWrapping: true,
-            },
-        ],
-        'radix': ['error', 'always'],
-        'require-await': 'error',
-        'require-unicode-regexp': 'error',
-
-        // Variables
-        'no-shadow': 'off', // @typescript-eslint/no-shadow
+        'no-unreachable-loop': 'error',
         'no-unused-private-class-members': 'error',
         'no-unused-vars': 'off', // @typescript-eslint/no-unused-vars
+        'require-atomic-updates': 'error',
 
-        // Stylistic issues
+        // Suggestions
+        'accessor-pairs': 'error',
+        'arrow-body-style': ['error', 'as-needed'],
+        'block-scoped-var': 'error',
         'camelcase': 'error',
         'capitalized-comments': [
             'error',
@@ -310,29 +283,52 @@ module.exports = {
                 ignoreConsecutiveComments: true,
             },
         ],
+        'consistent-return': 'error',
+        'curly': ['error', 'all'],
+        'default-case': 'error',
+        'default-case-last': 'error',
+        'default-param-last': 'off', // @typescript-eslint/default-param-last
         'dot-notation': 'error',
+        'eqeqeq': ['error', 'always'],
         'func-names': 'error',
-        'func-style': [
-            'error',
-            'declaration',
-            {
-                allowArrowFunctions: false,
-            },
-        ],
-        'max-depth': [
-            'error',
-            {
-                max: 4,
-            },
-        ],
+        'func-style': ['error', 'declaration', {allowArrowFunctions: false}],
+        'grouped-accessor-pairs': ['error', 'getBeforeSet'],
+        'guard-for-in': 'error',
+        'id-denylist': ['error', 'err', 'e'],
+        'logical-assignment-operators': ['error', 'always'],
+        'max-depth': ['error', {max: 4}],
         'new-cap': 'error',
-        'no-array-constructor': 'error',
+        'no-alert': 'error',
+        'no-array-constructor': 'off', // @typescript-eslint/no-array-constructor
         'no-bitwise': 'error',
+        'no-caller': 'error',
+        'no-console': 'error',
+        'no-else-return': 'error',
+        'no-empty-static-block': 'error',
+        'no-eval': 'error',
+        'no-extend-native': 'error',
+        'no-extra-bind': 'error',
+        'no-extra-label': 'error',
+        'no-floating-decimal': 'error',
+        'no-implicit-globals': 'error',
+        'no-implied-eval': 'error',
+        'no-invalid-this': 'off', // @typescript-eslint/no-invalid-this
+        'no-iterator': 'error',
+        'no-label-var': 'error',
+        'no-labels': 'error',
+        'no-lone-blocks': 'error',
         'no-lonely-if': 'error',
-        // TODO(DESK-679): Forbid mixed operators (useful braces around math operations)
+        'no-loop-func': 'off', // @typescript-eslint/no-loop-func
+        // TODO: https://github.com/prettier/prettier/issues/187
         // 'no-mixed-operators': 'error',
+        'no-multi-str': 'error',
         'no-nested-ternary': 'error',
+        'no-new': 'error',
+        'no-new-func': 'error',
         'no-new-object': 'error',
+        'no-new-wrappers': 'error',
+        'no-octal-escape': 'error',
+        'no-proto': 'error',
         'no-restricted-syntax': [
             'error',
             {
@@ -352,21 +348,23 @@ module.exports = {
                 message: 'Use named tuple members.',
             },
         ],
+        'no-return-assign': 'error',
+        'no-script-url': 'error',
+        'no-sequences': 'error',
+        'no-shadow': 'off', // @typescript-eslint/no-shadow
+        'no-throw-literal': 'error',
         'no-unneeded-ternary': 'error',
-        'operator-assignment': ['error', 'always'],
-        'prefer-exponentiation-operator': 'error',
-        'prefer-object-spread': 'error',
-
-        // ES6 features
-        'arrow-parens': 'error',
-        'arrow-body-style': ['error', 'as-needed'],
-        'no-dupe-class-members': 'off', // @typescript-eslint/no-dupe-class-members
-        'no-duplicate-imports': 'error',
-        'no-useless-constructor': 'off', // @typescript-eslint/no-useless-constructor
+        'no-unused-expressions': 'off', // @typescript-eslint/no-unused-expressions
+        'no-useless-call': 'error',
         'no-useless-computed-key': 'error',
+        'no-useless-concat': 'error',
+        'no-useless-constructor': 'off', // @typescript-eslint/no-useless-constructor
         'no-useless-rename': 'error',
+        'no-useless-return': 'error',
         'no-var': 'error',
+        'no-void': ['error', {allowAsStatement: true}],
         'object-shorthand': 'error',
+        'operator-assignment': ['error', 'always'],
         'prefer-arrow-callback': 'error',
         'prefer-const': 'error',
         'prefer-destructuring': [
@@ -377,11 +375,22 @@ module.exports = {
                 },
             },
         ],
+        'prefer-exponentiation-operator': 'error',
+        'prefer-named-capture-group': 'error',
         'prefer-numeric-literals': 'error',
+        'prefer-object-has-own': 'error',
+        'prefer-object-spread': 'error',
+        'prefer-promise-reject-errors': 'error',
+        'prefer-regex-literals': ['error', {disallowRedundantWrapping: true}],
         'prefer-rest-params': 'error',
         'prefer-spread': 'error',
         'prefer-template': 'error',
+        'radix': ['error', 'always'],
+        'require-await': 'error',
+        'require-unicode-regexp': 'error',
+        'spaced-comment': 'error',
         'symbol-description': 'error',
+        'yoda': 'error',
 
         // TypeScript features also applicable to JavaScript files
         '@typescript-eslint/array-type': [
@@ -409,6 +418,8 @@ module.exports = {
             },
         ],
         '@typescript-eslint/class-literal-property-style': 'error',
+        '@typescript-eslint/consistent-generic-constructors': 'error',
+        '@typescript-eslint/consistent-indexed-object-style': 'error',
         '@typescript-eslint/consistent-type-assertions': [
             'error',
             {
@@ -423,33 +434,59 @@ module.exports = {
             {
                 default: [
                     // Index signature
+                    'readonly-signature',
+                    'call-signature',
                     'signature',
 
                     // Static fields
+                    'public-static-readonly-field',
                     'public-static-field',
+                    'protected-static-readonly-field',
                     'protected-static-field',
+                    'private-static-readonly-field',
                     'private-static-field',
+                    '#private-static-readonly-field',
                     '#private-static-field',
                     'static-field',
 
                     // Fields
+                    'public-decorated-readonly-field',
                     'public-decorated-field',
+                    'protected-decorated-readonly-field',
                     'protected-decorated-field',
+                    'private-decorated-readonly-field',
                     'private-decorated-field',
+                    'public-instance-readonly-field',
                     'public-instance-field',
+                    'protected-instance-readonly-field',
                     'protected-instance-field',
+                    'private-instance-readonly-field',
                     'private-instance-field',
+                    '#private-instance-readonly-field',
                     '#private-instance-field',
+                    'public-abstract-readonly-field',
                     'public-abstract-field',
+                    'protected-abstract-readonly-field',
                     'protected-abstract-field',
+                    'public-readonly-field',
                     'public-field',
+                    'protected-readonly-field',
                     'protected-field',
+                    'private-readonly-field',
                     'private-field',
+                    '#private-readonly-field',
                     '#private-field',
+                    'instance-readonly-field',
                     'instance-field',
+                    'abstract-readonly-field',
                     'abstract-field',
+                    'decorated-readonly-field',
                     'decorated-field',
+                    'readonly-field',
                     'field',
+
+                    // Static initialization
+                    'static-initialization',
 
                     // Constructors
                     'public-constructor',
@@ -535,10 +572,6 @@ module.exports = {
         ],
         '@typescript-eslint/method-signature-style': 'error',
         '@typescript-eslint/no-confusing-non-null-assertion': 'error',
-        '@typescript-eslint/no-dynamic-delete': 'error',
-        '@typescript-eslint/no-explicit-any': 'error',
-        '@typescript-eslint/no-extraneous-class': 'error',
-        '@typescript-eslint/no-invalid-void-type': 'error',
         '@typescript-eslint/no-require-imports': 'error',
         '@typescript-eslint/parameter-properties': [
             'error',
@@ -551,19 +584,18 @@ module.exports = {
                     'protected readonly',
                     'public readonly',
                 ],
+                prefer: 'parameter-property',
             },
         ],
+        '@typescript-eslint/prefer-enum-initializers': 'error',
         '@typescript-eslint/prefer-for-of': 'error',
         '@typescript-eslint/prefer-function-type': 'error',
-        '@typescript-eslint/prefer-literal-enum-member': 'error',
-        '@typescript-eslint/prefer-ts-expect-error': 'error',
-        '@typescript-eslint/unified-signatures': 'error',
 
         // TypeScript eslint extensions
         '@typescript-eslint/default-param-last': 'error',
         '@typescript-eslint/no-dupe-class-members': 'error',
         '@typescript-eslint/no-invalid-this': 'error',
-        '@typescript-eslint/no-loss-of-precision': 'error',
+        '@typescript-eslint/no-loop-func': 'error',
         '@typescript-eslint/no-shadow': 'error',
         '@typescript-eslint/no-unused-expressions': 'error',
         '@typescript-eslint/no-unused-vars': [
@@ -572,7 +604,9 @@ module.exports = {
                 args: 'none',
             },
         ],
-        '@typescript-eslint/no-useless-constructor': 'error',
+
+        // Imports
+        'simple-import-sort/imports': 'error',
 
         // TODO(DESK-680): Enable jsdoc rules
         // JSDoc rules
@@ -648,74 +682,40 @@ module.exports = {
         'jsdoc/require-yields-check': 'error',
         'jsdoc/tag-lines': ['error', 'never', {startLines: 1}],
         'jsdoc/valid-types': 'off',
-
-        // Import sorting extension
-        'simple-import-sort/imports': 'error',
     },
 
     overrides: [
         // General JavaScript rules
         {
-            files: '*.js',
+            files: './**/*.{cjs,js}',
             rules: {
                 camelcase: 'error',
             },
         },
 
-        // General Svelte rules
-        {
-            files: '*.svelte',
-            parser: 'svelte-eslint-parser',
-            parserOptions: {
-                parser: '@typescript-eslint/parser',
-                project: './src/app/tsconfig.json',
-            },
-            rules: {
-                'no-labels': 'off',
-                '@typescript-eslint/ban-types': [
-                    'error',
-                    {
-                        extendDefaults: true,
-                        types: {
-                            // Note: Null often cannot be avoided when dealing with the Svelte lifecycle
-                            null: false,
-                        },
-                    },
-                ],
-                ...getTypeScriptOnlyRules('svelte'),
-            },
-        },
-
         // General TypeScript rules
         {
-            files: '*.ts',
+            files: './**/*.ts',
             parserOptions: {
                 project: './tsconfig.json',
             },
-            rules: {
-                ...getTypeScriptOnlyRules('ts'),
-
-                // TODO (jsdoc): Remove these rules
-                'jsdoc/require-jsdoc': 'off',
-                'jsdoc/require-throws': 'off',
-            },
-        },
-        {
-            files: 'src/**/*.ts',
-            parserOptions: {
-                project: './src/tsconfig.base.json',
-            },
-            rules: getTypeScriptOnlyRules('ts'),
+            ...getTypeScriptConfigMixin('ts', {
+                rules: {
+                    // TODO (jsdoc): Remove these rules
+                    'jsdoc/require-jsdoc': 'off',
+                    'jsdoc/require-throws': 'off',
+                },
+            }),
         },
 
         // Utility script rules
         {
             files: [
-                '.eslintrc.cjs',
-                'config/**/*.{cjs,js}',
-                'src/test/**/*.js',
-                'tools/**/*.{cjs,ts}',
-                'svelte.config.js',
+                './.eslintrc.cjs',
+                './config/**/*.{cjs,js,ts}',
+                './src/test/**/*.js',
+                './tools/**/*.{cjs,js,ts}',
+                './svelte.config.js',
             ],
             env: {
                 node: true,
@@ -729,18 +729,7 @@ module.exports = {
             },
         },
         {
-            files: ['config/**/*.ts'],
-            env: {
-                node: true,
-            },
-            rules: {
-                'no-console': 'off',
-            },
-        },
-
-        // Packaging script
-        {
-            files: 'packaging/**/*.ts',
+            files: './packaging/**/*.ts',
             parserOptions: {
                 project: './packaging/tsconfig.json',
             },
@@ -751,10 +740,19 @@ module.exports = {
                 'no-console': 'off',
             },
         },
+        {
+            files: './config/**/*.ts',
+            parserOptions: {
+                project: './config/tsconfig.json',
+            },
+            env: {
+                node: true,
+            },
+        },
 
         // Types source rules
         {
-            files: 'src/@types/**',
+            files: './src/@types/**',
             parserOptions: {
                 project: './src/@types/tsconfig.json',
             },
@@ -762,7 +760,8 @@ module.exports = {
 
         // App source rules
         {
-            files: 'src/app/**',
+            files: './src/app/**/*.ts',
+            parser: 'typescript-eslint-parser-for-extra-files',
             parserOptions: {
                 project: './src/app/tsconfig.json',
             },
@@ -770,17 +769,48 @@ module.exports = {
                 browser: true,
             },
         },
+        {
+            files: './src/app/**/*.svelte',
+            parser: 'svelte-eslint-parser',
+            parserOptions: {
+                parser: require('typescript-eslint-parser-for-extra-files'),
+                project: './src/app/tsconfig.json',
+            },
+            env: {
+                browser: true,
+            },
+            ...getTypeScriptConfigMixin('svelte', {
+                extends: ['plugin:svelte/prettier'],
+                rules: {
+                    'no-labels': 'off',
+                    '@typescript-eslint/ban-types': [
+                        'error',
+                        {
+                            extendDefaults: true,
+                            types: {
+                                // Note: Null often cannot be avoided when dealing with the Svelte lifecycle
+                                null: false,
+                            },
+                        },
+                    ],
+                },
+            }),
+        },
 
         // Common source rules
         {
-            files: 'src/common/**',
+            files: './src/common/**/*.ts',
             parserOptions: {
                 project: './src/common/tsconfig.json',
             },
         },
         {
-            files: 'src/common/network/structbuf/{csp,extra,group-call,md-d2d,md-d2d-rendezvous,md-d2m}/**',
+            files: [
+                './src/common/network/structbuf/utils.ts',
+                './src/common/network/structbuf/{csp,extra,group-call,md-d2d,md-d2d-rendezvous,md-d2m}/**/*.ts',
+            ],
             rules: {
+                '@typescript-eslint/ban-types': 'off',
                 '@typescript-eslint/no-empty-function': 'off',
                 '@typescript-eslint/no-unused-vars': 'off',
                 '@typescript-eslint/no-extraneous-class': 'off',
@@ -793,7 +823,7 @@ module.exports = {
 
         // Common DOM source rules
         {
-            files: 'src/common/dom/**',
+            files: './src/common/dom/**/*.ts',
             parserOptions: {
                 project: './src/common/dom/tsconfig.json',
             },
@@ -804,7 +834,7 @@ module.exports = {
 
         // Common enum source rules
         {
-            files: 'src/common/enum.ts',
+            files: './src/common/enum.ts',
             rules: {
                 '@typescript-eslint/naming-convention': 'off',
                 '@typescript-eslint/no-namespace': 'off',
@@ -814,7 +844,7 @@ module.exports = {
 
         // Common Node source rules
         {
-            files: 'src/common/node/**',
+            files: './src/common/node/**/*.ts',
             parserOptions: {
                 project: './src/common/node/tsconfig.json',
             },
@@ -825,7 +855,7 @@ module.exports = {
 
         // Electron-specific source rules
         {
-            files: 'src/electron/**',
+            files: './src/electron/**/*.ts',
             parserOptions: {
                 project: './src/electron/tsconfig.json',
             },
@@ -837,7 +867,7 @@ module.exports = {
 
         // Enum source rules
         {
-            files: 'src/enum/**',
+            files: './src/enum/**/*.ts',
             parserOptions: {
                 project: './src/enum/tsconfig.json',
             },
@@ -849,7 +879,7 @@ module.exports = {
 
         // Backend Worker source rules
         {
-            files: 'src/worker/backend/**',
+            files: './src/worker/backend/**/*.ts',
             parserOptions: {
                 project: './src/worker/backend/tsconfig.json',
             },
@@ -860,7 +890,7 @@ module.exports = {
 
         // Backend Worker Electron source rules
         {
-            files: 'src/worker/backend/electron/**',
+            files: './src/worker/backend/electron/**/*.ts',
             parserOptions: {
                 project: './src/worker/backend/electron/tsconfig.json',
             },
@@ -872,7 +902,7 @@ module.exports = {
 
         // Service worker source rules
         {
-            files: 'src/service-worker-*.ts',
+            files: './src/service-worker-*.ts',
             parserOptions: {
                 project: './src/service-worker-tsconfig.json',
             },
@@ -881,7 +911,7 @@ module.exports = {
             },
         },
         {
-            files: 'src/worker/service/**',
+            files: './src/worker/service/**/*.ts',
             parserOptions: {
                 project: './src/worker/service/tsconfig.json',
             },
@@ -892,52 +922,45 @@ module.exports = {
 
         // General test source rules
         {
-            files: 'src/test/**',
+            files: './src/test/**/*.{cjs,js,ts}',
             rules: {
                 'no-console': 'off',
                 'func-names': 'off',
                 'prefer-arrow-callback': 'off',
+
+                // Note: Mocha requires these.
                 '@typescript-eslint/no-invalid-this': 'off',
                 '@typescript-eslint/no-unused-expressions': 'off',
             },
         },
         {
-            files: 'src/test/common/**',
+            files: './src/test/common/**/*.ts',
             parserOptions: {
                 project: './src/test/common/tsconfig.json',
             },
         },
 
-        // Cypress integration test source rules
-        // TODO(DESK-35)
-        // {
-        //     files: 'src/test/cypress/integration/**',
-        //     parserOptions: {
-        //         project: './src/test/cypress/integration/tsconfig.json',
-        //     },
-        // },
-
         // Karma test source rules
         {
-            files: 'src/test/karma/**',
+            files: './src/test/karma/**/*.ts',
             parserOptions: {
                 project: './src/test/karma/tsconfig.json',
             },
         },
         {
-            files: 'src/test/karma/app/**',
+            files: './src/test/karma/app/**/*.ts',
             parserOptions: {
                 project: './src/test/karma/app/tsconfig.json',
             },
         },
         {
-            files: 'src/test/karma/common/**',
+            files: './src/test/karma/common/**/*.ts',
             parserOptions: {
                 project: './src/test/karma/common/tsconfig.json',
             },
         },
         {
-            files: 'src/test/karma/common/dom/**',
+            files: './src/test/karma/common/dom/**/*.ts',
             parserOptions: {
                 project: './src/test/karma/common/dom/tsconfig.json',
             },
@@ -946,7 +969,7 @@ module.exports = {
             },
         },
         {
-            files: 'src/test/karma/worker/backend/**',
+            files: './src/test/karma/worker/backend/**/*.ts',
             parserOptions: {
                 project: './src/test/karma/worker/backend/tsconfig.json',
             },
@@ -955,7 +978,7 @@ module.exports = {
             },
         },
         {
-            files: 'src/test/karma/worker/service/**',
+            files: './src/test/karma/worker/service/**/*.ts',
             parserOptions: {
                 project: './src/test/karma/worker/service/tsconfig.json',
             },
@@ -966,19 +989,19 @@ module.exports = {
 
         // Mocha test source rules
         {
-            files: 'src/test/mocha/**',
+            files: './src/test/mocha/**/*.ts',
             parserOptions: {
                 project: './src/test/mocha/tsconfig.json',
             },
         },
         {
-            files: 'src/test/mocha/app/**',
+            files: './src/test/mocha/app/**/*.ts',
             parserOptions: {
                 project: './src/test/mocha/app/tsconfig.json',
             },
         },
         {
-            files: 'src/test/mocha/common/**',
+            files: './src/test/mocha/common/**/*.ts',
             parserOptions: {
                 project: './src/test/mocha/common/tsconfig.json',
             },

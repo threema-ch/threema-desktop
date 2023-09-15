@@ -21,7 +21,7 @@
   new GlobalTimer()
     .sleep(1000)
     .then(() => (minimalConnectTimerElapsed = true))
-    .catch((e) => log.error('Sleep timer failed'));
+    .catch((error) => log.error('Sleep timer failed'));
 
   /**
    * Copy linking code to clipboard. Note: this is only supposed to be used in development.

@@ -111,7 +111,7 @@ export function run(): void {
             ];
 
             for (const testCase of testCases) {
-                // eslint-disable-next-line no-loop-func
+                // eslint-disable-next-line @typescript-eslint/no-loop-func
                 it(`initialize state '${testCase.expectedState}' for inbound ${testCase.expectedState} message`, function () {
                     // Create file message in database
                     const messageId = randomMessageId(crypto);

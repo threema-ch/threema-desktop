@@ -11,7 +11,7 @@
    */
   export let unread: u53 | undefined = undefined;
 
-  let debouncedUnreadCount = unread;
+  let debouncedUnreadCount: u53 | undefined = unread;
 
   const updateDebouncedUnreadCount = debounce((newCount: u53 | undefined) => {
     debouncedUnreadCount = newCount;

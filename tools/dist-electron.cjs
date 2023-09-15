@@ -21,9 +21,8 @@ function allow(directory, pattern) {
             // -> Continue walking recursively if allowed by the pattern
             if (path.replace(directory, '').match(pattern)) {
                 return 'allow';
-            } else {
-                return 'continue';
             }
+            return 'continue';
         }
 
         const parts = directory.split('/');
@@ -253,7 +252,11 @@ async function packageApp(variant, environment) {
         ],
         download: {
             // Use checksums provided by the electron package
-            checksums: JSON.parse(fs.readFileSync(resolve(__dirname, '..', 'node_modules', 'electron', 'checksums.json'))),
+            checksums: JSON.parse(
+                fs.readFileSync(
+                    resolve(__dirname, '..', 'node_modules', 'electron', 'checksums.json'),
+                ),
+            ),
             // Override the downloader and log all download requests
             downloader: LoggingDownloader,
         },

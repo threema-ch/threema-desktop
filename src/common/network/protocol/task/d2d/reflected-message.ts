@@ -143,7 +143,7 @@ export abstract class ReflectedMessageTaskBase<
         messageTypeDebug: string,
     ): structbuf.validate.csp.e2e.ValidatedCspE2eTypes | undefined {
         try {
-            const maybeReflectedE2eType = type as ReflectedE2eType;
+            const maybeReflectedE2eType = type satisfies ReflectedE2eType;
             switch (maybeReflectedE2eType) {
                 // Contact conversation messages
                 case CspE2eConversationType.TEXT:

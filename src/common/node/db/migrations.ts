@@ -6,7 +6,7 @@ import * as process from 'process';
 import {MigrationError} from '~/common/error';
 import {type Logger} from '~/common/logging';
 import {ensureU53, ensureU64, type u53, u64ToU53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 
 // Dynamically import all migration files.
 // This is done using the glob import feature in vite:
@@ -59,18 +59,16 @@ class MigrationFile {
     public static fromFile([filepath, contents]: [string, string]): MigrationFile | undefined {
         const filename = path.basename(filepath);
         const match = filename.match(/^(?<number>\d+)-(?<name>.*)\.(?<direction>up|down)\.sql$/u);
-        if (match !== null) {
-            const groups = match.groups;
-            assert(groups !== undefined);
-            return new MigrationFile(
-                parseInt(groups.number, 10),
-                groups.name,
-                groups.direction as 'up' | 'down',
-                contents,
-            );
-        } else {
+        if (match === null) {
             return undefined;
         }
+        const groups = unwrap(match.groups);
+        return new MigrationFile(
+            parseInt(unwrap(groups.number), 10),
+            unwrap(groups.name),
+            unwrap(groups.direction) as 'up' | 'down',
+            contents,
+        );
     }
 
     public toString(): string {
@@ -270,7 +268,7 @@ export class MigrationHelper {
      */
     public static create(log: Logger): MigrationHelper {
         // Filter and parse valid embedded migration files
-        const builders: Map<u53, MigrationBuilder> = new Map();
+        const builders = new Map<u53, MigrationBuilder>();
         let maxMigrationNumber = 0;
         for (const file of Object.entries(migrationFiles).map(MigrationFile.fromFile)) {
             if (file === undefined) {
@@ -286,7 +284,7 @@ export class MigrationHelper {
         }
 
         // Combine migration pairs
-        const migrations: Map<u53, Migration> = new Map();
+        const migrations = new Map<u53, Migration>();
         for (const [index, builder] of builders) {
             const migration = builder.finish();
             migrations.set(index, migration);
@@ -316,9 +314,8 @@ export class MigrationHelper {
         if (fromVersion === toVersion) {
             this._log.info(`Database version is already ${toVersion}, nothing to do`);
             return 0;
-        } else {
-            this._log.info(`Running migrations: ${fromVersion} → ${toVersion}`);
         }
+        this._log.info(`Running migrations: ${fromVersion} → ${toVersion}`);
 
         // Ensure that the migration cache table exists
         this._setupMigrationCacheTable(db);
@@ -326,9 +323,8 @@ export class MigrationHelper {
         // Migrate up or down
         if (fromVersion < toVersion) {
             return this._migrateUp(db, fromVersion, toVersion);
-        } else {
-            return this._migrateDown(db, fromVersion, toVersion);
         }
+        return this._migrateDown(db, fromVersion, toVersion);
     }
 
     /**
@@ -385,16 +381,18 @@ export class MigrationHelper {
      */
     private _migrateUp(db: Database, fromVersion: u53, toVersion: u53): u53 {
         let count = 0;
-        for (let i = fromVersion + 1; i <= toVersion; i++) {
-            const migration = this._migrations.get(i);
+        for (let version = fromVersion + 1; version <= toVersion; version++) {
+            const migration = this._migrations.get(version);
             if (migration === undefined) {
-                throw new MigrationError(`Could not find migration for version ${i}`);
+                throw new MigrationError(`Could not find migration for version ${version}`);
             }
 
             try {
                 migration.migrateUp(db, this._log);
             } catch (error) {
-                throw new MigrationError(`Running the up-migration ${i} failed`, {from: error});
+                throw new MigrationError(`Running the up-migration ${version} failed`, {
+                    from: error,
+                });
             }
             count++;
         }
@@ -410,16 +408,18 @@ export class MigrationHelper {
         this._loadCachedMigrations(db);
 
         let count = 0;
-        for (let i = fromVersion; i > toVersion; i--) {
-            const migration = this._migrations.get(i);
+        for (let version = fromVersion; version > toVersion; version--) {
+            const migration = this._migrations.get(version);
             if (migration === undefined) {
-                throw new MigrationError(`Could not find migration for version ${i}`);
+                throw new MigrationError(`Could not find migration for version ${version}`);
             }
 
             try {
                 migration.migrateDown(db, this._log);
             } catch (error) {
-                throw new MigrationError(`Running the down-migration ${i} failed`, {from: error});
+                throw new MigrationError(`Running the down-migration ${version} failed`, {
+                    from: error,
+                });
             }
             count++;
         }

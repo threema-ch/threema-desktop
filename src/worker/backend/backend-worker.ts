@@ -16,7 +16,6 @@ import {
 import {BACKEND_WORKER_CONFIG} from '~/worker/backend/config';
 
 declare const self: DedicatedWorkerGlobalScope;
-export {};
 
 /**
  * This is the common entrypoint for the backend worker, invoked by the app

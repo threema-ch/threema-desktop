@@ -4,6 +4,7 @@ import {ReceiverType} from '~/common/enum';
 import {type Logger} from '~/common/logging';
 import {assert} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
+import {split} from '~/common/utils/string';
 
 /**
  * Interface representing the current application routing state.
@@ -67,8 +68,8 @@ export function getFragmentForRoute(
             for (const segment of key.split('.')) {
                 value = (value as Record<string, unknown>)[segment];
             }
-            assert(value !== undefined, `Value for key ${key} must not be undefined`);
-            fragment += value;
+            assert(value !== undefined, `Value for key ${key} must be defined`);
+            fragment += `${value}`;
         } else {
             fragment += part;
         }
@@ -83,7 +84,9 @@ export function getFragmentForRoute(
  */
 function stateFromUrlFragment(fragment: string, log: Logger): RouterState | undefined {
     // Try to find route corresponding to the current URL fragment
-    const [path] = fragment.split('?', 1);
+    const {
+        items: [path],
+    } = split(fragment, '?', 1);
     if (!path.startsWith('/')) {
         return undefined;
     }
@@ -367,7 +370,7 @@ export class Router extends WritableStore<RouterState> {
         if (event.state !== null && event.state !== undefined) {
             // If the popstate event contains a state, restore this.
             // (No need to update the URL, this will have already happened by now.)
-            newState = event.state;
+            newState = event.state as RouterState;
         } else {
             // Otherwise, try to recreate the state from the fragment.
             const fragment = this._environment.getUrlFragment();

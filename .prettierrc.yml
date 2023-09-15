@@ -10,7 +10,6 @@ printWidth: 100
 quoteProps: consistent
 singleQuote: true
 tabWidth: 4
-trailingComma: all
 
 # Global svelte rules
 svelteSortOrder: options-scripts-markup-styles
@@ -20,12 +19,8 @@ xmlWhitespaceSensitivity: preserve
 
 # Overrides
 overrides:
-  - files: '*.{css,json,md,scss,yml}'
+  - files: '*.{css,html,json,md,scss,svelte,yml}'
     options:
-      tabWidth: 2
-  - files: '*.{html,svelte}'
-    options:
-      printWidth: 100
       tabWidth: 2
   - files: '*.metainfo.xml'
     options:

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {tick} from 'svelte';
+
   import Password from '#3sc/components/blocks/Input/Password.svelte';
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
@@ -120,7 +122,7 @@
   };
 
   $: if (!isCurrentPasswordCorrect) {
-    setTimeout(currentPasswordInput?.focusAndSelect, 0);
+    void tick().then(() => currentPasswordInput.focusAndSelect());
   }
 
   let hasAnyError = false;

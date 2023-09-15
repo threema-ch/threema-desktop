@@ -1,6 +1,6 @@
 import {type CryptoBackend} from '~/common/crypto';
 import {type u8, type u32, type u53, type u64} from '~/common/types';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 
 /**
  * Cryptographically strong random number generator.
@@ -38,21 +38,21 @@ export function randomPkcs7PaddingLength(
  * Generate a cryptographically secure random unsigned 8-bit integer.
  */
 export function randomU8(crypto: Pick<CryptoBackend, 'randomBytes'>): u8 {
-    return crypto.randomBytes(U8_BUFFER)[0];
+    return unwrap(crypto.randomBytes(U8_BUFFER)[0]);
 }
 
 /**
  * Generate a cryptographically secure random unsigned 32-bit integer.
  */
 export function randomU32(crypto: Pick<CryptoBackend, 'randomBytes'>): u32 {
-    return crypto.randomBytes(U32_BUFFER)[0];
+    return unwrap(crypto.randomBytes(U32_BUFFER)[0]);
 }
 
 /**
  * Generate a cryptographically secure random unsigned 64-bit integer.
  */
 export function randomU64(crypto: Pick<CryptoBackend, 'randomBytes'>): u64 {
-    return crypto.randomBytes(U64_BUFFER)[0];
+    return unwrap(crypto.randomBytes(U64_BUFFER)[0]);
 }
 
 /**
@@ -104,7 +104,9 @@ export function randomString(
     length = 8,
     charset = 'abcdefghijklmnopqrstuvwxyz1234567890',
 ): string {
-    return [...Array(length)].map(() => charset[randomU32Uniform(crypto, charset.length)]).join('');
+    return [...Array<undefined>(length)]
+        .map(() => charset[randomU32Uniform(crypto, charset.length)])
+        .join('');
 }
 
 /**
@@ -121,5 +123,5 @@ export function randomChoice<T>(
         array.length > 0 && array.length < 2 ** 32,
         'Expected array to have more than 0 and less than 2 ** 32 items',
     );
-    return array[randomU32Uniform(crypto, array.length)];
+    return unwrap(array[randomU32Uniform(crypto, array.length)]);
 }

@@ -16,7 +16,8 @@
   export let isArchived = false;
   export let isDraft = false;
 
-  const hasBadge = isInactive || isCreator;
+  let hasBadge = false;
+  $: hasBadge = isInactive || isCreator;
 </script>
 
 <template>

@@ -51,11 +51,11 @@
     origin = left?.getBoundingClientRect().width ?? 0;
 
     // Determine swipe area(s)
-    if ($$slots.left !== undefined && $$slots.right !== undefined) {
+    if ($$slots.left && $$slots.right) {
       area = 'both';
-    } else if ($$slots.left !== undefined) {
+    } else if ($$slots.left) {
       area = 'left';
-    } else if ($$slots.right !== undefined) {
+    } else if ($$slots.right) {
       area = 'right';
     } else {
       throw new Error(`No swipe area set, got: ${Object.keys($$slots)}`);
@@ -81,12 +81,12 @@
     <div on:click={() => reset('smooth')} class="main">
       <slot name="main" />
     </div>
-    {#if $$slots.left !== undefined}
+    {#if $$slots.left}
       <div bind:this={left} class="left">
         <slot name="left" />
       </div>
     {/if}
-    {#if $$slots.right !== undefined}
+    {#if $$slots.right}
       <div class="right">
         <slot name="right" />
       </div>

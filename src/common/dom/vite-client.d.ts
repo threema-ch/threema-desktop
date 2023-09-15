@@ -7,6 +7,7 @@
 // eslint-disable-next-line jsdoc/no-bad-blocks
 /* eslint-disable
    capitalized-comments,
+   spaced-comment,
    @typescript-eslint/consistent-indexed-object-style,
    @typescript-eslint/consistent-type-definitions,
    @typescript-eslint/prefer-function-type,

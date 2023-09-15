@@ -86,7 +86,7 @@ export function run(): void {
                 randomMessageId(crypto),
                 randomMessageId(crypto),
                 randomMessageId(crypto),
-            ];
+            ] as const;
             for (const messageId of messageIds) {
                 conversation.get().controller.addMessage.fromSync({
                     direction: MessageDirection.OUTBOUND,
@@ -127,26 +127,26 @@ export function run(): void {
             handle.finish();
 
             // Ensure that first two messages (but not the third) were marked as received or read
-            for (let i = 0; i < 3; i++) {
-                const msg = conversation.get().controller.getMessage(messageIds[i])?.get();
-                assert(msg !== undefined, `Message ${i + 1} not found`);
+            for (const [index, messageId] of messageIds.entries()) {
+                const msg = conversation.get().controller.getMessage(messageId)?.get();
+                assert(msg !== undefined, `Message ${index + 1} not found`);
                 assert(
                     msg.ctx === MessageDirection.OUTBOUND,
-                    `Expected message ${i + 1} to be outbound`,
+                    `Expected message ${index + 1} to be outbound`,
                 );
-                if (i < 2) {
+                if (index < 2) {
                     assert(
                         getActionDate(msg.view) !== undefined,
-                        `Message ${i + 1} should be marked as ${action}`,
+                        `Message ${index + 1} should be marked as ${action}`,
                     );
                     expect(
                         getActionDate(msg.view),
-                        `Wrong ${action} date for message ${i + 1}`,
+                        `Wrong ${action} date for message ${index + 1}`,
                     ).to.equal(actionTimestamp);
                 } else {
                     assert(
                         getActionDate(msg.view) === undefined,
-                        `Message ${i + 1} should not be marked as ${action}`,
+                        `Message ${index + 1} should not be marked as ${action}`,
                     );
                 }
                 assert(msg.view.lastReaction === undefined, 'Message should not have a reaction');

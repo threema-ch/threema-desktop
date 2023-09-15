@@ -36,7 +36,7 @@ export class LocalModelStoreCache<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     TModelStore extends LocalModelStore<any>,
 > {
-    protected readonly _stores: WeakValueMap<TKey, TModelStore> = new WeakValueMap();
+    protected readonly _stores = new WeakValueMap<TKey, TModelStore>();
 
     public constructor(public readonly setRef = new LazyWeakRef<LocalSetStore<TModelStore>>()) {}
 
@@ -70,9 +70,8 @@ export class LocalModelStoreCache<
         const store = this._stores.get(key);
         if (store === undefined) {
             return;
-        } else {
-            this._stores.delete(key);
         }
+        this._stores.delete(key);
 
         // IMPORTANT: Since the map has a reference to the store, the store cannot have been
         //            silently dropped from the map even though it is weakly referenced. This means

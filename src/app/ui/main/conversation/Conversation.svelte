@@ -24,7 +24,7 @@
   import {type AnyReceiverStore, type Conversation} from '~/common/model';
   import {type RemoteModelStore} from '~/common/model/utils/model-store';
   import {type MessageId} from '~/common/network/types';
-  import {unreachable} from '~/common/utils/assert';
+  import {unreachable, unwrap} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {WritableStore} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
@@ -96,24 +96,22 @@
   /**
    * Insert forwarded message: If route defines a forwarded message, insert it into the compose area
    */
-  async function insertForwardedMessage(fwdLookup: ForwardedMessageLookup): Promise<void> {
-    if (fwdLookup === undefined) {
-      return;
-    }
-
+  async function insertForwardedMessage(forwardedLookup: ForwardedMessageLookup): Promise<void> {
     const forwardedConversation = await backend.model.conversations.getForReceiver(
-      fwdLookup.receiverLookup,
+      forwardedLookup.receiverLookup,
     );
     if (forwardedConversation === undefined) {
       return;
     }
 
-    const fwdMessage = await forwardedConversation.get().controller.getMessage(fwdLookup.messageId);
-    if (fwdMessage === undefined) {
+    const forwardedMessageStore = await forwardedConversation
+      .get()
+      .controller.getMessage(forwardedLookup.messageId);
+    if (forwardedMessageStore === undefined) {
       return;
     }
 
-    const forwardedMessage = fwdMessage.get();
+    const forwardedMessage = forwardedMessageStore.get();
     if (forwardedMessage.type === 'text') {
       composeHandler.clearText();
       composeHandler.insertText(forwardedMessage.view.text);
@@ -150,7 +148,7 @@
    */
   function sendMessageActions(_: CustomEvent): void {
     // Set Nav to Conversation Preview List
-    if ($router.nav?.id !== 'conversationList') {
+    if ($router.nav.id !== 'conversationList') {
       router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withoutParams());
     }
 
@@ -229,7 +227,7 @@
 
     // Activate scroll anchor if it is visible in the viewport and vice versa
     const observer = new IntersectionObserver(([entry]) => {
-      anchorActive = entry.isIntersecting;
+      anchorActive = unwrap(entry).isIntersecting;
     });
     observer.observe(node);
 
@@ -435,6 +433,7 @@
               'You cannot send a message to this contact because it is blocked.',
             )}
           </div>
+          <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
         {:else if $composeData.mode === 'text' || $composeData.mode === 'quote'}
           {#if $composeData.mode === 'quote'}
             <div class="quote">

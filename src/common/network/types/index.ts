@@ -275,8 +275,7 @@ export function ensureDistributionListId(id: u64): DistributionListId {
  *
  * Must be compatible with {@link common.CspFeatureMaskFlag} (except for the number type).
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const FeatureMaskFlag = {
+export const FEATURE_MASK_FLAG = {
     // No features available
     NONE: 0x00n,
     // Can handle voice messages.
@@ -300,7 +299,7 @@ export const FeatureMaskFlag = {
 /**
  * Feature bitmask (64 bits).
  *
- * For valid bitmask values, see {@link FeatureMaskFlag}.
+ * For valid bitmask values, see {@link FEATURE_MASK_FLAG}.
  */
 export type FeatureMask = WeakOpaque<u64, {readonly FeatureMask: unique symbol}>;
 

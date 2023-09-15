@@ -5,6 +5,8 @@ import {type I18nType} from '~/app/ui/i18n-types';
 import {MessageDirection} from '~/common/enum';
 import {type Conversation, type RemoteModelFor} from '~/common/model';
 import {type Mutable, type u53} from '~/common/types';
+import {entriesReverse} from '~/common/utils/array';
+import {unwrap} from '~/common/utils/assert';
 import {isToday, isWithinCurrentYear, isWithinLastWeek, isYesterday} from '~/common/utils/date';
 import {type Remote} from '~/common/utils/endpoint';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
@@ -53,10 +55,10 @@ export function hasDirectionChanged(messages: SortedMessageList, index: u53): bo
         return false;
     }
 
-    const lastMessageDirection = messages[index - 1].direction;
-    const currentMessageDirection = messages[index].direction;
+    const lastMessageDirection = messages[index - 1]?.direction;
+    const currentMessageDirection = unwrap(messages[index]).direction;
 
-    return lastMessageDirection !== currentMessageDirection;
+    return lastMessageDirection !== undefined && lastMessageDirection !== currentMessageDirection;
 }
 
 /**
@@ -146,10 +148,13 @@ function newUnreadMessageInfo(
 
     // Search for unread messages, starting at the newest message. From there, we search backwards
     // until we find the first message that's either outbound, or that has already been read.
-    for (let index = messages.length - 1; index >= 0; index--) {
-        const msgView = messages[index].messageStore.get().view;
+    for (const [index, message] of entriesReverse(messages)) {
+        const messageView = message.messageStore.get().view;
 
-        if (msgView.direction === MessageDirection.INBOUND && msgView.readAt === undefined) {
+        if (
+            messageView.direction === MessageDirection.INBOUND &&
+            messageView.readAt === undefined
+        ) {
             info.earliestUnreadMessageIndex = index;
             info.inboundUnreadMessageCount++;
         } else {
@@ -169,10 +174,13 @@ function updateUnreadMessageInfo(
         latestCheckedMessageIndex: messages.length - 1,
     };
 
-    for (let index = messages.length - 1; index > info.latestCheckedMessageIndex; index--) {
-        const msgView = messages[index].messageStore.get().view;
+    for (const [index, message] of entriesReverse(messages)) {
+        if (index <= info.latestCheckedMessageIndex) {
+            break;
+        }
+        const messageView = message.messageStore.get().view;
 
-        if (msgView.direction === MessageDirection.INBOUND) {
+        if (messageView.direction === MessageDirection.INBOUND) {
             updatedInfo.inboundUnreadMessageCount++;
         } else {
             updatedInfo.hasOutboundMessageAfterEarliestUnreadMessage = true;
@@ -188,11 +196,11 @@ export function isLastMessageOutbound(messageList: SortedMessageList): boolean {
 }
 
 export function isLastOutboundMessageOlderThan(
-    messageList: SortedMessageList,
+    messages: SortedMessageList,
     thresholdAgeInMillis: u53,
 ): boolean {
-    for (let index = messageList.length - 1; index >= 0; index--) {
-        const messageStore = messageList[index].messageStore;
+    for (const [, message] of entriesReverse(messages)) {
+        const messageStore = message.messageStore;
 
         if (messageStore.ctx === MessageDirection.OUTBOUND) {
             const lastOutboundMessageCreatedAt = messageStore.get().view.createdAt;

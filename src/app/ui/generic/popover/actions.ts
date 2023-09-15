@@ -23,7 +23,6 @@ interface ClickOutsideActionProperties {
  * action.
  */
 interface ClickOutsideActionAttributes {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     readonly 'on:clickoutside': (event: CustomEvent<ClickOutsideEventDetail>) => void;
 }
 

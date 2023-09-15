@@ -401,8 +401,8 @@ export async function downloadBlob(
                 messageDirection,
             )} message as downloaded (scope=${blobDoneScope})`,
         );
-        downloadResult.done(blobDoneScope).catch((e) => {
-            log.error(`Failed to mark blob with id ${bytesToHex(blobId)} as done`, e);
+        downloadResult.done(blobDoneScope).catch((error) => {
+            log.error(`Failed to mark blob with id ${bytesToHex(blobId)} as done`, error);
         });
         log.info(`Downloaded ${type} blob`);
 

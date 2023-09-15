@@ -499,7 +499,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
     implements InboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<TView>();
+    public override readonly meta = new ModelLifetimeGuard<TView>();
 
     public readonly read: InboundBaseMessageController<TView>['read'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -594,7 +594,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
     implements OutboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
-    public readonly meta = new ModelLifetimeGuard<TView>();
+    public override readonly meta = new ModelLifetimeGuard<TView>();
 
     public readonly delivered: OutboundBaseMessageController<TView>['delivered'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
@@ -723,7 +723,6 @@ export function statusFromView(
         return ['delivered', view.deliveredAt];
     } else if (view.sentAt !== undefined) {
         return ['sent', view.sentAt];
-    } else {
-        return ['pending', view.createdAt];
     }
+    return ['pending', view.createdAt];
 }

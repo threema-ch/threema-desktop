@@ -22,6 +22,7 @@
     type MediaFile,
     resizeImage,
     validateMediaFiles,
+    ValidationResult,
   } from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
@@ -51,10 +52,10 @@
   export let moreFilesAttachable = true;
 
   // Values bound by Svelte could become null.
-  let sendButtonWrapper: HTMLElement | undefined | null;
-  let sendButtonPopover: Popover | undefined | null;
-  let emojiPickerPopover: Popover | undefined | null;
-  let captionComposeArea: Caption | undefined | null;
+  let sendButtonWrapper: HTMLElement | null | undefined;
+  let sendButtonPopover: Popover | null | undefined;
+  let emojiPickerPopover: Popover | null | undefined;
+  let captionComposeArea: Caption | null | undefined;
 
   let activeMediaFileIndex: u53 = 0;
   let confirmCloseDialogVisible = false;
@@ -78,7 +79,7 @@
    * Save caption text to the `mediaFile.caption` store.
    */
   function saveCurrentCaption(): void {
-    mediaFiles.at(activeMediaFileIndex)?.caption.set(captionComposeArea?.getText());
+    mediaFiles[activeMediaFileIndex]?.caption.set(captionComposeArea?.getText());
   }
 
   /**
@@ -115,7 +116,7 @@
    * dialog.
    */
   function setNewActiveMediaFile(index: u53): void {
-    const mediaFile = mediaFiles.at(index);
+    const mediaFile = mediaFiles[index];
     if (mediaFile !== undefined) {
       activeMediaFileIndex = index;
 
@@ -241,7 +242,16 @@
   let bodyHover = false;
 
   $: validatedMediaFiles = validateMediaFiles(mediaFiles);
-  $: [activeMediaFile, activeValidationResult] = validatedMediaFiles.at(activeMediaFileIndex) ?? [];
+
+  let activeMediaFile: MediaFile | undefined;
+  let activeValidationResult: ValidationResult | undefined;
+  $: {
+    const file = validatedMediaFiles[activeMediaFileIndex];
+    if (file !== undefined) {
+      [activeMediaFile, activeValidationResult] = file;
+    }
+  }
+
   $: activeCaption = activeMediaFile?.caption;
   $: {
     // Trigger reactivity of `mediaFiles` when `activeCaption` changes (e.g. to trigger another
@@ -250,6 +260,7 @@
     $activeCaption;
     mediaFiles = [...mediaFiles];
   }
+
   $: isSendingEnabled = validatedMediaFiles.every(([_, result]) => result.status === 'ok');
 
   function handleHotkeyControlE(): void {
@@ -313,7 +324,7 @@
             <div class="caption">
               <Caption
                 bind:this={captionComposeArea}
-                initialText={activeMediaFile?.caption?.get()}
+                initialText={activeMediaFile?.caption.get()}
                 on:submit={sendMessages}
                 on:textByteLengthChanged={handleTextChange}
               />

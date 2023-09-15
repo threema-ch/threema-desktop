@@ -73,11 +73,9 @@ export interface DeviceJoinResult {
 export class DeviceJoinProtocol {
     public abort: AbortRaiser<RendezvousCloseCause>;
 
-    private _state: JoinState = 'wait-for-begin';
-
     private readonly _reader: ReadableStreamDefaultReader<Uint8Array>;
     private readonly _writer: WritableStreamDefaultWriter<ReadonlyUint8Array>;
-    private readonly _essentialData: Delayed<EssentialData.Type> = new Delayed(
+    private readonly _essentialData = new Delayed<EssentialData.Type>(
         () =>
             new DeviceJoinError(
                 {kind: 'internal'},
@@ -90,7 +88,9 @@ export class DeviceJoinProtocol {
      * Mapping from {@link BlobIdString} to the {@link StoredFileHandle} as returned by the file
      * storage.
      */
-    private readonly _blobIdToFileId: Map<BlobIdString, StoredFileHandle> = new Map();
+    private readonly _blobIdToFileId = new Map<BlobIdString, StoredFileHandle>();
+
+    private _state: JoinState = 'wait-for-begin';
 
     public constructor(
         private readonly _rendezvousConnection: RendezvousConnection,

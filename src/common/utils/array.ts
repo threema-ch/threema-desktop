@@ -1,4 +1,5 @@
 import {type Primitive, type u53} from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
 
 /**
  * Group a large array into multiple smaller arrays with the same max size.
@@ -82,4 +83,20 @@ export function joinConstArray<Arr extends readonly string[], Separator extends 
     separator: Separator = ',' as Separator,
 ): Join<Arr, Separator> {
     return arr.join(separator) as Join<Arr, Separator>;
+}
+
+/**
+ * Iterate in reverse direction over the array.
+ *
+ * Note: Mutation of the array while iterating leads to undefined behaviour!
+ */
+export function* entriesReverse<T>(
+    array: readonly T[],
+): IterableIterator<readonly [index: u53, value: T]> {
+    if (array.length === 0) {
+        return;
+    }
+    for (let index = array.length - 1; index >= 0; --index) {
+        yield [index, unwrap(array[index])];
+    }
 }

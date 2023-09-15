@@ -1,4 +1,3 @@
-import {type Database} from 'better-sqlcipher';
 import {expect} from 'chai';
 
 import {type DbContactUid} from '~/common/db';
@@ -21,7 +20,7 @@ export function run(): void {
 
             it('should complete the self-test', function () {
                 // Run self-test
-                db.selftest();
+                db.checkIntegrity();
             });
 
             /**
@@ -32,7 +31,7 @@ export function run(): void {
 
                 // Create a contact using raw SQL (so we can control the storage format)
                 // @ts-expect-error: Private property
-                (db._rawDb as Database).exec(`
+                db._rawDb.exec(`
                     INSERT INTO contacts(uid, identity, publicKey, createdAt, identityType)
                     VALUES (
                         1000,

@@ -215,23 +215,23 @@ export class CryptoBoxEncryptor<
 
             // Done
             return nonce as TNonceScope extends NonceUnguardedScope ? Nonce : INonceGuard;
-        } else {
-            assert(
-                this._box.nonceService !== undefined,
-                'NonceService must be defined since nonceScope is not NonceUnguardedScope',
-            );
-
-            const nonceGuard = this._box.nonceService.getRandomNonce(this._box.nonceScope);
-
-            const arrayHeadroom = this._array.subarray(0, NACL_CONSTANTS.NONCE_LENGTH);
-            arrayHeadroom.set(nonceGuard.nonce);
-
-            // Encrypt data in-place
-            this._encrypt(nonceGuard.nonce);
-
-            // Done
-            return nonceGuard as TNonceScope extends NonceUnguardedScope ? Nonce : INonceGuard;
         }
+
+        assert(
+            this._box.nonceService !== undefined,
+            'NonceService must be defined since nonceScope is not NonceUnguardedScope',
+        );
+
+        const nonceGuard = this._box.nonceService.getRandomNonce(this._box.nonceScope);
+
+        const arrayHeadroom = this._array.subarray(0, NACL_CONSTANTS.NONCE_LENGTH);
+        arrayHeadroom.set(nonceGuard.nonce);
+
+        // Encrypt data in-place
+        this._encrypt(nonceGuard.nonce);
+
+        // Done
+        return nonceGuard as TNonceScope extends NonceUnguardedScope ? Nonce : INonceGuard;
     }
 
     private _encrypt(nonce: Nonce): void {
@@ -600,7 +600,7 @@ export class SecureSharedBoxFactory<
         const sharedKey = this.#_makeSharedSecret(publicKey);
         const derivedKey = deriveKey(length, sharedKey, parameters);
         sharedKey.purge();
-        return derivedKey as RawKey<TDerivedKeyLength>;
+        return derivedKey;
     }
 
     /**
@@ -612,6 +612,6 @@ export class SecureSharedBoxFactory<
      * @returns A crypto box for encryption/decryption.
      */
     public getSharedBox(publicKey: PublicKey): TBox {
-        return this.#_makeSharedBox(publicKey) as TBox;
+        return this.#_makeSharedBox(publicKey);
     }
 }

@@ -21,10 +21,9 @@ function traverse(root, matchers, transform) {
         if (matcher(node)) {
             // Recursive descent
             return traverse(node, matchers.slice(), transform);
-        } else {
-            // Continue
-            return undefined;
         }
+        // Continue
+        return undefined;
     });
 
     // Continue

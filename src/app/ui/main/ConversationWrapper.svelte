@@ -35,7 +35,7 @@
   let viewModelController: Remote<IConversationViewModelController> | undefined;
 
   // Look up conversation
-  $: if (receiverLookup !== undefined) {
+  $: {
     void backend.viewModel.conversation(receiverLookup).then((conversationViewModelParam) => {
       if (conversationViewModelParam === undefined) {
         // Show toast and navigate to welcome page

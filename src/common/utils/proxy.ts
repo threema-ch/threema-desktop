@@ -15,11 +15,13 @@ export class ProxyHandlerWrapper<T extends object> implements ProxyHandler<T> {
         // Invoke handler
         let result = attribute;
         if (this._handler.get !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = this._handler.get(target, property, receiver);
         }
 
         // Bind if needed (is the base attribute and function)
         if (result === attribute && attribute instanceof Function) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             result = attribute.bind(target);
         }
         return result;

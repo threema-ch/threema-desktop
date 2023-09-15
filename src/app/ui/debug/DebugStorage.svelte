@@ -12,7 +12,7 @@
     type DistributionListView,
     type GroupView,
   } from '~/common/model';
-  import {unreachable} from '~/common/utils/assert';
+  import {unreachable, unwrap} from '~/common/utils/assert';
 
   export let services: AppServices;
 
@@ -152,7 +152,7 @@
   const locales: Locale[] = [...LOCALES];
 
   function cycleLocale(): void {
-    $locale = locales.shift() ?? LOCALES[0];
+    $locale = locales.shift() ?? unwrap(LOCALES[0]);
     locales.push($locale);
   }
 
@@ -205,7 +205,8 @@
     </Button>
     <p>
       <em>
-        This will delete the profile data on this device, unlink the device from your Threema ID and {#if import.meta.env.BUILD_TARGET === 'electron'}restart{:else}reload{/if}.
+        This will delete the profile data on this device, unlink the device from your Threema ID and
+        restart.
       </em>
       {#if import.meta.env.DEBUG}
         <br />

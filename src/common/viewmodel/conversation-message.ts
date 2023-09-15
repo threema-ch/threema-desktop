@@ -204,9 +204,8 @@ function getMessageOrdinal(message: AnyMessageModel): u53 {
     // TODO(DESK-296): BE: Implement full-featured thread-based message sorting.
     if (message.view.direction === MessageDirection.INBOUND) {
         return message.view.receivedAt.getTime();
-    } else {
-        return message.view.sentAt?.getTime() ?? message.view.createdAt.getTime();
     }
+    return message.view.sentAt?.getTime() ?? message.view.createdAt.getTime();
 }
 
 /**

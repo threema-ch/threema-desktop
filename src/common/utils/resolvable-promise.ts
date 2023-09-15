@@ -29,8 +29,8 @@ export class ResolvablePromise<V, E extends Error = Error>
     extends Promise<V>
     implements QueryablePromise<V>
 {
-    private _state: QueryablePromiseState<V, E>;
     private readonly _inner: PromiseFn<V, E>;
+    private _state: QueryablePromiseState<V, E>;
 
     public constructor(
         executor?: (resolve: (value: V) => void, reject: (reason: E) => void) => void,
@@ -54,7 +54,6 @@ export class ResolvablePromise<V, E extends Error = Error>
                 inner.reject = innerReject;
                 if (executor) {
                     executor(outer.resolve, outer.reject);
-                    return;
                 }
             },
         );
@@ -68,10 +67,10 @@ export class ResolvablePromise<V, E extends Error = Error>
     /**
      * Creates a new resolvable promise that is immediately resolved.
      */
-    public static resolve<E extends Error = Error>(): ResolvablePromise<void, E>;
-    public static resolve<V, E extends Error = Error>(value: V): ResolvablePromise<V, E>;
+    public static override resolve<E extends Error = Error>(): ResolvablePromise<void, E>;
+    public static override resolve<V, E extends Error = Error>(value: V): ResolvablePromise<V, E>;
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    public static resolve<V, E extends Error = Error>(value?: V): ResolvablePromise<V, E> {
+    public static override resolve<V, E extends Error = Error>(value?: V): ResolvablePromise<V, E> {
         const promise = new ResolvablePromise<V, E>();
         promise.resolve(value as V);
         return promise;
@@ -87,8 +86,8 @@ export class ResolvablePromise<V, E extends Error = Error>
             .then((v) => {
                 promise.resolve(v);
             })
-            .catch((e) => {
-                promise.reject(ensureError(e));
+            .catch((error) => {
+                promise.reject(ensureError(error));
             });
         return promise;
     }

@@ -28,9 +28,9 @@ import {byteView, hexToBytes} from '~/common/utils/byte';
 export class FileChunkNonce {
     public static readonly MAX_COUNTER = 2 ** 32 - 1;
 
+    private readonly _nonce: Uint8Array;
     private _counter: u53 = 1;
     private _lastChunkReached = false;
-    private readonly _nonce: Uint8Array;
 
     public constructor(fileId: FileId) {
         // Determine file ID suffix (last 4 bytes)

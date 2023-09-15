@@ -95,13 +95,7 @@ export function filterConversations(
             .sort((a, b) => {
                 const aTime = unwrap(a.get().view.lastUpdate).getTime();
                 const bTime = unwrap(b.get().view.lastUpdate).getTime();
-                if (aTime > bTime) {
-                    return -1;
-                }
-                if (aTime < bTime) {
-                    return 1;
-                }
-                return 0;
+                return bTime - aTime;
             }),
     );
 }

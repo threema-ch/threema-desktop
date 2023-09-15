@@ -40,7 +40,7 @@ const FAILURE_RULES: readonly [
  */
 export function validateMediaFiles(
     mediaFiles: MediaFile[],
-): [mediaFile: MediaFile, result: ValidationResult][] {
+): readonly [mediaFile: MediaFile, result: ValidationResult][] {
     return mediaFiles.map((mediaFile) => [mediaFile, validateMediaFile(mediaFile)]);
 }
 
@@ -60,12 +60,11 @@ export function validateMediaFile(mediaFile: MediaFile): ValidationResult {
         return {
             status: 'ok',
         };
-    } else {
-        return {
-            status: 'error',
-            reasons,
-        };
     }
+    return {
+        status: 'error',
+        reasons,
+    };
 }
 
 function isFileTooLarge(mediaFile: MediaFile): boolean {

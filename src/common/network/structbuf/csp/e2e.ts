@@ -540,7 +540,7 @@ export class Container extends base.Struct implements ContainerLike {
      * field's description.
      */
     public get type(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -3890,7 +3890,7 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
      * field's description.
      */
     public get status(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -4060,7 +4060,7 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
      * field's description.
      */
     public get isTyping(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**

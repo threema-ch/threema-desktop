@@ -20,11 +20,11 @@
   import {ComposeArea} from '@threema/compose-area/web';
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
   import {type Readable} from 'svelte/store';
-  import {ElementResizeObserver} from 'threema-svelte-components/src/utils/observer';
 
+  import {ElementResizeObserver} from '#3sc/utils/observer';
   import {globals} from '~/app/globals';
   import {type u32, type u53} from '~/common/types';
-  import {isNotUndefined, unreachable} from '~/common/utils/assert';
+  import {isNotUndefined, unreachable, unwrap} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
   import {getUtf8ByteLength} from '~/common/utils/string';
   import {debounce} from '~/common/utils/timer';
@@ -218,10 +218,12 @@
     const items: DataTransferItemList = ev.clipboardData.items;
     const fileItems: DataTransferItem[] = [];
     let textItem: DataTransferItem | undefined;
-    // Note: Unfortunately `DataTransferItemList` not implement iterator, so for-of is not possible
+    // Note: Unfortunately `DataTransferItemList` does not implement iterator, so for-of is not
+    // possible.
+    //
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+    for (let index = 0; index < items.length; ++index) {
+      const item = unwrap(items[index]);
       if (item.kind === 'file') {
         fileItems.push(item);
       } else if (item.kind === 'string' && item.type === 'text/plain') {

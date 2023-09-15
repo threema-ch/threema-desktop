@@ -3,7 +3,7 @@ import * as sha256 from 'fast-sha256';
 import {ReceiverType} from '~/common/enum';
 import {type ConversationId} from '~/common/network/types';
 import {type u8, type u53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToBytesLe} from '~/common/utils/number';
 
@@ -33,8 +33,7 @@ export type IdColor = (typeof COLOR_GROUPS)[u53];
  */
 export function idColorIndex(conversationId: ConversationId): u8 {
     const hashedBytes = sha256.hash(getBytesToHash(conversationId));
-    assert(hashedBytes.byteLength > 0, 'Empty SHA256 hash');
-    return hashedBytes[0];
+    return unwrap(hashedBytes[0], 'Empty SHA256 hash');
 }
 
 /**
@@ -61,6 +60,5 @@ function getBytesToHash(conversationId: ConversationId): Uint8Array {
  * Convert a color index (0-255) to an {@link IdColor} color string.
  */
 export function idColorIndexToString(index: u8): IdColor {
-    const i = Math.floor(index / 16);
-    return COLOR_GROUPS[i];
+    return unwrap(COLOR_GROUPS[Math.floor(index / 16)]);
 }

@@ -1,4 +1,3 @@
-import {fail} from 'assert';
 import * as chai from 'chai';
 
 import {
@@ -7,6 +6,7 @@ import {
     createHash as blake2b,
     KEYBYTES,
 } from '~/common/crypto/blake2b/implementation';
+import {unwrap} from '~/common/utils/assert';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 import {type Blake2bTestVector, testVectors} from '~/test/mocha/common/crypto/blake2b/test-vectors';
 
@@ -37,32 +37,40 @@ function failureMessage(testVector: Blake2bTestVector, error?: unknown): string 
 export function run(): void {
     describe('Blake2b implementation', function () {
         it('should pass all tests from the original library', function () {
-            for (const v of testVectors) {
-                // prettier-ignore
-                try {
-                    const out = new Uint8Array(v.outlen);
+            for (const vector of testVectors) {
+                expect(() => {
+                    const out = new Uint8Array(vector.outlen);
 
-                    const input = hexWrite(new Uint8Array(v.input.length / 2), v.input)
-                    const key = v.key.length === 0 ? null : hexWrite(new Uint8Array(v.key.length / 2), v.key)
-                    const salt = v.salt.length === 0 ? null : hexWrite(new Uint8Array(v.salt.length / 2), v.salt)
-                    const personal = v.personal.length === 0 ? null : hexWrite(new Uint8Array(v.personal.length / 2), v.personal)
-              
-                    const expected = Buffer.from(hexWrite(new Uint8Array(v.out.length / 2), v.out))
+                    const input = hexWrite(new Uint8Array(vector.input.length / 2), vector.input);
+                    const key =
+                        vector.key.length === 0
+                            ? null
+                            : hexWrite(new Uint8Array(vector.key.length / 2), vector.key);
+                    const salt =
+                        vector.salt.length === 0
+                            ? null
+                            : hexWrite(new Uint8Array(vector.salt.length / 2), vector.salt);
+                    const personal =
+                        vector.personal.length === 0
+                            ? null
+                            : hexWrite(new Uint8Array(vector.personal.length / 2), vector.personal);
+
+                    const expected = Buffer.from(
+                        hexWrite(new Uint8Array(vector.out.length / 2), vector.out),
+                    );
                     const actual = Buffer.from(
                         // eslint-disable-next-line threema/ban-typed-array-length
                         blake2b(out.length, key, salt, personal, true).update(input).digest(out),
                     );
 
-                    expect(actual, failureMessage(v)).to.eql(expected);
-                } catch (error) {
-                    fail(failureMessage(v, error));
-                }
+                    expect(actual, failureMessage(vector)).to.eql(expected);
+                }).not.to.throw;
             }
         });
 
         describe('for buffers', function () {
             it('should work', function () {
-                const vector = testVectors.slice(-1)[0];
+                const vector = unwrap(testVectors.at(-1));
 
                 const out = Buffer.allocUnsafe(vector.outlen);
                 const input = Buffer.from(vector.input, 'hex');

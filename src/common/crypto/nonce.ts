@@ -186,13 +186,13 @@ export class NonceRegistry implements INonceRegistry {
         // Overload the nonceguard to also allocate / deallocate nonces from the registry.
         const nonceGuard = new (class extends NonceGuard {
             /** @inheritdoc */
-            public discard(): void {
+            public override discard(): void {
                 super.discard();
                 deleteAllocatedNonce();
             }
 
             /** @inheritdoc */
-            public commit(): void {
+            public override commit(): void {
                 super.commit();
                 deleteAllocatedNonce();
             }

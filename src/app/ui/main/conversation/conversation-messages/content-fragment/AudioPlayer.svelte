@@ -48,7 +48,7 @@
   /**
    * Whether an audio track is currently loaded.
    */
-  let isLoaded: ResolvablePromise<void> = new ResolvablePromise();
+  let isLoaded = new ResolvablePromise<void>();
 
   /**
    * Whether playback is paused.

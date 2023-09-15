@@ -21,12 +21,10 @@
   const dialogComponents: {
     readonly [Property in SystemDialog['type']]: typeof SvelteComponent;
   } = {
-    /* eslint-disable @typescript-eslint/naming-convention */
     'app-update': AppUpdate,
     'connection-error': ConnectionError,
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
-    /* eslint-enable @typescript-eslint/naming-convention */
   };
 
   function closeDialog(action: DialogAction): void {

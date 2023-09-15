@@ -199,7 +199,7 @@ export class LocalDerivedSetStore<
     public constructor(
         source: LocalSetStore<TValue>,
         derive: (value: TValue) => TDerived,
-        public readonly options?: StoreOptions<ReadonlySet<TDerived>>,
+        public override readonly options?: StoreOptions<ReadonlySet<TDerived>>,
     ) {
         const map = new Map([...source.get()].map((value) => [value, derive(value)]));
         super(new Set(map.values()));
@@ -516,6 +516,7 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         });
         return [
             [id, store.tag, store.options?.debug?.log?.prefix, endpoint.remote, values],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             [endpoint.remote, ...transfers],
         ];
     },

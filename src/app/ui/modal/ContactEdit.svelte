@@ -26,7 +26,7 @@
   let firstName = '';
   let lastName = '';
   let displayName = '';
-  let inputFirstName: TextInput;
+  let inputFirstName: TextInput | undefined;
 
   function closeModal(): void {
     router.closeModal();
@@ -71,9 +71,7 @@
     closeModal();
   }
 
-  $: if (inputFirstName !== undefined && inputFirstName !== null) {
-    inputFirstName.focus();
-  }
+  $: inputFirstName?.focus();
 
   onMount(loadContactOrCloseModal);
 </script>

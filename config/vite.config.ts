@@ -239,9 +239,7 @@ function makeConfig(
 }
 
 export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
-    const [target, entry, variant, environment] = (process.env.VITE_MAKE?.split(',', 4) ??
-        []) as readonly (string | undefined)[];
-
+    const [target, entry, variant, environment] = process.env.VITE_MAKE?.split(',', 4) ?? [];
     if (
         target === undefined ||
         entry === undefined ||
@@ -305,9 +303,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
         }),
         tsconfigPaths: tsconfigPaths({
             projects: [
-                // Threema Svelte Components (#3sc)
-                //
-                // Note: We need to resolve the canonical path in order to avoid errors
+                // Libs
                 fs.realpathSync('./node_modules/threema-svelte-components/src/tsconfig.lib.json'),
 
                 // Sources

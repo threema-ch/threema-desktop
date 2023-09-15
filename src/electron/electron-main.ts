@@ -33,7 +33,6 @@ const EXIT_CODE_RESTART = 8;
 const ELECTRON_PATH_APP_DATA = 'appData';
 const ELECTRON_PATH_USER_DATA = 'userData';
 
-/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Run parameters parsed from CLI arguments.
  */
@@ -60,7 +59,6 @@ const RUN_PARAMETERS_DOCS: {readonly [K in keyof RunParameters]: string} = {
     'single-instance-lock':
         '<true|false> – Prevent running multiple instances of Threema Desktop at the same time (default: "true"). Development option, disable at your own risk!',
 };
-/* eslint-enable @typescript-eslint/naming-convention */
 
 const ABOUT_PANEL_OPTIONS: electron.AboutPanelOptionsOptions = {
     applicationName: import.meta.env.APP_NAME,
@@ -178,7 +176,7 @@ function handleCriticalError(
                 electron.app.exit(EXIT_CODE_UNCAUGHT_ERROR);
             }
         })
-        .catch((e) => log.error(`Dialog promise unsuccessful: ${e}`));
+        .catch((error) => log.error(`Dialog promise unsuccessful: ${error}`));
 }
 
 function buildElectronMenu(): electron.Menu {
@@ -297,16 +295,16 @@ async function init(): Promise<MainInit> {
             //
             // Note: Don't use dot notation below, see https://stackoverflow.com/a/72403165/284318
             // eslint-disable-next-line dot-notation
-            const XDG_DATA_HOME = (process.env['XDG_DATA_HOME'] ?? '').trim();
+            const XDG_DATA_HOME = (process.env.XDG_DATA_HOME ?? '').trim();
             const baseDir =
                 XDG_DATA_HOME.length > 0
                     ? XDG_DATA_HOME
                     : path.join(os.homedir(), '.local', 'share');
             return [baseDir, rootDirectoryName];
-        } else {
-            // On other operating systems, let Electron decide.
-            return [path.join(electron.app.getPath(ELECTRON_PATH_APP_DATA), rootDirectoryName)];
         }
+        
+        // On other operating systems, let Electron decide.
+        return [path.join(electron.app.getPath(ELECTRON_PATH_APP_DATA), rootDirectoryName)];
     }
 
     /**
@@ -479,8 +477,8 @@ function main(
 
         try {
             fs.renameSync(appPath, unlinkedAppPath);
-        } catch (e) {
-            const error = ensureError(e);
+        } catch (error_) {
+            const error = ensureError(error_);
             log.error(
                 `Error: Moving profile directory ${appPath} to ${unlinkedAppPath} failed:\n  ${error.message}`,
             );
@@ -756,7 +754,6 @@ function main(
             return callback({
                 responseHeaders: {
                     ...details.responseHeaders,
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     'Content-Security-Policy': [
                         // Fetch directives
                         "default-src 'self'",
@@ -945,6 +942,5 @@ void (async () => {
             message: `Main process crashed`,
             stacktrace,
         });
-        return;
     }
 })();

@@ -270,7 +270,6 @@ async function requestSafeBackupUrl(
     let response: Response;
     try {
         const headers = new Headers({
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             'user-agent': config.USER_AGENT,
             'accept': 'application/octet-stream',
         });
@@ -458,7 +457,7 @@ export async function downloadSafeBackup(
     }
     const decoded = await decodeBackupBytes(decrypted, services);
 
-    let json;
+    let json: unknown;
     try {
         json = JSON.parse(decoded);
     } catch (error) {

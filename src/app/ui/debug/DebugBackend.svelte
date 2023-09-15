@@ -15,9 +15,11 @@
   const {connectionState, leaderState} = backend;
 
   let connectionState$: ConnectionState;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   $: connectionState$ = $connectionState as ConnectionState;
 
   let leaderState$: D2mLeaderState;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   $: leaderState$ = $leaderState as D2mLeaderState;
 
   const deviceIds = backend.deviceIds;

@@ -43,7 +43,6 @@ export class IncomingAlertPayloadTask implements PassiveTask<void> {
                 });
         } catch (error) {
             this._log.error(`Incoming server alert with invalid UTF-8`);
-            return;
         }
     }
 }

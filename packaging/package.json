@@ -1,6 +1,6 @@
 {
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "main": "./build/packaging/main.js",
   "sideEffects": false,
   "scripts": {

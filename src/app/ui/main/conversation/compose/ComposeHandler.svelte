@@ -8,7 +8,7 @@
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {ReceiverType} from '~/common/enum';
   import {type AnyReceiverStore} from '~/common/model';
-  import {unreachable} from '~/common/utils/assert';
+  import {unreachable, unwrap} from '~/common/utils/assert';
   import {type Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {WritableStore} from '~/common/utils/store';
@@ -83,7 +83,7 @@
 
     // If there is only one file, move the current compose text to the caption.
     if (mediaFiles.length === 1) {
-      mediaFiles[0].caption.set(composeBar.getText());
+      unwrap(mediaFiles[0]).caption.set(composeBar.getText());
       clearText();
     }
 

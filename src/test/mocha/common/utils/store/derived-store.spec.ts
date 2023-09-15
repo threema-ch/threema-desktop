@@ -11,26 +11,17 @@ import {
     type StoreUnsubscriber,
     WritableStore,
 } from '~/common/utils/store';
-import {DerivedStore, type DeriveFunction, type States} from '~/common/utils/store/derived-store';
-
-class ExposedDerivedStore<
-    TSourceStore extends IQueryableStore<unknown>,
-    TDerivedValue extends TOutDerivedValue,
-    TOutDerivedValue = TDerivedValue,
-> extends DerivedStore<TSourceStore, TDerivedValue, TOutDerivedValue> {
-    public declare _sourceStore: TSourceStore;
-    public declare _state: States<TSourceStore, TDerivedValue, TOutDerivedValue>;
-}
+import {DerivedStore, type DeriveFunction} from '~/common/utils/store/derived-store';
 
 type SourceStore = WritableStore<u32>;
 
 function createSimpleDerivedStore(): readonly [
-    derivedStore: ExposedDerivedStore<SourceStore, Readonly<{answer: string}>>,
+    derivedStore: DerivedStore<SourceStore, Readonly<{answer: string}>>,
     sourceStore: SourceStore,
 ] {
     const sourceStore = new WritableStore(41);
 
-    const derivedStore = new ExposedDerivedStore(sourceStore, (source) => ({
+    const derivedStore = new DerivedStore(sourceStore, (source) => ({
         answer: `is ${source + 1}`,
     }));
     return [derivedStore, sourceStore];
@@ -43,7 +34,7 @@ type LayeredStore = WritableStore<{
 function createLayeredDerivedStore<TDerived>(
     deriveFunction: DeriveFunction<LayeredStore, TDerived>,
 ): readonly [
-    derivedStore: ExposedDerivedStore<LayeredStore, TDerived>,
+    derivedStore: DerivedStore<LayeredStore, TDerived>,
     sourceStore: LayeredStore,
     innerStore: SourceStore,
 ] {
@@ -52,7 +43,7 @@ function createLayeredDerivedStore<TDerived>(
         innerStore,
     } as const);
 
-    const derivedStore = new ExposedDerivedStore(sourceStore, deriveFunction);
+    const derivedStore = new DerivedStore(sourceStore, deriveFunction);
 
     return [derivedStore, sourceStore, innerStore];
 }
@@ -71,6 +62,7 @@ export function run(): void {
             });
             it('should work when store was in disabled state', function () {
                 const [store] = createSimpleDerivedStore();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
                 expect(store.get()).to.deep.equal(EXPECTED);
             });
@@ -79,15 +71,19 @@ export function run(): void {
                 const unsubscriber = store.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
                 expect(store.get()).to.deep.equal(EXPECTED);
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
                 unsubscriber();
             });
             it('should return the store to the disabled state', function () {
                 const [store] = createSimpleDerivedStore();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
                 expect(store.get()).to.deep.equal(EXPECTED);
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
             });
         });
@@ -98,6 +94,7 @@ export function run(): void {
                 const unsubscriber = store.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(store._state.symbol, 'Store to be enabled after subscriptions').to.equal(
                     LAZY_STORE_ENABLED_STATE,
                 );
@@ -105,6 +102,7 @@ export function run(): void {
             });
             it('should disable the store on last unsubscription', function () {
                 const [store] = createSimpleDerivedStore();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
 
                 const unsubscribers = [undefined, undefined].map(() =>
@@ -112,17 +110,20 @@ export function run(): void {
                         // No-op
                     }),
                 );
+                // @ts-expect-error: Private property
                 expect(store._state.symbol, 'Store to be enabled after subscriptions').to.equal(
                     LAZY_STORE_ENABLED_STATE,
                 );
 
-                unsubscribers[0]();
+                unsubscribers[0]?.();
                 expect(
+                    // @ts-expect-error: Private property
                     store._state.symbol,
                     'Store to be enabled after first unsubscriptions',
                 ).to.equal(LAZY_STORE_ENABLED_STATE);
-                unsubscribers[1]();
+                unsubscribers[1]?.();
                 expect(
+                    // @ts-expect-error: Private property
                     store._state.symbol,
                     'Store to be disabled after second unsubscriptions',
                 ).to.equal(LAZY_STORE_DISABLED_STATE);
@@ -178,10 +179,12 @@ export function run(): void {
                     },
                 });
 
-                const store = new ExposedDerivedStore(sourceStore, () => undefined);
+                const store = new DerivedStore(sourceStore, () => undefined);
 
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
                 expect(store.get()).to.equal('test');
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
             });
             it('should throw when a sourceStore updates value on a disable store', function () {
@@ -199,13 +202,15 @@ export function run(): void {
                     }
                 })();
 
-                const store = new ExposedDerivedStore(faultySourceStore, () => undefined);
+                const store = new DerivedStore(faultySourceStore, () => undefined);
                 const derivedStoreUnsubscriber = store.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
                 expect(sourceStoreSubscriber).to.not.be.undefined;
                 derivedStoreUnsubscriber();
+                // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
 
                 expect(() => {
@@ -222,6 +227,7 @@ export function run(): void {
                 const [derivedStore] = createSimpleDerivedStore();
                 const newSourceStore = new WritableStore(42);
                 derivedStore.replaceSourceStore(newSourceStore);
+                // @ts-expect-error: Private property
                 expect(derivedStore._sourceStore).to.equal(newSourceStore);
             });
             it('should keep the previous derivedValueStore', function () {
@@ -229,12 +235,16 @@ export function run(): void {
                 const derivedStoreUnsubscriber = derivedStore.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(derivedStore._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
+                // @ts-expect-error: Private property
                 typeAssert(derivedStore._state.symbol === LAZY_STORE_ENABLED_STATE);
 
+                // @ts-expect-error: Private property
                 const previousDerivedStore = derivedStore._state.derivedValueStore;
                 const newSourceStore = new WritableStore(42);
                 derivedStore.replaceSourceStore(newSourceStore);
+                // @ts-expect-error: Private property
                 expect(derivedStore._state.derivedValueStore).to.equal(previousDerivedStore);
                 derivedStoreUnsubscriber();
             });
@@ -243,11 +253,15 @@ export function run(): void {
                 const derivedStoreUnsubscriber = derivedStore.subscribe(() => {
                     // No-op
                 });
+                // @ts-expect-error: Private property
                 expect(derivedStore._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
+                // @ts-expect-error: Private property
                 typeAssert(derivedStore._state.symbol === LAZY_STORE_ENABLED_STATE);
+                // @ts-expect-error: Private property
                 const oldUnsubscriber = derivedStore._state.unsubscriber;
                 const newSourceStore = new WritableStore(42);
                 derivedStore.replaceSourceStore(newSourceStore);
+                // @ts-expect-error: Private property
                 expect(derivedStore._state.unsubscriber).to.not.equal(oldUnsubscriber);
                 derivedStoreUnsubscriber();
             });
@@ -263,7 +277,7 @@ export function run(): void {
                         return '';
                     }
                 })();
-                const derivedStore = new ExposedDerivedStore(oldSourceStore, () => undefined);
+                const derivedStore = new DerivedStore(oldSourceStore, () => undefined);
                 const derivedStoreUnsubscriber = derivedStore.subscribe(() => {
                     // No-op
                 });
@@ -312,7 +326,9 @@ export function run(): void {
                 unwrapActive = false;
                 innerStore.set(24);
 
+                // @ts-expect-error: Private property
                 typeAssert(derivedStore._state.symbol === LAZY_STORE_ENABLED_STATE);
+                // @ts-expect-error: Private property
                 expect(derivedStore._state.unwrappedStoreSubscriptions.get(innerStore)).is
                     .undefined;
             });

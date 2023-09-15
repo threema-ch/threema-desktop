@@ -1,4 +1,4 @@
-import {type u53} from '~/common/types';
+import {RepeatedTuple, type u53} from '~/common/types';
 import {UTF8} from '~/common/utils/codec';
 
 /**
@@ -72,4 +72,25 @@ type StringLiteral<T extends string> = string extends T ? never : T;
  */
 export function literalToLowercase<S extends string>(string: StringLiteral<S>): Lowercase<S> {
     return string.toLowerCase() as Lowercase<S>;
+}
+
+/**
+ * Split a string into the first `nItems` and gather the rest.
+ *
+ * @throws {Error} if `value` does not contain at least `nItems`.
+ */
+export function split<N extends u53>(
+    value: string,
+    splitter: string,
+    nItems: N,
+): {items: RepeatedTuple<string, N>; rest: string[]} {
+    const rest = value.split(splitter);
+    const items = rest.splice(0, nItems);
+    if (items.length !== nItems) {
+        throw new Error(`Expected ${nItems} after split, got ${items.length}`);
+    }
+    return {
+        items: items as unknown as RepeatedTuple<string, N>,
+        rest,
+    };
 }

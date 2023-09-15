@@ -361,7 +361,7 @@ export class Footer extends base.Struct implements FooterLike {
      * field's description.
      */
     public get keyEpoch(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -369,7 +369,7 @@ export class Footer extends base.Struct implements FooterLike {
      * field's description.
      */
     public get keyRatchetCounter(): types.u8 {
-        return this._array[1];
+        return utils.unwrap(this._array[1]);
     }
 
     /**

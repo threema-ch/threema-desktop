@@ -1,6 +1,6 @@
 import {type Logger} from '~/common/logging';
 import {ensureMessageId, type MessageId} from '~/common/network/types';
-import {ensureError} from '~/common/utils/assert';
+import {ensureError, unwrap} from '~/common/utils/assert';
 import {hexLeToU64, u64ToHexLe} from '~/common/utils/number';
 
 const REGEX_MATCH_QUOTES = /^> quote #(?<messageId>[0-9a-f]{16})(?:\r?\n){2}(?<comment>.*)$/su;
@@ -26,12 +26,12 @@ export function parsePossibleTextQuote(
     let quotedMessageId: MessageId;
     let comment: string;
     try {
-        quotedMessageId = ensureMessageId(hexLeToU64(match.messageId));
+        quotedMessageId = ensureMessageId(hexLeToU64(unwrap(match.messageId)));
         comment = `${match.comment}`;
-    } catch (e) {
+    } catch (error) {
         log.warn(
             `Message ${u64ToHexLe(messageId)} contains an invalid quote string: ${
-                ensureError(e).message
+                ensureError(error).message
             }`,
         );
         return undefined;

@@ -154,6 +154,7 @@ export type DbContact = {
     readonly identity: IdentityString;
     readonly publicKey: PublicKey;
     readonly createdAt: Date;
+    readonly colorIndex: u8;
     firstName: string;
     lastName: string;
     nickname?: Nickname;
@@ -175,7 +176,6 @@ export type DbContact = {
     profilePictureGatewayDefined?: ReadonlyUint8Array;
     profilePictureUserDefined?: ReadonlyUint8Array;
     profilePictureBlobIdSent?: BlobId;
-    readonly colorIndex: u8;
 } & DbReceiverCommon<ReceiverType.CONTACT, DbContactUid>;
 
 /**
@@ -190,8 +190,8 @@ export type DbDistributionListUid = WeakOpaque<
  * A database distribution list.
  */
 export type DbDistributionList = {
-    name: string;
     readonly colorIndex: u8;
+    name: string;
 } & DbReceiverCommon<ReceiverType.DISTRIBUTION_LIST, DbDistributionListUid>;
 
 /**
@@ -211,6 +211,7 @@ export type DbGroup = {
     readonly groupId: GroupId;
     readonly creatorIdentity: IdentityString;
     readonly createdAt: Date;
+    readonly colorIndex: u8;
     name: string;
     userState: GroupUserState;
     notificationTriggerPolicyOverride?: {
@@ -219,7 +220,6 @@ export type DbGroup = {
     };
     notificationSoundPolicyOverride?: NotificationSoundPolicy;
     profilePictureAdminDefined?: ReadonlyUint8Array;
-    readonly colorIndex: u8;
 } & DbReceiverCommon<ReceiverType.GROUP, DbGroupUid>;
 
 /**
@@ -329,6 +329,16 @@ export interface DbMessageCommon<T extends MessageType> {
     readonly createdAt: Date;
 
     /**
+     * Unparsed raw body. Only provided for inbound messages.
+     */
+    readonly raw?: ReadonlyUint8Array;
+
+    /**
+     * Auto-incrementing thread ID used for sorting.
+     */
+    readonly threadId: u64;
+
+    /**
      * Optional timestamp for when the message...
      *
      * - Outbound: The "sentAt" timestamp.
@@ -363,16 +373,6 @@ export interface DbMessageCommon<T extends MessageType> {
         readonly at: Date;
         readonly type: MessageReaction;
     };
-
-    /**
-     * Unparsed raw body. Only provided for inbound messages.
-     */
-    readonly raw?: ReadonlyUint8Array;
-
-    /**
-     * Auto-incrementing thread ID used for sorting.
-     */
-    readonly threadId: u64;
 }
 
 /**
@@ -406,14 +406,14 @@ export interface DbBaseFileMessageFragment {
     readonly blobDownloadState?: BlobDownloadState;
     readonly thumbnailBlobDownloadState?: BlobDownloadState;
     readonly encryptionKey: RawBlobKey;
-    fileData?: DbFileData;
-    thumbnailFileData?: DbFileData;
     readonly mediaType: string;
     readonly thumbnailMediaType?: string;
     readonly fileName?: string;
     readonly fileSize: u53;
     readonly caption?: string;
     readonly correlationId?: string;
+    fileData?: DbFileData;
+    thumbnailFileData?: DbFileData;
 }
 
 /**

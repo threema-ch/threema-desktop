@@ -1,11 +1,13 @@
 {
   "extends": "../src/tsconfig.base.json",
+
   "compilerOptions": {
-    "module": "commonjs",
     "lib": ["esnext"],
     "types": ["node"],
+
     "outDir": "./build/packaging",
     "sourceMap": false
   },
+
   "include": ["*.ts"]
 }

@@ -135,9 +135,12 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         // Handle updates
         if (deltaImage.updated !== undefined) {
             const image = deltaImage.updated;
-            if (image.type !== common.Image.Type.JPEG) {
-                this._log.error(`Received unknown profile picture type: ${image.type}`);
-                return;
+            switch (image.type) {
+                case common.Image.Type.JPEG:
+                    break;
+                default:
+                    this._log.error(`Received unknown profile picture type: ${image.type}`);
+                    return;
             }
             const decryptedBlobBytes = await downloadAndDecryptBlob(
                 this._services,

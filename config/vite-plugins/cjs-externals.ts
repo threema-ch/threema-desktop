@@ -18,7 +18,8 @@ import MagicString from 'magic-string';
 import {type TransformResult} from 'rollup';
 import {type Plugin} from 'vite';
 
-import {type u53} from '~/common/types';
+import {type u53} from '../../src/common/types';
+import {assert, unwrap} from '../../src/common/utils/assert';
 
 const log = debug('vite-plugin-cjs-externals');
 
@@ -62,7 +63,7 @@ function transformEsm(
             ecmaVersion: 'latest',
             sourceType: 'module',
         }) as unknown as Program; // ???
-        const node = program.body[0];
+        const node = unwrap(program.body[0]);
 
         if (node.type !== 'ImportDeclaration') {
             continue;
@@ -114,11 +115,7 @@ function transformEsm(
             continue;
         }
 
-        const [
-            {
-                local: {name: namespaceIdentifier},
-            },
-        ] = importNamespaceSpecifierList;
+        const namespaceIdentifier = unwrap(importNamespaceSpecifierList[0]).local.name;
         const namespaceRequireStatement = requireStatement(namespaceIdentifier, module);
 
         if (localNamesIdentifiers === '') {
@@ -158,6 +155,7 @@ export default function commonjsExternalsPlugin({
             // strings as URL parameters at the end, for example:
             // `/[...]/node_modules/.vite/env-paths.js?v=1ddea99e`
             const [filename] = id.split('?', 1);
+            assert(filename !== undefined);
             if (!extensions.some((extension) => filename.endsWith(`.${extension}`))) {
                 log(`Ignoring due to extension: ${id}`);
                 return null;

@@ -15,7 +15,6 @@ import {
     ensureNickname,
     type IdentityString,
 } from '~/common/network/types';
-import {type f64} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {base64ToU8a} from '~/common/utils/base64';
 import {hexToBytes} from '~/common/utils/byte';
@@ -127,8 +126,8 @@ const TEST_MESSAGE_SCHEMA = v.union(
             type: v.literal('LOCATION'),
             content: v
                 .object({
-                    lat: v.number().map((value) => value as f64),
-                    lon: v.number().map((value) => value as f64),
+                    lat: v.number(),
+                    lon: v.number(),
                     description: v.string(),
                 })
                 .rest(v.unknown()),
@@ -141,7 +140,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
             content: v
                 .object({
                     type: v.string(),
-                    duration: v.number().map((value) => value as f64),
+                    duration: v.number(),
                 })
                 .rest(v.unknown()),
         })

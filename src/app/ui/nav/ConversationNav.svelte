@@ -24,6 +24,8 @@
     router,
   } = services;
 
+  // TODO(DESK-800): This type is incorrect, it's actually ` | undefined`. To prevent this, the
+  // remote store must be passed into this component once loaded, not before.
   let profile: Remote<ProfileViewModelStore>;
   viewModel
     .profile()
@@ -54,7 +56,6 @@
   const translationsForBackend: LocalStore<ConversationPreviewTranslations> = derive(
     i18n,
     ({t}) => ({
-      /* eslint-disable @typescript-eslint/naming-convention */
       'messaging.label--default-file-message-preview': t(
         'messaging.label--default-file-message-preview',
         'File',
@@ -71,7 +72,6 @@
         'messaging.label--default-audio-message-preview',
         'Voice Message',
       ),
-      /* eslint-enable @typescript-eslint/naming-convention */
     }),
   );
 
@@ -87,6 +87,7 @@
 <template>
   <div id="nav-wrapper">
     <div class="bar">
+      <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
       {#if profile !== undefined}
         <MainNavBar
           profilePicture={$profile.profilePicture}

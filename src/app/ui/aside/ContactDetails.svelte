@@ -219,6 +219,7 @@
         <ListElement label={`🐞 ${$i18n.t('settings.label--do-not-disturb', 'Do Not Disturb')}`}>
           {#if $contactViewModel.notificationTriggerPolicyOverride === undefined}
             {$i18n.t('settings.action--do-not-disturb-default', 'Off')}
+            <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
           {:else if $contactViewModel.notificationTriggerPolicyOverride.policy === ContactNotificationTriggerPolicy.NEVER}
             {#if $contactViewModel.notificationTriggerPolicyOverride.expiresAt === undefined}
               {$i18n.t('settings.action--do-not-disturb-indefinite', 'Indefinitely')}

@@ -437,7 +437,7 @@ export function run(): void {
                 // Text message should be part of the 1:1 conversation
                 const messages = [...conversation.get().controller.getAllMessages().get()];
                 expect(messages.length).to.equal(1);
-                const message = messages[0];
+                const message = unwrap(messages[0]);
                 assert(
                     message.type === MessageType.TEXT,
                     `Expected message type to be text, but was ${message.type}`,
@@ -501,7 +501,7 @@ export function run(): void {
                 // Text message should be part of the 1:1 conversation
                 const messages = [...conversation.get().controller.getAllMessages().get()];
                 expect(messages.length).to.equal(1);
-                const message = messages[0];
+                const message = unwrap(messages[0]);
                 assert(
                     message.type === MessageType.TEXT,
                     `Expected message type to be text, but was ${message.type}`,
@@ -675,7 +675,7 @@ export function run(): void {
                 // File message should be part of the 1:1 conversation
                 const messages = [...conversation.get().controller.getAllMessages().get()];
                 expect(messages.length).to.equal(1);
-                const message = messages[0];
+                const message = unwrap(messages[0]);
                 assert(
                     message.type === MessageType.FILE,
                     `Expected message type to be file, but was ${message.type}`,
@@ -730,7 +730,7 @@ export function run(): void {
                 // Image message should be part of the 1:1 conversation
                 const messages = [...conversation.get().controller.getAllMessages().get()];
                 expect(messages.length).to.equal(1);
-                const message = messages[0];
+                const message = unwrap(messages[0]);
                 assert(
                     message.type === MessageType.IMAGE,
                     `Expected message type to be image, but was ${message.type}`,
@@ -797,7 +797,7 @@ export function run(): void {
                 // Video message should be part of the 1:1 conversation
                 const messages = [...conversation.get().controller.getAllMessages().get()];
                 expect(messages.length).to.equal(1);
-                const message = messages[0];
+                const message = unwrap(messages[0]);
                 assert(
                     message.type === MessageType.VIDEO,
                     `Expected message type to be video, but was ${message.type}`,
@@ -857,7 +857,7 @@ export function run(): void {
                 // Audio message should be part of the 1:1 conversation
                 const messages = [...conversation.get().controller.getAllMessages().get()];
                 expect(messages.length).to.equal(1);
-                const message = messages[0];
+                const message = unwrap(messages[0]);
                 assert(
                     message.type === MessageType.AUDIO,
                     `Expected message type to be audio, but was ${message.type}`,

@@ -7,7 +7,7 @@
   import Miniature from '~/app/ui/modal/media-message/Miniature.svelte';
   import {type u53} from '~/common/types';
 
-  export let validatedMediaFiles: [mediaFile: MediaFile, result: ValidationResult][];
+  export let validatedMediaFiles: readonly [mediaFile: MediaFile, result: ValidationResult][];
   export let activeMediaFileIndex: u53;
 
   /**
@@ -19,7 +19,7 @@
     select: MediaFile;
   }>();
 
-  $: [activeMediaFile] = validatedMediaFiles.at(activeMediaFileIndex) ?? [];
+  $: [activeMediaFile] = validatedMediaFiles[activeMediaFileIndex] ?? [];
 </script>
 
 <template>

@@ -26,7 +26,7 @@ import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
 import {type GroupId, type IdentityString} from '~/common/network/types';
 import {type ReadonlyUint8Array} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {idColorIndex} from '~/common/utils/id-color';
 
@@ -78,7 +78,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
                 return undefined;
             }
             assert(addedContacts.length === 1, 'addedContacts contained more than one contact');
-            creator = addedContacts[0].get();
+            creator = unwrap(addedContacts[0]).get();
         }
         await sendGroupSyncRequest(groupId, creatorIdentity, creator, handle, services);
         return undefined;

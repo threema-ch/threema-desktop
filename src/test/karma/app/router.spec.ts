@@ -10,8 +10,8 @@ import {type Logger, NOOP_LOGGER} from '~/common/logging';
 const log: Logger = NOOP_LOGGER;
 
 class TestEnvironment implements RouterEnvironment {
-    private _onpopstate: ((event: PopStateEvent) => void) | undefined;
     private readonly _historyStack: [state: RouterState, url: string | URL | undefined][] = [];
+    private _onpopstate: ((event: PopStateEvent) => void) | undefined;
 
     public constructor(public fragment: string = '') {}
 

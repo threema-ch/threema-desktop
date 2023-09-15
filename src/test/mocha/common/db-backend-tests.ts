@@ -54,8 +54,8 @@ import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {
     ensureIdentityString,
     ensureNickname,
+    FEATURE_MASK_FLAG,
     type FeatureMask,
-    FeatureMaskFlag,
     type GroupId,
     type IdentityString,
     type MessageId,
@@ -63,7 +63,7 @@ import {
 } from '~/common/network/types';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
 import {type Dimensions, type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {Identity} from '~/common/utils/identity';
 import {hasProperty} from '~/common/utils/object';
@@ -130,7 +130,7 @@ export function makeContact(
         identityType: init.identityType ?? IdentityType.REGULAR,
         acquaintanceLevel: init.acquaintanceLevel ?? AcquaintanceLevel.DIRECT,
         activityState: init.activityState ?? ActivityState.ACTIVE,
-        featureMask: init.featureMask ?? (FeatureMaskFlag.NONE as FeatureMask),
+        featureMask: init.featureMask ?? (FEATURE_MASK_FLAG.NONE as FeatureMask),
         syncState: init.syncState ?? SyncState.INITIAL,
         notificationTriggerPolicyOverride: init.notificationTriggerPolicyOverride,
         notificationSoundPolicyOverride: init.notificationSoundPolicyOverride,
@@ -452,6 +452,7 @@ export function backendTests(
             // Add two contacts
             const identities = ['TESTTEST' as IdentityString, 'ABCDEFGH' as IdentityString];
             const [uid1, uid2] = identities.map((identity) => makeContact(db, {identity}));
+            assert(uid1 !== undefined && uid2 !== undefined);
 
             // Ensure contacts exist
             expect(db.getAllContactUids().map((contact) => contact.uid)).to.have.same.members([
@@ -1789,7 +1790,7 @@ export function backendTests(
                     const uid = db.addNonce(scope, randomNonce);
                     expect(uid >= 0n, 'Nonce UID should be a database uid');
 
-                    // eslint-disable-next-line no-loop-func
+                    // eslint-disable-next-line @typescript-eslint/no-loop-func
                     expect(() => db.addNonce(scope, randomNonce)).to.throw();
                 }
             });
@@ -1829,9 +1830,9 @@ export function backendTests(
                     const randomNonces = Array(6)
                         .fill(undefined)
                         .map(() => makeRandomNonceHash());
-                    db.addNonce(scope, randomNonces[0]);
+                    db.addNonce(scope, unwrap(randomNonces[0]));
 
-                    // eslint-disable-next-line no-loop-func
+                    // eslint-disable-next-line @typescript-eslint/no-loop-func
                     expect(() => db.addNonces(scope, randomNonces)).to.throw();
                 }
             });

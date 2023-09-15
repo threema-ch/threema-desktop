@@ -125,8 +125,8 @@ import {
     ensureIdentityString,
     ensureNickname,
     ensureServerGroup,
+    FEATURE_MASK_FLAG,
     type FeatureMask,
-    FeatureMaskFlag,
     type GroupId,
     type IdentityString,
     type MessageId,
@@ -148,7 +148,7 @@ import {
     type SystemDialogService,
 } from '~/common/system-dialog';
 import {type u8, type u53} from '~/common/types';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {type Delayed} from '~/common/utils/delayed';
 import {
@@ -202,27 +202,26 @@ export class TestCrypto extends TweetNaClBackend {}
 const UNCONNECTABLE_URL = 'http = //127.0.0.1:99999';
 const FAKE_PROXY_HANDLER = undefined as unknown as typeof PROXY_HANDLER;
 
-export class TestConfig implements Config {
+export const TEST_CONFIG = {
     /* eslint-disable @typescript-eslint/naming-convention */
-    public readonly CHAT_SERVER_KEY = ensurePublicKey(randomBytes(32));
-    public readonly MEDIATOR_SERVER_URL = UNCONNECTABLE_URL;
-    public readonly MEDIATOR_FRAME_MIN_BYTE_LENGTH = 4;
-    public readonly MEDIATOR_FRAME_MAX_BYTE_LENGTH = 65536;
-    public readonly MEDIATOR_RECONNECTION_DELAY_S = 1;
-    public readonly DIRECTORY_SERVER_URL = UNCONNECTABLE_URL;
-    public readonly BLOB_SERVER_URL = UNCONNECTABLE_URL;
-    public readonly RENDEZVOUS_SERVER_URL = UNCONNECTABLE_URL;
-    public readonly UPDATE_SERVER_URL = UNCONNECTABLE_URL;
-    public readonly DEBUG_PACKET_CAPTURE_HISTORY_LENGTH = 100;
-    public readonly KEY_STORAGE_PATH = ['/tmp/desktop-mocha-tests'];
-    public readonly FILE_STORAGE_PATH = ['/tmp/desktop-mocha-tests'];
-    public readonly DATABASE_PATH = ':memory:';
-    public readonly USER_AGENT = 'Threema Desktop Mocha Tests';
-    public readonly LOGGING = {
+    CHAT_SERVER_KEY: ensurePublicKey(randomBytes(32)),
+    MEDIATOR_SERVER_URL: UNCONNECTABLE_URL,
+    MEDIATOR_FRAME_MIN_BYTE_LENGTH: 4,
+    MEDIATOR_FRAME_MAX_BYTE_LENGTH: 65536,
+    MEDIATOR_RECONNECTION_DELAY_S: 1,
+    DIRECTORY_SERVER_URL: UNCONNECTABLE_URL,
+    BLOB_SERVER_URL: UNCONNECTABLE_URL,
+    RENDEZVOUS_SERVER_URL: UNCONNECTABLE_URL,
+    UPDATE_SERVER_URL: UNCONNECTABLE_URL,
+    DEBUG_PACKET_CAPTURE_HISTORY_LENGTH: 100,
+    KEY_STORAGE_PATH: ['/tmp/desktop-mocha-tests'],
+    FILE_STORAGE_PATH: ['/tmp/desktop-mocha-tests'],
+    DATABASE_PATH: ':memory:',
+    USER_AGENT: 'Threema Desktop Mocha Tests',
+    LOGGING: {
         ENDPOINT_COMMUNICATION: true,
-    };
-    /* eslint-enable @typescript-eslint/naming-convention */
-}
+    },
+} as const satisfies Config;
 
 export class TestTweetNaClBackend extends TweetNaClBackend {
     public constructor() {
@@ -392,11 +391,11 @@ class TestLoggerFactory implements LoggerFactory {
 }
 
 class UserRepository implements User {
+    public readonly displayName: LocalStore<string>;
     public [TRANSFER_HANDLER] = FAKE_PROXY_HANDLER;
 
     public identity: IdentityString;
     public profilePicture: LocalStore<ProfilePictureView>;
-    public readonly displayName: LocalStore<string>;
     public profileSettings: LocalModelStore<ProfileSettings>;
     public privacySettings: LocalModelStore<PrivacySettings>;
     public callsSettings: LocalModelStore<CallsSettings>;
@@ -539,9 +538,7 @@ export class TestNonceService implements INonceService {
     public getAllPersistedNonces(scope: NonceScope): ReadonlySet<NonceHash> {
         return new Set();
     }
-    public importNonces(scope: NonceScope, hashes: ReadonlySet<NonceHash>): void {
-        return;
-    }
+    public importNonces(scope: NonceScope, hashes: ReadonlySet<NonceHash>): void {}
 }
 
 export class TestNotificationService extends NotificationService {
@@ -647,7 +644,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
     };
 
     const partialServices = {
-        config: new TestConfig(),
+        config: TEST_CONFIG,
         crypto,
         device,
         directory: new TestDirectoryBackend(),
@@ -789,7 +786,7 @@ export class NetworkExpectationFactory {
                 // Ensure that only a single payload is reflected, then pass it to the user-defined
                 // inspector function
                 expect(payloads).to.be.of.length(1);
-                inspector?.(payloads[0]);
+                inspector?.(unwrap(payloads[0]));
             },
         };
     }
@@ -903,7 +900,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         }
 
         // Other cases: Instructions without data
-        instruction = inner as MessageFilterInstruction;
+        instruction = inner;
         if (instruction !== expectation.expectedInstruction) {
             this._failExpectation(
                 `Expected ${MessageFilterInstructionUtils.nameOf(
@@ -1094,7 +1091,7 @@ export function makeContactInit(user: TestUser): ContactInit {
         identityType: user.identityType ?? IdentityType.REGULAR,
         acquaintanceLevel: user.acquaintanceLevel ?? AcquaintanceLevel.DIRECT,
         activityState: user.activityState ?? ActivityState.ACTIVE,
-        featureMask: user.featureMask ?? ensureFeatureMask(FeatureMaskFlag.NONE),
+        featureMask: user.featureMask ?? ensureFeatureMask(FEATURE_MASK_FLAG.NONE),
         syncState: user.syncState ?? SyncState.INITIAL,
         category: ConversationCategory.DEFAULT,
         visibility: ConversationVisibility.SHOW,
@@ -1109,7 +1106,7 @@ export function registerTestUser(directory: TestDirectoryBackend, user: TestUser
         identity: user.identity.string,
         state: user.activityState ?? ActivityState.ACTIVE,
         publicKey: user.ck.public,
-        featureMask: user.featureMask ?? ensureFeatureMask(FeatureMaskFlag.NONE),
+        featureMask: user.featureMask ?? ensureFeatureMask(FEATURE_MASK_FLAG.NONE),
         type: user.identityType ?? IdentityType.REGULAR,
     });
 }
@@ -1126,7 +1123,7 @@ export function addTestUserAsContact(
 
 export function addTestUserToFakeDirectory(directory: TestDirectoryBackend, user: TestUser): void {
     directory.registerUser(user.identity.string, {
-        featureMask: FeatureMaskFlag.GROUP_SUPPORT as FeatureMask,
+        featureMask: FEATURE_MASK_FLAG.GROUP_SUPPORT as FeatureMask,
         identity: user.identity.string,
         publicKey: user.ck.public,
         state: ActivityState.ACTIVE,

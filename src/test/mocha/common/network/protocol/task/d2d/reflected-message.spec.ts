@@ -119,6 +119,7 @@ export function run(): void {
                 const messages = userConversation.get().controller.getAllMessages().get();
                 expect(messages.size, 'Conversation message count').to.equal(1);
                 const [message] = [...messages.values()];
+                assert(message !== undefined);
                 assert(message.ctx === MessageDirection.INBOUND, 'Wrong message direction');
                 assert(message.type === 'text', `Wrong message type: ${message.type}`);
                 expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
@@ -169,6 +170,7 @@ export function run(): void {
                 const groupMessages = groupConversation.get().controller.getAllMessages().get();
                 expect(groupMessages.size, 'Group conversation message count').to.equal(1);
                 const [message] = [...groupMessages.values()];
+                assert(message !== undefined);
                 assert(message.ctx === MessageDirection.INBOUND, 'Wrong message direction');
                 assert(message.type === 'text', `Wrong message type: ${message.type}`);
                 expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
@@ -252,6 +254,7 @@ export function run(): void {
                 const messages = userConversation.get().controller.getAllMessages().get();
                 expect(messages.size, 'Conversation message count').to.equal(1);
                 const [message] = [...messages.values()];
+                assert(message !== undefined);
                 assert(message.ctx === MessageDirection.OUTBOUND, 'Wrong message direction');
                 assert(message.type === 'text', `Wrong message type: ${message.type}`);
                 expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);
@@ -297,6 +300,7 @@ export function run(): void {
                 const groupMessages = groupConversation.get().controller.getAllMessages().get();
                 expect(groupMessages.size, 'Group conversation message count').to.equal(1);
                 const [message] = [...groupMessages.values()];
+                assert(message !== undefined);
                 assert(message.ctx === MessageDirection.OUTBOUND, 'Wrong message direction');
                 assert(message.type === 'text', `Wrong message type: ${message.type}`);
                 expect(message.get().view.createdAt, 'createdAt').to.eql(createdAt);

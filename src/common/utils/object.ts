@@ -54,11 +54,7 @@ export function pick<T, K extends keyof T = keyof T>(
  * Return whether an object is iterable.
  */
 export function isIterable(object: unknown): object is Iterable<unknown> {
-    if (object === null || object === undefined) {
-        return false;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return typeof (object as any)[Symbol.iterator] === 'function';
+    return object !== null && Symbol.iterator in Object(object);
 }
 
 /**

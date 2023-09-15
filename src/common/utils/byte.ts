@@ -6,6 +6,7 @@ import {
     type u53,
     type WeakOpaque,
 } from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 
 /**
@@ -17,7 +18,7 @@ export type Pkcs7Padding = WeakOpaque<Uint8Array, {readonly Pkcs7Padding: unique
 const HEX_LOOKUP_TABLE = [
     '0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-];
+] as const;
 
 /**
  * Test whether two Uint8Arrays are equal to each other.
@@ -64,7 +65,7 @@ export function byteToHex(byte: u8, validate = true): string {
         ensureU8(byte);
     }
     /* eslint-disable no-bitwise */
-    return HEX_LOOKUP_TABLE[byte >>> 4] + HEX_LOOKUP_TABLE[byte & 0x0f];
+    return unwrap(HEX_LOOKUP_TABLE[byte >>> 4]) + unwrap(HEX_LOOKUP_TABLE[byte & 0x0f]);
     /* eslint-enable no-bitwise */
 }
 
@@ -190,7 +191,7 @@ export function bytePadPkcs7(destination: ByteBuffer | Uint8Array, length: u8): 
  */
 export function byteWithoutPkcs7<T extends ReadonlyUint8Array>(array: T): T {
     const length = array.byteLength;
-    const end = length - array[length - 1];
+    const end = length - unwrap(array[length - 1], 'No PKCS#7 padding, input is empty');
     if (end < 0) {
         throw new Error(`Invalid PKCS#7 padding byte '${end}' for bytes of length ${length}`);
     }

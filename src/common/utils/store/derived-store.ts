@@ -22,6 +22,11 @@ type DisabledDeriveStoreState = LazyStoreState<typeof LAZY_STORE_DISABLED_STATE>
 export interface InitializingDerivedStoreState<TSourceStore extends IQueryableStore<unknown>>
     extends LazyStoreState<typeof LAZY_STORE_INITIALIZING_STATE> {
     /**
+     * Map containing the stores unwrapped in the derivation function and their unsubscribers.
+     */
+    readonly unwrappedStoreSubscriptions: Map<IQueryableStore<unknown>, StoreUnsubscriber>;
+
+    /**
      * Unsubscriber of the current {@link TSourceStore}
      */
     unsubscriber: StoreUnsubscriber | undefined;
@@ -30,11 +35,6 @@ export interface InitializingDerivedStoreState<TSourceStore extends IQueryableSt
      * Current source store value. Might be {@link NO_STORE_VALUE} during the initialization.
      */
     sourceStoreValue: IQueryableStoreValue<TSourceStore> | typeof NO_STORE_VALUE;
-
-    /**
-     * Map containing the stores unwrapped in the derivation function and their unsubscribers.
-     */
-    readonly unwrappedStoreSubscriptions: Map<IQueryableStore<unknown>, StoreUnsubscriber>;
 
     /**
      * Whether the store is currently deriving a value
@@ -47,24 +47,24 @@ export interface EnabledDerivedStoreState<
     TOutDerivedValue,
 > extends LazyStoreState<typeof LAZY_STORE_ENABLED_STATE> {
     /**
-     * Unsubscriber of the current {@link TSourceStore}
-     */
-    unsubscriber: StoreUnsubscriber;
-
-    /**
      * Derived value store with the subscribers.
      */
     readonly derivedValueStore: WritableStore<TInDerivedValue, TOutDerivedValue>;
 
     /**
-     * Current source store value.
-     */
-    sourceStoreValue: IQueryableStoreValue<TSourceStore>;
-
-    /**
      * Map containing the stores unwrapped in the derivation function and their unsubscribers.
      */
     readonly unwrappedStoreSubscriptions: Map<IQueryableStore<unknown>, StoreUnsubscriber>;
+
+    /**
+     * Unsubscriber of the current {@link TSourceStore}
+     */
+    unsubscriber: StoreUnsubscriber;
+
+    /**
+     * Current source store value.
+     */
+    sourceStoreValue: IQueryableStoreValue<TSourceStore>;
 
     /**
      * Whether the store is currently deriving a value

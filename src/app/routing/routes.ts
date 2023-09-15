@@ -210,9 +210,9 @@ function defineImplementation<TRoute extends RawRouteDefinition & Partial<RouteP
                     route.path.transform !== undefined ? route.path.transform(groups) : groups;
                 try {
                     params = route.params.parse(transformedGroups);
-                } catch (e) {
+                } catch (error) {
                     // Validation failed, reject this route
-                    log.warn(`Route matched, but validation failed: ${e}`);
+                    log.warn(`Route matched, but validation failed: ${error}`);
                     log.debug('Transformed groups:', transformedGroups);
                     return undefined;
                 }
@@ -318,7 +318,7 @@ function parseU64IfDefined(value: string | undefined): u64 | undefined {
             return undefined;
         }
         return bigintValue;
-    } catch (e) {
+    } catch (error) {
         return undefined;
     }
 }

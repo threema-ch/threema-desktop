@@ -1176,7 +1176,7 @@ export class Extension extends base.Struct implements ExtensionLike {
      * field's description.
      */
     public get type(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -1613,7 +1613,7 @@ export class MessagePayloadVersion extends base.Struct implements MessagePayload
      * field's description.
      */
     public get version(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**

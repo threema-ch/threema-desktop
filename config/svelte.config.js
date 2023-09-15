@@ -8,12 +8,12 @@ function getSveltePreprocessConfig(options) {
     return sveltePreprocess({
         // Enable TypeScript preprocessor
         typescript: {
-            tsconfigFile: options?.ts?.configFile ?? 'src/app/tsconfig.json',
+            tsconfigFile: options?.ts?.configFile ?? './src/app/tsconfig.json',
         },
 
         // Enable SCSS preprocessor
         scss: {
-            includePaths: options?.scss?.includePaths ?? ['src/sass', 'node_modules'],
+            includePaths: options?.scss?.includePaths ?? ['./src/sass', './node_modules'],
         },
 
         // Disable other preprocessors

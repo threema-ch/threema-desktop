@@ -14,7 +14,7 @@
 
   function copyToClipboard(event: MouseEvent): void {
     assert(event.target instanceof HTMLDivElement);
-    const text = `"${event.target.textContent}"` ?? '';
+    const text = `"${event.target.textContent ?? ''}"`;
 
     navigator.clipboard
       .writeText(text)

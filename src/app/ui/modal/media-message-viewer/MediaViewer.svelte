@@ -45,10 +45,10 @@
   let mediaState: MediaState = {status: 'loading'};
 
   let containerElement: HTMLElement | null;
-  let previewElement: HTMLElement | undefined | null = undefined;
-  let actionsContainerElement: HTMLElement | undefined | null = undefined;
+  let previewElement: HTMLElement | null | undefined = undefined;
+  let actionsContainerElement: HTMLElement | null | undefined = undefined;
 
-  let contextMenuPopover: Popover | null;
+  let contextMenuPopover: Popover | null | undefined;
   let contextMenuElement: HTMLElement | null | undefined;
   let contextMenuVirtualTrigger: VirtualRect | undefined = undefined;
 

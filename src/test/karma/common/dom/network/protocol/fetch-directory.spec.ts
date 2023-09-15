@@ -36,7 +36,6 @@ function makeResponse(status: u53, body: Record<string, unknown>): Response {
     return new Response(JSON.stringify(body), {
         status,
         headers: new Headers({
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             'Content-Type': 'application/json',
         }),
     });
@@ -67,11 +66,11 @@ function mockFetchResponse(
             if (requestBody.includes('"response":')) {
                 // Authenticated request
                 return makeResponse(status, responseBody);
-            } else {
-                // Unauthenticated request
-                assert(authResponseBody !== 'unauthenticated');
-                return makeResponse(status, authResponseBody);
             }
+
+            // Unauthenticated request
+            assert(authResponseBody !== 'unauthenticated');
+            return makeResponse(status, authResponseBody);
         },
     );
     sinon.replace(self, 'fetch', fakeFetch);
@@ -129,9 +128,7 @@ class TestNonceService implements INonceService {
     public getAllPersistedNonces(scope: NonceScope): ReadonlySet<NonceHash> {
         return new Set();
     }
-    public importNonces(scope: NonceScope, hashes: ReadonlySet<NonceHash>): void {
-        return;
-    }
+    public importNonces(scope: NonceScope, hashes: ReadonlySet<NonceHash>): void {}
 }
 
 /**

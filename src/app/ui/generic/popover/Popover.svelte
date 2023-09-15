@@ -26,18 +26,18 @@
    * The reference element the popover should attach to.
    * If this property is omitted, the `trigger` will be used as the reference.
    */
-  export let reference: HTMLElement | VirtualRect | undefined = undefined;
+  export let reference: HTMLElement | VirtualRect | null | undefined = undefined;
 
   /**
    * The HTML element representing this popover (i.e. its outermost container). Note: don't set this
    * value from outside, only bind to it.
    */
-  export let element: HTMLElement | undefined | null = undefined;
+  export let element: HTMLElement | null | undefined = undefined;
 
   /**
    * The container which the popover is constrained by.
    */
-  let constraintContainer: HTMLElement | undefined = undefined;
+  let constraintContainer: HTMLElement | null | undefined = undefined;
   export {constraintContainer as container};
 
   /**
@@ -252,6 +252,7 @@
         transition:fade={{duration: 100}}
         use:clickoutside={{enabled: isVisible}}
         on:clickoutside={({detail: {event}}) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           handleOutsideClick(event);
         }}
         on:introend={() => {

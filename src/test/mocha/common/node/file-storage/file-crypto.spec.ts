@@ -51,8 +51,8 @@ export function run(): void {
                     Uint8Array.of(0x94, 0xdc, 0x4a, 0x78, 0, 0, 0, 1, 0, 0, 0, 0),
                 );
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (nonce as any)._counter = 2 ** 32 - 1;
+                // @ts-expect-error: Private property
+                nonce._counter = 2 ** 32 - 1;
 
                 expect(nonce.next(false), '4294967295').to.deep.equal(
                     Uint8Array.of(0x94, 0xdc, 0x4a, 0x78, 255, 255, 255, 255, 0, 0, 0, 0),

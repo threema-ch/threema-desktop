@@ -325,7 +325,7 @@ export class Container extends base.Struct implements ContainerLike {
      * field's description.
      */
     public get type(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -954,7 +954,7 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
      * field's description.
      */
     public get flags(): types.u8 {
-        return this._array[28];
+        return utils.unwrap(this._array[28]);
     }
 
     /**
@@ -962,7 +962,7 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
      * field's description.
      */
     public get reserved(): types.u8 {
-        return this._array[29];
+        return utils.unwrap(this._array[29]);
     }
 
     /**
@@ -1524,7 +1524,7 @@ export class MessageWithMetadataBox extends base.Struct implements MessageWithMe
      * field's description.
      */
     public get flags(): types.u8 {
-        return this._array[28];
+        return utils.unwrap(this._array[28]);
     }
 
     /**
@@ -1532,7 +1532,7 @@ export class MessageWithMetadataBox extends base.Struct implements MessageWithMe
      * field's description.
      */
     public get reserved(): types.u8 {
-        return this._array[29];
+        return utils.unwrap(this._array[29]);
     }
 
     /**
@@ -1989,7 +1989,7 @@ export class SetPushNotificationToken extends base.Struct implements SetPushNoti
      * field's description.
      */
     public get type(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -2593,7 +2593,7 @@ export class CloseError extends base.Struct implements CloseErrorLike {
      * field's description.
      */
     public get canReconnect(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**

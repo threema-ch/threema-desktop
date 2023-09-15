@@ -3,6 +3,8 @@ import path from 'path';
 import {type TransformResult} from 'rollup';
 import {type Plugin, type UserConfig} from 'vite';
 
+import { assert } from '../../src/common/utils/assert';
+
 export function wasmPackPlugin(packages: string[]): Plugin {
     const log = debug('vite-plugin-wasm-pack');
 
@@ -31,6 +33,7 @@ export function wasmPackPlugin(packages: string[]): Plugin {
             // strings as URL parameters at the end, for example:
             // `/[...]/node_modules/.vite/env-paths.js?v=1ddea99e`
             const [modulePath] = id.split('?', 1);
+            assert(modulePath !== undefined);
 
             // Rewrite the WASM file path to use `new URL`.
             //

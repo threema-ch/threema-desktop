@@ -202,9 +202,9 @@ export type LazyStoreStates =
 export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue = TInValue>
     implements IQueryableStore<TOutValue>
 {
-    public _deactivator?: StoreDeactivator;
     protected readonly _representation: (value: TInValue) => string;
-    protected readonly _subscribers: Set<StoreSubscriber<TOutValue>> = new Set();
+    protected readonly _subscribers = new Set<StoreSubscriber<TOutValue>>();
+    private _deactivator?: StoreDeactivator;
 
     /**
      * Create a readable store.
@@ -300,9 +300,8 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
             }
             this._value = value;
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -438,7 +437,7 @@ export class MonotonicEnumStore<TValue extends u53>
      * @returns Whether the value has been updated.
      * @throws {Error} in case an attempt was made to decrease the value.
      */
-    protected _update(value: TValue, token?: typeof RESET_TOKEN): boolean {
+    protected override _update(value: TValue, token?: typeof RESET_TOKEN): boolean {
         // Special case: Reset
         if (token === RESET_TOKEN) {
             if (this._value !== value) {
@@ -450,9 +449,8 @@ export class MonotonicEnumStore<TValue extends u53>
                 }
                 this._value = value;
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
 
         // Normal case: Monotonically increasing
@@ -466,14 +464,15 @@ export class MonotonicEnumStore<TValue extends u53>
             return true;
         } else if (this._value === value) {
             return false;
-        } else {
-            const error =
-                'Attempted to decrease enum ' +
-                `${this._representation(this._value)} to ` +
-                `${this._representation(value)}`;
-            this.options?.debug?.log?.error(error);
-            throw new Error(error);
         }
+
+        // Error case: Attempt to decrease
+        const error =
+            'Attempted to decrease enum ' +
+            `${this._representation(this._value)} to ` +
+            `${this._representation(value)}`;
+        this.options?.debug?.log?.error(error);
+        throw new Error(error);
     }
 }
 
@@ -492,7 +491,7 @@ export type StrictMonotonicEnumStore<TValue extends u53> = Omit<
  */
 type ReadableStoresValues<TStores extends readonly IQueryableStore<unknown>[]> = {
     -readonly [K in keyof TStores]: TStores[K] extends IQueryableStore<infer TValue>
-        ? [store: TStores[K], value: TValue]
+        ? readonly [store: TStores[K], value: TValue]
         : never;
 };
 
@@ -503,7 +502,7 @@ type ReadableStoresValues<TStores extends readonly IQueryableStore<unknown>[]> =
  * @deprecated this store was deprecated by the new {@link DerivedStore}
  */
 export class DeprecatedDerivedStore<
-        TStores extends readonly IQueryableStore<unknown>[],
+        const TStores extends readonly IQueryableStore<unknown>[],
         TTransformed,
     >
     implements IQueryableStore<TTransformed>, LocalStore<TTransformed>
@@ -640,7 +639,7 @@ export class DeprecatedDerivedStore<
         };
         let initial = true;
         const values: ReadableStoresValues<TStores> = [
-            ...Array(this._stores.length),
+            ...Array<undefined>(this._stores.length),
         ] as unknown[] as ReadableStoresValues<TStores>;
         const transformAndDispatch = (): void => {
             // Transform aggregated source values and store the result
@@ -737,6 +736,7 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         const [serialized, transfers] = RemoteStore.expose(service, store, local);
         return [
             [id, store.tag, store.options?.debug?.log?.prefix, remote, serialized],
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             [remote, ...transfers],
         ];
     },

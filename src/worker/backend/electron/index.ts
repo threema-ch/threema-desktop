@@ -136,7 +136,7 @@ export default async function run(): Promise<void> {
             backend.runMigrations();
 
             // Run a quick database self-test
-            backend.selftest();
+            backend.checkIntegrity();
 
             return backend;
         },

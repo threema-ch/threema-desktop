@@ -23,17 +23,9 @@ export function sortGroupMembers(
     return (
         [...members]
             // Sort by display name
-            .sort((storeA, storeB) => {
-                const nameA = storeA.get().view.displayName;
-                const nameB = storeB.get().view.displayName;
-                if (nameA < nameB) {
-                    return -1;
-                } else if (nameA > nameB) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })
+            .sort((storeA, storeB) =>
+                storeA.get().view.displayName.localeCompare(storeB.get().view.displayName),
+            )
             // Sort by creator (creator should be always first member)
             .sort((storeA, storeB) => {
                 if (storeA.get().view.identity === creatorIdentity) {
@@ -89,17 +81,7 @@ export function filterGroups(
                     .toLowerCase()
                     .includes(filter.trim().toLowerCase()),
             )
-            .sort(([, {view: a}], [, {view: b}]) => {
-                const nameA = a.displayName;
-                const nameB = b.displayName;
-                if (nameA < nameB) {
-                    return -1;
-                } else if (nameA > nameB) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })
+            .sort(([, {view: a}], [, {view: b}]) => a.displayName.localeCompare(b.displayName))
             .map(([store]) => store),
     );
 }

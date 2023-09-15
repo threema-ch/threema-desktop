@@ -8,6 +8,7 @@ import {
     type BlobScope,
     isBlobId,
 } from '~/common/network/protocol/blob';
+import {unwrap} from '~/common/utils/assert';
 import {bytesToHex, byteToHex, hexToBytes} from '~/common/utils/byte';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -24,15 +25,14 @@ export class FetchBlobBackend implements BlobBackend {
     private readonly _deviceId: string;
     private readonly _deviceGroupId: string;
     public constructor(services: ServicesForBlobBackend) {
-        const prefix = byteToHex(services.device.d2m.dgpk.public[0]);
+        const prefix = byteToHex(unwrap(services.device.d2m.dgpk.public[0]));
         this._baseUrl = services.config.BLOB_SERVER_URL.replaceAll(
             '{prefix4}',
-            prefix[0],
+            unwrap(prefix[0]),
         ).replaceAll('{prefix8}', prefix);
         this._requestInit = {
             cache: 'no-store',
             headers: {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 'user-agent': services.config.USER_AGENT,
             },
         };

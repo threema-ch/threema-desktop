@@ -158,7 +158,7 @@ export class Container extends base.Struct implements ContainerLike {
      * field's description.
      */
     public get type(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -490,7 +490,7 @@ export class Reflect extends base.Struct implements ReflectLike {
      * field's description.
      */
     public get headerLength(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -498,7 +498,7 @@ export class Reflect extends base.Struct implements ReflectLike {
      * field's description.
      */
     public get reserved(): types.u8 {
-        return this._array[1];
+        return utils.unwrap(this._array[1]);
     }
 
     /**
@@ -907,7 +907,7 @@ export class Reflected extends base.Struct implements ReflectedLike {
      * field's description.
      */
     public get headerLength(): types.u8 {
-        return this._array[0];
+        return utils.unwrap(this._array[0]);
     }
 
     /**
@@ -915,7 +915,7 @@ export class Reflected extends base.Struct implements ReflectedLike {
      * field's description.
      */
     public get reserved(): types.u8 {
-        return this._array[1];
+        return utils.unwrap(this._array[1]);
     }
 
     /**

@@ -36,7 +36,7 @@ declare global {
         readonly url: string;
         readonly connection: Promise<WebSocketConnection>;
         readonly closed: Promise<WebSocketCloseInfo>;
-        close: (info?: WebSocketCloseInfo) => void;
+        readonly close: (info?: WebSocketCloseInfo) => void;
     }
 
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -168,9 +168,8 @@ export class WebSocketByteLengthQueueingStrategy implements QueuingStrategy<Buff
     public size(chunk: BufferSource | string): u53 {
         if (typeof chunk === 'string') {
             return chunk.length;
-        } else {
-            return chunk.byteLength;
         }
+        return chunk.byteLength;
     }
 }
 
@@ -244,9 +243,9 @@ export function createWebSocketStream(
     let connection: Promise<WebSocketConnection> | undefined;
 
     // TODO(DESK-767): Use the WebSocketStream API, if accessible
-    //if (self.WebSocketStream) {
-    //    ws = new WebSocketStream(url, options);
-    //}
+    // if (self.WebSocketStream) {
+    //     ws = new WebSocketStream(url, options);
+    // }
 
     // Fall back to the event-based WebSocket API
     if (ws === undefined) {
@@ -298,13 +297,11 @@ export function createWebSocketStream(
                 get(instance, property: keyof WebSocketStream): unknown {
                     if (property === 'connection') {
                         return connection;
-                    } else {
-                        return instance[property];
                     }
+                    return instance[property];
                 },
             }),
         );
-    } else {
-        return ws;
     }
+    return ws;
 }

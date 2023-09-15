@@ -1,4 +1,5 @@
 import {type ReadonlyUint8Array} from '~/common/types';
+import {unwrap} from '~/common/utils/assert';
 
 // These exist both in DOM and Node
 declare function atob(data: string): string;
@@ -40,8 +41,8 @@ export function base64ToU8a(base64String: string, headroom = 0): Uint8Array {
     }
     const array = new Uint8Array(headroom + decoded.length);
     const view = array.subarray(headroom);
-    for (let i = 0; i < decoded.length; ++i) {
-        view[i] = decoded[i].charCodeAt(0);
+    for (let index = 0; index < decoded.length; ++index) {
+        view[index] = unwrap(decoded[index]).charCodeAt(0);
     }
     return array;
 }

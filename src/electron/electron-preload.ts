@@ -23,6 +23,7 @@ log.debug('Loaded preload script');
 const appApi: ElectronIpc = {
     reportError: (errorMessage: ErrorDetails) =>
         ipcRenderer.send(ElectronIpcCommand.ERROR, errorMessage),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     getAppPath: () => ipcRenderer.sendSync(ElectronIpcCommand.GET_APP_PATH),
     getSystemInfo: () => ipcRenderer.invoke(ElectronIpcCommand.GET_SYSTEM_INFO),
     logToFile: (level, data) => ipcRenderer.invoke(ElectronIpcCommand.LOG_TO_FILE, level, data),

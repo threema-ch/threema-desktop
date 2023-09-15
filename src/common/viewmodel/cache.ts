@@ -12,24 +12,23 @@ import {type GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
 import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
 export class ViewModelCache {
-    public readonly conversationPreview: LazyWeakRef<ConversationPreviewSetStore> =
-        new LazyWeakRef();
-    public readonly contactListItem: LazyWeakRef<ContactListItemSetStore> = new LazyWeakRef();
-    public readonly groupListItem: LazyWeakRef<GroupListItemSetStore> = new LazyWeakRef();
-    public readonly profile: LazyWeakRef<ProfileViewModelStore> = new LazyWeakRef();
-    public readonly debugPanel: LazyWeakRef<DebugPanelViewModel> = new LazyWeakRef();
-    public readonly conversations: WeakValueMap<
+    public readonly conversationPreview = new LazyWeakRef<ConversationPreviewSetStore>();
+    public readonly contactListItem = new LazyWeakRef<ContactListItemSetStore>();
+    public readonly groupListItem = new LazyWeakRef<GroupListItemSetStore>();
+    public readonly profile = new LazyWeakRef<ProfileViewModelStore>();
+    public readonly debugPanel = new LazyWeakRef<DebugPanelViewModel>();
+    public readonly conversations = new WeakValueMap<
         LocalModelStore<Conversation>,
         ConversationViewModel
-    > = new WeakValueMap();
+    >();
 
-    public readonly conversationMessageSet: WeakValueMap<
+    public readonly conversationMessageSet = new WeakValueMap<
         LocalModelStore<Conversation>,
         ConversationMessageSetStore
-    > = new WeakValueMap();
+    >();
 
-    public readonly conversationMessage: WeakValueMap<
+    public readonly conversationMessage = new WeakValueMap<
         LocalModelStore<Conversation>,
         WeakValueMap<AnyMessageModelStore, ConversationMessageViewModelBundle>
-    > = new WeakValueMap();
+    >();
 }

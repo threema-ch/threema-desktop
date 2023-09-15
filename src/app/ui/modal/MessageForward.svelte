@@ -76,7 +76,7 @@
   }
 
   // Autofocus on search input
-  $: if (visible && searchInput !== null && searchInput !== undefined) {
+  $: if (visible) {
     searchInput.focus();
   }
 

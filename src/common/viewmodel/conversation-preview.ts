@@ -203,11 +203,10 @@ export function deriveLastMessagePreview(
                     const caption = lastMessage.view.caption;
                     if (caption !== undefined && caption !== '') {
                         return caption;
-                    } else {
-                        return translations[
-                            `messaging.label--default-${lastMessage.type}-message-preview`
-                        ];
                     }
+                    return translations[
+                        `messaging.label--default-${lastMessage.type}-message-preview`
+                    ];
                 }
 
                 default:

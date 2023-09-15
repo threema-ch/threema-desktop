@@ -135,9 +135,8 @@ function getOrientation(dimensions: Dimensions): Orientation {
         return 'none';
     } else if (dimensions.width > dimensions.height) {
         return 'horizontal';
-    } else {
-        return 'vertical';
     }
+    return 'vertical';
 }
 
 /**
@@ -166,9 +165,8 @@ function getConstraintViolationDimension({
         return 'width';
     } else if (violatesHeight) {
         return 'height';
-    } else {
-        return 'none';
     }
+    return 'none';
 }
 
 /**

@@ -37,14 +37,17 @@ export function run(): void {
 
         // Helper functions
         function tableExists(database: Database, tableName: string): boolean {
-            const result = database
-                .prepare(
-                    `SELECT COUNT(*) AS count FROM sqlite_master WHERE type='table' AND name='${tableName}'`,
-                )
-                .get();
-            return result.count !== undefined && result.count > 0;
+            return (
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+                database
+                    .prepare(
+                        `SELECT COUNT(*) AS count FROM sqlite_master WHERE type='table' AND name='${tableName}'`,
+                    )
+                    .get()?.count === 1
+            );
         }
         function migrationCacheEntryCount(database: Database): u53 {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
             return database
                 .prepare(`SELECT COUNT(*) AS count FROM ${MIGRATION_CACHE.TABLE_NAME}`)
                 .get().count;
@@ -60,18 +63,18 @@ export function run(): void {
 
         it('does nothing when no migrations are available', () => {
             // Remove migrations
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const helperUnsafe = migrationHelper as any;
-            helperUnsafe._migrations = new Map();
-            helperUnsafe._maxEmbeddedMigrationNumber = 0;
+            // @ts-expect-error: Unsafe usage of private property
+            migrationHelper._migrations = new Map();
+            // @ts-expect-error: Unsafe usage of private property
+            migrationHelper._maxEmbeddedMigrationNumber = 0;
 
             const applied = migrationHelper.migrate(db, 0);
             expect(applied).to.equal(0);
         });
 
         it('errors when up migration not found', () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const maxMigrationAvailable: u53 = (migrationHelper as any)._maxEmbeddedMigrationNumber;
+            // @ts-expect-error: Unsafe usage of private property
+            const maxMigrationAvailable: u53 = migrationHelper._maxEmbeddedMigrationNumber;
             expect(() => migrationHelper.migrate(db, Number.MAX_SAFE_INTEGER)).to.throw(
                 `Could not find migration for version ${maxMigrationAvailable + 1}`,
             );
@@ -96,6 +99,7 @@ export function run(): void {
                     ORDER BY number asc`,
                 )
                 .all();
+            /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return */
             expect(migrations.map((m) => m.number)).to.deep.equal([1, 2]);
             expect(migrations[0].upSql).not.to.be.empty;
             expect(migrations[0].downSql).not.to.be.empty;
@@ -103,6 +107,7 @@ export function run(): void {
             expect(migrations[1].upSql).not.to.be.empty;
             expect(migrations[1].downSql).not.to.be.empty;
             expect(migrations[1].upSql).not.to.equal(migrations[1].downSql);
+            /* eslint-enable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return */
         });
 
         it('overwrites existing migrations in migration cache', () => {
@@ -123,6 +128,7 @@ export function run(): void {
             // Apply other migrations, this should overwrite existing entries in the cache
             const applied2 = migrationHelper.migrate(db, 2);
             expect(applied2).to.equal(1);
+            /* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-assignment */
             const migration = db
                 .prepare(
                     `SELECT ${MIGRATION_CACHE.COL_NAME}, ${MIGRATION_CACHE.COL_UP_SQL}, ${MIGRATION_CACHE.COL_DOWN_SQL}
@@ -133,6 +139,7 @@ export function run(): void {
             expect(migration.name).not.to.equal('fake');
             expect(migration.upSql).not.to.equal('SELECT 1');
             expect(migration.downSql).not.to.equal('SELECT 1');
+            /* eslint-enable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-assignment */
         });
 
         it('removes migrations from cache after down-migration', () => {
@@ -147,8 +154,8 @@ export function run(): void {
 
         it('can load migrations from cache when doing down-migration', () => {
             // First, run all migrations
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const maxMigrationAvailable: u53 = (migrationHelper as any)._maxEmbeddedMigrationNumber;
+            // @ts-expect-error: Unsafe usage of private property
+            const maxMigrationAvailable: u53 = migrationHelper._maxEmbeddedMigrationNumber;
             const appliedUp = migrationHelper.migrate(db, maxMigrationAvailable);
             expect(appliedUp).to.equal(maxMigrationAvailable);
             expect(currentDbVersion(db)).to.equal(maxMigrationAvailable);

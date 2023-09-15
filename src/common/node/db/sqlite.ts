@@ -58,7 +58,7 @@ import {type FileId} from '~/common/file-storage';
 import {type Logger} from '~/common/logging';
 import {type GroupId, type IdentityString, type MessageId} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
-import {type u53, type u64} from '~/common/types';
+import {type u53} from '~/common/types';
 import {groupArray} from '~/common/utils/array';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
@@ -161,7 +161,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         dbKey.purge();
 
         // Check cipher provider
-        const provider = this._rawDb.pragma('cipher_provider', {simple: true});
+        const provider: unknown = this._rawDb.pragma('cipher_provider', {simple: true});
         if (provider !== 'bearssl') {
             throw new Error(`Invalid cipher provider: ${provider}`);
         }
@@ -205,9 +205,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         this._rawDb.pragma('synchronous = NORMAL');
 
         // Quick database integrity check
-        if (this._rawDb.prepare('SELECT count(*) FROM sqlite_master').all().length !== 1) {
-            throw new Error('Database file corrupt or invalid key');
-        }
+        this.checkIntegrity();
 
         // Ensure we're using safe integers (bigint) by default
         this._rawDb.defaultSafeIntegers();
@@ -266,13 +264,9 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
      *
      * @throws {Error} if the self-test failed.
      */
-    public selftest(): void {
-        const tableName = 'contacts';
-        const contactsTableFound: Record<string, u64> = this._rawDb
-            .prepare("SELECT count(*) AS count FROM sqlite_master WHERE type='table' AND name=?;")
-            .get(tableName);
-        if (contactsTableFound.count !== 1n) {
-            throw new Error(`Database self-test failed: Table ${tableName} not found`);
+    public checkIntegrity(): void {
+        if (this._rawDb.prepare('SELECT count(*) FROM sqlite_master').all().length !== 1) {
+            throw new Error('Database file corrupt or invalid key');
         }
     }
 

@@ -100,9 +100,9 @@ function unreachable(value: never, error?: Error): never {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-function unwrap<T>(value: T | undefined | null, message: string): T {
+function unwrap<T>(value: T | null | undefined, message?: string): T {
     if (value === undefined || value === null) {
-        fail(message);
+        fail(message ?? 'Unwrap failed');
     }
     return value;
 }
@@ -113,7 +113,6 @@ function unwrap<T>(value: T | undefined | null, message: string): T {
  * Unless running on CI, if a `required` command is not available, print a warning message.
  * Otherwise, if the command is not available, exit with an error message.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function checkCommandAvailability(command: string, required = false): boolean {
     const exists =
         spawnSync(IS_WINDOWS ? 'where.exe' : 'which', [command], {shell: false}).status === 0;
@@ -222,9 +221,9 @@ function readPackageJson(dirs: Directories): PackageJson {
  * Directory paths.
  */
 interface Directories {
-    root: string;
-    tmp: string;
-    out: string;
+    readonly root: string;
+    readonly tmp: string;
+    readonly out: string;
 }
 
 /**
@@ -261,7 +260,7 @@ function main(args: string[]): void {
     }
 
     // Prepare build and output directories
-    const rootDir = path.join(__dirname, '..', '..', '..');
+    const rootDir = fs.realpathSync('..');
     const dirs: Directories = {
         root: rootDir,
         tmp: path.join(rootDir, 'build', 'tmp'),
@@ -291,13 +290,13 @@ function main(args: string[]): void {
             buildBinaryArchives(dirs, true, args.slice(1));
             break;
         case 'dmg':
-            buildDmgs(dirs, false, args.slice(1)).catch((e) => {
-                fail(`Building DMG failed: ${e}`);
+            buildDmgs(dirs, false, args.slice(1)).catch((error) => {
+                fail(`Building DMG failed: ${error}`);
             });
             break;
         case 'dmgSigned':
-            buildDmgs(dirs, true, args.slice(1)).catch((e) => {
-                fail(`Building signed DMG failed: ${e}`);
+            buildDmgs(dirs, true, args.slice(1)).catch((error) => {
+                fail(`Building signed DMG failed: ${error}`);
             });
             break;
         case 'msix':
@@ -344,7 +343,7 @@ function buildSource(dirs: Directories, args: string[]): void {
             scriptArgs = [];
             break;
         case 1:
-            scriptArgs = ['-v', args[0]];
+            scriptArgs = ['-v', unwrap(args[0])];
             break;
         default:
             printUsage();
@@ -488,7 +487,7 @@ function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[])
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(args[0]);
+    const flavors = parseFlavors(unwrap(args[0]));
 
     // Build all flavors
     for (const flavor of flavors) {
@@ -585,7 +584,7 @@ async function buildDmgs(dirs: Directories, signed: boolean, args: string[]): Pr
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(args[0]);
+    const flavors = parseFlavors(unwrap(args[0]));
 
     // Build all flavors
     for (const flavor of flavors) {
@@ -795,7 +794,7 @@ function buildMsixs(dirs: Directories, signed: boolean, args: string[]): void {
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(args[0]);
+    const flavors = parseFlavors(unwrap(args[0]));
 
     // Build all flavors
     for (const flavor of flavors) {
@@ -961,7 +960,7 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(args[0]);
+    const flavors = parseFlavors(unwrap(args[0]));
     const appIds = [];
     for (const flavor of flavors) {
         appIds.push(determineAppRdn(flavor));
@@ -1096,4 +1095,3 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
 }
 
 main(process.argv.slice(2));
-export {};

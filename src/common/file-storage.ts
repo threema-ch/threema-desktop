@@ -131,8 +131,8 @@ export function byteToFileId(array: ReadonlyUint8Array): FileId {
  */
 export function deleteFilesInBackground(file: FileStorage, log: Logger, fileIds: FileId[]): void {
     for (const fileId of fileIds) {
-        file.delete(fileId).catch((e) => {
-            const error = ensureError(e);
+        file.delete(fileId).catch((error_) => {
+            const error = ensureError(error_);
             log.error(`Error while deleting file: ${extractErrorMessage(error, 'short')}`);
         });
     }
@@ -252,7 +252,7 @@ export class InMemoryFileStorage implements FileStorage {
     // The in-memory storage is not persistent, thus we can hardcode the storage format version to 0
     public readonly currentStorageFormatVersion = 0;
 
-    private readonly _files: Map<FileId, ReadonlyUint8Array> = new Map();
+    private readonly _files = new Map<FileId, ReadonlyUint8Array>();
 
     public constructor(private readonly _crypto: Pick<CryptoBackend, 'randomBytes'>) {}
 

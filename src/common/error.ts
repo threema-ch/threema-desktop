@@ -276,7 +276,7 @@ export type RendezvousCloseCause = 'unknown' | 'closed' | 'timeout' | 'complete'
 /** An error wrapping a {@link RendezvousCloseCause}. */
 export class RendezvousCloseError extends Error {
     public constructor(
-        public readonly cause: RendezvousCloseCause,
+        public override readonly cause: RendezvousCloseCause,
         message?: string,
     ) {
         super(message ?? `Rendezvous connection closed, cause: '${cause}'`);

@@ -2,6 +2,16 @@
 import type * as types from '~/common/types';
 
 /**
+ * Expect that a value exists. Return it if it exists and throw if it doesn't.
+ */
+export function unwrap<T>(value: T | null | undefined): T {
+    if (value === undefined || value === null) {
+        throw new Error('Value should have been defined');
+    }
+    return value;
+}
+
+/**
  * Encode bytes from a source array or a function into an array.
  *
  * @param destination The array to encode into.
@@ -17,9 +27,8 @@ export function encodeBytes(
     if (source instanceof Uint8Array) {
         destination.set(source, offset);
         return source.byteLength;
-    } else {
-        return source.encode(destination.subarray(offset)).byteLength;
     }
+    return source.encode(destination.subarray(offset)).byteLength;
 }
 
 /**
@@ -33,9 +42,8 @@ export function getByteLength(
 ): types.u53 {
     if (source instanceof Uint8Array) {
         return source.byteLength;
-    } else {
-        return source.byteLength();
     }
+    return source.byteLength();
 }
 
 /**

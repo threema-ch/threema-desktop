@@ -1,5 +1,5 @@
 import {type Logger} from '~/common/logging';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {byteToHex} from '~/common/utils/byte';
 
 import {type DecryptedKeyStorage, type EncryptedKeyStorage} from './key-storage-file';
@@ -98,7 +98,7 @@ export class MigrationHelper {
         const targetVersion = migrations.length;
         while (schema.schemaVersion < targetVersion) {
             // Find appropriate migration
-            const upMigration = migrations[schema.schemaVersion];
+            const upMigration = unwrap(migrations[schema.schemaVersion]);
 
             // Migrate up, increment version
             upMigration(schema);
@@ -113,8 +113,7 @@ export class MigrationHelper {
                 `Migrated ${schemaType} key storage format from version ${originalVersion} to version ${schema.schemaVersion}`,
             );
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 }

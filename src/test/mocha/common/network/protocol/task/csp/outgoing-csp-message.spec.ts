@@ -30,7 +30,7 @@ import {
     type MessageId,
     type Nickname,
 } from '~/common/network/types';
-import {assert} from '~/common/utils/assert';
+import {assert, unwrap} from '~/common/utils/assert';
 import {byteWithoutZeroPadding} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
 import {Delayed} from '~/common/utils/delayed';
@@ -98,7 +98,8 @@ export function run(): void {
                     'payload.outgoingMessageUpdate is null or undefined',
                 );
                 expect(message.updates).to.have.length(1);
-                expect(message.updates[0].sent).not.to.be.undefined;
+                const update = unwrap(message.updates[0]);
+                expect(update.sent).not.to.be.undefined;
             });
         }
 
@@ -174,13 +175,10 @@ export function run(): void {
                     'payload.outgoingMessageUpdate is null or undefined',
                 );
                 expect(message.updates).to.have.length(1);
-                expect(message.updates[0].conversation?.group).not.to.be.undefined;
-                expect(message.updates[0].conversation?.group?.creatorIdentity).to.equal(
-                    creatorIdentity,
-                );
-                expect(message.updates[0].conversation?.group?.groupId).to.eql(
-                    intoUnsignedLong(groupId),
-                );
+                const update = unwrap(message.updates[0]);
+                expect(update.conversation?.group).not.to.be.undefined;
+                expect(update.conversation?.group?.creatorIdentity).to.equal(creatorIdentity);
+                expect(update.conversation?.group?.groupId).to.eql(intoUnsignedLong(groupId));
             });
         }
 
@@ -329,10 +327,9 @@ export function run(): void {
                             'payload.outgoingMessageUpdate is null or undefined',
                         );
                         expect(message.updates).to.have.length(1);
-                        expect(message.updates[0].conversation?.contact).to.equal(
-                            user1.identity.string,
-                        );
-                        expect(ensureMessageId(intoU64(message.updates[0].messageId))).to.equal(
+                        const update = unwrap(message.updates[0]);
+                        expect(update.conversation?.contact).to.equal(user1.identity.string);
+                        expect(ensureMessageId(intoU64(update.messageId))).to.equal(
                             messageProperties.messageId,
                         );
                     }),

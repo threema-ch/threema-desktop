@@ -91,6 +91,7 @@ import {
     assertUnreachable,
     ensureError,
     unreachable,
+    unwrap,
 } from '~/common/utils/assert';
 import {bytesToHex, byteToHex} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
@@ -528,10 +529,9 @@ export class Backend implements ProxyMarked {
         if (keyStorage.isPresent()) {
             log.info('Identity found');
             return true;
-        } else {
-            log.info('No identity found');
-            return false;
         }
+        log.info('No identity found');
+        return false;
     }
 
     /**
@@ -817,13 +817,12 @@ export class Backend implements ProxyMarked {
                     {kind: 'connection-error', cause: error.type.cause},
                     error,
                 );
-            } else {
-                return await throwLinkingError(
-                    `Device join protocol failed: ${error}`,
-                    {kind: 'join-error'},
-                    ensureError(error),
-                );
             }
+            return await throwLinkingError(
+                `Device join protocol failed: ${error}`,
+                {kind: 'join-error'},
+                ensureError(error),
+            );
         }
         await updateSyncingPhase('restoring');
 
@@ -1528,11 +1527,11 @@ class Connection {
             lowWaterMark: 131072, // 2 chunks of 64 KiB -> 128 KiB
             pollIntervalMs: 20, // Poll every 20ms until the low water mark has been reached
         };
-        const prefix = byteToHex(device.d2m.dgpk.public[0]);
-        const url = config.MEDIATOR_SERVER_URL.replaceAll('{prefix4}', prefix[0]).replaceAll(
-            '{prefix8}',
-            prefix,
-        );
+        const prefix = byteToHex(unwrap(device.d2m.dgpk.public[0]));
+        const url = config.MEDIATOR_SERVER_URL.replaceAll(
+            '{prefix4}',
+            unwrap(prefix[0]),
+        ).replaceAll('{prefix8}', prefix);
         log.debug(`Connecting to ${url}`);
         const mediator = new MediatorWebSocketTransport(
             {

@@ -119,7 +119,7 @@ export class FileSystemFileStorage implements FileStorage {
                 },
             );
         } finally {
-            file?.close().catch((e) => this._log.warn(`Failed to close file: ${e}`));
+            file?.close().catch((error) => this._log.warn(`Failed to close file: ${error}`));
         }
 
         this._log.debug(`Loaded file with ID ${handle.fileId} (${decrypted.byteLength} bytes)`);
@@ -148,19 +148,21 @@ export class FileSystemFileStorage implements FileStorage {
         try {
             // Note: Opening the file in `wx` mode will fail if the file already exists.
             file = await fsPromises.open(filepath, 'wx', fileModeInternalIfPosix());
-        } catch (error) {
+        } catch (openError) {
             // Close file
-            file?.close().catch((e) => this._log.warn(`Failed to close file: ${e}`));
+            file
+                ?.close()
+                .catch((closeError) => this._log.warn(`Failed to close file: ${closeError}`));
 
             let message = `Could not write file with ID ${fileId}`;
-            if (isNodeError(error)) {
-                if (error.code === 'EEXIST') {
+            if (isNodeError(openError)) {
+                if (openError.code === 'EEXIST') {
                     message += ': File already exists';
                 } else {
-                    message += ` (${error.code})`;
+                    message += ` (${openError.code})`;
                 }
             }
-            throw new FileStorageError('write-error', message, {from: error});
+            throw new FileStorageError('write-error', message, {from: openError});
         }
 
         // Encrypt data and write it to the specified file
