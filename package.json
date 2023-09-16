@@ -111,7 +111,7 @@
     "@electron/osx-sign": "1.0.4",
     "@electron/rebuild": "3.2.13",
     "@prettier/plugin-xml": "3.2.0",
-    "@sveltejs/vite-plugin-svelte": "1.0.0-next.49",
+    "@sveltejs/vite-plugin-svelte": "2.4.6",
     "@types/chai": "~4.3.0",
     "@types/debug": "~4.1.7",
     "@types/electron-installer-dmg": "~3.0.1",
@@ -138,7 +138,7 @@
     "eslint-plugin-svelte": "~2.33.0",
     "eslint-plugin-threema": "file:libs/eslint-plugin-threema",
     "fs-extra": "~11.1.0",
-    "i18next-parser": "~8.7.0",
+    "i18next-parser": "8.4.0",
     "karma": "~6.4.0",
     "karma-chai": "~0.1.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -163,8 +163,8 @@
     "ts-proto": "~1.153.3",
     "typescript": "~5.1.6",
     "typescript-eslint-parser-for-extra-files": "~0.5.0",
-    "vite": "2.9.16",
-    "vite-tsconfig-paths": "3.6.0"
+    "vite": "4.4.9",
+    "vite-tsconfig-paths": "4.2.1"
   },
   "overrides": {
     "glob-parent": "^5.1.2",

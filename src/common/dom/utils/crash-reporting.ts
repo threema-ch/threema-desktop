@@ -20,7 +20,7 @@ export function initCrashReportingInSandboxBuilds(log: Logger): void {
 
         // Version info
         release: `${import.meta.env.BUILD_VERSION} (${import.meta.env.BUILD_VERSION_CODE})`,
-        environment: import.meta.env.MODE,
+        environment: import.meta.env.BUILD_MODE,
         initialScope: {
             tags: {
                 appName: import.meta.env.APP_NAME,

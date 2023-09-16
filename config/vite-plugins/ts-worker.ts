@@ -1,10 +1,16 @@
+import {createHash} from 'node:crypto';
+
 import debug from 'debug';
 import MagicString from 'magic-string';
-import {type TransformResult} from 'rollup';
+import {type PreRenderedAsset, type TransformResult} from 'rollup';
 import * as rollup from 'rollup';
 import {type Plugin, type ResolvedConfig} from 'vite';
 
 import {assert, unwrap} from '../../src/common/utils/assert';
+
+export interface WorkerPlugin extends Plugin {
+    readonly synchronizeAsset: (asset: PreRenderedAsset) => string;
+}
 
 const TS_IMPORT_META_URL_RE =
     // eslint-disable-next-line threema/ban-stateful-regex-flags
@@ -12,10 +18,11 @@ const TS_IMPORT_META_URL_RE =
 // eslint-disable-next-line threema/ban-stateful-regex-flags
 const TS_IMPORT_META_ENV_BUILD_TARGET_RE = /\$\{\s*import\.meta\.env\.BUILD_TARGET\s*\}/gu;
 
-export function tsWorkerPlugin(): Plugin {
+export function tsWorkerPlugin(): WorkerPlugin {
     const log = debug('vite-plugin-ts-worker');
     let config: ResolvedConfig;
     let isDev = true;
+    const assets = new Map<string, string>();
 
     return {
         name: 'vite-plugin-ts-worker',
@@ -43,7 +50,9 @@ export function tsWorkerPlugin(): Plugin {
                 //       and you wan't to complain, waddle through the pain of parsing the template
                 //       literal to an AST and then back to a string. Good luck!
                 if (url.startsWith('`')) {
-                    const buildTarget = unwrap(config.define)['import.meta.env.BUILD_TARGET'] as unknown;
+                    const buildTarget = unwrap(config.define)[
+                        'import.meta.env.BUILD_TARGET'
+                    ] as unknown;
                     assert(typeof buildTarget === 'string');
                     url = url.replaceAll(
                         TS_IMPORT_META_ENV_BUILD_TARGET_RE,
@@ -76,6 +85,19 @@ export function tsWorkerPlugin(): Plugin {
                         } = await bundle.generate({
                             format: 'iife',
                             sourcemap: config.build.sourcemap,
+
+                            // Duct-tape level over 9000: Keep asset file names in sync with the
+                            // parent builder because for some fucking reason the hashes don't
+                            // match...
+                            assetFileNames: (asset) => {
+                                const hash = createHash('sha256')
+                                    .update(asset.source)
+                                    .digest('hex')
+                                    .slice(0, 8);
+                                const fileName = `[name]-${hash}[extname]`;
+                                assets.set(unwrap(asset.name), fileName);
+                                return fileName;
+                            },
                         });
                         rewritten = `__VITE_ASSET__${this.emitFile({
                             type: 'asset',
@@ -100,6 +122,15 @@ export function tsWorkerPlugin(): Plugin {
                 : {
                       code: source.toString(),
                   };
+        },
+
+        synchronizeAsset(asset) {
+            const fileName = assets.get(unwrap(asset.name));
+            if (fileName === undefined) {
+                return '[name]-[hash][extname]';
+            }
+            log('synchronized asset', asset.name, '->', fileName);
+            return fileName;
         },
     };
 }

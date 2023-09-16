@@ -365,7 +365,7 @@ export async function generateScreenshotData(
         groups: [],
     };
     if (import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-        const jsonFiles = import.meta.globEager('./screenshot-data-*.json');
+        const jsonFiles = import.meta.glob('./screenshot-data-*.json', {eager: true});
         const filename = `./screenshot-data-${import.meta.env.BUILD_VARIANT}.json`;
         if (filename in jsonFiles) {
             const json = jsonFiles[filename];
@@ -457,7 +457,9 @@ export async function generateScreenshotData(
             continue;
         }
         log.info(`Adding group with name ${group.name.default}`);
-        const createdAt = new Date(getReferenceTimestampMs().getTime() - group.createdMinutesAgo * 60 * 1000);
+        const createdAt = new Date(
+            getReferenceTimestampMs().getTime() - group.createdMinutesAgo * 60 * 1000,
+        );
         const groupModel = model.groups.add.fromSync(
             {
                 groupId: group.id,
@@ -508,7 +510,9 @@ async function addConversationMessages(
         let content;
 
         const messageId = message.messageId ?? randomMessageId(crypto);
-        const messageDate = new Date(getReferenceTimestampMs().getTime() - message.minutesAgo * 60 * 1000);
+        const messageDate = new Date(
+            getReferenceTimestampMs().getTime() - message.minutesAgo * 60 * 1000,
+        );
         const lastReaction =
             message.lastReaction === undefined
                 ? undefined

@@ -5,7 +5,7 @@ import * as process from 'node:process';
 import * as v from '@badrap/valita';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
 import {type RollupOptions} from 'rollup';
-import {type ConfigEnv as ViteConfigEnv, type Plugin, type UserConfig} from 'vite';
+import {type ConfigEnv as ViteConfigEnv, type UserConfig} from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // Imports cannot be absolute in this file.
@@ -25,7 +25,6 @@ import {
 } from './build';
 import cjsExternals from './vite-plugins/cjs-externals';
 import {tsWorkerPlugin} from './vite-plugins/ts-worker';
-import {wasmPackPlugin} from './vite-plugins/wasm-pack';
 
 /**
  * Minimal package.json schema, extracting some components we need.
@@ -153,10 +152,7 @@ function determineMobileAppName(env: ConfigEnv): string {
     return name;
 }
 
-function makeConfig(
-    pkg: PackageJson,
-    env: ConfigEnv,
-): Omit<ImportMeta['env'], 'BASE_URL' | 'MODE'> {
+function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], 'BASE_URL'> {
     return {
         // Dev
         DEV_SERVER_PORT: env.devServerPort,
@@ -165,6 +161,7 @@ function makeConfig(
         DEBUG: env.mode === 'development',
 
         // Build variables
+        BUILD_MODE: env.mode,
         BUILD_TARGET: env.target,
         BUILD_VERSION: pkg.version,
         BUILD_VERSION_CODE: pkg.versionCode,
@@ -239,7 +236,14 @@ function makeConfig(
 }
 
 export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
-    const [target, entry, variant, environment] = process.env.VITE_MAKE?.split(',', 4) ?? [];
+    const [target, entry, variant, environment] = process.env.VITE_MAKE?.split(',', 5) ?? [];
+    if (!(BUILD_MODES as readonly string[]).includes(viteEnv.mode)) {
+        console.error(
+            `Expected one of the following modes (-m, --mode): ${BUILD_MODES.join(', ')}`,
+        );
+        console.error(`Got mode: ${viteEnv.mode}`);
+        process.exit(1);
+    }
     if (
         target === undefined ||
         entry === undefined ||
@@ -257,10 +261,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             `<${BUILD_ENVIRONMENTS.join('|')}>`;
         console.error(`Expected environment variable ${usage}`);
         console.error(`Got VITE_MAKE=${process.env.VITE_MAKE ?? ''}`);
-        process.exit(1);
-    }
-    if (!(BUILD_MODES as readonly string[]).includes(viteEnv.mode)) {
-        console.error(`Unknown mode: ${viteEnv.mode}`);
         process.exit(1);
     }
     const env: ConfigEnv = {
@@ -287,12 +287,11 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
     // External modules not to be bundled
     const external = [
         // Node builtin modules
-        ...builtinModules,
         ...builtinModules.map((mod) => `node:${mod}`),
     ];
 
     // Determine plugins
-    const plugins: Record<string, Plugin | readonly Plugin[] | undefined> = {
+    const plugins = {
         tsWorkerPlugin: env.entry === 'app' ? tsWorkerPlugin() : undefined,
         commonjsExternals: cjsExternals({
             externals: [
@@ -327,14 +326,13 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                 './test/mocha/common/tsconfig.json',
             ],
         }),
-        wasmPackPlugin: wasmPackPlugin(['@threema/compose-area/web']),
         svelte:
             env.entry === 'app'
                 ? svelte({
                       configFile: '../svelte.config.js',
                   })
                 : undefined,
-    };
+    } as const;
 
     // Determine rollup options
     const rollupOptions: RollupOptions = {};
@@ -361,6 +359,13 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             break;
         default: // Nothing to do
     }
+    if (plugins.tsWorkerPlugin !== undefined) {
+        const plugin = plugins.tsWorkerPlugin;
+        rollupOptions.output = {
+            ...rollupOptions.output,
+            assetFileNames: (asset) => plugin.synchronizeAsset(asset),
+        };
+    }
 
     // Common config
     return {
@@ -381,15 +386,21 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
                 env.entry === 'electron-main' || env.entry === 'electron-preload'
                     ? {
                           entry: `./electron/${env.entry}.ts`,
-                          formats: ['es'],
+                          formats: ['cjs'],
                       }
                     : undefined,
             // TODO(DESK-781): Use: minify: env.mode === 'production',
             minify: false,
+            reportCompressedSize: false,
             rollupOptions,
         },
         optimizeDeps: {
-            exclude: external,
+            exclude: [
+                ...external,
+                // Workaround for https://github.com/vitejs/vite/issues/8427
+                '@threema/compose-area/web',
+            ],
+            force: true, // TODO(DESK-782)
         },
         define: {
             // Inject config into import.meta.env.*
@@ -405,7 +416,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             .flat(),
         server: {
             port: env.devServerPort,
-            force: true, // TODO(DESK-782)
             fs: {
                 strict: true,
                 allow: ['.', '../libs', '../node_modules'],
@@ -416,6 +426,19 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             plugins: Object.values(plugins)
                 .filter((plugin) => plugin !== undefined && plugin !== plugins.svelte)
                 .flat(),
+        },
+        experimental: {
+            renderBuiltUrl: (filename) => {
+                if (filename.startsWith('res/')) {
+                    // DUCT-TAPE alarm! Vite is drunk and for some weird reason rewrites URLs in the
+                    // post-css plugin to absolute paths even though `base` is relative and it should
+                    // not do that.
+                    return `./${filename}`;
+                }
+
+                // Default behaviour
+                return undefined;
+            },
         },
     };
 }

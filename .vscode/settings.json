@@ -12,7 +12,7 @@
     "**/node_modules": true,
     "**/.flatpak-builder": true
   },
-  "eslint.validate": ["svelte"],
+  "eslint.validate": ["html", "svelte", "typescript", "javascript"],
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "rewrap.wrappingColumn": 100

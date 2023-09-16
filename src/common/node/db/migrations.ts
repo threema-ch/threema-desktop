@@ -1,7 +1,8 @@
+import * as path from 'node:path';
+import * as process from 'node:process';
+
 import * as v from '@badrap/valita';
 import {type Database} from 'better-sqlcipher';
-import * as path from 'path';
-import * as process from 'process';
 
 import {MigrationError} from '~/common/error';
 import {type Logger} from '~/common/logging';
@@ -11,7 +12,8 @@ import {assert, unreachable, unwrap} from '~/common/utils/assert';
 // Dynamically import all migration files.
 // This is done using the glob import feature in vite:
 // https://vitejs.dev/guide/features.html#glob-import
-const migrationFiles = import.meta.globEager<string>('/migrations/*.sql', {
+const migrationFiles = import.meta.glob<string>('/migrations/*.sql', {
+    eager: true,
     as: 'raw',
 });
 

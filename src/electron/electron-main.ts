@@ -302,7 +302,7 @@ async function init(): Promise<MainInit> {
                     : path.join(os.homedir(), '.local', 'share');
             return [baseDir, rootDirectoryName];
         }
-        
+
         // On other operating systems, let Electron decide.
         return [path.join(electron.app.getPath(ELECTRON_PATH_APP_DATA), rootDirectoryName)];
     }
@@ -653,7 +653,7 @@ function main(
         if (import.meta.env.DEBUG) {
             window.webContents.openDevTools();
         }
-        log.debug(`Running in mode: ${import.meta.env.MODE} with parameters:\n`, parameters);
+        log.debug(`Running in mode: ${import.meta.env.BUILD_MODE} with parameters:\n`, parameters);
         log.info(`Serving app from ${appUrl}`);
         window.loadURL(appUrl).catch((error) => log.error(`Unable to load URL ${appUrl}`, error));
 

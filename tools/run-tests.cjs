@@ -27,7 +27,7 @@ switch (testsuite) {
     case 'mocha':
         entry = 'mocha-tests';
         testCmd = path.resolve(rootDir, 'node_modules/.bin', IS_WINDOWS ? 'mocha.cmd' : 'mocha');
-        testArgs = ['--node-option', 'expose-gc' , 'build/electron/mocha-tests/run-specs.cjs'];
+        testArgs = ['--node-option', 'expose-gc', 'build/electron/mocha-tests/run-specs.cjs'];
         break;
     case 'karma':
         entry = 'karma-tests';

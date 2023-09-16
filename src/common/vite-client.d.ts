@@ -1,46 +1,149 @@
 /**
- * This is a slightly modified version of vite's exported client.d.ts
- * (https://github.com/vitejs/vite/blob/main/packages/vite/client.d.ts) and
- * should be kept in sync.
+ * This is a modified version of Vite's exported client.d.ts and importMeta.d.ts
+ * and must be kept in sync.
+ *
+ * When updating, diff with:
+ *
+ * - https://github.com/vitejs/vite/blob/main/packages/vite/client.d.ts
+ * - https://github.com/vitejs/vite/blob/main/packages/vite/types/importMeta.d.ts
  */
 
-// eslint-disable-next-line jsdoc/no-bad-blocks
+/* eslint-disable jsdoc/no-bad-blocks */
 /* eslint-disable
    capitalized-comments,
+   no-restricted-syntax,
    @typescript-eslint/consistent-type-definitions,
    @typescript-eslint/consistent-type-imports,
-    @typescript-eslint/consistent-indexed-object-style,
    @typescript-eslint/member-ordering,
    @typescript-eslint/method-signature-style,
    @typescript-eslint/no-explicit-any,
    @typescript-eslint/unified-signatures,
 */
-interface GlobOptions {
-    as?: string;
+
+/**
+ * This section reflects importGlob.d.ts.
+ *
+ * - Remove all DOM references and strip `export`... sigh.
+ */
+interface ImportGlobOptions<Eager extends boolean, AsType extends string> {
+    /**
+     * Import type for the import url.
+     */
+    as?: AsType;
+    /**
+     * Import as static or dynamic
+     *
+     * @default false
+     */
+    eager?: Eager;
+    /**
+     * Import only the specific named export. Set to `default` to import the default export.
+     */
+    import?: string;
+    /**
+     * Custom queries
+     */
+    query?: string | Record<string, string | number | boolean>;
+    /**
+     * Search files also inside `node_modules/` and hidden directories (e.g. `.git/`). This might have impact on performance.
+     *
+     * @default false
+     */
+    exhaustive?: boolean;
 }
 
-interface ViteDefaultImportMeta {
+type GeneralImportGlobOptions = ImportGlobOptions<boolean, string>;
+
+interface KnownAsTypeMap {
+    raw: string;
     url: string;
-
-    readonly hot?: import('vite/types/hot').ViteHotContext;
-
-    readonly env: ImportMetaEnv;
-
-    glob<Module = {[key: string]: any}>(
-        pattern: string,
-        options?: GlobOptions,
-    ): Record<string, () => Promise<Module>>;
-
-    globEager<Module = {[key: string]: any}>(
-        pattern: string,
-        options?: GlobOptions,
-    ): Record<string, Module>;
 }
 
-// Built-in asset types
-// see `src/constants.ts`
+interface ImportGlobFunction {
+    /**
+     * Import a list of files with a glob pattern.
+     *
+     * Overload 1: No generic provided, infer the type from `eager` and `as`
+     */
+    <
+        Eager extends boolean,
+        As extends string,
+        T = As extends keyof KnownAsTypeMap ? KnownAsTypeMap[As] : unknown,
+    >(
+        glob: string | string[],
+        options?: ImportGlobOptions<Eager, As>,
+    ): (Eager extends true ? true : false) extends true
+        ? Record<string, T>
+        : Record<string, () => Promise<T>>;
+    /**
+     * Import a list of files with a glob pattern.
+     *
+     * Overload 2: Module generic provided, infer the type from `eager: false`
+     */
+    <M>(
+        glob: string | string[],
+        options?: ImportGlobOptions<false, string>,
+    ): Record<string, () => Promise<M>>;
+    /**
+     * Import a list of files with a glob pattern.
+     *
+     * Overload 3: Module generic provided, infer the type from `eager: true`
+     */
+    <M>(glob: string | string[], options: ImportGlobOptions<true, string>): Record<string, M>;
+}
+
+interface ImportGlobEagerFunction {
+    /**
+     * Eagerly import a list of files with a glob pattern.
+     *
+     * Overload 1: No generic provided, infer the type from `as`
+     */
+    <As extends string, T = As extends keyof KnownAsTypeMap ? KnownAsTypeMap[As] : unknown>(
+        glob: string | string[],
+        options?: Omit<ImportGlobOptions<boolean, As>, 'eager'>,
+    ): Record<string, T>;
+    /**
+     * Eagerly import a list of files with a glob pattern.
+     *
+     * Overload 2: Module generic provided
+     */
+    <M>(
+        glob: string | string[],
+        options?: Omit<ImportGlobOptions<boolean, string>, 'eager'>,
+    ): Record<string, M>;
+}
+
+/**
+ * This section reflects importMeta.d.ts.
+ *
+ * - Rename `ImportMetaEnv` to `ViteDefaultImportMetaEnv` and strip all unnecessary properties.
+ * - Rename `ImportMeta` to `ViteDefaultImportMeta` and strip all unnecessary properties.
+ */
+interface ViteDefaultImportMetaEnv {
+    readonly BASE_URL: string;
+}
+interface ViteDefaultImportMeta {
+    readonly url: string;
+    readonly glob: ImportGlobFunction;
+}
+
+/**
+ * This section reflects client.d.ts.
+ *
+ * - Move all CSS module declarations into the dom/vite-client.d.ts.
+ * - Move WASM declarations into dom/vite-client.d.ts.
+ * - Strip worker module declarations.
+ */
 
 // images
+declare module '*.apng' {
+    const src: string;
+    export default src;
+}
+declare module '*.png' {
+    const src: string;
+    export default src;
+}
 declare module '*.jpg' {
     const src: string;
     export default src;
@@ -49,7 +152,15 @@ declare module '*.jpeg' {
     const src: string;
     export default src;
 }
-declare module '*.png' {
+declare module '*.jfif' {
+    const src: string;
+    export default src;
+}
+declare module '*.pjpeg' {
+    const src: string;
+    export default src;
+}
+declare module '*.pjp' {
     const src: string;
     export default src;
 }
@@ -104,6 +215,11 @@ declare module '*.aac' {
     export default src;
 }
 
+declare module '*.opus' {
+    const src: string;
+    export default src;
+}
+
 // fonts
 declare module '*.woff' {
     const src: string;
@@ -154,9 +270,9 @@ declare module '*?inline' {
     const src: string;
     export default src;
 }
-// eslint-disable-next-line jsdoc/no-bad-blocks
 /* eslint-enable
    capitalized-comments,
+   no-restricted-syntax,
    @typescript-eslint/consistent-type-definitions,
    @typescript-eslint/member-ordering,
    @typescript-eslint/method-signature-style,
@@ -165,16 +281,13 @@ declare module '*?inline' {
 */
 
 /**
- * Custom extensions provided by our own plugins.
+ * This section contains custom extensions provided by our own plugins and will
+ * expand `ImportMetaEnv` and `ImportMeta`.
  */
 
-type BuildConfig = import('../../config/build').BuildConfig;
-
 // IMPORTANT: Keep these in sync with vite.config.ts and theme.ts
-interface ImportMetaEnv extends BuildConfig {
-    readonly BASE_URL: string;
-    readonly MODE: string;
-
+type BuildConfig = import('../../config/build').BuildConfig;
+interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     // Dev
     readonly DEV_SERVER_PORT: import('./types').u16;
 
@@ -182,6 +295,7 @@ interface ImportMetaEnv extends BuildConfig {
     readonly DEBUG: boolean;
 
     // Build variables
+    readonly BUILD_MODE: import('../../config/build').BuildMode;
     readonly BUILD_TARGET: import('../../config/build').BuildTarget;
     readonly BUILD_VERSION: string;
     // eslint-disable-next-line no-restricted-syntax
@@ -225,13 +339,5 @@ interface ImportMetaEnv extends BuildConfig {
 }
 
 interface ImportMeta extends ViteDefaultImportMeta {
-    /**
-     * Available environment variables.
-     */
     readonly env: ImportMetaEnv;
-
-    /**
-     * Injects a list of all bundled files.
-     */
-    outputFiles?: readonly string[];
 }

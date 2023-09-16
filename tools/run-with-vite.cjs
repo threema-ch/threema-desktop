@@ -3,14 +3,6 @@ const fs = require('fs');
 const childProcess = require('child_process');
 const {createServer} = require('vite');
 
-/**
- * Parses the following arguments into options:
- *
- * - `-c <vite-config-path>`
- * - `-m <vite-env-mode>`
- * - `-r <program>`
- * - `-- [<program-argument> ...]`
- */
 function parseOption(arg, argv, options) {
     if (options.programArgv === undefined) {
         options.programArgv = [];

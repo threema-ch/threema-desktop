@@ -1,10 +1,14 @@
 /**
- * This is a slightly modified version of vite's exported client.d.ts
- * (https://github.com/vitejs/vite/blob/main/packages/vite/client.d.ts) and
- * should be kept in sync.
+ * This is a modified version of Vite's exported client.d.ts and importMeta.d.ts
+ * and must be kept in sync.
+ *
+ * When updating, diff with:
+ *
+ * - https://github.com/vitejs/vite/blob/main/packages/vite/client.d.ts
+ * - https://github.com/vitejs/vite/blob/main/packages/vite/types/importMeta.d.ts
  */
 
-// eslint-disable-next-line jsdoc/no-bad-blocks
+/* eslint-disable jsdoc/no-bad-blocks */
 /* eslint-disable
    capitalized-comments,
    spaced-comment,
@@ -14,9 +18,6 @@
    @typescript-eslint/triple-slash-reference,
 */
 /// <reference path="../vite-client.d.ts" />
-
-// Built-in asset types
-// see `src/constants.ts`
 
 // CSS modules
 type CSSModuleClasses = {readonly [key: string]: string};
@@ -49,40 +50,24 @@ declare module '*.module.pcss' {
     const classes: CSSModuleClasses;
     export default classes;
 }
+declare module '*.module.sss' {
+    const classes: CSSModuleClasses;
+    export default classes;
+}
 
 // CSS
-declare module '*.css' {
-    const css: string;
-    export default css;
-}
-declare module '*.scss' {
-    const css: string;
-    export default css;
-}
-declare module '*.sass' {
-    const css: string;
-    export default css;
-}
-declare module '*.less' {
-    const css: string;
-    export default css;
-}
-declare module '*.styl' {
-    const css: string;
-    export default css;
-}
-declare module '*.stylus' {
-    const css: string;
-    export default css;
-}
-declare module '*.pcss' {
-    const css: string;
-    export default css;
-}
+declare module '*.css' {}
+declare module '*.scss' {}
+declare module '*.sass' {}
+declare module '*.less' {}
+declare module '*.styl' {}
+declare module '*.stylus' {}
+declare module '*.pcss' {}
+declare module '*.sss' {}
 
-// other
-declare module '*.wasm' {
-    const initWasm: (options: WebAssembly.Imports) => Promise<WebAssembly.Exports>;
+// wasm?init
+declare module '*.wasm?init' {
+    const initWasm: (options?: WebAssembly.Imports) => Promise<WebAssembly.Instance>;
     export default initWasm;
 }
 // eslint-disable-next-line jsdoc/no-bad-blocks
@@ -91,14 +76,3 @@ declare module '*.wasm' {
    @typescript-eslint/consistent-type-definitions,
    @typescript-eslint/triple-slash-reference
 */
-
-/**
- * Custom extensions provided by our own plugins.
- */
-
-declare module '*?wrkr' {
-    export const url: string;
-    export const create: {
-        (): Worker;
-    };
-}
