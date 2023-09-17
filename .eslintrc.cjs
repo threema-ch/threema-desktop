@@ -183,6 +183,8 @@ function getTypeScriptConfigMixin(extension, override) {
         '@typescript-eslint/prefer-string-starts-ends-with': 'error',
         '@typescript-eslint/promise-function-async': 'error',
         '@typescript-eslint/require-array-sort-compare': 'error',
+        // We make heavy use of template expressions in error cases where the type is `unknown` or
+        // `never`.
         '@typescript-eslint/restrict-template-expressions': 'off',
         '@typescript-eslint/return-await': ['error', 'always'],
         '@typescript-eslint/strict-boolean-expressions': [
@@ -209,7 +211,6 @@ function getTypeScriptConfigMixin(extension, override) {
         'threema/ban-typed-array-length': 'error',
         'threema/ban-typed-array-equality-comparison': 'error',
         'threema/no-todo-comments-without-issue': 'error',
-        'threema/prefer-inline-type-imports': 'error',
     };
 
     return {
@@ -226,11 +227,12 @@ module.exports = {
     // https://eslint.org/docs/2.0.0/user-guide/configuring#configuration-cascading-and-hierarchy
     root: true,
 
-    plugins: ['@typescript-eslint', 'jsdoc', 'simple-import-sort', 'threema'],
+    plugins: ['@typescript-eslint', 'import', 'jsdoc', 'threema'],
 
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/strict',
+        'plugin:import/typescript',
         'plugin:svelte/recommended',
         'plugin:svelte/prettier',
         'plugin:jsdoc/recommended',
@@ -245,10 +247,21 @@ module.exports = {
         ecmaVersion: 'latest',
         extraFileExtensions: ['.svelte'],
         sourceType: 'module',
+        tsconfigRootDir: __dirname,
     },
 
     settings: {
-        jsdoc: {},
+        'import/parsers': {
+            '@typescript-eslint/parser': ['.ts'],
+        },
+        'import/resolver': {
+            typescript: {
+                alwaysTryTypes: true,
+                project: true, // \_(ツ)_/¯
+            },
+        },
+
+        'jsdoc': {},
     },
 
     env: {
@@ -606,7 +619,64 @@ module.exports = {
         ],
 
         // Imports
-        'simple-import-sort/imports': 'error',
+        '@typescript-eslint/consistent-type-imports': [
+            'error',
+            {
+                prefer: 'type-imports',
+                fixStyle: 'inline-type-imports',
+            },
+        ],
+        '@typescript-eslint/no-import-type-side-effects': 'error',
+        // TODO: Should replace the two TS rules but import has no
+        // @typescript-eslint/no-import-type-side-effects equivalent atm.
+        // 'import/consistent-type-specifier-style': ['error', 'prefer-inline'],
+        // TODO: Wait for https://github.com/import-js/eslint-plugin-import/issues/2729
+        // 'import/extensions': ['error', 'always'],
+        'import/newline-after-import': 'error',
+        'import/no-absolute-path': 'error',
+        'import/no-default-export': 'error',
+        'import/no-duplicates': ['error', {'prefer-inline': true}],
+        'import/no-empty-named-blocks': 'error',
+        // TODO: Currently broken for e.g. 'sinon' and 'chai' which affects tests, see:
+        // https://github.com/import-js/eslint-plugin-import/issues/2168
+        'import/no-extraneous-dependencies': [
+            'error',
+            {
+                devDependencies: ['./{config,packaging,test,tools}/**'],
+                peerDependencies: false,
+                bundledDependencies: false,
+                packageDir: __dirname,
+            },
+        ],
+        'import/no-mutable-exports': 'error',
+        'import/no-named-as-default-member': 'error',
+        'import/no-named-as-default': 'error',
+        'import/no-named-default': 'error',
+        'import/no-self-import': 'error',
+        'import/no-unassigned-import': 'error',
+        // Note: This can be occasionally useful to detect unused exports but use it with caution
+        // 'import/no-unused-modules': ['error', {unusedExports: true}],
+        'import/no-useless-path-segments': 'error',
+        'import/order': [
+            'error',
+            {
+                'newlines-between': 'always',
+                'alphabetize': {
+                    order: 'asc',
+                    orderImportKind: 'asc',
+                    caseInsensitive: false,
+                },
+                'groups': [
+                    'builtin',
+                    'external',
+                    'internal',
+                    'parent',
+                    'sibling',
+                    'index',
+                    'object',
+                ],
+            },
+        ],
 
         // TODO(DESK-680): Enable jsdoc rules
         // JSDoc rules
@@ -726,6 +796,7 @@ module.exports = {
                 '@typescript-eslint/explicit-module-boundary-types': 'off',
                 '@typescript-eslint/no-var-requires': 'off',
                 '@typescript-eslint/no-require-imports': 'off',
+                'import/no-default-export': 'off',
             },
         },
         {
@@ -760,24 +831,28 @@ module.exports = {
 
         // App source rules
         {
-            files: './src/app/**/*.ts',
-            parser: 'typescript-eslint-parser-for-extra-files',
-            parserOptions: {
-                project: './src/app/tsconfig.json',
+            files: './src/app/**',
+            rules: {
+                'import/no-unassigned-import': ['error', {allow: ['**/*.scss']}],
             },
             env: {
                 browser: true,
             },
         },
         {
+            files: './src/app/**/*.ts',
+            parser: 'typescript-eslint-parser-for-extra-files',
+            parserOptions: {
+                project: './src/app/tsconfig.json',
+            },
+        },
+        {
             files: './src/app/**/*.svelte',
             parser: 'svelte-eslint-parser',
             parserOptions: {
+                // eslint-disable-next-line import/no-extraneous-dependencies
                 parser: require('typescript-eslint-parser-for-extra-files'),
                 project: './src/app/tsconfig.json',
-            },
-            env: {
-                browser: true,
             },
             ...getTypeScriptConfigMixin('svelte', {
                 extends: ['plugin:svelte/prettier'],
@@ -793,6 +868,7 @@ module.exports = {
                             },
                         },
                     ],
+                    'import/no-mutable-exports': 'off',
                 },
             }),
         },
@@ -817,7 +893,7 @@ module.exports = {
                 '@typescript-eslint/no-empty-interface': 'off',
                 '@typescript-eslint/naming-convention': 'off',
                 'prefer-const': 'off',
-                'simple-import-sort/imports': 'off',
+                'import/order': 'off',
             },
         },
 
@@ -927,10 +1003,15 @@ module.exports = {
                 'no-console': 'off',
                 'func-names': 'off',
                 'prefer-arrow-callback': 'off',
+                'import/no-default-export': 'off',
 
-                // Note: Mocha requires these.
+                // Mocha requires these.
                 '@typescript-eslint/no-invalid-this': 'off',
                 '@typescript-eslint/no-unused-expressions': 'off',
+
+                // TODO: Currently broken for e.g. 'sinon' and 'chai' which affects tests, see:
+                // https://github.com/import-js/eslint-plugin-import/issues/2168
+                'import/no-extraneous-dependencies': 'off',
             },
         },
         {
