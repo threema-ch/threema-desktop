@@ -8,8 +8,8 @@ import * as path from 'node:path';
 
 import {expect} from 'chai';
 
-import {type ServicesForBackend} from '~/common/backend';
-import {type Config} from '~/common/config';
+import type {ServicesForBackend} from '~/common/backend';
+import type {Config} from '~/common/config';
 import {
     type CryptoBackend,
     type EncryptedData,
@@ -23,7 +23,7 @@ import {
 } from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
-import {type INonceGuard, type INonceService} from '~/common/crypto/nonce';
+import type {INonceGuard, INonceService} from '~/common/crypto/nonce';
 import {type CryptoPrng, randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
@@ -32,7 +32,7 @@ import {
     type DbReceiverLookup,
     wrapRawDatabaseKey,
 } from '~/common/db';
-import {type Device} from '~/common/device';
+import type {Device} from '~/common/device';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -52,13 +52,13 @@ import {
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
-import {
-    type Contact,
-    type ContactInit,
-    type Group,
-    type ProfilePictureView,
-    type Repositories,
-    type ServicesForModel,
+import type {
+    Contact,
+    ContactInit,
+    Group,
+    ProfilePictureView,
+    Repositories,
+    ServicesForModel,
 } from '~/common/model';
 import {ContactModelRepository} from '~/common/model/contact';
 import {
@@ -74,18 +74,18 @@ import {
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
-import {type ContactRepository} from '~/common/model/types/contact';
-import {type ConversationRepository} from '~/common/model/types/conversation';
-import {type GroupRepository} from '~/common/model/types/group';
-import {type AnyMessageModelStore} from '~/common/model/types/message';
-import {
-    type CallsSettings,
-    type IGlobalPropertyRepository,
-    type PrivacySettings,
-    type ProfileSettings,
+import type {ContactRepository} from '~/common/model/types/contact';
+import type {ConversationRepository} from '~/common/model/types/conversation';
+import type {GroupRepository} from '~/common/model/types/group';
+import type {AnyMessageModelStore} from '~/common/model/types/message';
+import type {
+    CallsSettings,
+    IGlobalPropertyRepository,
+    PrivacySettings,
+    ProfileSettings,
 } from '~/common/model/types/settings';
-import {type User} from '~/common/model/types/user';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {User} from '~/common/model/types/user';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
     CspPayloadType,
@@ -107,13 +107,13 @@ import {
     type IdentityData,
     type IdentityPrivateData,
 } from '~/common/network/protocol/directory';
-import {
-    type ActiveTaskCodecHandle,
-    type ServicesForTasks,
-    type TaskCodecReadInstruction,
-    type TaskController,
-    type TransactionResult,
-    type TransactionRunning,
+import type {
+    ActiveTaskCodecHandle,
+    ServicesForTasks,
+    TaskCodecReadInstruction,
+    TaskController,
+    TransactionResult,
+    TransactionRunning,
 } from '~/common/network/protocol/task';
 import {_only_for_testing, TaskManager} from '~/common/network/protocol/task/manager';
 import {randomGroupId} from '~/common/network/protocol/utils';
@@ -142,15 +142,11 @@ import {
     type NotificationHandle,
     NotificationService,
 } from '~/common/notification';
-import {
-    type SystemDialog,
-    type SystemDialogHandle,
-    type SystemDialogService,
-} from '~/common/system-dialog';
-import {type u8, type u53} from '~/common/types';
+import type {SystemDialog, SystemDialogHandle, SystemDialogService} from '~/common/system-dialog';
+import type {u8, u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
-import {type Delayed} from '~/common/utils/delayed';
+import type {Delayed} from '~/common/utils/delayed';
 import {
     type EndpointService,
     LocalObjectMapper,
@@ -163,18 +159,18 @@ import {
 import {Identity} from '~/common/utils/identity';
 import {ValueObject} from '~/common/utils/object';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {type AbortSubscriber} from '~/common/utils/signal';
-import {type LocalStore} from '~/common/utils/store';
+import type {AbortSubscriber} from '~/common/utils/signal';
+import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {GlobalTimer} from '~/common/utils/timer';
-import {type IViewModelRepository} from '~/common/viewmodel';
+import type {IViewModelRepository} from '~/common/viewmodel';
 import {
     type ContactListItemSetEntry,
     type ContactListItemSetStore,
     getContactListItemSetStore,
     getContactListItemStore,
 } from '~/common/viewmodel/contact-list-item';
-import {type ConversationViewModel} from '~/common/viewmodel/conversation';
+import type {ConversationViewModel} from '~/common/viewmodel/conversation';
 import {
     type ConversationMessageViewModelBundle,
     getConversationMessageViewModelBundle,

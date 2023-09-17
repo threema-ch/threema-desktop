@@ -3,23 +3,23 @@ import {
     transformNotificationPolicyFromContact,
     transformNotificationPolicyFromGroup,
 } from '~/app/ui/generic/receiver';
-import {type DbConversationUid, type DbReceiverLookup} from '~/common/db';
+import type {DbConversationUid, DbReceiverLookup} from '~/common/db';
 import {type ConversationCategory, type ConversationVisibility, ReceiverType} from '~/common/enum';
-import {
-    type AnyReceiver,
-    type AnyReceiverStore,
-    type Contact,
-    type Conversation,
-    type Group,
-    type ProfilePicture,
-    type RemoteModelFor,
-    type RemoteModelStoreFor,
+import type {
+    AnyReceiver,
+    AnyReceiverStore,
+    Contact,
+    Conversation,
+    Group,
+    ProfilePicture,
+    RemoteModelFor,
+    RemoteModelStoreFor,
 } from '~/common/model';
-import {type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type u53} from '~/common/types';
+import type {RemoteModelStore} from '~/common/model/utils/model-store';
+import type {u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
-import {type ReceiverBadgeType} from '~/common/viewmodel/types';
+import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 /**

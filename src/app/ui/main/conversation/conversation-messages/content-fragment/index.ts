@@ -1,4 +1,4 @@
-import {type Dimensions, type u53} from '~/common/types';
+import type {Dimensions, u53} from '~/common/types';
 import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
 export type Orientation = 'none' | 'horizontal' | 'vertical';

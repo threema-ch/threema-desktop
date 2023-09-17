@@ -1,5 +1,5 @@
-import {type SystemInfo} from '~/common/electron-ipc';
-import {type Logger} from '~/common/logging';
+import type {SystemInfo} from '~/common/electron-ipc';
+import type {Logger} from '~/common/logging';
 import {ReadableStore} from '~/common/utils/store';
 
 export interface Hotkey {

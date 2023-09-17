@@ -1,8 +1,8 @@
 import * as sha256 from 'fast-sha256';
 
 import {ReceiverType} from '~/common/enum';
-import {type ConversationId} from '~/common/network/types';
-import {type u8, type u53} from '~/common/types';
+import type {ConversationId} from '~/common/network/types';
+import type {u8, u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToBytesLe} from '~/common/utils/number';

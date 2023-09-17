@@ -1,21 +1,21 @@
 import '../sass/app.scss';
 
-import {default as initComposeArea} from '@threema/compose-area/web';
+import initComposeArea from '@threema/compose-area/web';
 
 import {APP_CONFIG} from '~/app/config';
 import {globals} from '~/app/globals';
 import {Router, type RouterState} from '~/app/routing/router';
-import {type AppServices} from '~/app/types';
+import type {AppServices} from '~/app/types';
 import App from '~/app/ui/App.svelte';
+import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
-import {type LinkingParams} from '~/app/ui/linking';
+import type {LinkingParams} from '~/app/ui/linking';
 import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
-import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {SystemTimeStore} from '~/app/ui/time';
 import {CONFIG} from '~/common/config';
-import {type LinkingState} from '~/common/dom/backend';
+import type {LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DOM_CONSOLE_LOGGER} from '~/common/dom/logging';
@@ -27,13 +27,13 @@ import {applyThemeBranding} from '~/common/dom/ui/theme';
 import {checkForUpdate} from '~/common/dom/update-check';
 import {initCrashReportingInSandboxBuilds} from '~/common/dom/utils/crash-reporting';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
-import {type ElectronIpc, type SystemInfo} from '~/common/electron-ipc';
+import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {type ISubscribableStore, type ReadableStore} from '~/common/utils/store';
+import type {ISubscribableStore, ReadableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
 // Extend global APIs

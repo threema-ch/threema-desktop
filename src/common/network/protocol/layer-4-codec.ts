@@ -3,23 +3,27 @@
  *
  * - Sends CSP echo requests and handles CSP echo replies.
  */
-import {type ServicesForBackend} from '~/common/backend';
-import {type Logger} from '~/common/logging';
+import type {ServicesForBackend} from '~/common/backend';
+import type {Logger} from '~/common/logging';
 import * as structbuf from '~/common/network/structbuf';
 import * as struct from '~/common/network/structbuf/bridge';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
-import {
-    type CodecEnqueuer,
-    type CodecEnqueuerHandle,
-    type TransformerCodec,
-    type TransformerCodecController,
+import type {
+    CodecEnqueuer,
+    CodecEnqueuerHandle,
+    TransformerCodec,
+    TransformerCodecController,
 } from '~/common/utils/codec';
-import {type Delayed} from '~/common/utils/delayed';
+import type {Delayed} from '~/common/utils/delayed';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
-import {type TimerCanceller} from '~/common/utils/timer';
+import type {TimerCanceller} from '~/common/utils/timer';
 
 import {CloseCode} from '..';
+
+import type {RawCaptureHandler} from './capture';
+import type {ConnectionHandle} from './controller';
+
 import {
     CspPayloadType,
     D2mPayloadType,
@@ -29,8 +33,6 @@ import {
     type OutboundL3Message,
     type OutboundL4Message,
 } from '.';
-import {type RawCaptureHandler} from './capture';
-import {type ConnectionHandle} from './controller';
 
 /**
  * Properties needed to keep the connection towards the Chat Server alive.

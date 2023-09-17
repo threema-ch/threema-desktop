@@ -3,9 +3,9 @@ import {
     CspE2eDeliveryReceiptStatusUtils,
     CspE2eStatusUpdateType,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Contact} from '~/common/model';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {Logger} from '~/common/logging';
+import type {Contact} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     ACTIVE_TASK,
@@ -17,7 +17,7 @@ import {
 import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {type MessageId} from '~/common/network/types';
+import type {MessageId} from '~/common/network/types';
 import {groupArray} from '~/common/utils/array';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';

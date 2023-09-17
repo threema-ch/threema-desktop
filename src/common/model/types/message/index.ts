@@ -1,37 +1,37 @@
-import {type MessageDirection, type MessageType} from '~/common/enum';
-import {
-    type IInboundAudioMessageModelStore,
-    type InboundAudioMessage,
-    type IOutboundAudioMessageModelStore,
-    type OutboundAudioMessage,
+import type {MessageDirection, MessageType} from '~/common/enum';
+import type {
+    IInboundAudioMessageModelStore,
+    InboundAudioMessage,
+    IOutboundAudioMessageModelStore,
+    OutboundAudioMessage,
 } from '~/common/model/types/message/audio';
-import {
-    type IInboundFileMessageModelStore,
-    type InboundFileMessage,
-    type IOutboundFileMessageModelStore,
-    type OutboundFileMessage,
+import type {
+    IInboundFileMessageModelStore,
+    InboundFileMessage,
+    IOutboundFileMessageModelStore,
+    OutboundFileMessage,
 } from '~/common/model/types/message/file';
-import {
-    type IInboundImageMessageModelStore,
-    type InboundImageMessage,
-    type IOutboundImageMessageModelStore,
-    type OutboundImageMessage,
+import type {
+    IInboundImageMessageModelStore,
+    InboundImageMessage,
+    IOutboundImageMessageModelStore,
+    OutboundImageMessage,
 } from '~/common/model/types/message/image';
-import {
-    type IInboundTextMessageModelStore,
-    type InboundTextMessage,
-    type IOutboundTextMessageModelStore,
-    type OutboundTextMessage,
+import type {
+    IInboundTextMessageModelStore,
+    InboundTextMessage,
+    IOutboundTextMessageModelStore,
+    OutboundTextMessage,
 } from '~/common/model/types/message/text';
-import {
-    type IInboundVideoMessageModelStore,
-    type InboundVideoMessage,
-    type IOutboundVideoMessageModelStore,
-    type OutboundVideoMessage,
+import type {
+    IInboundVideoMessageModelStore,
+    InboundVideoMessage,
+    IOutboundVideoMessageModelStore,
+    OutboundVideoMessage,
 } from '~/common/model/types/message/video';
-import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type LocalSetStore, type RemoteSetStore} from '~/common/utils/store/set-store';
+import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {LocalSetStore, RemoteSetStore} from '~/common/utils/store/set-store';
 
 export * from './common';
 

@@ -1,8 +1,8 @@
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {type CryptoBackend, ensurePublicKey} from '~/common/crypto';
 import {randomChoice, randomString, randomU8, randomU64} from '~/common/crypto/random';
-import {type DbContactUid} from '~/common/db';
-import {type BackendHandle} from '~/common/dom/backend';
+import type {DbContactUid} from '~/common/db';
+import type {BackendHandle} from '~/common/dom/backend';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {
     OWN_IDENTITY,
@@ -29,11 +29,11 @@ import {
     WorkVerificationLevel,
     WorkVerificationLevelUtils,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Contact} from '~/common/model';
-import {type ContactModelStore} from '~/common/model/contact';
-import {type GroupModelStore} from '~/common/model/group';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {Logger} from '~/common/logging';
+import type {Contact} from '~/common/model';
+import type {ContactModelStore} from '~/common/model/contact';
+import type {GroupModelStore} from '~/common/model/group';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {randomMessageId} from '~/common/network/protocol/utils';
@@ -45,7 +45,7 @@ import {
     type GroupId,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 

@@ -6,14 +6,14 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {assertRoute} from '~/app/routing';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {getProfilePictureAndMemberStores} from '~/app/ui/aside/group-details';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import ProfilePictureEdit from '~/app/ui/generic/profile-picture/ProfilePictureEdit.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {type Group, type ProfilePicture} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {Group, ProfilePicture} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
 
   export let services: AppServices;
 

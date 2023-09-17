@@ -21,7 +21,7 @@ import {
     ensureServerGroup,
 } from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
-import {type FileSystemKeyStorage} from '~/common/node/key-storage';
+import type {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {
     DecryptedKeyStorage,
     EncryptedKeyStorage,

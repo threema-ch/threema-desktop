@@ -1,5 +1,5 @@
 import {CspMessageFlag, MessageType} from '~/common/enum';
-import {type u8} from '~/common/types';
+import type {u8} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 
 /**

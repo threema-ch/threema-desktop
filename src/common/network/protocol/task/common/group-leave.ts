@@ -1,20 +1,20 @@
 /**
  * Incoming group leave task.
  */
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {GroupUserState} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Contact, type ContactInit, type Group} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {Contact, ContactInit, Group} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type PassiveTaskCodecHandle,
-    type ServicesForTasks,
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    PassiveTaskCodecHandle,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**

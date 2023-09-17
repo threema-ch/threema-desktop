@@ -1,5 +1,5 @@
-import {type ServicesForBackend} from '~/common/backend';
-import {type u53} from '~/common/types';
+import type {ServicesForBackend} from '~/common/backend';
+import type {u53} from '~/common/types';
 import {
     type CustomTransferable,
     type DebugObjectCacheCounter,

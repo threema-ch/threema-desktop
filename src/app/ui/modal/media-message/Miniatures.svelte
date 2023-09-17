@@ -3,9 +3,9 @@
 
   import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
+  import type {MediaFile, ValidationResult} from '~/app/ui/modal/media-message';
   import Miniature from '~/app/ui/modal/media-message/Miniature.svelte';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
 
   export let validatedMediaFiles: readonly [mediaFile: MediaFile, result: ValidationResult][];
   export let activeMediaFileIndex: u53;

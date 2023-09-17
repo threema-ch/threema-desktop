@@ -6,9 +6,9 @@ import {
     type ReadonlyRawKey,
     wrapRawKey,
 } from '~/common/crypto';
-import {type SecureSharedBoxFactory, type SharedBoxFactory} from '~/common/crypto/box';
-import {type CspE2eBox, type CspPayloadBox} from '~/common/network/types';
-import {type WeakOpaque} from '~/common/types';
+import type {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
+import type {CspE2eBox, CspPayloadBox} from '~/common/network/types';
+import type {WeakOpaque} from '~/common/types';
 
 /**
  * The raw Client Key (often internally referred to as `ck` in the code and documentation) is a 32

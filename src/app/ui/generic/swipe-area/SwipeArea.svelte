@@ -2,7 +2,7 @@
   import {onDestroy, onMount} from 'svelte';
 
   import {ElementResizeObserver} from '#3sc/utils/observer';
-  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import type {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
 
   /**
    * Optional swipe area group. Grouped swipe areas will reset each other on

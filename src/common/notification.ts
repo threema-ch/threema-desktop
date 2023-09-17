@@ -1,12 +1,12 @@
 import {ConversationCategory, ReceiverType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type ConversationView} from '~/common/model';
-import {type AnyInboundMessageModelStore} from '~/common/model/types/message';
-import {type AnyReceiverStore} from '~/common/model/types/receiver';
-import {type GroupId, type IdentityString} from '~/common/network/types';
-import {type u53, type WeakOpaque} from '~/common/types';
+import type {Logger} from '~/common/logging';
+import type {ConversationView} from '~/common/model';
+import type {AnyInboundMessageModelStore} from '~/common/model/types/message';
+import type {AnyReceiverStore} from '~/common/model/types/receiver';
+import type {GroupId, IdentityString} from '~/common/network/types';
+import type {u53, WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {type ProxyMarked, type RemoteProxy} from '~/common/utils/endpoint';
+import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
 
 // Copied from lib.dom.d.ts

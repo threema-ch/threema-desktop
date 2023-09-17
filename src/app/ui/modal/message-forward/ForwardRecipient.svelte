@@ -1,6 +1,6 @@
 <script lang="ts">
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
@@ -11,8 +11,8 @@
     transformContact,
     type TransformedContact,
   } from '~/app/ui/nav/receiver';
-  import {type Contact, type ProfilePicture, type RemoteModelStoreFor} from '~/common/model';
-  import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {Contact, ProfilePicture, RemoteModelStoreFor} from '~/common/model';
+  import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 
   export let services: AppServices;
   const {backend} = services;

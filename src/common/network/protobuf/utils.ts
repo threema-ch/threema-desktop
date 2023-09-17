@@ -2,8 +2,8 @@ import type * as v from '@badrap/valita';
 import type Long from 'long';
 import {Writer} from 'protobufjs/minimal';
 
-import {type LayerEncoder} from '~/common/network/protocol';
-import {type Bare, type OpaquePick, type TagOf, type u53, type WeakOpaque} from '~/common/types';
+import type {LayerEncoder} from '~/common/network/protocol';
+import type {Bare, OpaquePick, TagOf, u53, WeakOpaque} from '~/common/types';
 
 import type * as tag from './tag';
 

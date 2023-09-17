@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {type SvelteComponent} from 'svelte';
+  import type {SvelteComponent} from 'svelte';
 
   import AppUpdate from '~/app/ui/system-dialogs/AppUpdate.svelte';
   import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import UnrecoverableState from '~/app/ui/system-dialogs/UnrecoverableState.svelte';
-  import {type Config} from '~/common/config';
+  import type {Config} from '~/common/config';
   import {display, layout} from '~/common/dom/ui/state';
   import {systemDialogStore} from '~/common/dom/ui/system-dialog';
-  import {type Logger} from '~/common/logging';
-  import {type DialogAction, type SystemDialog} from '~/common/system-dialog';
+  import type {Logger} from '~/common/logging';
+  import type {DialogAction, SystemDialog} from '~/common/system-dialog';
 
   export let config: Config;
 

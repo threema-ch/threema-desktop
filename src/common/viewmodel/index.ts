@@ -1,12 +1,12 @@
-import {type ServicesForBackend} from '~/common/backend';
-import {type DbContactUid, type DbReceiverLookup} from '~/common/db';
-import {type AnyMessageModelStore} from '~/common/model';
-import {type ConversationModelStore} from '~/common/model/conversation';
-import {type MessageId} from '~/common/network/types';
+import type {ServicesForBackend} from '~/common/backend';
+import type {DbContactUid, DbReceiverLookup} from '~/common/db';
+import type {AnyMessageModelStore} from '~/common/model';
+import type {ConversationModelStore} from '~/common/model/conversation';
+import type {MessageId} from '~/common/network/types';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
-import {type LocalStore} from '~/common/utils/store';
-import {type ViewModelCache} from '~/common/viewmodel/cache';
+import type {LocalStore} from '~/common/utils/store';
+import type {ViewModelCache} from '~/common/viewmodel/cache';
 import {
     type ContactListItemSetEntry,
     type ContactListItemSetStore,

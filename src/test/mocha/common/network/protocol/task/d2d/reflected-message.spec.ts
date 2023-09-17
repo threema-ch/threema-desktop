@@ -7,9 +7,9 @@ import {
     MessageDirection,
     ReceiverType,
 } from '~/common/enum';
-import {type Contact, type Conversation} from '~/common/model';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type d2d} from '~/common/network/protobuf';
+import type {Contact, Conversation} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {d2d} from '~/common/network/protobuf';
 import {ReflectedIncomingMessageTask} from '~/common/network/protocol/task/d2d/reflected-incoming-message';
 import {ReflectedOutgoingMessageTask} from '~/common/network/protocol/task/d2d/reflected-outgoing-message';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';

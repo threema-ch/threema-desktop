@@ -1,6 +1,6 @@
 import Long from 'long';
 
-import {type i53, type ibig, type u32, type u53, type u64} from '~/common/types';
+import type {i53, ibig, u32, u53, u64} from '~/common/types';
 
 import {ensureError} from './assert';
 import {bytesToHex, byteView, hexToBytes} from './byte';

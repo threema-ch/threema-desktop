@@ -1,8 +1,10 @@
 const fs = require('node:fs');
 const {join, resolve} = require('node:path');
 
-const debug = require('debug');
+// Note: Not listed as a dependency because this is tied to electron and we take whatever we get here.
+// eslint-disable-next-line import/no-extraneous-dependencies
 const {GotDownloader} = require('@electron/get/dist/cjs/GotDownloader');
+const debug = require('debug');
 const packager = require('electron-packager');
 const {populateIgnoredPaths} = require('electron-packager/src/copy-filter');
 

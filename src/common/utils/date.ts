@@ -1,4 +1,4 @@
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 
 /**
  * Determine whether `a` and `b` {@link Date}s are in the same minute.

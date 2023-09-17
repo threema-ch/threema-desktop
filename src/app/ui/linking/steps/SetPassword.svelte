@@ -5,7 +5,7 @@
   import Password from '#3sc/components/blocks/Input/Password.svelte';
   import {APP_CONFIG} from '~/app/config';
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingWizardStateSetPassword} from '~/app/ui/linking';
+  import type {LinkingWizardStateSetPassword} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
 
   export let linkingWizardState: LinkingWizardStateSetPassword;

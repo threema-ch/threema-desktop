@@ -1,6 +1,6 @@
-import {type DbContact} from '~/common/db';
+import type {DbContact} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
-import {type AnyMessageModel, type Repositories} from '~/common/model';
+import type {AnyMessageModel, Repositories} from '~/common/model';
 import {type IdentityString, isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 

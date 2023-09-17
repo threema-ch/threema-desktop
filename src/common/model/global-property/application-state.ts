@@ -1,9 +1,9 @@
 import * as v from '@badrap/valita';
 
-import {type GlobalPropertyKey} from '~/common/enum';
+import type {GlobalPropertyKey} from '~/common/enum';
 import * as proto from '~/common/model/global-property/global-property';
-import {type GlobalPropertyValues} from '~/common/model/types/settings';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {GlobalPropertyValues} from '~/common/model/types/settings';
+import type {ReadonlyUint8Array} from '~/common/types';
 
 /**
  * Validation schema for the Profile Settings parameters.

@@ -1,19 +1,19 @@
 import {NACL_CONSTANTS} from '~/common/crypto';
 import {randomString} from '~/common/crypto/random';
 import {ImageRenderingType, MessageDirection, MessageType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Conversation} from '~/common/model';
-import {type AnyReceiverStore} from '~/common/model/types/receiver';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {
-    type OutboundFileMessageInitFragment,
-    type OutboundImageMessageInitFragment,
-    type OutboundTextMessageInitFragment,
+import type {Logger} from '~/common/logging';
+import type {Conversation} from '~/common/model';
+import type {AnyReceiverStore} from '~/common/model/types/receiver';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {
+    OutboundFileMessageInitFragment,
+    OutboundImageMessageInitFragment,
+    OutboundTextMessageInitFragment,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
-import {type MessageId} from '~/common/network/types';
+import type {MessageId} from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
-import {type Dimensions, type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {Dimensions, ReadonlyUint8Array, u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {
     type PropertiesMarked,
@@ -23,11 +23,11 @@ import {
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {isSupportedImageType} from '~/common/utils/image';
-import {type LocalStore} from '~/common/utils/store';
+import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
-import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
-import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
+import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 import {
     type TransformedReceiverData,
     transformReceiver,

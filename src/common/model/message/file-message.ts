@@ -1,10 +1,4 @@
-import {
-    type DbCreate,
-    type DbFileMessage,
-    type DbMessageCommon,
-    type DbMessageFor,
-    type UidOf,
-} from '~/common/db';
+import type {DbCreate, DbFileMessage, DbMessageCommon, DbMessageFor, UidOf} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
 import {
     InboundBaseMessageModelController,
@@ -16,24 +10,24 @@ import {
     NO_SENDER,
     uploadBlobs,
 } from '~/common/model/message/common';
-import {type ServicesForModel} from '~/common/model/types/common';
-import {type Contact} from '~/common/model/types/contact';
-import {type ConversationControllerHandle} from '~/common/model/types/conversation';
-import {
-    type AnyFileMessageModelStore,
-    type BaseMessageView,
-    type CommonBaseFileMessageView,
-    type CommonBaseMessageView,
-    type DirectedMessageFor,
+import type {ServicesForModel} from '~/common/model/types/common';
+import type {Contact} from '~/common/model/types/contact';
+import type {ConversationControllerHandle} from '~/common/model/types/conversation';
+import type {
+    AnyFileMessageModelStore,
+    BaseMessageView,
+    CommonBaseFileMessageView,
+    CommonBaseMessageView,
+    DirectedMessageFor,
 } from '~/common/model/types/message';
-import {
-    type InboundFileMessage,
-    type InboundFileMessageController,
-    type OutboundFileMessage,
-    type OutboundFileMessageController,
+import type {
+    InboundFileMessage,
+    InboundFileMessageController,
+    OutboundFileMessage,
+    OutboundFileMessageController,
 } from '~/common/model/types/message/file';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {AsyncLock} from '~/common/utils/lock';
 

@@ -9,10 +9,10 @@ import {
     NonceScope,
     ReceiverType,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Contact} from '~/common/model';
-import {type MessageFor} from '~/common/model/types/message';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {Logger} from '~/common/logging';
+import type {Contact} from '~/common/model';
+import type {MessageFor} from '~/common/model/types/message';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type ComposableTask,
@@ -40,11 +40,11 @@ import {
     messageReferenceDebugFor,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import type * as structbuf from '~/common/network/structbuf';
-import {
-    type ContactConversationId,
-    type D2mDeviceId,
-    type GroupConversationId,
-    type MessageId,
+import type {
+    ContactConversationId,
+    D2mDeviceId,
+    GroupConversationId,
+    MessageId,
 } from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';

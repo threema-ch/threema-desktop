@@ -10,9 +10,9 @@ import {
     type ServicesForNonceService,
 } from '~/common/crypto/nonce';
 import {randomU64} from '~/common/crypto/random';
-import {type DbNonceUid} from '~/common/db';
+import type {DbNonceUid} from '~/common/db';
 import {NonceScope, NonceScopeUtils} from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {assert} from '~/common/utils/assert';
 import {byteEquals, bytesToHex} from '~/common/utils/byte';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';

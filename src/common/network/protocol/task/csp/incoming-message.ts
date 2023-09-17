@@ -1,11 +1,11 @@
 /**
  * Incoming message task.
  */
-import {type EncryptedData, type Nonce, type PublicKey} from '~/common/crypto';
+import type {EncryptedData, Nonce, PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
-import {type INonceGuard} from '~/common/crypto/nonce';
-import {type DbContact, type UidOf} from '~/common/db';
+import type {INonceGuard} from '~/common/crypto/nonce';
+import type {DbContact, UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -27,14 +27,14 @@ import {
     VerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {
-    type Contact,
-    type ContactInit,
-    type Conversation,
-    type DirectedMessageFor,
-    type Group,
-    type MessageFor,
+import type {Logger} from '~/common/logging';
+import type {
+    Contact,
+    ContactInit,
+    Conversation,
+    DirectedMessageFor,
+    Group,
+    MessageFor,
 } from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
@@ -65,13 +65,13 @@ import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/gro
 import {getTextForLocation} from '~/common/network/protocol/task/common/location';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
 import {
+    messageReferenceDebugFor,
     type AnyInboundMessageInitFragment,
     type InboundAudioMessageInitFragment,
     type InboundFileMessageInitFragment,
     type InboundImageMessageInitFragment,
     type InboundTextMessageInitFragment,
     type InboundVideoMessageInitFragment,
-    messageReferenceDebugFor,
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
@@ -85,7 +85,7 @@ import {
     type MessageId,
     type Nickname,
 } from '~/common/network/types';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, ensureError, exhausted, unreachable} from '~/common/utils/assert';
 import {byteWithoutPkcs7, byteWithoutZeroPadding} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';

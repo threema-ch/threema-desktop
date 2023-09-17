@@ -3,17 +3,17 @@
 
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavList from '~/app/ui/nav/conversation/ConversationNavList.svelte';
-  import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type LocalStore} from '~/common/utils/store';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {LocalStore} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
-  import {type ConversationPreviewTranslations} from '~/common/viewmodel/conversation-preview';
-  import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
+  import type {ConversationPreviewTranslations} from '~/common/viewmodel/conversation-preview';
+  import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-nav');
   const hotkeyManager = globals.unwrap().hotkeyManager;

@@ -1,14 +1,14 @@
 import {ImageRenderingType, MessageType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type AnyMessageModelStore} from '~/common/model';
-import {
-    type AnyImageMessageModelStore,
-    type AnyVideoMessageModelStore,
+import type {Logger} from '~/common/logging';
+import type {AnyMessageModelStore} from '~/common/model';
+import type {
+    AnyImageMessageModelStore,
+    AnyVideoMessageModelStore,
 } from '~/common/model/types/message';
-import {type CommonAudioMessageInit} from '~/common/model/types/message/audio';
-import {type CommonFileMessageInit} from '~/common/model/types/message/file';
-import {type CommonImageMessageInit} from '~/common/model/types/message/image';
-import {type CommonVideoMessageInit} from '~/common/model/types/message/video';
+import type {CommonAudioMessageInit} from '~/common/model/types/message/audio';
+import type {CommonFileMessageInit} from '~/common/model/types/message/file';
+import type {CommonImageMessageInit} from '~/common/model/types/message/image';
+import type {CommonVideoMessageInit} from '~/common/model/types/message/video';
 import {
     type FileJson,
     RAW_AUDIO_METADATA_SCHEMA,

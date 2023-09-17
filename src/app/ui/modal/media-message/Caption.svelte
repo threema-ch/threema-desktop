@@ -1,7 +1,7 @@
 <script lang="ts">
   import {i18n} from '~/app/ui/i18n';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
 
   export let initialText: string | undefined = undefined;
 

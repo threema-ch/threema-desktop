@@ -1,23 +1,23 @@
-import {type DbContact, type UidOf} from '~/common/db';
-import {
-    type BlobDownloadState,
-    type MessageDirection,
-    type MessageReaction,
-    type MessageType,
+import type {DbContact, UidOf} from '~/common/db';
+import type {
+    BlobDownloadState,
+    MessageDirection,
+    MessageReaction,
+    MessageType,
 } from '~/common/enum';
-import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
-import {
-    type ControllerUpdateFromSource,
-    type ControllerUpdateFromSync,
+import type {FileEncryptionKey, FileId} from '~/common/file-storage';
+import type {
+    ControllerUpdateFromSource,
+    ControllerUpdateFromSync,
 } from '~/common/model/types/common';
-import {type Contact} from '~/common/model/types/contact';
-import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type BlobId} from '~/common/network/protocol/blob';
-import {type MessageId} from '~/common/network/types';
-import {type RawBlobKey} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
-import {type ProxyMarked} from '~/common/utils/endpoint';
+import type {Contact} from '~/common/model/types/contact';
+import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {BlobId} from '~/common/network/protocol/blob';
+import type {MessageId} from '~/common/network/types';
+import type {RawBlobKey} from '~/common/network/types/keys';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
+import type {ProxyMarked} from '~/common/utils/endpoint';
 
 /**
  * Base view for all message types and directions.

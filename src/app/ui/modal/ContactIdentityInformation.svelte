@@ -3,7 +3,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {type PublicKey} from '~/common/crypto';
+  import type {PublicKey} from '~/common/crypto';
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';
 
   export let visible: boolean;

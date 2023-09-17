@@ -1,6 +1,6 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
-  import {type Readable} from 'svelte/store';
+  import type {Readable} from 'svelte/store';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
@@ -10,7 +10,7 @@
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
 
   const hotkeyManager = globals.unwrap().hotkeyManager;
 

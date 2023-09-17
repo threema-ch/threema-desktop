@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {type FilenameDetails} from '~/common/utils/file';
+  import type {FilenameDetails} from '~/common/utils/file';
 
   export let filenameDetails: FilenameDetails;
 </script>

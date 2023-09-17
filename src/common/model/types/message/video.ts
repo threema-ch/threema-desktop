@@ -1,17 +1,17 @@
-import {type MessageDirection, type MessageType} from '~/common/enum';
-import {type LocalModel} from '~/common/model';
-import {
-    type CommonBaseFileMessageInit,
-    type CommonBaseFileMessageView,
-    type InboundBaseFileMessageController,
-    type InboundBaseFileMessageView,
-    type InboundBaseMessageInit,
-    type OutboundBaseFileMessageController,
-    type OutboundBaseFileMessageView,
-    type OutboundBaseMessageInit,
+import type {MessageDirection, MessageType} from '~/common/enum';
+import type {LocalModel} from '~/common/model';
+import type {
+    CommonBaseFileMessageInit,
+    CommonBaseFileMessageView,
+    InboundBaseFileMessageController,
+    InboundBaseFileMessageView,
+    InboundBaseMessageInit,
+    OutboundBaseFileMessageController,
+    OutboundBaseFileMessageView,
+    OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type Dimensions, type f64} from '~/common/types';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {Dimensions, f64} from '~/common/types';
 
 // View
 

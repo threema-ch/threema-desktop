@@ -10,22 +10,22 @@ import {
     VerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Contact, type ContactInit, type Group} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {Contact, ContactInit, Group} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
-import {
-    type ActiveTaskCodecHandle,
-    type ActiveTaskPersistence,
-    type ServicesForTasks,
+import type {
+    ActiveTaskCodecHandle,
+    ActiveTaskPersistence,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {type GroupId, type IdentityString} from '~/common/network/types';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {GroupId, IdentityString} from '~/common/network/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {idColorIndex} from '~/common/utils/id-color';

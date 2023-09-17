@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {matchesGroupSearchFilter} from '~/app/ui/aside/group-details';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import GroupListItem from '~/app/ui/nav/receiver/GroupListItem.svelte';
-  import {type DbGroupUid} from '~/common/db';
+  import type {DbGroupUid} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ReceiverType} from '~/common/enum';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type SetValue} from '~/common/utils/set';
-  import {type IQueryableStoreValue} from '~/common/utils/store';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {SetValue} from '~/common/utils/set';
+  import type {IQueryableStoreValue} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
   import {localeSort} from '~/common/utils/string';
-  import {type GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
+  import type {GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
 
   import {contactListFilter} from '.';
 

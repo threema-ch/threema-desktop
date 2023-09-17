@@ -7,7 +7,7 @@
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
-  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import type {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -27,9 +27,9 @@
   } from '~/common/enum';
   import {statusFromView} from '~/common/model/message';
   import {unreachable} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
+  import type {Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
-  import {type ConversationPreview} from '~/common/viewmodel/conversation-preview';
+  import type {ConversationPreview} from '~/common/viewmodel/conversation-preview';
 
   /**
    * ConversationPreview

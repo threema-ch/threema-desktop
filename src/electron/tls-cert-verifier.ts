@@ -1,9 +1,9 @@
 import {createHash, X509Certificate} from 'node:crypto';
 
-import {type Request} from 'electron';
+import type {Request} from 'electron';
 
-import {type Logger} from '~/common/logging';
-import {type DomainCertificatePin} from '~/common/types';
+import type {Logger} from '~/common/logging';
+import type {DomainCertificatePin} from '~/common/types';
 import {base64ToU8a} from '~/common/utils/base64';
 
 /**

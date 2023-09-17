@@ -9,7 +9,7 @@ import {
     type WritableStreamDefaultController,
 } from '~/common/dom/streams';
 import {CloseCode} from '~/common/network';
-import {type u16, type u32, type u53} from '~/common/types';
+import type {u16, u32, u53} from '~/common/types';
 import {ProxyHandlerWrapper} from '~/common/utils/proxy';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 

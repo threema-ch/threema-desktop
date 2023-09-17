@@ -2,9 +2,11 @@ import {createHash} from 'node:crypto';
 
 import debug from 'debug';
 import MagicString from 'magic-string';
-import {type PreRenderedAsset, type TransformResult} from 'rollup';
+import type {PreRenderedAsset, TransformResult} from 'rollup';
+// Note: Not listed as a dependency because this is tied to vite and we take whatever we get here.
+// eslint-disable-next-line import/no-extraneous-dependencies
 import * as rollup from 'rollup';
-import {type Plugin, type ResolvedConfig} from 'vite';
+import type {Plugin, ResolvedConfig} from 'vite';
 
 import {assert, unwrap} from '../../src/common/utils/assert';
 

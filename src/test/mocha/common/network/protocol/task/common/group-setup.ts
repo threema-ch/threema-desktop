@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -13,11 +13,8 @@ import * as protobuf from '~/common/network/protobuf';
 import {IncomingGroupSetupTask} from '~/common/network/protocol/task/csp/incoming-group-setup';
 import {ReflectedIncomingGroupSetupTask} from '~/common/network/protocol/task/d2d/reflected-incoming-group-setup';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
-import {
-    type GroupCreatorContainer,
-    type GroupSetup,
-} from '~/common/network/structbuf/validate/csp/e2e';
-import {type GroupId, type IdentityString} from '~/common/network/types';
+import type {GroupCreatorContainer, GroupSetup} from '~/common/network/structbuf/validate/csp/e2e';
+import type {GroupId, IdentityString} from '~/common/network/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {

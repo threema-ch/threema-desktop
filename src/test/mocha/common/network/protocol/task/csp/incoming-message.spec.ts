@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {NONCE_UNGUARDED_SCOPE, type PlainData} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
@@ -14,10 +14,10 @@ import {
     TransactionScope,
     UnknownContactPolicy,
 } from '~/common/enum';
-import {type Conversation} from '~/common/model';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {Conversation} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
-import {type BlobId} from '~/common/network/protocol/blob';
+import type {BlobId} from '~/common/network/protocol/blob';
 import {
     BLOB_FILE_NONCE,
     BLOB_THUMBNAIL_NONCE,
@@ -28,8 +28,8 @@ import {IncomingGroupNameTask} from '~/common/network/protocol/task/csp/incoming
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {type MessageWithMetadataBoxLike} from '~/common/network/structbuf/csp/payload';
-import {type FileRenderingType} from '~/common/network/structbuf/validate/csp/e2e/file';
+import type {MessageWithMetadataBoxLike} from '~/common/network/structbuf/csp/payload';
+import type {FileRenderingType} from '~/common/network/structbuf/validate/csp/e2e/file';
 import {
     ensureIdentityString,
     ensureMessageId,
@@ -38,8 +38,8 @@ import {
     type MessageId,
     type Nickname,
 } from '~/common/network/types';
-import {type RawBlobKey} from '~/common/network/types/keys';
-import {type ByteLengthEncoder, type Dimensions, type f64, type u8, type u53} from '~/common/types';
+import type {RawBlobKey} from '~/common/network/types/keys';
+import type {ByteLengthEncoder, Dimensions, f64, u8, u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';

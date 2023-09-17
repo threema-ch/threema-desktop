@@ -12,7 +12,7 @@ import {
 } from '~/common/crypto';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {CryptoError} from '~/common/error';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 import getSharedBoxTestVectors from '~/test/mocha/common/data/box.random';
 import getSecretBoxTestVectors from '~/test/mocha/common/data/secretbox.random';

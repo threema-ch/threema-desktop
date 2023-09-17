@@ -1,5 +1,5 @@
 import {Browser} from '~/common/enum';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 
 export interface BrowserInfo {

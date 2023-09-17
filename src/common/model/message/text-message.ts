@@ -1,28 +1,28 @@
-import {type DbCreate, type DbMessageCommon, type DbTextMessage, type UidOf} from '~/common/db';
+import type {DbCreate, DbMessageCommon, DbTextMessage, UidOf} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
-import {type Contact, type ServicesForModel} from '~/common/model';
+import type {Contact, ServicesForModel} from '~/common/model';
 import {
     InboundBaseMessageModelController,
     OutboundBaseMessageModelController,
 } from '~/common/model/message';
 import {NO_SENDER} from '~/common/model/message/common';
-import {type ConversationControllerHandle} from '~/common/model/types/conversation';
-import {
-    type AnyTextMessageModelStore,
-    type BaseMessageView,
-    type CommonBaseMessageView,
-    type DirectedMessageFor,
+import type {ConversationControllerHandle} from '~/common/model/types/conversation';
+import type {
+    AnyTextMessageModelStore,
+    BaseMessageView,
+    CommonBaseMessageView,
+    DirectedMessageFor,
 } from '~/common/model/types/message';
-import {
-    type CommonTextMessageView,
-    type IInboundTextMessageModelStore,
-    type InboundTextMessage,
-    type InboundTextMessageController,
-    type InboundTextMessageModel,
-    type IOutboundTextMessageModelStore,
-    type OutboundTextMessage,
-    type OutboundTextMessageController,
-    type OutboundTextMessageModel,
+import type {
+    CommonTextMessageView,
+    IInboundTextMessageModelStore,
+    InboundTextMessage,
+    InboundTextMessageController,
+    InboundTextMessageModel,
+    IOutboundTextMessageModelStore,
+    OutboundTextMessage,
+    OutboundTextMessageController,
+    OutboundTextMessageModel,
 } from '~/common/model/types/message/text';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {assert, unreachable} from '~/common/utils/assert';

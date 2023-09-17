@@ -4,7 +4,7 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {type UnrecoverableStateDialog} from '~/common/system-dialog';
+  import type {UnrecoverableStateDialog} from '~/common/system-dialog';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
   export let visible: boolean;

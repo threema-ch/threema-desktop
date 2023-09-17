@@ -1,35 +1,35 @@
-import {
-    type DbContact,
-    type DbContactReceiverLookup,
-    type DbContactUid,
-    type DbCreate,
-    type DbCreateConversationMixin,
+import type {
+    DbContact,
+    DbContactReceiverLookup,
+    DbContactUid,
+    DbCreate,
+    DbCreateConversationMixin,
 } from '~/common/db';
 import {Existence, ReceiverType, TriggerSource} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type ConversationModelStore} from '~/common/model/conversation';
+import type {Logger} from '~/common/logging';
+import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
-import {type ContactProfilePictureFields} from '~/common/model/profile-picture';
-import {type ServicesForModel} from '~/common/model/types/common';
-import {
-    type Contact,
-    type ContactController,
-    type ContactInit,
-    type ContactRepository,
-    type ContactUpdate,
-    type ContactView,
-    type ContactViewDerivedProperties,
+import type {ContactProfilePictureFields} from '~/common/model/profile-picture';
+import type {ServicesForModel} from '~/common/model/types/common';
+import type {
+    Contact,
+    ContactController,
+    ContactInit,
+    ContactRepository,
+    ContactUpdate,
+    ContactView,
+    ContactViewDerivedProperties,
 } from '~/common/model/types/contact';
-import {type Conversation} from '~/common/model/types/conversation';
-import {type ProfilePicture} from '~/common/model/types/profile-picture';
+import type {Conversation} from '~/common/model/types/conversation';
+import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import {type IdentityString} from '~/common/network/types';
+import type {IdentityString} from '~/common/network/types';
 import {getNotificationTagForContact, type NotificationTag} from '~/common/notification';
-import {type StrictOmit, type u53} from '~/common/types';
+import type {StrictOmit, u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';

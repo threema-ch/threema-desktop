@@ -1,9 +1,4 @@
-import {
-    type DatabaseBackend,
-    type DbConversationUid,
-    type DbReceiverLookup,
-    type UidOf,
-} from '~/common/db';
+import type {DatabaseBackend, DbConversationUid, DbReceiverLookup, UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
     ConversationVisibility,
@@ -16,35 +11,35 @@ import {
     TriggerSource,
 } from '~/common/enum';
 import {getGroupTag, type Logger} from '~/common/logging';
-import {type ServicesForModel} from '~/common/model/types/common';
-import {
-    type Conversation,
-    type ConversationController,
-    type ConversationControllerHandle,
-    type ConversationRepository,
-    type ConversationUpdate,
-    type ConversationUpdateFromToSync,
-    type ConversationView,
+import type {ServicesForModel} from '~/common/model/types/common';
+import type {
+    Conversation,
+    ConversationController,
+    ConversationControllerHandle,
+    ConversationRepository,
+    ConversationUpdate,
+    ConversationUpdateFromToSync,
+    ConversationView,
 } from '~/common/model/types/conversation';
-import {
-    type AnyInboundMessageModelStore,
-    type AnyMessageModelStore,
-    type AnyOutboundMessageModelStore,
-    type DirectedMessageFor,
-    type SetOfAnyLocalMessageModelStore,
+import type {
+    AnyInboundMessageModelStore,
+    AnyMessageModelStore,
+    AnyOutboundMessageModelStore,
+    DirectedMessageFor,
+    SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
-import {type AnyReceiver, type AnyReceiverStore} from '~/common/model/types/receiver';
+import type {AnyReceiver, AnyReceiverStore} from '~/common/model/types/receiver';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type InternalActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import type {InternalActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
 import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
 import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
-import {type ConversationId, type MessageId} from '~/common/network/types';
-import {type i53, type Mutable, type u53} from '~/common/types';
+import type {ConversationId, MessageId} from '~/common/network/types';
+import type {i53, Mutable, u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';

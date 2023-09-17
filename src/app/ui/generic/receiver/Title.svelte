@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {type ReceiverTitle} from '~/app/ui/generic/receiver';
+  import type {ReceiverTitle} from '~/app/ui/generic/receiver';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import {i18n} from '~/app/ui/i18n';
 

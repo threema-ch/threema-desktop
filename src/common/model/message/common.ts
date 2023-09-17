@@ -1,10 +1,6 @@
 import {type Nonce, NONCE_UNGUARDED_SCOPE} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import {
-    type DbBaseFileMessageFragment,
-    type DbConversationUid,
-    type DbMessageUid,
-} from '~/common/db';
+import type {DbBaseFileMessageFragment, DbConversationUid, DbMessageUid} from '~/common/db';
 import {
     BlobDownloadState,
     MessageDirection,
@@ -14,17 +10,17 @@ import {
 } from '~/common/enum';
 import {BlobFetchError} from '~/common/error';
 import {deleteFilesInBackground, FileStorageError} from '~/common/file-storage';
-import {type Logger} from '~/common/logging';
-import {type ServicesForModel} from '~/common/model/types/common';
-import {type ConversationControllerHandle} from '~/common/model/types/conversation';
-import {
-    type AnyFileBasedMessageModelLifetimeGuard,
-    type AnyFileBasedOutboundMessageModelLifetimeGuard,
-    type CommonBaseFileMessageView,
-    type CommonBaseMessageView,
-    type FileData,
-    type FileMessageDataState,
-    type OutboundBaseFileMessageView,
+import type {Logger} from '~/common/logging';
+import type {ServicesForModel} from '~/common/model/types/common';
+import type {ConversationControllerHandle} from '~/common/model/types/conversation';
+import type {
+    AnyFileBasedMessageModelLifetimeGuard,
+    AnyFileBasedOutboundMessageModelLifetimeGuard,
+    CommonBaseFileMessageView,
+    CommonBaseMessageView,
+    FileData,
+    FileMessageDataState,
+    OutboundBaseFileMessageView,
 } from '~/common/model/types/message';
 import {
     BlobBackendError,
@@ -32,11 +28,11 @@ import {
     encryptAndUploadBlobWithEncryptionKey,
 } from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
-import {type RawBlobKey} from '~/common/network/types/keys';
-import {type Mutable, type ReadonlyUint8Array} from '~/common/types';
+import type {RawBlobKey} from '~/common/network/types/keys';
+import type {Mutable, ReadonlyUint8Array} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {type AsyncLock} from '~/common/utils/lock';
+import type {AsyncLock} from '~/common/utils/lock';
 
 export const NO_SENDER = Symbol('no-sender');
 

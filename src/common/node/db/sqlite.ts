@@ -1,49 +1,49 @@
-import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {SynchronousPromise} from 'synchronous-promise';
-import {type UpdateSets} from 'ts-sql-query/expressions/update';
+import type {UpdateSets} from 'ts-sql-query/expressions/update';
 import {ConsoleLogQueryRunner} from 'ts-sql-query/queryRunners/ConsoleLogQueryRunner';
-import {type QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
-import {type ColumnsForSetOf, type OuterJoinSourceOf} from 'ts-sql-query/utils/tableOrViewUtils';
+import type {QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
+import type {ColumnsForSetOf, OuterJoinSourceOf} from 'ts-sql-query/utils/tableOrViewUtils';
 
-import {type NonceHash} from '~/common/crypto';
-import {
-    type DatabaseBackend,
-    type DbAnyMessage,
-    type DbAudioMessage,
-    type DbAudioMessageFragment,
-    type DbBaseFileMessageFragment,
-    type DbContact,
-    type DbContactUid,
-    type DbConversation,
-    type DbConversationUid,
-    type DbCreate,
-    type DbCreateConversationMixin,
-    type DbCreated,
-    type DbDistributionListUid,
-    type DbFileData,
-    type DbFileDataUid,
-    type DbFileMessage,
-    type DbGet,
-    type DbGlobalProperty,
-    type DbGroup,
-    type DbGroupUid,
-    type DbHas,
-    type DbImageMessage,
-    type DbImageMessageFragment,
-    type DbList,
-    type DbMessageCommon,
-    type DbMessageUid,
-    type DbNonce,
-    type DbNonceUid,
-    type DbReceiverLookup,
-    type DbRemove,
-    type DbTextMessage,
-    type DbTextMessageFragment,
-    type DbUnreadMessageCountMixin,
-    type DbUpdate,
-    type DbVideoMessage,
-    type DbVideoMessageFragment,
-    type RawDatabaseKey,
+import DatabaseConstructor, {type Database} from 'better-sqlcipher';
+import type {NonceHash} from '~/common/crypto';
+import type {
+    DbAudioMessage,
+    DbAudioMessageFragment,
+    DatabaseBackend,
+    DbAnyMessage,
+    DbBaseFileMessageFragment,
+    DbContact,
+    DbContactUid,
+    DbConversation,
+    DbConversationUid,
+    DbCreate,
+    DbCreateConversationMixin,
+    DbCreated,
+    DbDistributionListUid,
+    DbFileData,
+    DbFileDataUid,
+    DbFileMessage,
+    DbGet,
+    DbGlobalProperty,
+    DbGroup,
+    DbGroupUid,
+    DbHas,
+    DbImageMessage,
+    DbImageMessageFragment,
+    DbList,
+    DbMessageCommon,
+    DbMessageUid,
+    DbNonce,
+    DbNonceUid,
+    DbReceiverLookup,
+    DbRemove,
+    DbTextMessage,
+    DbTextMessageFragment,
+    DbUnreadMessageCountMixin,
+    DbUpdate,
+    DbVideoMessage,
+    DbVideoMessageFragment,
+    RawDatabaseKey,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -54,11 +54,11 @@ import {
     type NonceScope,
     ReceiverType,
 } from '~/common/enum';
-import {type FileId} from '~/common/file-storage';
-import {type Logger} from '~/common/logging';
-import {type GroupId, type IdentityString, type MessageId} from '~/common/network/types';
+import type {FileId} from '~/common/file-storage';
+import type {Logger} from '~/common/logging';
+import type {GroupId, IdentityString, MessageId} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {groupArray} from '~/common/utils/array';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';

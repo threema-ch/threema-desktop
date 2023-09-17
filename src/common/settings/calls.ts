@@ -2,7 +2,7 @@ import * as v from '@badrap/valita';
 
 import {CallConnectionPolicyUtils, CallPolicyUtils} from '~/common/enum';
 import * as proto from '~/common/node/settings/settings';
-import {type SettingsCategoryCodec} from '~/common/settings';
+import type {SettingsCategoryCodec} from '~/common/settings';
 import {optionalEnum} from '~/common/utils/valita-helpers';
 
 const CALLS_SETTINGS_SCHEMA = v

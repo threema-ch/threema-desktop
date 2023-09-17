@@ -1,8 +1,8 @@
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
-import {type INonceGuard} from '~/common/crypto/nonce';
-import {type Logger} from '~/common/logging';
+import type {DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
+import type {INonceGuard} from '~/common/crypto/nonce';
+import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {D2mPayloadType} from '~/common/network/protocol';
 import {

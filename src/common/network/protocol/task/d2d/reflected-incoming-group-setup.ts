@@ -1,14 +1,11 @@
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {ActivityState} from '~/common/enum';
 import {ProtocolError} from '~/common/error';
-import {type Group, type GroupInit} from '~/common/model';
-import {type PassiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {Group, GroupInit} from '~/common/model';
+import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {GroupSetupTaskBase} from '~/common/network/protocol/task/common/group-setup';
-import {
-    type GroupCreatorContainer,
-    type GroupSetup,
-} from '~/common/network/structbuf/validate/csp/e2e';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {GroupCreatorContainer, GroupSetup} from '~/common/network/structbuf/validate/csp/e2e';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 
 /**

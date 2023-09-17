@@ -1,11 +1,11 @@
-import {
-    type VerificationLevel,
-    type VerificationLevelColors,
+import type {
+    VerificationLevel,
+    VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
-import {type MessageDirection, type MessageReaction} from '~/common/enum';
-import {type ProfilePictureView} from '~/common/model';
-import {type Dimensions, type u53} from '~/common/types';
-import {type ProfilePictureData} from '~/common/viewmodel/profile-picture';
+import type {MessageDirection, MessageReaction} from '~/common/enum';
+import type {ProfilePictureView} from '~/common/model';
+import type {Dimensions, u53} from '~/common/types';
+import type {ProfilePictureData} from '~/common/viewmodel/profile-picture';
 
 /**
  * Status of a message.

@@ -1,6 +1,5 @@
 import * as libthreema from 'libthreema';
-
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {
     createWebSocketStream,
     type WebSocketEventWrapperStreamOptions,
@@ -14,11 +13,11 @@ import {
 } from '~/common/dom/streams';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type RendezvousCloseCause, RendezvousCloseError} from '~/common/error';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {UNIT_MESSAGE} from '~/common/network/protobuf';
-import {type RendezvousAuthenticationKey} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array, type u32} from '~/common/types';
+import type {RendezvousAuthenticationKey} from '~/common/network/types/keys';
+import type {ReadonlyUint8Array, u32} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
 import {byteSplit} from '~/common/utils/byte';

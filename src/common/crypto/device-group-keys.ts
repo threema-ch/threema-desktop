@@ -7,11 +7,11 @@ import {
 } from '~/common/crypto';
 import {deriveKey} from '~/common/crypto/blake2b';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
-import {type INonceService} from '~/common/crypto/nonce';
+import type {INonceService} from '~/common/crypto/nonce';
 import {NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
-import {type RawDeviceGroupKey} from '~/common/network/types/keys';
-import {type Bare, type WeakOpaque} from '~/common/types';
+import type {RawDeviceGroupKey} from '~/common/network/types/keys';
+import type {Bare, WeakOpaque} from '~/common/types';
 
 type SecretBoxWithRandomNonce = CryptoBox<never, never, never, never, NonceScope.D2D>;
 

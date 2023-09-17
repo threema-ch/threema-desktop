@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type DbGroupUid} from '~/common/db';
+import type {DbGroupUid} from '~/common/db';
 import {
     ConversationCategory,
     ConversationVisibility,
@@ -11,9 +11,9 @@ import {
     D2mPayloadType,
     GroupUserState,
 } from '~/common/enum';
-import {type Group, type GroupController, type GroupView} from '~/common/model';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type CspE2eType} from '~/common/network/protocol';
+import type {Group, GroupController, GroupView} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {CspE2eType} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     type MessageProperties,

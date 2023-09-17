@@ -1,48 +1,41 @@
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {type NonceHash, type PublicKey, type RawKey, wrapRawKey} from '~/common/crypto';
-import {
-    type AcquaintanceLevel,
-    type ActivityState,
-    type BlobDownloadState,
-    type ContactNotificationTriggerPolicy,
-    type ConversationCategory,
-    type ConversationVisibility,
-    type GlobalPropertyKey,
-    type GroupNotificationTriggerPolicy,
-    type GroupUserState,
-    type IdentityType,
-    type ImageRenderingType,
-    type MessageQueryDirection,
-    type MessageReaction,
-    type MessageType,
-    type NonceScope,
-    type NotificationSoundPolicy,
-    type ReadReceiptPolicy,
-    type ReceiverType,
-    type SyncState,
-    type TypingIndicatorPolicy,
-    type VerificationLevel,
-    type WorkVerificationLevel,
+import type {
+    AcquaintanceLevel,
+    ActivityState,
+    BlobDownloadState,
+    ContactNotificationTriggerPolicy,
+    ConversationCategory,
+    ConversationVisibility,
+    GlobalPropertyKey,
+    GroupNotificationTriggerPolicy,
+    GroupUserState,
+    IdentityType,
+    ImageRenderingType,
+    MessageQueryDirection,
+    MessageReaction,
+    MessageType,
+    NonceScope,
+    NotificationSoundPolicy,
+    ReadReceiptPolicy,
+    ReceiverType,
+    SyncState,
+    TypingIndicatorPolicy,
+    VerificationLevel,
+    WorkVerificationLevel,
 } from '~/common/enum';
-import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
-import {type BlobId} from '~/common/network/protocol/blob';
-import {
-    type FeatureMask,
-    type GroupId,
-    type IdentityString,
-    type MessageId,
-    type Nickname,
+import type {FileEncryptionKey, FileId} from '~/common/file-storage';
+import type {BlobId} from '~/common/network/protocol/blob';
+import type {
+    FeatureMask,
+    GroupId,
+    IdentityString,
+    MessageId,
+    Nickname,
 } from '~/common/network/types';
-import {type RawBlobKey} from '~/common/network/types/keys';
-import {type Settings} from '~/common/settings';
-import {
-    type f64,
-    type ReadonlyUint8Array,
-    type u8,
-    type u53,
-    type u64,
-    type WeakOpaque,
-} from '~/common/types';
+import type {RawBlobKey} from '~/common/network/types/keys';
+import type {Settings} from '~/common/settings';
+import type {f64, ReadonlyUint8Array, u8, u53, u64, WeakOpaque} from '~/common/types';
 
 /**
  * Key length of a database key in bytes.

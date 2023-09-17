@@ -1,4 +1,4 @@
-import {type ActionReturn} from 'svelte/action';
+import type {ActionReturn} from 'svelte/action';
 
 /*
  * `clickoutside` Svelte Action

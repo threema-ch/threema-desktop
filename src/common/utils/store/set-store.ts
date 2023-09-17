@@ -1,5 +1,5 @@
 import {DeltaUpdateType, TransferTag} from '~/common/enum';
-import {type LogPrefix} from '~/common/logging';
+import type {LogPrefix} from '~/common/logging';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,
@@ -18,7 +18,7 @@ import {
     TRANSFERRED_MARKER,
 } from '~/common/utils/endpoint';
 import {EventController, type EventListener, type EventUnsubscriber} from '~/common/utils/event';
-import {type AbortRaiser} from '~/common/utils/signal';
+import type {AbortRaiser} from '~/common/utils/signal';
 import {
     type IQueryableStore,
     type LocalStore,

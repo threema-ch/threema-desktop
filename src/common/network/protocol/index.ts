@@ -21,7 +21,7 @@ import {
 } from '~/common/enum';
 import type * as protobuf from '~/common/network/protobuf';
 import type * as structbuf from '~/common/network/structbuf';
-import {type ByteLengthEncoder, type u53, type WeakOpaque} from '~/common/types';
+import type {ByteLengthEncoder, u53, WeakOpaque} from '~/common/types';
 
 // Re-export enums
 export {D2mPayloadType, CspExtensionType, CspPayloadType, CspMessageFlag};

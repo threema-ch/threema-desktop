@@ -1,4 +1,4 @@
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 
 /**
  * Available themes. The 'system' theme uses the light or dark theme following the current theme of

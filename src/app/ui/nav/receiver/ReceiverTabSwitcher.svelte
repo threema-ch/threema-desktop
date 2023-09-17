@@ -1,8 +1,8 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type ContactTab} from '~/app/ui/nav';
+  import type {ContactTab} from '~/app/ui/nav';
   import Tab from '~/app/ui/nav/receiver/Tab.svelte';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
 
   export let activeTab: ContactTab;

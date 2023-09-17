@@ -28,10 +28,10 @@
     getConstrainedImageDimensions,
     type ImageDisplayProposal,
   } from '~/app/ui/main/conversation/conversation-messages/content-fragment';
-  import {type Dimensions} from '~/common/types';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
-  import {type Message, type MessageBody} from '~/common/viewmodel/types';
+  import type {Dimensions} from '~/common/types';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
+  import type {Message, MessageBody} from '~/common/viewmodel/types';
 
   const log = globals
     .unwrap()

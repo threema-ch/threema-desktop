@@ -1,6 +1,6 @@
 import {TransferTag} from '~/common/enum';
 import {BaseError} from '~/common/error';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**

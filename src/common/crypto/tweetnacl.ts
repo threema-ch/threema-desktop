@@ -15,18 +15,11 @@ import {
     wrapRawKey,
 } from '~/common/crypto';
 import {CryptoBox} from '~/common/crypto/box';
-import {type INonceService} from '~/common/crypto/nonce';
-import {type CryptoPrng} from '~/common/crypto/random';
-import {type NonceScope} from '~/common/enum';
+import type {INonceService} from '~/common/crypto/nonce';
+import type {CryptoPrng} from '~/common/crypto/random';
+import type {NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
-import {
-    type i53,
-    type ReadonlyUint8Array,
-    type u8,
-    type u53,
-    type u64,
-    type WeakOpaque,
-} from '~/common/types';
+import type {i53, ReadonlyUint8Array, u8, u53, u64, WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 
 /**

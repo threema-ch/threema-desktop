@@ -1,4 +1,4 @@
-import {RepeatedTuple, type u53} from '~/common/types';
+import type {RepeatedTuple, u53} from '~/common/types';
 import {UTF8} from '~/common/utils/codec';
 
 /**

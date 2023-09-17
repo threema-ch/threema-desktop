@@ -6,12 +6,13 @@
  * For communication with the main process, IPC must be used.
  * For communication with the application, the contextBridge must be used.
  */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {contextBridge, ipcRenderer} from 'electron';
 
-import {type ElectronIpc, type ErrorDetails} from '~/common/electron-ipc';
+import type {ElectronIpc, ErrorDetails} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
 import {CONSOLE_LOGGER} from '~/common/logging';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 
 const log = CONSOLE_LOGGER;
 

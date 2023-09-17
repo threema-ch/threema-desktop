@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 
-import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
+import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {sync} from '~/common/network/protobuf/js';
 import {validator} from '~/common/network/protobuf/utils';
 import * as DeltaImage from '~/common/network/protobuf/validate/common/delta-image';

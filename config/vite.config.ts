@@ -4,13 +4,14 @@ import * as process from 'node:process';
 
 import * as v from '@badrap/valita';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
-import {type RollupOptions} from 'rollup';
-import {type ConfigEnv as ViteConfigEnv, type UserConfig} from 'vite';
+import type {RollupOptions} from 'rollup';
+import type {ConfigEnv as ViteConfigEnv, UserConfig} from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // Imports cannot be absolute in this file.
 import {KiB, MiB, type u53} from '../src/common/types';
 import {unreachable} from '../src/common/utils/assert';
+
 import {
     BUILD_ENTRIES,
     BUILD_ENVIRONMENTS,

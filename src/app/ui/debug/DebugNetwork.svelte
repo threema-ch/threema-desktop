@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {type Readable} from 'svelte/store';
+  import type {Readable} from 'svelte/store';
 
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ByteView from '#3sc/components/generic/ByteView/ByteView.svelte';
-  import {type TreeExpandEvent, type TreeItem} from '#3sc/components/generic/ObjectTree';
+  import type {TreeExpandEvent, TreeItem} from '#3sc/components/generic/ObjectTree';
   import ObjectTree from '#3sc/components/generic/ObjectTree/ObjectTree.svelte';
-  import {type Packet} from '#3sc/components/generic/PacketFlow/';
+  import type {Packet} from '#3sc/components/generic/PacketFlow/';
   import PacketFlow from '#3sc/components/generic/PacketFlow/PacketFlow.svelte';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {LAYERS} from '~/common/network/protocol/capture';
   import {assert} from '~/common/utils/assert';
 

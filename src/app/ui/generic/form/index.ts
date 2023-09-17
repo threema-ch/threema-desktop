@@ -1,21 +1,21 @@
 import {markify, TokenType} from '@threema/threema-markup';
 import autolinker from 'autolinker';
 
-import {type I18nType} from '~/app/ui/i18n-types';
+import type {I18nType} from '~/app/ui/i18n-types';
 import {MessageDirection} from '~/common/enum';
-import {type Conversation, type RemoteModelFor} from '~/common/model';
-import {type Mutable, type u53} from '~/common/types';
+import type {Conversation, RemoteModelFor} from '~/common/model';
+import type {Mutable, u53} from '~/common/types';
 import {entriesReverse} from '~/common/utils/array';
 import {unwrap} from '~/common/utils/assert';
 import {isToday, isWithinCurrentYear, isWithinLastWeek, isYesterday} from '~/common/utils/date';
-import {type Remote} from '~/common/utils/endpoint';
+import type {Remote} from '~/common/utils/endpoint';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
 import {escapeRegExp} from '~/common/utils/regex';
-import {type IQueryableStore} from '~/common/utils/store';
+import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
-import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
-import {type Mention} from '~/common/viewmodel/utils/mentions';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
+import type {Mention} from '~/common/viewmodel/utils/mentions';
 
 /**
  * Escape HTML-unsafe characters in the given input string. If the input is

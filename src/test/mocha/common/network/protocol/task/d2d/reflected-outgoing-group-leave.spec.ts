@@ -1,10 +1,10 @@
 import {expect} from 'chai';
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {GroupUserState} from '~/common/enum';
 import {ReflectedOutgoingGroupLeaveTask} from '~/common/network/protocol/task/d2d/reflected-outgoing-group-leave';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
-import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
+import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {
     ensureIdentityString,
     type GroupId,

@@ -1,8 +1,8 @@
-import {type CryptoBackend} from '~/common/crypto';
+import type {CryptoBackend} from '~/common/crypto';
 import {randomU64} from '~/common/crypto/random';
-import {type GroupId, type MessageId} from '~/common/network/types';
+import type {GroupId, MessageId} from '~/common/network/types';
 
-import {type D2mMessage, type D2mPayloadType} from '.';
+import type {D2mMessage, D2mPayloadType} from '.';
 
 /**
  * Decode a D2M payload and uplift it into another D2M payload via its payload

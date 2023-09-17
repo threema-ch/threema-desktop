@@ -9,16 +9,16 @@
     extractMessageStatus,
     extractTextContent,
   } from '~/app/ui/main/conversation/conversation-messages';
+  import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
+  import MessageStatus from '~/app/ui/main/conversation/conversation-messages/MessageStatus.svelte';
   import AudioPlayer from '~/app/ui/main/conversation/conversation-messages/content-fragment/AudioPlayer.svelte';
   import FileInfo from '~/app/ui/main/conversation/conversation-messages/content-fragment/FileInfo.svelte';
   import Thumbnail from '~/app/ui/main/conversation/conversation-messages/content-fragment/Thumbnail.svelte';
-  import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
-  import MessageStatus from '~/app/ui/main/conversation/conversation-messages/MessageStatus.svelte';
-  import {type AnyReceiverStore} from '~/common/model';
+  import type {AnyReceiverStore} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
   import {durationToString} from '~/common/utils/date';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
   /**
    * Bundle containing the viewModel and viewModelController.

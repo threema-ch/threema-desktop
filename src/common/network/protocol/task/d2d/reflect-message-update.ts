@@ -1,6 +1,6 @@
 import {ReceiverType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type AnyReceiver} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {AnyReceiver} from '~/common/model';
 import type * as protobuf from '~/common/network/protobuf';
 import {
     ConversationId as D2dConversationId,
@@ -15,7 +15,7 @@ import {
     type ComposableTask,
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
-import {type ConversationId, type MessageId} from '~/common/network/types';
+import type {ConversationId, MessageId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 

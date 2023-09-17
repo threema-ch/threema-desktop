@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {
     CspE2eDeliveryReceiptStatus,
     CspE2eDeliveryReceiptStatusUtils,
@@ -8,12 +8,12 @@ import {
     MessageReaction,
     ReceiverType,
 } from '~/common/enum';
-import {type Conversation} from '~/common/model';
-import {
-    type AnyInboundMessageModelStore,
-    type AnyOutboundMessageModelStore,
+import type {Conversation} from '~/common/model';
+import type {
+    AnyInboundMessageModelStore,
+    AnyOutboundMessageModelStore,
 } from '~/common/model/types/message';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {

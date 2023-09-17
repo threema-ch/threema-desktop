@@ -1,4 +1,4 @@
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {randomU8} from '~/common/crypto/random';
 import {
@@ -10,7 +10,7 @@ import {
     TransactionScopeUtils,
 } from '~/common/enum';
 import {ConnectionClosed, ProtocolError} from '~/common/error';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {
     CspPayloadType,
@@ -27,7 +27,7 @@ import {
     type ReflectSequenceNumber,
     type ReflectSequenceNumberValue,
 } from '~/common/network/types';
-import {type u32, type u53, type WeakOpaque} from '~/common/types';
+import type {u32, u53, WeakOpaque} from '~/common/types';
 import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
@@ -40,7 +40,11 @@ import {
 } from '~/common/utils/queue';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {SequenceNumberU32, SequenceNumberU53} from '~/common/utils/sequence-number';
-import {type AbortListener} from '~/common/utils/signal';
+import type {AbortListener} from '~/common/utils/signal';
+
+import {getTaskForIncomingCspMessage as getTaskForIncomingL5CspMessage} from './csp';
+import {getTaskForIncomingL5D2mMessage} from './d2m';
+import {DropDeviceTask} from './d2m/drop-device';
 
 import {
     ACTIVE_TASK,
@@ -59,9 +63,6 @@ import {
     TaskError,
     type TaskQueueItem,
 } from '.';
-import {getTaskForIncomingCspMessage as getTaskForIncomingL5CspMessage} from './csp';
-import {getTaskForIncomingL5D2mMessage} from './d2m';
-import {DropDeviceTask} from './d2m/drop-device';
 
 // Transaction running token. Must not be exported!
 const TRANSACTION_RUNNING_TOKEN: unique symbol = Symbol('transaction-running-token');

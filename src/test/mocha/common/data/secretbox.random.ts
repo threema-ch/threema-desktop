@@ -6,7 +6,7 @@ import {
     type ReadonlyRawKey,
     wrapRawKey,
 } from '~/common/crypto';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {base64ToU8a} from '~/common/utils/base64';
 
 /**

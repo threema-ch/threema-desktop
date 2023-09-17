@@ -1,5 +1,5 @@
-import {type ServicesForBackend} from '~/common/backend';
-import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
+import type {ServicesForBackend} from '~/common/backend';
+import type {DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
@@ -19,19 +19,19 @@ import {
     type OutboundL4Message,
     type OutboundPassiveTaskMessage,
 } from '~/common/network/protocol';
-import {
-    type __TransactionComplete as TransactionComplete,
-    type __TransactionRunning as TransactionRunning,
-    type TransactionAbortedByPrecondition,
+import type {
+    __TransactionComplete as TransactionComplete,
+    __TransactionRunning as TransactionRunning,
+    TransactionAbortedByPrecondition,
 } from '~/common/network/protocol/task/manager';
-import {type IdentityString} from '~/common/network/types';
-import {type ClientKey} from '~/common/network/types/keys';
-import {type WeakOpaque} from '~/common/types';
+import type {IdentityString} from '~/common/network/types';
+import type {ClientKey} from '~/common/network/types/keys';
+import type {WeakOpaque} from '~/common/types';
 import {assertUnreachable, unreachable} from '~/common/utils/assert';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';
-import {type QueueConsumer, type QueueProducer} from '~/common/utils/queue';
-import {type QueryablePromise, type ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {type AbortListener} from '~/common/utils/signal';
+import type {QueueConsumer, QueueProducer} from '~/common/utils/queue';
+import type {QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';
+import type {AbortListener} from '~/common/utils/signal';
 
 // Re-export for other APIs
 export type {TransactionRunning};

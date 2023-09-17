@@ -1,5 +1,5 @@
-import {type ServicesForBackendController} from '~/common/backend';
-import {type DeviceIds} from '~/common/device';
+import type {ServicesForBackendController} from '~/common/backend';
+import type {DeviceIds} from '~/common/device';
 import {
     BackendCreationError,
     type BackendCreator,
@@ -8,19 +8,19 @@ import {
     type DeviceLinkingSetup,
     type LinkingState,
 } from '~/common/dom/backend';
-import {type DebugBackend} from '~/common/dom/debug';
-import {type SafeCredentials} from '~/common/dom/safe';
-import {type D2mLeaderState} from '~/common/enum';
+import type {DebugBackend} from '~/common/dom/debug';
+import type {SafeCredentials} from '~/common/dom/safe';
+import type {D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
-import {type KeyStorage} from '~/common/key-storage';
-import {type Logger} from '~/common/logging';
-import {type ProfilePictureView, type Repositories} from '~/common/model';
-import {type DisplayPacket} from '~/common/network/protocol/capture';
-import {type DirectoryBackend} from '~/common/network/protocol/directory';
-import {type ConnectionState} from '~/common/network/protocol/state';
-import {type IdentityString} from '~/common/network/types';
-import {type NotificationCreator} from '~/common/notification';
-import {type SystemDialogService} from '~/common/system-dialog';
+import type {KeyStorage} from '~/common/key-storage';
+import type {Logger} from '~/common/logging';
+import type {ProfilePictureView, Repositories} from '~/common/model';
+import type {DisplayPacket} from '~/common/network/protocol/capture';
+import type {DirectoryBackend} from '~/common/network/protocol/directory';
+import type {ConnectionState} from '~/common/network/protocol/state';
+import type {IdentityString} from '~/common/network/types';
+import type {NotificationCreator} from '~/common/notification';
+import type {SystemDialogService} from '~/common/system-dialog';
 import {assertError, ensureError, unreachable} from '~/common/utils/assert';
 import {
     type EndpointFor,
@@ -40,7 +40,7 @@ import {
     type RemoteStore,
     WritableStore,
 } from '~/common/utils/store';
-import {type IViewModelRepository} from '~/common/viewmodel';
+import type {IViewModelRepository} from '~/common/viewmodel';
 
 export interface UserData {
     readonly identity: IdentityString;

@@ -2,7 +2,7 @@
   import {onMount, type SvelteComponent} from 'svelte';
 
   import {dragEvents} from '#3sc/utils/dragdrop';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
@@ -12,19 +12,19 @@
   import ChangePassword from '~/app/ui/modal/ChangePassword.svelte';
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
   import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';
-  import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
   import NavContactAdd from '~/app/ui/nav/ContactAddNav.svelte';
   import NavConversationList from '~/app/ui/nav/ConversationNav.svelte';
   import NavContactList from '~/app/ui/nav/ReceiverNav.svelte';
+  import NavContactAddDetail from '~/app/ui/nav/contact-add/ContactAddDetail.svelte';
   import NetworkAlert from '~/app/ui/notification/NetworkAlert.svelte';
   import Snackbar from '~/app/ui/snackbar/Snackbar.svelte';
   import {DisplayModeObserver, manageLayout} from '~/common/dom/ui/layout';
   import {display, layout} from '~/common/dom/ui/state';
-  import {type IGlobalPropertyModel} from '~/common/model/types/settings';
-  import {type LocalModelStore} from '~/common/model/utils/model-store';
+  import type {IGlobalPropertyModel} from '~/common/model/types/settings';
+  import type {LocalModelStore} from '~/common/model/utils/model-store';
   import {ConnectionState} from '~/common/network/protocol/state';
   import {unreachable} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
+  import type {Remote} from '~/common/utils/endpoint';
 
   export let services: AppServices;
 

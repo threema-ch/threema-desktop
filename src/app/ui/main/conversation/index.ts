@@ -1,19 +1,19 @@
 import {SyncEvent} from 'ts-events';
 
-import {type ReceiverNotificationPolicy} from '~/app/ui/generic/receiver';
-import {type DbConversationUid, type DbReceiverLookup} from '~/common/db';
+import type {ReceiverNotificationPolicy} from '~/app/ui/generic/receiver';
+import type {DbConversationUid, DbReceiverLookup} from '~/common/db';
 import {type ConversationCategory, type ConversationVisibility, ReceiverType} from '~/common/enum';
-import {
-    type AnyReceiverStore,
-    type Conversation,
-    type ProfilePicture,
-    type RemoteModelFor,
-    type RemoteModelStoreFor,
+import type {
+    AnyReceiverStore,
+    Conversation,
+    ProfilePicture,
+    RemoteModelFor,
+    RemoteModelStoreFor,
 } from '~/common/model';
-import {type RemoteModelStore} from '~/common/model/utils/model-store';
+import type {RemoteModelStore} from '~/common/model/utils/model-store';
 import {assertUnreachable} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
-import {type AnyReceiverData, type ReceiverType as ReceiverType3SC} from '~/common/viewmodel/types';
+import type {AnyReceiverData, ReceiverType as ReceiverType3SC} from '~/common/viewmodel/types';
 
 /**
  * Transformed data necessary to display a conversation.

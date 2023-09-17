@@ -1,18 +1,18 @@
 import {expect} from 'chai';
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {
     CspE2eGroupControlType,
     CspPayloadType,
     D2mPayloadType,
     GroupUserState,
 } from '~/common/enum';
-import {type Contact, type ContactInit} from '~/common/model';
+import type {Contact, ContactInit} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {IncomingGroupLeaveTask} from '~/common/network/protocol/task/csp/incoming-group-leave';
 import {ReflectedIncomingGroupLeaveTask} from '~/common/network/protocol/task/d2d/reflected-incoming-group-leave';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
-import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
+import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {
     ensureMessageId,
     type GroupId,

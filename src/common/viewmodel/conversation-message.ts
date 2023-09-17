@@ -1,15 +1,15 @@
 import {MessageDirection, type MessageReaction, MessageType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Repositories, type User} from '~/common/model';
-import {type ConversationModelStore} from '~/common/model/conversation';
+import type {Logger} from '~/common/logging';
+import type {Repositories, User} from '~/common/model';
+import type {ConversationModelStore} from '~/common/model/conversation';
 import {statusFromView} from '~/common/model/message';
-import {
-    type AnyMessageModel,
-    type AnyMessageModelStore,
-    type CommonBaseFileMessageView,
+import type {
+    AnyMessageModel,
+    AnyMessageModelStore,
+    CommonBaseFileMessageView,
 } from '~/common/model/types/message';
-import {type MessageId} from '~/common/network/types';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {MessageId} from '~/common/network/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {
     type PropertiesMarked,
@@ -18,17 +18,17 @@ import {
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
 import {u64ToHexLe} from '~/common/utils/number';
-import {type LocalStore} from '~/common/utils/store';
+import type {LocalStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
-import {type ServicesForViewModel} from '~/common/viewmodel';
+import type {ServicesForViewModel} from '~/common/viewmodel';
 import {transformContact} from '~/common/viewmodel/svelte-components-transformations';
-import {
-    type AnyMessageBody,
-    type FileMessageDataState,
-    type IncomingMessage,
-    type Message,
-    type MessageBodyFor,
-    type OutgoingMessage,
+import type {
+    AnyMessageBody,
+    FileMessageDataState,
+    IncomingMessage,
+    Message,
+    MessageBodyFor,
+    OutgoingMessage,
 } from '~/common/viewmodel/types';
 import {getMentions, type Mention} from '~/common/viewmodel/utils/mentions';
 

@@ -1,23 +1,17 @@
-import {type DbReceiverLookup} from '~/common/db';
+import type {DbReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
-import {
-    type Contact,
-    type Conversation,
-    type ConversationView,
-    type Group,
-    type ProfilePicture,
-} from '~/common/model';
+import type {Contact, Conversation, ConversationView, Group, ProfilePicture} from '~/common/model';
 import {getDisplayName} from '~/common/model/contact';
-import {type AnyReceiverStore} from '~/common/model/types/receiver';
-import {type PrivacySettings} from '~/common/model/types/settings';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {AnyReceiverStore} from '~/common/model/types/receiver';
+import type {PrivacySettings} from '~/common/model/types/settings';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
-import {type PropertiesMarked} from '~/common/utils/endpoint';
-import {type LocalStore, type RemoteStore} from '~/common/utils/store';
+import type {PropertiesMarked} from '~/common/utils/endpoint';
+import type {LocalStore, RemoteStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
-import {type IViewModelRepository, type ServicesForViewModel} from '~/common/viewmodel';
-import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
 export type ConversationPreviewSetStore = LocalDerivedSetStore<
     LocalSetStore<LocalModelStore<Conversation>>,

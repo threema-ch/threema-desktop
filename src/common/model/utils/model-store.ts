@@ -1,12 +1,12 @@
 import {TransferTag} from '~/common/enum';
-import {type Logger, type LogPrefix} from '~/common/logging';
-import {
-    type LocalModel,
-    type LocalModelController,
-    type RemoteModel,
-    type RemoteModelController,
+import type {Logger, LogPrefix} from '~/common/logging';
+import type {
+    LocalModel,
+    LocalModelController,
+    RemoteModel,
+    RemoteModelController,
 } from '~/common/model';
-import {type WeakOpaque} from '~/common/types';
+import type {WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,
@@ -25,7 +25,7 @@ import {
     TRANSFER_HANDLER,
     TRANSFERRED_MARKER,
 } from '~/common/utils/endpoint';
-import {type AbortRaiser} from '~/common/utils/signal';
+import type {AbortRaiser} from '~/common/utils/signal';
 import {
     type ISubscribableStore,
     NO_STORE_VALUE,

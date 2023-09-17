@@ -4,17 +4,17 @@ import {
     MessageDirection,
     MessageReaction,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type AnyMessageModel, type AnyOutboundMessageModel} from '~/common/model';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type PassiveTaskCodecHandle,
-    type ServicesForTasks,
+import type {Logger} from '~/common/logging';
+import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model';
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    PassiveTaskCodecHandle,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {getConversationById} from '~/common/network/protocol/task/message-processing-helpers';
-import {type DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
-import {type ConversationId, type MessageId} from '~/common/network/types';
+import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
+import type {ConversationId, MessageId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 

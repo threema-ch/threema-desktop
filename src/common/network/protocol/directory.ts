@@ -9,7 +9,7 @@ import {
     ensureServerGroup,
     type IdentityString,
 } from '~/common/network/types';
-import {type ClientKey} from '~/common/network/types/keys';
+import type {ClientKey} from '~/common/network/types/keys';
 import {base64ToU8a} from '~/common/utils/base64';
 import {
     type ProxyMarked,

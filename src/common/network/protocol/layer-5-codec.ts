@@ -1,21 +1,22 @@
 /**
  * Layer 5: End-to-end layer.
  */
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {ConnectionClosed} from '~/common/error';
 import {ensureError} from '~/common/utils/assert';
-import {
-    type AsyncCodecSink,
-    type AsyncCodecSource,
-    type SinkCodecController,
-    type SourceCodecController,
+import type {
+    AsyncCodecSink,
+    AsyncCodecSource,
+    SinkCodecController,
+    SourceCodecController,
 } from '~/common/utils/codec';
-import {type QueueConsumer, type QueueProducer} from '~/common/utils/queue';
+import type {QueueConsumer, QueueProducer} from '~/common/utils/queue';
 
-import {type InboundL4Message, type OutboundL4Message} from '.';
-import {type RawCaptureHandler} from './capture';
-import {type DecoderQueueItem, type EncoderQueueItem} from './task';
-import {type ConnectedTaskManager} from './task/manager';
+import type {RawCaptureHandler} from './capture';
+import type {DecoderQueueItem, EncoderQueueItem} from './task';
+import type {ConnectedTaskManager} from './task/manager';
+
+import type {InboundL4Message, OutboundL4Message} from '.';
 
 /**
  * Properties needed to handle end-to-end encrypted messages.

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {i18n} from '~/app/ui/i18n';
-  import {type LoadedImageState} from '~/app/ui/modal/media-message-viewer';
+  import type {LoadedImageState} from '~/app/ui/modal/media-message-viewer';
 
   /**
    * State that provides the image data to preview.

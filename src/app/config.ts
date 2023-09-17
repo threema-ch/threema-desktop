@@ -1,5 +1,5 @@
 import {createLoggerStyle} from '~/common/logging';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 
 /**
  * App configuration.

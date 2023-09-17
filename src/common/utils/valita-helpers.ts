@@ -7,7 +7,7 @@ import Long from 'long';
 
 import * as Unit from '~/common/network/protobuf/validate/common/unit';
 import {NULL_OR_UNDEFINED_SCHEMA} from '~/common/network/protobuf/validate/helpers';
-import {type u53, type u64} from '~/common/types';
+import type {u53, u64} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {intoU64, unixTimestampToDateMs} from '~/common/utils/number';
 

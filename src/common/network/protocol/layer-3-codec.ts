@@ -5,7 +5,7 @@
  * - Transport layer encryption/decryption of CSP messages.
  * - Encoding/Decoding CSP message payloads and forwarding D2M messages.
  */
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {
     type EncryptedData,
     type EncryptedDataWithNonceAhead,
@@ -16,32 +16,28 @@ import {
 } from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
 import {deriveVouchKey} from '~/common/crypto/csp-keys';
-import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
+import type {DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {randomPkcs7PaddingLength} from '~/common/crypto/random';
 import {CspMessagePayloadVersion, D2mPayloadTypeUtils, GlobalPropertyKey} from '~/common/enum';
 import {extractErrorMessage, ProtocolError} from '~/common/error';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {CloseCode} from '~/common/network/';
 import * as protobuf from '~/common/network/protobuf';
 import * as structbuf from '~/common/network/structbuf';
-import {
-    type ClientCookie,
-    type ClientSequenceNumber,
-    type ClientSequenceNumberValue,
-    type CspDeviceId,
-    type CspPayloadBox,
-    type D2mChallengeBox,
-    type D2mDeviceId,
-    type IdentityBytes,
-    type ServerCookie,
-    type ServerSequenceNumber,
+import type {
+    ClientCookie,
+    ClientSequenceNumber,
+    ClientSequenceNumberValue,
+    CspDeviceId,
+    CspPayloadBox,
+    D2mChallengeBox,
+    D2mDeviceId,
+    IdentityBytes,
+    ServerCookie,
+    ServerSequenceNumber,
 } from '~/common/network/types';
-import {
-    type ClientKey,
-    type TemporaryClientKey,
-    type TemporaryServerKey,
-} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array, type u32, type u53, type WeakOpaque} from '~/common/types';
+import type {ClientKey, TemporaryClientKey, TemporaryServerKey} from '~/common/network/types/keys';
+import type {ReadonlyUint8Array, u32, u53, WeakOpaque} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {byteEncodeSequence, byteEquals, bytePadPkcs7, byteToHex} from '~/common/utils/byte';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
@@ -52,10 +48,14 @@ import {
     type TransformerCodecController,
     UTF8,
 } from '~/common/utils/codec';
-import {type Delayed} from '~/common/utils/delayed';
+import type {Delayed} from '~/common/utils/delayed';
 import {intoUnsignedLong} from '~/common/utils/number';
-import {type ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {type MonotonicEnumStore} from '~/common/utils/store';
+import type {ResolvablePromise} from '~/common/utils/resolvable-promise';
+import type {MonotonicEnumStore} from '~/common/utils/store';
+
+import type {RawCaptureHandler} from './capture';
+import type {ConnectionHandle} from './controller';
+import {CspAuthState, CspAuthStateUtils, D2mAuthState, D2mAuthStateUtils} from './state';
 
 import {
     CspExtensionType,
@@ -75,9 +75,6 @@ import {
     type OutboundL3D2mMessage,
     type OutboundL3Message,
 } from '.';
-import {type RawCaptureHandler} from './capture';
-import {type ConnectionHandle} from './controller';
-import {CspAuthState, CspAuthStateUtils, D2mAuthState, D2mAuthStateUtils} from './state';
 
 type EncryptedDeviceInfo = WeakOpaque<
     EncryptedDataWithNonceAhead,

@@ -1,8 +1,8 @@
-import {type ServerGroup} from '~/common/network/types';
+import type {ServerGroup} from '~/common/network/types';
 import {bytesToHex} from '~/common/utils/byte';
-import {type PropertiesMarked} from '~/common/utils/endpoint';
+import type {PropertiesMarked} from '~/common/utils/endpoint';
 import {u64ToBytesLe} from '~/common/utils/number';
-import {type ServicesForViewModel} from '~/common/viewmodel';
+import type {ServicesForViewModel} from '~/common/viewmodel';
 
 export interface DebugPanelViewModel extends PropertiesMarked {
     readonly deviceGroupIdHex: string;

@@ -13,7 +13,7 @@ import {CREATE_BUFFER_TOKEN, type CryptoBox} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys, type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {wrapRawDeviceGroupKey} from '~/common/network/types/keys';
-import {type Bare} from '~/common/types';
+import type {Bare} from '~/common/types';
 import {hexToBytes} from '~/common/utils/byte';
 import {TestNonceService} from '~/test/mocha/common/backend-mocks';
 import {

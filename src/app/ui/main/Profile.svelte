@@ -4,7 +4,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {i18n, type Locale, LOCALE_NAMES, LOCALES} from '~/app/ui/i18n';
   import Profile from '~/app/ui/main/settings/Profile.svelte';
   import Select from '~/app/ui/main/settings/Select.svelte';
@@ -13,9 +13,9 @@
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';
   import {display} from '~/common/dom/ui/state';
   import {THEMES} from '~/common/dom/ui/theme';
-  import {type u53} from '~/common/types';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type ProfileViewModelStore} from '~/common/viewmodel/profile';
+  import type {u53} from '~/common/types';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.profile');
 

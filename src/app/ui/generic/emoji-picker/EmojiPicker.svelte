@@ -3,7 +3,7 @@
 
   import EmojiGroups from '#3sc/components/generic/EmojiPicker/EmojiGroups.svelte';
   import EmojiPicker from '#3sc/components/generic/EmojiPicker/EmojiPicker.svelte';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
 
   let emojiGroups: EmojiGroups;
   let emojiPicker: EmojiPicker;

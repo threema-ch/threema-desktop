@@ -4,10 +4,10 @@
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {truncate} from '~/common/utils/string';
-  import {type ReceiverType} from '~/common/viewmodel/types';
+  import type {ReceiverType} from '~/common/viewmodel/types';
 
   export let visible: boolean;
   export let receiverName: string;

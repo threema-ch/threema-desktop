@@ -1,16 +1,16 @@
 <script lang="ts">
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {type Locale, LOCALES} from '~/app/ui/i18n';
   import {type Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
-  import {
-    type AnyMessage,
-    type ContactView,
-    type ConversationView,
-    type DistributionListView,
-    type GroupView,
+  import type {
+    AnyMessage,
+    ContactView,
+    ConversationView,
+    DistributionListView,
+    GroupView,
   } from '~/common/model';
   import {unreachable, unwrap} from '~/common/utils/assert';
 

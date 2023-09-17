@@ -1,4 +1,4 @@
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {type QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';
 

@@ -5,9 +5,9 @@
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {
-    type MediaViewerContextMenuEvent,
-    type MediaViewerMessage,
+  import type {
+    MediaViewerContextMenuEvent,
+    MediaViewerMessage,
   } from '~/app/ui/modal/media-message-viewer';
 
   /**

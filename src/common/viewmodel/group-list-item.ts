@@ -1,16 +1,16 @@
-import {type DbGroupUid} from '~/common/db';
-import {type GroupUserState} from '~/common/enum';
-import {type ContactRepository, type Group, type ProfilePicture} from '~/common/model';
+import type {DbGroupUid} from '~/common/db';
+import type {GroupUserState} from '~/common/enum';
+import type {ContactRepository, Group, ProfilePicture} from '~/common/model';
 import {getDisplayName} from '~/common/model/group';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString} from '~/common/network/types';
-import {type u53} from '~/common/types';
-import {type PropertiesMarked} from '~/common/utils/endpoint';
-import {type LocalStore} from '~/common/utils/store';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {IdentityString} from '~/common/network/types';
+import type {u53} from '~/common/types';
+import type {PropertiesMarked} from '~/common/utils/endpoint';
+import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import {getGraphemeClusters} from '~/common/utils/string';
-import {type ServicesForViewModel} from '~/common/viewmodel';
+import type {ServicesForViewModel} from '~/common/viewmodel';
 
 export type GroupListItemSetStore = LocalDerivedSetStore<
     LocalSetStore<LocalModelStore<Group>>,

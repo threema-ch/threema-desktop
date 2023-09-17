@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
-import {type ServicesForBackend} from '~/common/backend';
-import {type EncryptedData, type Nonce, type PublicKey} from '~/common/crypto';
+import type {ServicesForBackend} from '~/common/backend';
+import type {EncryptedData, Nonce, PublicKey} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
@@ -19,7 +19,7 @@ import {
     type IdentityString,
     type MessageId,
 } from '~/common/network/types';
-import {type ClientKey} from '~/common/network/types/keys';
+import type {ClientKey} from '~/common/network/types/keys';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteWithoutPkcs7} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';

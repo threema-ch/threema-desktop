@@ -10,7 +10,7 @@ import {
 } from '~/common/enum';
 import * as validate from '~/common/network/protobuf/validate';
 import * as proto from '~/common/node/settings/settings';
-import {type SettingsCategoryCodec} from '~/common/settings';
+import type {SettingsCategoryCodec} from '~/common/settings';
 import {nullOptional, optionalEnum} from '~/common/utils/valita-helpers';
 
 const PRIVACY_SETTINGS_SCHEMA = v

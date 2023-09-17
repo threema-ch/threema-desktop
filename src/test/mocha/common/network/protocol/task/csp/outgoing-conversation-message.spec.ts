@@ -1,29 +1,29 @@
 import {expect} from 'chai';
 
-import {type CryptoBackend} from '~/common/crypto';
+import type {CryptoBackend} from '~/common/crypto';
 import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
     MessageDirection,
     MessageType,
 } from '~/common/enum';
-import {type AnyReceiver, type Contact, type Group} from '~/common/model';
-import {type OutboundTextMessageModelStore} from '~/common/model/message/text-message';
-import {type OutboundTextMessageModel} from '~/common/model/types/message/text';
+import type {AnyReceiver, Contact, Group} from '~/common/model';
+import type {OutboundTextMessageModelStore} from '~/common/model/message/text-message';
+import type {OutboundTextMessageModel} from '~/common/model/types/message/text';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
-import {type ActiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {serializeQuoteText} from '~/common/network/protocol/task/common/quotes';
 import {OutgoingConversationMessageTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message';
-import {
-    type IOutgoingCspMessageTaskConstructor,
-    type MessageProperties,
-    type ValidCspMessageTypeForReceiver,
+import type {
+    IOutgoingCspMessageTaskConstructor,
+    MessageProperties,
+    ValidCspMessageTypeForReceiver,
 } from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import {
-    type GroupMemberContainerEncodable,
-    type TextEncodable,
+import type {
+    GroupMemberContainerEncodable,
+    TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
 import {ensureIdentityString, type MessageId, type Nickname} from '~/common/network/types';
 import {UTF8} from '~/common/utils/codec';

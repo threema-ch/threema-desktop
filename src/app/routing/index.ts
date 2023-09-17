@@ -1,4 +1,4 @@
-import {type AnyRouteInstance, type RouteInstances} from '~/app/routing/routes';
+import type {AnyRouteInstance, RouteInstances} from '~/app/routing/routes';
 
 export function assertRoute<
     TPanelType extends keyof RouteInstances,

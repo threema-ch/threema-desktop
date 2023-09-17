@@ -2,10 +2,10 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
-  import {type ConnectionErrorDialog} from '~/common/system-dialog';
+  import type {ConnectionErrorDialog} from '~/common/system-dialog';
   import {unreachable} from '~/common/utils/assert';
 
   export let visible: boolean;

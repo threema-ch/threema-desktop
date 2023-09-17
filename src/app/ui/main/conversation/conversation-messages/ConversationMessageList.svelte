@@ -2,7 +2,8 @@
   import {onDestroy} from 'svelte';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {
     getUnreadMessageInfo,
     hasDirectionChanged,
@@ -16,15 +17,14 @@
   import {i18n} from '~/app/ui/i18n';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';
   import SystemMessage from '~/app/ui/main/conversation/conversation-messages/SystemMessage.svelte';
-  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
-  import {type DbReceiverLookup} from '~/common/db';
+  import type {DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
-  import {type AnyReceiverStore, type Conversation} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type Remote} from '~/common/utils/endpoint';
+  import type {AnyReceiverStore, Conversation} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import {debounce} from '~/common/utils/timer';
-  import {type ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
+  import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
 
   /**
    * App services.

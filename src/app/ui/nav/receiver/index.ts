@@ -1,32 +1,27 @@
-import {
-    type VerificationLevel,
-    type VerificationLevelColors,
+import type {
+    VerificationLevel,
+    VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
 import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromContact,
 } from '~/app/ui/generic/receiver';
-import {type PublicKey} from '~/common/crypto';
-import {type DbReceiverLookup} from '~/common/db';
-import {type BackendController} from '~/common/dom/backend/controller';
+import type {PublicKey} from '~/common/crypto';
+import type {DbReceiverLookup} from '~/common/db';
+import type {BackendController} from '~/common/dom/backend/controller';
 import {
     AcquaintanceLevel,
     ReceiverType,
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import {
-    type Contact,
-    type ContactView,
-    type ProfilePicture,
-    type RemoteModelFor,
-} from '~/common/model';
+import type {Contact, ContactView, ProfilePicture, RemoteModelFor} from '~/common/model';
 import {getFullName} from '~/common/model/contact';
-import {type RemoteModelStore} from '~/common/model/utils/model-store';
+import type {RemoteModelStore} from '~/common/model/utils/model-store';
 import {isNickname, type Nickname} from '~/common/network/types';
-import {type StrictOmit} from '~/common/types';
+import type {StrictOmit} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {type Remote} from '~/common/utils/endpoint';
+import type {Remote} from '~/common/utils/endpoint';
 import {
     DeprecatedDerivedStore,
     type IQueryableStore,
@@ -35,8 +30,8 @@ import {
 } from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {localeSort} from '~/common/utils/string';
-import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
-import {type ContactData} from '~/common/viewmodel/types';
+import type {ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
+import type {ContactData} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 /**

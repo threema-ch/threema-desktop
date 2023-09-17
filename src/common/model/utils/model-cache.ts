@@ -1,7 +1,7 @@
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {assert} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
-import {type LocalSetStore} from '~/common/utils/store/set-store';
+import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 /**
  * A lazily created {@link WeakRef} reference.

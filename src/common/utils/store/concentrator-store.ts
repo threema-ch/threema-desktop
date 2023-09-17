@@ -1,4 +1,4 @@
-import {type Mutable} from '~/common/types';
+import type {Mutable} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {

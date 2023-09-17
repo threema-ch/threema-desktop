@@ -1,4 +1,4 @@
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 
 // These exist both in DOM and Node

@@ -1,14 +1,11 @@
-import {
-    type Packet as DisplayPacket,
-    type PacketDirection,
-} from '#3sc/components/generic/PacketFlow';
+import type {Packet as DisplayPacket, PacketDirection} from '#3sc/components/generic/PacketFlow';
 import {type D2mPayloadType, D2mPayloadTypeUtils} from '~/common/enum';
-import {type ProtocolError, type ProtocolErrorType} from '~/common/error';
+import type {ProtocolError, ProtocolErrorType} from '~/common/error';
 import {Struct} from '~/common/network/structbuf/base';
-import {type ByteLengthEncoder, type i53, type u53, type WeakOpaque} from '~/common/types';
-import {type DomTransferable} from '~/common/utils/endpoint';
+import type {ByteLengthEncoder, i53, u53, WeakOpaque} from '~/common/types';
+import type {DomTransferable} from '~/common/utils/endpoint';
 
-import {type D2mMessage, type LayerEncoder} from '.';
+import type {D2mMessage, LayerEncoder} from '.';
 
 // Re-export PacketFlow component types
 export type {DisplayPacket, PacketDirection};

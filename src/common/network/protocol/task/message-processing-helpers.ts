@@ -3,26 +3,17 @@
  */
 
 import {CspE2eStatusUpdateType, ReceiverType} from '~/common/enum';
-import {type Conversation, type Repositories} from '~/common/model';
-import {
-    type InboundAudioMessage,
-    type OutboundAudioMessage,
-} from '~/common/model/types/message/audio';
-import {type InboundFileMessage, type OutboundFileMessage} from '~/common/model/types/message/file';
-import {
-    type InboundImageMessage,
-    type OutboundImageMessage,
-} from '~/common/model/types/message/image';
-import {type InboundTextMessage, type OutboundTextMessage} from '~/common/model/types/message/text';
-import {
-    type InboundVideoMessage,
-    type OutboundVideoMessage,
-} from '~/common/model/types/message/video';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type CspE2eType} from '~/common/network/protocol';
+import type {Conversation, Repositories} from '~/common/model';
+import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
+import type {InboundFileMessage, OutboundFileMessage} from '~/common/model/types/message/file';
+import type {InboundImageMessage, OutboundImageMessage} from '~/common/model/types/message/image';
+import type {InboundTextMessage, OutboundTextMessage} from '~/common/model/types/message/text';
+import type {InboundVideoMessage, OutboundVideoMessage} from '~/common/model/types/message/video';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {CspE2eType} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
-import {type ConversationId, type MessageId} from '~/common/network/types';
-import {type Mutable} from '~/common/types';
+import type {ConversationId, MessageId} from '~/common/network/types';
+import type {Mutable} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 

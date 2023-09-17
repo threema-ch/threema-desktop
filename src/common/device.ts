@@ -1,13 +1,8 @@
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {deriveDeviceGroupKeys, type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
-import {type DatabaseBackend} from '~/common/db';
-import {
-    type CspDeviceId,
-    type D2mDeviceId,
-    type IdentityString,
-    type ServerGroup,
-} from '~/common/network/types';
-import {type ClientKey, type RawDeviceGroupKey} from '~/common/network/types/keys';
+import type {DatabaseBackend} from '~/common/db';
+import type {CspDeviceId, D2mDeviceId, IdentityString, ServerGroup} from '~/common/network/types';
+import type {ClientKey, RawDeviceGroupKey} from '~/common/network/types/keys';
 import {Identity} from '~/common/utils/identity';
 
 /**

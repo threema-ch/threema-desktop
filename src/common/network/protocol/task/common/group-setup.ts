@@ -1,24 +1,21 @@
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {
     ConversationCategory,
     ConversationVisibility,
     GroupUserState,
     ReceiverType,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Group, type GroupInit} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {Group, GroupInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type PassiveTaskCodecHandle,
-    type ServicesForTasks,
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    PassiveTaskCodecHandle,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {
-    type GroupCreatorContainer,
-    type GroupSetup,
-} from '~/common/network/structbuf/validate/csp/e2e';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {GroupCreatorContainer, GroupSetup} from '~/common/network/structbuf/validate/csp/e2e';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
 import {u64ToHexLe} from '~/common/utils/number';

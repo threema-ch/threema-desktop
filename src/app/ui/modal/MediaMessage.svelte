@@ -10,33 +10,33 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import {type FileResult} from '#3sc/utils/filelist';
+  import type {FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import Tooltip from '~/app/ui/generic/popover/Tooltip.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {showFileResultError} from '~/app/ui/main/conversation/compose';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {
     generateThumbnail,
     type MediaFile,
     resizeImage,
     validateMediaFiles,
-    ValidationResult,
+    type ValidationResult,
   } from '~/app/ui/modal/media-message';
   import ActiveMediaFile from '~/app/ui/modal/media-message/ActiveMediaFile.svelte';
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
   import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {type Dimensions, ensureU53, type u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {isSupportedImageType} from '~/common/utils/image';
   import {WritableStore} from '~/common/utils/store';
-  import {
-    type SendFileBasedMessagesEventDetail,
-    type SendMessageEventDetail,
+  import type {
+    SendFileBasedMessagesEventDetail,
+    SendMessageEventDetail,
   } from '~/common/viewmodel/conversation';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.media-message-modal');

@@ -55,7 +55,6 @@ import path from 'node:path';
 import {performance} from 'node:perf_hooks';
 
 import * as argon2 from 'argon2';
-
 import {
     NACL_CONSTANTS,
     NONCE_UNGUARDED_SCOPE,
@@ -77,7 +76,7 @@ import {
     KeyStorageError,
     type ServicesForKeyStorage,
 } from '~/common/key-storage';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
 import {KiB, MiB, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';

@@ -6,7 +6,7 @@
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {APP_CONFIG} from '~/app/config';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {toast} from '~/app/ui/snackbar';

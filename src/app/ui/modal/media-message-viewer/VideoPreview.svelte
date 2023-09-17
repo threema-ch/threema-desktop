@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {type LoadedVideoState} from '~/app/ui/modal/media-message-viewer';
+  import type {LoadedVideoState} from '~/app/ui/modal/media-message-viewer';
 
   /**
    * State that provides the video data to preview.

@@ -2,11 +2,10 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import initLibthreema, * as libthreema from 'libthreema';
-
 import {CONFIG} from '~/common/config';
-import {type RawDatabaseKey, type ServicesForDatabaseFactory} from '~/common/db';
-import {type ServicesForFileStorageFactory} from '~/common/file-storage';
-import {type ServicesForKeyStorageFactory} from '~/common/key-storage';
+import type {RawDatabaseKey, ServicesForDatabaseFactory} from '~/common/db';
+import type {ServicesForFileStorageFactory} from '~/common/file-storage';
+import type {ServicesForKeyStorageFactory} from '~/common/key-storage';
 import {
     CONSOLE_LOGGER,
     createLoggerStyle,
@@ -25,7 +24,7 @@ import {assert} from '~/common/utils/assert';
 import {main} from '~/worker/backend/backend-worker';
 import {BACKEND_WORKER_CONFIG} from '~/worker/backend/config';
 
-export default async function run(): Promise<void> {
+export async function run(): Promise<void> {
     // We need the app path before we can do anything.
     // Note: The path is sent from the app initialization code in src/app/app.ts
     const appPath: string = await new Promise((resolve) => {

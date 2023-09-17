@@ -1,4 +1,4 @@
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {assertUnreachable, unreachable} from '~/common/utils/assert';
 import {EventController, type EventUnsubscriber} from '~/common/utils/event';
 import {type QueryablePromise, ResolvablePromise} from '~/common/utils/resolvable-promise';

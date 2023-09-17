@@ -11,7 +11,7 @@ import * as UserProfile from '~/common/network/protobuf/validate/sync/user-profi
 import {profilePictureShareWithFromSchema} from '~/common/network/protobuf/validate/sync/user-profile';
 import {ensureIdentityString, ensureServerGroup} from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {bytesToHex} from '~/common/utils/byte';
 import {unixTimestampToDateMs} from '~/common/utils/number';
 import {instanceOf, nullOptional, unsignedLongAsU64, validate} from '~/common/utils/valita-helpers';

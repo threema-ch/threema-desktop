@@ -1,5 +1,5 @@
-import {type PublicKey} from '~/common/crypto';
-import {type DbContactUid} from '~/common/db';
+import type {PublicKey} from '~/common/crypto';
+import type {DbContactUid} from '~/common/db';
 import {
     AcquaintanceLevel,
     type ActivityState,
@@ -10,17 +10,17 @@ import {
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import {type Contact, type ContactView, type ProfilePicture} from '~/common/model';
+import type {Contact, ContactView, ProfilePicture} from '~/common/model';
 import {getDisplayName} from '~/common/model/contact';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString, type Nickname} from '~/common/network/types';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {IdentityString, Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
-import {type PropertiesMarked} from '~/common/utils/endpoint';
-import {type LocalStore} from '~/common/utils/store';
+import type {PropertiesMarked} from '~/common/utils/endpoint';
+import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
-import {type ServicesForViewModel} from '~/common/viewmodel';
-import {type ReceiverBadgeType} from '~/common/viewmodel/types';
+import type {ServicesForViewModel} from '~/common/viewmodel';
+import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 /**

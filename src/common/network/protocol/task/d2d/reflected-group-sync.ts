@@ -1,6 +1,6 @@
-import {type Logger} from '~/common/logging';
-import {type Group} from '~/common/model';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {Logger} from '~/common/logging';
+import type {Group} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
     PASSIVE_TASK,

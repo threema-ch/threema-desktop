@@ -1,21 +1,21 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type Router} from '~/app/routing/router';
-  import {type ContactReceiver} from '~/app/ui/generic/receiver';
+  import type {Router} from '~/app/routing/router';
+  import type {ContactReceiver} from '~/app/ui/generic/receiver';
   import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
-  import {type SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import type {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {contactListFilter, showFullNameAndNickname} from '~/app/ui/nav/receiver';
-  import {type DbContactUid} from '~/common/db';
+  import type {DbContactUid} from '~/common/db';
   import {ActivityState, ReceiverType} from '~/common/enum';
-  import {type ProfilePicture} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {
-    type ContactListItemViewModel,
-    type ContactListItemViewModelStore,
+  import type {ProfilePicture} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {
+    ContactListItemViewModel,
+    ContactListItemViewModelStore,
   } from '~/common/viewmodel/contact-list-item';
 
   /**

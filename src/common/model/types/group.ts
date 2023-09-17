@@ -1,25 +1,25 @@
-import {type DbContactUid, type DbGroup, type DbGroupUid, type UidOf} from '~/common/db';
-import {
-    type GroupNotificationTriggerPolicy,
-    type GroupUserState,
-    type NotificationSoundPolicy,
-    type ReceiverType,
+import type {DbContactUid, DbGroup, DbGroupUid, UidOf} from '~/common/db';
+import type {
+    GroupNotificationTriggerPolicy,
+    GroupUserState,
+    NotificationSoundPolicy,
+    ReceiverType,
 } from '~/common/enum';
-import {
-    type ControllerUpdateFromLocal,
-    type ControllerUpdateFromSource,
-    type ControllerUpdateFromSync,
-    type LocalModel,
+import type {
+    ControllerUpdateFromLocal,
+    ControllerUpdateFromSource,
+    ControllerUpdateFromSync,
+    LocalModel,
 } from '~/common/model/types/common';
-import {type ConversationInitMixin} from '~/common/model/types/conversation';
-import {type ReceiverController} from '~/common/model/types/receiver';
-import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type GroupId, type IdentityString} from '~/common/network/types';
-import {type u8, type u53} from '~/common/types';
-import {type ProxyMarked} from '~/common/utils/endpoint';
-import {type SequenceNumberU53} from '~/common/utils/sequence-number';
-import {type LocalSetStore} from '~/common/utils/store/set-store';
+import type {ConversationInitMixin} from '~/common/model/types/conversation';
+import type {ReceiverController} from '~/common/model/types/receiver';
+import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {GroupId, IdentityString} from '~/common/network/types';
+import type {u8, u53} from '~/common/types';
+import type {ProxyMarked} from '~/common/utils/endpoint';
+import type {SequenceNumberU53} from '~/common/utils/sequence-number';
+import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 export interface GroupView {
     readonly groupId: GroupId;

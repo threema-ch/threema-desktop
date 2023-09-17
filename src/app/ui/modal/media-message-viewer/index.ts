@@ -1,11 +1,11 @@
-import {type I18nType} from '~/app/ui/i18n-types';
+import type {I18nType} from '~/app/ui/i18n-types';
 import {BlobFetchError} from '~/common/error';
-import {type Logger} from '~/common/logging';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {Logger} from '~/common/logging';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
-import {type RemoteProxy} from '~/common/utils/endpoint';
-import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
-import {type AnyMessageBody, type Message, type MessageBody} from '~/common/viewmodel/types';
+import type {RemoteProxy} from '~/common/utils/endpoint';
+import type {ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
+import type {AnyMessageBody, Message, MessageBody} from '~/common/viewmodel/types';
 
 /**
  * Union of {@link Message} types supported by the media viewer.

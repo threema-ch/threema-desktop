@@ -1,7 +1,7 @@
 /**
  * Outgoing message task.
  */
-import {type Nonce} from '~/common/crypto';
+import type {Nonce} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {deriveMessageMetadataKey} from '~/common/crypto/csp-keys';
 import {
@@ -18,10 +18,10 @@ import {
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type AnyReceiver, type Contact} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {AnyReceiver, Contact} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
-import {type ProtobufInstanceOf} from '~/common/network/protobuf/utils';
+import type {ProtobufInstanceOf} from '~/common/network/protobuf/utils';
 import {
     type CspE2eType,
     cspE2eTypeNameOf,
@@ -31,7 +31,7 @@ import {
     MESSAGE_TYPE_PROPERTIES,
 } from '~/common/network/protocol';
 import {MESSAGE_DATA_PADDING_LENGTH_MIN} from '~/common/network/protocol/constants';
-import {type CspMessageFlags} from '~/common/network/protocol/flags';
+import type {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     type ActiveTaskCodecHandle,
     type ComposableTask,
@@ -42,7 +42,7 @@ import {
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import * as structbuf from '~/common/network/structbuf';
 import {conversationIdForReceiver, type MessageId} from '~/common/network/types';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {assert, assertUnreachable, debugAssert, unreachable} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';

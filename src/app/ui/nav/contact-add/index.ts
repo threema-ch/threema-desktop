@@ -1,6 +1,6 @@
 import {i18n} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
-import {type BackendController} from '~/common/dom/backend/controller';
+import type {BackendController} from '~/common/dom/backend/controller';
 import {ConnectionState} from '~/common/enum';
 
 /**

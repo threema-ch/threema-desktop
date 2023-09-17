@@ -1,4 +1,4 @@
-import {type DbReceiverLookup} from '~/common/db';
+import type {DbReceiverLookup} from '~/common/db';
 import {
     CspE2eConversationType,
     CspE2eGroupConversationType,
@@ -6,9 +6,9 @@ import {
     ReceiverType,
     ReceiverTypeUtils,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type AnyOutboundMessageModelStore, type AnyReceiver} from '~/common/model';
-import {type CspE2eType, type LayerEncoder} from '~/common/network/protocol';
+import type {Logger} from '~/common/logging';
+import type {AnyOutboundMessageModelStore, AnyReceiver} from '~/common/model';
+import type {CspE2eType, LayerEncoder} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
     ACTIVE_TASK,
@@ -25,12 +25,12 @@ import {
     type ValidCspMessageTypeForReceiver,
 } from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import * as structbuf from '~/common/network/structbuf';
-import {
-    type FileEncodable,
-    type GroupMemberContainerEncodable,
-    type TextEncodable,
+import type {
+    FileEncodable,
+    GroupMemberContainerEncodable,
+    TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
-import {type MessageId} from '~/common/network/types';
+import type {MessageId} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';

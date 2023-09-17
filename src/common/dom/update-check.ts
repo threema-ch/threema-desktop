@@ -4,9 +4,9 @@
 
 import * as v from '@badrap/valita';
 
-import {type Config} from '~/common/config';
-import {type SystemInfo} from '~/common/electron-ipc';
-import {type Logger} from '~/common/logging';
+import type {Config} from '~/common/config';
+import type {SystemInfo} from '~/common/electron-ipc';
+import type {Logger} from '~/common/logging';
 
 const UPDATE_INFO_SCHEMA = v
     .object({

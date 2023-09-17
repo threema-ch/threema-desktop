@@ -1,4 +1,4 @@
-import {type PublicKey} from '~/common/crypto';
+import type {PublicKey} from '~/common/crypto';
 import {bytesToHex} from '~/common/utils/byte';
 
 /**

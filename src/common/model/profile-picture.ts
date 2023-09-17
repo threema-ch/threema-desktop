@@ -1,30 +1,30 @@
-import {
-    type DbContact,
-    type DbContactUid,
-    type DbGroup,
-    type DbGroupUid,
-    type DbReceiverLookup,
-    type DbUpdate,
+import type {
+    DbContact,
+    DbContactUid,
+    DbGroup,
+    DbGroupUid,
+    DbReceiverLookup,
+    DbUpdate,
 } from '~/common/db';
 import {ReceiverType, TriggerSource} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type ServicesForModel} from '~/common/model/types/common';
-import {
-    type ProfilePicture,
-    type ProfilePictureController,
-    type ProfilePictureSource,
-    type ProfilePictureView,
+import type {Logger} from '~/common/logging';
+import type {ServicesForModel} from '~/common/model/types/common';
+import type {
+    ProfilePicture,
+    ProfilePictureController,
+    ProfilePictureSource,
+    ProfilePictureView,
 } from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type BlobId} from '~/common/network/protocol/blob';
-import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
-import {type ProfilePictureUpdate} from '~/common/network/protocol/task/d2d/reflect-contact-sync';
+import type {BlobId} from '~/common/network/protocol/blob';
+import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import type {ProfilePictureUpdate} from '~/common/network/protocol/task/d2d/reflect-contact-sync';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import {type ConversationId, type GroupId, type IdentityString} from '~/common/network/types';
-import {type RawBlobKey} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {ConversationId, GroupId, IdentityString} from '~/common/network/types';
+import type {RawBlobKey} from '~/common/network/types/keys';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndexToString} from '~/common/utils/id-color';

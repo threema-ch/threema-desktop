@@ -5,7 +5,7 @@
   import Text from '#3sc/components/blocks/Input/Text.svelte';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import ProfilePictureUpload from '~/app/ui/generic/profile-picture/ProfilePictureUpload.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -20,9 +20,9 @@
     VerificationLevel,
     WorkVerificationLevel,
   } from '~/common/enum';
-  import {type ContactInit, type RemoteModelStoreFor} from '~/common/model';
-  import {type ContactModelStore} from '~/common/model/contact';
-  import {type ValidIdentityData} from '~/common/network/protocol/directory';
+  import type {ContactInit, RemoteModelStoreFor} from '~/common/model';
+  import type {ContactModelStore} from '~/common/model/contact';
+  import type {ValidIdentityData} from '~/common/network/protocol/directory';
   import {idColorIndex} from '~/common/utils/id-color';
 
   export let services: AppServices;

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {BlobData} from '~/common/network/protobuf/validate/common';
 import {ensureBlobId} from '~/common/network/protocol/blob';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {TestTweetNaClBackend} from '~/test/mocha/common/backend-mocks';
 
 /**

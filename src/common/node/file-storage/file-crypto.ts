@@ -1,5 +1,5 @@
-import {type FileId} from '~/common/file-storage';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {FileId} from '~/common/file-storage';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {byteView, hexToBytes} from '~/common/utils/byte';
 

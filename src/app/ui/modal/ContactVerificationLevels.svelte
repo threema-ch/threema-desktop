@@ -1,7 +1,7 @@
 <script lang="ts">
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import {type VerificationLevelColors} from '#3sc/components/threema/VerificationDots';
+  import type {VerificationLevelColors} from '#3sc/components/threema/VerificationDots';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';

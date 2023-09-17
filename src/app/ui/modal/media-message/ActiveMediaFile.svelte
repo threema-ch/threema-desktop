@@ -5,7 +5,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import Image from '#3sc/components/blocks/Image/Image.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type MediaFile, type ValidationResult} from '~/app/ui/modal/media-message';
+  import type {MediaFile, ValidationResult} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
   import {unreachable} from '~/common/utils/assert';
   import {isSupportedImageType} from '~/common/utils/image';

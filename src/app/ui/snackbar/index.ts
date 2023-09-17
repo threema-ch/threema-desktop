@@ -1,5 +1,5 @@
-import {type AnyToastAction, type ToastAction} from '#3sc/components/generic/Snackbar';
-import {type IconSet} from '~/common/types';
+import type {AnyToastAction, ToastAction} from '#3sc/components/generic/Snackbar';
+import type {IconSet} from '~/common/types';
 import {WritableStore} from '~/common/utils/store';
 
 const SIMPLE_TOAST_TTL_MILLISECONDS = 5000 as const;

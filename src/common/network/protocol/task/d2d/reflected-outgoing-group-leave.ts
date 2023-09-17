@@ -1,13 +1,13 @@
 import {GroupUserState} from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {groupDebugString} from '~/common/model/group';
-import {
-    type ComposableTask,
-    type PassiveTaskCodecHandle,
-    type ServicesForTasks,
+import type {
+    ComposableTask,
+    PassiveTaskCodecHandle,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
-import {type MessageId} from '~/common/network/types';
+import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
+import type {MessageId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**

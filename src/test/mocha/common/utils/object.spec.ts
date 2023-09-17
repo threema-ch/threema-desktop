@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {isIterable, pick} from '~/common/utils/object';
 
 /**

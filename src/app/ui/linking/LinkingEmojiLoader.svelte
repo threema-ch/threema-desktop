@@ -1,7 +1,7 @@
 <script lang="ts">
   import {i18n} from '~/app/ui/i18n';
   import {EMOJI_LIST} from '~/app/ui/linking/emoji-list';
-  import {type u8, type u53} from '~/common/types';
+  import type {u8, u53} from '~/common/types';
   import {joinConstArray} from '~/common/utils/array';
   import {literalToLowercase} from '~/common/utils/string';
 

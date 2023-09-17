@@ -1,5 +1,6 @@
 import {CloseCode} from '~/common/enum';
-import {type u16} from '~/common/types';
+import type {u16} from '~/common/types';
+
 export {CloseCode};
 
 export interface CloseInfo {

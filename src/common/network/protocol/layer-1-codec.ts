@@ -6,18 +6,19 @@
  * - Decoding inbound bytes to a D2M message container.
  * - Encoding an outbound D2M message container to bytes.
  */
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {D2mPayloadTypeUtils} from '~/common/enum';
 import {extractErrorMessage, ProtocolError} from '~/common/error';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import * as structbuf from '~/common/network/structbuf';
-import {type ByteLengthEncoder, type u53} from '~/common/types';
+import type {ByteLengthEncoder, u53} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
 import {byteToHex} from '~/common/utils/byte';
-import {type TransformerCodec, type TransformerCodecController} from '~/common/utils/codec';
+import type {TransformerCodec, TransformerCodecController} from '~/common/utils/codec';
+
+import type {RawCaptureHandler} from './capture';
 
 import {D2mPayloadType, type InboundL1Message, type OutboundL2Message, type RawL1Data} from '.';
-import {type RawCaptureHandler} from './capture';
 
 export class Layer1Decoder implements TransformerCodec<ArrayBuffer, InboundL1Message> {
     private readonly _services: ServicesForBackend;

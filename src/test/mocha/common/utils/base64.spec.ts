@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 
-import {type u8} from '~/common/types';
+import type {u8} from '~/common/types';
 import {base64ToU8a} from '~/common/utils/base64';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 

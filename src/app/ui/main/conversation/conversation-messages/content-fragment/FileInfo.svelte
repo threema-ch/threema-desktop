@@ -7,7 +7,7 @@
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
-  import {type Message, type MessageBody} from '~/common/viewmodel/types';
+  import type {Message, MessageBody} from '~/common/viewmodel/types';
 
   /**
    * The message containing the file to display file info for.

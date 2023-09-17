@@ -13,7 +13,7 @@ import {
     type ServicesForFileStorage,
     type StoredFileHandle,
 } from '~/common/file-storage';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {FileChunkNonce} from '~/common/node/file-storage/file-crypto';
 import {directoryModeInternalObjectIfPosix, fileModeInternalIfPosix} from '~/common/node/fs';
 import {isNodeError} from '~/common/node/utils';

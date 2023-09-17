@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {D2mLeaderState} from '~/common/enum';
   import {ConnectionState, ConnectionStateUtils} from '~/common/network/protocol/state';
   import {u64ToHexLe} from '~/common/utils/number';

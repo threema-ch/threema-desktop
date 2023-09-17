@@ -9,10 +9,10 @@
     transformContact,
     type TransformedContact,
   } from '~/app/ui/nav/receiver';
-  import {type BackendController} from '~/common/dom/backend/controller';
-  import {type Contact, type ProfilePicture} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type IdentityString} from '~/common/network/types';
+  import type {BackendController} from '~/common/dom/backend/controller';
+  import type {Contact, ProfilePicture} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {IdentityString} from '~/common/network/types';
 
   export let backend: BackendController;
 

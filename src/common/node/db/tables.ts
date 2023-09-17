@@ -1,53 +1,53 @@
 /** Table declarations. */
 import {Table} from 'ts-sql-query/Table';
 
-import {type NonceHash, type PublicKey} from '~/common/crypto';
-import {
-    type DbContactUid,
-    type DbConversationUid,
-    type DbDistributionListUid,
-    type DbFileDataUid,
-    type DbGlobalPropertyUid,
-    type DbGroupMemberUid,
-    type DbGroupUid,
-    type DbMessageUid,
-    type DbNonceUid,
+import type {NonceHash, PublicKey} from '~/common/crypto';
+import type {
+    DbContactUid,
+    DbConversationUid,
+    DbDistributionListUid,
+    DbFileDataUid,
+    DbGlobalPropertyUid,
+    DbGroupMemberUid,
+    DbGroupUid,
+    DbMessageUid,
+    DbNonceUid,
 } from '~/common/db';
-import {
-    type AcquaintanceLevel,
-    type ActivityState,
-    type BlobDownloadState,
-    type ContactNotificationTriggerPolicy,
-    type ConversationCategory,
-    type ConversationVisibility,
-    type GlobalPropertyKey,
-    type GroupNotificationTriggerPolicy,
-    type GroupUserState,
-    type IdentityType,
-    type ImageRenderingType,
-    type MessageReaction,
-    type MessageType,
-    type NonceScope,
-    type NotificationSoundPolicy,
-    type ReadReceiptPolicy,
-    type SyncState,
-    type TypingIndicatorPolicy,
-    type VerificationLevel,
-    type WorkVerificationLevel,
+import type {
+    AcquaintanceLevel,
+    ActivityState,
+    BlobDownloadState,
+    ContactNotificationTriggerPolicy,
+    ConversationCategory,
+    ConversationVisibility,
+    GlobalPropertyKey,
+    GroupNotificationTriggerPolicy,
+    GroupUserState,
+    IdentityType,
+    ImageRenderingType,
+    MessageReaction,
+    MessageType,
+    NonceScope,
+    NotificationSoundPolicy,
+    ReadReceiptPolicy,
+    SyncState,
+    TypingIndicatorPolicy,
+    VerificationLevel,
+    WorkVerificationLevel,
 } from '~/common/enum';
-import {type FileEncryptionKey, type FileId} from '~/common/file-storage';
-import {type BlobId} from '~/common/network/protocol/blob';
-import {
-    type DistributionListId,
-    type FeatureMask,
-    type GroupId,
-    type IdentityString,
-    type MessageId,
-    type Nickname,
+import type {FileEncryptionKey, FileId} from '~/common/file-storage';
+import type {BlobId} from '~/common/network/protocol/blob';
+import type {
+    DistributionListId,
+    FeatureMask,
+    GroupId,
+    IdentityString,
+    MessageId,
+    Nickname,
 } from '~/common/network/types';
-import {type RawBlobKey} from '~/common/network/types/keys';
+import type {RawBlobKey} from '~/common/network/types/keys';
 import {CUSTOM_TYPES, type DBConnection} from '~/common/node/db/connection';
-import {type f64, type ReadonlyUint8Array, type u8, type u53} from '~/common/types';
+import type {f64, ReadonlyUint8Array, u8, u53} from '~/common/types';
 
 /**
  * A contact.

@@ -3,9 +3,9 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {globals} from '~/app/globals';
-  import {type RouterState} from '~/app/routing/router';
+  import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {
     getProfilePictureAndMemberStores,
     type GroupPreviewStores,
@@ -19,10 +19,10 @@
   import {toast} from '~/app/ui/snackbar';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {ReceiverType} from '~/common/enum';
-  import {type Contact, type Group} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {Contact, Group} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import {ensureIdentityString} from '~/common/network/types';
-  import {type IQueryableStore} from '~/common/utils/store';
+  import type {IQueryableStore} from '~/common/utils/store';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.group-details');
 

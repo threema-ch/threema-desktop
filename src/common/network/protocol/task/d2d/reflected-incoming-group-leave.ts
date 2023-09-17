@@ -1,13 +1,13 @@
 /**
  * Incoming group leave task.
  */
-import {type DbContactUid} from '~/common/db';
-import {type Contact, type Group} from '~/common/model';
+import type {DbContactUid} from '~/common/db';
+import type {Contact, Group} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type PassiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {PassiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {GroupLeaveTaskBase} from '~/common/network/protocol/task/common/group-leave';
-import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
-import {type MessageId} from '~/common/network/types';
+import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
+import type {MessageId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 
 /**

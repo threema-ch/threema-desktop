@@ -1,4 +1,4 @@
-import {type ByteEncoder, type u53} from '~/common/types';
+import type {ByteEncoder, u53} from '~/common/types';
 
 /**
  * A byte buffer claim.

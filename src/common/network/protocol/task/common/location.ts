@@ -1,5 +1,5 @@
 import {ParseError} from '~/common/error';
-import {type f64} from '~/common/types';
+import type {f64} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {split} from '~/common/utils/string';
 

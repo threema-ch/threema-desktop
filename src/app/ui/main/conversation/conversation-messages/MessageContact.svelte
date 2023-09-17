@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {type ProfilePictureColor} from '#3sc/components/threema/ProfilePicture';
+  import type {ProfilePictureColor} from '#3sc/components/threema/ProfilePicture';
 
   export let name: string;
 

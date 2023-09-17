@@ -1,20 +1,20 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type Router} from '~/app/routing/router';
+  import type {Router} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {sortGroupMembers} from '~/app/ui/aside/group-details';
   import GroupMember from '~/app/ui/aside/group-details/GroupMember.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import {i18n} from '~/app/ui/i18n';
   import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
-  import {type DbContactUid} from '~/common/db';
-  import {type BackendController} from '~/common/dom/backend/controller';
+  import type {DbContactUid} from '~/common/db';
+  import type {BackendController} from '~/common/dom/backend/controller';
   import {ReceiverType} from '~/common/enum';
-  import {type Contact} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type IdentityString} from '~/common/network/types';
-  import {type u53} from '~/common/types';
-  import {type IQueryableStore} from '~/common/utils/store';
+  import type {Contact} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {IdentityString} from '~/common/network/types';
+  import type {u53} from '~/common/types';
+  import type {IQueryableStore} from '~/common/utils/store';
 
   export let router: Router;
 

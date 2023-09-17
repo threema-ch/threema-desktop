@@ -1,7 +1,7 @@
 import {IdentityType, WorkVerificationLevel} from '~/common/enum';
-import {type ContactView} from '~/common/model';
+import type {ContactView} from '~/common/model';
 import {unreachable} from '~/common/utils/assert';
-import {type ReceiverBadgeType} from '~/common/viewmodel/types';
+import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 
 /**
  * Determine badge type.

@@ -1,11 +1,11 @@
 import {expect} from 'chai';
 
 import {parseHighlights, parseLinks, parseMentions, parseText} from '~/app/ui/generic/form';
-import {type DbContact, type DbContactUid} from '~/common/db';
+import type {DbContact, DbContactUid} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {ensureIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
-import {type Mention} from '~/common/viewmodel/utils/mentions';
+import type {Mention} from '~/common/viewmodel/utils/mentions';
 
 function mockedT(key: string, defaultValue: string): string {
     return defaultValue;

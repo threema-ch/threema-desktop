@@ -1,7 +1,7 @@
 <script lang="ts">
   import {escapeHtmlUnsafeChars, parseText} from '~/app/ui/generic/form';
   import {i18n} from '~/app/ui/i18n';
-  import {type Mention} from '~/common/viewmodel/utils/mentions';
+  import type {Mention} from '~/common/viewmodel/utils/mentions';
 
   export let text: string;
   export let mentions: Mention | Mention[] | undefined = undefined;

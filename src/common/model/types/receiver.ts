@@ -1,10 +1,10 @@
-import {type Contact} from '~/common/model/types/contact';
-import {type Conversation} from '~/common/model/types/conversation';
-import {type DistributionList} from '~/common/model/types/distribution-list';
-import {type Group} from '~/common/model/types/group';
-import {type ProfilePicture} from '~/common/model/types/profile-picture';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type NotificationTag} from '~/common/notification';
+import type {Contact} from '~/common/model/types/contact';
+import type {Conversation} from '~/common/model/types/conversation';
+import type {DistributionList} from '~/common/model/types/distribution-list';
+import type {Group} from '~/common/model/types/group';
+import type {ProfilePicture} from '~/common/model/types/profile-picture';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {NotificationTag} from '~/common/notification';
 
 export type AnyReceiver = Contact | DistributionList | Group;
 export type AnyReceiverStore =

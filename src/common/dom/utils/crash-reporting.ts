@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser';
 
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {filterUndefinedProperties} from '~/common/utils/object';
 
 let crashReportingInitialized = false;

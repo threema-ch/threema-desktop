@@ -4,22 +4,22 @@ import {ensureNonce, NACL_CONSTANTS, type NonceHash, type PublicKey} from '~/com
 import {hashNonce} from '~/common/crypto/nonce';
 import {randomString} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
-import {
-    type DatabaseBackend,
-    type DbAnyMessage,
-    type DbContactUid,
-    type DbConversation,
-    type DbConversationUid,
-    type DbCreate,
-    type DbCreateConversationMixin,
-    type DbFileData,
-    type DbGroup,
-    type DbGroupUid,
-    type DbMessageCommon,
-    type DbMessageUid,
-    type DbNonceUid,
-    type DbReceiverLookup,
-    type DbUnreadMessageCountMixin,
+import type {
+    DatabaseBackend,
+    DbAnyMessage,
+    DbContactUid,
+    DbConversation,
+    DbConversationUid,
+    DbCreate,
+    DbCreateConversationMixin,
+    DbFileData,
+    DbGroup,
+    DbGroupUid,
+    DbMessageCommon,
+    DbMessageUid,
+    DbNonceUid,
+    DbReceiverLookup,
+    DbUnreadMessageCountMixin,
 } from '~/common/db';
 import {
     AcquaintanceLevel,
@@ -62,7 +62,7 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
-import {type Dimensions, type ReadonlyUint8Array, type u53, type u64} from '~/common/types';
+import type {Dimensions, ReadonlyUint8Array, u53, u64} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {Identity} from '~/common/utils/identity';

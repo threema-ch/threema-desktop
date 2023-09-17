@@ -1,5 +1,5 @@
-import {type PublicKey} from './crypto';
-import {type ReadonlyUint8Array, type u16, type u32, type u53} from './types';
+import type {PublicKey} from './crypto';
+import type {ReadonlyUint8Array, u16, u32, u53} from './types';
 
 /**
  * General project configuration.

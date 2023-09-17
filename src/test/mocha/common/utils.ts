@@ -1,6 +1,6 @@
 import {AssertionError, expect} from 'chai';
 
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {byteView} from '~/common/utils/byte';
 
 /**

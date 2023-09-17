@@ -1,14 +1,14 @@
-import {type Config} from '~/common/config';
+import type {Config} from '~/common/config';
 import {type CryptoBackend, type PublicKey, wrapRawKey} from '~/common/crypto';
 import {deriveKey} from '~/common/crypto/blake2b';
-import {type INonceService} from '~/common/crypto/nonce';
+import type {INonceService} from '~/common/crypto/nonce';
 import {NonceScope} from '~/common/enum';
-import {
-    type ClientKey,
-    type DirectoryChallengeResponseKey,
-    type MessageMetadataBox,
-    type TemporaryServerKey,
-    type VouchKey,
+import type {
+    ClientKey,
+    DirectoryChallengeResponseKey,
+    MessageMetadataBox,
+    TemporaryServerKey,
+    VouchKey,
 } from '~/common/network/types/keys';
 import {byteJoin} from '~/common/utils/byte';
 

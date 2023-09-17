@@ -1,12 +1,12 @@
 import {downsizeImage, getImageDimensions} from '~/common/dom/utils/image';
 import {ImageType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {THUMBNAIL_MAX_SIZE} from '~/common/network/protocol/constants';
-import {type Dimensions} from '~/common/types';
+import type {Dimensions} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {type FilenameDetails} from '~/common/utils/file';
+import type {FilenameDetails} from '~/common/utils/file';
 import {mediaTypeToImageType} from '~/common/utils/image';
-import {type WritableStore} from '~/common/utils/store';
+import type {WritableStore} from '~/common/utils/store';
 import {getUtf8ByteLength} from '~/common/utils/string';
 
 export interface MediaFile {

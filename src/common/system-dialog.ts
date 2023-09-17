@@ -1,5 +1,5 @@
-import {type SystemInfo} from '~/common/electron-ipc';
-import {type ProxyMarked} from '~/common/utils/endpoint';
+import type {SystemInfo} from '~/common/electron-ipc';
+import type {ProxyMarked} from '~/common/utils/endpoint';
 
 /**
  * Base interface for all system dialogs.

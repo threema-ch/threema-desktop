@@ -4,9 +4,9 @@
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {globals} from '~/app/globals';
-  import {type RouterState} from '~/app/routing/router';
+  import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {formatDateLocalized} from '~/app/ui/generic/form';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
@@ -29,13 +29,13 @@
     ReceiverType,
     TypingIndicatorPolicy,
   } from '~/common/enum';
-  import {type ContactController, type ProfilePicture} from '~/common/model';
-  import {type RemoteModelController} from '~/common/model/types/common';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {ContactController, ProfilePicture} from '~/common/model';
+  import type {RemoteModelController} from '~/common/model/types/common';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import {unreachable} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type LocalStore} from '~/common/utils/store';
-  import {type ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {LocalStore} from '~/common/utils/store';
+  import type {ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.contact-details');
 

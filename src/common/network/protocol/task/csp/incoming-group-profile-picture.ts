@@ -1,21 +1,21 @@
 import {extractErrorMessage} from '~/common/error';
-import {type Logger} from '~/common/logging';
-import {type Contact, type ContactInit} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {Contact, ContactInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type ServicesForTasks,
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
-import {
-    type GroupCreatorContainer,
-    type SetProfilePicture,
+import type {
+    GroupCreatorContainer,
+    SetProfilePicture,
 } from '~/common/network/structbuf/validate/csp/e2e';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import {ensureError} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 

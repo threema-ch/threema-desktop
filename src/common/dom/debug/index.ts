@@ -1,11 +1,11 @@
-import {type ServicesForBackend} from '~/common/backend';
-import {type BackendHandle} from '~/common/dom/backend';
+import type {ServicesForBackend} from '~/common/backend';
+import type {BackendHandle} from '~/common/dom/backend';
 import {
     generateFakeContactConversation,
     generateFakeGroupConversation,
     generateScreenshotData,
 } from '~/common/dom/debug/fake';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**

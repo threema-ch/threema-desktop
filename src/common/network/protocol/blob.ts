@@ -8,10 +8,10 @@ import {
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions, extractErrorMessage} from '~/common/error';
-import {type Logger} from '~/common/logging';
-import {type ServicesForTasks} from '~/common/network/protocol/task';
+import type {Logger} from '~/common/logging';
+import type {ServicesForTasks} from '~/common/network/protocol/task';
 import {type RawBlobKey, wrapRawBlobKey} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
+import type {ReadonlyUint8Array, WeakOpaque} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {registerErrorTransferHandler, TRANSFER_HANDLER} from '~/common/utils/endpoint';

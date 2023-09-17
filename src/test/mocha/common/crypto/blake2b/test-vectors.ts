@@ -16,7 +16,7 @@
  * @see SOURCE: {@link https://raw.githubusercontent.com/emilbayes/blake2b/1f63e02/test-vectors.json}
  */
 
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 
 export interface Blake2bTestVector {
     outlen: u53;

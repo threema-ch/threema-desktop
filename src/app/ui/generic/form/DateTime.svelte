@@ -2,7 +2,7 @@
   import {globals} from '~/app/globals';
   import {formatDateLocalized} from '~/app/ui/generic/form';
   import {i18n as i18nStore} from '~/app/ui/i18n';
-  import {type I18nType} from '~/app/ui/i18n-types';
+  import type {I18nType} from '~/app/ui/i18n-types';
 
   const systemTime = globals.unwrap().systemTime;
 

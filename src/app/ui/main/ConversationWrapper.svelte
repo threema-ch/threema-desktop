@@ -1,18 +1,18 @@
 <script lang="ts">
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {i18n} from '~/app/ui/i18n';
-  import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
   import Welcome from '~/app/ui/main/Welcome.svelte';
+  import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {type DbReceiverLookup} from '~/common/db';
-  import {type AnyReceiverStore} from '~/common/model';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {
-    type ConversationViewModel,
-    type IConversationViewModelController,
-    type SendMessageEventDetail,
+  import type {DbReceiverLookup} from '~/common/db';
+  import type {AnyReceiverStore} from '~/common/model';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {
+    ConversationViewModel,
+    IConversationViewModelController,
+    SendMessageEventDetail,
   } from '~/common/viewmodel/conversation';
 
   export let services: AppServices;

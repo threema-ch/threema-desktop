@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type PropertiesMarked} from '~/common/utils/endpoint';
+import type {PropertiesMarked} from '~/common/utils/endpoint';
 import {ReadableStore, WritableStore} from '~/common/utils/store';
 import {LocalSetDerivedSetStore} from '~/common/utils/store/set-store';
 

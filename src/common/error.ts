@@ -1,5 +1,5 @@
 import {TransferTag} from '~/common/enum';
-import {type FileStorageErrorType} from '~/common/file-storage';
+import type {FileStorageErrorType} from '~/common/file-storage';
 import {ensureError} from '~/common/utils/assert';
 import {
     type RegisteredErrorTransferHandler,
@@ -7,6 +7,7 @@ import {
     registerErrorTransferHandler,
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
+
 /**
  * Recursively extract the error message, including the message of the error cause.
  */

@@ -1,8 +1,8 @@
-import {type OutboundAudioMessage} from '~/common/model/types/message/audio';
-import {type OutboundFileMessage} from '~/common/model/types/message/file';
-import {type OutboundImageMessage} from '~/common/model/types/message/image';
-import {type OutboundVideoMessage} from '~/common/model/types/message/video';
-import {type u53} from '~/common/types';
+import type {OutboundAudioMessage} from '~/common/model/types/message/audio';
+import type {OutboundFileMessage} from '~/common/model/types/message/file';
+import type {OutboundImageMessage} from '~/common/model/types/message/image';
+import type {OutboundVideoMessage} from '~/common/model/types/message/video';
+import type {u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {filterUndefinedProperties} from '~/common/utils/object';

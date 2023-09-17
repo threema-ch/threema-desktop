@@ -2,16 +2,16 @@ import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromGroup,
 } from '~/app/ui/generic/receiver';
-import {type DbReceiverLookup} from '~/common/db';
+import type {DbReceiverLookup} from '~/common/db';
 import {GroupUserState, ReceiverType} from '~/common/enum';
-import {type Contact, type Group, type ProfilePicture, type RemoteModelFor} from '~/common/model';
-import {type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString} from '~/common/network/types';
-import {type Remote} from '~/common/utils/endpoint';
+import type {Contact, Group, ProfilePicture, RemoteModelFor} from '~/common/model';
+import type {RemoteModelStore} from '~/common/model/utils/model-store';
+import type {IdentityString} from '~/common/network/types';
+import type {Remote} from '~/common/utils/endpoint';
 import {DeprecatedDerivedStore, type IQueryableStore} from '~/common/utils/store';
-import {type RemoteSetStore} from '~/common/utils/store/set-store';
-import {type GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
-import {type GroupData} from '~/common/viewmodel/types';
+import type {RemoteSetStore} from '~/common/utils/store/set-store';
+import type {GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
+import type {GroupData} from '~/common/viewmodel/types';
 
 /**
  * Sort group members by display name. Creator will always be shown as first member.

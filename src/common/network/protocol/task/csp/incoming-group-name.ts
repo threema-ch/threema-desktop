@@ -1,21 +1,18 @@
 /**
  * Incoming group name task.
  */
-import {type Logger} from '~/common/logging';
-import {type Contact, type ContactInit} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {Contact, ContactInit} from '~/common/model';
 import {groupDebugString} from '~/common/model/group';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type ServicesForTasks,
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {commonGroupReceiveSteps} from '~/common/network/protocol/task/common/group-helpers';
-import {
-    type GroupCreatorContainer,
-    type GroupName,
-} from '~/common/network/structbuf/validate/csp/e2e';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {GroupCreatorContainer, GroupName} from '~/common/network/structbuf/validate/csp/e2e';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**

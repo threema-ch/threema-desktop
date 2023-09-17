@@ -5,20 +5,22 @@
  * TODO(DESK-683): Invest the time to clean this up properly
  */
 
+// Note: Not listed as a dependency because this is tied to vite and we take whatever we get here.
+// eslint-disable-next-line import/no-extraneous-dependencies
 import * as acorn from 'acorn';
 import debug from 'debug';
 import * as esModuleLexer from 'es-module-lexer';
-import {
-    type ImportDefaultSpecifier,
-    type ImportNamespaceSpecifier,
-    type ImportSpecifier,
-    type Program,
+import type {
+    ImportDefaultSpecifier,
+    ImportNamespaceSpecifier,
+    ImportSpecifier,
+    Program,
 } from 'estree';
 import MagicString from 'magic-string';
-import {type TransformResult} from 'rollup';
-import {type Plugin} from 'vite';
+import type {TransformResult} from 'rollup';
+import type {Plugin} from 'vite';
 
-import {type u53} from '../../src/common/types';
+import type {u53} from '../../src/common/types';
 import {assert, unwrap} from '../../src/common/utils/assert';
 
 const log = debug('vite-plugin-cjs-externals');

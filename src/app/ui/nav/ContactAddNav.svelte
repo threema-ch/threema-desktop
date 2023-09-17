@@ -7,13 +7,13 @@
   import {globals} from '~/app/globals';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import HiddenSubmit from '~/app/ui/generic/form/HiddenSubmit.svelte';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
   import {AcquaintanceLevel, ActivityState} from '~/common/enum';
-  import {type ValidIdentityData} from '~/common/network/protocol/directory';
+  import type {ValidIdentityData} from '~/common/network/protocol/directory';
   import {isIdentityString} from '~/common/network/types';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.contact-add-nav');

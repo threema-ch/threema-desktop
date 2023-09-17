@@ -1,12 +1,12 @@
 import {expect} from 'chai';
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {GroupUserState, GroupUserStateUtils} from '~/common/enum';
-import {type Contact, type ContactInit} from '~/common/model';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {Contact, ContactInit} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {IncomingGroupSyncRequestTask} from '~/common/network/protocol/task/csp/incoming-group-sync-request';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
-import {type GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
+import type {GroupCreatorContainer} from '~/common/network/structbuf/validate/csp/e2e';
 import {
     ensureIdentityString,
     type GroupId,

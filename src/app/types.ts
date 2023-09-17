@@ -3,14 +3,14 @@
  *
  * Note: For types shared across the entire project, src/common/types.ts should be used instead.
  */
-import {type Router} from '~/app/routing/router';
-import {type Config} from '~/common/config';
-import {type CryptoBackend} from '~/common/crypto';
-import {type BackendController} from '~/common/dom/backend/controller';
-import {type LocalStorageController} from '~/common/dom/ui/local-storage';
-import {type LoggerFactory} from '~/common/logging';
-import {type SystemDialogService} from '~/common/system-dialog';
-import {type GlobalTimer} from '~/common/utils/timer';
+import type {Router} from '~/app/routing/router';
+import type {Config} from '~/common/config';
+import type {CryptoBackend} from '~/common/crypto';
+import type {BackendController} from '~/common/dom/backend/controller';
+import type {LocalStorageController} from '~/common/dom/ui/local-storage';
+import type {LoggerFactory} from '~/common/logging';
+import type {SystemDialogService} from '~/common/system-dialog';
+import type {GlobalTimer} from '~/common/utils/timer';
 
 /**
  * Container for available services on the app and on the root panels.

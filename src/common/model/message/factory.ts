@@ -1,21 +1,21 @@
-import {type DbMessageCommon, type DbMessageFor} from '~/common/db';
-import {type MessageDirection, type MessageType} from '~/common/enum';
-import {
-    type AnyMessageModelStore,
-    type Contact,
-    type DirectedMessageFor,
-    type ServicesForModel,
+import type {DbMessageCommon, DbMessageFor} from '~/common/db';
+import type {MessageDirection, MessageType} from '~/common/enum';
+import type {
+    AnyMessageModelStore,
+    Contact,
+    DirectedMessageFor,
+    ServicesForModel,
 } from '~/common/model';
-import {type MessageFactory} from '~/common/model/message';
+import type {MessageFactory} from '~/common/model/message';
 import {createAudioMessage, getAudioMessageModelStore} from '~/common/model/message/audio-message';
-import {type NO_SENDER} from '~/common/model/message/common';
+import type {NO_SENDER} from '~/common/model/message/common';
 import {createFileMessage, getFileMessageModelStore} from '~/common/model/message/file-message';
 import {createImageMessage, getImageMessageModelStore} from '~/common/model/message/image-message';
 import {createTextMessage, getTextMessageModelStore} from '~/common/model/message/text-message';
 import {createVideoMessage, getVideoMessageModelStore} from '~/common/model/message/video-message';
-import {type ConversationControllerHandle} from '~/common/model/types/conversation';
-import {type BaseMessageView} from '~/common/model/types/message';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {ConversationControllerHandle} from '~/common/model/types/conversation';
+import type {BaseMessageView} from '~/common/model/types/message';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {unreachable} from '~/common/utils/assert';
 
 /**

@@ -1,44 +1,41 @@
-import {
-    type DbContactUid,
-    type DbCreate,
-    type DbCreateConversationMixin,
-    type DbGroup,
-    type DbGroupUid,
-    type DbReceiverLookup,
+import type {
+    DbContactUid,
+    DbCreate,
+    DbCreateConversationMixin,
+    DbGroup,
+    DbGroupUid,
+    DbReceiverLookup,
 } from '~/common/db';
 import {Existence, GroupUserState, ReceiverType, TriggerSource} from '~/common/enum';
 import {getGroupTag, type Logger} from '~/common/logging';
 import * as contact from '~/common/model/contact';
-import {type ConversationModelStore} from '~/common/model/conversation';
+import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
-import {type GroupProfilePictureFields} from '~/common/model/profile-picture';
-import {type ServicesForModel} from '~/common/model/types/common';
-import {type Contact} from '~/common/model/types/contact';
-import {
-    type Conversation,
-    type ConversationUpdateFromToSync,
-} from '~/common/model/types/conversation';
-import {
-    type Group,
-    type GroupController,
-    type GroupControllerHandle,
-    type GroupInit,
-    type GroupMemberController,
-    type GroupRepository,
-    type GroupUpdate,
-    type GroupUpdateFromLocal,
-    type GroupUpdateFromToSync,
-    type GroupView,
+import type {GroupProfilePictureFields} from '~/common/model/profile-picture';
+import type {ServicesForModel} from '~/common/model/types/common';
+import type {Contact} from '~/common/model/types/contact';
+import type {Conversation, ConversationUpdateFromToSync} from '~/common/model/types/conversation';
+import type {
+    Group,
+    GroupController,
+    GroupControllerHandle,
+    GroupInit,
+    GroupMemberController,
+    GroupRepository,
+    GroupUpdate,
+    GroupUpdateFromLocal,
+    GroupUpdateFromToSync,
+    GroupView,
 } from '~/common/model/types/group';
-import {type ProfilePicture} from '~/common/model/types/profile-picture';
+import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-group-sync-transaction';
-import {type GroupId, type IdentityString} from '~/common/network/types';
+import type {GroupId, IdentityString} from '~/common/network/types';
 import {getNotificationTagForGroup, type NotificationTag} from '~/common/notification';
-import {type Mutable, type u53} from '~/common/types';
+import type {Mutable, u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';

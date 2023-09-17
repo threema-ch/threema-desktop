@@ -1,5 +1,5 @@
 import {TransferTag} from '~/common/enum';
-import {type Logger, type LogPrefix} from '~/common/logging';
+import type {Logger, LogPrefix} from '~/common/logging';
 import {ensureU53, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {
@@ -18,7 +18,7 @@ import {
     TRANSFERRED_MARKER,
     type WireValue,
 } from '~/common/utils/endpoint';
-import {type AbortRaiser} from '~/common/utils/signal';
+import type {AbortRaiser} from '~/common/utils/signal';
 
 /**
  * Symbol to mark a remote as a store.

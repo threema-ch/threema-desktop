@@ -1,6 +1,6 @@
 import * as v from '@badrap/valita';
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {wrapRawDatabaseKey} from '~/common/db';
 import {TransferTag} from '~/common/enum';

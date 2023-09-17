@@ -1,4 +1,4 @@
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {eternalPromise} from '~/common/utils/promise';
 
 /**

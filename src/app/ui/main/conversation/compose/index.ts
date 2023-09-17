@@ -1,9 +1,9 @@
-import {type i18n as i18nStore} from '~/app/ui/i18n';
+import type {i18n as i18nStore} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {unreachable} from '~/common/utils/assert';
-import {type Remote} from '~/common/utils/endpoint';
-import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+import type {Remote} from '~/common/utils/endpoint';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
 /**
  * Compose area data.

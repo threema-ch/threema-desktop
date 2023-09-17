@@ -1,4 +1,4 @@
-import {type CloseInfo} from '~/common/network';
+import type {CloseInfo} from '~/common/network';
 
 export interface MediatorPipe {
     readonly readable: Promise<void>;

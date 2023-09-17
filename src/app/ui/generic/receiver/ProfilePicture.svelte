@@ -2,9 +2,9 @@
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import ProfilePictureOverlay from '~/app/ui/generic/profile-picture/ProfilePictureOverlay.svelte';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
-  import {type ProfilePictureView} from '~/common/model';
-  import {type u53} from '~/common/types';
-  import {type ReceiverBadgeType} from '~/common/viewmodel/types';
+  import type {ProfilePictureView} from '~/common/model';
+  import type {u53} from '~/common/types';
+  import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 
   export let profilePicture: ProfilePictureView;
 

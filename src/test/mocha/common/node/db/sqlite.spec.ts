@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {NOOP_LOGGER} from '~/common/logging';
-import {type SqliteDatabaseBackend} from '~/common/node/db/sqlite';
+import type {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {assert} from '~/common/utils/assert';
 import {initSqliteBackend} from '~/test/mocha/common/backend-mocks';
 import {backendTests} from '~/test/mocha/common/db-backend-tests';

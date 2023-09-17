@@ -1,17 +1,17 @@
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {groupDebugString} from '~/common/model/group';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
-import {
-    type ComposableTask,
-    type PassiveTaskCodecHandle,
-    type ServicesForTasks,
+import type {
+    ComposableTask,
+    PassiveTaskCodecHandle,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
-import {
-    type GroupCreatorContainer,
-    type SetProfilePicture,
+import type {
+    GroupCreatorContainer,
+    SetProfilePicture,
 } from '~/common/network/structbuf/validate/csp/e2e';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**

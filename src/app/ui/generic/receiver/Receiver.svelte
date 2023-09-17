@@ -2,7 +2,7 @@
   import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
-  import {type Receiver} from '~/app/ui/generic/receiver';
+  import type {Receiver} from '~/app/ui/generic/receiver';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';

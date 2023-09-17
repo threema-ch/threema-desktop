@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type CompressionMethod, type Compressor} from '~/common/compressor';
+import type {CompressionMethod, Compressor} from '~/common/compressor';
 
 import {expectRejectedWith} from './utils';
 

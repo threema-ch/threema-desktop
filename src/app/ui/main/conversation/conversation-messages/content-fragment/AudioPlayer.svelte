@@ -22,12 +22,12 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import LinearProgress from '#3sc/components/blocks/LinearProgress/LinearProgress.svelte';
   import {globals} from '~/app/globals';
-  import {type f64} from '~/common/types';
+  import type {f64} from '~/common/types';
   import {assert, ensureError} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
+  import type {Remote} from '~/common/utils/endpoint';
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-  import {type ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
-  import {type Message, type MessageBody} from '~/common/viewmodel/types';
+  import type {ConversationMessageViewModelController} from '~/common/viewmodel/conversation-message';
+  import type {Message, MessageBody} from '~/common/viewmodel/types';
 
   const log = globals
     .unwrap()

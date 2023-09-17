@@ -1,4 +1,4 @@
-import {type u32, type u53, type u64} from '~/common/types';
+import type {u32, u53, u64} from '~/common/types';
 
 /**
  * A generic 64-bit unsigned sequence number. Prevents wrapping.

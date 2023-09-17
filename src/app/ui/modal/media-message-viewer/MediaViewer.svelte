@@ -6,11 +6,12 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {globals} from '~/app/globals';
-  import {type VirtualRect} from '~/app/ui/generic/popover';
+  import type {VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type I18nType} from '~/app/ui/i18n-types';
+  import type {I18nType} from '~/app/ui/i18n-types';
   import {copyImageBytes} from '~/app/ui/main/conversation/conversation-messages';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {
     fetchMedia,
     type MediaState,
@@ -20,14 +21,13 @@
   import ImagePreview from '~/app/ui/modal/media-message-viewer/ImagePreview.svelte';
   import MediaViewerContextMenu from '~/app/ui/modal/media-message-viewer/MediaViewerContextMenu.svelte';
   import VideoPreview from '~/app/ui/modal/media-message-viewer/VideoPreview.svelte';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {nodeContainsTarget} from '~/app/ui/utils/node';
   import {ensureError, unreachable} from '~/common/utils/assert';
-  import {type Remote, type RemoteProxy} from '~/common/utils/endpoint';
+  import type {Remote, RemoteProxy} from '~/common/utils/endpoint';
   import {GlobalTimer} from '~/common/utils/timer';
-  import {
-    type ConversationMessageViewModelBundle,
-    type ConversationMessageViewModelController,
+  import type {
+    ConversationMessageViewModelBundle,
+    ConversationMessageViewModelController,
   } from '~/common/viewmodel/conversation-message';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.modal.media-message-viewer`);

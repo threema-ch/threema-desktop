@@ -5,10 +5,11 @@ import * as process from 'node:process';
 import {pathToFileURL, URL} from 'node:url';
 
 import * as v from '@badrap/valita';
+import type {MenuItemConstructorOptions} from 'electron';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import * as electron from 'electron';
-import {type MenuItemConstructorOptions} from 'electron';
 
-import {type ErrorDetails, type SystemInfo} from '~/common/electron-ipc';
+import type {ErrorDetails, SystemInfo} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
 import {extractErrorTraceback} from '~/common/error';
 import {
@@ -20,7 +21,7 @@ import {
 } from '~/common/logging';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {ensureError} from '~/common/utils/assert';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';

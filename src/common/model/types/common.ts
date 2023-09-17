@@ -1,10 +1,10 @@
-import {type ServicesForBackend} from '~/common/backend';
-import {type DatabaseBackend} from '~/common/db';
-import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
-import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
-import {type TaskManager} from '~/common/network/protocol/task/manager';
-import {type ProxyMarked, type RemoteProxy} from '~/common/utils/endpoint';
+import type {ServicesForBackend} from '~/common/backend';
+import type {DatabaseBackend} from '~/common/db';
+import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import type {TaskManager} from '~/common/network/protocol/task/manager';
+import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
 
 /**
  * Services required by the model backend.

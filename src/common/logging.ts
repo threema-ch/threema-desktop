@@ -1,5 +1,5 @@
-import {type ElectronIpc} from '~/common/electron-ipc';
-import {type GroupId, type IdentityString} from '~/common/network/types';
+import type {ElectronIpc} from '~/common/electron-ipc';
+import type {GroupId, IdentityString} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**

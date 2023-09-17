@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {type SvelteComponentDev} from 'svelte/internal';
+  import type {SvelteComponentDev} from 'svelte/internal';
 
   import {globals} from '~/app/globals';
-  import {type LinkingParams, type LinkingWizardState} from '~/app/ui/linking';
+  import type {LinkingParams, LinkingWizardState} from '~/app/ui/linking';
   import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
   import Error from '~/app/ui/linking/steps/Error.svelte';
   import Scan from '~/app/ui/linking/steps/Scan.svelte';
   import SetPassword from '~/app/ui/linking/steps/SetPassword.svelte';
   import SuccessLinked from '~/app/ui/linking/steps/SuccessLinked.svelte';
   import Sync from '~/app/ui/linking/steps/Sync.svelte';
-  import {type LinkingState} from '~/common/dom/backend';
+  import type {LinkingState} from '~/common/dom/backend';
   import {unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking-wizard`);

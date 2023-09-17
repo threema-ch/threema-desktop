@@ -1,5 +1,5 @@
-import {type ServicesForBackend, type ServicesThatRequireIdentity} from '~/common/backend';
-import {type Compressor} from '~/common/compressor';
+import type {ServicesForBackend, ServicesThatRequireIdentity} from '~/common/backend';
+import type {Compressor} from '~/common/compressor';
 import {NACL_CONSTANTS, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory, SharedBoxFactory} from '~/common/crypto/box';
 import {NonceService} from '~/common/crypto/nonce';
@@ -23,8 +23,8 @@ import {
     type RendezvousProtocolSetup,
 } from '~/common/dom/network/protocol/rendezvous';
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
-import {type WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
-import {type SafeCredentials} from '~/common/dom/safe';
+import type {WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
+import type {SafeCredentials} from '~/common/dom/safe';
 import {type BrowserInfo, getBrowserInfo} from '~/common/dom/utils/browser';
 import {
     CloseCode,
@@ -44,7 +44,7 @@ import {
     type RendezvousCloseCause,
     RendezvousCloseError,
 } from '~/common/error';
-import {type FileStorage, type ServicesForFileStorageFactory} from '~/common/file-storage';
+import type {FileStorage, ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
     type KeyStorage,
     type KeyStorageContents,
@@ -52,9 +52,9 @@ import {
     type ServicesForKeyStorageFactory,
 } from '~/common/key-storage';
 import {createLoggerStyle, type Logger, type LoggerFactory} from '~/common/logging';
-import {type Repositories} from '~/common/model';
+import type {Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
-import {type CloseInfo} from '~/common/network';
+import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
 import {
     type DisplayPacket,
@@ -83,8 +83,8 @@ import {
     wrapRawDeviceGroupKey,
 } from '~/common/network/types/keys';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
-import {type SystemDialogService} from '~/common/system-dialog';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {SystemDialogService} from '~/common/system-dialog';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {
     assert,
     assertError,

@@ -6,22 +6,22 @@ import {
     NotificationSoundPolicy,
     ReceiverType,
 } from '~/common/enum';
-import {
-    type AnyReceiver,
-    type ContactView,
-    type GroupView,
-    type ProfilePictureView,
-    type RemoteModelFor,
+import type {
+    AnyReceiver,
+    ContactView,
+    GroupView,
+    ProfilePictureView,
+    RemoteModelFor,
 } from '~/common/model';
-import {type IdentityString} from '~/common/network/types';
-import {type u53} from '~/common/types';
+import type {IdentityString} from '~/common/network/types';
+import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {
-    type VerificationLevel,
-    type VerificationLevelColors,
+import type {
+    VerificationLevel,
+    VerificationLevelColors,
 } from '~/common/viewmodel/contact-list-item';
-import {type ReceiverBadgeType} from '~/common/viewmodel/types';
-import {type Mention} from '~/common/viewmodel/utils/mentions';
+import type {ReceiverBadgeType} from '~/common/viewmodel/types';
+import type {Mention} from '~/common/viewmodel/utils/mentions';
 
 export interface ReceiverProfilePicture {
     readonly profilePicture: ProfilePictureView;

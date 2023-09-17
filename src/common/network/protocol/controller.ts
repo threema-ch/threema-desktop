@@ -1,32 +1,32 @@
-import {type ServicesForBackend} from '~/common/backend';
-import {type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
+import type {ServicesForBackend} from '~/common/backend';
+import type {DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {ProtocolError} from '~/common/error';
-import {type CloseInfo} from '~/common/network';
+import type {CloseInfo} from '~/common/network';
 import type * as protobuf from '~/common/network/protobuf';
-import {type ConnectedTaskManager} from '~/common/network/protocol/task/manager';
-import {
-    type ClientCookie,
-    type ClientSequenceNumber,
-    type CspDeviceId,
-    type CspPayloadBox,
-    type D2mChallengeBox,
-    type D2mDeviceId,
-    type IdentityBytes,
-    type ServerCookie,
-    type ServerSequenceNumber,
+import type {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
+import type {
+    ClientCookie,
+    ClientSequenceNumber,
+    CspDeviceId,
+    CspPayloadBox,
+    D2mChallengeBox,
+    D2mDeviceId,
+    IdentityBytes,
+    ServerCookie,
+    ServerSequenceNumber,
 } from '~/common/network/types';
-import {type ClientKey, type TemporaryClientKey} from '~/common/network/types/keys';
-import {type u32, type u53} from '~/common/types';
+import type {ClientKey, TemporaryClientKey} from '~/common/network/types/keys';
+import type {u32, u53} from '~/common/types';
 import {Delayed} from '~/common/utils/delayed';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {SequenceNumberU64} from '~/common/utils/sequence-number';
-import {type AbortListener} from '~/common/utils/signal';
+import type {AbortListener} from '~/common/utils/signal';
 import {MonotonicEnumStore} from '~/common/utils/store';
 
-import {type Layer2Controller} from './layer-2-codec';
-import {type Layer3Controller} from './layer-3-codec';
-import {type Layer4Controller} from './layer-4-codec';
-import {type Layer5Controller} from './layer-5-codec';
+import type {Layer2Controller} from './layer-2-codec';
+import type {Layer3Controller} from './layer-3-codec';
+import type {Layer4Controller} from './layer-4-codec';
+import type {Layer5Controller} from './layer-5-codec';
 import {CspAuthState, D2mAuthState} from './state';
 
 export interface ConnectionHandle {

@@ -16,6 +16,7 @@
    @typescript-eslint/consistent-type-definitions,
    @typescript-eslint/prefer-function-type,
    @typescript-eslint/triple-slash-reference,
+   import/no-default-export,
 */
 /// <reference path="../vite-client.d.ts" />
 
@@ -70,9 +71,3 @@ declare module '*.wasm?init' {
     const initWasm: (options?: WebAssembly.Imports) => Promise<WebAssembly.Instance>;
     export default initWasm;
 }
-// eslint-disable-next-line jsdoc/no-bad-blocks
-/* eslint-enable
-   capitalized-comments,
-   @typescript-eslint/consistent-type-definitions,
-   @typescript-eslint/triple-slash-reference
-*/

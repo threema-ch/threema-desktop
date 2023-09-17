@@ -1,10 +1,4 @@
-import {
-    type DbAnyMessage,
-    type DbConversation,
-    type DbMessageCommon,
-    type DbMessageFor,
-    type UidOf,
-} from '~/common/db';
+import type {DbAnyMessage, DbConversation, DbMessageCommon, DbMessageFor, UidOf} from '~/common/db';
 import {
     CspE2eDeliveryReceiptStatus,
     Existence,
@@ -14,38 +8,38 @@ import {
     TriggerSource,
 } from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';
-import {type Logger} from '~/common/logging';
-import {
-    type AnyMessageModelStore,
-    type Contact,
-    type DirectedMessageFor,
-    type ServicesForModel,
+import type {Logger} from '~/common/logging';
+import type {
+    AnyMessageModelStore,
+    Contact,
+    DirectedMessageFor,
+    ServicesForModel,
 } from '~/common/model';
 import * as contact from '~/common/model/contact';
 import {NO_SENDER} from '~/common/model/message/common';
-import {type GuardedStoreHandle} from '~/common/model/types/common';
-import {type ConversationControllerHandle} from '~/common/model/types/conversation';
-import {
-    type BaseMessageView,
-    type CommonBaseMessageView,
-    type InboundBaseMessageController,
-    type InboundBaseMessageView,
-    type OutboundBaseMessageController,
-    type OutboundBaseMessageView,
-    type SetOfAnyLocalMessageModelStore,
+import type {GuardedStoreHandle} from '~/common/model/types/common';
+import type {ConversationControllerHandle} from '~/common/model/types/conversation';
+import type {
+    BaseMessageView,
+    CommonBaseMessageView,
+    InboundBaseMessageController,
+    InboundBaseMessageView,
+    OutboundBaseMessageController,
+    OutboundBaseMessageView,
+    SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type ActiveTaskCodecHandle} from '~/common/network/protocol/task';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
-import {type MessageId} from '~/common/network/types';
+import type {MessageId} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {bigintSortAsc} from '~/common/utils/number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
-import {type MessageStatus} from '~/common/viewmodel/types';
+import type {MessageStatus} from '~/common/viewmodel/types';
 
 /**
  * Factory for creating stores and database entries for concrete message types.

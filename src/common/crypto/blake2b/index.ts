@@ -5,7 +5,7 @@ import {
     PERSONALBYTES,
     SALTBYTES,
 } from '~/common/crypto/blake2b/implementation';
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {UTF8} from '~/common/utils/codec';
 
 /**

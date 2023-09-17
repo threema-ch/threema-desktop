@@ -1,4 +1,4 @@
-import {type Primitive, type u53} from '~/common/types';
+import type {Primitive, u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 
 /**

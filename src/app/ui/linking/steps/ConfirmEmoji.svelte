@@ -1,6 +1,6 @@
 <script lang="ts">
   import {i18n} from '~/app/ui/i18n';
-  import {type LinkingWizardStateConfirmEmoji} from '~/app/ui/linking';
+  import type {LinkingWizardStateConfirmEmoji} from '~/app/ui/linking';
   import LinkingEmojiLoader from '~/app/ui/linking/LinkingEmojiLoader.svelte';
   import Step from '~/app/ui/linking/Step.svelte';
   import {unwrap} from '~/common/utils/assert';

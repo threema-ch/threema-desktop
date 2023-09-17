@@ -1,17 +1,15 @@
-/* eslint '@typescript-eslint/no-misused-promises': 0 */
 // SOURCE: https://github.com/i18next/i18next/issues/1901
 
-import {default as i18next, type i18n as I18nextType} from 'i18next';
+import i18next, {type i18n as I18nextType} from 'i18next';
 import ICU from 'i18next-icu';
 
-import {type I18nType} from '~/app/ui/i18n-types';
-import {type Logger, type LoggerFactory, type LogRecordFn} from '~/common/logging';
-import {type StrictPartial, type u53} from '~/common/types';
+import type {I18nType} from '~/app/ui/i18n-types';
+import type {Logger, LoggerFactory, LogRecordFn} from '~/common/logging';
+import type {StrictPartial, u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-// Import all translation files
 import translationDeRendezvousEmojiJson from '~/translations/de/rendezvous-emoji.json';
 import translationDeMainJson from '~/translations/de/translation.json';
 import translationEnRendezvousEmojiJson from '~/translations/en/rendezvous-emoji.json';

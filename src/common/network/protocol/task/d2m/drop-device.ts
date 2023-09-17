@@ -7,7 +7,7 @@ import {
     type ActiveTaskCodecHandle,
     type ActiveTaskSymbol,
 } from '~/common/network/protocol/task';
-import {type D2mDeviceId} from '~/common/network/types';
+import type {D2mDeviceId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 import {intoU64, intoUnsignedLong} from '~/common/utils/number';
 

@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {assertRoute} from '~/app/routing';
 import {Router, type RouterEnvironment, type RouterState} from '~/app/routing/router';
 import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {type Logger, NOOP_LOGGER} from '~/common/logging';
 

@@ -1,14 +1,11 @@
-import {type DbContactUid} from '~/common/db';
-import {type Group, type GroupInit} from '~/common/model';
+import type {DbContactUid} from '~/common/db';
+import type {Group, GroupInit} from '~/common/model';
 import * as protobuf from '~/common/network/protobuf';
-import {type ActiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {addGroupContacts} from '~/common/network/protocol/task/common/group-helpers';
 import {GroupSetupTaskBase} from '~/common/network/protocol/task/common/group-setup';
-import {
-    type GroupCreatorContainer,
-    type GroupSetup,
-} from '~/common/network/structbuf/validate/csp/e2e';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {GroupCreatorContainer, GroupSetup} from '~/common/network/structbuf/validate/csp/e2e';
+import type {IdentityString, MessageId} from '~/common/network/types';
 
 /**
  * Receive and process incoming group setup messages.

@@ -3,9 +3,9 @@
 
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import {type VirtualRect} from '~/app/ui/generic/popover';
+  import type {VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import {i18n} from '~/app/ui/i18n';
@@ -15,15 +15,15 @@
   import ContactListContextMenu from '~/app/ui/nav/receiver/ContactListContextMenu.svelte';
   import ContactListItem from '~/app/ui/nav/receiver/ContactListItem.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {type DbContactUid} from '~/common/db';
+  import type {DbContactUid} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ReceiverType, type WorkVerificationLevel} from '~/common/enum';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type SetValue} from '~/common/utils/set';
-  import {type IQueryableStoreValue} from '~/common/utils/store';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {SetValue} from '~/common/utils/set';
+  import type {IQueryableStoreValue} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
   import {localeSort} from '~/common/utils/string';
-  import {type ContactListItemSetStore} from '~/common/viewmodel/contact-list-item';
+  import type {ContactListItemSetStore} from '~/common/viewmodel/contact-list-item';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.contact-list');
 

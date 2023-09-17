@@ -1,14 +1,14 @@
-import {type CryptoBackend} from '~/common/crypto';
+import type {CryptoBackend} from '~/common/crypto';
 import {randomPkcs7PaddingLength} from '~/common/crypto/random';
-import {type LayerEncoder} from '~/common/network/protocol';
-import {
-    type Bare,
-    type ByteLengthEncoder,
-    type EncoderPick,
-    type OpaquePick,
-    type u8,
-    type u53,
-    type WeakOpaque,
+import type {LayerEncoder} from '~/common/network/protocol';
+import type {
+    Bare,
+    ByteLengthEncoder,
+    EncoderPick,
+    OpaquePick,
+    u8,
+    u53,
+    WeakOpaque,
 } from '~/common/types';
 import {bytePadPkcs7} from '~/common/utils/byte';
 

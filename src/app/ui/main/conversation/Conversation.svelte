@@ -1,39 +1,39 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy} from 'svelte';
-  import {type Writable} from 'svelte/store';
+  import type {Writable} from 'svelte/store';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {type FileResult} from '#3sc/utils/filelist';
+  import type {FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices, type SvelteAction} from '~/app/types';
+  import type {AppServices, SvelteAction} from '~/app/types';
   import {isDisabledReceiver, isInactiveContact} from '~/app/ui/generic/receiver';
   import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts, conversationListEvent} from '~/app/ui/main/conversation';
-  import {type ComposeData} from '~/app/ui/main/conversation/compose';
+  import type {ComposeData} from '~/app/ui/main/conversation/compose';
   import ComposeHandler from '~/app/ui/main/conversation/compose/ComposeHandler.svelte';
   import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
   import MessageBody from '~/app/ui/main/conversation/conversation-messages/MessageBody.svelte';
   import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {type DbReceiverLookup} from '~/common/db';
+  import type {DbReceiverLookup} from '~/common/db';
   import {display, layout} from '~/common/dom/ui/state';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationCategory, ReceiverType} from '~/common/enum';
-  import {type AnyReceiverStore, type Conversation} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
-  import {type MessageId} from '~/common/network/types';
+  import type {AnyReceiverStore, Conversation} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {MessageId} from '~/common/network/types';
   import {unreachable, unwrap} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
+  import type {Remote} from '~/common/utils/endpoint';
   import {WritableStore} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
-  import {
-    type ConversationViewModel,
-    type InnerConversationViewModelStore,
-    type SendMessageEventDetail,
+  import type {
+    ConversationViewModel,
+    InnerConversationViewModelStore,
+    SendMessageEventDetail,
   } from '~/common/viewmodel/conversation';
-  import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+  import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation');
 

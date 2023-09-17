@@ -2,10 +2,10 @@ import * as path from 'node:path';
 import * as process from 'node:process';
 
 import * as v from '@badrap/valita';
-import {type Database} from 'better-sqlcipher';
 
+import type {Database} from 'better-sqlcipher';
 import {MigrationError} from '~/common/error';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {ensureU53, ensureU64, type u53, u64ToU53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 

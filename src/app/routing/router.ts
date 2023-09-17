@@ -1,7 +1,7 @@
 import {type AnyRouteInstance, ROUTE_DEFINITIONS} from '~/app/routing/routes';
-import {type DbReceiverLookup} from '~/common/db';
+import type {DbReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {assert} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
 import {split} from '~/common/utils/string';

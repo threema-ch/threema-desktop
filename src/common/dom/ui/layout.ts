@@ -1,11 +1,11 @@
-import {type RouterState} from '~/app/routing/router';
+import type {RouterState} from '~/app/routing/router';
 import {unreachable} from '~/common/utils/assert';
-import {
-    type IQueryableStore,
-    type ISubscribableStore,
-    type IWritableStore,
-    type StoreUnsubscriber,
-    type WritableStore,
+import type {
+    IQueryableStore,
+    ISubscribableStore,
+    IWritableStore,
+    StoreUnsubscriber,
+    WritableStore,
 } from '~/common/utils/store';
 import {concentrate} from '~/common/utils/store/concentrator-store';
 

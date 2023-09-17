@@ -1,4 +1,4 @@
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {isSameMinute} from '~/common/utils/date';
 import {ReadableStore} from '~/common/utils/store';
 import {GlobalTimer} from '~/common/utils/timer';

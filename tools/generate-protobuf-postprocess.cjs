@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-const fs = require('fs');
+const fs = require('node:fs');
+
 const ts = require('typescript');
+
 const {
     traverse,
     createTypesImportNode,

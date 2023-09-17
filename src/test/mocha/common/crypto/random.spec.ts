@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 
-import {type CryptoBackend} from '~/common/crypto';
+import type {CryptoBackend} from '~/common/crypto';
 import {randomPkcs7PaddingLength} from '~/common/crypto/random';
-import {type u8} from '~/common/types';
+import type {u8} from '~/common/types';
 import {byteView} from '~/common/utils/byte';
 
 /**

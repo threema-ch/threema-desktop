@@ -4,11 +4,11 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type ContactTab} from '~/app/ui/nav';
+  import type {ContactTab} from '~/app/ui/nav';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import {contactListFilter} from '~/app/ui/nav/receiver';
   import ContactList from '~/app/ui/nav/receiver/ContactList.svelte';

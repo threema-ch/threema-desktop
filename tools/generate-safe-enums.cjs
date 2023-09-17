@@ -4,8 +4,10 @@
  *
  * Note: For editing this script, https://ts-ast-viewer.com/ is very handy.
  */
-const fs = require('fs');
+const fs = require('node:fs');
+
 const ts = require('typescript');
+
 const {getLeadingComments, createSource} = require('./generator-utils.cjs');
 
 const factory = ts.factory;

@@ -8,9 +8,9 @@
   import MessageContact from '~/app/ui/main/conversation/conversation-messages/MessageContact.svelte';
   import MessageSyncProvider from '~/app/ui/main/conversation/conversation-messages/MessageSyncProvider.svelte';
   import MediaViewer from '~/app/ui/modal/media-message-viewer/MediaViewer.svelte';
-  import {type AnyReceiverStore} from '~/common/model';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {type ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+  import type {AnyReceiverStore} from '~/common/model';
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
   /**
    * Bundle containing the viewModel and viewModelController.

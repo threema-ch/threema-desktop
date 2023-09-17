@@ -1,4 +1,4 @@
-import {type i53, type u53} from '~/common/types';
+import type {i53, u53} from '~/common/types';
 import {clamp} from '~/common/utils/number';
 import {WritableStore} from '~/common/utils/store';
 

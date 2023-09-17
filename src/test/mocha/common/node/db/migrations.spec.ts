@@ -1,9 +1,9 @@
-import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {expect} from 'chai';
 
+import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {type Logger, NOOP_LOGGER} from '~/common/logging';
 import {MigrationHelper} from '~/common/node/db/migrations';
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 
 // Should match the values in `migrations.ts`: If we (accidentally or on purpose) change the name of
 // a column in `migrations.ts` that will break existing apps with an existing database table.

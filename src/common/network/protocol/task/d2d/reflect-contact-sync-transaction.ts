@@ -1,5 +1,5 @@
 import {TransactionScope} from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {
     ACTIVE_TASK,
     type ActiveTask,

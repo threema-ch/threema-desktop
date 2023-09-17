@@ -1,18 +1,18 @@
 /**
  * Incoming group leave task.
  */
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {AcquaintanceLevel} from '~/common/enum';
-import {type Contact, type ContactInit, type Group} from '~/common/model';
+import type {Contact, ContactInit, Group} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type ActiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {
     addGroupContacts,
     sendGroupSyncRequest,
 } from '~/common/network/protocol/task/common/group-helpers';
 import {GroupLeaveTaskBase} from '~/common/network/protocol/task/common/group-leave';
-import {type GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
-import {type MessageId} from '~/common/network/types';
+import type {GroupMemberContainer} from '~/common/network/structbuf/validate/csp/e2e';
+import type {MessageId} from '~/common/network/types';
 import {assert, unwrap} from '~/common/utils/assert';
 
 /**

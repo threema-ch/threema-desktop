@@ -1,16 +1,16 @@
 import {CspE2eForwardSecurityType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Contact, type ContactInit} from '~/common/model';
+import type {Logger} from '~/common/logging';
+import type {Contact, ContactInit} from '~/common/model';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type ServicesForTasks,
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {randomMessageId} from '~/common/network/protocol/utils';
-import {type IdentityString, type MessageId} from '~/common/network/types';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import {intoUnsignedLong, u64ToHexLe} from '~/common/utils/number';
 
 import {OutgoingCspMessageTask} from './outgoing-csp-message';

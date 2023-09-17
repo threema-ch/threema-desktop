@@ -11,27 +11,21 @@
  * 3. comlink types depend on a DOM context which we don't have here.
  */
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {TransferTag} from '~/common/enum';
-import {type Logger, type LoggerFactory} from '~/common/logging';
-import {type LocalModelStore, type RemoteModelStore} from '~/common/model/utils/model-store';
-import {
-    type BareFromTag,
-    type i53,
-    type Primitive,
-    type u53,
-    type WeakOpaque,
-} from '~/common/types';
+import type {Logger, LoggerFactory} from '~/common/logging';
+import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+import type {BareFromTag, i53, Primitive, u53, WeakOpaque} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {AbortRaiser} from '~/common/utils/signal';
-import {type LocalStore, type RemoteStore} from '~/common/utils/store';
-import {
-    type ISetStore,
-    type LocalDerivedSetStore,
-    type LocalSetStore,
-    type RemoteSetStore,
+import type {LocalStore, RemoteStore} from '~/common/utils/store';
+import type {
+    ISetStore,
+    LocalDerivedSetStore,
+    LocalSetStore,
+    RemoteSetStore,
 } from '~/common/utils/store/set-store';
 
 /**

@@ -1,4 +1,4 @@
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 
 import {PASSIVE_TASK, type PassiveTask, type PassiveTaskSymbol, type ServicesForTasks} from '.';
 

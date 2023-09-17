@@ -1,24 +1,21 @@
-import {type ServicesForBackend} from '~/common/backend';
-import {type MediatorPipe} from '~/common/dom/network';
+import type {ServicesForBackend} from '~/common/backend';
+import type {MediatorPipe} from '~/common/dom/network';
 import {
     type BidirectionalStream,
     ReadableStream,
     TransformStream,
     WritableStream,
 } from '~/common/dom/streams';
-import {
-    type InboundL1Message,
-    type InboundL2Message,
-    type InboundL3Message,
-    type InboundL4Message,
-    type OutboundL2Message,
-    type OutboundL3Message,
-    type OutboundL4Message,
+import type {
+    InboundL1Message,
+    InboundL2Message,
+    InboundL3Message,
+    InboundL4Message,
+    OutboundL2Message,
+    OutboundL3Message,
+    OutboundL4Message,
 } from '~/common/network/protocol';
-import {
-    type RawCaptureHandlerPair,
-    type RawCaptureHandlers,
-} from '~/common/network/protocol/capture';
+import type {RawCaptureHandlerPair, RawCaptureHandlers} from '~/common/network/protocol/capture';
 import {Layer1Decoder, Layer1Encoder} from '~/common/network/protocol/layer-1-codec';
 import {type Layer2Controller, Layer2Decoder} from '~/common/network/protocol/layer-2-codec';
 import {
@@ -38,7 +35,7 @@ import {
 } from '~/common/network/protocol/layer-5-codec';
 import {CspAuthStateUtils, D2mAuthStateUtils} from '~/common/network/protocol/state';
 import {CodecEnqueuerHandle} from '~/common/utils/codec';
-import {type TimerCanceller} from '~/common/utils/timer';
+import type {TimerCanceller} from '~/common/utils/timer';
 
 /**
  * See `layer-1-codec.ts` for docs.

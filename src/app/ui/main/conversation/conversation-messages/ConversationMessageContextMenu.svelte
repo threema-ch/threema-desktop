@@ -6,9 +6,9 @@
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
   import MenuItemDivider from '#3sc/components/generic/Menu/MenuItemDivider.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
+  import type {ConversationMessageContextMenuEvent} from '~/app/ui/main/conversation/conversation-messages';
   import {MessageDirection, MessageReaction} from '~/common/enum';
-  import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
+  import type {AnyMessageBody, Message} from '~/common/viewmodel/types';
 
   interface OpenOptions {
     readonly showReactions: boolean;

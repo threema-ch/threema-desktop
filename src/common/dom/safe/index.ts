@@ -1,7 +1,7 @@
 import * as v from '@badrap/valita';
 import {syncScrypt} from 'scrypt-js';
 
-import {type ServicesForBackend} from '~/common/backend';
+import type {ServicesForBackend} from '~/common/backend';
 import {
     ensureEncryptedDataWithNonceAhead,
     NACL_CONSTANTS,
@@ -12,10 +12,10 @@ import {
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
 import {SafeError} from '~/common/error';
-import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
+import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {ensureIdentityString, ensureNickname, type IdentityString} from '~/common/network/types';
-import {type ReadonlyUint8Array, type WeakOpaque} from '~/common/types';
+import type {ReadonlyUint8Array, WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';

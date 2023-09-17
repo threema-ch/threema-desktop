@@ -1,4 +1,4 @@
-import {type u8, type u53} from '~/common/types';
+import type {u8, u53} from '~/common/types';
 
 export const BUILD_ENTRIES = [
     'app',

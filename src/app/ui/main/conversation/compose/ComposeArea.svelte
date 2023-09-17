@@ -19,11 +19,11 @@
 <script lang="ts">
   import {ComposeArea} from '@threema/compose-area/web';
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
-  import {type Readable} from 'svelte/store';
+  import type {Readable} from 'svelte/store';
 
   import {ElementResizeObserver} from '#3sc/utils/observer';
   import {globals} from '~/app/globals';
-  import {type u32, type u53} from '~/common/types';
+  import type {u32, u53} from '~/common/types';
   import {isNotUndefined, unreachable, unwrap} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
   import {getUtf8ByteLength} from '~/common/utils/string';

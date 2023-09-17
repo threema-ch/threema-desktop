@@ -1,6 +1,6 @@
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import type * as protobuf from '~/common/network/protobuf';
-import {type validate} from '~/common/network/protobuf';
+import type {validate} from '~/common/network/protobuf';
 import * as d2d from '~/common/network/protobuf/validate/d2d';
 import {
     PASSIVE_TASK,
@@ -9,7 +9,7 @@ import {
     type PassiveTaskSymbol,
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
-import {type D2mDeviceId} from '~/common/network/types';
+import type {D2mDeviceId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
 import {filterUndefinedProperties} from '~/common/utils/object';
 

@@ -1,5 +1,5 @@
 import type * as protobuf from '~/common/network/protobuf';
-import {type PassiveTask, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {PassiveTask, ServicesForTasks} from '~/common/network/protocol/task';
 import {TechDebtTask} from '~/common/network/protocol/task/tech-debt';
 import type * as structbuf from '~/common/network/structbuf/';
 import {unreachable} from '~/common/utils/assert';

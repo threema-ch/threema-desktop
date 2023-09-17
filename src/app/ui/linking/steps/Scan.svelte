@@ -4,10 +4,10 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import QrCode from '#3sc/components/generic/QrCode/QrCode.svelte';
   import {globals} from '~/app/globals';
-  import {i18n} from '~/app/ui/i18n';
-  import {type LinkingWizardStateScan} from '~/app/ui/linking';
-  import Step from '~/app/ui/linking/Step.svelte';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
+  import {i18n} from '~/app/ui/i18n';
+  import type {LinkingWizardStateScan} from '~/app/ui/linking';
+  import Step from '~/app/ui/linking/Step.svelte';
   import {GlobalTimer} from '~/common/utils/timer';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking.scan`);

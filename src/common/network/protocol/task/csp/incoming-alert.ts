@@ -1,7 +1,7 @@
 /**
  * Incoming alert payload task.
  */
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import {
     PASSIVE_TASK,
     type PassiveTask,

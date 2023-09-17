@@ -1,8 +1,8 @@
-import {
-    type DialogAction,
-    type SystemDialog,
-    type SystemDialogHandle,
-    type SystemDialogService,
+import type {
+    DialogAction,
+    SystemDialog,
+    SystemDialogHandle,
+    SystemDialogService,
 } from '~/common/system-dialog';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';

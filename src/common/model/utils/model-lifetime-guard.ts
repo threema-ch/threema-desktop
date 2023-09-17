@@ -1,5 +1,5 @@
-import {type GuardedStoreHandle} from '~/common/model/types/common';
-import {type UpdatedView, type ViewUpdateFn} from '~/common/model/utils/model-store';
+import type {GuardedStoreHandle} from '~/common/model/types/common';
+import type {UpdatedView, ViewUpdateFn} from '~/common/model/utils/model-store';
 import {Delayed} from '~/common/utils/delayed';
 
 /**

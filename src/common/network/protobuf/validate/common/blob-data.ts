@@ -3,7 +3,7 @@ import * as v from '@badrap/valita';
 import {common} from '~/common/network/protobuf/js';
 import {creator, type ProtobufInstanceOf, validator} from '~/common/network/protobuf/utils';
 import {ensureBlobId} from '~/common/network/protocol/blob';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {instanceOf} from '~/common/utils/valita-helpers';
 
 /** Validates {@link common.BlobData} */

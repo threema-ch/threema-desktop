@@ -1,9 +1,9 @@
-import {
-    type VerificationLevel,
-    type VerificationLevelColors,
+import type {
+    VerificationLevel,
+    VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
-import {type PublicKey} from '~/common/crypto';
-import {type DbReceiverLookup} from '~/common/db';
+import type {PublicKey} from '~/common/crypto';
+import type {DbReceiverLookup} from '~/common/db';
 import {
     ContactNotificationTriggerPolicy,
     GroupNotificationTriggerPolicy,
@@ -12,23 +12,23 @@ import {
     VerificationLevel as NumericVerificationLevel,
     WorkVerificationLevel,
 } from '~/common/enum';
-import {
-    type AnyReceiver,
-    type Contact,
-    type ContactView,
-    type Group,
-    type GroupView,
-    type ProfilePicture,
-    type Repositories,
+import type {
+    AnyReceiver,
+    Contact,
+    ContactView,
+    Group,
+    GroupView,
+    ProfilePicture,
+    Repositories,
 } from '~/common/model';
-import {type ContactRepository} from '~/common/model/types/contact';
-import {type PrivacySettings} from '~/common/model/types/settings';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type Nickname} from '~/common/network/types';
+import type {ContactRepository} from '~/common/model/types/contact';
+import type {PrivacySettings} from '~/common/model/types/settings';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
-import {type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
+import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {getMemberNames} from '~/common/viewmodel/group-list-item';
-import {type AnyReceiverData, type ContactData} from '~/common/viewmodel/types';
+import type {AnyReceiverData, ContactData} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 export type TransformedReceiverData = AnyReceiverData & {

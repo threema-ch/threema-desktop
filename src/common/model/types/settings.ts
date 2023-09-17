@@ -1,23 +1,23 @@
 // Profile Settings
 
-import {
-    type CallConnectionPolicy,
-    type CallPolicy,
-    type ContactSyncPolicy,
-    type GlobalPropertyKey,
-    type KeyboardDataCollectionPolicy,
-    type ReadReceiptPolicy,
-    type ScreenshotPolicy,
-    type TypingIndicatorPolicy,
-    type UnknownContactPolicy,
+import type {
+    CallConnectionPolicy,
+    CallPolicy,
+    ContactSyncPolicy,
+    GlobalPropertyKey,
+    KeyboardDataCollectionPolicy,
+    ReadReceiptPolicy,
+    ScreenshotPolicy,
+    TypingIndicatorPolicy,
+    UnknownContactPolicy,
 } from '~/common/enum';
-import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
-import {type LocalModel} from '~/common/model/types/common';
-import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString, type Nickname} from '~/common/network/types';
-import {type ReadonlyUint8Array} from '~/common/types';
-import {type ProxyMarked} from '~/common/utils/endpoint';
+import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
+import type {LocalModel} from '~/common/model/types/common';
+import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {IdentityString, Nickname} from '~/common/network/types';
+import type {ReadonlyUint8Array} from '~/common/types';
+import type {ProxyMarked} from '~/common/utils/endpoint';
 
 // Note: Type must be compatible with common.settings.ProfileSettings
 export interface ProfileSettingsView {

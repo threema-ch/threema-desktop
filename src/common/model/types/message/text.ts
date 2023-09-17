@@ -1,18 +1,18 @@
-import {type MessageDirection, type MessageType} from '~/common/enum';
-import {type LocalModel} from '~/common/model';
-import {
-    type CommonBaseMessageController,
-    type CommonBaseMessageInit,
-    type CommonBaseMessageView,
-    type InboundBaseMessageController,
-    type InboundBaseMessageInit,
-    type InboundBaseMessageView,
-    type OutboundBaseMessageController,
-    type OutboundBaseMessageInit,
-    type OutboundBaseMessageView,
+import type {MessageDirection, MessageType} from '~/common/enum';
+import type {LocalModel} from '~/common/model';
+import type {
+    CommonBaseMessageController,
+    CommonBaseMessageInit,
+    CommonBaseMessageView,
+    InboundBaseMessageController,
+    InboundBaseMessageInit,
+    InboundBaseMessageView,
+    OutboundBaseMessageController,
+    OutboundBaseMessageInit,
+    OutboundBaseMessageView,
 } from '~/common/model/types/message/common';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type MessageId} from '~/common/network/types';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {MessageId} from '~/common/network/types';
 
 // View
 

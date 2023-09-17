@@ -1,11 +1,7 @@
-import {
-    type LinkingState,
-    type LinkingStateErrorType,
-    type SyncingPhase,
-} from '~/common/dom/backend';
-import {type ReadonlyUint8Array} from '~/common/types';
-import {type ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {type ReadableStore} from '~/common/utils/store';
+import type {LinkingState, LinkingStateErrorType, SyncingPhase} from '~/common/dom/backend';
+import type {ReadonlyUint8Array} from '~/common/types';
+import type {ResolvablePromise} from '~/common/utils/resolvable-promise';
+import type {ReadableStore} from '~/common/utils/store';
 
 export interface LinkingParams {
     /**

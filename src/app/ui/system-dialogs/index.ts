@@ -1,6 +1,6 @@
 import SystemDialogs from '~/app/ui/system-dialogs/SystemDialogs.svelte';
-import {type Config} from '~/common/config';
-import {type LoggerFactory} from '~/common/logging';
+import type {Config} from '~/common/config';
+import type {LoggerFactory} from '~/common/logging';
 
 /**
  * Attach global dialogs to DOM.

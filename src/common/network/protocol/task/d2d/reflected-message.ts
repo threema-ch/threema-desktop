@@ -9,9 +9,9 @@ import {
     CspE2eGroupStatusUpdateType,
     CspE2eStatusUpdateType,
 } from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import type * as protobuf from '~/common/network/protobuf';
-import {type IncomingMessage, type OutgoingMessage} from '~/common/network/protobuf/validate/d2d';
+import type {IncomingMessage, OutgoingMessage} from '~/common/network/protobuf/validate/d2d';
 import {MESSAGE_ID_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {type CspE2eType, cspE2eTypeNameOf, type ReflectedE2eType} from '~/common/network/protocol';
 import {
@@ -19,7 +19,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import * as structbuf from '~/common/network/structbuf';
-import {type D2mDeviceId} from '~/common/network/types';
+import type {D2mDeviceId} from '~/common/network/types';
 import {exhausted} from '~/common/utils/assert';
 import {intoU64, u64ToHexLe} from '~/common/utils/number';
 

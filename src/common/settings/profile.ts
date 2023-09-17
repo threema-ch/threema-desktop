@@ -1,11 +1,11 @@
 import * as v from '@badrap/valita';
 
-import {type ProfilePictureShareWith} from '~/common/model/settings/profile';
+import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import {IDENTITY_STRING_LIST_SCHEMA} from '~/common/network/protobuf/validate/helpers';
 import {ensureNickname} from '~/common/network/types';
 import * as proto from '~/common/node/settings/settings';
-import {type SettingsCategoryCodec} from '~/common/settings';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {SettingsCategoryCodec} from '~/common/settings';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {instanceOf} from '~/common/utils/valita-helpers';
 

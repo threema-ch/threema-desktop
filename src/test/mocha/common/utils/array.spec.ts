@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 
-import {type u8} from '~/common/types';
+import type {u8} from '~/common/types';
 import {groupArray, joinConstArray} from '~/common/utils/array';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 

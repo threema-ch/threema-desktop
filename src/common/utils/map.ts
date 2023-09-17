@@ -1,4 +1,4 @@
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {AsyncLock} from '~/common/utils/lock';
 
 /**

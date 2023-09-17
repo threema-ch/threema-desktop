@@ -1,9 +1,9 @@
-import {type Cookie, type CryptoBox, type NonceUnguardedScope} from '~/common/crypto';
+import type {Cookie, CryptoBox, NonceUnguardedScope} from '~/common/crypto';
 import {type NonceScope, ReceiverType} from '~/common/enum';
-import {type AnyReceiver} from '~/common/model';
+import type {AnyReceiver} from '~/common/model';
 import {isU64, type u32, type u64, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {type SequenceNumberU32, type SequenceNumberU64} from '~/common/utils/sequence-number';
+import type {SequenceNumberU32, SequenceNumberU64} from '~/common/utils/sequence-number';
 
 /**
  * The client's Threema ID as a string.

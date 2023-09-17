@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {type FileResult} from '#3sc/utils/filelist';
+  import type {FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import {i18n} from '~/app/ui/i18n';
   import {showFileResultError} from '~/app/ui/main/conversation/compose';
   import ComposeBar from '~/app/ui/main/conversation/compose/ComposeBar.svelte';
-  import {generateThumbnail, type MediaFile} from '~/app/ui/modal/media-message';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
+  import {generateThumbnail, type MediaFile} from '~/app/ui/modal/media-message';
   import {ReceiverType} from '~/common/enum';
-  import {type AnyReceiverStore} from '~/common/model';
+  import type {AnyReceiverStore} from '~/common/model';
   import {unreachable, unwrap} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
+  import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {WritableStore} from '~/common/utils/store';
 

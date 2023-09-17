@@ -3,7 +3,7 @@
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import RecipientTitle from '~/app/ui/generic/receiver/Title.svelte';
 
-  import {type ReceiverProfilePicture, type ReceiverTitle} from '.';
+  import type {ReceiverProfilePicture, ReceiverTitle} from '.';
 
   /**
    * Determine whether the contact is clickable.

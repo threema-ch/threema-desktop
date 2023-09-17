@@ -1,6 +1,6 @@
 import {D2mPayloadType, D2mPayloadTypeUtils} from '~/common/enum';
-import {type InboundD2mTaskMessage} from '~/common/network/protocol';
-import {type RunnableTask, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {InboundD2mTaskMessage} from '~/common/network/protocol';
+import type {RunnableTask, ServicesForTasks} from '~/common/network/protocol/task';
 import {TechDebtTask} from '~/common/network/protocol/task/tech-debt';
 import {unreachable} from '~/common/utils/assert';
 

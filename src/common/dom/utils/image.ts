@@ -1,5 +1,5 @@
-import {type Logger} from '~/common/logging';
-import {type Dimensions, type f64, type u53} from '~/common/types';
+import type {Logger} from '~/common/logging';
+import type {Dimensions, f64, u53} from '~/common/types';
 import {debugAssert, unwrap} from '~/common/utils/assert';
 import {isSupportedImageType} from '~/common/utils/image';
 

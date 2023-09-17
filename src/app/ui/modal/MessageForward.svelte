@@ -2,17 +2,17 @@
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import ForwardRecipient from '~/app/ui/modal/message-forward/ForwardRecipient.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
-  import {type ContactTab} from '~/app/ui/nav/index';
+  import ForwardRecipient from '~/app/ui/modal/message-forward/ForwardRecipient.svelte';
+  import type {ContactTab} from '~/app/ui/nav/index';
   import {filterContacts} from '~/app/ui/nav/receiver';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
-  import {type DbReceiverLookup} from '~/common/db';
+  import type {DbReceiverLookup} from '~/common/db';
   import {WorkVerificationLevel} from '~/common/enum';
-  import {type MessageId} from '~/common/network/types';
+  import type {MessageId} from '~/common/network/types';
   import {unreachable} from '~/common/utils/assert';
 
   export let visible: boolean;

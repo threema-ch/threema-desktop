@@ -10,9 +10,9 @@
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import {type AppServices} from '~/app/types';
+  import type {AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import {type VirtualRect} from '~/app/ui/generic/popover';
+  import type {VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {
@@ -25,7 +25,7 @@
   import MessageDetail from '~/app/ui/modal/MessageDetail.svelte';
   import MessageForward from '~/app/ui/modal/MessageForward.svelte';
   import {toast} from '~/app/ui/snackbar';
-  import {type DbReceiverLookup} from '~/common/db';
+  import type {DbReceiverLookup} from '~/common/db';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {
     MessageDirection,
@@ -34,20 +34,16 @@
     ReceiverType,
   } from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
-  import {
-    type AnyMessageModelStore,
-    type AnyReceiverStore,
-    type RemoteModelStoreFor,
-  } from '~/common/model';
-  import {type MessageId} from '~/common/network/types';
-  import {type ReadonlyUint8Array} from '~/common/types';
+  import type {AnyMessageModelStore, AnyReceiverStore, RemoteModelStoreFor} from '~/common/model';
+  import type {MessageId} from '~/common/network/types';
+  import type {ReadonlyUint8Array} from '~/common/types';
   import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
-  import {
-    type ConversationMessageViewModelBundle,
-    type ConversationMessageViewModelStore,
+  import type {Remote} from '~/common/utils/endpoint';
+  import type {
+    ConversationMessageViewModelBundle,
+    ConversationMessageViewModelStore,
   } from '~/common/viewmodel/conversation-message';
-  import {type AnyMessageBody, type Message} from '~/common/viewmodel/types';
+  import type {AnyMessageBody, Message} from '~/common/viewmodel/types';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-message');
 

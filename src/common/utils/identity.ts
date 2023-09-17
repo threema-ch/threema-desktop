@@ -1,4 +1,4 @@
-import {type IdentityBytes, type IdentityString} from '~/common/network/types';
+import type {IdentityBytes, IdentityString} from '~/common/network/types';
 import {UTF8} from '~/common/utils/codec';
 
 /**

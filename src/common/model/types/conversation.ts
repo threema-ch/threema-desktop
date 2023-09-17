@@ -1,29 +1,29 @@
-import {type DbConversation, type DbReceiverLookup, type UidOf} from '~/common/db';
-import {
-    type ConversationCategory,
-    type ConversationVisibility,
-    type MessageDirection,
-    type MessageType,
-    type ReceiverType,
+import type {DbConversation, DbReceiverLookup, UidOf} from '~/common/db';
+import type {
+    ConversationCategory,
+    ConversationVisibility,
+    MessageDirection,
+    MessageType,
+    ReceiverType,
 } from '~/common/enum';
-import {
-    type ControllerCustomUpdateFromSource,
-    type ControllerUpdateFromLocal,
-    type LocalModel,
+import type {
+    ControllerCustomUpdateFromSource,
+    ControllerUpdateFromLocal,
+    LocalModel,
 } from '~/common/model/types/common';
-import {
-    type AnyMessageModelStore,
-    type DirectedMessageFor,
-    type SetOfAnyLocalMessageModelStore,
+import type {
+    AnyMessageModelStore,
+    DirectedMessageFor,
+    SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
-import {type AnyReceiverStore} from '~/common/model/types/receiver';
-import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type ConversationId, type MessageId} from '~/common/network/types';
-import {type i53, type u53} from '~/common/types';
-import {type ProxyMarked} from '~/common/utils/endpoint';
-import {type LocalStore} from '~/common/utils/store';
-import {type LocalSetStore} from '~/common/utils/store/set-store';
+import type {AnyReceiverStore} from '~/common/model/types/receiver';
+import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ConversationId, MessageId} from '~/common/network/types';
+import type {i53, u53} from '~/common/types';
+import type {ProxyMarked} from '~/common/utils/endpoint';
+import type {LocalStore} from '~/common/utils/store';
+import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 export interface ConversationInitMixin {
     readonly lastUpdate?: Date;

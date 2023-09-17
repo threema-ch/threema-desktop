@@ -1,16 +1,16 @@
-import {type TransactionScope} from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {TransactionScope} from '~/common/enum';
+import type {Logger} from '~/common/logging';
 import {groupDebugString} from '~/common/model/group';
-import {type ConversationUpdateFromToSync} from '~/common/model/types/conversation';
-import {type GroupUpdateFromToSync} from '~/common/model/types/group';
+import type {ConversationUpdateFromToSync} from '~/common/model/types/conversation';
+import type {GroupUpdateFromToSync} from '~/common/model/types/group';
 import * as protobuf from '~/common/network/protobuf';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type ServicesForTasks,
-    type TransactionRunning,
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    ServicesForTasks,
+    TransactionRunning,
 } from '~/common/network/protocol/task';
-import {type GroupId, type IdentityString} from '~/common/network/types';
+import type {GroupId, IdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {hasProperty} from '~/common/utils/object';

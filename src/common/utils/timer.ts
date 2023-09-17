@@ -1,4 +1,4 @@
-import {type u53, type WeakOpaque} from '~/common/types';
+import type {u53, WeakOpaque} from '~/common/types';
 
 /**
  * Cancels the timer.

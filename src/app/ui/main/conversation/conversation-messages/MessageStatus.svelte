@@ -7,7 +7,7 @@
     ReceiverType,
   } from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
-  import {type MessageStatus} from '~/common/viewmodel/types';
+  import type {MessageStatus} from '~/common/viewmodel/types';
 
   export let direction: MessageDirection;
   export let status: MessageStatus | undefined;

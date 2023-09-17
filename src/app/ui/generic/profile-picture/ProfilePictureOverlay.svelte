@@ -2,9 +2,9 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
   import {debounce} from '~/common/utils/timer';
-  import {type ReceiverBadgeType} from '~/common/viewmodel/types';
+  import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 
   /**
    * Unread messages counter.

@@ -1,9 +1,9 @@
 import {appVisibility} from '~/common/dom/ui/state';
-import {
-    type ExtendedNotificationOptions,
-    type NotificationCreator,
-    type NotificationHandle,
-    type NotificationTag,
+import type {
+    ExtendedNotificationOptions,
+    NotificationCreator,
+    NotificationHandle,
+    NotificationTag,
 } from '~/common/notification';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 

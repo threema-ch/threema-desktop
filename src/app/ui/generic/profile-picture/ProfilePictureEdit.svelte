@@ -4,8 +4,8 @@
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
-  import {type ProfilePicture as ProfilePictureModel} from '~/common/model';
-  import {type RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {ProfilePicture as ProfilePictureModel} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
 
   export let profilePicture: RemoteModelStore<ProfilePictureModel>;
 

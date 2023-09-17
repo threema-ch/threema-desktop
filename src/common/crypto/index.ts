@@ -1,9 +1,10 @@
-import {type CryptoBox} from '~/common/crypto/box';
-import {type INonceService} from '~/common/crypto/nonce';
-import {type NonceScope} from '~/common/enum';
+import type {CryptoBox} from '~/common/crypto/box';
+import type {INonceService} from '~/common/crypto/nonce';
+import type {NonceScope} from '~/common/enum';
 import {CryptoError} from '~/common/error';
-import {type ReadonlyUint8Array, type u53, type u64, type WeakOpaque} from '~/common/types';
+import type {ReadonlyUint8Array, u53, u64, WeakOpaque} from '~/common/types';
 import {byteEquals} from '~/common/utils/byte';
+
 export type {CryptoBox};
 
 /**

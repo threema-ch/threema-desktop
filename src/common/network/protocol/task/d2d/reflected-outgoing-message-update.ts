@@ -1,5 +1,5 @@
 import {MessageDirection} from '~/common/enum';
-import {type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import * as protobuf from '~/common/network/protobuf';
 import {toCommonConversationId} from '~/common/network/protobuf/validate/d2d/conversation-id';
 import {
@@ -10,7 +10,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
 import {getConversationById} from '~/common/network/protocol/task/message-processing-helpers';
-import {type D2mDeviceId} from '~/common/network/types';
+import type {D2mDeviceId} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {u64ToHexLe} from '~/common/utils/number';
 

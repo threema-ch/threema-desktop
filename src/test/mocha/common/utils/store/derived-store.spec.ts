@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type u32} from '~/common/types';
+import type {u32} from '~/common/types';
 import {assert as typeAssert} from '~/common/utils/assert';
 import {
     type IQueryableStore,

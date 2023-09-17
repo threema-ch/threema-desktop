@@ -1,14 +1,14 @@
 import {UnknownContactPolicy} from '~/common/enum';
-import {type ServicesForModel} from '~/common/model';
-import {
-    type PrivacySettings,
-    type PrivacySettingsController,
-    type PrivacySettingsUpdate,
-    type PrivacySettingsView,
+import type {ServicesForModel} from '~/common/model';
+import type {
+    PrivacySettings,
+    PrivacySettingsController,
+    PrivacySettingsUpdate,
+    PrivacySettingsView,
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import {type IdentityString} from '~/common/network/types';
+import type {IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 export class PrivacySettingsModelController implements PrivacySettingsController {

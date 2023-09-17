@@ -1,5 +1,5 @@
-import {type CryptoBackend} from '~/common/crypto';
-import {type u8, type u32, type u53, type u64} from '~/common/types';
+import type {CryptoBackend} from '~/common/crypto';
+import type {u8, u32, u53, u64} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 
 /**

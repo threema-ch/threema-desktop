@@ -6,12 +6,12 @@ import {
     ProfilePictureModelRepository,
     type ProfilePictureRepository,
 } from '~/common/model/profile-picture';
-import {type ServicesForModel} from '~/common/model/types/common';
-import {type ContactRepository} from '~/common/model/types/contact';
-import {type ConversationRepository} from '~/common/model/types/conversation';
-import {type GroupRepository} from '~/common/model/types/group';
-import {type IGlobalPropertyRepository} from '~/common/model/types/settings';
-import {type User} from '~/common/model/types/user';
+import type {ServicesForModel} from '~/common/model/types/common';
+import type {ContactRepository} from '~/common/model/types/contact';
+import type {ConversationRepository} from '~/common/model/types/conversation';
+import type {GroupRepository} from '~/common/model/types/group';
+import type {IGlobalPropertyRepository} from '~/common/model/types/settings';
+import type {User} from '~/common/model/types/user';
 import {UserModel} from '~/common/model/user';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 

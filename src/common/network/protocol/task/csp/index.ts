@@ -1,6 +1,6 @@
 import {CspPayloadType} from '~/common/enum';
-import {type InboundCspTaskMessage} from '~/common/network/protocol';
-import {type RunnableTask, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {InboundCspTaskMessage} from '~/common/network/protocol';
+import type {RunnableTask, ServicesForTasks} from '~/common/network/protocol/task';
 import {IncomingAlertPayloadTask} from '~/common/network/protocol/task/csp/incoming-alert';
 import {IncomingCloseErrorPayloadTask} from '~/common/network/protocol/task/csp/incoming-close-error';
 import {IncomingMessageTask} from '~/common/network/protocol/task/csp/incoming-message';

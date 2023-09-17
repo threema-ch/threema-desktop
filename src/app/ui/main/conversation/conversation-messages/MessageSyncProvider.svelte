@@ -5,12 +5,12 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {unreachable} from '~/common/utils/assert';
-  import {type PropertiesMarkedRemote, type Remote} from '~/common/utils/endpoint';
-  import {
-    type ConversationMessageViewModel,
-    type ConversationMessageViewModelBundle,
+  import type {PropertiesMarkedRemote, Remote} from '~/common/utils/endpoint';
+  import type {
+    ConversationMessageViewModel,
+    ConversationMessageViewModelBundle,
   } from '~/common/viewmodel/conversation-message';
-  import {type AnyMessageBody} from '~/common/viewmodel/types';
+  import type {AnyMessageBody} from '~/common/viewmodel/types';
 
   /**
    * Bundle containing the viewModel and viewModelController.

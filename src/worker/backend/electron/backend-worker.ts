@@ -1,2 +1,3 @@
-import run from '.';
+import {run} from '.';
+
 void run();

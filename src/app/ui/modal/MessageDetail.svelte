@@ -14,7 +14,7 @@
     MessageReaction,
     MessageReactionUtils,
   } from '~/common/enum';
-  import {type AnyMessageModel, type RemoteModelFor} from '~/common/model';
+  import type {AnyMessageModel, RemoteModelFor} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
   import {u64ToHexLe} from '~/common/utils/number';
 

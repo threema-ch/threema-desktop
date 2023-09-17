@@ -3,7 +3,7 @@
  * TypeScript types for {@link https://raw.githubusercontent.com/emilbayes/blake2b/1f63e02/index.js}.
  */
 
-import {type ReadonlyUint8Array, type u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 
 declare class Blake2b {
     public update(input: ReadonlyUint8Array): this;

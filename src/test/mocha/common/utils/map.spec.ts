@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {type u53} from '~/common/types';
+import type {u53} from '~/common/types';
 import {AsyncWeakValueMap} from '~/common/utils/map';
 import {GlobalTimer} from '~/common/utils/timer';
 

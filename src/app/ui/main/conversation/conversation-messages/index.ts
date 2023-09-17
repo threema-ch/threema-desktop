@@ -2,14 +2,14 @@ import {i18n} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
 import {convertImage} from '~/common/dom/utils/image';
 import {MessageDirection, ReceiverType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {Logger} from '~/common/logging';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
-import {
-    type AnyMessageBody,
-    type IncomingMessage,
-    type Message,
-    type MessageStatus,
+import type {
+    AnyMessageBody,
+    IncomingMessage,
+    Message,
+    MessageStatus,
 } from '~/common/viewmodel/types';
 
 /**

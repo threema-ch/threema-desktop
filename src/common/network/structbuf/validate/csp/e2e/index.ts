@@ -1,10 +1,10 @@
-import {
-    type CspE2eConversationType,
-    type CspE2eGroupControlType,
-    type CspE2eGroupConversationType,
-    type CspE2eStatusUpdateType,
+import type {
+    CspE2eConversationType,
+    CspE2eGroupControlType,
+    CspE2eGroupConversationType,
+    CspE2eStatusUpdateType,
 } from '~/common/enum';
-import {type CspE2eType} from '~/common/network/protocol';
+import type {CspE2eType} from '~/common/network/protocol';
 
 import * as DeliveryReceipt from './delivery-receipt';
 import * as File from './file';
@@ -15,6 +15,7 @@ import * as GroupSetup from './group-setup';
 import * as Location from './location';
 import * as SetProfilePicture from './set-profile-picture';
 import * as Text from './text';
+
 export {
     DeliveryReceipt,
     File,

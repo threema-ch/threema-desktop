@@ -1,6 +1,6 @@
 <script lang="ts">
   import {globals} from '~/app/globals';
-  import {type u53} from '~/common/types';
+  import type {u53} from '~/common/types';
   import {assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 
   export let text: string | undefined;

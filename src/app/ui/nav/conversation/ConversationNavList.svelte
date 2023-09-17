@@ -1,19 +1,19 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import {type Router} from '~/app/routing/router';
+  import type {Router} from '~/app/routing/router';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import {conversationListEvent} from '~/app/ui/main/conversation/index';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavElement from '~/app/ui/nav/conversation/ConversationNavElement.svelte';
-  import {type DbReceiverLookup} from '~/common/db';
+  import type {DbReceiverLookup} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationVisibility} from '~/common/enum';
   import {unreachable, unwrap} from '~/common/utils/assert';
-  import {type Remote} from '~/common/utils/endpoint';
+  import type {Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
-  import {type ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
-  import {type SvelteAction} from '~/common/viewmodel/types';
+  import type {ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
+  import type {SvelteAction} from '~/common/viewmodel/types';
 
   /**
    * Set store of all conversation previews.

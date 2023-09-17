@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import {assertRoute} from '~/app/routing';
 import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-import {type DbContactUid} from '~/common/db';
+import type {DbContactUid} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 
 export function run(): void {

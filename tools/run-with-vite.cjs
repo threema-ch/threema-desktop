@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const childProcess = require('child_process');
+const childProcess = require('node:child_process');
+const fs = require('node:fs');
+
 const {createServer} = require('vite');
 
 function parseOption(arg, argv, options) {

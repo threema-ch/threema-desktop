@@ -1,19 +1,19 @@
 import {type TransactionScope, TriggerSource} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type ContactInit, type ContactUpdate} from '~/common/model';
-import {type ConversationUpdateFromToSync} from '~/common/model/types/conversation';
+import type {Logger} from '~/common/logging';
+import type {ContactInit, ContactUpdate} from '~/common/model';
+import type {ConversationUpdateFromToSync} from '~/common/model/types/conversation';
 import * as protobuf from '~/common/network/protobuf';
 import {type BlobId, encryptAndUploadBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
-import {
-    type ActiveTaskCodecHandle,
-    type ComposableTask,
-    type ServicesForTasks,
-    type TransactionRunning,
+import type {
+    ActiveTaskCodecHandle,
+    ComposableTask,
+    ServicesForTasks,
+    TransactionRunning,
 } from '~/common/network/protocol/task';
-import {type IdentityString} from '~/common/network/types';
-import {type RawBlobKey} from '~/common/network/types/keys';
-import {type ReadonlyUint8Array} from '~/common/types';
+import type {IdentityString} from '~/common/network/types';
+import type {RawBlobKey} from '~/common/network/types/keys';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
 import {hasProperty} from '~/common/utils/object';

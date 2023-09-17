@@ -1,27 +1,27 @@
-import {type PublicKey} from '~/common/crypto';
-import {type DbContact, type DbContactUid, type UidOf} from '~/common/db';
-import {
-    type AcquaintanceLevel,
-    type ActivityState,
-    type ContactNotificationTriggerPolicy,
-    type IdentityType,
-    type NotificationSoundPolicy,
-    type ReadReceiptPolicy,
-    type ReceiverType,
-    type SyncState,
-    type TypingIndicatorPolicy,
-    type VerificationLevel,
-    type WorkVerificationLevel,
+import type {PublicKey} from '~/common/crypto';
+import type {DbContact, DbContactUid, UidOf} from '~/common/db';
+import type {
+    AcquaintanceLevel,
+    ActivityState,
+    ContactNotificationTriggerPolicy,
+    IdentityType,
+    NotificationSoundPolicy,
+    ReadReceiptPolicy,
+    ReceiverType,
+    SyncState,
+    TypingIndicatorPolicy,
+    VerificationLevel,
+    WorkVerificationLevel,
 } from '~/common/enum';
-import {type ControllerUpdateFromSource, type LocalModel} from '~/common/model/types/common';
-import {type ConversationInitMixin} from '~/common/model/types/conversation';
-import {type ReceiverController} from '~/common/model/types/receiver';
-import {type ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
-import {type FeatureMask, type IdentityString, type Nickname} from '~/common/network/types';
-import {type StrictExtract, type StrictOmit, type u8} from '~/common/types';
-import {type ProxyMarked} from '~/common/utils/endpoint';
-import {type LocalSetStore} from '~/common/utils/store/set-store';
+import type {ControllerUpdateFromSource, LocalModel} from '~/common/model/types/common';
+import type {ConversationInitMixin} from '~/common/model/types/conversation';
+import type {ReceiverController} from '~/common/model/types/receiver';
+import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {FeatureMask, IdentityString, Nickname} from '~/common/network/types';
+import type {StrictExtract, StrictOmit, u8} from '~/common/types';
+import type {ProxyMarked} from '~/common/utils/endpoint';
+import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 // Contact
 export interface ContactView {

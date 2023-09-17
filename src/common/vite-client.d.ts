@@ -18,6 +18,7 @@
    @typescript-eslint/method-signature-style,
    @typescript-eslint/no-explicit-any,
    @typescript-eslint/unified-signatures,
+   import/no-default-export,
 */
 
 /**
@@ -278,6 +279,7 @@ declare module '*?inline' {
    @typescript-eslint/method-signature-style,
    @typescript-eslint/no-explicit-any,
    @typescript-eslint/unified-signatures,
+   import/no-default-export,
 */
 
 /**

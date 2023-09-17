@@ -1,10 +1,10 @@
 import {ReceiverType} from '~/common/enum';
-import {type Logger} from '~/common/logging';
-import {type Contact, type ProfilePicture, type ProfilePictureSource} from '~/common/model';
-import {type LocalModelStore} from '~/common/model/utils/model-store';
+import type {Logger} from '~/common/logging';
+import type {Contact, ProfilePicture, ProfilePictureSource} from '~/common/model';
+import type {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {common} from '~/common/network/protobuf/js';
-import {type DeltaImage} from '~/common/network/protobuf/validate/common';
+import type {DeltaImage} from '~/common/network/protobuf/validate/common';
 import {downloadAndDecryptBlob} from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE} from '~/common/network/protocol/constants';
 import {

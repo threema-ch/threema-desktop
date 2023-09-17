@@ -1,9 +1,9 @@
 import {MessageDirection, type MessageReaction} from '~/common/enum';
-import {type AnyMessageModel, type AnyOutboundMessageModel} from '~/common/model';
-import {type ActiveTaskCodecHandle, type ServicesForTasks} from '~/common/network/protocol/task';
+import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model';
+import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';
-import {type DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
-import {type ConversationId, type MessageId} from '~/common/network/types';
+import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
+import type {ConversationId, MessageId} from '~/common/network/types';
 import {assert} from '~/common/utils/assert';
 
 const EXPECTED_MESSAGE_DIRECTION = MessageDirection.OUTBOUND;
