@@ -741,13 +741,19 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Return `limit` amount (or all) message UIDs associated to a conversation.
      *
-     * If the reference message UID is not defined, fetch the newest `limit` message UIDs.
+     * - If a reference message is defined: fetch list of message UIDs older/newer than the
+     *   reference message (and also including the reference message itself).
+     * - If no reference message is defined: fetch list of the newest messages.
      *
-     * If the reference message UID is provided, fetch `limit-1` message UIDs newer/older than it.
+     * TODO(DESK-296): Order correctly. Right now, the order of messages returned is undefined. Find
+     * out whether there is a logical order (older-to-newer or newer-to-old) that can be used as-is.
+     * Take threading ID into account for sorting.
      *
-     * TODO(DESK-296): Order correctly. Right now, the order of messages returned is undefined.
-     * Find out whether there is a logical order (older-to-newer or newer-to-old) that can be used
-     * as-is. Take threading ID into account for sorting.
+     * @param conversationUid {@link DbConversationUid} of the conversation to search in.
+     * @param limit The length of the list of results to return. Note: Possibly smaller, if there
+     *   are fewer messages in the conversation than `limit`.
+     * @param reference The reference message to fetch around.
+     * @returns List of message UIDs.
      */
     readonly getMessageUids: (
         conversationUid: DbConversationUid,

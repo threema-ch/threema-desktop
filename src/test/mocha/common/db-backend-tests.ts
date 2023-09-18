@@ -8,6 +8,7 @@ import {
     type DatabaseBackend,
     type DbAnyMessage,
     type DbContactUid,
+    type DbConversation,
     type DbConversationUid,
     type DbCreate,
     type DbCreateConversationMixin,
@@ -18,6 +19,7 @@ import {
     type DbMessageUid,
     type DbNonceUid,
     type DbReceiverLookup,
+    type DbUnreadMessageCountMixin,
 } from '~/common/db';
 import {
     AcquaintanceLevel,
@@ -1508,11 +1510,24 @@ export function backendTests(
             );
         });
 
-        if (!(features.doesNotImplementThreadIdTodoRemoveThis ?? false)) {
-            it('getMessageUids', function () {
-                // Add contacts and get conversations
+        describe('getMessageUids', function () {
+            function setupConversations(): {
+                conversation: readonly [
+                    conversation1: DbConversation & DbUnreadMessageCountMixin,
+                    conversation2: DbConversation & DbUnreadMessageCountMixin,
+                ];
+                message: readonly [
+                    messageUid1: DbMessageUid,
+                    messageUid2: DbMessageUid,
+                    messageUid3: DbMessageUid,
+                    messageUid4: DbMessageUid,
+                    messageUid5: DbMessageUid,
+                ];
+            } {
+                // Add contacts and get conversations.
                 const contactUid1 = makeContact(db, {identity: 'TESTTEST'});
                 const contactUid2 = makeContact(db, {identity: 'FOOOBAAR'});
+
                 const conversation1 = db.getConversationOfReceiver({
                     type: ReceiverType.CONTACT,
                     uid: contactUid1,
@@ -1523,88 +1538,172 @@ export function backendTests(
                 });
                 assert(conversation1 !== undefined && conversation2 !== undefined);
 
-                // Add messages
-                createTextMessage(db, {
+                // Add messages.
+                // Conversation 1
+                const messageUid1 = createTextMessage(db, {
                     id: 1000n,
                     conversationUid: conversation1.uid,
-                    threadId: 1n,
                     text: 'A',
                     processedAt: new Date(1),
                 });
-                const messageUidConversation1 = createTextMessage(db, {
+                const messageUid2 = createTextMessage(db, {
                     id: 1001n,
                     conversationUid: conversation1.uid,
-                    threadId: 2n,
                     text: 'B',
                     processedAt: new Date(2),
                 });
-                createTextMessage(db, {
+                const messageUid3 = createTextMessage(db, {
                     id: 1002n,
                     conversationUid: conversation1.uid,
-                    threadId: 3n,
                     text: 'C',
                     processedAt: new Date(3),
                 });
-                const messageUidConversation2 = createTextMessage(db, {
-                    id: 2000n,
-                    conversationUid: conversation2.uid,
-                    threadId: 1n,
+                const messageUid4 = createTextMessage(db, {
+                    id: 1003n,
+                    conversationUid: conversation1.uid,
                     text: 'D',
                     processedAt: new Date(4),
                 });
 
-                // Get max 10 messages from conversation 1
-                const olderMessagesNoReferenceLimit10 = db
-                    .getMessageUids(conversation1.uid, 10)
-                    .map((m) => m.uid);
-                expect(olderMessagesNoReferenceLimit10).to.have.length(3);
-                expect(olderMessagesNoReferenceLimit10).to.deep.equal([3n, 2n, 1n]);
+                // Conversation 2
+                const messageUid5 = createTextMessage(db, {
+                    id: 2000n,
+                    conversationUid: conversation2.uid,
+                    text: 'E',
+                    processedAt: new Date(5),
+                });
 
-                // Get max 2 messages from conversation 1
-                const olderMessagesNoReferenceLimit2 = db
-                    .getMessageUids(conversation1.uid, 2)
-                    .map((m) => m.uid);
-                expect(olderMessagesNoReferenceLimit2).to.have.length(2);
-                expect(olderMessagesNoReferenceLimit2).to.deep.equal([3n, 2n]);
+                return {
+                    conversation: [conversation1, conversation2],
+                    message: [messageUid1, messageUid2, messageUid3, messageUid4, messageUid5],
+                };
+            }
 
-                // Get messages from conversation 1 with a reference UID
-                const olderMessagesWithReference = db
-                    .getMessageUids(conversation1.uid, 10, {
-                        uid: messageUidConversation1,
-                        direction: MessageQueryDirection.OLDER,
-                    })
-                    .map((m) => m.uid);
-                expect(olderMessagesWithReference).to.have.length(2);
-                expect(olderMessagesWithReference).to.deep.equal([2n, 1n]);
-                const newerMessagesWithReference = db
-                    .getMessageUids(conversation1.uid, 10, {
-                        uid: messageUidConversation1,
-                        direction: MessageQueryDirection.NEWER,
-                    })
-                    .map((m) => m.uid);
-                expect(newerMessagesWithReference).to.have.length(2);
-                expect(newerMessagesWithReference).to.deep.equal([2n, 3n]);
+            function testGetMessageUidsQuery(
+                tests: readonly {
+                    readonly description: string;
+                    readonly params: Parameters<DatabaseBackend['getMessageUids']>;
+                    readonly result: readonly DbMessageUid[];
+                }[],
+            ): void {
+                for (const {params, result, description} of tests) {
+                    const result1 = db.getMessageUids(...params).map((m) => m.uid);
+                    expect(result1, description).to.have.all.members(result);
+                    expect(result1, description).to.have.length(result.length);
+                }
+            }
 
-                // Get messages from conversation 1 with a reference UID
-                // that does not belong to this conversation
-                const messagesWrongReference = db
-                    .getMessageUids(conversation1.uid, 10, {
-                        uid: messageUidConversation2,
-                        direction: MessageQueryDirection.OLDER,
-                    })
-                    .map((m) => m.uid);
-                expect(messagesWrongReference).to.have.length(0);
+            it('respects the limit parameters', function () {
+                const {conversation, message} = setupConversations();
 
-                // Get messages from conversation 1 with a non-existing reference UID
-                const messagesInvalidReference = db
-                    .getMessageUids(conversation1.uid, 10, {
-                        uid: 9234234n as DbMessageUid,
-                        direction: MessageQueryDirection.OLDER,
-                    })
-                    .map((m) => m.uid);
-                expect(messagesInvalidReference).to.have.length(0);
+                testGetMessageUidsQuery([
+                    {
+                        description: 'Get max 10 latest messages from conversation 1',
+                        params: [conversation[0].uid, 10],
+                        result: [message[0], message[1], message[2], message[3]],
+                    },
+                    {
+                        description: 'Get max 2 latest messages from conversation 1',
+                        params: [conversation[0].uid, 2],
+                        result: [message[2], message[3]],
+                    },
+                ]);
             });
-        }
+
+            it('returns only results from the same conversation', function () {
+                const {conversation, message} = setupConversations();
+
+                testGetMessageUidsQuery([
+                    {
+                        description:
+                            'Get messages from conversation 1 with a reference UID that does not belong to this conversation',
+                        params: [
+                            conversation[0].uid,
+                            10,
+                            {
+                                // UID from `conversation2`.
+                                uid: message[4],
+                                direction: MessageQueryDirection.OLDER,
+                            },
+                        ],
+                        result: [],
+                    },
+                    {
+                        description:
+                            'Get messages from conversation 1 with a non-existing reference UID',
+                        params: [
+                            conversation[0].uid,
+                            10,
+                            {
+                                // Non-existing UID.
+                                uid: 9234234n as DbMessageUid,
+                                direction: MessageQueryDirection.OLDER,
+                            },
+                        ],
+                        result: [],
+                    },
+                ]);
+            });
+
+            it('respects the reference filter', function () {
+                const {conversation, message} = setupConversations();
+
+                testGetMessageUidsQuery([
+                    {
+                        description:
+                            'Get 10 messages from conversation 1 that are older than `messageUid1` (as this is the oldest, it should be the only one returned)',
+                        params: [
+                            conversation[0].uid,
+                            10,
+                            {
+                                uid: message[0],
+                                direction: MessageQueryDirection.OLDER,
+                            },
+                        ],
+                        result: [message[0]],
+                    },
+                    {
+                        description:
+                            'Get 10 messages from conversation 1 that are newer than `messageUid2` (as this is the second-oldest, it should be the only one not returned in the result)',
+                        params: [
+                            conversation[0].uid,
+                            10,
+                            {
+                                uid: message[1],
+                                direction: MessageQueryDirection.NEWER,
+                            },
+                        ],
+                        result: [message[1], message[2], message[3]],
+                    },
+                    {
+                        description:
+                            'Get 2 messages from conversation 1 that are older than `messageUid2`',
+                        params: [
+                            conversation[0].uid,
+                            2,
+                            {
+                                uid: message[1],
+                                direction: MessageQueryDirection.OLDER,
+                            },
+                        ],
+                        result: [message[0], message[1]],
+                    },
+                    {
+                        description:
+                            'Get 2 messages from conversation 1 that are newer than `messageUid2`',
+                        params: [
+                            conversation[0].uid,
+                            2,
+                            {
+                                uid: message[1],
+                                direction: MessageQueryDirection.NEWER,
+                            },
+                        ],
+                        result: [message[1], message[2]],
+                    },
+                ]);
+            });
+        });
     });
 
     describe('Settings', function () {

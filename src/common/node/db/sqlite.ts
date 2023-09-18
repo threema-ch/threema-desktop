@@ -1,6 +1,5 @@
 import DatabaseConstructor, {type Database} from 'better-sqlcipher';
 import {SynchronousPromise} from 'synchronous-promise';
-import {type DynamicCondition} from 'ts-sql-query/expressions/dynamicConditionUsingFilters';
 import {type UpdateSets} from 'ts-sql-query/expressions/update';
 import {ConsoleLogQueryRunner} from 'ts-sql-query/queryRunners/ConsoleLogQueryRunner';
 import {type QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
@@ -2054,49 +2053,47 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             );
         }
 
-        // Get second reference on messages table, so we can join on the table itself
-        const tMessage2 = tMessage.as('messages2');
+        const referenceMessage = this._db
+            .selectFrom(tMessage)
+            .where(
+                tMessage.conversationUid
+                    .equals(conversationUid)
+                    .and(tMessage.uid.equals(reference.uid)),
+            )
+            .selectOneColumn(tMessage.processedAt)
+            .forUseAsInlineQueryValue();
 
         // Determine ordering and dynamic WHERE clause: Filter by conversation
         // and by processedAt timestamp.
-        const filter: DynamicCondition<{
-            conversationUid: [type: 'custom', filter: DbConversationUid];
-            processedAt: 'localDateTime';
-        }> = {
-            conversationUid: {equals: conversationUid},
-        };
+        let processedAtCondition;
         let orderByMode: 'asc' | 'desc';
         switch (reference.direction) {
             case MessageQueryDirection.OLDER:
                 orderByMode = 'desc';
-                // @ts-expect-error TODO!
-                filter.processedAt = {lessOrEquals: tMessage2.processedAt};
+                processedAtCondition = tMessage.processedAt.lessOrEquals(referenceMessage);
                 break;
             case MessageQueryDirection.NEWER:
                 orderByMode = 'asc';
-                // @ts-expect-error TODO!
-                filter.processedAt = {greaterOrEquals: tMessage2.processedAt};
+                processedAtCondition = tMessage.processedAt.greaterOrEquals(referenceMessage);
                 break;
             default:
                 unreachable(reference.direction);
         }
-        const dynamicWhere = this._db.dynamicConditionFor(selectFields).withValues(filter);
 
         // Run query: Join the messages table on itself. This way, every row
         // has access to the information of the reference row.
         return sync(
             this._db
                 .selectFrom(tMessage)
-                .join(tMessage2)
-                .on(
-                    tMessage2.conversationUid
-                        .equals(tMessage.conversationUid)
-                        .and(tMessage2.uid.equals(reference.uid)),
-                )
                 .select(selectFields)
-                .where(dynamicWhere)
+                .where(
+                    tMessage.conversationUid
+                        .equals(conversationUid)
+                        .and(referenceMessage.isNotNull())
+                        .and(processedAtCondition),
+                )
                 // TODO(DESK-296): Order correctly
-                .orderBy('uid', orderByMode)
+                .orderBy('processedAt', orderByMode)
                 .limitIfValue(limit)
                 .executeSelectMany(),
         );
