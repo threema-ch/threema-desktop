@@ -9,12 +9,16 @@
     <url type="help">https://threema.ch/support</url>
     <url type="contact">https://threema.ch/en/request/default?i_have_read_the_faq=1</url>
     <description>
-        <p>Threema for desktop is a desktop client for Threema, a privacy-focused end-to-end
-        encrypted mobile messenger hosted and developed in Switzerland.</p>
+        <p>
+            Threema for desktop is a desktop client for Threema, a privacy-focused end-to-end
+            encrypted mobile messenger hosted and developed in Switzerland.
+        </p>
     </description>
     <screenshots>
         <screenshot type="default">
-            <image type="source" width="1600" height="900">https://releases.threema.ch/flatpak/threema-desktop/screenshot-1.png</image>
+            <image type="source" width="1600" height="900">
+                https://releases.threema.ch/flatpak/threema-desktop/screenshot-1.png
+            </image>
         </screenshot>
     </screenshots>
     <developer_name>Threema GmbH</developer_name>
@@ -45,8 +49,14 @@
                 <p>Improvements:</p>
                 <ul>
                     <li>Scale down large images before sending</li>
-                    <li>Better error messages when trying to link a private Threema ID to a Threema Work app, or vice versa</li>
-                    <li>Screen reader support: set proper alt text for confirmation images that are shown when adding a linked device</li>
+                    <li>
+                        Better error messages when trying to link a private Threema ID to a Threema
+                        Work app, or vice versa
+                    </li>
+                    <li>
+                        Screen reader support: set proper alt text for confirmation images that are
+                        shown when adding a linked device
+                    </li>
                     <li>Improve app icons on Windows</li>
                 </ul>
                 <p>Fixes:</p>
@@ -62,13 +72,18 @@
             <description>
                 <p>Improvements:</p>
                 <ul>
-                    <li>Add full support for image messages: sending, receiving and in-app display</li>
+                    <li>
+                        Add full support for image messages: sending, receiving and in-app display
+                    </li>
                     <li>Add German translations</li>
                 </ul>
                 <p>Fixes:</p>
                 <ul>
                     <li>Fix performance bug when loading contact list or chat list</li>
-                    <li>Fix bug that occurred during device linking with older Threema installations, related to server group validation</li>
+                    <li>
+                        Fix bug that occurred during device linking with older Threema
+                        installations, related to server group validation
+                    </li>
                     <li>Disable built-in Electron DNS resolver to improve privacy</li>
                     <li>Various UI fixes</li>
                 </ul>
@@ -79,7 +94,9 @@
             <description>
                 <p>Improvements:</p>
                 <ul>
-                    <li>New device linking based on QR-Code<br />
+                    <li>
+                        New device linking based on QR-Code
+                        <br />
                         <ul>
                             <li>
                                 Please test this by unlinking and relinking the
@@ -92,12 +109,17 @@
                     <li>Synchronization of profile pictures during linking</li>
                     <li>Allow changing password in user profile</li>
                     <li>Chats list: Improved text preview of group and file messages</li>
-                    <li>File sending dialog: Improved UX when errors are encountered while accessing files</li>
+                    <li>
+                        File sending dialog: Improved UX when errors are encountered while accessing
+                        files
+                    </li>
                 </ul>
                 <p>Fixes:</p>
                 <ul>
                     <li>Limit size of file messages to maximum supported by Threema (100 MB)</li>
-                    <li>Improve dialog that is shown when an invalid application state is detected</li>
+                    <li>
+                        Improve dialog that is shown when an invalid application state is detected
+                    </li>
                     <li>Set initial window size to avoid scrollbars</li>
                     <li>Embed fonts into application</li>
                 </ul>
@@ -126,7 +148,10 @@
                 <p>Bugfixes:</p>
                 <ul>
                     <li>Fix issue that caused some data synchronization messages to be ignored</li>
-                    <li>Prevent cases where context menus were displayed behind other elements and could not be clicked</li>
+                    <li>
+                        Prevent cases where context menus were displayed behind other elements and
+                        could not be clicked
+                    </li>
                     <li>Properly store and display profile pictures from Threema Gateway IDs</li>
                 </ul>
                 <p>Other:</p>
@@ -140,7 +165,10 @@
             <description>
                 <p>Improvements:</p>
                 <ul>
-                    <li>Render user mentions and text formatting in conversation list message preview</li>
+                    <li>
+                        Render user mentions and text formatting in conversation list message
+                        preview
+                    </li>
                     <li>Render user mentions and text formatting in file captions</li>
                     <li>Implement TLS certificate pinning for all connections</li>
                     <li>Make most text in application non-selectable and non-draggable</li>
@@ -156,10 +184,14 @@
             <description>
                 <p>Improvements:</p>
                 <ul>
-                    <li>Add some simple keyboard shortcuts:<br />
+                    <li>
+                        Add some simple keyboard shortcuts:
+                        <br />
                         <ul>
                             <li>Focus chat search with Ctrl+F (Windows, Linux) / Cmd+F (macOS)</li>
-                            <li>Toggle emoji picker with Ctrl+E (Windows, Linux) / Cmd+E (macOS)</li>
+                            <li>
+                                Toggle emoji picker with Ctrl+E (Windows, Linux) / Cmd+E (macOS)
+                            </li>
                         </ul>
                     </li>
                     <li>Show work/private contact indicator in contact details side panel</li>
@@ -181,7 +213,10 @@
             <description>
                 <p>Improvements:</p>
                 <ul>
-                    <li>Don't send read receipts if globally disabled in iOS app (contact-specific overrides are not yet supported)</li>
+                    <li>
+                        Don't send read receipts if globally disabled in iOS app (contact-specific
+                        overrides are not yet supported)
+                    </li>
                 </ul>
                 <p>Bugfixes:</p>
                 <ul>
@@ -241,7 +276,9 @@
                 </ul>
                 <p>Bugfixes:</p>
                 <ul>
-                    <li>Send complete filenames also when file extensions in macOS Finder are hidden</li>
+                    <li>
+                        Send complete filenames also when file extensions in macOS Finder are hidden
+                    </li>
                     <li>Position emoji picker correctly on window resize</li>
                     <li>Improve profile picture display in some cases</li>
                 </ul>
@@ -259,7 +296,10 @@
                 </ul>
                 <p>Improvements:</p>
                 <ul>
-                    <li>Process incoming user profile updates from your iOS device, i.e. profile picture and nickname</li>
+                    <li>
+                        Process incoming user profile updates from your iOS device, i.e. profile
+                        picture and nickname
+                    </li>
                     <li>Update contact nickname when messages are received</li>
                     <li>Use SI units for file sizes consistently with iOS and Android</li>
                     <li>Support for encrypted message metadata</li>
@@ -283,7 +323,10 @@
                 <p>New features:</p>
                 <ul>
                     <li>Emoji picker</li>
-                    <li>Allow deleting all messages in a conversation through the menu in the top right</li>
+                    <li>
+                        Allow deleting all messages in a conversation through the menu in the top
+                        right
+                    </li>
                 </ul>
                 <p>Improvements:</p>
                 <ul>
@@ -291,7 +334,10 @@
                 </ul>
                 <p>Bugfixes:</p>
                 <ul>
-                    <li>Fix a crash that occurred when linking an iOS device where the profile picture releasing configuration was set to "Selected Contacts".</li>
+                    <li>
+                        Fix a crash that occurred when linking an iOS device where the profile
+                        picture releasing configuration was set to "Selected Contacts".
+                    </li>
                 </ul>
                 <p>...and a few other changes and improvements.</p>
             </description>
@@ -302,13 +348,23 @@
                 <ul>
                     <li>Import own profile picture from mobile device (requires re-linking*)</li>
                     <li>Show contact profile pictures</li>
-                    <li>Note: Profile pictures will appear after re-linking*, once you have received a message from that contact. Without re-linking, it may take up to 7 days for profile pictures to appear.</li>
+                    <li>
+                        Note: Profile pictures will appear after re-linking*, once you have received
+                        a message from that contact. Without re-linking, it may take up to 7 days
+                        for profile pictures to appear.
+                    </li>
                     <li>Show group profile pictures</li>
-                    <li>Note: Profile pictures will appear after re-linking* or once the group is modified or re-synced by the group administrator.</li>
+                    <li>
+                        Note: Profile pictures will appear after re-linking* or once the group is
+                        modified or re-synced by the group administrator.
+                    </li>
                     <li>Allow setting theme (light/dark/system) in user profile screen</li>
                     <li>Support for "system" theme on Windows</li>
                 </ul>
-                <p>* To re-link, disable the Multi-Device Preview in the iOS app and enable it again. The chat history of your desktop app will be cleared.</p>
+                <p>
+                    * To re-link, disable the Multi-Device Preview in the iOS app and enable it
+                    again. The chat history of your desktop app will be cleared.
+                </p>
                 <p>Improvements:</p>
                 <ul>
                     <li>Proper formatting of quoted messages</li>
@@ -331,9 +387,15 @@
                 <ul>
                     <li>Show line above unread messages</li>
                     <li>Handle incoming location messages</li>
-                    <li>Dynamically switch between light and dark theme on macOS (requires re-linking for existing installs)</li>
+                    <li>
+                        Dynamically switch between light and dark theme on macOS (requires
+                        re-linking for existing installs)
+                    </li>
                     <li>Display unread badge in macOS app icon</li>
-                    <li>Option to enter custom Threema Safe server credentials (authentication) when linking</li>
+                    <li>
+                        Option to enter custom Threema Safe server credentials (authentication) when
+                        linking
+                    </li>
                 </ul>
                 <p>Improvements:</p>
                 <ul>

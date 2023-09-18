@@ -27,3 +27,7 @@ overrides:
     options:
       printWidth: 100
       tabWidth: 2
+  - files: '*.metainfo.xml'
+    options:
+      # Note: Only enable this for files that are whitespace-insensitive.
+      xmlWhitespaceSensitivity: ignore
