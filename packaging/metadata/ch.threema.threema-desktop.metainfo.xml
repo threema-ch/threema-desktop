@@ -25,6 +25,31 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta21" date="2023-09-19">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>
+                        Support for viewing video messages (for messages received after installing
+                        beta21)
+                    </li>
+                    <li>
+                        Support for playing voice messages (for messages received after installing
+                        beta21)
+                    </li>
+                    <li>Allow the message compose field to grow larger than just 4 rows</li>
+                    <li>Security improvements with regards to nonce checks</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        After clearing search field, ensure that active conversation is always
+                        visible
+                    </li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta20" date="2023-09-01">
             <description>
                 <p>Improvements:</p>
