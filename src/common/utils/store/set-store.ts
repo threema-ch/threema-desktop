@@ -24,6 +24,7 @@ import {
     type LocalStore,
     ReadableStore,
     type StoreOptions,
+    type StoreUnsubscriber,
 } from '~/common/utils/store';
 
 /**
@@ -93,6 +94,82 @@ export class LocalSetStore<TValue extends CustomTransferable>
         this._value.clear();
         this._dispatch(this._value);
         this._delta.raise([DeltaUpdateType.CLEARED]);
+    }
+}
+
+/**
+ * A {@link ISetStore} implementation that subscribes to a `Store<Set<T>>` and propagates
+ * delta-updates from the provided full set.
+ *
+ * Note that only changed object references (or elementar types) are compared when calculating the
+ * delta update.
+ */
+export class LocalSetDerivedSetStore<TValue extends CustomTransferable>
+    extends ReadableStore<ReadonlySet<TValue>>
+    implements ISetStore<TValue>, SetStoreDeltaListener<TValue>
+{
+    public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
+    public readonly tag: string;
+    private readonly _delta: EventController<DeltaUpdate<TValue>>;
+
+    /**
+     * Keep a reference to the source store unsubscriber to prevent garbage collection.
+     */
+    // @ts-expect-error: ts(6138)
+    private readonly _sourceUnsubscriber: StoreUnsubscriber;
+
+    public constructor(
+        simpleSetStore: IQueryableStore<ReadonlySet<TValue>>,
+        options?: StoreOptions<ReadonlySet<TValue>>,
+    ) {
+        super(simpleSetStore.get(), options);
+        this.tag = options?.debug?.tag ?? '';
+        this._delta = new EventController<DeltaUpdate<TValue>>(
+            options?.debug?.log,
+            new Set([this]), // Bidirectional coupling to prevent garbage collection
+        );
+        this._sourceUnsubscriber = simpleSetStore.subscribe((newSet) =>
+            this._updateFromSet(newSet),
+        );
+    }
+
+    public get delta(): EventListener<DeltaUpdate<TValue>> {
+        return this._delta;
+    }
+
+    /**
+     * Create delta update from a provided full new Set. Note: Only object references are taken into
+     * account when calculating the delta update.
+     */
+    private _updateFromSet(newSet: ReadonlySet<TValue>): void {
+        // Special case: Empty set
+        if (newSet.size === 0) {
+            if (this._value.size !== 0) {
+                // This might be a single item delete, but the result is the same - the subscriber
+                // of the SetStore just gets an empty set.
+                this._value = newSet;
+                this._delta.raise([DeltaUpdateType.CLEARED]);
+                this._dispatch(this._value);
+            }
+            return;
+        }
+
+        // Add new items
+        for (const newItem of newSet) {
+            if (!this._value.has(newItem)) {
+                this._delta.raise([DeltaUpdateType.ADDED, newItem]);
+            }
+        }
+
+        // Remove obsolete items
+        for (const oldItem of this._value) {
+            if (!newSet.has(oldItem)) {
+                this._delta.raise([DeltaUpdateType.DELETED, oldItem]);
+            }
+        }
+
+        this._value = newSet;
+        this._dispatch(this._value);
     }
 }
 
