@@ -20,7 +20,7 @@ import {
 import * as structbuf from '~/common/network/structbuf';
 import {type D2mDeviceId, isMessageId} from '~/common/network/types';
 import {exhausted} from '~/common/utils/assert';
-import {u64ToHexLe} from '~/common/utils/number';
+import {intoU64, u64ToHexLe} from '~/common/utils/number';
 
 function unhandled(
     params:
@@ -104,8 +104,14 @@ export abstract class ReflectedMessageTaskBase<
         try {
             validatedMessage = schema.parse(unvalidatedMessage) as v.Infer<TSchema>;
         } catch (error) {
+            let messageIdHex;
+            try {
+                messageIdHex = u64ToHexLe(intoU64(unvalidatedMessage.messageId));
+            } catch (innerError) {
+                messageIdHex = 'unknown';
+            }
             this._log.error(
-                `Discarding reflected ${this._direction} message due to validation error: ${error}`,
+                `Discarding reflected ${this._direction} message with ID ${messageIdHex} due to validation error: ${error}`,
             );
             return undefined;
         }
