@@ -392,9 +392,9 @@
       </div>
     {:else}
       <div bind:this={messagesContainer} class="messages">
-        {#await conversationViewModel.viewModelController.getConversationMessagesSetStore() then conversationMessagesSet}
+        {#await conversationViewModel.viewModelController.getConversationMessagesSetViewModel() then conversationMessageViewModel}
           <ConversationMessageList
-            {conversationMessagesSet}
+            conversationMessagesSet={conversationMessageViewModel.store}
             {receiverLookup}
             {receiver}
             {conversation}

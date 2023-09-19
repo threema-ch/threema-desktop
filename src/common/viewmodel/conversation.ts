@@ -27,7 +27,7 @@ import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
-import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
+import type {ConversationMessageSetViewModel} from '~/common/viewmodel/conversation-message-set';
 import {
     type TransformedReceiverData,
     transformReceiver,
@@ -55,7 +55,7 @@ export interface SendFileBasedMessagesEventDetail {
 export type SendMessageEventDetail = SendTextMessageEventDetail | SendFileBasedMessagesEventDetail;
 
 export interface IConversationViewModelController extends ProxyMarked {
-    getConversationMessagesSetStore: () => ConversationMessageSetStore;
+    getConversationMessagesSetViewModel: () => ConversationMessageSetViewModel;
     getConversationMessage: (
         messageId: MessageId,
     ) => ConversationMessageViewModelBundle | undefined;
@@ -81,8 +81,8 @@ export class ConversationViewModelController implements IConversationViewModelCo
         this._log = _services.logging.logger('viewmodel.conversation.controller');
     }
 
-    public getConversationMessagesSetStore(): ConversationMessageSetStore {
-        return this._viewModelRepository.conversationMessageSet(this._conversation);
+    public getConversationMessagesSetViewModel(): ConversationMessageSetViewModel {
+        return this._viewModelRepository.conversationMessageSetViewModel(this._conversation);
     }
 
     public getConversationMessage(

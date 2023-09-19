@@ -176,8 +176,8 @@ import {
     getConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation-message';
 import {
-    type ConversationMessageSetStore,
-    getConversationMessageSetStore,
+    type ConversationMessageSetViewModel,
+    getConversationMessageSetViewModel,
 } from '~/common/viewmodel/conversation-message-set';
 import {
     type ConversationPreviewSetStore,
@@ -461,10 +461,10 @@ export class TestViewModel implements IViewModelRepository {
         return undefined;
     }
 
-    public conversationMessageSet(
+    public conversationMessageSetViewModel(
         conversation: ConversationModelStore,
-    ): ConversationMessageSetStore {
-        return getConversationMessageSetStore(this, conversation);
+    ): ConversationMessageSetViewModel {
+        return getConversationMessageSetViewModel(this._services, this, conversation);
     }
 
     public conversationMessage(

@@ -5,7 +5,7 @@ import {WeakValueMap} from '~/common/utils/map';
 import type {ContactListItemSetStore} from '~/common/viewmodel/contact-list-item';
 import type {ConversationViewModel} from '~/common/viewmodel/conversation';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
-import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation-message-set';
+import type {ConversationMessageSetViewModel} from '~/common/viewmodel/conversation-message-set';
 import type {ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
 import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import type {GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
@@ -22,9 +22,9 @@ export class ViewModelCache {
         ConversationViewModel
     >();
 
-    public readonly conversationMessageSet = new WeakValueMap<
+    public readonly conversationMessageSetViewModel = new WeakValueMap<
         LocalModelStore<Conversation>,
-        ConversationMessageSetStore
+        ConversationMessageSetViewModel
     >();
 
     public readonly conversationMessage = new WeakValueMap<

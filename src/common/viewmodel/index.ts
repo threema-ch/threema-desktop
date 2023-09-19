@@ -22,8 +22,8 @@ import {
     getConversationMessageViewModelBundle,
 } from '~/common/viewmodel/conversation-message';
 import {
-    type ConversationMessageSetStore,
-    getConversationMessageSetStore,
+    type ConversationMessageSetViewModel,
+    getConversationMessageSetViewModel,
 } from '~/common/viewmodel/conversation-message-set';
 import {
     type ConversationPreviewSetStore,
@@ -50,9 +50,9 @@ export interface IViewModelRepository extends ProxyMarked {
     ) => ConversationPreviewSetStore;
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModel | undefined;
 
-    readonly conversationMessageSet: (
+    readonly conversationMessageSetViewModel: (
         conversation: ConversationModelStore,
-    ) => ConversationMessageSetStore;
+    ) => ConversationMessageSetViewModel;
     readonly conversationMessage: (
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
@@ -97,11 +97,11 @@ export class ViewModelRepository implements IViewModelRepository {
         );
     }
 
-    public conversationMessageSet(
+    public conversationMessageSetViewModel(
         conversation: ConversationModelStore,
-    ): ConversationMessageSetStore {
-        return this._cache.conversationMessageSet.getOrCreate(conversation, () =>
-            getConversationMessageSetStore(this, conversation),
+    ): ConversationMessageSetViewModel {
+        return this._cache.conversationMessageSetViewModel.getOrCreate(conversation, () =>
+            getConversationMessageSetViewModel(this._services, this, conversation),
         );
     }
 
