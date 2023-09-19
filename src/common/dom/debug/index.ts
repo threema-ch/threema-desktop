@@ -1,3 +1,4 @@
+import type {I18nLocales} from '~/app/ui/i18n-types';
 import type {ServicesForBackend} from '~/common/backend';
 import type {BackendHandle} from '~/common/dom/backend';
 import {
@@ -42,7 +43,7 @@ export class DebugBackend implements ProxyMarked {
     /**
      * Generate fake conversations and messages for making screenshots.
      */
-    public async generateScreenshotData(): Promise<void> {
-        await generateScreenshotData(this._services, this._log);
+    public async generateScreenshotData(locale: I18nLocales): Promise<void> {
+        await generateScreenshotData(this._services, this._log, locale);
     }
 }

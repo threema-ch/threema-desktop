@@ -14,3 +14,5 @@ export interface I18nType {
     readonly t: I18nTLikeFunction;
     readonly locale: 'de' | 'en';
 }
+
+export type I18nLocales = I18nType['locale'];

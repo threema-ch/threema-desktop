@@ -1,3 +1,4 @@
+import type {I18nLocales} from '~/app/ui/i18n-types';
 import type {ServicesForBackend} from '~/common/backend';
 import {type CryptoBackend, ensurePublicKey} from '~/common/crypto';
 import {randomChoice, randomString, randomU8, randomU64} from '~/common/crypto/random';
@@ -5,6 +6,7 @@ import type {DbContactUid} from '~/common/db';
 import type {BackendHandle} from '~/common/dom/backend';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {
+    getTranslatedValue,
     OWN_IDENTITY,
     SCREENSHOT_DATA_JSON_SCHEMA,
     type ScreenshotDataJsonGroup,
@@ -356,6 +358,7 @@ function getReferenceTimestamp(): Date {
 export async function generateScreenshotData(
     services: Pick<ServicesForBackend, 'crypto' | 'device' | 'file' | 'model'>,
     log: Logger,
+    locale: I18nLocales,
 ): Promise<void> {
     log.info('generateScreenshotData: Starting');
     const {device, model} = services;
@@ -397,8 +400,8 @@ export async function generateScreenshotData(
             identity,
             publicKey: contact.publicKey,
             createdAt: getReferenceTimestamp(),
-            firstName: contact.name.first,
-            lastName: contact.name.last,
+            firstName: getTranslatedValue(contact.name, locale).first,
+            lastName: getTranslatedValue(contact.name, locale).last,
             nickname: undefined,
             colorIndex: idColorIndex({type: ReceiverType.CONTACT, identity}),
             identityType: contact.identityType,
@@ -428,7 +431,13 @@ export async function generateScreenshotData(
 
         // Create conversation
         if (contact.conversation.length > 0) {
-            await addConversationMessages(contactModel, contact.conversation, services, log);
+            await addConversationMessages(
+                contactModel,
+                contact.conversation,
+                services,
+                log,
+                locale,
+            );
         }
     }
 
@@ -452,12 +461,13 @@ export async function generateScreenshotData(
         }
 
         // Create group
+        const groupName = getTranslatedValue(group.name, locale);
         if (model.groups.getByGroupIdAndCreator(group.id, creatorIdentity)) {
             // Group already exists
-            log.warn(`Skipping group ${group.name.default}, already exists`);
+            log.warn(`Skipping group ${groupName}, already exists`);
             continue;
         }
-        log.info(`Adding group with name ${group.name.default}`);
+        log.info(`Adding group with name ${groupName}`);
         const createdAt = new Date(
             getReferenceTimestamp().getTime() - group.createdMinutesAgo * 60 * 1000,
         );
@@ -465,7 +475,7 @@ export async function generateScreenshotData(
             {
                 groupId: group.id,
                 creatorIdentity,
-                name: group.name.default,
+                name: groupName,
                 createdAt,
                 lastUpdate: createdAt,
                 colorIndex: idColorIndex({
@@ -490,7 +500,7 @@ export async function generateScreenshotData(
 
         // Create conversation
         if (group.conversation.length > 0) {
-            await addConversationMessages(groupModel, group.conversation, services, log);
+            await addConversationMessages(groupModel, group.conversation, services, log, locale);
         }
     }
 
@@ -506,6 +516,7 @@ async function addConversationMessages(
     messages: ScreenshotDataJsonContact['conversation'] | ScreenshotDataJsonGroup['conversation'],
     {crypto, file, model}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>,
     log: Logger,
+    locale: I18nLocales,
 ): Promise<void> {
     const conversation = receiver.get().controller.conversation().get();
     for (const message of messages) {
@@ -522,7 +533,10 @@ async function addConversationMessages(
 
         switch (message.type) {
             case 'TEXT': {
-                const messageText = message.contentQuoteV2?.default ?? message.content.default;
+                const messageText =
+                    message.contentQuoteV2 !== undefined
+                        ? getTranslatedValue(message.contentQuoteV2, locale)
+                        : getTranslatedValue(message.content, locale);
                 const quoteInfo = parsePossibleTextQuote(messageText, log, messageId);
                 content = {
                     type: 'text',
@@ -541,7 +555,10 @@ async function addConversationMessages(
                     fileSize: message.content.fileBytes.byteLength,
                     blobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                     encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
-                    caption: message.content.caption?.default,
+                    caption:
+                        message.content.caption !== undefined
+                            ? getTranslatedValue(message.content.caption, locale)
+                            : undefined,
                 } as const;
                 break;
             }
@@ -559,7 +576,10 @@ async function addConversationMessages(
                     thumbnailBlobId: ensureBlobId(randomBytes(new Uint8Array(BLOB_ID_LENGTH))),
                     encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
                     renderingType: ImageRenderingType.REGULAR,
-                    caption: message.content.caption?.default,
+                    caption:
+                        message.content.caption !== undefined
+                            ? getTranslatedValue(message.content.caption, locale)
+                            : undefined,
                     dimensions: undefined,
                     animated: false,
                 } as const;

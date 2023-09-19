@@ -2,7 +2,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import type {AppServices} from '~/app/types';
-  import {type Locale, LOCALES} from '~/app/ui/i18n';
+  import {i18n, type Locale, LOCALES} from '~/app/ui/i18n';
   import {type Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
   import type {
@@ -255,7 +255,7 @@
     <Button
       flavor="filled"
       on:click={() => {
-        void backend.debug.generateScreenshotData();
+        void backend.debug.generateScreenshotData($i18n.locale);
       }}
     >
       <span class="icon-and-text"

@@ -87,8 +87,9 @@ def convert_contacts(contacts, current_dir, own_identity):
             'identity': identity,
             'publicKey': data['pk'],
             'name': {
-                'first': data['name']['default'][0],
-                'last': data['name']['default'][1],
+                language: {'first': first, 'last': last}
+                for language, [first, last]
+                in data['name'].items()
             },
             'verificationLevel': data.get('verification', 1) - 1, # Note: Desktop uses 0-2, not 1-3
             'acquaintanceLevel': 'GROUP' if data.get('hidden', False) else 'DIRECT',

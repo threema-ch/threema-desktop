@@ -1,5 +1,6 @@
 import * as v from '@badrap/valita';
 
+import type {I18nLocales} from '~/app/ui/i18n-types';
 import {ensurePublicKey} from '~/common/crypto';
 import {
     AcquaintanceLevel,
@@ -35,12 +36,18 @@ function identityStringOrOwnIdentity(
     }
 }
 
-const TRANSLATED_VALUE_SCHEMA = v
-    .object({
-        default: v.string(),
-        de: v.string().optional(),
-    })
-    .rest(v.unknown());
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function translatedValueSchema<T>(valueSchema: v.Type<T>) {
+    return v
+        .object({
+            default: valueSchema,
+            de: valueSchema.optional(),
+            fr: valueSchema.optional(),
+        })
+        .rest(v.unknown());
+}
+
+type TranslatedValueSchema<T> = v.Infer<ReturnType<typeof translatedValueSchema<T>>>;
 
 const TEST_MESSAGE_BASE = {
     messageId: v.string().map(hexLeToU64).map(ensureMessageId).optional(),
@@ -78,8 +85,8 @@ const TEST_MESSAGE_SCHEMA = v.union(
         .object({
             ...TEST_MESSAGE_BASE,
             type: v.literal('TEXT'),
-            content: TRANSLATED_VALUE_SCHEMA,
-            contentQuoteV2: TRANSLATED_VALUE_SCHEMA.optional(),
+            content: translatedValueSchema(v.string()),
+            contentQuoteV2: translatedValueSchema(v.string()).optional(),
         })
         .rest(v.unknown()),
     v
@@ -91,7 +98,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
                     fileName: v.string(),
                     fileBytes: v.string().map(base64ToU8a),
                     mediaType: v.string(),
-                    caption: TRANSLATED_VALUE_SCHEMA.optional(),
+                    caption: translatedValueSchema(v.string()).optional(),
                 })
                 .rest(v.unknown()),
         })
@@ -104,7 +111,7 @@ const TEST_MESSAGE_SCHEMA = v.union(
                 .object({
                     imageBytes: v.string().map(base64ToU8a),
                     mediaType: v.string(),
-                    caption: TRANSLATED_VALUE_SCHEMA.optional(),
+                    caption: translatedValueSchema(v.string()).optional(),
                 })
                 .rest(v.unknown()),
         })
@@ -158,12 +165,14 @@ const TEST_CONTACT_SCHEMA = v
     .object({
         identity: v.string().map(ensureIdentityString),
         publicKey: v.string().map(hexToBytes).map(ensurePublicKey),
-        name: v
-            .object({
-                first: v.string(),
-                last: v.string(),
-            })
-            .rest(v.unknown()),
+        name: translatedValueSchema(
+            v
+                .object({
+                    first: v.string(),
+                    last: v.string(),
+                })
+                .rest(v.unknown()),
+        ),
         verificationLevel: v.number().map(VerificationLevelUtils.fromNumber),
         acquaintanceLevel: v.union(v.literal('DIRECT'), v.literal('GROUP')).map((value) => {
             switch (value) {
@@ -194,7 +203,7 @@ const TEST_GROUP_SCHEMA = v
     .object({
         id: v.string().map(hexLeToU64).map(ensureGroupId),
         creator: v.string().chain(identityStringOrOwnIdentity),
-        name: TRANSLATED_VALUE_SCHEMA,
+        name: translatedValueSchema(v.string()),
         members: v.array(v.string().chain(identityStringOrOwnIdentity)),
         createdMinutesAgo: v.number(),
         avatar: v.string().map(base64ToU8a).optional(),
@@ -220,3 +229,18 @@ export type ScreenshotDataJson = Readonly<v.Infer<typeof SCREENSHOT_DATA_JSON_SC
 
 export type ScreenshotDataJsonContact = Readonly<v.Infer<typeof TEST_CONTACT_SCHEMA>>;
 export type ScreenshotDataJsonGroup = Readonly<v.Infer<typeof TEST_GROUP_SCHEMA>>;
+
+/**
+ * Return a translated value for the specified language. Fall back to the default if value is not
+ * available in this language.
+ */
+export function getTranslatedValue<T>(value: TranslatedValueSchema<T>, language: I18nLocales): T {
+    switch (language) {
+        case 'de':
+            return value.de ?? value.default;
+        case 'en':
+            return value.default;
+        default:
+            return unreachable(language);
+    }
+}
