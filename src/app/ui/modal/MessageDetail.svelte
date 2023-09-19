@@ -100,7 +100,7 @@
                 >
               </div>
               <div class="date">
-                {message.view.lastReaction.at.toLocaleString()}
+                <DateTime date={message.view.lastReaction.at} format="extended" />
               </div>
             </div>
           {/if}
