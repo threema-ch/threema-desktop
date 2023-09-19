@@ -616,7 +616,7 @@ function main(
         window = new electron.BrowserWindow({
             title: import.meta.env.APP_NAME,
             icon: process.platform === 'linux' ? ABOUT_PANEL_OPTIONS.iconPath : undefined,
-            width: 900,
+            width: 1200,
             height: 700,
             webPreferences: {
                 // TODO(DESK-79): Harden this. Disable `nodeIntegrationInWorker` and enable `sandbox`. This means
