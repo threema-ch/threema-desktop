@@ -25,6 +25,20 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta22" date="2023-09-20">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Increase default window size</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Message details: Localized date for "last reaction"</li>
+                    <li>Security update for Electron (fixes CVE-2023-4863)</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta21" date="2023-09-19">
             <description>
                 <p>Improvements:</p>
