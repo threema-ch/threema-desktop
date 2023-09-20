@@ -17,7 +17,7 @@ import {
 import {type IdentityString, isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
-import {purgeUndefinedProperties} from '~/common/utils/object';
+import {filterUndefinedProperties} from '~/common/utils/object';
 import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 type ProfilePictures = Pick<
@@ -230,7 +230,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         const controller = contact.get().controller;
 
         const propertiesToUpdate = mapValitaDefaultsToUndefined(
-            purgeUndefinedProperties({
+            filterUndefinedProperties({
                 createdAt: update.createdAt,
                 firstName: update.firstName,
                 lastName: update.lastName,

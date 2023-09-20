@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/browser';
 
 import {type Logger} from '~/common/logging';
-import {purgeUndefinedProperties} from '~/common/utils/object';
+import {filterUndefinedProperties} from '~/common/utils/object';
 
 let crashReportingInitialized = false;
 
@@ -48,7 +48,7 @@ export function handleError(message: string, logTag?: string, error?: Error): vo
     if (!crashReportingInitialized) {
         return;
     }
-    const tags = purgeUndefinedProperties({logTag});
+    const tags = filterUndefinedProperties({logTag});
     if (error !== undefined) {
         Sentry.captureException(error, {tags, extra: {message}});
     } else {

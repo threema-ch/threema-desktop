@@ -14,14 +14,27 @@ export function hasProperty<
 }
 
 /**
- * Remove all properties from an object whose value is undefined.
+ * This helper type takes a record, and returns a record where the value types don't include
+ * `undefined`. Additionally, keys that are always `undefined` are removed from the keys.
+ *
+ * Example: The type `{a: string, b: boolean | undefined, c: undefined}` is transformed to `{a:
+ * string, b: boolean}`.
  */
-export function purgeUndefinedProperties<TObject extends Record<string | u53 | symbol, unknown>>(
-    object: TObject,
-): TObject {
+type RecordWithoutUndefinedValues<R extends Record<string | u53 | symbol, unknown>> = {
+    // Note: If the part behind "as" evaluates to "never", then the key is removed from the set of keys.
+    // See https://www.typescriptlang.org/docs/handbook/2/mapped-types.html#key-remapping-via-as
+    [K in keyof R as Exclude<R[K], undefined> extends never ? never : K]: Exclude<R[K], undefined>;
+};
+
+/**
+ * Return a copy of a record with all keys removed where the value is `undefined`.
+ */
+export function filterUndefinedProperties<R extends Record<string | u53 | symbol, unknown>>(
+    record: R,
+): RecordWithoutUndefinedValues<R> {
     return Object.fromEntries(
-        Object.entries(object).filter(([key, value]) => value !== undefined),
-    ) as TObject;
+        Object.entries(record).filter(([key, value]) => value !== undefined),
+    ) as RecordWithoutUndefinedValues<R>;
 }
 
 /**

@@ -21,7 +21,6 @@ import {
 import {type LocalModelStore} from '~/common/model/utils/model-store';
 import {type CspE2eType} from '~/common/network/protocol';
 import * as structbuf from '~/common/network/structbuf';
-import {type DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
 import {type ConversationId, type MessageId} from '~/common/network/types';
 import {type Mutable} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';

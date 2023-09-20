@@ -11,7 +11,7 @@ import {
 } from '~/common/network/protocol/task/';
 import {type D2mDeviceId} from '~/common/network/types';
 import {u64ToHexLe} from '~/common/utils/number';
-import {purgeUndefinedProperties} from '~/common/utils/object';
+import {filterUndefinedProperties} from '~/common/utils/object';
 
 /**
  * Process reflected SettingsSync messages with updated settings.
@@ -64,7 +64,7 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
             excludeFromSyncIdentities,
         } = settingsUpdate;
         this._services.model.user.privacySettings.get().controller.update(
-            purgeUndefinedProperties({
+            filterUndefinedProperties({
                 contactSyncPolicy,
                 unknownContactPolicy,
                 readReceiptPolicy,
@@ -73,17 +73,17 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
                 keyboardDataCollectionPolicy,
                 blockedIdentities,
                 excludeFromSyncIdentities,
-            }),
+            } as const),
         );
     }
 
     private _processCallsSettings(settingsUpdate: validate.sync.Settings.Type): void {
         const {callPolicy, callConnectionPolicy} = settingsUpdate;
         this._services.model.user.callsSettings.get().controller.update(
-            purgeUndefinedProperties({
+            filterUndefinedProperties({
                 callPolicy,
                 callConnectionPolicy,
-            }),
+            } as const),
         );
     }
 }

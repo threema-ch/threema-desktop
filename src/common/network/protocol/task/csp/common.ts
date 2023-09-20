@@ -5,7 +5,7 @@ import {type OutboundVideoMessage} from '~/common/model/types/message/video';
 import {type u53} from '~/common/types';
 import {unreachable, unwrap} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {purgeUndefinedProperties} from '~/common/utils/object';
+import {filterUndefinedProperties} from '~/common/utils/object';
 
 /**
  * Based on the specified message, generate the file message JSON data (as defined in the CSP file
@@ -36,7 +36,7 @@ export function getFileJsonData<
         case 'image':
             renderingType = view.renderingType; // Image or sticker
             deprecatedRenderingType = 1;
-            metadata = purgeUndefinedProperties({
+            metadata = filterUndefinedProperties({
                 a: view.animated,
                 h: view.dimensions?.height,
                 w: view.dimensions?.width,
@@ -44,7 +44,7 @@ export function getFileJsonData<
             break;
         case 'video':
             renderingType = deprecatedRenderingType = 1; // Media
-            metadata = purgeUndefinedProperties({
+            metadata = filterUndefinedProperties({
                 d: view.duration,
                 h: view.dimensions?.height,
                 w: view.dimensions?.width,
@@ -52,7 +52,7 @@ export function getFileJsonData<
             break;
         case 'audio':
             renderingType = deprecatedRenderingType = 1; // Media
-            metadata = purgeUndefinedProperties({
+            metadata = filterUndefinedProperties({
                 d: view.duration,
             });
             break;
@@ -60,7 +60,7 @@ export function getFileJsonData<
             unreachable(message);
     }
 
-    return purgeUndefinedProperties({
+    return filterUndefinedProperties({
         j: renderingType, // Rendering type
         i: deprecatedRenderingType, // Deprecated rendering type for compatibility
         k: bytesToHex(view.encryptionKey.unwrap()), // Blob encryption key

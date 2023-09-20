@@ -151,7 +151,7 @@ export function optionalEnum<T>(enumUtils: {
  * mapped to `undefined`, then we could not differentiate the two. By mapping the empty string to
  * `VALITA_DEFAULT`, we can distinguish between these two cases.
  *
- * Note: This is especially useful in combination with {@link purgeUndefinedProperties} followed by
+ * Note: This is especially useful in combination with {@link filterUndefinedProperties} followed by
  *       {@link mapValitaDefaultsToUndefined}.
  */
 export const VALITA_DEFAULT = Symbol('valita-default');

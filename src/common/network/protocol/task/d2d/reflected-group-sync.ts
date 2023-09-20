@@ -10,7 +10,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task';
 import {unreachable} from '~/common/utils/assert';
-import {purgeUndefinedProperties} from '~/common/utils/object';
+import {filterUndefinedProperties} from '~/common/utils/object';
 import {mapValitaDefaultsToUndefined} from '~/common/utils/valita-helpers';
 
 export class ReflectedGroupSyncTask implements PassiveTask<void> {
@@ -98,7 +98,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
         const controller = group.get().controller;
 
         const propertiesToUpdate = mapValitaDefaultsToUndefined(
-            purgeUndefinedProperties({
+            filterUndefinedProperties({
                 notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride,
                 notificationSoundPolicyOverride: update.notificationSoundPolicyOverride,
             } as const),
