@@ -232,7 +232,7 @@ export function create(
         .add(message.uid, () => createStore(services, conversation, factory, message, sender));
 }
 
-function getByUid(
+export function getByUid(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
     factory: MessageFactory,

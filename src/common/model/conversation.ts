@@ -5,6 +5,7 @@ import {
     CspE2eDeliveryReceiptStatus,
     Existence,
     MessageDirection,
+    MessageQueryDirection,
     type MessageType,
     ReadReceiptPolicy,
     ReceiverType,
@@ -396,6 +397,53 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public getAllMessages(): SetOfAnyLocalMessageModelStore {
         return this.meta.run(() => message.all(this._services, this._handle, MESSAGE_FACTORY));
+    }
+
+    /** @inheritdoc */
+    public getMessageWithSurroundingMessages(
+        refrenceMessageId: MessageId,
+        contextSize: u53,
+    ): Set<AnyMessageModelStore> | undefined {
+        const {db} = this._services;
+        return this.meta.run(() => {
+            const referenceMessageUid = db.hasMessageById(this.uid, refrenceMessageId);
+            if (referenceMessageUid === undefined) {
+                return undefined;
+            }
+
+            // Add messages older than reference (reverse db result)
+            const olderMessages = [
+                ...this.meta.run(() =>
+                    db.getMessageUids(this.uid, contextSize, {
+                        direction: MessageQueryDirection.OLDER,
+                        uid: referenceMessageUid,
+                    }),
+                ),
+            ];
+
+            // Add messages newer than reference
+            const newerMessages = this.meta.run(() =>
+                db.getMessageUids(this.uid, contextSize, {
+                    direction: MessageQueryDirection.NEWER,
+                    uid: referenceMessageUid,
+                }),
+            );
+
+            // Get all stores for the message
+            // Note that the reference message is fetched twice - since it is cached and Set-uniqued
+
+            return new Set(
+                [...olderMessages, ...newerMessages].map((dbMessageListing) =>
+                    message.getByUid(
+                        this._services,
+                        this._handle,
+                        MESSAGE_FACTORY,
+                        dbMessageListing.uid,
+                        Existence.ENSURED,
+                    ),
+                ),
+            );
+        });
     }
 
     private _handleRead(source: TriggerSource.LOCAL, readAt: Date): void {

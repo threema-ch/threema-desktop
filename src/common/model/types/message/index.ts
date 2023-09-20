@@ -31,7 +31,7 @@ import type {
 } from '~/common/model/types/message/video';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
-import type {LocalSetStore, RemoteSetStore} from '~/common/utils/store/set-store';
+import type {IDerivableSetStore, RemoteSetStore} from '~/common/utils/store/set-store';
 
 export * from './common';
 
@@ -153,7 +153,7 @@ export type SetOfAnyRemoteMessageModel =
     | ReadonlySet<RemoteModelStore<OutboundVideoMessage['model']>>
     | ReadonlySet<RemoteModelStore<InboundAudioMessage['model']>>
     | ReadonlySet<RemoteModelStore<OutboundAudioMessage['model']>>;
-export type SetOfAnyLocalMessageModelStore = LocalSetStore<
+export type SetOfAnyLocalMessageModelStore = IDerivableSetStore<
     | LocalModelStore<InboundTextMessage['model']>
     | LocalModelStore<OutboundTextMessage['model']>
     | LocalModelStore<InboundFileMessage['model']>

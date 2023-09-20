@@ -21,12 +21,7 @@ import {WeakValueMap} from '~/common/utils/map';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {AbortRaiser} from '~/common/utils/signal';
 import type {LocalStore, RemoteStore} from '~/common/utils/store';
-import type {
-    ISetStore,
-    LocalDerivedSetStore,
-    LocalSetStore,
-    RemoteSetStore,
-} from '~/common/utils/store/set-store';
+import type {IDerivableSetStore, ISetStore, RemoteSetStore} from '~/common/utils/store/set-store';
 
 /**
  * Symbol to mark a remote as an object with transferred properties.
@@ -402,9 +397,9 @@ export type PropertiesMarkedRemote<T> = {
 } & CustomTransferredRemoteMarker<typeof OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER>;
 
 /**
- * Make sure that {@param T} extends an object.
+ * Make sure that {@param T} extends {@param TType}.
  */
-type MustExtendObject<T extends object> = T;
+type MustExtend<TType, T extends TType> = T;
 
 /**
  * Maps our custom local transfer marked types to the matching remote counterpart type.
@@ -420,10 +415,10 @@ type CustomTransferableRemote<T extends CustomTransferable> = T extends LocalMod
     infer TType
 >
     ? RemoteModelStore<TModel, TView, TController, TCtx, TType>
-    : T extends LocalSetStore<infer TValue>
-    ? RemoteSetStore<MustExtendObject<Remote<TValue>>>
-    : T extends LocalDerivedSetStore<any, infer TDerived>
-    ? RemoteSetStore<Remote<TDerived>>
+    : T extends IDerivableSetStore<infer TValue>
+    ? // TValue must extends CustomTransferrable. We cannot enforce this since the remote mapping
+      // of a CustomTransferrable is a plain object.
+      RemoteSetStore<MustExtend<object, Remote<TValue>>>
     : T extends LocalStore<infer TValue, RegisteredTransferHandler<any, any, any, any, TransferTag>>
     ? RemoteStore<Remote<TValue>>
     : T extends PropertiesMarked

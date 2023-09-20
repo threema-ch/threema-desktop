@@ -48,9 +48,16 @@ function defaultSetStoreRepresentation(set: ReadonlySet<unknown>): string {
 export type ISetStore<TValue> = IQueryableStore<ReadonlySet<TValue>> &
     LocalStore<ReadonlySet<TValue>, typeof SET_STORE_TRANSFER_HANDLER>;
 
+/**
+ * A SetStore that can be derived from with delta update support.
+ */
+export interface IDerivableSetStore<TValue extends CustomTransferable>
+    extends ISetStore<TValue>,
+        SetStoreDeltaListener<TValue> {}
+
 export class LocalSetStore<TValue extends CustomTransferable>
     extends ReadableStore<Set<TValue>, ReadonlySet<TValue>>
-    implements ISetStore<TValue>, SetStoreDeltaListener<TValue>
+    implements IDerivableSetStore<TValue>
 {
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
     public readonly tag: string;
@@ -98,15 +105,14 @@ export class LocalSetStore<TValue extends CustomTransferable>
 }
 
 /**
- * A {@link ISetStore} implementation that subscribes to a `Store<Set<T>>` and propagates
+ * An {@link ISetStore} implementation that subscribes to a `Store<Set<T>>` and propagates
  * delta-updates from the provided full set.
  *
- * Note that only changed object references (or elementar types) are compared when calculating the
- * delta update.
+ * Note that only changed object references are compared when calculating the delta update.
  */
 export class LocalSetDerivedSetStore<TValue extends CustomTransferable>
     extends ReadableStore<ReadonlySet<TValue>>
-    implements ISetStore<TValue>, SetStoreDeltaListener<TValue>
+    implements IDerivableSetStore<TValue>
 {
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
     public readonly tag: string;
@@ -184,7 +190,7 @@ export class LocalDerivedSetStore<
         TDerived extends CustomTransferable,
     >
     extends ReadableStore<Set<TDerived>, ReadonlySet<TDerived>>
-    implements ISetStore<TDerived>, SetStoreDeltaListener<TDerived>
+    implements IDerivableSetStore<TDerived>
 {
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
     public readonly tag: string;
@@ -197,7 +203,7 @@ export class LocalDerivedSetStore<
     private readonly _sourceDeltaUnsubscribe: EventUnsubscriber;
 
     public constructor(
-        source: LocalSetStore<TValue>,
+        source: IDerivableSetStore<TValue>,
         derive: (value: TValue) => TDerived,
         public override readonly options?: StoreOptions<ReadonlySet<TDerived>>,
     ) {

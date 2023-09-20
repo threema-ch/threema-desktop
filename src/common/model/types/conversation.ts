@@ -96,6 +96,14 @@ export type ConversationController = {
      */
     readonly getAllMessages: () => SetOfAnyLocalMessageModelStore;
     /**
+     * Return a {@link LocalModelStore} for every message in the current conversation with a certain
+     * range around a reference message.
+     */
+    readonly getMessageWithSurroundingMessages: (
+        id: MessageId,
+        contextSize: u53,
+    ) => Set<AnyMessageModelStore> | undefined;
+    /**
      * The user read (i.e. opened) the conversation on the current device.
      */
     readonly read: ControllerUpdateFromLocal<[readAt: Date]>;
