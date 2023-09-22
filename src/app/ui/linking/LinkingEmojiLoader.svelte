@@ -10,8 +10,8 @@
    */
   export let byte: u8;
 
-  // Note: The source emoji list should be uniformly distributed over 256 indices so that no bias
-  // occurs.
+  // Note: The number of source emoji should be a factor of 256 (i.e. 256, 128, 64, ...) so that
+  //       they uniformly distribute over the possible byte values without bias.
   const emojis = EMOJI_LIST.map(
     (codepoints) =>
       ({

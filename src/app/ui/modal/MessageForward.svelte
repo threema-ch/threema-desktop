@@ -24,7 +24,7 @@
   export let services: AppServices;
   const {backend, router} = services;
 
-  let searchInput: SearchInput;
+  let searchInput: SearchInput | null | undefined;
   let activeTab: ContactTab = 'private-contacts';
   let filter = '';
 
@@ -77,7 +77,7 @@
 
   // Autofocus on search input
   $: if (visible) {
-    searchInput.focus();
+    searchInput?.focus();
   }
 
   // TODO(DESK-830)

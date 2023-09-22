@@ -295,8 +295,8 @@ async function init(): Promise<MainInit> {
             // override the default and use XDG_DATA_HOME instead.
             //
             // Note: Don't use dot notation below, see https://stackoverflow.com/a/72403165/284318
-            // eslint-disable-next-line dot-notation
-            const XDG_DATA_HOME = (process.env.XDG_DATA_HOME ?? '').trim();
+            // eslint-disable-next-line @typescript-eslint/dot-notation
+            const XDG_DATA_HOME = (process.env['XDG_DATA_HOME'] ?? '').trim();
             const baseDir =
                 XDG_DATA_HOME.length > 0
                     ? XDG_DATA_HOME

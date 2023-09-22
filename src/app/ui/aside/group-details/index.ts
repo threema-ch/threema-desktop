@@ -23,9 +23,11 @@ export function sortGroupMembers(
     return (
         [...members]
             // Sort by display name
-            .sort((storeA, storeB) =>
-                storeA.get().view.displayName.localeCompare(storeB.get().view.displayName),
-            )
+            .sort((storeA, storeB) => {
+                const nameA = storeA.get().view.displayName;
+                const nameB = storeB.get().view.displayName;
+                return nameA.localeCompare(nameB);
+            })
             // Sort by creator (creator should be always first member)
             .sort((storeA, storeB) => {
                 if (storeA.get().view.identity === creatorIdentity) {

@@ -79,7 +79,7 @@ export function literalToLowercase<S extends string>(string: StringLiteral<S>): 
  *
  * @throws {Error} if `value` does not contain at least `nItems`.
  */
-export function split<N extends u53>(
+export function splitAtLeast<N extends u53>(
     value: string,
     splitter: string,
     nItems: N,

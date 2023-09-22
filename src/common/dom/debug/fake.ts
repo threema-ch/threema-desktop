@@ -7,6 +7,7 @@ import {randomBytes} from '~/common/dom/crypto/random';
 import {
     OWN_IDENTITY,
     SCREENSHOT_DATA_JSON_SCHEMA,
+    type ScreenshotDataJsonGroup,
     type ScreenshotDataJson,
     type ScreenshotDataJsonContact,
 } from '~/common/dom/debug/screenshot-data';
@@ -342,7 +343,7 @@ export async function generateFakeGroupConversation(
 /**
  * Return the screenshot reference timestamp (today 08:15).
  */
-function getReferenceTimestampMs(): Date {
+function getReferenceTimestamp(): Date {
     const date = new Date();
     date.setHours(8);
     date.setMinutes(15);
@@ -395,7 +396,7 @@ export async function generateScreenshotData(
         const contactModel = model.contacts.add.fromSync({
             identity,
             publicKey: contact.publicKey,
-            createdAt: getReferenceTimestampMs(),
+            createdAt: getReferenceTimestamp(),
             firstName: contact.name.first,
             lastName: contact.name.last,
             nickname: undefined,
@@ -458,7 +459,7 @@ export async function generateScreenshotData(
         }
         log.info(`Adding group with name ${group.name.default}`);
         const createdAt = new Date(
-            getReferenceTimestampMs().getTime() - group.createdMinutesAgo * 60 * 1000,
+            getReferenceTimestamp().getTime() - group.createdMinutesAgo * 60 * 1000,
         );
         const groupModel = model.groups.add.fromSync(
             {
@@ -501,7 +502,8 @@ export async function generateScreenshotData(
  */
 async function addConversationMessages(
     receiver: ContactModelStore | GroupModelStore,
-    messages: ScreenshotDataJsonContact['conversation'],
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-type-constituents
+    messages: ScreenshotDataJsonContact['conversation'] | ScreenshotDataJsonGroup['conversation'],
     {crypto, file, model}: Pick<ServicesForBackend, 'crypto' | 'file' | 'model'>,
     log: Logger,
 ): Promise<void> {
@@ -511,7 +513,7 @@ async function addConversationMessages(
 
         const messageId = message.messageId ?? randomMessageId(crypto);
         const messageDate = new Date(
-            getReferenceTimestampMs().getTime() - message.minutesAgo * 60 * 1000,
+            getReferenceTimestamp().getTime() - message.minutesAgo * 60 * 1000,
         );
         const lastReaction =
             message.lastReaction === undefined

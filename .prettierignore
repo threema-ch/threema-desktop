@@ -1,5 +1,6 @@
 /.gitlab/
 /build/
+/docs/book/
 /export/
 /libs/
 /node_modules/

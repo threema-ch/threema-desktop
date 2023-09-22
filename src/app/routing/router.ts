@@ -4,7 +4,7 @@ import {ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {assert} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
-import {split} from '~/common/utils/string';
+import {splitAtLeast} from '~/common/utils/string';
 
 /**
  * Interface representing the current application routing state.
@@ -86,7 +86,7 @@ function stateFromUrlFragment(fragment: string, log: Logger): RouterState | unde
     // Try to find route corresponding to the current URL fragment
     const {
         items: [path],
-    } = split(fragment, '?', 1);
+    } = splitAtLeast(fragment, '?', 1);
     if (!path.startsWith('/')) {
         return undefined;
     }

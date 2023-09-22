@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 
-import {getGraphemeClusters, localeSort, truncate} from '~/common/utils/string';
+import {getGraphemeClusters, localeSort, splitAtLeast, truncate} from '~/common/utils/string';
 
 export function run(): void {
     describe('utils::string', function () {
@@ -53,6 +53,49 @@ export function run(): void {
                 expect(truncate('hi 🤷‍♀️ there', 5)).to.equal('hi 🤷‍♀️…');
                 expect(truncate('hi 🤷‍♀️ there', 4)).to.equal('hi …');
                 expect(truncate('hi 🤷‍♀️ there', 3)).to.equal('hi…');
+            });
+        });
+
+        describe('splitAtLeast', function () {
+            it('splits 2/2 parts', function () {
+                expect(splitAtLeast('hello,world', ',', 2)).to.deep.equal({
+                    items: ['hello', 'world'],
+                    rest: [],
+                });
+            });
+
+            it('splits 2/4 parts', function () {
+                expect(splitAtLeast('hello:world:and:space', ':', 2)).to.deep.equal({
+                    items: ['hello', 'world'],
+                    rest: ['and', 'space'],
+                });
+            });
+
+            it('splits 1/1 parts', function () {
+                expect(splitAtLeast('hello', ',', 1)).to.deep.equal({
+                    items: ['hello'],
+                    rest: [],
+                });
+            });
+
+            it('handle nItems=0', function () {
+                expect(splitAtLeast('hello,big,world', ',', 0)).to.deep.equal({
+                    items: [],
+                    rest: ['hello', 'big', 'world'],
+                });
+            });
+
+            it('handle empty items', function () {
+                expect(splitAtLeast('hello,,world', ',', 2)).to.deep.equal({
+                    items: ['hello', ''],
+                    rest: ['world'],
+                });
+            });
+
+            it('throw if not enough items are found', function () {
+                expect(() => splitAtLeast('hello,big,world', ',', 4)).to.throw(
+                    'Expected 4 after split, got 3',
+                );
             });
         });
     });

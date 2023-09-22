@@ -1,7 +1,7 @@
 import {ParseError} from '~/common/error';
 import type {f64} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
-import {split} from '~/common/utils/string';
+import {splitAtLeast} from '~/common/utils/string';
 
 export interface Coordinates {
     readonly lat: f64;
@@ -18,7 +18,7 @@ export interface Location {
 function parseCoordinates(line: string): Location['coordinates'] {
     let parts, rest;
     try {
-        ({items: parts, rest} = split(line.trim(), ',', 2));
+        ({items: parts, rest} = splitAtLeast(line.trim(), ',', 2));
     } catch {
         throw new ParseError('Could not parse location: Did not find two coordinates');
     }

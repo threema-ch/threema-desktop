@@ -8,26 +8,27 @@ function parseOption(arg, argv, options) {
     if (options.programArgv === undefined) {
         options.programArgv = [];
     }
-    if (arg === '-c') {
-        options.viteConfigPath = argv.shift();
-        return;
-    }
-    if (arg === '-m') {
-        options.viteEnvMode = argv.shift();
-        return;
-    }
-    if (arg === '-r') {
-        options.program = argv.shift();
-        return;
-    }
-    if (arg === '-p') {
-        options.pidfile = argv.shift();
-        return;
-    }
-    if (arg === '--') {
-        for (let v = argv.shift(); v !== undefined; v = argv.shift()) {
-            options.programArgv.push(v);
-        }
+    switch (arg) {
+        case '-c':
+            options.viteConfigPath = argv.shift();
+            break;
+        case '-m':
+            options.viteEnvMode = argv.shift();
+            break;
+        case '-r':
+            options.program = argv.shift();
+            break;
+        case '-p':
+            options.pidfile = argv.shift();
+            break;
+        case '--':
+            for (let v = argv.shift(); v !== undefined; v = argv.shift()) {
+                options.programArgv.push(v);
+            }
+            break;
+        default:
+            // Ignore
+            break;
     }
 }
 
