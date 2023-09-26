@@ -9,7 +9,14 @@ import * as process from 'node:process';
 
 import * as v from '@badrap/valita';
 import type createDMG from 'electron-installer-dmg';
-import * as fsExtra from 'fs-extra';
+import fsExtra from 'fs-extra';
+
+// Note: Eslint wants us to do "import {copySync, ensureDirSync} from 'fs-extra'", but when using
+//       that syntax, node complains and suggests to use the default import instead. In the
+//       meantime, fs-extra _should_ support ESM by importing from 'fs-extra/esm', but the types
+//       don't seem to support that yet.
+// eslint-disable-next-line import/no-named-as-default-member
+const {copySync, ensureDirSync} = fsExtra;
 
 // ANSI escape codes
 const ANSI_GREEN = '\u001b[0;32m';
@@ -274,8 +281,8 @@ function main(args: string[]): void {
         }
         fs.rmSync(dirs.tmp, {recursive: true, force: true});
     }
-    fsExtra.ensureDirSync(dirs.tmp);
-    fsExtra.ensureDirSync(dirs.out);
+    ensureDirSync(dirs.tmp);
+    ensureDirSync(dirs.out);
 
     // Dispatch to appropriate build target
     const target: Target = args[0];
@@ -504,7 +511,7 @@ function buildBinaryArchive(dirs: Directories, flavor: Flavor, sign: boolean): v
     const appId = determineAppIdentifier(flavor);
     const binaryDirNew = `${appId}-bin-${process.platform}-${process.arch}`;
     const binaryDirPathNew = path.join(dirs.tmp, binaryDirNew);
-    fsExtra.copySync(binaryDirPathOld, binaryDirPathNew, {
+    copySync(binaryDirPathOld, binaryDirPathNew, {
         errorOnExist: true,
         dereference: false,
         preserveTimestamps: false,
