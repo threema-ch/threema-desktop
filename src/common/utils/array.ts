@@ -71,14 +71,11 @@ export type Join<
  * separated by commas or a specified separator string. The return type will contain the appropriate
  * string literals.
  *
- * Note: This only works if the array is marked with `as const`. Otherwise you'll get back the type
- * of an empty string literal.
- *
  * @param arr The const string array to join.
  * @param separator The separator string to join the values with.
  * @returns The concatenated values as a string.
  */
-export function joinConstArray<Arr extends readonly string[], Separator extends string = ','>(
+export function joinConstArray<const Arr extends readonly string[], Separator extends string = ','>(
     arr: Arr,
     separator: Separator = ',' as Separator,
 ): Join<Arr, Separator> {

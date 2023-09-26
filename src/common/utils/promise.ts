@@ -18,7 +18,7 @@ export interface TaggedPromise<TTag, TValue> {
  * tagged.
  */
 // eslint-disable-next-line @typescript-eslint/promise-function-async
-export function taggedRace<TTag1, TValue1, TTag2, TValue2>(
+export function taggedRace<const TTag1, const TValue1, const TTag2, const TValue2>(
     promise1: TaggedPromise<TTag1, TValue1>,
     promise2: TaggedPromise<TTag2, TValue2>,
 ): Promise<{tag: TTag1; value: TValue1} | {tag: TTag2; value: TValue2}> {

@@ -29,7 +29,7 @@ type RecordWithoutUndefinedValues<R extends Record<string | u53 | symbol, unknow
 /**
  * Return a copy of a record with all keys removed where the value is `undefined`.
  */
-export function filterUndefinedProperties<R extends Record<string | u53 | symbol, unknown>>(
+export function filterUndefinedProperties<const R extends Record<string | u53 | symbol, unknown>>(
     record: R,
 ): RecordWithoutUndefinedValues<R> {
     return Object.fromEntries(

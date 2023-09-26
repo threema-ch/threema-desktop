@@ -211,12 +211,9 @@ function customPolicyOverrideOrValitaDefault<T>(schema: v.Type<T>): v.Type<T | V
 
 /**
  * Map all properties from an object whose value is {@link VALITA_DEFAULT} to undefined.
- *
- * Note: In order to properly return the expected types, probably `as const` has to be used in the
- *       `object` parameter.
  */
 export function mapValitaDefaultsToUndefined<
-    TObjectIn extends object,
+    const TObjectIn extends object,
     TObjectOut extends {
         [K in keyof TObjectIn]: Extract<TObjectIn[K], ValitaDefault> extends never
             ? TObjectIn[K]

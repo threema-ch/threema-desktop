@@ -101,7 +101,7 @@ export class ReflectedGroupSyncTask implements PassiveTask<void> {
             filterUndefinedProperties({
                 notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride,
                 notificationSoundPolicyOverride: update.notificationSoundPolicyOverride,
-            } as const),
+            }),
         );
 
         controller.update.fromSync(propertiesToUpdate);

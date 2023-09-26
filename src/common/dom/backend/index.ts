@@ -914,8 +914,8 @@ export class Backend implements ProxyMarked {
         log.debug('Waiting for user password');
         await updateSyncingPhase('encrypting');
         const userPasswordResult = await taggedRace(
-            {tag: 'password', promise: userPasswordPromise} as const,
-            {tag: 'join-aborted', promise: joinProtocol.abort.promise} as const,
+            {tag: 'password', promise: userPasswordPromise},
+            {tag: 'join-aborted', promise: joinProtocol.abort.promise},
         );
         if (userPasswordResult.tag === 'join-aborted') {
             // The "aborted" signal was raised before the user password was entered. This means that

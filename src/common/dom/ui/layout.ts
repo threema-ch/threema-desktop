@@ -93,45 +93,43 @@ export function manageLayout(
     },
     layout: WritableStore<LayoutMode>,
 ): StoreUnsubscriber {
-    return concentrate([source.display, source.router] as const).subscribe(
-        ([displayMode, routerState]) => {
-            switch (displayMode) {
-                case 'small':
-                    layout.update((mode) => {
-                        let small: LayoutMode['small'];
-                        if (routerState.aside !== undefined) {
-                            // Show the aside panel if present
-                            small = 'aside';
-                        } else if (routerState.main.id !== 'welcome') {
-                            // Show the main panel if it's not the welcome page
-                            small = 'main';
-                        } else {
-                            // Otherwise, show nav
-                            small = 'nav';
-                        }
-                        return {...mode, small};
-                    });
-                    break;
-                case 'medium':
-                case 'large':
-                    // Only show the aside panel in medium/large mode if there is an aside defined for it.
+    return concentrate([source.display, source.router]).subscribe(([displayMode, routerState]) => {
+        switch (displayMode) {
+            case 'small':
+                layout.update((mode) => {
+                    let small: LayoutMode['small'];
                     if (routerState.aside !== undefined) {
-                        layout.update((mode) => ({
-                            ...mode,
-                            medium: 'nav-aside',
-                            large: 'nav-main-aside',
-                        }));
+                        // Show the aside panel if present
+                        small = 'aside';
+                    } else if (routerState.main.id !== 'welcome') {
+                        // Show the main panel if it's not the welcome page
+                        small = 'main';
                     } else {
-                        layout.update((mode) => ({
-                            ...mode,
-                            medium: 'nav-main',
-                            large: 'nav-main',
-                        }));
+                        // Otherwise, show nav
+                        small = 'nav';
                     }
-                    break;
-                default:
-                    unreachable(displayMode);
-            }
-        },
-    );
+                    return {...mode, small};
+                });
+                break;
+            case 'medium':
+            case 'large':
+                // Only show the aside panel in medium/large mode if there is an aside defined for it.
+                if (routerState.aside !== undefined) {
+                    layout.update((mode) => ({
+                        ...mode,
+                        medium: 'nav-aside',
+                        large: 'nav-main-aside',
+                    }));
+                } else {
+                    layout.update((mode) => ({
+                        ...mode,
+                        medium: 'nav-main',
+                        large: 'nav-main',
+                    }));
+                }
+                break;
+            default:
+                unreachable(displayMode);
+        }
+    });
 }

@@ -806,7 +806,7 @@ export class EndpointService {
      * Mark an object such that all of its properties are serialised with their respective transfer
      * handler, if existing (fall back to structured cloning).
      */
-    public exposeProperties<TObject extends Record<string | u53, unknown>>(
+    public exposeProperties<const TObject extends Record<string | u53, unknown>>(
         object: TObject,
     ): TObject & PropertiesMarked {
         return Object.assign(object, {[TRANSFER_HANDLER]: PROPERTIES_HANDLER});
@@ -1228,7 +1228,7 @@ export const PROXY_HANDLER: RegisteredTransferHandler<
         const remote = service.wrap(endpoint as DomEndpoint);
         return remote;
     },
-} as const);
+});
 
 // Register object properties handler
 const PROPERTIES_HANDLER: RegisteredTransferHandler<
@@ -1262,7 +1262,7 @@ const PROPERTIES_HANDLER: RegisteredTransferHandler<
             ]),
             [TRANSFERRED_MARKER, OBJECT_PROPERTIES_TRANSFERRED_REMOTE_MARKER],
         ]),
-} as const);
+});
 
 export type SerializedError<TAdditionalValues extends unknown[] = []> = [
     // eslint-disable-next-line no-restricted-syntax
@@ -1362,7 +1362,7 @@ const THROW_HANDLER: RegisteredTransferHandler<
             return thrown;
         }
     },
-} as const);
+});
 
 export interface ErrorTransferHandler<
     TError extends Error,

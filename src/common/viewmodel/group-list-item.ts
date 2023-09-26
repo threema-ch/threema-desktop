@@ -99,6 +99,6 @@ function getViewModelStore(
             members: group.view.members,
             memberNames,
             totalMembersCount: group.view.members.length + 1,
-        } as const);
+        });
     });
 }

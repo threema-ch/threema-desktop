@@ -55,12 +55,12 @@ export function run(): void {
 
         describe('joinArray', function () {
             it('joins three strings', function () {
-                const joined: 'a,bee,c' = joinConstArray(['a', 'bee', 'c'] as const);
+                const joined: 'a,bee,c' = joinConstArray(['a', 'bee', 'c']);
                 expect(joined).to.equal('a,bee,c');
             });
 
             it('joins an empty array', function () {
-                const joined: '' = joinConstArray([] as const);
+                const joined: '' = joinConstArray([]);
                 expect(joined).to.equal('');
             });
         });

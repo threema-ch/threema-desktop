@@ -73,7 +73,7 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
                 keyboardDataCollectionPolicy,
                 blockedIdentities,
                 excludeFromSyncIdentities,
-            } as const),
+            }),
         );
     }
 
@@ -83,7 +83,7 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
             filterUndefinedProperties({
                 callPolicy,
                 callConnectionPolicy,
-            } as const),
+            }),
         );
     }
 }

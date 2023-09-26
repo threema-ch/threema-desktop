@@ -216,7 +216,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                 readReceiptPolicyOverride: create.readReceiptPolicyOverride,
                 category: create.conversationCategory,
                 visibility: create.conversationVisibility,
-            } as const),
+            }),
         );
 
         await this._processProfilePictures(
@@ -249,7 +249,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
                 notificationTriggerPolicyOverride: update.notificationTriggerPolicyOverride,
                 notificationSoundPolicyOverride: update.notificationSoundPolicyOverride,
                 nickname: update.nickname,
-            } as const),
+            }),
         );
 
         controller.update.fromSync(propertiesToUpdate);

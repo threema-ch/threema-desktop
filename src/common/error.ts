@@ -144,7 +144,7 @@ const PROTOCOL_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     serialize: (error) => [error.type, error.recoverability],
     deserialize: (message, cause, [type, recoverability]) =>
         new ProtocolError(type, message, recoverability, {from: cause}),
-} as const);
+});
 
 /**
  * A protocol error.

@@ -110,7 +110,7 @@ function assertNoMissingUnsubscribers<TSourceStores extends QueryableStores>(
  * @param stores The source stores.
  * @returns a {@link ConcentratorStore} of the {@param stores}.
  */
-export function concentrate<TSourceStores extends QueryableStores>(
+export function concentrate<const TSourceStores extends QueryableStores>(
     stores: TSourceStores,
 ): ConcentratorStore<TSourceStores> {
     return new ConcentratorStore(stores);

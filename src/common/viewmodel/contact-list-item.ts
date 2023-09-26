@@ -150,7 +150,7 @@ function getViewModelStore(
             typingIndicatorPolicyOverride: contact.view.typingIndicatorPolicyOverride,
             notificationTriggerPolicyOverride: contact.view.notificationTriggerPolicyOverride,
             notificationSoundPolicyOverride: contact.view.notificationSoundPolicyOverride,
-        } as const),
+        }),
     );
 }
 

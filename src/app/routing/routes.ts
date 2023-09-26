@@ -265,21 +265,27 @@ function defineImplementation<TRoute extends RawRouteDefinition & Partial<RouteP
     return {...route, matches, withUntypedParams, withTypedParams, withoutParams};
 }
 
-function defineNav<TRoute extends RawRouteDefinition>(route: TRoute): RouteDefinition<TRoute> {
-    return defineImplementation(route);
-}
-
-function defineMain<TRoute extends RawRouteDefinition & RoutePathDefinition>(
+function defineNav<const TRoute extends RawRouteDefinition>(
     route: TRoute,
 ): RouteDefinition<TRoute> {
     return defineImplementation(route);
 }
 
-function defineAside<TRoute extends RawRouteDefinition>(route: TRoute): RouteDefinition<TRoute> {
+function defineMain<const TRoute extends RawRouteDefinition & RoutePathDefinition>(
+    route: TRoute,
+): RouteDefinition<TRoute> {
     return defineImplementation(route);
 }
 
-function defineModal<TRoute extends RawRouteDefinition>(route: TRoute): RouteDefinition<TRoute> {
+function defineAside<const TRoute extends RawRouteDefinition>(
+    route: TRoute,
+): RouteDefinition<TRoute> {
+    return defineImplementation(route);
+}
+
+function defineModal<const TRoute extends RawRouteDefinition>(
+    route: TRoute,
+): RouteDefinition<TRoute> {
     return defineImplementation(route);
 }
 
@@ -332,19 +338,19 @@ export const ROUTE_DEFINITIONS = {
         conversationList: defineNav({
             id: 'conversationList',
             params: undefined,
-        } as const),
+        }),
         contactList: defineNav({
             id: 'contactList',
             params: undefined,
-        } as const),
+        }),
         contactAdd: defineNav({
             id: 'contactAdd',
             params: PARAM_OPTIONAL_IDENTITY_SCHEMA,
-        } as const),
+        }),
         contactAddDetails: defineNav({
             id: 'contactAddDetails',
             params: PARAM_IDENTITY_DATA_SCHEMA,
-        } as const),
+        }),
     },
     main: {
         welcome: defineMain({
@@ -354,7 +360,7 @@ export const ROUTE_DEFINITIONS = {
                 match: new RegExp('^/$', 'u'),
                 template: '/',
             },
-        } as const),
+        }),
         profile: defineMain({
             id: 'profile',
             params: undefined,
@@ -362,7 +368,7 @@ export const ROUTE_DEFINITIONS = {
                 match: new RegExp('^/profile/$', 'u'),
                 template: '/profile/',
             },
-        } as const),
+        }),
         conversation: defineMain({
             id: 'conversation',
             params: PARAM_RECEIVER_LOOKUP_SCHEMA,
@@ -379,33 +385,33 @@ export const ROUTE_DEFINITIONS = {
                     },
                 }),
             },
-        } as const),
+        }),
     },
     aside: {
         contactDetails: defineAside({
             id: 'contactDetails',
             params: PARAM_CONTACT_LOOKUP_SCHEMA,
-        } as const),
+        }),
         groupDetails: defineAside({
             id: 'groupDetails',
             params: PARAM_GROUP_LOOKUP_SCHEMA,
-        } as const),
+        }),
     },
     modal: {
         contactEdit: defineModal({
             id: 'contactEdit',
             params: PARAM_CONTACT_LOOKUP_SCHEMA,
-        } as const),
+        }),
         groupEdit: defineModal({
             id: 'groupEdit',
             params: PARAM_GROUP_LOOKUP_SCHEMA,
-        } as const),
+        }),
         changePassword: defineModal({
             id: 'changePassword',
             params: undefined,
-        } as const),
+        }),
     },
-} as const;
+};
 /* eslint-enable prefer-regex-literals */
 
 /**
