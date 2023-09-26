@@ -95,23 +95,42 @@ export class GlobalTimer implements Timer {
 }
 
 /**
- * Create a version of `func` with the same signature but that is executed only once if it is
- * called multiple times with less that `waitForMillis` milliseconds between calls.
+ * Create a version of `func` with the same signature but that is executed only once if it is called
+ * multiple times with less that `waitForMillis` milliseconds between calls.
  *
- * Source: {@url https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940?permalink_comment_id=4307328#gistcomment-4307328}
- *
- * @param func The function to debounce
- * @param waitForMillis The number of milliseconds to wait after the last call to `func` before
- *   effectively calling it.
+ * @param func The function to debounce. Must not be async. After the timeout, the function is
+ *   always called with the latest argument value.
+ * @param waitForMs The number of milliseconds to wait after the last call to `func` (if
+ *   {@link resetOnUpdate} is true) or after the first call to `func` (if {@link resetOnUpdate} is
+ *   false) before effectively calling it.
+ * @param resetOnUpdate Whether the timer is reset on updates or not. If set to `true`, the function
+ *   is only executed if there is no call within {@link waitForMs}. If set to `false`, the function
+ *   is executed {@link waitForMs} after the first call.
  * @returns A debounced version of `func`
  */
 export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
     func: F,
-    waitForMillis: u53,
+    waitForMs: u53,
+    resetOnUpdate: boolean = true,
 ): (...args: Parameters<F>) => void {
-    let timeout: TimeoutId;
+    let timeout: TimeoutId | undefined;
+    let lastArgs: Parameters<F>;
+
     return (...args: Parameters<F>): void => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), waitForMillis);
+        lastArgs = args;
+
+        if (timeout !== undefined && !resetOnUpdate) {
+            return;
+        }
+
+        if (timeout !== undefined) {
+            clearTimeout(timeout);
+            timeout = undefined;
+        }
+
+        timeout = setTimeout(() => {
+            timeout = undefined;
+            return func(...lastArgs);
+        }, waitForMs);
     };
 }

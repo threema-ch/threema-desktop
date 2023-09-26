@@ -2,6 +2,7 @@ import {AssertionError, expect} from 'chai';
 
 import type {u53} from '~/common/types';
 import {byteView} from '~/common/utils/byte';
+import {GlobalTimer} from '~/common/utils/timer';
 
 /**
  * Generate fake (non-)random values.
@@ -61,5 +62,43 @@ export async function expectRejectedWith<T extends Error>(
                 .to.be.instanceOf(errorConstructor ?? Error)
                 .with.property('message', errorMessage);
         }
+    }
+}
+
+/**
+ * Wait for {@link condition} to return true. Re-test every {@link intervalMs}, up to
+ * {@link waitTime}.
+ */
+export async function waitForCondition(
+    condition: () => boolean,
+    intervalMs = 5,
+    waitTime = 100,
+): Promise<boolean> {
+    const timer = new GlobalTimer();
+    if (condition()) {
+        return true;
+    }
+    const attempts = Math.ceil(waitTime / intervalMs);
+    for (let i = 0; i < attempts; i++) {
+        await timer.sleep(intervalMs);
+        if (condition()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Assert that {@link condition} is fulfilled (returns true) within {@link waitTime}.
+ */
+export async function expectCondition(
+    condition: () => boolean,
+    description: string,
+    intervalMs = 5,
+    waitTime = 100,
+): Promise<void> {
+    const conditionFulfilled = await waitForCondition(condition, intervalMs, waitTime);
+    if (!conditionFulfilled) {
+        expect.fail(`Condition "${description}" not fulfilled within ${waitTime} ms`);
     }
 }
