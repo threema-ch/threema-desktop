@@ -242,6 +242,7 @@
               <span class="icon">
                 {#if isGroupConversation}
                   <MdIcon theme="Filled">group</MdIcon>
+                {:else}
                   <MessageStatus
                     direction={$lastMessageStore.view.direction}
                     status={$lastMessageStore.view.direction === MessageDirection.OUTBOUND
