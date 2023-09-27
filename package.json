@@ -56,8 +56,8 @@
     "assets:generate:icons": "npm run assets:generate:icons:macos && npm run assets:generate:icons:windows && npm run assets:generate:icons:flatpak && npm run assets:generate:icons:web"
   },
   "engines": {
-    "node": "18.15.0",
-    "npm": "9.5.0"
+    "node": "18.17.1",
+    "npm": "9.6.7"
   },
   "dependencies": {
     "@badrap/valita": "0.3.0",
@@ -118,7 +118,7 @@
     "@types/estree": "~1.0.0",
     "@types/fs-extra": "~9.0.13",
     "@types/mocha": "~10.0.0",
-    "@types/node": "~18.11.18",
+    "@types/node": "~18.17.19",
     "@types/sinon": "~10.0.11",
     "@types/sinon-chai": "~3.2.9",
     "@typescript-eslint/eslint-plugin": "~6.6.0",
@@ -127,7 +127,7 @@
     "@typescript-eslint/utils": "~6.6.0",
     "chai": "~4.3.4",
     "debug": "~4.3.3",
-    "electron": "25.8.3",
+    "electron": "27.0.0",
     "electron-installer-dmg": "~4.0.0",
     "electron-packager": "~17.1.1",
     "es-module-lexer": "~1.1.0",
