@@ -521,7 +521,7 @@ export class FileSystemKeyStorage implements KeyStorage {
                     },
                 }).finish() as PlainData,
             )
-            .encryptWithRandomNonceAhead();
+            .encryptWithRandomNonceAhead(this._log.prefix?.[0]);
         key.purge();
 
         // Encode

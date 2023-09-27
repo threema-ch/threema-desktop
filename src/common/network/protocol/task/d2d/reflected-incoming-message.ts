@@ -135,7 +135,11 @@ export class ReflectedIncomingMessageTask
         const messageReferenceDebug = messageReferenceDebugFor(type, body);
 
         // Persist nonce
-        const guard = nonces.checkAndRegisterNonce(NonceScope.CSP, messageNonce);
+        const guard = nonces.checkAndRegisterNonce(
+            NonceScope.CSP,
+            messageNonce,
+            this._log.prefix?.[0],
+        );
         const nonceHexString = bytesToHex(messageNonce);
         if (guard === NONCE_REUSED) {
             // This might happen if a messages is being reprocessed, e.g. because it was not acked

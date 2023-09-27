@@ -317,7 +317,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                     padding: new Uint8Array(randomU8(crypto)),
                                 }).encode,
                             )
-                            .encryptWithRandomNonceAhead(),
+                            .encryptWithRandomNonceAhead(`${this._log.prefix?.[0]}.reflect`),
                     }),
                 });
             }
@@ -388,7 +388,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                 scope,
                             }).encode,
                         )
-                        .encryptWithRandomNonceAhead(),
+                        .encryptWithRandomNonceAhead(`${this._log.prefix?.[0]}.begin-transaction`),
                     ttl: 0, // TODO(DESK-658): Set appropriate TTL
                 }),
             });

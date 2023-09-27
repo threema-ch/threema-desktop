@@ -235,7 +235,10 @@ export class OutgoingCspMessageTask<
          * Commits the prepared nonces directly when generated.
          */
         const preparedNonces: NonceList = [...receivers].map(() => {
-            const nonceGuard = nonces.getRandomNonce(NonceScope.CSP);
+            const nonceGuard = nonces.getRandomNonce(
+                NonceScope.CSP,
+                `${this._log.prefix?.[0]}.prepared-csp-nonce`,
+            );
             const nonce = nonceGuard.nonce;
             nonceGuard.commit();
             return nonce;

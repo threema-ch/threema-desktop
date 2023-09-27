@@ -805,7 +805,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
         const challengeResponse = d2m.dgpk
             .getSharedBox(serverHello.esk as ReadonlyUint8Array as PublicKey)
             .encryptor(buffer, serverHello.challenge as PlainData)
-            .encryptWithRandomNonceAhead();
+            .encryptWithRandomNonceAhead(`${this._log.prefix?.[0]}.challenge-response`);
 
         // Encode and encrypt `d2d.DeviceInfo`
         const encryptedDeviceInfo = this._createD2mEncryptedDeviceInfo();
@@ -865,7 +865,9 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     label: d2m.label,
                 }).encode,
             )
-            .encryptWithRandomNonceAhead() as EncryptedDeviceInfo;
+            .encryptWithRandomNonceAhead(
+                `${this._log.prefix?.[0]}.device-info`,
+            ) as EncryptedDeviceInfo;
     }
 }
 

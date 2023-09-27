@@ -148,7 +148,11 @@ export class ReflectedOutgoingMessageTask
         // Persist nonces
         let importedNonces = 0;
         for (const nonce of messageNonces) {
-            const guard = nonces.checkAndRegisterNonce(NonceScope.CSP, nonce);
+            const guard = nonces.checkAndRegisterNonce(
+                NonceScope.CSP,
+                nonce,
+                this._log.prefix?.[0],
+            );
             const nonceHexString = bytesToHex(nonce);
             if (guard === NONCE_REUSED) {
                 // This might happen due to resending nonces of already sent group messages

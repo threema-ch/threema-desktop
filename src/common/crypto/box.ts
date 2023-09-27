@@ -68,7 +68,9 @@ export class CryptoBoxDecryptor<
      * @throws {CryptoError} if decryption fails.
      * @throws {CryptoError} if nonce re-use was detected.
      */
-    public decrypt(): {
+    public decrypt(
+        nonceDebugToken?: TNonceScope extends NonceUnguardedScope ? undefined : string,
+    ): {
         nonceGuard: TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard;
         plainData: PlainData;
     } {
@@ -85,7 +87,11 @@ export class CryptoBoxDecryptor<
                 this._box.nonceService !== undefined,
                 'NonceService must be defined since nonceScope is not NonceUnguardedScope',
             );
-            nonceGuard = this._box.nonceService.checkAndRegisterNonce(nonceScope, this._nonce);
+            nonceGuard = this._box.nonceService.checkAndRegisterNonce(
+                nonceScope,
+                this._nonce,
+                nonceDebugToken,
+            );
             if (nonceGuard === NONCE_REUSED) {
                 throw new CryptoError('Decryption failed, nonce reused!');
             }
@@ -163,9 +169,9 @@ export class CryptoBoxEncryptor<
         ) as EncryptedData;
     }
 
-    public encryptWithRandomNonce(): [nonce: Nonce, encrypted: EncryptedData] {
+    public encryptWithRandomNonce(debugToken?: string): [nonce: Nonce, encrypted: EncryptedData] {
         // Generate cryptographically secure random nonce and encrypt data in-place
-        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce();
+        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce(debugToken);
         let nonce;
         if (isNonce(nonceOrNonceGuard)) {
             nonce = nonceOrNonceGuard;
@@ -181,9 +187,9 @@ export class CryptoBoxEncryptor<
         return [nonce, encrypted];
     }
 
-    public encryptWithRandomNonceAhead(): EncryptedDataWithNonceAhead {
+    public encryptWithRandomNonceAhead(debugToken?: string): EncryptedDataWithNonceAhead {
         // Generate cryptographically secure random nonce and encrypt data in-place
-        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce();
+        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce(debugToken);
         let nonce;
         if (isNonce(nonceOrNonceGuard)) {
             nonce = nonceOrNonceGuard;
@@ -200,9 +206,9 @@ export class CryptoBoxEncryptor<
         return encryptedWithNonceAhead as EncryptedDataWithNonceAhead;
     }
 
-    private _encryptInPlaceWithRandomNonce(): TNonceScope extends NonceUnguardedScope
-        ? Nonce
-        : INonceGuard {
+    private _encryptInPlaceWithRandomNonce(
+        debugToken?: string,
+    ): TNonceScope extends NonceUnguardedScope ? Nonce : INonceGuard {
         // Generate cryptographically secure random nonce
 
         if (this._box.nonceScope === NONCE_UNGUARDED_SCOPE) {
@@ -222,7 +228,7 @@ export class CryptoBoxEncryptor<
             'NonceService must be defined since nonceScope is not NonceUnguardedScope',
         );
 
-        const nonceGuard = this._box.nonceService.getRandomNonce(this._box.nonceScope);
+        const nonceGuard = this._box.nonceService.getRandomNonce(this._box.nonceScope, debugToken);
 
         const arrayHeadroom = this._array.subarray(0, NACL_CONSTANTS.NONCE_LENGTH);
         arrayHeadroom.set(nonceGuard.nonce);
@@ -534,7 +540,7 @@ export class SecureSharedBoxFactory<
         );
         const encryptedKey = box
             .encryptor(CREATE_BUFFER_TOKEN, secret.unwrap() as PlainData)
-            .encryptWithRandomNonceAhead();
+            .encryptWithRandomNonceAhead('crypto.securesharedboxfactory.in-memory-encryption');
         secret.purge();
 
         // Create an executor function that temporary yields the secret key

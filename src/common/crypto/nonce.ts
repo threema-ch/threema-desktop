@@ -126,7 +126,11 @@ export interface INonceRegistry {
      * Check if a nonce was used before, if yes return {@link NONCE_REUSED}, else register it and
      * return a nonce guard to commit/discard it.
      */
-    checkAndRegisterNonce: (scope: NonceScope, nonce: Nonce) => INonceGuard | NonceReused;
+    checkAndRegisterNonce: (
+        scope: NonceScope,
+        nonce: Nonce,
+        debugToken?: string,
+    ) => INonceGuard | NonceReused;
 }
 
 /** See {@link INonceRegistry} */
@@ -135,11 +139,15 @@ export class NonceRegistry implements INonceRegistry {
 
     private readonly _registeredNonceGuards = new WeakValueMap<ScopeAndNonceKey, NonceGuard>();
 
-    private readonly _nonceGuardFinalizationRegistry = new FinalizationRegistry<
-        ReadonlyValueObject<boolean>
-    >((processed) => {
+    private readonly _nonceGuardFinalizationRegistry = new FinalizationRegistry<{
+        readonly processed: ReadonlyValueObject<boolean>;
+        readonly debugToken?: string;
+    }>(({processed, debugToken}) => {
         if (!processed.value) {
-            this._log.error('NonceGuard that was not yet processed was garbage collected!');
+            const debugTokenText = debugToken !== undefined ? ` with token '${debugToken}'` : '';
+            this._log.error(
+                `NonceGuard${debugTokenText} that was not yet processed was garbage collected!`,
+            );
         }
     });
 
@@ -153,7 +161,11 @@ export class NonceRegistry implements INonceRegistry {
     /**
      * @inheritdoc
      */
-    public checkAndRegisterNonce(scope: NonceScope, nonce: Nonce): INonceGuard | NonceReused {
+    public checkAndRegisterNonce(
+        scope: NonceScope,
+        nonce: Nonce,
+        debugToken?: string,
+    ): INonceGuard | NonceReused {
         const {db} = this._services;
         if (this._registeredNonceGuards.get(getScopeAndNonceKey(scope, nonce)) !== undefined) {
             this._log.warn(`Nonce ${bytesToHex(nonce)} was already registered as used at runtime!`);
@@ -167,7 +179,7 @@ export class NonceRegistry implements INonceRegistry {
             return NONCE_REUSED;
         }
 
-        return this._createAndRegisterNonceGuard(scope, nonce);
+        return this._createAndRegisterNonceGuard(scope, nonce, debugToken);
     }
 
     /**
@@ -176,7 +188,11 @@ export class NonceRegistry implements INonceRegistry {
      * Note: Nonces must be either be consumed or discarded or will stay registered in memory and
      * trigger an error when the {@link NonceGuard} is discarded!
      */
-    private _createAndRegisterNonceGuard(scope: NonceScope, nonce: Nonce): INonceGuard {
+    private _createAndRegisterNonceGuard(
+        scope: NonceScope,
+        nonce: Nonce,
+        debugToken?: string,
+    ): INonceGuard {
         const key = getScopeAndNonceKey(scope, nonce);
         const deleteAllocatedNonce = (): void => {
             this._registeredNonceGuards.delete(key);
@@ -199,7 +215,7 @@ export class NonceRegistry implements INonceRegistry {
         })(this._services, scope, nonce, this._ownIdentity, processed);
 
         this._registeredNonceGuards.set(key, nonceGuard);
-        this._nonceGuardFinalizationRegistry.register(nonceGuard, processed);
+        this._nonceGuardFinalizationRegistry.register(nonceGuard, {processed, debugToken});
 
         return nonceGuard;
     }
@@ -212,12 +228,16 @@ export interface INonceService {
      *
      * @returns the {@link NonceGuard} for the Nonce or {@link NONCE_REUSED} constant.
      */
-    readonly checkAndRegisterNonce: (scope: NonceScope, nonce: Nonce) => INonceGuard | NonceReused;
+    readonly checkAndRegisterNonce: (
+        scope: NonceScope,
+        nonce: Nonce,
+        debugToken?: string,
+    ) => INonceGuard | NonceReused;
 
     /**
      * Get a random nonce protected by a {@link NonceGuard}.
      */
-    readonly getRandomNonce: (scope: NonceScope) => INonceGuard;
+    readonly getRandomNonce: (scope: NonceScope, debugToken?: string) => INonceGuard;
 
     /**
      * Get a snapshot of all nonces currently stored for a specific {@link NonceScope}
@@ -243,12 +263,16 @@ export class NonceService implements INonceService {
     ) {}
 
     /** @inheritdoc */
-    public checkAndRegisterNonce(scope: NonceScope, nonce: Nonce): INonceGuard | NonceReused {
-        return this._nonceRegistry.checkAndRegisterNonce(scope, nonce);
+    public checkAndRegisterNonce(
+        scope: NonceScope,
+        nonce: Nonce,
+        debugToken?: string,
+    ): INonceGuard | NonceReused {
+        return this._nonceRegistry.checkAndRegisterNonce(scope, nonce, debugToken);
     }
 
     /** @inheritdoc */
-    public getRandomNonce(scope: NonceScope): INonceGuard {
+    public getRandomNonce(scope: NonceScope, debugToken?: string): INonceGuard {
         const {crypto} = this._services;
 
         // Generate cryptographically secure random nonce
@@ -256,7 +280,7 @@ export class NonceService implements INonceService {
             crypto.randomBytes(new Uint8Array(NACL_CONSTANTS.NONCE_LENGTH)),
         );
 
-        const guard = this.checkAndRegisterNonce(scope, randomNonce);
+        const guard = this.checkAndRegisterNonce(scope, randomNonce, debugToken);
         if (guard === NONCE_REUSED) {
             // This case is very very improbable, so we throw an error since it could also mean
             // the numbers are not truely random.

@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import {ensureNonce, isNonce, NACL_CONSTANTS, type Nonce, type NonceHash} from '~/common/crypto';
 import {
     hashNonce,
+    type INonceService,
     NONCE_REUSED,
     NonceGuard,
     NonceRegistry,
@@ -247,7 +248,7 @@ export function run(): void {
     });
     describe('NonceService', function () {
         function makeNonceServiceWithFakeRegistry(
-            checkAndRegisterNonce = (scope: NonceScope, nonce: Nonce) =>
+            checkAndRegisterNonce = (scope: NonceScope, nonce: Nonce, debugToken?: string) =>
                 new NonceGuard(services, scope, nonce, me.identity),
         ): NonceService {
             return new NonceService(services, me.identity, {
@@ -351,19 +352,19 @@ export function run(): void {
             it('registers and checks the nonce in the NonceRegistry', async function () {
                 services = makeServices();
 
-                type NonceTuple = [scope: NonceScope, nonce: Nonce];
-                const registration = new ResolvablePromise<NonceTuple>();
-                const functionInput = new ResolvablePromise<NonceTuple>();
-                function checkAndRegisterNonce(...params: NonceTuple): NonceGuard {
+                type NonceParams = Parameters<INonceService['checkAndRegisterNonce']>;
+                const registration = new ResolvablePromise<NonceParams>();
+                const functionInput = new ResolvablePromise<NonceParams>();
+                function checkAndRegisterNonce(...params: NonceParams): NonceGuard {
                     registration.resolve(params);
                     console.log('Some nonce was registered.');
-                    return new NonceGuard(services, ...params, me.identity);
+                    return new NonceGuard(services, params[0], params[1], me.identity);
                 }
 
                 const scope = NonceScope.D2D;
                 const service = makeNonceServiceWithFakeRegistry(checkAndRegisterNonce);
                 const guard = service.getRandomNonce(scope);
-                const guardValues: NonceTuple = [scope, guard.nonce];
+                const guardValues: NonceParams = [scope, guard.nonce, undefined];
                 guard.discard();
                 functionInput.resolve(guardValues);
                 expect(await registration).to.deep.equal(await functionInput);
