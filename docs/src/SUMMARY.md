@@ -4,6 +4,8 @@
 
 - [Architecture](./architecture.md)
   - [Sequence Diagrams](./sequence-diagrams.md)
+  - [Stores](./stores.md)
+  - [RPC](./rpc.md)
 - [Guidelines](./guidelines.md)
   - [Dependencies](./dependencies.md)
   - [Models](./models.md)
