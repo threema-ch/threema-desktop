@@ -394,10 +394,11 @@ async function init(): Promise<MainInit> {
     log = logging.logger('main');
 
     // Initial log entries
+    const appName = ABOUT_PANEL_OPTIONS.applicationName ?? 'Threema';
     log.info(`
-Starting ${ABOUT_PANEL_OPTIONS.applicationName ?? 'Threema'}
+Starting ${appName} ${ABOUT_PANEL_OPTIONS.applicationVersion}
 Version information:
-  Application: ${ABOUT_PANEL_OPTIONS.version}
+  Application: ${ABOUT_PANEL_OPTIONS.applicationVersion} (${ABOUT_PANEL_OPTIONS.version})
   NodeJS: ${process.version}
   NODE_MODULE_VERSION: ${process.versions.modules}`);
     log.info(`File system storage path: ${appPath}`);
