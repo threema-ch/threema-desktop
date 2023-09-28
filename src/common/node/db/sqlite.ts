@@ -2029,8 +2029,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         // Fields to select
         const selectFields = {
             uid: tMessage.uid,
-            conversationUid: tMessage.conversationUid,
-            processedAt: tMessage.processedAt,
+            ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt),
         };
 
         // If the reference UID is undefined, we start at the newest message.
@@ -2047,14 +2046,14 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             );
         }
 
-        const referenceMessage = this._db
+        const referenceMessageDateTime = this._db
             .selectFrom(tMessage)
             .where(
                 tMessage.conversationUid
                     .equals(conversationUid)
                     .and(tMessage.uid.equals(reference.uid)),
             )
-            .selectOneColumn(tMessage.processedAt)
+            .selectOneColumn(tMessage.processedAt.valueWhenNull(tMessage.createdAt))
             .forUseAsInlineQueryValue();
 
         // Determine ordering and dynamic WHERE clause: Filter by conversation
@@ -2064,18 +2063,30 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         switch (reference.direction) {
             case MessageQueryDirection.OLDER:
                 orderByMode = 'desc';
-                processedAtCondition = tMessage.processedAt.lessOrEquals(referenceMessage);
+                processedAtCondition = tMessage.processedAt
+                    .lessOrEquals(referenceMessageDateTime)
+                    .or(
+                        // Handle case that processedAt was not (yet) set (outbound messages)
+                        tMessage.processedAt
+                            .isNull()
+                            .and(tMessage.createdAt.lessOrEquals(referenceMessageDateTime)),
+                    );
                 break;
             case MessageQueryDirection.NEWER:
                 orderByMode = 'asc';
-                processedAtCondition = tMessage.processedAt.greaterOrEquals(referenceMessage);
+                processedAtCondition = tMessage.processedAt
+                    .greaterOrEquals(referenceMessageDateTime)
+                    .or(
+                        // Handle case that processedAt was not (yet) set (outbound messages)
+                        tMessage.processedAt
+                            .isNull()
+                            .and(tMessage.createdAt.greaterOrEquals(referenceMessageDateTime)),
+                    );
                 break;
             default:
                 unreachable(reference.direction);
         }
 
-        // Run query: Join the messages table on itself. This way, every row
-        // has access to the information of the reference row.
         return sync(
             this._db
                 .selectFrom(tMessage)
@@ -2083,11 +2094,11 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .where(
                     tMessage.conversationUid
                         .equals(conversationUid)
-                        .and(referenceMessage.isNotNull())
+                        .and(referenceMessageDateTime.isNotNull())
                         .and(processedAtCondition),
                 )
                 // TODO(DESK-296): Order correctly
-                .orderBy('processedAt', orderByMode)
+                .orderBy('ordinal', orderByMode)
                 .limitIfValue(limit)
                 .executeSelectMany(),
         );
