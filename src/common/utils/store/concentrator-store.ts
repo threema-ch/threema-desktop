@@ -217,12 +217,12 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
 
         // Following unsubscribe/value "tuples", but in fact this is a dynamic Array creation, so we
         // promise typescript that we took care of length and default values.
-        const initialSourceStoreValues = new Array(this._sourceStores.length).fill(
+        const initialSourceStoreValues = Array(this._sourceStores.length).fill(
             NO_STORE_VALUE,
-        ) as unknown as StoreValuesOptional<TSourceStores>;
-        const sourceStoreUnsubscribers = new Array(this._sourceStores.length).fill(
+        ) as StoreValuesOptional<TSourceStores>;
+        const sourceStoreUnsubscribers = Array(this._sourceStores.length).fill(
             undefined,
-        ) as unknown as MappedArray<TSourceStores, StoreUnsubscriber | undefined>;
+        ) as MappedArray<TSourceStores, StoreUnsubscriber | undefined>;
 
         this._state = {
             symbol: LAZY_STORE_INITIALIZING_STATE,
