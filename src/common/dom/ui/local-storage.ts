@@ -37,6 +37,13 @@ export class LocalStorageController {
     public readonly locale: IWritableStore<Locale> & IQueryableStore<Locale>;
 
     public constructor(containers: HTMLElement[], systemLocale: string) {
+        // Note: We can ignore the unsubscribers because we will also maintain a reference to the
+        // store for the lifetime of this instance. Moreover, this instance should be used like a
+        // singleton.
+        //
+        // TODO(DESK-1081): Remove the smelly singleton class, move it to `globals` and make it an
+        // object.
+
         // Debug panel
         this.debugPanelState = new WritableStore(
             ensureDebugPanelState(localStorage.getItem(KEYS.debugPanelState) ?? ''),

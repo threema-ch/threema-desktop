@@ -21,6 +21,9 @@ export class FrontendNotificationCreator implements NotificationCreator {
         //
         // Note: Only one instance of a `FrontendNotificationCreator` should exist for the lifetime
         //       of the app, so we don't need to unsubscribe from the store.
+        //
+        // TODO(DESK-1081): Move the subscription out of this constructor, e.g. into `globals` to
+        // remove the singleton smell.
         appVisibility.subscribe((visibility) => {
             if (visibility === 'focused') {
                 for (const notification of this._notifications.values()) {
