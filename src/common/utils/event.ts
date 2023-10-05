@@ -43,14 +43,8 @@ export class EventController<TEvent> {
      * Create a new {@link EventController} instance.
      *
      * @param _log Optional logger
-     * @param _lifetimeReferences Object references to keep alive while the {@link EventController}
-     *   exists. This is useful to prevent event raiser garbage collection.
      */
-    public constructor(
-        private readonly _log?: Logger,
-        // @ts-expect-error: ts(6138)
-        private readonly _lifetimeReferences?: Set<object>,
-    ) {}
+    public constructor(private readonly _log?: Logger) {}
 
     public get listener(): EventListener<TEvent> {
         return this;

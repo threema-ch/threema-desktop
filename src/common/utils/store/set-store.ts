@@ -17,7 +17,7 @@ import {
     TRANSFER_HANDLER,
     TRANSFERRED_MARKER,
 } from '~/common/utils/endpoint';
-import {EventController, type EventListener, type EventUnsubscriber} from '~/common/utils/event';
+import {EventController, type EventListener} from '~/common/utils/event';
 import type {AbortRaiser} from '~/common/utils/signal';
 import {
     type IQueryableStore,
@@ -71,10 +71,7 @@ export class LocalSetStore<TValue extends CustomTransferable>
             },
         });
         this.tag = options?.debug?.tag ?? '';
-        this._delta = new EventController<DeltaUpdate<TValue>>(
-            options?.debug?.log,
-            new Set([this]), // Bidirectional coupling to prevent garbage collection
-        );
+        this._delta = new EventController<DeltaUpdate<TValue>>(options?.debug?.log);
     }
 
     public get delta(): EventListener<DeltaUpdate<TValue>> {
@@ -114,29 +111,23 @@ export class LocalSetDerivedSetStore<TValue extends CustomTransferable>
     extends ReadableStore<ReadonlySet<TValue>>
     implements IDerivableSetStore<TValue>
 {
+    private static readonly _REGISTRY = new FinalizationRegistry<StoreUnsubscriber>(
+        (unsubscriber) => unsubscriber(),
+    );
+
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
     public readonly tag: string;
     private readonly _delta: EventController<DeltaUpdate<TValue>>;
 
-    /**
-     * Keep a reference to the source store unsubscriber to prevent garbage collection.
-     */
-    // @ts-expect-error: ts(6138)
-    private readonly _sourceUnsubscriber: StoreUnsubscriber;
-
     public constructor(
-        simpleSetStore: IQueryableStore<ReadonlySet<TValue>>,
+        source: IQueryableStore<ReadonlySet<TValue>>,
         options?: StoreOptions<ReadonlySet<TValue>>,
     ) {
-        super(simpleSetStore.get(), options);
+        super(source.get(), options);
         this.tag = options?.debug?.tag ?? '';
-        this._delta = new EventController<DeltaUpdate<TValue>>(
-            options?.debug?.log,
-            new Set([this]), // Bidirectional coupling to prevent garbage collection
-        );
-        this._sourceUnsubscriber = simpleSetStore.subscribe((newSet) =>
-            this._updateFromSet(newSet),
-        );
+        this._delta = new EventController<DeltaUpdate<TValue>>(options?.debug?.log);
+        const unsubscriber = source.subscribe((newSet) => this._updateFromSet(newSet));
+        LocalSetDerivedSetStore._REGISTRY.register(this, unsubscriber);
     }
 
     public get delta(): EventListener<DeltaUpdate<TValue>> {
@@ -192,15 +183,13 @@ export class LocalDerivedSetStore<
     extends ReadableStore<Set<TDerived>, ReadonlySet<TDerived>>
     implements IDerivableSetStore<TDerived>
 {
+    private static readonly _REGISTRY = new FinalizationRegistry<StoreUnsubscriber>(
+        (unsubscriber) => unsubscriber(),
+    );
+
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
     public readonly tag: string;
     private readonly _delta: EventController<DeltaUpdate<TDerived>>;
-
-    /**
-     * Keep a reference to the source delta event unsubscriber to prevent garbage collection.
-     */
-    // @ts-expect-error: ts(6138)
-    private readonly _sourceDeltaUnsubscribe: EventUnsubscriber;
 
     public constructor(
         source: IDerivableSetStore<TValue>,
@@ -210,13 +199,10 @@ export class LocalDerivedSetStore<
         const map = new Map([...source.get()].map((value) => [value, derive(value)]));
         super(new Set(map.values()));
         this.tag = options?.debug?.tag ?? '';
-        this._delta = new EventController<DeltaUpdate<TDerived>>(
-            options?.debug?.log,
-            new Set([this]), // Bidirectional coupling to prevent garbage collection
-        );
+        this._delta = new EventController<DeltaUpdate<TDerived>>(options?.debug?.log);
 
         // Subscribe to delta updates
-        this._sourceDeltaUnsubscribe = source.delta.subscribe(([type, value]) => {
+        const unsubscriber = source.delta.subscribe(([type, value]) => {
             switch (type) {
                 case DeltaUpdateType.ADDED: {
                     const derived = derive(value);
@@ -262,6 +248,7 @@ export class LocalDerivedSetStore<
                     unreachable(type);
             }
         });
+        LocalDerivedSetStore._REGISTRY.register(this, unsubscriber);
     }
 
     public get delta(): EventListener<DeltaUpdate<TDerived>> {
