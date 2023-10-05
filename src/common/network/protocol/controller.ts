@@ -95,13 +95,14 @@ class CspController {
             () => new ProtocolError('csp', 'Payload crypto box already set'),
         );
         this.state = new MonotonicEnumStore<CspAuthState>(CspAuthState.CLIENT_HELLO);
-        this.authenticated = new ResolvablePromise((resolve) =>
-            this.state.subscribe((state) => {
+        this.authenticated = new ResolvablePromise((resolve) => {
+            const unsubscribe = this.state.subscribe((state) => {
                 if (state === CspAuthState.COMPLETE) {
+                    unsubscribe();
                     resolve();
                 }
-            }),
-        );
+            });
+        });
     }
 }
 
@@ -132,13 +133,14 @@ class D2mController implements Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'> {
             () => new ProtocolError('d2m', 'Challenge crypto box already set'),
         );
         this.state = new MonotonicEnumStore<D2mAuthState>(D2mAuthState.SERVER_HELLO);
-        this.authenticated = new ResolvablePromise((resolve) =>
-            this.state.subscribe((state) => {
+        this.authenticated = new ResolvablePromise((resolve) => {
+            const unsubscribe = this.state.subscribe((state) => {
                 if (state === D2mAuthState.COMPLETE) {
+                    unsubscribe();
                     resolve();
                 }
-            }),
-        );
+            });
+        });
         this.serverInfo = new ResolvablePromise();
         this.promotedToLeader = new ResolvablePromise();
         this.reflectionQueueDry = new ResolvablePromise();
