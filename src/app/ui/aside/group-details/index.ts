@@ -68,26 +68,6 @@ export interface GroupPreviewStores {
     readonly members: IQueryableStore<ReadonlySet<RemoteModelStore<Contact>>>;
 }
 
-/**
- * Filter groups by user input string and sort result by group.displayName
- */
-export function filterGroups(
-    set: ReadonlySet<RemoteModelStore<Group>>,
-    filter: string,
-): IQueryableStore<readonly RemoteModelStore<Group>[]> {
-    return new DeprecatedDerivedStore([...set.values()], (item) =>
-        [...item]
-            .filter((itemFilter) =>
-                [itemFilter[1].view.name, itemFilter[1].view.creatorIdentity]
-                    .join(' ')
-                    .toLowerCase()
-                    .includes(filter.trim().toLowerCase()),
-            )
-            .sort(([, {view: a}], [, {view: b}]) => a.displayName.localeCompare(b.displayName))
-            .map(([store]) => store),
-    );
-}
-
 // TODO(DESK-577): This will be superseded by a new store with this ticket.
 function getMembersForGroup(
     group: RemoteModelStore<Group>,

@@ -17,8 +17,8 @@ import type {
 } from '~/common/model';
 import type {RemoteModelStore} from '~/common/model/utils/model-store';
 import type {u53} from '~/common/types';
-import {unreachable, unwrap} from '~/common/utils/assert';
-import {DeprecatedDerivedStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
+import {unreachable} from '~/common/utils/assert';
+import {WritableStore} from '~/common/utils/store';
 import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
@@ -83,21 +83,6 @@ export interface ConversationPreviewStores {
      * Profile picture of the receiver.
      */
     readonly profilePicture: RemoteModelStore<ProfilePicture>;
-}
-
-export function filterConversations(
-    set: ReadonlySet<RemoteModelStore<Conversation>>,
-): IQueryableStore<readonly RemoteModelStore<Conversation>[]> {
-    return new DeprecatedDerivedStore([...set.values()], (item) =>
-        item
-            .map(([store]) => store)
-            .filter((conversation) => conversation.get().view.lastUpdate !== undefined)
-            .sort((a, b) => {
-                const aTime = unwrap(a.get().view.lastUpdate).getTime();
-                const bTime = unwrap(b.get().view.lastUpdate).getTime();
-                return bTime - aTime;
-            }),
-    );
 }
 
 export function transformConversation(
