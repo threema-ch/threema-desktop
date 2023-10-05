@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {onDestroy} from 'svelte';
+
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
@@ -13,6 +15,7 @@
   import type {Contact, ProfilePicture} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import type {IdentityString} from '~/common/network/types';
+  import type {StoreUnsubscriber} from '~/common/utils/store';
 
   export let backend: BackendController;
 
@@ -31,16 +34,19 @@
   }
 
   // TODO(DESK-830): Refactor this into the ViewModel.
+  const unsubscribers: StoreUnsubscriber[] = [];
   $: transformContact(backend, $member)
     .then((c) => {
       transformedContact = c;
-      c.isBlocked.subscribe((isBlockedPromise) => {
-        isBlockedPromise
-          .then((b) => {
-            isBlocked = b;
-          })
-          .catch(resetContactData);
-      });
+      unsubscribers.push(
+        c.isBlocked.subscribe((isBlockedPromise) => {
+          isBlockedPromise
+            .then((b) => {
+              isBlocked = b;
+            })
+            .catch(resetContactData);
+        }),
+      );
       getStores($member)
         .then((stores) => {
           profilePicture = stores.profilePicture;
@@ -48,6 +54,11 @@
         .catch(resetContactData);
     })
     .catch(resetContactData);
+  onDestroy(() => {
+    for (const unsubscriber of unsubscribers) {
+      unsubscriber();
+    }
+  });
 </script>
 
 <template>

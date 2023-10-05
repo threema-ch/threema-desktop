@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {onMount} from 'svelte';
   import type {SvelteComponentDev} from 'svelte/internal';
 
   import {globals} from '~/app/globals';
@@ -43,47 +44,49 @@
   $: wizardStepComponent = PROCESS_STEPS[linkingWizardState.currentStep];
 
   // Handle backend linking state changes
-  params.linkingState.subscribe((state: LinkingState) => {
-    log.info(`Backend linking state changed to ${state.state}`);
-    switch (state.state) {
-      case 'initializing':
-        // Initial state
-        break;
-      case 'waiting-for-handshake':
-        linkingWizardState = {
-          currentStep: 'scan',
-          joinUri: state.joinUri,
-        };
-        break;
-      case 'nominated':
-        linkingWizardState = {
-          currentStep: 'confirm-emoji',
-          rph: state.rph,
-        };
-        break;
-      case 'waiting-for-password':
-        linkingWizardState = {currentStep: 'set-password', userPassword: params.userPassword};
-        break;
-      case 'syncing':
-        linkingWizardState = {currentStep: 'syncing', phase: state.phase};
-        break;
-      case 'registered':
-        linkingWizardState = {
-          currentStep: 'success-linked',
-          identityReady: params.identityReady,
-        };
-        break;
-      case 'error':
-        linkingWizardState = {
-          currentStep: 'error',
-          errorType: state.type,
-          errorMessage: state.message,
-        };
-        break;
-      default:
-        unreachable(state);
-    }
-  });
+  onMount(() =>
+    params.linkingState.subscribe((state: LinkingState) => {
+      log.info(`Backend linking state changed to ${state.state}`);
+      switch (state.state) {
+        case 'initializing':
+          // Initial state
+          break;
+        case 'waiting-for-handshake':
+          linkingWizardState = {
+            currentStep: 'scan',
+            joinUri: state.joinUri,
+          };
+          break;
+        case 'nominated':
+          linkingWizardState = {
+            currentStep: 'confirm-emoji',
+            rph: state.rph,
+          };
+          break;
+        case 'waiting-for-password':
+          linkingWizardState = {currentStep: 'set-password', userPassword: params.userPassword};
+          break;
+        case 'syncing':
+          linkingWizardState = {currentStep: 'syncing', phase: state.phase};
+          break;
+        case 'registered':
+          linkingWizardState = {
+            currentStep: 'success-linked',
+            identityReady: params.identityReady,
+          };
+          break;
+        case 'error':
+          linkingWizardState = {
+            currentStep: 'error',
+            errorType: state.type,
+            errorMessage: state.message,
+          };
+          break;
+        default:
+          unreachable(state);
+      }
+    }),
+  );
 </script>
 
 <template>
