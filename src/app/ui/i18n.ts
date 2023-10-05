@@ -4,9 +4,8 @@ import i18next, {type i18n as I18nextType} from 'i18next';
 import ICU from 'i18next-icu';
 
 import type {I18nType} from '~/app/ui/i18n-types';
-import type {Logger, LoggerFactory, LogRecordFn} from '~/common/logging';
+import type {LoggerFactory, LogRecordFn} from '~/common/logging';
 import type {StrictPartial, u53} from '~/common/types';
-import {assert} from '~/common/utils/assert';
 import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -100,7 +99,7 @@ export const LOCALE_NAMES: {[Locale in keyof typeof resources]: string} & {
 
 export type Locale = (typeof LOCALES)[u53];
 
-export const FALLBACK_LOCALE: Locale = 'en' as const;
+const FALLBACK_LOCALE: Locale = 'en' as const;
 
 export function ensureLocale(locale: string | undefined): Locale {
     if (locale === undefined) {
@@ -144,8 +143,6 @@ function i18nLogAdapter(logRecordFn: LogRecordFn): (args: unknown[]) => void {
     };
 }
 
-let log: Logger;
-
 // Returning an object `{i18n: i18nextType}` instead of directly `i18n: i18nextType` is a way to force
 // triggering an update.
 function createI18nStore(i18n: I18nextType): WritableStore<{i18n: I18nextType}> {
@@ -165,21 +162,18 @@ function createI18nStore(i18n: I18nextType): WritableStore<{i18n: I18nextType}> 
 
 const i18nStore = createI18nStore(i18next);
 
-function currentI18n(): I18nextType {
-    return i18nStore.get().i18n;
-}
-
 export async function initialize(config: LocaleConfig): Promise<void> {
-    log = config.logging.logger('i18n');
+    const log = config.logging.logger('i18n');
+    const i18n = i18nStore.get().i18n;
 
-    if (currentI18n().isInitialized) {
+    if (i18n.isInitialized) {
         log.warn('Already initialized');
         return;
     }
 
     log.info('Initializing...', {config});
 
-    await currentI18n()
+    await i18n
         .use({
             type: 'logger',
             log: i18nLogAdapter(log.info),
@@ -196,26 +190,20 @@ export async function initialize(config: LocaleConfig): Promise<void> {
         });
 
     log.info('Initialization complete', {
-        language: currentI18n().language,
-        resolvedLanguage: currentI18n().resolvedLanguage,
-        loadedLanguages: currentI18n().languages,
+        language: i18n.language,
+        resolvedLanguage: i18n.resolvedLanguage,
+        loadedLanguages: i18n.languages,
     });
 
+    // Note: We can ignore the unsubscriber because we will maintain a global reference to the store
     config.localeStore.subscribe((locale) => {
         if (isLocale(locale)) {
-            void setLanguage(locale);
+            if (i18n.language === locale) {
+                return;
+            }
+            void i18n.changeLanguage(locale);
         }
     });
-}
-
-async function setLanguage(locale: Locale): Promise<void> {
-    assert(currentI18n().isInitialized, 'i18n must be initialized before calling `setLanguage`');
-
-    if (currentI18n().language === locale) {
-        return;
-    }
-
-    await currentI18n().changeLanguage(locale);
 }
 
 // Svelte only re-renders the component using the store, when the store is updated.
