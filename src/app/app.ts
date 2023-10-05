@@ -33,7 +33,7 @@ import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import type {ISubscribableStore, ReadableStore} from '~/common/utils/store';
+import type {ReadableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
 
 // Extend global APIs
@@ -135,7 +135,9 @@ async function updateCheck(
     }
 }
 
-export async function main(appState: AppState): Promise<App> {
+// Creates the application state and returns a destroy function to purge the app and its associated
+// state from the DOM.
+async function main(): Promise<() => void> {
     // Promise that resolves when the 'DOMContentLoaded' event happens
     const domContentLoaded = new Promise<void>((resolve) => {
         document.addEventListener('DOMContentLoaded', () => {
@@ -381,9 +383,9 @@ export async function main(appState: AppState): Promise<App> {
         document.title = title;
         window.app.updateAppBadge(count ?? 0);
     }
-    const totalUnreadMessageCountStore = await backend.model.conversations.totalUnreadMessageCount;
-    totalUnreadMessageCountStore.subscribe(debounce(updateUnreadMessageAppBadge, 300));
-    appState.totalUnreadMessageCountStore = totalUnreadMessageCountStore;
+    const totalUnreadMessageCountUnsubscriber = (
+        await backend.model.conversations.totalUnreadMessageCount
+    ).subscribe(debounce(updateUnreadMessageAppBadge, 300));
 
     // Attach app when the identity is ready and DOM is loaded
     log.debug('Waiting for identity');
@@ -391,15 +393,14 @@ export async function main(appState: AppState): Promise<App> {
     log.debug('Waiting for DOM');
     await domContentLoaded;
     log.debug('Attaching app');
-    return attachApp(services, elements);
+    const app = attachApp(services, elements);
+
+    // Return a destructor
+    return () => {
+        totalUnreadMessageCountUnsubscriber();
+        app.$destroy();
+    };
 }
 
-// Global app state
-interface AppState {
-    // This store is subscribed in the `main` function. Its reference must be kept alive to prevent
-    // it from being garbage collected.
-    totalUnreadMessageCountStore?: ISubscribableStore<u53>;
-}
-const appState: AppState = {};
-
-export const app = main(appState);
+// Note: Only exported, so that references are kept alive until the app is closed.
+export const destroy = main();
