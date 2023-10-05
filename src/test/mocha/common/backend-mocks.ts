@@ -977,7 +977,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
     // eslint-disable-next-line @typescript-eslint/member-ordering
     public abort = {
         aborted: false,
-        subscribe: (subscriber: AbortSubscriber) => () => undefined,
+        subscribe: (subscriber: AbortSubscriber<{readonly cause: string}>) => () => undefined,
     };
 
     public async step<T>(executor: () => Promise<T>): Promise<T> {

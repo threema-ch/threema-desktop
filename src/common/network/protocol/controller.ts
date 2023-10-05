@@ -167,7 +167,7 @@ export class ProtocolController {
         services: Pick<ServicesForBackend, 'crypto'>,
         public readonly taskManager: ConnectedTaskManager,
         public readonly connection: Delayed<ConnectionHandle>,
-        public readonly signal: AbortListener,
+        public readonly signal: AbortListener<{readonly cause: string}>,
         csp: CspControllerSource,
         d2m: D2mControllerSource,
         d2d: D2dControllerSource,

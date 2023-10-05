@@ -43,6 +43,7 @@ import {
     extractErrorTraceback,
     type RendezvousCloseCause,
     RendezvousCloseError,
+    ConnectionClosed,
 } from '~/common/error';
 import type {FileStorage, ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
@@ -1434,7 +1435,7 @@ class Connection {
         ) as TemporaryClientKey;
 
         // Create protocol controller
-        const abort = new AbortRaiser();
+        const abort = new AbortRaiser<{readonly cause: string}>();
         const delayedConnection = Delayed.simple<ConnectionHandle>(
             'Tried to access connection handle before connected',
             'Connection handle has already been set',
@@ -1515,7 +1516,8 @@ class Connection {
         controller.d2m.promotedToLeader
             .then(() => leaderState.set(D2mLeaderState.LEADER))
             .catch((error) => {
-                log.warn(`Leader state promise errored: ${error}`);
+                log.warn('Leader state promise errored', error);
+                abort.raise({cause: 'Leader state promise errored'});
             });
 
         // Connect to mediator server and set up pipelines
@@ -1554,8 +1556,14 @@ class Connection {
                 ),
         );
         mediator.closed
-            .then((info) => log.info('Mediator transport closed cleanly:', info))
-            .catch((error) => log.warn('Mediator transport closed with error:', error))
+            .then((info) => {
+                log.info('Mediator transport closed cleanly:', info);
+                abort.raise({cause: 'Mediator transport closed cleanly'});
+            })
+            .catch((error) => {
+                log.warn('Mediator transport closed with error:', error);
+                abort.raise({cause: 'Mediator transport closed with error'});
+            })
             .finally(() => {
                 for (const unsubscribe of unsubscribers) {
                     unsubscribe();
@@ -1566,18 +1574,39 @@ class Connection {
         const pipe = await mediator.pipe;
         log.debug('Mediator transport pipe attached');
         pipe.readable
-            .then(() => log.warn('Mediator transport readable pipe detached'))
-            .catch((error) => log.warn('Mediator transport readable side errored:', error));
+            .then(() => {
+                log.warn('Mediator transport readable pipe detached');
+                abort.raise({cause: 'Mediator transport readable pipe detached'});
+            })
+            .catch((error) => {
+                log.warn('Mediator transport readable side errored:', error);
+                abort.raise({cause: 'Mediator transport readable side errored'});
+            });
         pipe.writable
-            .then(() => log.warn('Mediator transport writable side detached'))
-            .catch((error) => log.warn('Mediator transport writable side errored:', error));
+            .then(() => {
+                log.warn('Mediator transport writable side detached');
+                abort.raise({cause: 'Mediator transport writable side detached'});
+            })
+            .catch((error) => {
+                log.warn('Mediator transport writable side errored:', error);
+                abort.raise({cause: 'Mediator transport writable side errored'});
+            });
         connectionState.set(ConnectionState.HANDSHAKE);
 
         // Run the task manager
         controller.taskManager
             .run(services, controller, abort.listener)
-            .then((v) => unreachable(v))
-            .catch((error) => log.error('Task manager errored:', error));
+            .then((v) => {
+                abort.raise({cause: 'Task manager stopped'});
+                unreachable(v, new Error('Task manager stopped'));
+            })
+            .catch((error) => {
+                if (error instanceof ConnectionClosed) {
+                    log.info('Task manager stopped due to connection being closed', error);
+                } else {
+                    log.error('Task manager errored:', error);
+                }
+            });
 
         const connection = new Connection(mediator, connectionState, leaderState);
         delayedConnection.set(connection);

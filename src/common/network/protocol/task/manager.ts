@@ -179,7 +179,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
     public constructor(
         private readonly _services: ServicesForTasks,
         public readonly controller: TaskController,
-        public readonly abort: AbortListener,
+        public readonly abort: AbortListener<{readonly cause: string}>,
         private readonly _manager: TaskManagerHandle,
         private readonly _name: string,
         private readonly _decoder: DecoderQueues,
@@ -758,16 +758,11 @@ export class ConnectedTaskManager {
     public async run(
         services: ServicesForBackend,
         controller: TaskController,
-        abort: AbortListener,
+        abort: AbortListener<{readonly cause: string}>,
     ): Promise<never> {
         this._log.debug('Running task manager');
-
-        // TODO(DESK-580): Test
-        abort.subscribe(() => {
-            const aborted = new ConnectionClosed(
-                'abort',
-                'Connection aborted by task manager signal',
-            );
+        const unsubscribe = abort.subscribe(({cause}) => {
+            const aborted = new ConnectionClosed('abort', cause);
             this._decoder.queue.error(aborted);
             this._decoder.backlog.error(aborted);
             this._encoder.queue.error(aborted);
@@ -818,6 +813,7 @@ export class ConnectedTaskManager {
                 this._decoder.queue.error(error);
                 this._encoder.queue.error(error);
                 this._log.debug('Exiting main loop');
+                unsubscribe();
                 throw error;
             }
         }
@@ -922,7 +918,7 @@ export class ConnectedTaskManager {
         task: RunnableTask<unknown>,
         services: ServicesForTasks,
         controller: TaskController,
-        abort: AbortListener,
+        abort: AbortListener<{readonly cause: string}>,
     ): Promise<unknown> {
         // Move the backlog to the task's decoder
         const decoder = {...this._decoder};

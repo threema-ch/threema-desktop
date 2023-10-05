@@ -104,7 +104,7 @@ export type TaskCodecReadInstruction<T = undefined> =
     | MessageFilterInstruction.REJECT;
 
 interface TaskCodecHandle {
-    readonly abort: AbortListener;
+    readonly abort: AbortListener<{readonly cause: string}>;
     readonly controller: TaskController;
 
     readonly step: <T>(executor: () => Promise<T>) => Promise<T>;
