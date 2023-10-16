@@ -99,20 +99,20 @@ export function run(): void {
 
             // Add value to the source array, ensure that delta updates are propagated
             sourceStore.set([value1, value2, value3]);
-            expect(events).to.deep.equal([[DeltaUpdateType.ADDED, value3]]);
+            expect(events).to.deep.equal([[DeltaUpdateType.ADDED, [value3]]]);
             clearEvents();
 
             // Remove value
             sourceStore.set([value1, value3]);
-            expect(events).to.deep.equal([[DeltaUpdateType.DELETED, value2]]);
+            expect(events).to.deep.equal([[DeltaUpdateType.DELETED, [value2]]]);
             clearEvents();
 
             // Add two, remove one
             sourceStore.set([value1, value4, value5]);
             expect(events).to.deep.equal([
-                [DeltaUpdateType.ADDED, value4],
-                [DeltaUpdateType.ADDED, value5],
-                [DeltaUpdateType.DELETED, value3],
+                [DeltaUpdateType.ADDED, [value4]],
+                [DeltaUpdateType.ADDED, [value5]],
+                [DeltaUpdateType.DELETED, [value3]],
             ]);
             clearEvents();
         });
