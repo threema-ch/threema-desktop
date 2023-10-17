@@ -110,9 +110,8 @@ export function run(): void {
             // Add two, remove one
             sourceStore.set([value1, value4, value5]);
             expect(events).to.deep.equal([
-                [DeltaUpdateType.ADDED, [value4]],
-                [DeltaUpdateType.ADDED, [value5]],
                 [DeltaUpdateType.DELETED, [value3]],
+                [DeltaUpdateType.ADDED, [value4, value5]],
             ]);
             clearEvents();
         });

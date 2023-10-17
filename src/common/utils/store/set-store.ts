@@ -135,8 +135,9 @@ export class LocalSetDerivedSetStore<TValue extends CustomTransferable>
     }
 
     /**
-     * Create delta update from a provided full new Set. Note: Only object references are taken into
-     * account when calculating the delta update.
+     * Create delta update from a provided full new Set.
+     *
+     * Note: Only object references are taken into account when calculating the delta update!
      */
     private _updateFromSet(newSet: ReadonlySet<TValue>): void {
         // Special case: Empty set
@@ -151,20 +152,22 @@ export class LocalSetDerivedSetStore<TValue extends CustomTransferable>
             return;
         }
 
-        // Add new items
-        for (const newItem of newSet) {
-            if (!this._value.has(newItem)) {
-                this._delta.raise([DeltaUpdateType.ADDED, [newItem]]);
-            }
+        // Calculate diff of old and new set
+        //
+        // Note: Could be replaced with actual set operations once V8 finally gets around to implement
+        // the set methods proposal: https://github.com/tc39/proposal-set-methods/issues/78
+        const added = [...newSet].filter((x) => !this._value.has(x));
+        const deleted = [...this._value].filter((x) => !newSet.has(x));
+
+        // Raise delta updates. First delete, then add, for memory efficiency reasons.
+        if (deleted.length > 0) {
+            this._delta.raise([DeltaUpdateType.DELETED, deleted]);
+        }
+        if (added.length > 0) {
+            this._delta.raise([DeltaUpdateType.ADDED, added]);
         }
 
-        // Remove obsolete items
-        for (const oldItem of this._value) {
-            if (!newSet.has(oldItem)) {
-                this._delta.raise([DeltaUpdateType.DELETED, [oldItem]]);
-            }
-        }
-
+        // Replace inner set and notify subscribers
         this._value = newSet;
         this._dispatch(this._value);
     }
@@ -205,7 +208,7 @@ export class LocalDerivedSetStore<
         const unsubscriber = source.delta.subscribe(([type, values]) => {
             switch (type) {
                 case DeltaUpdateType.ADDED: {
-                    for (const value of values) {
+                    const derivedValues = values.map((value) => {
                         const derived = derive(value);
                         assert(
                             !map.has(value),
@@ -216,13 +219,15 @@ export class LocalDerivedSetStore<
                             'Expected derived value to not already exist on delta add',
                         );
                         map.set(value, derived);
-                        this._dispatch(this._value.add(derived));
-                        this._delta.raise([DeltaUpdateType.ADDED, [derived]]);
-                    }
+                        this._value.add(derived);
+                        return derived;
+                    });
+                    this._dispatch(this._value);
+                    this._delta.raise([DeltaUpdateType.ADDED, derivedValues]);
                     break;
                 }
                 case DeltaUpdateType.DELETED: {
-                    for (const value of values) {
+                    const derivedValues = values.map((value) => {
                         const derived = map.get(value);
                         assert(
                             derived !== undefined,
@@ -236,9 +241,10 @@ export class LocalDerivedSetStore<
                             this._value.delete(derived),
                             'Expected derived to have been removed on delta delete',
                         );
-                        this._dispatch(this._value);
-                        this._delta.raise([DeltaUpdateType.DELETED, [derived]]);
-                    }
+                        return derived;
+                    });
+                    this._dispatch(this._value);
+                    this._delta.raise([DeltaUpdateType.DELETED, derivedValues]);
                     break;
                 }
                 case DeltaUpdateType.CLEARED: {
@@ -365,7 +371,6 @@ export class RemoteSetStore<TValue extends object>
                             .remote.getOrCreate<TValue>(object.id, () =>
                                 service.deserialize<TValue>(object.serialized, true),
                             );
-                        options.debug?.log?.debug(`Added value to set (id=${object.id})`);
                         assert(
                             !self_._value.has(value),
                             'Expected value to not already exist when adding as part of a delta update',
@@ -385,7 +390,6 @@ export class RemoteSetStore<TValue extends object>
                     const values = [];
                     for (const object of delta.objects) {
                         const value = service.cache().remote.get<TValue>(object.id);
-                        options.debug?.log?.debug(`Deleted value from set (id=${object.id})`);
                         // TODO(lgr): Debug this issue
                         // assert(
                         //     value !== undefined,
@@ -494,15 +498,17 @@ export class RemoteSetStore<TValue extends object>
         // Subsequently, push (delta) updates
         const unsubscriber = store.delta.subscribe(([type, values]) => {
             let delta: SerializedSetStoreWireValue<TValue>;
-            let serialized, transfers;
+            const transfers = [];
             switch (type) {
                 case DeltaUpdateType.ADDED: {
                     const objects = [];
                     for (const value of values) {
                         const id = service.cache().local.getOrAssignId(value);
                         store.options?.debug?.log?.debug(`Add value to set (id=${id})`);
-                        [serialized, transfers] = service.serialize(value);
+                        const [serialized, valueTransfers] = service.serialize(value);
                         objects.push({id, serialized});
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                        transfers.push(...valueTransfers);
                     }
                     delta = {type, objects};
                     break;
@@ -525,7 +531,7 @@ export class RemoteSetStore<TValue extends object>
                 default:
                     unreachable(type);
             }
-            set.endpoint.postMessage(delta, transfers ?? []);
+            set.endpoint.postMessage(delta, transfers);
         });
 
         // Unsubscribe from store and close endpoint on any inbound message
