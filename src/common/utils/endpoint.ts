@@ -168,8 +168,6 @@ export interface HandlerWireValue {
 
 export type WireValue = RawWireValue | HandlerWireValue;
 
-type MessageID = string;
-
 // eslint-disable-next-line no-restricted-syntax
 const enum MessageType {
     GET = 'GET',
@@ -179,27 +177,27 @@ const enum MessageType {
 }
 
 interface GetMessage {
-    readonly id?: MessageID;
+    readonly id?: u53;
     readonly type: MessageType.GET;
     readonly path: string[];
 }
 
 interface SetMessage {
-    readonly id?: MessageID;
+    readonly id?: u53;
     readonly type: MessageType.SET;
     readonly path: string[];
     readonly value: WireValue;
 }
 
 interface ApplyMessage {
-    readonly id?: MessageID;
+    readonly id?: u53;
     readonly type: MessageType.APPLY;
     readonly path: string[];
     readonly argumentList: WireValue[];
 }
 
 interface ReleaseMessage {
-    readonly id?: MessageID;
+    readonly id?: u53;
     readonly type: MessageType.RELEASE;
 }
 
