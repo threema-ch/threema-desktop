@@ -10,7 +10,7 @@ import {
 } from '~/common/utils/endpoint';
 import {ReadableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {type DeltaUpdate, LocalSetDerivedSetStore} from '~/common/utils/store/set-store';
+import {type DeltaUpdate, LocalSetBasedSetStore} from '~/common/utils/store/set-store';
 
 const FAKE_PROXY_HANDLER = undefined as unknown as typeof PROXY_HANDLER;
 
@@ -26,14 +26,14 @@ class Value implements ProxyMarked {
  * Test of set stores.
  */
 export function run(): void {
-    describe('SetDerivedSetStore', function () {
+    describe('SetBasedSetStore', function () {
         // Note: Casts to PropertiesMarked below are OK because we don't do transfers and the actual
         // object references are compared in expect.
 
         it('should create a set store with the same initial values', function () {
             const values = [{a: 'A'}, {b: 'B'}] as unknown as PropertiesMarked[];
             const originalSet = new ReadableStore(new Set(values));
-            const setStore = new LocalSetDerivedSetStore(originalSet);
+            const setStore = new LocalSetBasedSetStore(originalSet);
 
             expect([...setStore.get()], 'SetStore values').to.have.same.members(values);
         });
@@ -41,7 +41,7 @@ export function run(): void {
         it('should add new items to the SetStore', function () {
             const values = new Set([{a: 'A'}, {b: 'B'}] as unknown as PropertiesMarked[]);
             const originalSet = new WritableStore(values);
-            const setStore = new LocalSetDerivedSetStore(originalSet);
+            const setStore = new LocalSetBasedSetStore(originalSet);
 
             values.add({c: 'C'} as unknown as PropertiesMarked);
             values.add({d: 'D'} as unknown as PropertiesMarked);
@@ -54,7 +54,7 @@ export function run(): void {
             const itemB = {b: 'B'} as unknown as PropertiesMarked;
             const values = new Set([{a: 'A'}, itemB] as unknown as PropertiesMarked[]);
             const originalSet = new WritableStore(values);
-            const setStore = new LocalSetDerivedSetStore(originalSet);
+            const setStore = new LocalSetBasedSetStore(originalSet);
 
             values.delete(itemB);
             originalSet.set(values);
@@ -66,7 +66,7 @@ export function run(): void {
         it('should clear the SetStore if the input set is cleared', function () {
             const values = new Set([{a: 'A'}, {b: 'B'}] as unknown as PropertiesMarked[]);
             const originalSet = new WritableStore(values);
-            const setStore = new LocalSetDerivedSetStore(originalSet);
+            const setStore = new LocalSetBasedSetStore(originalSet);
 
             values.clear();
             originalSet.set(values);
@@ -86,7 +86,7 @@ export function run(): void {
             const sourceStore = new WritableStore<Value[]>([value1, value2]);
 
             // Derived store (which doesn't actually change anything about the values)
-            const derivedStore = new LocalSetDerivedSetStore(
+            const derivedStore = new LocalSetBasedSetStore(
                 derive(sourceStore, (sourceSet) => new Set([...sourceSet])),
             );
 

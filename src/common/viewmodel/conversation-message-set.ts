@@ -13,7 +13,7 @@ import {
 } from '~/common/utils/endpoint';
 import {type IQueryableStore, WritableStore, StoreOptions} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {LocalDerivedSetStore, LocalSetDerivedSetStore} from '~/common/utils/store/set-store';
+import {LocalDerivedSetStore, LocalSetBasedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
@@ -125,7 +125,7 @@ export function getConversationMessageSetViewModel(
     // Above, we have a store containing a set. But we don't want to transfer the full set every
     // time something changes. Instead, we want delta updates. To achieve this, convert the store of
     // a set to a `SetStore`.
-    const deltaSetStore = new LocalSetDerivedSetStore(activeMessageStores, storeOptions);
+    const deltaSetStore = new LocalSetBasedSetStore(activeMessageStores, storeOptions);
 
     // Fetch the view model for every message in the set store
     const conversationMessageSetStore = new LocalDerivedSetStore(

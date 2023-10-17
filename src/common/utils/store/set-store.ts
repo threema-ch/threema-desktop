@@ -105,9 +105,11 @@ export class LocalSetStore<TValue extends CustomTransferable>
  * An {@link ISetStore} implementation that subscribes to a `Store<Set<T>>` and propagates
  * delta-updates from the provided full set.
  *
+ * In other words, it converts a `Store<Set<T>>` to a `SetStore<T>`.
+ *
  * Note that only changed object references are compared when calculating the delta update.
  */
-export class LocalSetDerivedSetStore<TValue extends CustomTransferable>
+export class LocalSetBasedSetStore<TValue extends CustomTransferable>
     extends ReadableStore<ReadonlySet<TValue>>
     implements IDerivableSetStore<TValue>
 {
@@ -127,7 +129,7 @@ export class LocalSetDerivedSetStore<TValue extends CustomTransferable>
         this.tag = options?.debug?.tag ?? '';
         this._delta = new EventController<DeltaUpdate<TValue>>(options?.debug?.log);
         const unsubscriber = source.subscribe((newSet) => this._updateFromSet(newSet));
-        LocalSetDerivedSetStore._REGISTRY.register(this, unsubscriber);
+        LocalSetBasedSetStore._REGISTRY.register(this, unsubscriber);
     }
 
     public get delta(): EventListener<DeltaUpdate<TValue>> {
