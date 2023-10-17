@@ -499,9 +499,11 @@ export interface TransferHandler<
     ) => readonly [value: TLocalWireValue, transfers?: readonly DomTransferable[]];
 
     /**
-     * Gets called to deserialize an incoming value that was serialized in the
-     * other thread with this transfer handler (known through the name it was
-     * registered under).
+     * Gets called to deserialize an incoming value that was serialized from the remote endpoint
+     * with this transfer handler (known through the name it was registered under).
+     *
+     * This method is also responsible for handling any transferred {@link MessagePort}s that have
+     * been created through the {@link serialize} method.
      */
     readonly deserialize: (
         value: TRemoteWireValue,
@@ -593,6 +595,12 @@ export class LocalObjectMapper<TLocalObject extends CustomTransferable> {
     private readonly _sn = new SequenceNumberU53<u53>(0);
     private readonly _map = new WeakMap<TLocalObject, u53>();
 
+    public getId<TTargetObject extends TLocalObject>(
+        object: TTargetObject,
+    ): ObjectId<TTargetObject> | undefined {
+        return this._map.get(object) as ObjectId<TTargetObject> | undefined;
+    }
+
     public getOrAssignId<TTargetObject extends TLocalObject>(
         object: TTargetObject,
     ): ObjectId<TTargetObject> {
@@ -617,7 +625,7 @@ export class RemoteObjectMapper<TRemoteObject extends object> {
     public getOrCreate<TTargetObject extends TRemoteObject>(
         id: ObjectId<TTargetObject>,
         miss: () => TTargetObject,
-        hit?: () => void,
+        hit: () => void,
     ): TTargetObject {
         return this._map.getOrCreate(id, miss, hit);
     }
@@ -861,10 +869,14 @@ export class EndpointService {
     /**
      * Deserialise a {@link WireValue} to its associated type.
      *
+     * If the value type is {@link WireValueType.HANDLER}, then the `deserialize` method on the
+     * associated transfer handler will be called. This method also has the responsibility of
+     * handling any transferred {@link MessagePort}s that were created when serializing.
+     *
      * Note: Only call this if you know that a (nested) value needs deserialisation.
      *
-     * IMPORTANT: The return type of this method is unsafe. You should know what you're doing when
-     *            calling this!
+     * IMPORTANT: The return value of this method is unsafely casted into {@link TResult}. You
+     *            should know the return type you're expecting when calling this!
      */
     public deserialize<TResult>(value: WireValue, root: boolean): TResult {
         switch (value.type) {

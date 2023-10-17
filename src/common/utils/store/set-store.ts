@@ -16,6 +16,8 @@ import {
     registerTransferHandler,
     TRANSFER_HANDLER,
     TRANSFERRED_MARKER,
+    LocalObjectMapper,
+    RemoteObjectMapper,
 } from '~/common/utils/endpoint';
 import {EventController, type EventListener} from '~/common/utils/event';
 import type {AbortRaiser} from '~/common/utils/signal';
@@ -30,12 +32,11 @@ import {
 /**
  * Symbol to mark a remote as a set store.
  */
-// eslint-disable-next-line @typescript-eslint/no-inferrable-types
 export const SET_STORE_REMOTE_MARKER: symbol = Symbol('set-store-remote-marker');
 
 export type DeltaUpdate<TValue> =
-    | [type: Exclude<DeltaUpdateType, DeltaUpdateType.CLEARED>, values: TValue[]]
-    | [type: DeltaUpdateType.CLEARED];
+    | readonly [type: Exclude<DeltaUpdateType, DeltaUpdateType.CLEARED>, values: readonly TValue[]]
+    | readonly [type: DeltaUpdateType.CLEARED];
 
 export interface SetStoreDeltaListener<TValue> {
     readonly delta: EventListener<DeltaUpdate<TValue>>;
@@ -281,24 +282,24 @@ function releaseRemoteSetValues({
     set.releaser?.raise(undefined);
 }
 
-interface SerializedSetStoreWireValueInitial<TTarget> {
+interface SerializedSetStoreWireValueInitial<TValue> {
     readonly type: undefined;
-    readonly id: ObjectId<TTarget>;
+    readonly id: ObjectId<TValue>;
     readonly serialized: HandlerWireValue;
 }
 
-interface SerializedSetStoreWireValueAdd<TTarget> {
+interface SerializedSetStoreWireValueAdd<TValue> {
     readonly type: DeltaUpdateType.ADDED;
     readonly objects: {
-        readonly id: ObjectId<TTarget>;
+        readonly id: ObjectId<TValue>;
         readonly serialized: HandlerWireValue;
     }[];
 }
 
-interface SerializedSetStoreWireValueDelete<TTarget> {
+interface SerializedSetStoreWireValueDelete<TValue> {
     readonly type: DeltaUpdateType.DELETED;
     readonly objects: {
-        readonly id: ObjectId<TTarget>;
+        readonly id: ObjectId<TValue>;
     }[];
 }
 
@@ -327,6 +328,7 @@ export class RemoteSetStore<TValue extends object>
 
     private constructor(
         service: EndpointService,
+        mapper: RemoteObjectMapper<TValue>,
         set: {
             readonly endpoint: EndpointFor<'set'>;
             readonly values: Map<ObjectId<TValue>, TValue>;
@@ -368,11 +370,14 @@ export class RemoteSetStore<TValue extends object>
                     );
                     const values = [];
                     for (const object of delta.objects) {
-                        const value = service
-                            .cache()
-                            .remote.getOrCreate<TValue>(object.id, () =>
-                                service.deserialize<TValue>(object.serialized, true),
-                            );
+                        const value = mapper.getOrCreate(
+                            object.id,
+                            () => service.deserialize<TValue>(object.serialized, true),
+                            // Note: We **must** deserialize in the _hit_ case as well since the
+                            // endpoint provided as part of TValue would otherwise linger indefinitely
+                            // and therefore leak memory.
+                            () => service.deserialize<TValue>(object.serialized, true),
+                        );
                         assert(
                             !self_._value.has(value),
                             'Expected value to not already exist when adding as part of a delta update',
@@ -391,20 +396,16 @@ export class RemoteSetStore<TValue extends object>
                     );
                     const values = [];
                     for (const object of delta.objects) {
-                        const value = service.cache().remote.get<TValue>(object.id);
-                        // TODO(lgr): Debug this issue
-                        // assert(
-                        //     value !== undefined,
-                        //     'Expected value of a delta delete to be available in the cache',
-                        // );
-                        // assert(
-                        //     self_._value.delete(value),
-                        //     'Expected value to have been removed when removing as part of a delta delete',
-                        // );
-                        if (value !== undefined) {
-                            self_._value.delete(value);
-                            values.push(value);
-                        }
+                        const value = mapper.get(object.id);
+                        assert(
+                            value !== undefined,
+                            'Expected value of a delta delete to be available in the cache',
+                        );
+                        assert(
+                            self_._value.delete(value),
+                            'Expected value to have been removed when removing as part of a delta delete',
+                        );
+                        values.push(value);
                     }
                     deltaUpdate = [delta.type, values];
                     break;
@@ -436,19 +437,26 @@ export class RemoteSetStore<TValue extends object>
         },
         options: StoreOptions<ReadonlySet<TValue>>,
     ): RemoteSetStore<TValue> {
+        // Note: We want to lookup arbitrary TValues by unique IDs, so using the global object cache
+        // would be confusing. This essentially maintains a map whose values mirror our set.
+        const mapper = new RemoteObjectMapper<TValue>();
+
         // When wrapping the store, all initial values will be transferred. Future updates will be
         // sent as delta updates.
-        const valuePairs = set.values.map((wireValue) => {
+        const values = set.values.map((wireValue) => {
             assert(
                 wireValue.type === undefined,
                 'Expected initial values to not have a delta type',
             );
 
-            const deserializedValue = service
-                .cache()
-                .remote.getOrCreate<TValue>(wireValue.id, () =>
-                    service.deserialize<TValue>(wireValue.serialized, true),
-                );
+            const deserializedValue = mapper.getOrCreate(
+                wireValue.id,
+                () => service.deserialize<TValue>(wireValue.serialized, true),
+                // Note: We **must** deserialize in the _hit_ case as well since the
+                // endpoint provided as part of TValue would otherwise linger indefinitely
+                // and therefore leak memory.
+                () => service.deserialize<TValue>(wireValue.serialized, true),
+            );
 
             return [wireValue.id, deserializedValue] as const;
         });
@@ -456,9 +464,10 @@ export class RemoteSetStore<TValue extends object>
         // Create the store
         const store = new RemoteSetStore(
             service,
+            mapper,
             {
                 endpoint: set.endpoint,
-                values: new Map(valuePairs),
+                values: new Map(values),
             },
             options,
         );
@@ -481,6 +490,10 @@ export class RemoteSetStore<TValue extends object>
         values: readonly SerializedSetStoreWireValue<TValue>[],
         transfers: readonly DomTransferable[],
     ] {
+        // Note: We want to assign unique IDs to arbitrary TValues, so using the global object cache
+        // would be confusing.
+        const mapper = new LocalObjectMapper<TValue>();
+
         // Initially, serialize all values
         const initial: {
             readonly values: SerializedSetStoreWireValue<TValue>[];
@@ -490,7 +503,7 @@ export class RemoteSetStore<TValue extends object>
             transfers: [],
         };
         for (const value of store.get()) {
-            const id = service.cache().local.getOrAssignId(value);
+            const id = mapper.getOrAssignId(value);
             const [serialized, transfers] = service.serialize(value);
             initial.values.push({type: undefined, id, serialized});
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -505,7 +518,7 @@ export class RemoteSetStore<TValue extends object>
                 case DeltaUpdateType.ADDED: {
                     const objects = [];
                     for (const value of values) {
-                        const id = service.cache().local.getOrAssignId(value);
+                        const id = mapper.getOrAssignId(value);
                         store.options?.debug?.log?.debug(`Add value to set (id=${id})`);
                         const [serialized, valueTransfers] = service.serialize(value);
                         objects.push({id, serialized});
@@ -518,8 +531,12 @@ export class RemoteSetStore<TValue extends object>
                 case DeltaUpdateType.DELETED: {
                     const objects = [];
                     for (const value of values) {
-                        const id = service.cache().local.getOrAssignId(value);
+                        const id = mapper.getId(value);
                         store.options?.debug?.log?.debug(`Delete value from set (id=${id})`);
+                        assert(
+                            id !== undefined,
+                            'Expected id of a delta delete to be available in the cache',
+                        );
                         objects.push({id});
                     }
                     delta = {type, objects};
@@ -626,7 +643,6 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
                     },
                 ),
             () =>
-                // There is already a RemoteSetStore with endpoint, so release the newly created one
                 releaseRemoteSetValues({
                     set: {
                         endpoint,
