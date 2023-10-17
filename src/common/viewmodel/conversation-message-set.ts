@@ -11,7 +11,7 @@ import {
     type ProxyMarked,
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
-import {type IQueryableStore, WritableStore} from '~/common/utils/store';
+import {type IQueryableStore, WritableStore, StoreOptions} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, LocalSetDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
@@ -51,40 +51,40 @@ class ConversationMessageSetController implements IConversationMessageSetControl
     }
 }
 
-function getConversationMessageSetStore(
-    viewModelRepository: IViewModelRepository,
-    conversation: LocalModelStore<Conversation>,
-    messageSetStore: SetOfAnyLocalMessageModelStore,
-): ConversationMessageSetStore {
-    return new LocalDerivedSetStore(messageSetStore, (store) =>
-        viewModelRepository.conversationMessage(conversation, store),
-    );
-}
-
 /**
  * Get a ViewModel that contains a Set of conversation messages for a receiver.
  */
 export function getConversationMessageSetViewModel(
     services: ServicesForViewModel,
-    viewModelrepository: IViewModelRepository,
+    viewModelRepository: IViewModelRepository,
     conversation: LocalModelStore<Conversation>,
 ): ConversationMessageSetViewModel {
-    const {endpoint} = services;
+    const {endpoint, logging} = services;
 
     const controller = new ConversationMessageSetController();
 
     const conversationModel = conversation.get();
 
+    // Options for all derived stores below
+    const tag = `conversation-message[]`;
+    const storeOptions = {
+        debug: {
+            log: logging.logger(`model.${tag}`),
+            tag,
+        },
+    };
+
+    // Based on the currently visible messages in the viewport, derive a set of message stores
+    // including context above and below the current viewport.
     const activeMessageStores = derive(
         controller.currentViewportMessages,
         (viewPortMessageIds, getAndSubscribe) => {
             const mutableViewPortMessageIds = [...viewPortMessageIds];
-            // Subscribe to the last messages store so we receive updates when the last message is
-            // updated as well.
 
-            // TODO: How to update if a reflected message updates other messages than the last?
-            // Create a store for "conversation updates", which holds the date of the last update.
-            // Look at `lastMessage` update in conversation to find the location to add this.
+            // TODO: How to update if a reflected message updates the last message, or other
+            // messages than the last? Create a store for "conversation updates", which holds the
+            // date of the last update. Look at `lastMessage` update in conversation to find the
+            // location to add this.
 
             const activeMessageSet = new Set<AnyMessageModelStore>();
 
@@ -99,6 +99,7 @@ export function getConversationMessageSetViewModel(
                 }
             }
 
+            // Otherwise, load surrounding messages as well
             for (const viewPortMessageId of mutableViewPortMessageIds) {
                 const surroundingMessages =
                     // TODO: The db call does not work on messages that have no sent date yet -
@@ -118,11 +119,20 @@ export function getConversationMessageSetViewModel(
 
             return activeMessageSet;
         },
+        storeOptions,
     );
 
-    const deltaSetStore = new LocalSetDerivedSetStore(activeMessageStores);
+    // Above, we have a store containing a set. But we don't want to transfer the full set every
+    // time something changes. Instead, we want delta updates. To achieve this, convert the store of
+    // a set to a `SetStore`.
+    const deltaSetStore = new LocalSetDerivedSetStore(activeMessageStores, storeOptions);
 
-    const store = getConversationMessageSetStore(viewModelrepository, conversation, deltaSetStore);
+    // Fetch the view model for every message in the set store
+    const conversationMessageSetStore = new LocalDerivedSetStore(
+        deltaSetStore,
+        (messageStore) => viewModelRepository.conversationMessage(conversation, messageStore),
+        storeOptions,
+    );
 
-    return endpoint.exposeProperties({controller, store});
+    return endpoint.exposeProperties({controller, store: conversationMessageSetStore});
 }
