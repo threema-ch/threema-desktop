@@ -138,7 +138,7 @@ export class ReflectedIncomingMessageTask
         const guard = nonces.checkAndRegisterNonce(
             NonceScope.CSP,
             messageNonce,
-            this._log.prefix?.[0],
+            'ReflectedIncomingMessageTask#run',
         );
         const nonceHexString = bytesToHex(messageNonce);
         if (guard === NONCE_REUSED) {

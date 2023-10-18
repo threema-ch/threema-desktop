@@ -336,7 +336,7 @@ function decryptBackupBytes(
                 CREATE_BUFFER_TOKEN,
                 ensureEncryptedDataWithNonceAhead(encrypted),
             )
-            .decrypt().plainData;
+            .decrypt(undefined).plainData;
     } catch (error) {
         throw new SafeError('crypto', `Decrypting backup failed: ${error}`, {from: error});
     }

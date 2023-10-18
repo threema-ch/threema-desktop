@@ -344,7 +344,7 @@ export function run(): void {
                                 },
                             }).finish() as PlainData,
                         )
-                        .encryptWithRandomNonceAhead(),
+                        .encryptWithRandomNonceAhead(undefined),
                     kdfParameters: {
                         $case: 'argon2id',
                         argon2id: {
@@ -395,7 +395,7 @@ export function run(): void {
                         undefined,
                     )
                     .encryptor(CREATE_BUFFER_TOKEN, new Uint8Array([1, 2, 3, 4]) as PlainData)
-                    .encryptWithRandomNonceAhead();
+                    .encryptWithRandomNonceAhead(undefined);
                 const encryptedInvalidKeyStorage: EncryptedKeyStorage = {
                     schemaVersion: 1,
                     encryptedKeyStorage: encryptedInvalidKeyStorageBytes,
@@ -489,7 +489,7 @@ export function run(): void {
                     undefined,
                 )
                 .encryptor(CREATE_BUFFER_TOKEN, encodedBytes)
-                .encryptWithRandomNonceAhead();
+                .encryptWithRandomNonceAhead(undefined);
             const encryptedKeyStorageFileBytes = EncryptedKeyStorage.encode({
                 schemaVersion: 1,
                 encryptedKeyStorage: encryptedKeyStorageBytes,

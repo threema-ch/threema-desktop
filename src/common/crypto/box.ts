@@ -63,14 +63,13 @@ export class CryptoBoxDecryptor<
     /**
      * Decrypt the encrypted box.
      *
+     * @param nonceDebugToken The debug token associated with the nonce guard.
      * @returns The decrypted data and the nonceguard (if guarded scope).
      * @throws {CryptoError} if data is already decrypted.
      * @throws {CryptoError} if decryption fails.
      * @throws {CryptoError} if nonce re-use was detected.
      */
-    public decrypt(
-        nonceDebugToken?: TNonceScope extends NonceUnguardedScope ? undefined : string,
-    ): {
+    public decrypt(nonceDebugToken: TNonceScope extends NonceUnguardedScope ? undefined : string): {
         nonceGuard: TNonceScope extends NonceUnguardedScope ? undefined : INonceGuard;
         plainData: PlainData;
     } {
@@ -169,9 +168,16 @@ export class CryptoBoxEncryptor<
         ) as EncryptedData;
     }
 
-    public encryptWithRandomNonce(debugToken?: string): [nonce: Nonce, encrypted: EncryptedData] {
+    /**
+     * Encrypt this box with a random nonce. Return the ciphertext along with the nonce.
+     *
+     * @param nonceDebugToken The debug token associated with the nonce guard.
+     */
+    public encryptWithRandomNonce(
+        nonceDebugToken: TNonceScope extends NonceUnguardedScope ? undefined : string,
+    ): [nonce: Nonce, encrypted: EncryptedData] {
         // Generate cryptographically secure random nonce and encrypt data in-place
-        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce(debugToken);
+        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce(nonceDebugToken);
         let nonce;
         if (isNonce(nonceOrNonceGuard)) {
             nonce = nonceOrNonceGuard;
@@ -187,9 +193,16 @@ export class CryptoBoxEncryptor<
         return [nonce, encrypted];
     }
 
-    public encryptWithRandomNonceAhead(debugToken?: string): EncryptedDataWithNonceAhead {
+    /**
+     * Encrypt this box with a random nonce. Return the ciphertext with the nonce prepended.
+     *
+     * @param nonceDebugToken The debug token associated with the nonce guard.
+     */
+    public encryptWithRandomNonceAhead(
+        nonceDebugToken: TNonceScope extends NonceUnguardedScope ? undefined : string,
+    ): EncryptedDataWithNonceAhead {
         // Generate cryptographically secure random nonce and encrypt data in-place
-        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce(debugToken);
+        const nonceOrNonceGuard = this._encryptInPlaceWithRandomNonce(nonceDebugToken);
         let nonce;
         if (isNonce(nonceOrNonceGuard)) {
             nonce = nonceOrNonceGuard;
@@ -207,7 +220,7 @@ export class CryptoBoxEncryptor<
     }
 
     private _encryptInPlaceWithRandomNonce(
-        debugToken?: string,
+        nonceDebugToken: TNonceScope extends NonceUnguardedScope ? undefined : string,
     ): TNonceScope extends NonceUnguardedScope ? Nonce : INonceGuard {
         // Generate cryptographically secure random nonce
 
@@ -228,7 +241,10 @@ export class CryptoBoxEncryptor<
             'NonceService must be defined since nonceScope is not NonceUnguardedScope',
         );
 
-        const nonceGuard = this._box.nonceService.getRandomNonce(this._box.nonceScope, debugToken);
+        const nonceGuard = this._box.nonceService.getRandomNonce(
+            this._box.nonceScope,
+            nonceDebugToken,
+        );
 
         const arrayHeadroom = this._array.subarray(0, NACL_CONSTANTS.NONCE_LENGTH);
         arrayHeadroom.set(nonceGuard.nonce);
@@ -540,7 +556,7 @@ export class SecureSharedBoxFactory<
         );
         const encryptedKey = box
             .encryptor(CREATE_BUFFER_TOKEN, secret.unwrap() as PlainData)
-            .encryptWithRandomNonceAhead('crypto.securesharedboxfactory.in-memory-encryption');
+            .encryptWithRandomNonceAhead(undefined);
         secret.purge();
 
         // Create an executor function that temporary yields the secret key
@@ -552,7 +568,8 @@ export class SecureSharedBoxFactory<
         // Declare protected operations for use with the key
         function runWithKey<TResult>(executor: (key: RawKey<32>) => TResult): TResult {
             const decryptedKey = wrapRawKey(
-                box.decryptorWithNonceAhead(decryptBuffer, encryptedKey).decrypt().plainData,
+                box.decryptorWithNonceAhead(decryptBuffer, encryptedKey).decrypt(undefined)
+                    .plainData,
                 NACL_CONSTANTS.KEY_LENGTH,
             );
             const result = executor(decryptedKey);

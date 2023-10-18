@@ -332,7 +332,7 @@ export async function downloadBlob(
         try {
             decryptedBytes = secretBox
                 .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, downloadResult.data)
-                .decrypt().plainData;
+                .decrypt(undefined).plainData;
         } catch (error) {
             throw new BlobFetchError(
                 {kind: 'decryption-error', cause: ensureError(error)},

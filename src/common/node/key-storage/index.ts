@@ -458,7 +458,7 @@ export class FileSystemKeyStorage implements KeyStorage {
         );
         let decryptedBytes: Uint8Array;
         try {
-            decryptedBytes = decryptor.decrypt().plainData;
+            decryptedBytes = decryptor.decrypt(undefined).plainData;
         } catch (error) {
             throw new KeyStorageError('undecryptable', `Cannot decrypt encrypted key storage`, {
                 from: error,
@@ -521,7 +521,7 @@ export class FileSystemKeyStorage implements KeyStorage {
                     },
                 }).finish() as PlainData,
             )
-            .encryptWithRandomNonceAhead(this._log.prefix?.[0]);
+            .encryptWithRandomNonceAhead(undefined);
         key.purge();
 
         // Encode

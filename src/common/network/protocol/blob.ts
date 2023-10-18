@@ -203,7 +203,7 @@ export async function downloadAndDecryptBlob(
     const box = crypto.getSecretBox(key, NONCE_UNGUARDED_SCOPE, undefined);
     const decrypted = box
         .decryptorWithNonce(CREATE_BUFFER_TOKEN, nonce, result.data)
-        .decrypt().plainData;
+        .decrypt(undefined).plainData;
 
     // Mark as downloaded in the background
     // TODO(DESK-921): Do this *after* processing!

@@ -317,7 +317,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                     padding: new Uint8Array(randomU8(crypto)),
                                 }).encode,
                             )
-                            .encryptWithRandomNonceAhead(`${this._log.prefix?.[0]}.reflect`),
+                            .encryptWithRandomNonceAhead('TaskCodec#reflect'),
                     }),
                 });
             }
@@ -388,7 +388,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                                 scope,
                             }).encode,
                         )
-                        .encryptWithRandomNonceAhead(`${this._log.prefix?.[0]}.begin-transaction`),
+                        .encryptWithRandomNonceAhead('TaskCodec#transaction(begin-transaction)'),
                     ttl: 0, // TODO(DESK-658): Set appropriate TTL
                 }),
             });
@@ -533,7 +533,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
                     this._buffer.reset(),
                     ensureEncryptedDataWithNonceAhead(messagePayload.encryptedScope),
                 )
-                .decrypt();
+                .decrypt('TaskCodec#_getTransactionScopeName');
             nonceGuard = encodedMessage.nonceGuard;
             transactionScope = protobuf.d2d.TransactionScope.decode(encodedMessage.plainData);
             nonceGuard.commit();

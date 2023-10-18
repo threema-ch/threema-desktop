@@ -960,7 +960,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._message.messageAndMetadataNonce as Nonce,
                 this._message.metadataContainer as EncryptedData,
             )
-            .decrypt(this._log.prefix?.[0]);
+            .decrypt('IncomingMessageTask#_decodeAndDecryptMetadata');
         const parsedMessageMetadata = protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
             protobuf.csp_e2e.MessageMetadata.decode(plainData),
         );
@@ -980,7 +980,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._message.messageAndMetadataNonce as Nonce,
                 this._message.messageBox as EncryptedData,
             )
-            .decrypt();
+            .decrypt('IncomingMessageTask#_decodeAndDecryptContainer');
 
         assert(this._nonceGuard === undefined, 'No nonceguard should have been set prior.');
         this._nonceGuard = nonceGuard;

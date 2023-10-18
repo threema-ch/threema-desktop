@@ -67,7 +67,7 @@ export function decryptMetadata(
                     message.messageAndMetadataNonce as Nonce,
                     message.metadataContainer as EncryptedData,
                 )
-                .decrypt().plainData,
+                .decrypt('decryptMetadata').plainData,
         ),
     );
 }
@@ -87,7 +87,7 @@ export function decryptContainer(
             message.messageAndMetadataNonce as Nonce,
             message.messageBox as EncryptedData,
         )
-        .decrypt().plainData;
+        .decrypt('decryptContainer').plainData;
     return structbuf.csp.e2e.Container.decode(decrypted);
 }
 

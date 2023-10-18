@@ -410,7 +410,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     csp.ssn.next(),
                     frame.box as EncryptedData,
                 )
-                .decrypt().plainData,
+                .decrypt(undefined).plainData,
         );
 
         // Decode payload according to its type
@@ -472,7 +472,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     csp.ssn.next(),
                     serverHello.serverChallengeResponseBox as EncryptedData,
                 )
-                .decrypt().plainData,
+                .decrypt(undefined).plainData,
         );
     }
 
@@ -489,7 +489,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 csp.ssn.next(),
                 loginAck.reservedBox as EncryptedData,
             )
-            .decrypt().plainData;
+            .decrypt(undefined).plainData;
     }
 
     private _createCspLogin(
@@ -805,7 +805,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
         const challengeResponse = d2m.dgpk
             .getSharedBox(serverHello.esk as ReadonlyUint8Array as PublicKey)
             .encryptor(buffer, serverHello.challenge as PlainData)
-            .encryptWithRandomNonceAhead(`${this._log.prefix?.[0]}.challenge-response`);
+            .encryptWithRandomNonceAhead('Layer3Decoder#_createD2mClientHello');
 
         // Encode and encrypt `d2d.DeviceInfo`
         const encryptedDeviceInfo = this._createD2mEncryptedDeviceInfo();
@@ -866,7 +866,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 }).encode,
             )
             .encryptWithRandomNonceAhead(
-                `${this._log.prefix?.[0]}.device-info`,
+                'Layer3Decoder#_createD2mEncryptedDeviceInfo',
             ) as EncryptedDeviceInfo;
     }
 }

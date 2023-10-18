@@ -75,7 +75,7 @@ export function run(): void {
                         const [nonce, encryptedWithRandomNonce] = crypto
                             .getSharedBox(publicKey, secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithRandomNonce();
+                            .encryptWithRandomNonce(undefined);
 
                         const encryptedWithGivenNonce = crypto
                             .getSharedBox(publicKey, secretKey, NONCE_UNGUARDED_SCOPE, undefined)
@@ -101,7 +101,7 @@ export function run(): void {
                         const [nonce, encryptedWithRandomNonce] = crypto
                             .getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined)
                             .encryptor(CREATE_BUFFER_TOKEN, plainData)
-                            .encryptWithRandomNonce();
+                            .encryptWithRandomNonce(undefined);
 
                         const encryptedWithGivenNonce = crypto
                             .getSecretBox(secretKey, NONCE_UNGUARDED_SCOPE, undefined)

@@ -143,7 +143,7 @@ export class ReflectedTask implements PassiveTask<void> {
 
         // Decrypt Envelope
         const decryptor = dgrk.decryptorWithNonceAhead(CREATE_BUFFER_TOKEN, encryptedEnvelope);
-        const {plainData, nonceGuard} = decryptor.decrypt();
+        const {plainData, nonceGuard} = decryptor.decrypt('ReflectedTask#_decryptD2dMessage');
 
         assert(this._nonceGuard === undefined, 'No prior nonceguard may be set.');
         this._nonceGuard = nonceGuard;

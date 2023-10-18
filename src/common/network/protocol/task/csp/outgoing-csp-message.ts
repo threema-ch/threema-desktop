@@ -237,7 +237,7 @@ export class OutgoingCspMessageTask<
         const preparedNonces: NonceList = [...receivers].map(() => {
             const nonceGuard = nonces.getRandomNonce(
                 NonceScope.CSP,
-                `${this._log.prefix?.[0]}.prepared-csp-nonce`,
+                `OutgoingCspMessageTask#run(prepared-csp-nonce)`,
             );
             const nonce = nonceGuard.nonce;
             nonceGuard.commit();

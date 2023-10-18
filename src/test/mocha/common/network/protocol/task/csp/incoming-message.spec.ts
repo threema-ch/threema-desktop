@@ -99,7 +99,7 @@ function createMessage(
                 createdAt: intoUnsignedLong(dateToUnixTimestampMs(createdAt)),
             }),
         )
-        .encryptWithRandomNonce();
+        .encryptWithRandomNonce('incoming-message.spec.ts#createMessage');
     const messageBox = device.csp.ck
         .getSharedBox(sender.ck.public)
         .encryptor(
