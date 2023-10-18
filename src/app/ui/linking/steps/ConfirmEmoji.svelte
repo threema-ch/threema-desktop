@@ -28,7 +28,7 @@
     </div>
 
     <footer>
-      <a href="https://threema.ch/faq/md_overview" target="_blank" rel="noreferrer noopener"
+      <a href={import.meta.env.URLS.overview.full} target="_blank" rel="noreferrer noopener"
         >{$i18n.t('dialog--linking-confirm-emoji.action--need-help', 'Need help?')}</a
       >
     </footer>

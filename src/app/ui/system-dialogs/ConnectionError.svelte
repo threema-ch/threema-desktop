@@ -73,7 +73,7 @@
             >
               <a
                 slot="1"
-                href="https://three.ma/md"
+                href={import.meta.env.URLS.downloadAndInfo.full}
                 target="_blank"
                 rel="noreferrer noopener"
                 let:text>{text}</a
@@ -106,7 +106,7 @@
             >
               <a
                 slot="1"
-                href="https://threema.ch/faq/md_limit"
+                href={import.meta.env.URLS.limitations.full}
                 target="_blank"
                 rel="noreferrer noopener"
                 let:text>{text}</a

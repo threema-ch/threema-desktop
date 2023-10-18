@@ -55,8 +55,11 @@
                 'For more information about this update, see <1 />.',
               )}
             >
-              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
-                >three.ma/md</a
+              <a
+                slot="1"
+                href={import.meta.env.URLS.downloadAndInfo.full}
+                target="_blank"
+                rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfo.short}</a
               >
             </SubstitutableText>
           </p>
@@ -68,8 +71,11 @@
                 'Please update by downloading and installing the latest release from <1 />.',
               )}
             >
-              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
-                >three.ma/md</a
+              <a
+                slot="1"
+                href={import.meta.env.URLS.downloadAndInfo.full}
+                target="_blank"
+                rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfo.short}</a
               >
             </SubstitutableText>
           </p>
@@ -81,8 +87,11 @@
                 'Please update by downloading and installing the latest release from <1 />.',
               )}
             >
-              <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
-                >three.ma/md</a
+              <a
+                slot="1"
+                href={import.meta.env.URLS.downloadAndInfo.full}
+                target="_blank"
+                rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfo.short}</a
               >
             </SubstitutableText>
           </p>

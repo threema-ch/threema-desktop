@@ -304,8 +304,31 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly BUILD_VERSION_CODE: number;
     readonly BUILD_VARIANT: import('../../config/build').BuildVariant;
     readonly BUILD_ENVIRONMENT: import('../../config/build').BuildEnvironment;
+
+    // Names
+    /** Name of the desktop app. */
     readonly APP_NAME: string;
+    /** Name of the corresponding mobile app. */
     readonly MOBILE_APP_NAME: string;
+
+    // URLs that can vary depending on build variant
+    readonly URLS: {
+        /** URL to the download and info page */
+        readonly downloadAndInfo: {short: string; full: string};
+        /**
+         * URL to the download and info page for the *other* build variant (i.e. for consumer in a
+         * work build, and vice versa)
+         */
+        readonly downloadAndInfoForOtherVariant: {short: string; full: string};
+        /** URL to the overview page */
+        readonly overview: {full: string};
+        /** URL to the limitations FAQ page */
+        readonly limitations: {full: string};
+        /** URL to the "forgot password" FAQ page */
+        readonly forgotPassword: {full: string};
+        /** URL to the "reset profile" FAQ page */
+        readonly resetProfile: {full: string};
+    };
 
     // Defaults
     readonly MAX_TEXT_MESSAGE_BYTES: import('./types').u53;

@@ -151,23 +151,15 @@
       </h1>
 
       <p class="description">
-        {#if import.meta.env.BUILD_VARIANT === 'consumer'}
-          <SubstitutableText text={errorText.message}>
-            <a slot="1" href="https://three.ma/mdw" target="_blank" rel="noreferrer noopener"
-              >three.ma/mdw</a
-            >
-            <br slot="2" />
-          </SubstitutableText>
-        {:else if import.meta.env.BUILD_VARIANT === 'work'}
-          <SubstitutableText text={errorText.message}>
-            <a slot="1" href="https://three.ma/md" target="_blank" rel="noreferrer noopener"
-              >three.ma/md</a
-            >
-            <br slot="2" />
-          </SubstitutableText>
-        {:else}
-          {unreachable(import.meta.env.BUILD_VARIANT)}
-        {/if}
+        <SubstitutableText text={errorText.message}>
+          <a
+            slot="1"
+            href={import.meta.env.URLS.downloadAndInfoForOtherVariant.full}
+            target="_blank"
+            rel="noreferrer noopener">{import.meta.env.URLS.downloadAndInfoForOtherVariant.short}</a
+          >
+          <br slot="2" />
+        </SubstitutableText>
       </p>
 
       {#if errorText.details !== undefined}

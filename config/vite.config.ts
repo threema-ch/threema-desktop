@@ -153,6 +153,37 @@ function determineMobileAppName(env: ConfigEnv): string {
     return name;
 }
 
+function determineUrls(env: ConfigEnv): ImportMeta['env']['URLS'] {
+    let downloadAndInfoShort;
+    let downloadAndInfoForOtherVariantShort;
+    let overviewFull;
+    switch (env.variant) {
+        case 'consumer':
+            downloadAndInfoShort = 'three.ma/md';
+            downloadAndInfoForOtherVariantShort = 'three.ma/mdw';
+            overviewFull = 'https://threema.ch/faq/md_overview';
+            break;
+        case 'work':
+            downloadAndInfoShort = 'three.ma/mdw';
+            downloadAndInfoForOtherVariantShort = 'three.ma/md';
+            overviewFull = 'https://threema.ch/work/support/mdw_overview';
+            break;
+        default:
+            unreachable(env.variant);
+    }
+    return {
+        downloadAndInfo: {short: downloadAndInfoShort, full: `https://${downloadAndInfoShort}`},
+        downloadAndInfoForOtherVariant: {
+            short: downloadAndInfoForOtherVariantShort,
+            full: `https://${downloadAndInfoForOtherVariantShort}`,
+        },
+        overview: {full: overviewFull},
+        limitations: {full: 'https://threema.ch/faq/md_limit'},
+        forgotPassword: {full: 'https://threema.ch/faq/md_password'},
+        resetProfile: {full: 'https://threema.ch/faq/md_reset'},
+    };
+}
+
 function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], 'BASE_URL'> {
     return {
         // Dev
@@ -170,6 +201,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         BUILD_ENVIRONMENT: env.environment,
         APP_NAME: determineAppName(env),
         MOBILE_APP_NAME: determineMobileAppName(env),
+        URLS: determineUrls(env),
 
         // Defaults
         /**

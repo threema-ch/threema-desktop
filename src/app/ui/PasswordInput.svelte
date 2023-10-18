@@ -78,7 +78,7 @@
           >
             <a
               slot="1"
-              href="https://threema.ch/faq/md_password"
+              href={import.meta.env.URLS.forgotPassword.full}
               target="_blank"
               rel="noreferrer noopener"
               let:text>{text}</a

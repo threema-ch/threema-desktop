@@ -493,7 +493,7 @@ function main(
             });
 
             if (selection === 0) {
-                void electron.shell.openExternal('https://threema.ch/faq/md_reset');
+                void electron.shell.openExternal(import.meta.env.URLS.resetProfile.full);
             }
         }
     }
