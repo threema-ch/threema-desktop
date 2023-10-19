@@ -1459,10 +1459,25 @@ class ConnectionManager {
 /**
  * Platform details, e.g. "Firefox 91"
  */
-function makeD2mPlatformDetails(browserInfo: BrowserInfo): string {
+function makeD2mPlatformDetails(browserInfo: BrowserInfo, systemInfo: SystemInfo): string {
     let details = browserInfo.name;
     if (browserInfo.version !== undefined) {
         details += ` ${browserInfo.version}`;
+    }
+    switch (systemInfo.os) {
+        case 'linux':
+            details += ' on Linux';
+            break;
+        case 'macos':
+            details += ' on macOS';
+            break;
+        case 'windows':
+            details += ' on Windows';
+            break;
+        case 'other':
+            break;
+        default:
+            unreachable(systemInfo.os);
     }
     return details;
 }
@@ -1510,7 +1525,7 @@ class Connection {
         );
         const browserInfo = getBrowserInfo(self.navigator.userAgent);
         const cspClientInfo = makeCspClientInfo(browserInfo, services.systemInfo);
-        const d2mPlatformDetails = makeD2mPlatformDetails(browserInfo);
+        const d2mPlatformDetails = makeD2mPlatformDetails(browserInfo, services.systemInfo);
         log.debug(`CSP client info string: ${cspClientInfo}`);
         const controller = new ProtocolController(
             services,
