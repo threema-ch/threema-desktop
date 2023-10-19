@@ -146,3 +146,24 @@ export function getBrowserInfo(userAgent: string): BrowserInfo {
         mobile,
     };
 }
+
+/**
+ * Format: `<app-version>;<platform>;<lang>/<country-code>;<renderer>;<renderer-version>;<os-name>;<os-architecture>`
+ */
+export function makeCspClientInfo(browserInfo: BrowserInfo): string {
+    let locale = new Intl.DateTimeFormat().resolvedOptions().locale.replace('-', '/');
+    if (!locale.includes('/')) {
+        locale += '/??';
+    }
+
+    const browser = browserInfo.name;
+    const browserVersion = browserInfo.version ?? '0.0.0';
+
+    // TODO(DESK-792): Get system info from NodeJS
+    const osName = '';
+    const osArchitecture = '';
+
+    const version = import.meta.env.BUILD_VERSION;
+
+    return `${version};Q;${locale};${browser};${browserVersion};${osName};${osArchitecture}`;
+}

@@ -25,7 +25,7 @@ import {
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
 import type {WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
 import type {SafeCredentials} from '~/common/dom/safe';
-import {type BrowserInfo, getBrowserInfo} from '~/common/dom/utils/browser';
+import {type BrowserInfo, getBrowserInfo, makeCspClientInfo} from '~/common/dom/utils/browser';
 import {
     CloseCode,
     CloseCodeUtils,
@@ -1406,35 +1406,6 @@ class ConnectionManager {
         this._connection = undefined;
         return state;
     }
-}
-
-interface NavigatorUAData {
-    mobile: boolean;
-    platform: string;
-}
-
-/**
- * Format: `<app-version>;<platform>;<lang>/<country-code>;<renderer>;<renderer-version>;<os-name>;<os-architecture>`
- */
-function makeCspClientInfo(browserInfo: BrowserInfo): string {
-    let locale = new Intl.DateTimeFormat().resolvedOptions().locale.replace('-', '/');
-    if (!locale.includes('/')) {
-        locale += '/??';
-    }
-
-    const browser = browserInfo.name;
-    const browserVersion = browserInfo.version ?? '0.0.0';
-
-    // TODO(DESK-792): Get system info from NodeJS
-    let osName = '';
-    const osArchitecture = '';
-    if ('userAgentData' in self.navigator) {
-        osName = (self.navigator.userAgentData as NavigatorUAData).platform;
-    }
-
-    const version = import.meta.env.BUILD_VERSION;
-
-    return `${version};Q;${locale};${browser};${browserVersion};${osName};${osArchitecture}`;
 }
 
 /**

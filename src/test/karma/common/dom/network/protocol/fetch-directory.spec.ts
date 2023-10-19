@@ -17,6 +17,7 @@ import type {u53} from '~/common/types';
 import {assert, assertError} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
 import {ValueObject} from '~/common/utils/object';
+import {makeResponse} from '~/test/karma/common/dom/dom-test-helpers';
 
 const {expect} = chai.use(sinonChai);
 
@@ -24,21 +25,6 @@ class NoopLoggerFactory implements LoggerFactory {
     public logger(tag: string, style?: string): Logger {
         return NOOP_LOGGER;
     }
-}
-
-/**
- * Create a response.
- *
- * @param status The response status code
- * @param body The response body
- */
-function makeResponse(status: u53, body: Record<string, unknown>): Response {
-    return new Response(JSON.stringify(body), {
-        status,
-        headers: new Headers({
-            'Content-Type': 'application/json',
-        }),
-    });
 }
 
 /**
