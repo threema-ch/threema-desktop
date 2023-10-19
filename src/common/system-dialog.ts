@@ -62,6 +62,13 @@ export interface UnrecoverableStateDialog extends SystemDialogBase {
 }
 
 /**
+ * Dialog which is shown on when work credentials are missing.
+ */
+export interface MissingWorkCredentialsDialog extends SystemDialogBase {
+    readonly type: 'missing-work-credentials';
+}
+
+/**
  * All possible system dialogs.
  * Note: All Properties must be structurally clonable.
  */
@@ -69,7 +76,8 @@ export type SystemDialog =
     | AppUpdateDialog
     | ConnectionErrorDialog
     | ServerAlertDialog
-    | UnrecoverableStateDialog;
+    | UnrecoverableStateDialog
+    | MissingWorkCredentialsDialog;
 
 export type DialogAction = 'confirmed' | 'cancelled';
 

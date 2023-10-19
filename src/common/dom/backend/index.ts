@@ -525,8 +525,8 @@ export class Backend implements ProxyMarked {
         this.keyStorage = _services.keyStorage;
         this.viewModel = _services.viewModel;
 
+        // Log IDs
         {
-            // Log IDs
             const dgid = bytesToHex(_services.device.d2m.dgpk.public);
             const d2m = u64ToHexLe(_services.device.d2m.deviceId);
             const csp = u64ToHexLe(this.deviceIds.cspDeviceId);
@@ -678,6 +678,21 @@ export class Backend implements ProxyMarked {
             keyStorageContents.workCredentials,
         );
         const backend = new Backend(backendServices);
+
+        // Check for unrecoverable problems
+        if (
+            import.meta.env.BUILD_VARIANT === 'work' &&
+            backend._services.device.workData === undefined
+        ) {
+            // The work app requires work credentials. Older versions of the app did not yet sync
+            // and store these fields. Thus, enforce this requirement here.
+            log.error(
+                'This is a work app, but no work data was found. Profile should be re-linked.',
+            );
+            // TODO(): Force re-linking of profile and prevent connection from starting
+            // void backendServices.systemDialog.open({type: 'missing-work-credentials'});
+            // startConnection = false;
+        }
 
         // Start connection
         void backend.connectionManager.start();
@@ -945,10 +960,10 @@ export class Backend implements ProxyMarked {
                     );
                 }
                 if (licenseCheckResult.valid) {
-                    log.info('Threema Work license is valid');
+                    log.info('Threema Work credentials are valid');
                 } else {
                     return await throwLinkingError(
-                        `Threema Work credentials are invalid or expired: ${licenseCheckResult.message}`,
+                        `Threema Work credentials are invalid or revoked: ${licenseCheckResult.message}`,
                         {kind: 'invalid-work-credentials'},
                     );
                 }
