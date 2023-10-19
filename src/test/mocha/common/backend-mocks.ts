@@ -33,6 +33,7 @@ import {
     wrapRawDatabaseKey,
 } from '~/common/db';
 import type {Device} from '~/common/device';
+import type {SystemInfo} from '~/common/electron-ipc';
 import {
     AcquaintanceLevel,
     ActivityState,
@@ -638,6 +639,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         remote: new RemoteObjectMapper(),
         counter: undefined,
     };
+    const systemInfo: SystemInfo = {os: 'other', arch: 'pentium386', locale: 'de_CH.utf8'};
 
     const partialServices = {
         config: TEST_CONFIG,
@@ -651,6 +653,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         compressor: new ZlibCompressor(),
         blob: new TestBlobBackend(),
         systemDialog: TEST_SYSTEM_DIALOG_SERVICE,
+        systemInfo,
         file,
         endpoint: {
             cache: () => endpointCache,

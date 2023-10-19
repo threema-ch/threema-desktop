@@ -10,6 +10,7 @@ import {
 } from '~/common/dom/backend';
 import type {DebugBackend} from '~/common/dom/debug';
 import type {SafeCredentials} from '~/common/dom/safe';
+import type {SystemInfo} from '~/common/electron-ipc';
 import type {D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import type {KeyStorage} from '~/common/key-storage';
@@ -103,6 +104,7 @@ export class BackendController {
             readonly notification: NotificationCreator;
             readonly systemDialog: SystemDialogService;
         },
+        systemInfo: SystemInfo,
         services: ServicesForBackendController,
         creator: RemoteProxy<BackendCreator>,
         showLinkingWizard: (
@@ -140,6 +142,7 @@ export class BackendController {
             const result = {
                 notificationEndpoint,
                 systemDialogEndpoint,
+                systemInfo,
             };
             return endpoint.transfer(result, [
                 result.notificationEndpoint,

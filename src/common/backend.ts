@@ -1,3 +1,5 @@
+import type {SystemInfo} from '~/common/electron-ipc';
+
 import type {Compressor} from './compressor';
 import type {Config} from './config';
 import type {CryptoBackend} from './crypto';
@@ -35,6 +37,7 @@ export interface ServicesForBackend {
     readonly notification: NotificationService;
     readonly viewModel: IViewModelRepository;
     readonly systemDialog: Remote<SystemDialogService>;
+    readonly systemInfo: SystemInfo;
     readonly taskManager: TaskManager;
     readonly timer: Timer;
 }

@@ -178,7 +178,7 @@ async function main(): Promise<() => void> {
     // Instantiate global time keeper
     const systemTimeStore = new SystemTimeStore(logging.logger('system-time'));
 
-    // Initialize globals
+    // Initialize app globals
     globals.set({
         // Note: It is important that this logger is initialized before we initialize the backend,
         // because the logger is used in components that are part of the linking process.
@@ -342,6 +342,7 @@ async function main(): Promise<() => void> {
             notification,
             systemDialog,
         },
+        systemInfo,
         {
             config,
             crypto: {randomBytes},

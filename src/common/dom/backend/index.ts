@@ -26,6 +26,7 @@ import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediato
 import type {WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
 import type {SafeCredentials} from '~/common/dom/safe';
 import {type BrowserInfo, getBrowserInfo, makeCspClientInfo} from '~/common/dom/utils/browser';
+import type {SystemInfo} from '~/common/electron-ipc';
 import {
     CloseCode,
     CloseCodeUtils,
@@ -169,6 +170,7 @@ export class BackendCreationError extends BaseError {
 export interface BackendInit {
     readonly notificationEndpoint: EndpointFor<NotificationCreator>;
     readonly systemDialogEndpoint: EndpointFor<SystemDialogService>;
+    readonly systemInfo: SystemInfo;
 }
 
 /**
@@ -177,6 +179,7 @@ export interface BackendInit {
 export interface BackendInitAfterTransfer {
     readonly notificationEndpoint: TransferredToRemote<EndpointFor<NotificationCreator>>;
     readonly systemDialogEndpoint: TransferredToRemote<EndpointFor<SystemDialogService>>;
+    readonly systemInfo: SystemInfo;
 }
 
 /**
@@ -353,6 +356,7 @@ function initBackendServicesWithoutIdentity(
     {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
     notificationEndpoint: EndpointFor<NotificationCreator>,
     systemDialogEndpoint: EndpointFor<SystemDialogService>,
+    systemInfo: SystemInfo,
 ): Omit<ServicesForBackend, ServicesThatRequireIdentity> {
     const crypto = new TweetNaClBackend(randomBytes);
 
@@ -379,6 +383,7 @@ function initBackendServicesWithoutIdentity(
         logging,
         notification,
         systemDialog,
+        systemInfo,
         taskManager,
         timer,
     };
@@ -560,7 +565,7 @@ export class Backend implements ProxyMarked {
      *   backend worker.
      */
     public static async createFromKeyStorage(
-        {notificationEndpoint, systemDialogEndpoint}: BackendInit,
+        {notificationEndpoint, systemDialogEndpoint, systemInfo}: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         keyStoragePassword: string,
@@ -574,6 +579,7 @@ export class Backend implements ProxyMarked {
             {config, endpoint, logging},
             notificationEndpoint,
             systemDialogEndpoint,
+            systemInfo,
         );
 
         // Try to read the credentials from the key storage.
@@ -693,7 +699,7 @@ export class Backend implements ProxyMarked {
      *   backend worker.
      */
     public static async createFromDeviceJoin(
-        {notificationEndpoint, systemDialogEndpoint}: BackendInit,
+        {notificationEndpoint, systemDialogEndpoint, systemInfo}: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
@@ -707,6 +713,7 @@ export class Backend implements ProxyMarked {
             {config, endpoint, logging},
             notificationEndpoint,
             systemDialogEndpoint,
+            systemInfo,
         );
 
         // Get access to linking setup information
@@ -1461,7 +1468,7 @@ class Connection {
             'Connection handle has already been set',
         );
         const browserInfo = getBrowserInfo(self.navigator.userAgent);
-        const cspClientInfo = makeCspClientInfo(browserInfo);
+        const cspClientInfo = makeCspClientInfo(browserInfo, services.systemInfo);
         const d2mPlatformDetails = makeD2mPlatformDetails(browserInfo);
         log.debug(`CSP client info string: ${cspClientInfo}`);
         const controller = new ProtocolController(

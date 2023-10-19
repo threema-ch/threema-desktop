@@ -50,7 +50,7 @@ export async function workLicenseCheck(
     const url = `${new URL('/check_license', base)}`;
 
     const browserInfo = getBrowserInfo(self.navigator.userAgent);
-    const cspClientInfo = makeCspClientInfo(browserInfo);
+    const cspClientInfo = makeCspClientInfo(browserInfo, systemInfo);
 
     // Send request
     let response;

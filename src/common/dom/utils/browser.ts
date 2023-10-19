@@ -1,3 +1,4 @@
+import type {SystemInfo} from '~/common/electron-ipc';
 import {Browser} from '~/common/enum';
 import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
@@ -150,18 +151,16 @@ export function getBrowserInfo(userAgent: string): BrowserInfo {
 /**
  * Format: `<app-version>;<platform>;<lang>/<country-code>;<renderer>;<renderer-version>;<os-name>;<os-architecture>`
  */
-export function makeCspClientInfo(browserInfo: BrowserInfo): string {
-    let locale = new Intl.DateTimeFormat().resolvedOptions().locale.replace('-', '/');
+export function makeCspClientInfo(browserInfo: BrowserInfo, systemInfo: SystemInfo): string {
+    let locale = systemInfo.locale.replace('-', '/');
     if (!locale.includes('/')) {
         locale += '/??';
     }
 
     const browser = browserInfo.name;
     const browserVersion = browserInfo.version ?? '0.0.0';
-
-    // TODO(DESK-792): Get system info from NodeJS
-    const osName = '';
-    const osArchitecture = '';
+    const osName = systemInfo.os;
+    const osArchitecture = systemInfo.arch;
 
     const version = import.meta.env.BUILD_VERSION;
 
