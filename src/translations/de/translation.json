@@ -171,11 +171,13 @@
     "label--title-connection-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-generic": "Verknüpfung nicht erfolgreich",
     "label--title-invalid-identity": "Widerrufene oder unbekannte Threema-ID",
+    "label--title-invalid-work-credentials": "Ungültige oder abgelaufene Threema Work-Lizenz",
     "label--title-rendezvous-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-restore-error": "Datenwiederherstellung fehlgeschlagen",
     "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
     "prose--message-generic": "Während der Verknüpfung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "prose--message-invalid-identity": "Die Threema-ID, die beim Verknüpfen verwendet wurde, ist ungültig oder wurde widerrufen.",
+    "prose--message-invalid-work-credentials": "Die Lizenz für Threema Work ist ungültig oder abgelaufen.",
     "prose--message-wrong-app-variant-consumer-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema Work, dann laden Sie die Desktop-App von <1 /> herunter.",
     "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema für Privatanwender, dann laden Sie die Desktop-App von <1 /> herunter."
   },

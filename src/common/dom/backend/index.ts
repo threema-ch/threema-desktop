@@ -22,6 +22,7 @@ import {
     RendezvousConnection,
     type RendezvousProtocolSetup,
 } from '~/common/dom/network/protocol/rendezvous';
+import {workLicenseCheck} from '~/common/dom/network/protocol/work-license-check';
 import {MediatorWebSocketTransport} from '~/common/dom/network/transport/mediator-websocket';
 import type {WebSocketEventWrapperStreamOptions} from '~/common/dom/network/transport/websocket';
 import type {SafeCredentials} from '~/common/dom/safe';
@@ -262,6 +263,7 @@ export interface SafeCredentialsAndDeviceIds {
  * - identity-transfer-prohibited: Restoring failed because user tried to link a Threema Work ID
  *   with the consumer build variant, or vice versa
  * - invalid-identity: Restoring failed because user identity is unknown or revoked
+ * - invalid-work-credentials: Restoring failed because user's Threema Work credentials are invalid or expired
  * - registration-error: Initial registration at Mediator server failed.
  * - generic-error: Some other error during linking.
  */
@@ -272,6 +274,7 @@ export type LinkingStateErrorType =
     | {readonly kind: 'restore-error'}
     | {readonly kind: 'identity-transfer-prohibited'}
     | {readonly kind: 'invalid-identity'}
+    | {readonly kind: 'invalid-work-credentials'}
     | {readonly kind: 'registration-error'}
     | {readonly kind: 'generic-error'};
 
@@ -900,7 +903,7 @@ export class Backend implements ProxyMarked {
         }
 
         // Validate Threema Work credentials depending on build variant. The consumer app may not
-        // receive credentials, the work app must receive credentials.
+        // receive credentials, the work app must receive (valid) credentials.
         switch (import.meta.env.BUILD_VARIANT) {
             case 'consumer':
                 if (joinResult.workCredentials !== undefined) {
@@ -910,25 +913,48 @@ export class Backend implements ProxyMarked {
                     );
                 }
                 break;
-            case 'work':
+            case 'work': {
                 if (joinResult.workCredentials === undefined) {
                     return await throwLinkingError(
-                        `This is a work app, but essential data did not include Threema Work credentials. Ensure that you're using the latest mobile app version.`,
+                        `This is a Threema Work app, but essential data did not include Threema Work credentials. Ensure that you're using the latest mobile app version.`,
                         {kind: 'generic-error'},
                     );
                 }
                 if (joinResult.workCredentials.username === '') {
-                    return await throwLinkingError(`Work credentials username is empty.`, {
-                        kind: 'generic-error',
+                    return await throwLinkingError('Threema Work credentials username is empty.', {
+                        kind: 'invalid-work-credentials',
                     });
                 }
                 if (joinResult.workCredentials.password === '') {
-                    return await throwLinkingError(`Work credentials password is empty.`, {
-                        kind: 'generic-error',
+                    return await throwLinkingError('Threema Work credentials password is empty.', {
+                        kind: 'invalid-work-credentials',
                     });
                 }
 
+                let licenseCheckResult;
+                try {
+                    licenseCheckResult = await workLicenseCheck(
+                        joinResult.workCredentials,
+                        systemInfo,
+                        log,
+                    );
+                } catch (error) {
+                    return await throwLinkingError(
+                        `Threema Work credentials could not be validated: ${error}`,
+                        {kind: 'generic-error'},
+                    );
+                }
+                if (licenseCheckResult.valid) {
+                    log.info('Threema Work license is valid');
+                } else {
+                    return await throwLinkingError(
+                        `Threema Work credentials are invalid or expired: ${licenseCheckResult.message}`,
+                        {kind: 'invalid-work-credentials'},
+                    );
+                }
+
                 break;
+            }
             default:
                 unreachable(import.meta.env.BUILD_VARIANT);
         }

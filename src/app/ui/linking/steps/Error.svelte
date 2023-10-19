@@ -115,6 +115,17 @@
         }
         break;
 
+      case 'invalid-work-credentials':
+        title = t(
+          'dialog--linking-error.label--title-invalid-work-credentials',
+          'Invalid or Expired Threema Work License',
+        );
+        message = t(
+          'dialog--linking-error.prose--message-invalid-work-credentials',
+          'The license for Threema Work is invalid or has expired.',
+        );
+        break;
+
       case 'restore-error':
         title = t('dialog--linking-error.label--title-restore-error', 'Data Restore Error');
         message = t(
