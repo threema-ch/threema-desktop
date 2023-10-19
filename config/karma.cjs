@@ -59,7 +59,10 @@ module.exports = (config) => {
             'karma-junit-reporter',
         ],
 
-        // JUnit reporter config
+        mochaReporter: {
+            showDiff: true,
+        },
+
         junitReporter: {
             outputDir: '../junit/',
             outputFile: 'karma.xml',
