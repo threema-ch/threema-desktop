@@ -45,10 +45,15 @@ export interface ElectronIpc {
     /**
      * Delete the user profile and restart the application.
      *
-     * Restarting is done using `app.exit(0)`, which means that the application will be
+     * Restarting is done using `app.exit(...)`, which means that the application will be
      * force-closed immediately.
      */
     readonly deleteProfileAndRestartApp: () => void;
+
+    /**
+     * Close the application.
+     */
+    readonly closeApp: () => void;
 
     /**
      * Update app badge with the total unread messages count.

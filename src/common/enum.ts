@@ -63,6 +63,19 @@ export namespace TransferTag {
     export type BLOB_FETCH_ERROR = typeof BLOB_FETCH_ERROR;
 }
 /**
+ * All enums to be used must be declared in this file. They are disallowed in
+ * any other place via an eslint rule.
+ *
+ * Use `npm run safe-enums:generate` to generate safer enum variants from them.
+ *
+ * Then, import the safe enum variant from `common/enum/index.ts`.
+ *
+ * Details on why standard enums in TypeScript are not type safe enough:
+ *
+ * - https://stackoverflow.com/a/55459814
+ * - https://github.com/microsoft/TypeScript/issues/32690
+ */
+/**
  * ENDPOINT
  * ========
  */
@@ -2035,6 +2048,8 @@ export namespace ElectronIpcCommand {
     export type LOG_TO_FILE = typeof LOG_TO_FILE;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';
     export type DELETE_PROFILE_AND_RESTART = typeof DELETE_PROFILE_AND_RESTART;
+    export const CLOSE_APP = 'closeApp';
+    export type CLOSE_APP = typeof CLOSE_APP;
     export const UPDATE_APP_BADGE = 'updateAppBadge';
     export type UPDATE_APP_BADGE = typeof UPDATE_APP_BADGE;
 }

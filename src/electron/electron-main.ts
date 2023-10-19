@@ -556,6 +556,9 @@ function main(
             .on(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, () => {
                 scheduleRenameUnlinkedProfileAndQuit();
             })
+            .on(ElectronIpcCommand.CLOSE_APP, () => {
+                electron.app.quit();
+            })
             .on(
                 ElectronIpcCommand.UPDATE_APP_BADGE,
                 (event: electron.IpcMainEvent, totalUnreadMessageCount: u53) => {

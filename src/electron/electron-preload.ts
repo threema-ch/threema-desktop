@@ -30,6 +30,7 @@ const appApi: ElectronIpc = {
     logToFile: (level, data) => ipcRenderer.invoke(ElectronIpcCommand.LOG_TO_FILE, level, data),
     deleteProfileAndRestartApp: () =>
         ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART),
+    closeApp: () => ipcRenderer.send(ElectronIpcCommand.CLOSE_APP),
     updateAppBadge: (totalUnreadMessageCount: u53) =>
         ipcRenderer.send(ElectronIpcCommand.UPDATE_APP_BADGE, totalUnreadMessageCount),
 };
