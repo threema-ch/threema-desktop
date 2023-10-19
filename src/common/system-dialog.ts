@@ -1,3 +1,4 @@
+import type {ThreemaWorkCredentials} from '~/common/device';
 import type {SystemInfo} from '~/common/electron-ipc';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
@@ -62,10 +63,16 @@ export interface UnrecoverableStateDialog extends SystemDialogBase {
 }
 
 /**
- * Dialog which is shown on when work credentials are missing.
+ * Dialog which is shown on when work credentials are invalid.
  */
-export interface MissingWorkCredentialsDialog extends SystemDialogBase {
-    readonly type: 'missing-work-credentials';
+export interface InvalidWorkCredentialsDialog extends SystemDialogBase {
+    readonly type: 'invalid-work-credentials';
+    readonly context: {
+        /**
+         * The current work credentials.
+         */
+        readonly workCredentials: ThreemaWorkCredentials;
+    };
 }
 
 /**
@@ -77,7 +84,7 @@ export type SystemDialog =
     | ConnectionErrorDialog
     | ServerAlertDialog
     | UnrecoverableStateDialog
-    | MissingWorkCredentialsDialog;
+    | InvalidWorkCredentialsDialog;
 
 export type DialogAction = 'confirmed' | 'cancelled';
 
@@ -91,5 +98,18 @@ export type SystemDialogHandle = {
  * Lives in the frontend / app thread.
  */
 export interface SystemDialogService extends ProxyMarked {
+    /**
+     * Show the specified system dialog.
+     *
+     * If another dialog is already being shown, this dialog will be in the background until the
+     * other dialog(s) are closed.
+     */
     readonly open: (dialog: SystemDialog) => SystemDialogHandle;
+    /**
+     * Show the specified system dialog.
+     *
+     * If another dialog of the same type is already being shown, this dialog instance will not be
+     * shown. Instead, a handle to the existing dialog will be returned.
+     */
+    readonly openOnce: (dialog: SystemDialog) => SystemDialogHandle;
 }

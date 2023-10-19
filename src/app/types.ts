@@ -9,6 +9,7 @@ import type {CryptoBackend} from '~/common/crypto';
 import type {BackendController} from '~/common/dom/backend/controller';
 import type {LocalStorageController} from '~/common/dom/ui/local-storage';
 import type {ProfilePictureService} from '~/common/dom/ui/profile-picture';
+import type {SystemInfo} from '~/common/electron-ipc';
 import type {LoggerFactory} from '~/common/logging';
 import type {SystemDialogService} from '~/common/system-dialog';
 import type {GlobalTimer} from '~/common/utils/timer';
@@ -26,6 +27,7 @@ export interface AppServices {
     readonly backend: BackendController;
     readonly router: Router;
     readonly systemDialog: SystemDialogService;
+    readonly systemInfo: SystemInfo;
 }
 
 // TODO(DESK-339): Use SvelteAction when 3.47 is released

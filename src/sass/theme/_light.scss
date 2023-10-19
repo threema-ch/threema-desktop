@@ -25,6 +25,7 @@
       text-e3: theme.$light-text-e2,
       text-anchor: theme.$work-blue-800,
       primary-text-anchor: -g($branding, primary-color-800),
+      success: #8BC34A,
       // Main panels
       panel-gap: color.scale(theme.$light-background, $lightness: -12%),
       nav-background: color.scale(theme.$light-background, $lightness: -4%),

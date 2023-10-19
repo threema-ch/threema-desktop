@@ -156,6 +156,25 @@
     "prose--threema-id-description-p1": "Bei der ersten Nutzung vom Threema wird jedem Nutzer eine zufällig erzeugte, achtstellige Threema-ID zugeteilt. Diese Threema-ID ist Ihre eindeutige Adresse bei Threema. Dadurch ist es möglich, Threema komplett anonym zu nutzen, ohne private Daten preisgeben zu müssen.",
     "prose--threema-id-description-p2": "Ihre Threema-ID ist nur eine Komponente Ihrer Identität bei Threema. Die zweite Komponente ist das sogenannte Schlüsselpaar (bestehend aus einem privaten und einem öffentlichen Schlüssel), welches für die sichere Verschlüsselung benötigt wird. Ihre Threema-ID ist untrennbar mit Ihrem Schlüsselpaar verbunden. Der private Schlüssel verbleibt auf Ihrem Handy, während der öffentliche Schlüssel auf die Threema-Server hochgeladen wird, welche diesen an Ihre Gesprächspartner verteilen. Auf dem Handy Ihres Gesprächspartners werden Nachrichten an Sie mit Ihrem öffentlichen Schlüssel verschlüsselt. Diese Nachrichten können ausschliesslich mit Ihrem privaten Schlüssel wieder entschlüsselt werden."
   },
+  "dialog--invalid-work-credentials": {
+    "action--relink": "Lokales Profil entfernen und Gerät neu verknüpfen",
+    "error--invalid-credentials": "Ungültige Zugangsdaten: {message}",
+    "error--unlinking-failed": "Geräte-Verknüpfung konnte nicht aufgehoben werden.",
+    "error--validation-failed": "Work-Zugangsdaten konnten nicht validiert werden.",
+    "label--check-credentials": "Zugangsdaten prüfen",
+    "label--password": "Passwort",
+    "label--store-credentials": "Zugangsdaten speichern und schliessen",
+    "label--subtitle-option-1": "Option 1: Gültige Work-Zugangsdaten eingeben",
+    "label--subtitle-option-2": "Option 2: Gerät neu verknüpfen",
+    "label--title": "Ungültige Threema Work-Zugangsdaten",
+    "label--username": "Benutzername",
+    "prose--credentials-valid": "Zugangsdaten sind gültig! Bitte geben Sie Ihr App-Passwort ein, um die aktualisierten Zugangsdaten zu speichern:",
+    "prose--description-enter-credentials": "Bitte geben Sie gültige Threema Work-Zugangsdaten ein. Wenn Sie die Zugangsdaten nicht kennen, fragen Sie Ihren Threema Work-Administrator.",
+    "prose--description-p1": "Die Zugangsdaten für Threema Work sind ungültig. Entweder wurden sie durch Ihren Threema Work-Administrator deaktiviert, oder die Lizenz von Threema Work ist abgelaufen.",
+    "prose--description-p2": "Um {appName} weiterhin zu verwenden, haben Sie zwei Möglichkeiten:",
+    "prose--description-relink": "Alternativ, verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Bitte beachten Sie, dass dabei alle gespeicherten Nachrichten in {appName} für Desktop (aber nicht auf dem Mobilgerät) verloren gehen.",
+    "prose--update-success": "Threema Work-Zugangsdaten erfolgreich aktualisiert!"
+  },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Brauchen Sie Hilfe?",
     "label--title": "Bestätigen Sie die Bilder auf Ihrem Mobilgerät"
@@ -171,13 +190,13 @@
     "label--title-connection-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-generic": "Verknüpfung nicht erfolgreich",
     "label--title-invalid-identity": "Widerrufene oder unbekannte Threema-ID",
-    "label--title-invalid-work-credentials": "Ungültige oder abgelaufene Threema Work-Lizenz",
+    "label--title-invalid-work-credentials": "Ungültige Threema Work-Zugangsdaten",
     "label--title-rendezvous-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-restore-error": "Datenwiederherstellung fehlgeschlagen",
     "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
     "prose--message-generic": "Während der Verknüpfung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "prose--message-invalid-identity": "Die Threema-ID, die beim Verknüpfen verwendet wurde, ist ungültig oder wurde widerrufen.",
-    "prose--message-invalid-work-credentials": "Die Lizenz für Threema Work ist ungültig oder abgelaufen.",
+    "prose--message-invalid-work-credentials": "Die Zugangsdaten für Threema Work sind ungültig oder abgelaufen. Bitte wiederholen Sie den Vorgang, nachdem Sie Ihre mobile App neu gestartet haben, oder kontaktieren Sie Ihren Threema Work-Administrator.",
     "prose--message-wrong-app-variant-consumer-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema Work, dann laden Sie die Desktop-App von <1 /> herunter.",
     "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema für Privatanwender, dann laden Sie die Desktop-App von <1 /> herunter."
   },
@@ -213,7 +232,7 @@
     "action--need-help": "Brauchen Sie Hilfe?",
     "label--title-encrypting": "Daten werden mit Ihrem Passwort verschlüsselt",
     "label--title-receiving": "Daten werden empfangen",
-    "label--title-restoring": "Daten werden wiederhergestellt"
+    "label--title-restoring": "Daten werden geladen"
   },
   "dialog--media-message-viewer": {
     "error--media-not-loaded": "Medium konnte nicht geladen werden.",
@@ -235,8 +254,8 @@
   "dialog--startup-unlock": {
     "action--confirm": "Weiter",
     "error--incorrect-password": "Das eingegebene Passwort ist falsch. Bitte versuchen Sie es erneut.",
-    "label--password": "Passwort",
-    "label--title": "Passwort eingeben",
+    "label--password": "App-Passwort",
+    "label--title": "App-Passwort eingeben",
     "markup--password-hint": "Passwort vergessen? Bitte beachten Sie <1>diesen FAQ-Eintrag</1>."
   },
   "dialog--unrecoverable-state": {
@@ -359,6 +378,7 @@
     "label--typing-indicator": "Melden, wenn ich tippe"
   },
   "system": {
+    "error--check-internet-and-retry": "Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
     "error--connection": "Keine Serververbindung. Versuchen Sie, sich erneut mit dem Wifi zu verbinden, oder prüfen Sie Ihr Modem oder Router.",
     "error--connection-unrecoverable-state": "Aufgrund eines unvorhergesehenen Fehlers wurde dieses Gerät vom Server getrennt. Bitte starten Sie die App neu, und verknüpfen Sie es erneut."
   }

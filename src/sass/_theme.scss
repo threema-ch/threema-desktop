@@ -34,9 +34,8 @@ $brandings: (
     --t-text-e3-color: -g($t, text-e3),
     --t-text-anchor-color: -g($t, text-anchor),
     --t-primary-text-anchor-color: -g($t, primary-text-anchor),
-
-    // Colors
     --t-color-primary: -g($b, primary-background),
+    --t-color-success: -g($t, success),
 
     // Main panels
     --t-panel-gap-color: color-conforms(-g($t, panel-gap), $alpha: false),

@@ -118,11 +118,11 @@
       case 'invalid-work-credentials':
         title = t(
           'dialog--linking-error.label--title-invalid-work-credentials',
-          'Invalid or Expired Threema Work License',
+          'Invalid Threema Work Credentials',
         );
         message = t(
           'dialog--linking-error.prose--message-invalid-work-credentials',
-          'The license for Threema Work is invalid or has expired.',
+          'The credentials for Threema Work are invalid or expired. Please retry linking after restarting your mobile app, or contact your Threema Work admin.',
         );
         break;
 

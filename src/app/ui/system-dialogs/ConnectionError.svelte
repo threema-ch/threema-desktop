@@ -2,15 +2,23 @@
   import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import type {Logger} from 'libthreema';
+  import type {AppServices} from '~/app/types';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import type {Config} from '~/common/config';
   import type {ConnectionErrorDialog} from '~/common/system-dialog';
   import {unreachable} from '~/common/utils/assert';
+  import type {Delayed} from '~/common/utils/delayed';
+  import {unusedProp} from '~/common/utils/svelte-helpers';
 
+  export let log: Logger;
+  export let config: Config;
   export let visible: boolean;
-
+  export let appServices: Delayed<AppServices>;
   export let context: ConnectionErrorDialog['context'];
+  unusedProp(log, config, appServices);
 
   function deleteProfileAndRestartApp(): void {
     const ipc = window.app;

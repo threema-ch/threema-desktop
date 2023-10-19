@@ -12,6 +12,8 @@ import {
     wrapRawDatabaseKey,
 } from '~/common/db';
 import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device';
+import {BackgroundJobScheduler} from '~/common/dom/backend/background-job-scheduler';
+import {workLicenseCheckJob} from '~/common/dom/backend/background-jobs';
 import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/join';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
@@ -502,18 +504,22 @@ async function writeKeyStorage(
  */
 export class Backend implements ProxyMarked {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    public readonly connectionManager: ConnectionManager;
     public readonly debug: DebugBackend;
     public readonly deviceIds: DeviceIds;
     public readonly directory: DirectoryBackend;
-    public readonly model: Repositories;
     public readonly keyStorage: KeyStorage;
+    public readonly model: Repositories;
     public readonly viewModel: IViewModelRepository;
-    public readonly connectionManager: ConnectionManager;
+
     private readonly _log: Logger;
+    private readonly _backgroundJobScheduler: BackgroundJobScheduler;
     private _capture?: RawCaptureHandlers;
 
     private constructor(private readonly _services: ServicesForBackend) {
         this._log = _services.logging.logger('backend');
+        this._backgroundJobScheduler = new BackgroundJobScheduler(_services.logging);
         this.connectionManager = new ConnectionManager(_services, () => this._capture);
         this.debug = new DebugBackend(this._services, this);
         this.deviceIds = {
@@ -534,6 +540,9 @@ export class Backend implements ProxyMarked {
                 `Backend created.\nDevice IDs:\n  DGID = ${dgid}\n  D2M  = ${d2m}\n  CSP  = ${csp}`,
             );
         }
+
+        // Schedule background jobs
+        this._scheduleBackgroundJobs();
     }
 
     /**
@@ -687,9 +696,9 @@ export class Backend implements ProxyMarked {
             // The work app requires work credentials. Older versions of the app did not yet sync
             // and store these fields. Thus, enforce this requirement here.
             log.error(
-                'This is a work app, but no work data was found. Profile should be re-linked.',
+                'This is a work app, but no work data was found. Profile should be relinked.',
             );
-            // TODO(): Force re-linking of profile and prevent connection from starting
+            // TODO(DESK-1227): Force relinking of profile and prevent connection from starting
             // void backendServices.systemDialog.open({type: 'missing-work-credentials'});
             // startConnection = false;
         }
@@ -1119,6 +1128,26 @@ export class Backend implements ProxyMarked {
         const ownDeviceId = this._services.device.d2m.deviceId;
         // Note: This call will fail if no connection is available, but that is acceptable for now.
         await this._services.taskManager.schedule(new DropDeviceTask(ownDeviceId));
+    }
+
+    /**
+     * Schedule backend background jobs.
+     */
+    private _scheduleBackgroundJobs(): void {
+        // Schedule license check every 12h
+        if (import.meta.env.BUILD_VARIANT === 'work') {
+            const workData = this._services.device.workData;
+            if (workData !== undefined) {
+                setTimeout(() => {
+                    this._backgroundJobScheduler.scheduleRecurringJob(
+                        (log) => workLicenseCheckJob(workData, this._services, log),
+                        'work-license-check',
+                        12 * 3600,
+                        true,
+                    );
+                }, 1000);
+            }
+        }
     }
 }
 

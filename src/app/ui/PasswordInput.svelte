@@ -49,7 +49,7 @@
     <ModalDialog visible={true} closableWithEscape={false} on:confirm={handleOnSubmit}>
       <Title
         slot="header"
-        title={$i18n.t('dialog--startup-unlock.label--title', 'Enter Password')}
+        title={$i18n.t('dialog--startup-unlock.label--title', 'Enter App Password')}
       />
       <div class="body" slot="body" data-has-error={showErrorMessage}>
         <Password
@@ -61,7 +61,7 @@
                 'The entered password is incorrect. Please try again.',
               )
             : undefined}
-          label={$i18n.t('dialog--startup-unlock.label--password', 'Password')}
+          label={$i18n.t('dialog--startup-unlock.label--password', 'App Password')}
           on:input={clearError}
           on:keydown={(event) => {
             if (event.key === 'Enter') {

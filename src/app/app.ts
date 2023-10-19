@@ -33,6 +33,7 @@ import {extractErrorTraceback} from '~/common/error';
 import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
+import {Delayed} from '~/common/utils/delayed';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
 import {debounce, GlobalTimer} from '~/common/utils/timer';
@@ -322,7 +323,11 @@ async function main(): Promise<() => void> {
     }
 
     // Initialize global dialog component
-    attachSystemDialogs(CONFIG, logging, elements.systemDialogs);
+    const systemDialogsAppServices = new Delayed<AppServices>(
+        () => new Error('App services for system dialogs not available'),
+        () => new Error('App services for system dialogs already set'),
+    );
+    attachSystemDialogs(CONFIG, logging, elements.systemDialogs, systemDialogsAppServices);
 
     // Instantiate early services
     const config = CONFIG;
@@ -364,9 +369,11 @@ async function main(): Promise<() => void> {
         timer,
         storage: localStorageController,
         systemDialog,
+        systemInfo,
         backend,
         router,
     };
+    systemDialogsAppServices.set(services);
 
     // If this is an existing identity, resolve `identityReady` promise
     if (!isNewIdentity) {

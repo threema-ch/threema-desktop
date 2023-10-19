@@ -1,8 +1,10 @@
 <script lang="ts">
   import type {SvelteComponent} from 'svelte';
 
+  import type {AppServices} from '~/app/types';
   import AppUpdate from '~/app/ui/system-dialogs/AppUpdate.svelte';
   import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
+  import InvalidWorkCredentials from '~/app/ui/system-dialogs/InvalidWorkCredentials.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import UnrecoverableState from '~/app/ui/system-dialogs/UnrecoverableState.svelte';
   import type {Config} from '~/common/config';
@@ -10,10 +12,13 @@
   import {systemDialogStore} from '~/common/dom/ui/system-dialog';
   import type {Logger} from '~/common/logging';
   import type {DialogAction, SystemDialog} from '~/common/system-dialog';
+  import type {Delayed} from '~/common/utils/delayed';
 
   export let config: Config;
 
   export let log: Logger;
+
+  export let appServices: Delayed<AppServices>;
 
   /**
    * Mapping from dialog type to corresponding svelte component.
@@ -25,6 +30,7 @@
     'connection-error': ConnectionError,
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
+    'invalid-work-credentials': InvalidWorkCredentials,
   };
 
   function closeDialog(action: DialogAction): void {
@@ -49,8 +55,9 @@
           on:close={() => closeDialog('cancelled')}
           on:clickoutside={(ev) => ev.preventDefault()}
           visible={true}
-          {config}
           {log}
+          {config}
+          {appServices}
           context={systemDialog.dialog.context}
         />
       </div>

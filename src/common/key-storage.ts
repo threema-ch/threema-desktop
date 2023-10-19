@@ -3,7 +3,7 @@ import * as v from '@badrap/valita';
 import type {ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {wrapRawDatabaseKey} from '~/common/db';
-import {ThreemaWorkCredentials} from '~/common/device';
+import type {ThreemaWorkCredentials} from '~/common/device';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {
