@@ -682,6 +682,11 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     readonly getLastMessage: (conversationUid: DbConversationUid) => DbGet<DbAnyMessage>;
 
     /**
+     * Get the first (oldest), unread message of the conversation.
+     */
+    readonly getFirstUnreadMessage: (conversationUid: DbConversationUid) => DbGet<DbAnyMessage>;
+
+    /**
      * Update the specified message. Fields that are missing will be ignored.
      *
      * When file messages are updated, it's possible that file message data is removed. If this

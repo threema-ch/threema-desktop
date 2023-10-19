@@ -121,6 +121,11 @@ export type ConversationController = {
         contextSize: u53,
     ) => Set<AnyMessageModelStore> | undefined;
     /**
+     * Return id of the first (i.e. oldest) unread message, or `undefined` if all messages in the
+     * conversation have been read.
+     */
+    readonly getFirstUnreadMessageId: () => MessageId | undefined;
+    /**
      * The user read (i.e. opened) the conversation on the current device.
      */
     readonly read: ControllerUpdateFromLocal<[readAt: Date]>;

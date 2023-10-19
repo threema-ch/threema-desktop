@@ -10,12 +10,6 @@ export type SvelteNullableBinding<T> = T | null;
  * Wraps a function with additional dependencies, so that Svelte will re-evaluate it if any of the
  * given dependencies change.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function dependent<TFunction extends (...args: any[]) => any>(
-    fn: TFunction,
-    dependencies: unknown[],
-    ...args: Parameters<TFunction>
-): ReturnType<TFunction> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return fn(...args);
+export function reactive<TReturn>(fn: () => TReturn, dependencies: unknown[]): TReturn {
+    return fn();
 }

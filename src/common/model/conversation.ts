@@ -453,6 +453,11 @@ export class ConversationModelController implements ConversationController {
         });
     }
 
+    /** @inheritdoc */
+    public getFirstUnreadMessageId(): MessageId | undefined {
+        return message.getFirstUnreadMessageId(this._services, this._handle, MESSAGE_FACTORY);
+    }
+
     private _handleRead(source: TriggerSource.LOCAL, readAt: Date): void {
         this.meta.run((handle) => {
             if (handle.view().unreadMessageCount < 1) {

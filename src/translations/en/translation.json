@@ -333,6 +333,7 @@
     "label--protected-conversation": "Private",
     "label--search-conversation": "Find Chat",
     "label--timestamp-yesterday": "Yesterday {time}",
+    "label--unread-messages": "New Messages",
     "label--unread-messages-count": "{n, plural, =0 {} =1 {1 New Message} other {# New Messages}}",
     "markup--chat-empty-state": "This chat is linked with your mobile device. <1/>All future messages will appear here.",
     "success--copy-message-content": "Message copied to clipboard",

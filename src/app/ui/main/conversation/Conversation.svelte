@@ -83,6 +83,10 @@
     composeHandler.focus();
   }
 
+  function handleMarkAllMessagesAsRead(): void {
+    void conversation.get().controller.read.fromLocal(new Date());
+  }
+
   /**
    * Delete a message and remove it from being quoted (in case it is).
    */
@@ -361,10 +365,14 @@
         {#await conversationViewModel.viewModelController.getConversationMessagesSetViewModel() then messageSetViewModel}
           <ChatView
             conversation={{
-              type: receiver.type,
+              firstUnreadMessageId: $conversationInnerViewModel.firstUnreadMessageId,
+              id: $conversation.ctx,
               isBlocked: $isReceiverBlockedStore,
+              lastMessage: $conversationInnerViewModel.lastMessage,
+              markAllMessagesAsRead: handleMarkAllMessagesAsRead,
               receiverLookup,
-              lastMessageId: $conversationInnerViewModel.lastMessageId,
+              type: receiver.type,
+              unreadMessagesCount: $conversationInnerViewModel.unreadMessagesCount,
             }}
             {messageSetViewModel}
             {services}

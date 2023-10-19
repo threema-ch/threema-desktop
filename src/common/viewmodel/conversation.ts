@@ -210,7 +210,14 @@ export interface ConversationViewModel extends PropertiesMarked {
 
 interface InnerConversationViewModel extends PropertiesMarked {
     readonly receiver: TransformedReceiverData;
-    readonly lastMessageId: MessageId | undefined;
+    readonly lastMessage:
+        | {
+              readonly direction: MessageDirection;
+              readonly id: MessageId;
+          }
+        | undefined;
+    readonly firstUnreadMessageId: MessageId | undefined;
+    readonly unreadMessagesCount: u53;
 }
 
 export type InnerConversationViewModelStore = LocalStore<InnerConversationViewModel>;
@@ -243,13 +250,20 @@ function getInnerConversationViewModelStore(
         const receiver = getAndSubscribe(conversationModel.controller.receiver());
         const profilePicture = getAndSubscribe(receiver.controller.profilePicture);
         const lastMessageStore = getAndSubscribe(conversationModel.controller.lastMessageStore());
+        const lastMessageView =
+            lastMessageStore === undefined ? undefined : getAndSubscribe(lastMessageStore).view;
 
         return endpoint.exposeProperties({
             receiver: transformReceiver(receiver, profilePicture, model, getAndSubscribe),
-            lastMessageId:
-                lastMessageStore === undefined
+            lastMessage:
+                lastMessageView === undefined
                     ? undefined
-                    : getAndSubscribe(lastMessageStore).view.id,
+                    : {
+                          direction: lastMessageView.direction,
+                          id: lastMessageView.id,
+                      },
+            firstUnreadMessageId: conversationModel.controller.getFirstUnreadMessageId(),
+            unreadMessagesCount: conversationModel.view.unreadMessageCount,
         });
     });
 }

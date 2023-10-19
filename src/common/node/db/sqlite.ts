@@ -1554,6 +1554,27 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public getFirstUnreadMessage(conversationUid: DbConversationUid): DbGet<DbAnyMessage> {
+        const common = sync(
+            this._getCommonMessageSelector()
+                .where(
+                    tMessage.conversationUid
+                        .equals(conversationUid)
+                        .and(tMessage.senderContactUid.isNotNull())
+                        .and(tMessage.readAt.isNull()),
+                )
+                // TODO(DESK-296): Order correctly
+                .orderBy('uid', 'asc')
+                .limit(1)
+                .executeSelectNoneOrOne(),
+        );
+        if (common === null) {
+            return undefined;
+        }
+        return this._getMessage(common);
+    }
+
+    /** @inheritdoc */
     public updateMessage(
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyMessage, 'type'>,

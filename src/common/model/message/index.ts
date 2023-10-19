@@ -296,6 +296,17 @@ export function getLastMessage(
         );
 }
 
+export function getFirstUnreadMessageId(
+    services: ServicesForModel,
+    conversation: ConversationControllerHandle,
+    factory: MessageFactory,
+): MessageId | undefined {
+    const {db} = services;
+
+    // Lookup the message
+    return db.getFirstUnreadMessage(conversation.uid)?.id;
+}
+
 /**
  * Update a message with the specified changeset.
  *

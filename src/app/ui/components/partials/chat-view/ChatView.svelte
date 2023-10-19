@@ -16,9 +16,13 @@
   import MessageDetailsModal from '~/app/ui/components/partials/chat-view/internal/message-details-modal/MessageDetailsModal.svelte';
   import MessageForwardModal from '~/app/ui/components/partials/chat-view/internal/message-forward-modal/MessageForwardModal.svelte';
   import MessageMediaViewerModal from '~/app/ui/components/partials/chat-view/internal/message-media-viewer-modal/MessageMediaViewerModal.svelte';
+  import UnreadMessagesIndicator from '~/app/ui/components/partials/chat-view/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
   import type {ChatViewProps} from '~/app/ui/components/partials/chat-view/props';
-  import type {ModalState} from '~/app/ui/components/partials/chat-view/types';
-  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import type {UnreadState, ModalState} from '~/app/ui/components/partials/chat-view/types';
+  import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import type {DbConversationUid} from '~/common/db';
+  import {appVisibility} from '~/common/dom/ui/state';
+  import {MessageDirection} from '~/common/enum';
   import type {MessageId} from '~/common/network/types';
   import {unreachable} from '~/common/utils/assert';
   import {AsyncLock} from '~/common/utils/lock';
@@ -35,6 +39,15 @@
   let element: HTMLElement;
   let lazyListComponent: SvelteNullableBinding<LazyList<MessageId, MessagePropsFromBackend>> = null;
 
+  /**
+   * Because the read state of messages is immediately propagated to the frontend as soon as it
+   * changes in the database, we need to keep the previous state to display visual cues to the user.
+   */
+  let rememberedUnreadState: UnreadState = {
+    firstUnreadMessageId: undefined,
+    hasIncomingUnreadMessages: false,
+    hasOutgoingMessageChangesSinceOpened: false,
+  };
   let modalState: ModalState = {type: 'none'};
 
   const dispatch = createEventDispatcher<{
@@ -150,6 +163,41 @@
     };
   }
 
+  function handleChangeConversation(): void {
+    rememberUnreadState();
+    markConversationAsRead();
+  }
+
+  function handleChangeApplicationFocus(): void {
+    if ($appVisibility === 'focused') {
+      markConversationAsRead();
+    }
+  }
+
+  function handleChangeLastMessage(): void {
+    const hasOutgoingMessageChangesSinceOpened =
+      rememberedUnreadState.hasOutgoingMessageChangesSinceOpened
+        ? true
+        : currentLastMessage?.direction === MessageDirection.OUTBOUND;
+
+    if ($appVisibility === 'focused') {
+      /*
+       * If app is focused, only update whether any outgoing messages have been sent since first
+       * opening the conversation.
+       */
+      rememberedUnreadState = {
+        ...rememberedUnreadState,
+        hasOutgoingMessageChangesSinceOpened,
+      };
+    } else {
+      /*
+       * If app is in background, refresh the conversation state (i.e., get fresh unread info from
+       * the back-end) to move the indicator to the right location.
+       */
+      rememberUnreadState();
+    }
+  }
+
   function handleItemEntered(
     event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
   ): void {
@@ -160,6 +208,14 @@
     event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
   ): void {
     updateViewportMessages({delete: event.detail.id});
+  }
+
+  function rememberUnreadState(): void {
+    rememberedUnreadState = {
+      firstUnreadMessageId: conversation.firstUnreadMessageId,
+      hasIncomingUnreadMessages: conversation.unreadMessagesCount > 0,
+      hasOutgoingMessageChangesSinceOpened: false,
+    };
   }
 
   function updateViewportMessages(update: {
@@ -175,19 +231,60 @@
     viewport.update();
   }
 
+  /**
+   * Mark all messages as read in the database. Note: This will be propagated back to the UI layer
+   * as an update of `conversation`.
+   */
+  function markConversationAsRead(): void {
+    conversation.markAllMessagesAsRead();
+  }
+
+  /**
+   * Updates only if the value of `conversation.id` changes, not on every change of the
+   * `conversation` object.
+   */
+  let currentConversationId: DbConversationUid;
+  $: if (currentConversationId !== conversation.id) {
+    currentConversationId = conversation.id;
+  }
+
+  /**
+   * Updates only if the value of `conversation.lastMessage.id` changes, not on every change of the
+   * `conversation` object.
+   */
+  let currentLastMessage: $$Props['conversation']['lastMessage'];
+  $: if (currentLastMessage?.id !== conversation.lastMessage?.id) {
+    currentLastMessage = conversation.lastMessage;
+  }
+
   $: messagePropsStore = messageSetViewModelToMessagePropsStore(messageSetViewModel);
+
+  $: reactive(handleChangeConversation, [currentConversationId]);
+  $: reactive(handleChangeApplicationFocus, [$appVisibility]);
+  $: reactive(handleChangeLastMessage, [currentLastMessage]);
 </script>
 
 <div bind:this={element} class="chat">
   <LazyList
     bind:this={lazyListComponent}
     items={$messagePropsStore}
-    lastItemId={conversation.lastMessageId}
+    lastItemId={currentLastMessage?.id}
     on:itementered={handleItemEntered}
     on:itemexited={handleItemExited}
   >
     <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -->
     <div class={`message ${item.direction}`} slot="item" let:item>
+      <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -->
+      {#if item.id === rememberedUnreadState.firstUnreadMessageId}
+        <div class="separator">
+          <UnreadMessagesIndicator
+            variant={rememberedUnreadState.hasOutgoingMessageChangesSinceOpened
+              ? 'hairline'
+              : 'new-messages'}
+          />
+        </div>
+      {/if}
+
       <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
       <Message
         {...item}
@@ -228,21 +325,27 @@
 
     .message {
       display: flex;
+      flex-direction: column;
       width: 100%;
       padding: 0 rem(8px) rem(8px);
 
-      :global(> *) {
+      :global(> .container) {
         max-width: min(rem(512px), 90%);
       }
 
       &.inbound {
-        align-items: center;
-        justify-content: start;
+        align-items: start;
+        justify-content: center;
       }
 
       &.outbound {
-        align-items: center;
-        justify-content: end;
+        align-items: end;
+        justify-content: center;
+      }
+
+      .separator {
+        padding: rem(8px) 0 rem(16px) 0;
+        width: 100%;
       }
     }
   }

@@ -20,7 +20,7 @@
   import {toast} from '~/app/ui/snackbar';
   import {handleCopyImage, handleSaveAsFile} from '~/app/ui/utils/file-sync/handlers';
   import {syncAndGetPayload} from '~/app/ui/utils/file-sync/helpers';
-  import {dependent} from '~/app/ui/utils/svelte';
+  import {reactive} from '~/app/ui/utils/svelte';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
@@ -187,12 +187,9 @@
     direction === 'inbound' &&
     conversation.type === ReceiverType.CONTACT;
 
-  $: timestamp = dependent(
-    formatDateLocalized,
+  $: timestamp = reactive(
+    () => formatDateLocalized(status.created.at, $i18n, 'auto'),
     [$systemTime.current],
-    status.created.at,
-    $i18n,
-    'auto',
   );
 
   $: updateQuoteProps(quote);
