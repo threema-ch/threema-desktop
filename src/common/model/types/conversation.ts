@@ -49,7 +49,24 @@ export type ConversationController = {
     readonly uid: UidOf<DbConversation>;
     readonly meta: ModelLifetimeGuard<ConversationView>;
     readonly receiver: () => AnyReceiverStore;
+    /**
+     * A store that contains the last message sent or received in this conversation (or none, if the
+     * conversation is empty).
+     */
     readonly lastMessageStore: () => LocalStore<AnyMessageModelStore | undefined>;
+    /**
+     * Return a store that contains the timestamp of the last conversation update. The store is
+     * initialized with the current date.
+     *
+     * Things that update the store:
+     *
+     * - A message is added
+     * - A message is removed
+     * - The conversation is cleared
+     *
+     * Note that changes to an existing message do not trigger an update to this store.
+     */
+    readonly lastConversationUpdateStore: () => LocalStore<Date>;
     /**
      * Update a conversation.
      *

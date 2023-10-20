@@ -250,7 +250,7 @@ export class ConversationModelController implements ConversationController {
             }
 
             messageToRemove.get().controller.remove();
-            this._updateLastMessage();
+            this._updateStoresOnConversationUpdate();
         },
     };
 
@@ -261,19 +261,19 @@ export class ConversationModelController implements ConversationController {
         fromLocal: async () => {
             this.meta.update(() => {
                 message.removeAll(this._services, this._log, this.uid);
-                this._updateLastMessage();
+                this._updateStoresOnConversationUpdate();
                 return {};
             });
         },
     };
 
     private readonly _handle: ConversationControllerHandle;
-
-    private readonly _lastMessageStore: WritableStore<AnyMessageModelStore | undefined>;
-
     private readonly _lock = new AsyncLock();
-
     private readonly _log: Logger;
+
+    // Stores
+    private readonly _lastMessageStore: WritableStore<AnyMessageModelStore | undefined>;
+    private readonly _lastConversationUpdateStore: WritableStore<Date>;
 
     public constructor(
         private readonly _services: ServicesForModel,
@@ -294,6 +294,7 @@ export class ConversationModelController implements ConversationController {
         this._lastMessageStore = new WritableStore(
             message.getLastMessage(_services, this._handle, MESSAGE_FACTORY),
         );
+        this._lastConversationUpdateStore = new WritableStore(new Date());
     }
 
     /**
@@ -336,8 +337,14 @@ export class ConversationModelController implements ConversationController {
         });
     }
 
+    /** @inheritdoc */
     public lastMessageStore(): LocalStore<AnyMessageModelStore | undefined> {
         return this._lastMessageStore;
+    }
+
+    /** @inheritdoc */
+    public lastConversationUpdateStore(): LocalStore<Date> {
+        return this._lastConversationUpdateStore;
     }
 
     /** @inheritdoc */
@@ -669,11 +676,6 @@ export class ConversationModelController implements ConversationController {
         // Store the message in the DB and retrieve the model
         const store = message.create(this._services, this._handle, MESSAGE_FACTORY, init);
 
-        // Update 'last message', if applicable
-        // TODO(DESK-296): This needs to depend on whether the message appears as the last message
-        //                  (i.e. the sort order)!
-        this._updateLastMessage();
-
         // Ensure that the contracts stated by the overload variants of this function are fulfilled
         switch (init.direction) {
             case MessageDirection.INBOUND:
@@ -694,13 +696,23 @@ export class ConversationModelController implements ConversationController {
                 unreachable(init);
         }
 
+        // Update dependent stores
+        this._updateStoresOnConversationUpdate();
+
         return store;
     }
 
-    private _updateLastMessage(): void {
+    /**
+     * Update the stores that depend on conversation changes:
+     *
+     * - Update {@link _lastMessageStore} with the last message of the conversation
+     * - Update {@link _lastConversationUpdateStore} with the current timestamp
+     */
+    private _updateStoresOnConversationUpdate(): void {
         this._lastMessageStore.set(
             message.getLastMessage(this._services, this._handle, MESSAGE_FACTORY),
         );
+        this._lastConversationUpdateStore.set(new Date());
     }
 }
 
