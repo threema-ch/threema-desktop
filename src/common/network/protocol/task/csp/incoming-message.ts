@@ -401,6 +401,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     public readonly transaction = undefined;
     private readonly _log: Logger;
     private readonly _id: MessageId;
+    /** Nonce guard of the message container. */
     private _nonceGuard: undefined | INonceGuard;
 
     public constructor(
@@ -498,8 +499,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // Decrypt and decode the metadata, if any
         //
         // If there is metadata, ensure the message IDs match
-        let metadataNonceGuard;
-        let metadata;
+        let metadata, metadataNonceGuard;
         try {
             [metadataNonceGuard, metadata] = this._decodeAndDecryptMetadata(senderPublicKey);
         } catch (error) {
@@ -513,17 +513,16 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             return await this._discard(handle);
         }
 
-        // Discard the metadata nonce since the same nonce is reused for the main container.
+        // Discard the metadata nonce since the same nonce is reused for the main container below
         if (metadataNonceGuard !== undefined) {
             metadataNonceGuard.discard();
             this._nonceGuard = undefined;
         }
 
         // Decrypt and decode the message
-        let container;
-        let nonceGuard;
+        let container, containerNonceGuard;
         try {
-            [nonceGuard, container] = this._decodeAndDecryptContainer(senderPublicKey);
+            [containerNonceGuard, container] = this._decodeAndDecryptContainer(senderPublicKey);
         } catch (error) {
             this._log.warn(
                 `Discarding message because we could not decrypt or decode data: ${error}`,
@@ -567,7 +566,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 cspMessageBody,
                 senderContactOrInit,
                 metadata,
-                nonceGuard,
+                containerNonceGuard,
             );
         } catch (error) {
             this._log.info(`Discarding ${messageTypeDebug} message with invalid content: ${error}`);
@@ -853,6 +852,9 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         this._nonceGuard = undefined;
     }
 
+    /**
+     * Check if there is an unprocessed nonce and discard it.
+     */
     private _discardUnprocessedNonce(): void {
         if (this._nonceGuard?.processed.value === false) {
             this._nonceGuard.discard();
@@ -960,11 +962,18 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._message.messageAndMetadataNonce as Nonce,
                 this._message.metadataContainer as EncryptedData,
             )
-            .decrypt('IncomingMessageTask#_decodeAndDecryptMetadata');
+            .decrypt(
+                `IncomingMessageTask<${u64ToHexLe(
+                    this._message.messageId,
+                )}>#_decodeAndDecryptMetadata`,
+            );
         const parsedMessageMetadata = protobuf.validate.csp_e2e.MessageMetadata.SCHEMA.parse(
             protobuf.csp_e2e.MessageMetadata.decode(plainData),
         );
-        assert(this._nonceGuard === undefined, 'No nonceguard should have been set prior.');
+        assert(
+            this._nonceGuard === undefined,
+            '_decodeAndDecryptMetadata: No nonceguard should have been set prior',
+        );
         this._nonceGuard = nonceGuard;
         return [nonceGuard, parsedMessageMetadata];
     }
@@ -980,9 +989,16 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._message.messageAndMetadataNonce as Nonce,
                 this._message.messageBox as EncryptedData,
             )
-            .decrypt('IncomingMessageTask#_decodeAndDecryptContainer');
+            .decrypt(
+                `IncomingMessageTask<${u64ToHexLe(
+                    this._message.messageId,
+                )}>#_decodeAndDecryptContainer`,
+            );
 
-        assert(this._nonceGuard === undefined, 'No nonceguard should have been set prior.');
+        assert(
+            this._nonceGuard === undefined,
+            '_decodeAndDecryptContainer: No nonceguard should have been set prior',
+        );
         this._nonceGuard = nonceGuard;
 
         return [nonceGuard, structbuf.csp.e2e.Container.decode(plainData)];
