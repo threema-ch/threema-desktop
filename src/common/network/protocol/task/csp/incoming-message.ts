@@ -527,7 +527,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             this._log.warn(
                 `Discarding message because we could not decrypt or decode data: ${error}`,
             );
-
             return await this._discard(handle);
         }
         const type = container.type;
@@ -876,8 +875,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 this._log.warn(`Failed to acknowledge discarded message: ${error}`);
                 throw ensureError(error);
             }
-            this._commitNonce(true);
         }
+        this._commitNonce(true);
         return 'discarded';
     }
 
