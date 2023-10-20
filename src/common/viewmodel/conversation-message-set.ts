@@ -81,10 +81,10 @@ export function getConversationMessageSetViewModel(
         (viewPortMessageIds, getAndSubscribe) => {
             const mutableViewPortMessageIds = [...viewPortMessageIds];
 
-            // TODO: How to update if a reflected message updates the last message, or other
-            // messages than the last? Create a store for "conversation updates", which holds the
-            // date of the last update. Look at `lastMessage` update in conversation to find the
-            // location to add this.
+            // Subscribe to the "last conversation update" store. This ensures that the active
+            // messages are re-derived whenever a message is added to or removed from the
+            // conversation.
+            getAndSubscribe(conversationModel.controller.lastConversationUpdateStore());
 
             const activeMessageSet = new Set<AnyMessageModelStore>();
 
