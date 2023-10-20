@@ -91,9 +91,8 @@ export function getConversationMessageSetViewModel(
             // If no message is visible currently (might happen during initialization), use last
             // message in chat.
             if (viewPortMessageIds.length === 0) {
-                const lastMessageId = getAndSubscribe(
-                    conversationModel.controller.lastMessageStore(),
-                )?.get().view.id;
+                const lastMessageId = conversationModel.controller.lastMessageStore().get()?.get()
+                    .view.id;
                 if (lastMessageId !== undefined) {
                     mutableViewPortMessageIds.push(lastMessageId);
                 }

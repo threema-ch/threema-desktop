@@ -709,6 +709,9 @@ export class ConversationModelController implements ConversationController {
      * - Update {@link _lastConversationUpdateStore} with the current timestamp
      */
     private _updateStoresOnConversationUpdate(): void {
+        // Note: Update the "last message" store before updating the "last conversation update"
+        // store. This way, when subscribing to conversation updates, the last message can be
+        // fetched from the "last message" store and will already be correct.
         this._lastMessageStore.set(
             message.getLastMessage(this._services, this._handle, MESSAGE_FACTORY),
         );
