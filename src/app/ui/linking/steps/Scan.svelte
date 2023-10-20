@@ -54,7 +54,7 @@
         >
           <a
             slot="1"
-            href={import.meta.env.URLS.overview.full}
+            href={import.meta.env.URLS.limitations.full}
             target="_blank"
             rel="noreferrer noopener"
             let:text>{text}</a
