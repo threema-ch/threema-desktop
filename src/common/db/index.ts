@@ -763,6 +763,14 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbList<DbAnyMessage, 'uid'>;
 
     /**
+     * Given a set of message IDs, return the corresponding UIDs as a sorted array (oldest first).
+     */
+    readonly getSortedMessageUids: (
+        conversationUid: DbConversationUid,
+        messageIds: ReadonlySet<MessageId>,
+    ) => DbMessageUid[];
+
+    /**
      * Store settings for a given category. It returns the given settings if the action was successful.
      */
     readonly setSettings: <TKey extends keyof Settings>(

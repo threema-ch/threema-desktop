@@ -41,7 +41,7 @@ import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2
 import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import type {ConversationId, MessageId} from '~/common/network/types';
 import type {i53, Mutable, u53} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
@@ -407,41 +407,44 @@ export class ConversationModelController implements ConversationController {
     }
 
     /** @inheritdoc */
-    public getMessageWithSurroundingMessages(
-        refrenceMessageId: MessageId,
+    public getMessagesWithSurroundingMessages(
+        messageIds: ReadonlySet<MessageId>,
         contextSize: u53,
-    ): Set<AnyMessageModelStore> | undefined {
+    ): Set<AnyMessageModelStore> {
         const {db} = this._services;
         return this.meta.run(() => {
-            const referenceMessageUid = db.hasMessageById(this.uid, refrenceMessageId);
-            if (referenceMessageUid === undefined) {
-                return undefined;
+            // Get sorted list of UIDs
+            const sortedUids = db.getSortedMessageUids(this.uid, messageIds).map((uid) => ({uid}));
+            if (sortedUids.length === 0) {
+                return new Set();
             }
 
-            // Add messages older than reference
+            // Add messages older than oldest message
+            const oldestUid = unwrap(sortedUids.at(0));
             const olderMessages = [
                 ...this.meta.run(() =>
                     db.getMessageUids(this.uid, contextSize, {
                         direction: MessageQueryDirection.OLDER,
-                        uid: referenceMessageUid,
+                        uid: oldestUid.uid,
                     }),
                 ),
             ];
 
-            // Add messages newer than reference
+            // Add messages newer than newest message
+            const newestUid = unwrap(sortedUids.at(-1));
             const newerMessages = this.meta.run(() =>
                 db.getMessageUids(this.uid, contextSize, {
                     direction: MessageQueryDirection.NEWER,
-                    uid: referenceMessageUid,
+                    uid: newestUid.uid,
                 }),
             );
 
             // Return set of unique message stores
             //
-            // Note: The store for the reference message is fetched twice. That's not a problem
+            // Note: The store for the two reference messages is fetched twice. That's not a problem
             //       though, thanks to caching, and because the set discards duplicates.
             return new Set(
-                [...olderMessages, ...newerMessages].map((dbMessageListing) =>
+                [...olderMessages, ...sortedUids, ...newerMessages].map((dbMessageListing) =>
                     message.getByUid(
                         this._services,
                         this._handle,

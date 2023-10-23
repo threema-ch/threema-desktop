@@ -2126,6 +2126,38 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public getSortedMessageUids(
+        conversationUid: DbConversationUid,
+        messageIds: ReadonlySet<MessageId>,
+    ): DbMessageUid[] {
+        if (messageIds.size === 0) {
+            return [];
+        }
+
+        // Note: The database abstraction wants arrays, not sets
+        const messageIdArray = [...messageIds];
+
+        // Get sorted list of UIDs with ordinal
+        const messageUidsWithOrdinal = sync(
+            this._db
+                .selectFrom(tMessage)
+                .select({
+                    uid: tMessage.uid,
+                    ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt),
+                })
+                .where(
+                    tMessage.conversationUid
+                        .equals(conversationUid)
+                        .and(tMessage.messageId.in(messageIdArray)),
+                )
+                .orderBy('ordinal', 'asc')
+                .executeSelectMany(),
+        );
+
+        return messageUidsWithOrdinal.map(({uid}) => uid);
+    }
+
+    /** @inheritdoc */
     public setSettings<TKey extends keyof Settings>(
         category: TKey,
         settings: Settings[TKey],

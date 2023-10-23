@@ -113,19 +113,19 @@ export type ConversationController = {
      */
     readonly getAllMessages: () => SetOfAnyLocalMessageModelStore;
     /**
-     * Return a {@link LocalModelStore} for every message in the current conversation with a certain
-     * range around a reference message.
+     * Return a {@link LocalModelStore} for every message in {@link messageIds}, plus a number of
+     * additional older and newer messages (the "context").
      *
-     * @param id The reference message ID.
+     * @param messageIds The reference message IDs.
      * @param contextSize The number of messages to load for each direction. Example: If
-     *   `contextSize` is 10 and the last message is selected, then 11 messages will be returned. If
-     *   `contextSize` is 25 and a message in the middle of the conversation is selected, then 51
-     *   messages will be returned.
+     *   `contextSize` is 10 and the last message ID is the only entry in {@link messageIds}, then
+     *   11 messages will be returned. If `contextSize` is 25 and 5 messages in the middle of the
+     *   conversation are part of {@link messageIds}, then 55 messages will be returned.
      */
-    readonly getMessageWithSurroundingMessages: (
-        id: MessageId,
+    readonly getMessagesWithSurroundingMessages: (
+        messageIds: ReadonlySet<MessageId>,
         contextSize: u53,
-    ) => Set<AnyMessageModelStore> | undefined;
+    ) => Set<AnyMessageModelStore>;
     /**
      * Return id of the first (i.e. oldest) unread message, or `undefined` if all messages in the
      * conversation have been read.

@@ -53,6 +53,7 @@ import {BLOB_ID_LENGTH, type BlobId} from '~/common/network/protocol/blob';
 import {randomGroupId, randomMessageId} from '~/common/network/protocol/utils';
 import {
     ensureIdentityString,
+    ensureMessageId,
     ensureNickname,
     FEATURE_MASK_FLAG,
     type FeatureMask,
@@ -1703,6 +1704,135 @@ export function backendTests(
                         result: [message[1], message[2]],
                     },
                 ]);
+            });
+        });
+
+        describe('getSortedMessageUids', function () {
+            it('returns the correct UIDs', function () {
+                const contactUid = makeContact(db, {identity: 'TESTTEST'});
+                const conversation = db.getConversationOfReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: contactUid,
+                });
+                assert(conversation !== undefined);
+
+                const now = new Date();
+
+                const messageUids = new Map<MessageId, DbMessageUid>();
+
+                // Add 1000 incoming messages
+                for (let i = 0; i < 1000; i++) {
+                    const messageId = ensureMessageId(1000n + BigInt(i));
+                    const messageUid = createTextMessage(db, {
+                        id: messageId,
+                        conversationUid: conversation.uid,
+                        text: 'a message',
+                        processedAt: new Date(now.getTime() + i * 10),
+                    });
+                    messageUids.set(messageId, messageUid);
+                }
+
+                // Add an outgoing message in the middle
+                messageUids.set(
+                    ensureMessageId(2000n),
+                    createTextMessage(db, {
+                        id: 2000n,
+                        conversationUid: conversation.uid,
+                        text: 'a message',
+                        createdAt: new Date(now.getTime() + 5005),
+                        processedAt: undefined,
+                    }),
+                );
+
+                // Simple test case: Only two IDs, the first and the last incoming message
+                expect(
+                    db.getSortedMessageUids(
+                        conversation.uid,
+                        new Set([ensureMessageId(1000n), ensureMessageId(1999n)]),
+                    ),
+                    'simple case',
+                ).to.deep.equal([
+                    messageUids.get(ensureMessageId(1000n)),
+                    messageUids.get(ensureMessageId(1999n)),
+                ]);
+
+                // All message IDs
+                const allUids = db.getSortedMessageUids(
+                    conversation.uid,
+                    new Set(messageUids.keys()),
+                );
+                expect(allUids.length, 'all message IDs (size)').to.equal(messageUids.size);
+                expect(allUids.at(0), 'all message IDs (oldest)').to.equal(
+                    messageUids.get(ensureMessageId(1000n)),
+                );
+                expect(allUids.at(-1), 'all message IDs (newest)').to.equal(
+                    messageUids.get(ensureMessageId(1999n)),
+                );
+
+                // Mixed incoming and outgoing
+                const mixedMessageIds = new Set<MessageId>();
+                mixedMessageIds.add(ensureMessageId(2000n)); // Outgoing message
+                for (let i = 501n; i <= 600n; i++) {
+                    // Incoming messages after outgoing message
+                    mixedMessageIds.add(ensureMessageId(1000n + i));
+                }
+                const mixedUids = db.getSortedMessageUids(conversation.uid, mixedMessageIds);
+                expect(mixedUids.length, 'mixed incoming and outgoing (size)').to.equal(101);
+                expect(mixedUids.at(0), 'mixed incoming and outgoing (oldest)').to.equal(
+                    messageUids.get(ensureMessageId(2000n)),
+                );
+                expect(mixedUids.at(-1), 'mixed incoming and outgoing (newest)').to.equal(
+                    messageUids.get(ensureMessageId(1600n)),
+                );
+            });
+
+            it('handles edge cases correctly', function () {
+                const contactUid = makeContact(db, {identity: 'TESTTEST'});
+                const conversation = db.getConversationOfReceiver({
+                    type: ReceiverType.CONTACT,
+                    uid: contactUid,
+                });
+                assert(conversation !== undefined);
+                const messageUid = createTextMessage(db, {
+                    id: 1n,
+                    conversationUid: conversation.uid,
+                    text: 'a message',
+                    createdAt: new Date(),
+                    processedAt: undefined,
+                });
+
+                // Empty set
+                expect(
+                    db.getSortedMessageUids(conversation.uid, new Set()),
+                    'empty set',
+                ).to.deep.equal([]);
+
+                // Set of invalid message IDs
+                expect(
+                    db.getSortedMessageUids(
+                        conversation.uid,
+                        new Set([ensureMessageId(999n), ensureMessageId(888n)]),
+                    ),
+                    'invalid message IDs',
+                ).to.deep.equal([]);
+
+                // Set of mixed valid and invalid message IDs
+                expect(
+                    db.getSortedMessageUids(
+                        conversation.uid,
+                        new Set([ensureMessageId(1n), ensureMessageId(888n)]),
+                    ),
+                    'mixed invalid message IDs',
+                ).to.deep.equal([messageUid]);
+
+                // Unknown conversation ID
+                expect(
+                    db.getSortedMessageUids(
+                        7697969n as DbConversationUid,
+                        new Set([ensureMessageId(999n), ensureMessageId(888n)]),
+                    ),
+                    'invalid message IDs',
+                ).to.deep.equal([]);
             });
         });
     });

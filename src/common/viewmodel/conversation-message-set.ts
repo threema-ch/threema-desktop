@@ -1,8 +1,5 @@
 import type {Conversation} from '~/common/model';
-import type {
-    AnyMessageModelStore,
-    SetOfAnyLocalMessageModelStore,
-} from '~/common/model/types/message';
+import type {SetOfAnyLocalMessageModelStore} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {MessageId} from '~/common/network/types';
 import {
@@ -82,40 +79,24 @@ export function getConversationMessageSetViewModel(
     const activeMessageStores = derive(
         controller.currentViewportMessages,
         (viewPortMessageIds, getAndSubscribe) => {
-            const mutableViewPortMessageIds = [...viewPortMessageIds];
-
             // Subscribe to the "last conversation update" store. This ensures that the active
             // messages are re-derived whenever a message is added to or removed from the
             // conversation.
             getAndSubscribe(conversationModel.controller.lastConversationUpdateStore());
 
-            const activeMessageSet = new Set<AnyMessageModelStore>();
+            // Get active messages plus surrounding messages
+            const activeMessageSet =
+                conversationModel.controller.getMessagesWithSurroundingMessages(
+                    viewPortMessageIds,
+                    75,
+                );
 
             // If no message is visible currently (might happen during initialization), use last
-            // message in chat.
-            if (viewPortMessageIds.size === 0) {
-                const lastMessageId = conversationModel.controller.lastMessageStore().get()?.get()
-                    .view.id;
-                if (lastMessageId !== undefined) {
-                    mutableViewPortMessageIds.push(lastMessageId);
-                }
-            }
-
-            // Otherwise, load surrounding messages as well
-            for (const viewPortMessageId of mutableViewPortMessageIds) {
-                const surroundingMessages =
-                    // TODO: The db call does not work on messages that have no sent date yet -
-                    // which might be the case (fah has such a message). -> fah has added a solution.
-                    conversationModel.controller.getMessageWithSurroundingMessages(
-                        viewPortMessageId,
-                        150, // TODO: Is this a good value? Should it be dynamic?
-                    );
-
-                if (surroundingMessages === undefined) {
-                    continue;
-                }
-                for (const messageModel of surroundingMessages) {
-                    activeMessageSet.add(messageModel);
+            // message in chat instead (if any).
+            if (activeMessageSet.size === 0) {
+                const lastMessage = conversationModel.controller.lastMessageStore().get();
+                if (lastMessage !== undefined) {
+                    activeMessageSet.add(lastMessage);
                 }
             }
 
