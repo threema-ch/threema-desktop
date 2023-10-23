@@ -11,7 +11,7 @@ import {
     type ProxyMarked,
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
-import {type IQueryableStore, WritableStore, StoreOptions} from '~/common/utils/store';
+import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, LocalSetBasedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
@@ -32,21 +32,24 @@ interface IConversationMessageSetController extends ProxyMarked {
      * Set the currently visible messages in conversation viewport.
      *
      * Used to calculate the fetched (and prefetched) messages from the model store / database.
+     *
+     * Note: Make sure to pass in a new `Set` each time, otherwise store changes won't be
+     *       propagated!
      */
-    readonly setCurrentViewportMessages: (messageIds: MessageId[]) => void;
+    readonly setCurrentViewportMessages: (messageIds: Set<MessageId>) => void;
 }
 
 class ConversationMessageSetController implements IConversationMessageSetController {
     public [TRANSFER_HANDLER] = PROXY_HANDLER;
 
-    private readonly _currentViewportMessagesStore = new WritableStore<MessageId[]>([]);
+    private readonly _currentViewportMessagesStore = new WritableStore<Set<MessageId>>(new Set());
 
-    public get currentViewportMessages(): IQueryableStore<MessageId[]> {
+    public get currentViewportMessages(): IQueryableStore<Set<MessageId>> {
         return this._currentViewportMessagesStore;
     }
 
     /** @inheritdoc */
-    public setCurrentViewportMessages(messageIds: MessageId[]): void {
+    public setCurrentViewportMessages(messageIds: Set<MessageId>): void {
         this._currentViewportMessagesStore.set(messageIds);
     }
 }
@@ -90,7 +93,7 @@ export function getConversationMessageSetViewModel(
 
             // If no message is visible currently (might happen during initialization), use last
             // message in chat.
-            if (viewPortMessageIds.length === 0) {
+            if (viewPortMessageIds.size === 0) {
                 const lastMessageId = conversationModel.controller.lastMessageStore().get()?.get()
                     .view.id;
                 if (lastMessageId !== undefined) {

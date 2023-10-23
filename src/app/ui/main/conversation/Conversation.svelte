@@ -10,8 +10,8 @@
   import type {AppServices} from '~/app/types';
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
   import ChatView from '~/app/ui/components/partials/chat-view/ChatView.svelte';
-  import type {MessagePropsFromBackend} from '~/app/ui/components/partials/chat-view/helpers';
   import {getTextContent} from '~/app/ui/components/partials/chat-view/internal/message/helpers';
+  import type {MessagePropsFromBackend} from '~/app/ui/components/partials/chat-view/transformers';
   import {isDisabledReceiver, isInactiveContact} from '~/app/ui/generic/receiver';
   import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts, conversationListEvent} from '~/app/ui/main/conversation';

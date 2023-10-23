@@ -8,16 +8,17 @@
   import {globals} from '~/app/globals';
   import LazyList from '~/app/ui/components/organisms/lazy-list/LazyList.svelte';
   import type {LazyListItemProps} from '~/app/ui/components/organisms/lazy-list/props';
-  import {
-    type MessagePropsFromBackend,
-    messageSetViewModelToMessagePropsStore,
-  } from '~/app/ui/components/partials/chat-view/helpers';
+  import {Viewport} from '~/app/ui/components/partials/chat-view/helpers';
   import Message from '~/app/ui/components/partials/chat-view/internal/message/Message.svelte';
   import MessageDetailsModal from '~/app/ui/components/partials/chat-view/internal/message-details-modal/MessageDetailsModal.svelte';
   import MessageForwardModal from '~/app/ui/components/partials/chat-view/internal/message-forward-modal/MessageForwardModal.svelte';
   import MessageMediaViewerModal from '~/app/ui/components/partials/chat-view/internal/message-media-viewer-modal/MessageMediaViewerModal.svelte';
   import UnreadMessagesIndicator from '~/app/ui/components/partials/chat-view/internal/unread-messages-indicator/UnreadMessagesIndicator.svelte';
   import type {ChatViewProps} from '~/app/ui/components/partials/chat-view/props';
+  import {
+    type MessagePropsFromBackend,
+    messageSetViewModelToMessagePropsStore,
+  } from '~/app/ui/components/partials/chat-view/transformers';
   import type {UnreadState, ModalState} from '~/app/ui/components/partials/chat-view/types';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbConversationUid} from '~/common/db';
@@ -25,8 +26,6 @@
   import {MessageDirection} from '~/common/enum';
   import type {MessageId} from '~/common/network/types';
   import {unreachable} from '~/common/utils/assert';
-  import {AsyncLock} from '~/common/utils/lock';
-  import {debounce} from '~/common/utils/timer';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.chat-view');
 
@@ -55,23 +54,7 @@
     clickdelete: MessagePropsFromBackend;
   }>();
 
-  const viewport: {
-    readonly lock: AsyncLock;
-    readonly messages: Set<MessageId>;
-    update: () => void;
-  } = {
-    lock: new AsyncLock(),
-    messages: new Set(),
-    update: debounce(
-      () => {
-        void viewport.lock.with(async () => {
-          await messageSetViewModel.controller.setCurrentViewportMessages([...viewport.messages]);
-        });
-      },
-      100,
-      false,
-    ),
-  };
+  const viewport = new Viewport(log, messageSetViewModel.controller);
 
   /**
    * Scrolls the view to the message with the given id.
@@ -201,13 +184,13 @@
   function handleItemEntered(
     event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
   ): void {
-    updateViewportMessages({add: event.detail.id});
+    viewport.addMessage(event.detail.id);
   }
 
   function handleItemExited(
     event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
   ): void {
-    updateViewportMessages({delete: event.detail.id});
+    viewport.deleteMessage(event.detail.id);
   }
 
   function rememberUnreadState(): void {
@@ -216,19 +199,6 @@
       hasIncomingUnreadMessages: conversation.unreadMessagesCount > 0,
       hasOutgoingMessageChangesSinceOpened: false,
     };
-  }
-
-  function updateViewportMessages(update: {
-    readonly add?: MessageId;
-    readonly delete?: MessageId;
-  }): void {
-    if (update.add !== undefined) {
-      viewport.messages.add(update.add);
-    }
-    if (update.delete !== undefined) {
-      viewport.messages.delete(update.delete);
-    }
-    viewport.update();
   }
 
   /**

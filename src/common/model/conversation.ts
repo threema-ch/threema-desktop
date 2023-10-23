@@ -418,7 +418,7 @@ export class ConversationModelController implements ConversationController {
                 return undefined;
             }
 
-            // Add messages older than reference (reverse db result)
+            // Add messages older than reference
             const olderMessages = [
                 ...this.meta.run(() =>
                     db.getMessageUids(this.uid, contextSize, {
@@ -436,9 +436,10 @@ export class ConversationModelController implements ConversationController {
                 }),
             );
 
-            // Get all stores for the message
-            // Note that the reference message is fetched twice - since it is cached and Set-uniqued
-
+            // Return set of unique message stores
+            //
+            // Note: The store for the reference message is fetched twice. That's not a problem
+            //       though, thanks to caching, and because the set discards duplicates.
             return new Set(
                 [...olderMessages, ...newerMessages].map((dbMessageListing) =>
                     message.getByUid(

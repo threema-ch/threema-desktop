@@ -115,6 +115,12 @@ export type ConversationController = {
     /**
      * Return a {@link LocalModelStore} for every message in the current conversation with a certain
      * range around a reference message.
+     *
+     * @param id The reference message ID.
+     * @param contextSize The number of messages to load for each direction. Example: If
+     *   `contextSize` is 10 and the last message is selected, then 11 messages will be returned. If
+     *   `contextSize` is 25 and a message in the middle of the conversation is selected, then 51
+     *   messages will be returned.
      */
     readonly getMessageWithSurroundingMessages: (
         id: MessageId,

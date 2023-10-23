@@ -1,4 +1,4 @@
-import type {MessagePropsFromBackend} from '~/app/ui/components/partials/chat-view/helpers';
+import type {MessagePropsFromBackend} from '~/app/ui/components/partials/chat-view/transformers';
 import type {i18n as i18nStore} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
 import type {Logger} from '~/common/logging';
