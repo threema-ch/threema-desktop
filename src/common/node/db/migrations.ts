@@ -336,15 +336,13 @@ export class MigrationHelper {
      * @throws if table creation fails
      */
     private _setupMigrationCacheTable(db: Database): void {
-        // TODO(DESK-371): Once we upgrade to SQLite 3.38, we can use `unixepoch()` instead of the
-        //                  strftime hack below.
         const createStatement = db.prepare(`
             CREATE TABLE IF NOT EXISTS ${MIGRATION_CACHE.TABLE_NAME} (
                 ${MIGRATION_CACHE.COL_NUMBER} INTEGER UNIQUE NOT NULL,
                 ${MIGRATION_CACHE.COL_NAME} STRING NOT NULL,
                 ${MIGRATION_CACHE.COL_UP_SQL} TEXT NOT NULL,
                 ${MIGRATION_CACHE.COL_DOWN_SQL} TEXT NOT NULL,
-                ${MIGRATION_CACHE.COL_APPLIED_AT} INTEGER NOT NULL DEFAULT(strftime('%s', 'now') * 1000)
+                ${MIGRATION_CACHE.COL_APPLIED_AT} INTEGER NOT NULL DEFAULT(unixepoch() * 1000)
             );
         `);
         createStatement.run();
