@@ -56,7 +56,8 @@
   ::-webkit-scrollbar-button {
     display: none;
   }
-  ::-webkit-scrollbar-track {
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
     background-color: transparent;
   }
   ::-webkit-scrollbar-thumb {

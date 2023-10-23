@@ -11,8 +11,8 @@
     isLastOutboundMessageOlderThan,
     type SortedMessageList,
     type SortedMessageListStore,
-    sortMessages,
     unsetUnreadMessageInfo,
+    sortMessages,
   } from '~/app/ui/generic/form';
   import {i18n} from '~/app/ui/i18n';
   import ConversationMessageComponent from '~/app/ui/main/conversation/conversation-messages/ConversationMessage.svelte';

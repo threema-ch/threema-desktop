@@ -3,20 +3,42 @@
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
-  import Toast from '#3sc/components/generic/Snackbar/Toast.svelte';
+  import ToastComponent from '#3sc/components/generic/Snackbar/Toast.svelte';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
-  import {snackbarStore, toast} from '.';
+  import {type Toast, snackbarStore, toast} from '.';
+
+  let snackbarElement: SvelteNullableBinding<HTMLDialogElement> = null;
+
+  function updateSnackbar(element: typeof snackbarElement, toasts: Toast[]): void {
+    if (element === null) {
+      return;
+    }
+
+    // Always close an open modal first (even if there are still toasts), as we need to reopen it
+    // anyway for it to be in front.
+    if (element.open) {
+      element.close();
+    }
+
+    if (toasts.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      element.showPopover();
+    }
+  }
+
+  $: updateSnackbar(snackbarElement, $snackbarStore);
 </script>
 
 <template>
-  <div class="snackbar">
+  <dialog bind:this={snackbarElement} class="snackbar" popover="manual">
     {#each $snackbarStore as toastItem (toastItem)}
       <div
         class="toast-wrapper"
         in:fly={{y: -100, duration: 800, opacity: 1}}
         out:fly={{x: 336, duration: 800, opacity: 1}}
       >
-        <Toast
+        <ToastComponent
           action={toastItem.action}
           text={toastItem.message}
           on:close={() => toast.removeToast(toastItem)}
@@ -30,25 +52,36 @@
               {/if}
             </div>
           {/if}
-        </Toast>
+        </ToastComponent>
       </div>
     {/each}
-  </div>
+  </dialog>
 </template>
 
 <style lang="scss">
   @use 'component' as *;
 
   .snackbar {
-    z-index: $z-index-alert;
+    // Reset default `dialog` styles
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+
+    // Other styles
     position: absolute;
     height: 100%;
     overflow-y: auto;
     top: 0;
     right: 0;
+    left: auto;
     overflow: hidden;
     width: rem(328px);
     pointer-events: none; // TODO(DESK-453): scrollable snackbar
+
+    &::backdrop {
+      pointer-events: none;
+    }
 
     .toast-wrapper {
       margin-top: rem(8px);

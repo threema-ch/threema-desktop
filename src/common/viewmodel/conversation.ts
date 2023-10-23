@@ -210,6 +210,7 @@ export interface ConversationViewModel extends PropertiesMarked {
 
 interface InnerConversationViewModel extends PropertiesMarked {
     readonly receiver: TransformedReceiverData;
+    readonly lastMessageId: MessageId | undefined;
 }
 
 export type InnerConversationViewModelStore = LocalStore<InnerConversationViewModel>;
@@ -241,8 +242,14 @@ function getInnerConversationViewModelStore(
     return derive(conversationStore, (conversationModel, getAndSubscribe) => {
         const receiver = getAndSubscribe(conversationModel.controller.receiver());
         const profilePicture = getAndSubscribe(receiver.controller.profilePicture);
+        const lastMessageStore = getAndSubscribe(conversationModel.controller.lastMessageStore());
+
         return endpoint.exposeProperties({
             receiver: transformReceiver(receiver, profilePicture, model, getAndSubscribe),
+            lastMessageId:
+                lastMessageStore === undefined
+                    ? undefined
+                    : getAndSubscribe(lastMessageStore).view.id,
         });
     });
 }

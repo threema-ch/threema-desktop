@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {escapeHtmlUnsafeChars, parseText} from '~/app/ui/generic/form';
   import {i18n} from '~/app/ui/i18n';
+  import {sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
   import type {Mention} from '~/common/viewmodel/utils/mentions';
 
   export let text: string;
@@ -10,8 +10,7 @@
   export let shouldParseMarkup = false;
   export let shouldParseLinks = false;
 
-  $: processedText = parseText($i18n.t, {
-    text: escapeHtmlUnsafeChars(text),
+  $: processedText = sanitizeAndParseTextToHtml(text, $i18n.t, {
     mentions,
     highlights,
     shouldLinkMentions,

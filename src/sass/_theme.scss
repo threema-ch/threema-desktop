@@ -280,7 +280,11 @@ $brandings: (
   // prettier-ignore
   $branding: config-merge(-g(theme.$brandings, $branding-name), -g($brandings, $branding-name));
 
-  &[data-branding='#{$branding-name}'] {
+  &[data-branding='#{$branding-name}'],
+  // Apply theme & branding variables to the root `::backdrop` as well, as it does not inherit from
+  // any element and is not inherited from (which means CSS variables which are not defined for the
+  // pseudo-element directly would have no effect).
+  &[data-branding='#{$branding-name}'] ::backdrop {
     // see https://github.com/prettier/prettier/issues/15369:
     // prettier-ignore
     $theme: config-merge(-g(theme.$themes, $theme-name), -generate-theme($branding, $theme-name));

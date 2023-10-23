@@ -110,8 +110,8 @@
   @use 'component' as *;
 
   .drag-wrapper {
-    height: 100%;
-    overflow: auto;
+    // height: 100%;
+    // overflow: auto;
 
     &.bodyHover {
       position: relative;

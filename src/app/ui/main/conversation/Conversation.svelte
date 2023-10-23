@@ -7,24 +7,25 @@
   import type {FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import type {AppServices, SvelteAction} from '~/app/types';
+  import type {AppServices} from '~/app/types';
+  import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
+  import ChatView from '~/app/ui/components/partials/chat-view/ChatView.svelte';
+  import type {MessagePropsFromBackend} from '~/app/ui/components/partials/chat-view/helpers';
+  import {getTextContent} from '~/app/ui/components/partials/chat-view/internal/message/helpers';
   import {isDisabledReceiver, isInactiveContact} from '~/app/ui/generic/receiver';
   import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts, conversationListEvent} from '~/app/ui/main/conversation';
-  import type {ComposeData} from '~/app/ui/main/conversation/compose';
+  import {getDefaultComposeData, type ComposeData} from '~/app/ui/main/conversation/compose';
   import ComposeHandler from '~/app/ui/main/conversation/compose/ComposeHandler.svelte';
-  import ConversationMessageList from '~/app/ui/main/conversation/conversation-messages/ConversationMessageList.svelte';
-  import MessageBody from '~/app/ui/main/conversation/conversation-messages/MessageBody.svelte';
   import ConversationTopBar from '~/app/ui/main/conversation/top-bar/ConversationTopBar.svelte';
   import {toast} from '~/app/ui/snackbar';
   import type {DbReceiverLookup} from '~/common/db';
   import {display, layout} from '~/common/dom/ui/state';
-  import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationCategory, ReceiverType} from '~/common/enum';
+  import {extractErrorMessage} from '~/common/error';
   import type {AnyReceiverStore, Conversation} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
-  import type {MessageId} from '~/common/network/types';
-  import {unreachable, unwrap} from '~/common/utils/assert';
+  import {unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {WritableStore} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
@@ -33,53 +34,36 @@
     InnerConversationViewModelStore,
     SendMessageEventDetail,
   } from '~/common/viewmodel/conversation';
-  import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation');
 
-  /**
-   * App services.
-   */
   export let services: AppServices;
   const {backend, router} = services;
 
+  export let conversationViewModel: Remote<ConversationViewModel>;
   export let receiverLookup: DbReceiverLookup;
-
   export let forwardedMessageLookup: ForwardedMessageLookup | undefined;
 
-  $: if (forwardedMessageLookup !== undefined) {
-    void insertForwardedMessage(forwardedMessageLookup);
-  }
-
   /**
-   * The Conversation ViewModel.
-   */
-  export let conversationViewModel: Remote<ConversationViewModel>;
-
-  /**
-   * The conversation model store.
-   */
-  let conversation: RemoteModelStore<Conversation> = conversationViewModel.conversation;
-  $: conversation = conversationViewModel.conversation;
-
-  let receiver: Remote<AnyReceiverStore> = conversationViewModel.receiver;
-  $: receiver = conversationViewModel.receiver;
-
-  $: isReceiverBlockedStore = derive(
-    conversationViewModel.viewModel,
-    (viewModel) => viewModel.receiver.type === 'contact' && viewModel.receiver.isBlocked,
-  );
-
-  let innerConversationViewModel: Remote<InnerConversationViewModelStore> =
-    conversationViewModel.viewModel;
-  $: innerConversationViewModel = conversationViewModel.viewModel;
-
-  let composeHandler: ComposeHandler;
-
-  /**
-   * Whether the Media Message Dialog is visible or not
+   * Whether the Media Message Dialog is visible.
    */
   export let mediaMessageDialogVisible: boolean;
+
+  let composeHandler: ComposeHandler;
+  let lastReceiverLookup = receiverLookup;
+  let conversationDraftStore = conversationDrafts.getOrCreateStore(receiverLookup);
+
+  $: conversationInnerViewModel = conversationViewModel.viewModel;
+
+  // Compose mode and data
+  //
+  // TODO(DESK-306): If a draft is available for the current receiver, initialize it here (set the
+  // text appropriately).
+  const composeData: Writable<ComposeData> = new WritableStore(
+    getDefaultComposeData($conversationDraftStore),
+  );
+
+  const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
 
   /**
    * Open the media compose message dialog if accessible files have been dropped
@@ -89,12 +73,75 @@
   }
 
   /**
-   * Component event dispatcher
+   * Set a message as the current quote.
    */
-  const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
+  function handleClickQuoteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+    updateComposeData({
+      mode: 'quote',
+      quotedMessageProps: event.detail,
+    });
+    composeHandler.focus();
+  }
 
   /**
-   * Insert forwarded message: If route defines a forwarded message, insert it into the compose area
+   * Delete a message and remove it from being quoted (in case it is).
+   */
+  function handleClickDeleteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+    const messageId = event.detail.id;
+
+    if ($composeData.mode === 'quote' && $composeData.quotedMessageProps.id === messageId) {
+      updateComposeData({
+        mode: 'text',
+      });
+    }
+
+    conversation
+      .get()
+      .controller.removeMessage.fromLocal(messageId)
+      .catch(() => {
+        log.error('Could not delete message');
+        toast.addSimpleFailure(
+          $i18n.t('messaging.error--delete-message', 'Could not delete message'),
+        );
+      });
+  }
+
+  /**
+   * Discard current quote.
+   */
+  function handleClickCloseQuote(_: MouseEvent): void {
+    updateComposeData({mode: 'text'});
+    composeHandler.focus();
+  }
+
+  /**
+   * Send a text message.
+   */
+  function handleSendTextMessage(event: CustomEvent<string>): void {
+    const text = event.detail;
+    const quotedMessageId =
+      $composeData.mode === 'quote' ? $composeData.quotedMessageProps.id : undefined;
+
+    // Do not send empty messages.
+    if (text.trim() === '') {
+      return;
+    }
+    dispatch('sendMessage', {
+      type: 'text',
+      text,
+      quotedMessageId,
+    });
+
+    // Clear draft and compose data.
+    conversationDraftStore.set(undefined);
+    composeData.set(getDefaultComposeData(undefined));
+
+    executeSendMessageSideEffects();
+  }
+
+  /**
+   * Insert forwarded message: If route defines a forwarded message, insert it into the compose
+   * area.
    */
   async function insertForwardedMessage(forwardedLookup: ForwardedMessageLookup): Promise<void> {
     const forwardedConversation = await backend.model.conversations.getForReceiver(
@@ -119,75 +166,29 @@
   }
 
   /**
-   * Send a text message.
-   */
-  function sendTextMessage(ev: CustomEvent<string>): void {
-    const text = ev.detail;
-    const quotedMessageId =
-      $composeData.mode === 'quote' ? $composeData.quotedMessageViewModelBundle.id : undefined;
-
-    // Do not send empty messages
-    if (text.trim() === '') {
-      return;
-    }
-    dispatch('sendMessage', {
-      type: 'text',
-      text,
-      quotedMessageId,
-    });
-
-    // Clear draft and compose data
-    conversationDraftStore.set(undefined);
-    composeData.set(getDefaultComposeData(undefined));
-
-    sendMessageActions(ev);
-  }
-
-  /**
    * Actions which should be executed when a message is being sent.
    */
-  function sendMessageActions(_: CustomEvent): void {
-    // Set Nav to Conversation Preview List
+  function executeSendMessageSideEffects(): void {
+    // Set Nav to Conversation Preview List.
     if ($router.nav.id !== 'conversationList') {
       router.replaceNav(ROUTE_DEFINITIONS.nav.conversationList.withoutParams());
     }
 
-    // Dispatch an event to scroll the conversation list all the way to the top
+    // Dispatch an event to scroll the conversation list all the way to the top.
     conversationListEvent.post({action: 'scroll-to-top'});
-
-    // Scroll to the bottom of the conversation
-    anchorActive = true;
   }
 
-  let conversationDraftStore = conversationDrafts.getOrCreateStore(receiverLookup);
-
-  // Compose mode and data
-  //
-  // TODO(DESK-306): If a draft is available for the current receiver, initialize it here (set the
-  // text appropriately).
-  const composeData: Writable<ComposeData> = new WritableStore(
-    getDefaultComposeData($conversationDraftStore),
-  );
-
-  function getDefaultComposeData(text: string | undefined): ComposeData {
-    return {
-      mode: 'text',
-      text,
-      attachment: undefined,
-      quotedMessageViewModelBundle: undefined,
-    };
-  }
-
-  type ComposeDataUpdate =
-    | {
-        readonly mode: 'quote';
-        readonly quotedMessageViewModelBundle: Remote<ConversationMessageViewModelBundle>;
-      }
-    | {
-        readonly mode: 'text';
-        readonly text?: string;
-      };
-  function updateComposeData(update: ComposeDataUpdate): void {
+  function updateComposeData(
+    update:
+      | {
+          readonly mode: 'quote';
+          readonly quotedMessageProps: MessagePropsFromBackend;
+        }
+      | {
+          readonly mode: 'text';
+          readonly text?: string;
+        },
+  ): void {
     composeData.update((currentData) => {
       let newData;
       switch (update.mode) {
@@ -202,7 +203,7 @@
           newData = {
             ...currentData,
             mode: 'text',
-            quotedMessageViewModelBundle: undefined,
+            quotedMessageProps: undefined,
             text: update.text ?? currentData.text,
           } as const;
           break;
@@ -213,50 +214,22 @@
     });
   }
 
-  // Determine whether scroll snapping anchor is active.
-  let anchorActive = true;
-
-  /**
-   * Detect and switch if the scroll snapping anchor should be active based on element visibility.
-   */
-  function scrollSnap(node: HTMLElement): SvelteAction {
-    // Make sure that the scroll anchor is initially visible if active
-    if (anchorActive) {
-      scrollToCenterOfView(node);
-    }
-
-    // Activate scroll anchor if it is visible in the viewport and vice versa
-    const observer = new IntersectionObserver(([entry]) => {
-      anchorActive = unwrap(entry).isIntersecting;
-    });
-    observer.observe(node);
-
-    return {
-      destroy: () => {
-        observer.disconnect();
-      },
-    };
-  }
-
   /**
    * Save the message draft for the specified receiver and clear the compose area.
    */
   function saveMessageDraftAndClear(draftReceiverLookup: DbReceiverLookup): void {
     conversationDraftStore = conversationDrafts.getOrCreateStore(draftReceiverLookup);
-    // Compose area does not exist on detail view in <large mode,
-    // or, when an inactive group is displayed
+    // Compose area does not exist on detail view in <large mode, or, when an inactive group is
+    // displayed.
     if (!isComposeHandler(composeHandler)) {
       return;
     }
 
-    // Save current message draft
+    // Save current message draft.
     const currentDraft = composeHandler.getText();
     conversationDraftStore.set(currentDraft?.trim() === '' ? undefined : currentDraft);
     composeHandler.clearText();
   }
-
-  // Detect route changes
-  let lastReceiverLookup = receiverLookup;
 
   function isComposeHandler(x: unknown): x is ComposeHandler {
     return x !== undefined && x !== null && x instanceof ComposeHandler;
@@ -301,52 +274,29 @@
     }
   });
 
-  /**
-   * Set a message as the current quote
-   */
-  function quoteMessage(event: CustomEvent<Remote<ConversationMessageViewModelBundle>>): void {
-    updateComposeData({
-      mode: 'quote',
-      quotedMessageViewModelBundle: event.detail,
-    });
-    composeHandler.focus();
+  let conversation: RemoteModelStore<Conversation>;
+  $: conversation = conversationViewModel.conversation;
+
+  let receiver: Remote<AnyReceiverStore>;
+  $: receiver = conversationViewModel.receiver;
+
+  let innerConversationViewModel: Remote<InnerConversationViewModelStore>;
+  $: innerConversationViewModel = conversationViewModel.viewModel;
+
+  $: isReceiverBlockedStore = derive(
+    conversationViewModel.viewModel,
+    (viewModel) => viewModel.receiver.type === 'contact' && viewModel.receiver.isBlocked,
+  );
+
+  $: if (forwardedMessageLookup !== undefined) {
+    void insertForwardedMessage(forwardedMessageLookup);
   }
 
-  /**
-   * Remove the current quote
-   */
-  function removeQuote(_: MouseEvent): void {
-    updateComposeData({mode: 'text'});
-    composeHandler.focus();
-  }
-
-  /**
-   * Delete a message and remove it from being quoted (in case it is)
-   */
-  function deleteMessage(event: CustomEvent<MessageId>): void {
-    const messageId = event.detail;
-
-    if (
-      $composeData.mode === 'quote' &&
-      $composeData.quotedMessageViewModelBundle.id === messageId
-    ) {
-      updateComposeData({
-        mode: 'text',
-      });
-    }
-
-    conversation
-      .get()
-      .controller.removeMessage.fromLocal(messageId)
-      .catch(() => {
-        log.error('Could not delete message');
-        toast.addSimpleFailure(
-          $i18n.t('messaging.error--delete-message', 'Could not delete message'),
-        );
-      });
-  }
-
-  let messagesContainer: HTMLElement | null = null;
+  $: quoteHtmlContent = getTextContent(
+    $composeData.quotedMessageProps?.text?.raw,
+    $composeData.quotedMessageProps?.text?.mentions,
+    $i18n.t,
+  );
 
   onDestroy(() => {
     saveMessageDraftAndClear(lastReceiverLookup);
@@ -391,8 +341,8 @@
         </div>
       </div>
     {:else}
-      <div bind:this={messagesContainer} class="messages">
-        {#await conversationViewModel.viewModelController.getConversationMessagesSetViewModel() then conversationMessageViewModel}
+      <!-- <div bind:this={messagesContainer} class="messages">
+        {#await conversationViewModel.viewModelController.getConversationMessagesSetStore() then conversationMessagesSet}
           <ConversationMessageList
             conversationMessagesSet={conversationMessageViewModel.store}
             {receiverLookup}
@@ -406,6 +356,23 @@
           />
         {/await}
         <div class="anchor" class:active={anchorActive} use:scrollSnap />
+      </div> -->
+      <div class="messages">
+        {#await conversationViewModel.viewModelController.getConversationMessagesSetViewModel() then messageSetViewModel}
+          <ChatView
+            conversation={{
+              type: receiver.type,
+              isBlocked: $isReceiverBlockedStore,
+              receiverLookup,
+              lastMessageId: $conversationInnerViewModel.lastMessageId,
+            }}
+            {messageSetViewModel}
+            {services}
+            on:clickquote={handleClickQuoteMessage}
+            on:clickforward
+            on:clickdelete={handleClickDeleteMessage}
+          />
+        {/await}
       </div>
       <div class="bottom-bar">
         {#if isDisabledReceiver($receiver)}
@@ -437,16 +404,29 @@
         {:else if $composeData.mode === 'text' || $composeData.mode === 'quote'}
           {#if $composeData.mode === 'quote'}
             <div class="quote">
-              {#key $composeData.quotedMessageViewModelBundle}
+              {#key $composeData.quotedMessageProps.id}
                 <div class="body">
-                  <MessageBody
-                    viewModelBundle={$composeData.quotedMessageViewModelBundle}
-                    {receiver}
-                    isQuoted={true}
+                  <Quote
+                    alt={$i18n.t('messaging.hint--media-thumbnail')}
+                    content={quoteHtmlContent === undefined
+                      ? undefined
+                      : {
+                          sanitizedHtml: quoteHtmlContent,
+                        }}
+                    file={$composeData.quotedMessageProps.file}
+                    onError={(error) =>
+                      log.error(
+                        `An error occurred in a child component: ${extractErrorMessage(
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                          error,
+                          'short',
+                        )}`,
+                      )}
+                    sender={$composeData.quotedMessageProps.sender}
                   />
                 </div>
               {/key}
-              <IconButton flavor="naked" on:click={removeQuote}>
+              <IconButton flavor="naked" on:click={handleClickCloseQuote}>
                 <MdIcon theme="Filled">close</MdIcon>
               </IconButton>
             </div>
@@ -460,10 +440,10 @@
             on:recordAudio={() => {
               // TODO(DESK-196)
             }}
-            on:sendTextMessage={sendTextMessage}
+            on:sendTextMessage={handleSendTextMessage}
             on:sendMessage={(event) => {
               dispatch('sendMessage', event.detail);
-              sendMessageActions(event);
+              executeSendMessageSideEffects();
             }}
           />
         {:else}
@@ -481,11 +461,11 @@
     display: grid;
     grid-template:
       'top-bar' rem(64px)
-      'messages' 1fr
+      'messages' minmax(0, 1fr)
       '.' rem(1px)
       'bottom-bar' minmax(rem(64px), auto)
       / 100%;
-    height: 100%;
+    height: 100vh;
     background-color: var(--t-panel-gap-color);
     overflow: inherit;
 
@@ -551,20 +531,23 @@
 
     .messages {
       grid-area: messages;
-      scroll-snap-type: y mandatory;
-      overflow-y: auto;
-      display: grid;
-      align-content: start;
-      gap: rem(8px);
+      // scroll-snap-type: y mandatory;
+      // overflow-y: auto;
+      // display: grid;
+      // align-content: start;
+      // gap: rem(8px);
 
-      .anchor {
-        height: 1px;
-        align-self: end;
+      // .anchor {
+      //   height: 1px;
+      //   align-self: end;
 
-        &.active {
-          scroll-snap-align: end;
-        }
-      }
+      //   &.active {
+      //     scroll-snap-align: end;
+      //   }
+      // }
+      // :global(> *) {
+      //   height: 100%;
+      // }
     }
 
     .bottom-bar {

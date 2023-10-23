@@ -1,8 +1,7 @@
 <script lang="ts">
   import {globals} from '~/app/globals';
-  import {formatDateLocalized} from '~/app/ui/generic/form';
   import {i18n as i18nStore} from '~/app/ui/i18n';
-  import type {I18nType} from '~/app/ui/i18n-types';
+  import {formatDateLocalized} from '~/app/ui/utils/timestamp';
 
   const systemTime = globals.unwrap().systemTime;
 
@@ -19,35 +18,13 @@
    */
   export let format: 'auto' | 'time' | 'extended' = 'auto';
 
-  function formatDate(it: Date, i18n: I18nType): string {
-    if (format === 'time') {
-      return new Intl.DateTimeFormat(i18n.locale, {
-        hour: 'numeric',
-        minute: '2-digit',
-      }).format(it);
-    }
-
-    if (format === 'extended') {
-      return new Intl.DateTimeFormat(i18n.locale, {
-        year: 'numeric',
-        month: 'long',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }).format(it);
-    }
-
-    return formatDateLocalized(date, $i18nStore);
-  }
-
   let formattedDate: string;
   $: {
     // Re-evaluate this block on system time changes.
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     $systemTime.current;
 
-    formattedDate = formatDate(date, $i18nStore);
+    formattedDate = formatDateLocalized(date, $i18nStore, format);
   }
 </script>
 

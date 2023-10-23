@@ -1,6 +1,11 @@
 import {expect} from 'chai';
 
-import {parseHighlights, parseLinks, parseMentions, parseText} from '~/app/ui/generic/form';
+import {
+    parseHighlights,
+    parseLinks,
+    parseMentions,
+    sanitizeAndParseTextToHtml,
+} from '~/app/ui/utils/text';
 import type {DbContact, DbContactUid} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
 import {ensureIdentityString} from '~/common/network/types';
@@ -402,13 +407,17 @@ export function run(): void {
 
                 if (skipped === true) {
                     it.skip(description, function () {
-                        const parsedText = parseText(mockedT, {text: input, ...extraArgs});
+                        const parsedText = sanitizeAndParseTextToHtml(input, mockedT, {
+                            ...extraArgs,
+                        });
 
                         expect(parsedText).to.equal(expected);
                     });
                 } else {
                     it(description, function () {
-                        const parsedText = parseText(mockedT, {text: input, ...extraArgs});
+                        const parsedText = sanitizeAndParseTextToHtml(input, mockedT, {
+                            ...extraArgs,
+                        });
 
                         expect(parsedText).to.equal(expected);
                     });

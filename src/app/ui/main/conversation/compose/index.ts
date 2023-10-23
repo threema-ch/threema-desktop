@@ -1,9 +1,8 @@
+import type {MessagePropsFromBackend} from '~/app/ui/components/partials/chat-view/helpers';
 import type {i18n as i18nStore} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
 import type {Logger} from '~/common/logging';
 import {unreachable} from '~/common/utils/assert';
-import type {Remote} from '~/common/utils/endpoint';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
 
 /**
  * Compose area data.
@@ -19,7 +18,7 @@ interface TextComposeData extends BaseComposeData {
     readonly mode: 'text';
 
     /** @inheritdoc */
-    readonly quotedMessageViewModelBundle: undefined;
+    readonly quotedMessageProps: undefined;
 }
 
 interface QuoteComposeData extends BaseComposeData {
@@ -30,7 +29,7 @@ interface QuoteComposeData extends BaseComposeData {
     readonly attachment: undefined;
 
     /** @inheritdoc */
-    readonly quotedMessageViewModelBundle: Remote<ConversationMessageViewModelBundle>;
+    readonly quotedMessageProps: MessagePropsFromBackend;
 }
 
 interface BaseComposeData {
@@ -52,7 +51,19 @@ interface BaseComposeData {
     /**
      * Quoted Message ID
      */
-    readonly quotedMessageViewModelBundle: Remote<ConversationMessageViewModelBundle> | undefined;
+    readonly quotedMessageProps: MessagePropsFromBackend | undefined;
+}
+
+/**
+ * Returns the default {@link ComposeData} config.
+ */
+export function getDefaultComposeData(text: string | undefined): ComposeData {
+    return {
+        mode: 'text',
+        text,
+        attachment: undefined,
+        quotedMessageProps: undefined,
+    };
 }
 
 /**

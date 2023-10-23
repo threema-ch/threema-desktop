@@ -2,8 +2,8 @@
   import {createEventDispatcher} from 'svelte/internal';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import Prose from '~/app/ui/components/atoms/prose/Prose.svelte';
   import DateTime from '~/app/ui/generic/form/DateTime.svelte';
-  import Text from '~/app/ui/generic/form/Text.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {
     extractMessageStatus,
@@ -14,6 +14,7 @@
   import AudioPlayer from '~/app/ui/main/conversation/conversation-messages/content-fragment/AudioPlayer.svelte';
   import FileInfo from '~/app/ui/main/conversation/conversation-messages/content-fragment/FileInfo.svelte';
   import Thumbnail from '~/app/ui/main/conversation/conversation-messages/content-fragment/Thumbnail.svelte';
+  import {sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
   import type {AnyReceiverStore} from '~/common/model';
   import {unreachable} from '~/common/utils/assert';
   import {durationToString} from '~/common/utils/date';
@@ -169,7 +170,19 @@
       <!-- Text content -->
       {#if textContent !== undefined}
         <div class="text">
-          <Text text={textContent} mentions={$viewModelStore.mentions} />
+          <Prose
+            content={{
+              sanitizedHtml: sanitizeAndParseTextToHtml(textContent, $i18n.t, {
+                highlights: [],
+                mentions: $viewModelStore.mentions,
+                shouldLinkMentions: true,
+                shouldParseLinks: true,
+                shouldParseMarkup: true,
+              }),
+            }}
+            selectable={true}
+            wrap={true}
+          />
         </div>
       {/if}
     </div>

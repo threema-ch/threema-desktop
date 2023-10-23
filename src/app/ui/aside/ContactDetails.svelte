@@ -7,7 +7,6 @@
   import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
-  import {formatDateLocalized} from '~/app/ui/generic/form';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -21,6 +20,7 @@
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
   import Subheader from '~/app/ui/nav/receiver/detail/Subheader.svelte';
   import {toast} from '~/app/ui/snackbar';
+  import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {
     ContactNotificationTriggerPolicy,
@@ -228,6 +228,7 @@
                 date: formatDateLocalized(
                   $contactViewModel.notificationTriggerPolicyOverride.expiresAt,
                   $i18n,
+                  'auto',
                 ),
               })}
             {/if}

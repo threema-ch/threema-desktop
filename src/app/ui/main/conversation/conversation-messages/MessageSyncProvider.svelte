@@ -55,16 +55,16 @@
       case 'download':
         switch (messageType) {
           case 'file':
-            return t('messaging.action--sync-file-download', 'Click to download file');
+            return t('messaging.action--sync-file-download', 'Download file');
 
           case 'image':
-            return t('messaging.action--sync-image-download', 'Click to download image');
+            return t('messaging.action--sync-image-download', 'Download image');
 
           case 'video':
-            return t('messaging.action--sync-video-download', 'Click to download video');
+            return t('messaging.action--sync-video-download', 'Download video');
 
           case 'audio':
-            return t('messaging.action--sync-audio-download', 'Click to download voice message');
+            return t('messaging.action--sync-audio-download', 'Download voice message');
 
           default:
             return unreachable(messageType);
@@ -73,16 +73,16 @@
       case 'upload':
         switch (messageType) {
           case 'file':
-            return t('messaging.action--sync-file-upload', 'Click to upload file');
+            return t('messaging.action--sync-file-upload', 'Upload file');
 
           case 'image':
-            return t('messaging.action--sync-image-upload', 'Click to upload image');
+            return t('messaging.action--sync-image-upload', 'Upload image');
 
           case 'video':
-            return t('messaging.action--sync-video-upload', 'Click to upload video');
+            return t('messaging.action--sync-video-upload', 'Upload video');
 
           case 'audio':
-            return t('messaging.action--sync-audio-upload', 'Click to upload voice message');
+            return t('messaging.action--sync-audio-upload', 'Upload voice message');
 
           default:
             return unreachable(messageType);

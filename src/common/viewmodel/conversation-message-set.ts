@@ -62,7 +62,7 @@ function getConversationMessageSetStore(
 }
 
 /**
- * Get a ViewModel that contains a Set of Conversationmessages for a receiver.
+ * Get a ViewModel that contains a Set of conversation messages for a receiver.
  */
 export function getConversationMessageSetViewModel(
     services: ServicesForViewModel,
@@ -83,6 +83,8 @@ export function getConversationMessageSetViewModel(
             // updated as well.
 
             // TODO: How to update if a reflected message updates other messages than the last?
+            // Create a store for "conversation updates", which holds the date of the last update.
+            // Look at `lastMessage` update in conversation to find the location to add this.
 
             const activeMessageSet = new Set<AnyMessageModelStore>();
 
@@ -100,10 +102,10 @@ export function getConversationMessageSetViewModel(
             for (const viewPortMessageId of mutableViewPortMessageIds) {
                 const surroundingMessages =
                     // TODO: The db call does not work on messages that have no sent date yet -
-                    // which might be the case (fah has such a message)
+                    // which might be the case (fah has such a message). -> fah has added a solution.
                     conversationModel.controller.getMessageWithSurroundingMessages(
                         viewPortMessageId,
-                        100, // TODO: Is this a good value? Should it be dynamic?
+                        150, // TODO: Is this a good value? Should it be dynamic?
                     );
 
                 if (surroundingMessages === undefined) {

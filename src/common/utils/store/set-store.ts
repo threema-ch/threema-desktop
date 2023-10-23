@@ -330,6 +330,7 @@ export class RemoteSetStore<TValue extends object>
                         .remote.getOrCreate<TValue>(id, () =>
                             service.deserialize<TValue>(serialized, true),
                         );
+                    options.debug?.log?.debug(`Added value to set (id=${id})`);
                     assert(
                         !self_._value.has(value),
                         'Expected value to not already exist when adding as part of a delta update',
@@ -339,14 +340,18 @@ export class RemoteSetStore<TValue extends object>
                     break;
                 case DeltaUpdateType.DELETED:
                     value = service.cache().remote.get<TValue>(id);
-                    assert(
-                        value !== undefined,
-                        'Expected value of a delta delete to be available in the cache',
-                    );
-                    assert(
-                        self_._value.delete(value),
-                        'Expected value to have been removed when removing as part of a delta delta',
-                    );
+                    options.debug?.log?.debug(`Deleted value from set (id=${id})`);
+                    // assert(
+                    //     value !== undefined,
+                    //     'Expected value of a delta delete to be available in the cache',
+                    // );
+                    // assert(
+                    //     self_._value.delete(value),
+                    //     'Expected value to have been removed when removing as part of a delta delete',
+                    // );
+                    if (value !== undefined) {
+                        self_._value.delete(value);
+                    }
                     deltaUpdate = [type, value];
                     break;
                 case DeltaUpdateType.CLEARED:
@@ -440,16 +445,19 @@ export class RemoteSetStore<TValue extends object>
             switch (type) {
                 case DeltaUpdateType.ADDED: {
                     const id = service.cache().local.getOrAssignId(value);
+                    store.options?.debug?.log?.debug(`Add value to set (id=${id})`);
                     [serialized, transfers] = service.serialize(value);
                     delta = [id, type, serialized];
                     break;
                 }
                 case DeltaUpdateType.DELETED: {
                     const id = service.cache().local.getOrAssignId(value);
+                    store.options?.debug?.log?.debug(`Delete value from set (id=${id})`);
                     delta = [id, type, undefined];
                     break;
                 }
                 case DeltaUpdateType.CLEARED: {
+                    store.options?.debug?.log?.debug(`Clear set`);
                     delta = [undefined, type, undefined];
                     break;
                 }
@@ -507,6 +515,7 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         const [values, transfers] = RemoteSetStore.expose(service, store, {
             endpoint: endpoint.local,
         });
+
         return [
             [id, store.tag, store.options?.debug?.log?.prefix, endpoint.remote, values],
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

@@ -87,6 +87,26 @@
    */
   export let closeOnClickOutside = true;
 
+  /**
+   * Callback that is guaranteed to run before the `popover` opens.
+   */
+  export let beforeOpen: ((event?: MouseEvent) => void) | undefined = undefined;
+
+  /**
+   * Callback that is guaranteed to run after the `popover` opens.
+   */
+  export let afterOpen: (() => void) | undefined = undefined;
+
+  /**
+   * Callback that is guaranteed to run before the `popover` closes.
+   */
+  export let beforeClose: ((event?: MouseEvent) => void) | undefined = undefined;
+
+  /**
+   * Callback that is guaranteed to run after the `popover` closes.
+   */
+  export let afterClose: (() => void) | undefined = undefined;
+
   // Component event dispatcher
   const dispatch = createEventDispatcher<{
     willopen: undefined;
@@ -102,15 +122,16 @@
   let popover: HTMLElement | null = null;
 
   let position: Offset | undefined = undefined;
-  let isVisible = false;
+  let isOpen = false;
 
   /**
    * Close the `popover`.
    */
-  export function close(): void {
+  export function close(event?: MouseEvent): void {
     dispatch('willclose');
+    beforeClose?.(event);
 
-    isVisible = false;
+    isOpen = false;
 
     // Remove any existing close function.
     popoverStore.set(undefined);
@@ -121,6 +142,7 @@
    */
   export function open(event?: MouseEvent): void {
     dispatch('willopen');
+    beforeOpen?.(event);
 
     if ($popoverStore !== undefined) {
       // Call the defined close function.
@@ -131,17 +153,17 @@
     // Define a new close function.
     popoverStore.set(close);
 
-    isVisible = true;
+    isOpen = true;
   }
 
   /**
    * Open or close the `popover`, depending on its previous state.
    */
-  export function toggle(): void {
-    if (isVisible) {
-      close();
+  export function toggle(event?: MouseEvent): void {
+    if (isOpen) {
+      close(event);
     } else {
-      open();
+      open(event);
     }
   }
 
@@ -149,7 +171,7 @@
    * Force recalculation of the popup's positioning, and update.
    */
   export function forceReposition(): void {
-    if (isVisible) {
+    if (isOpen) {
       updatePosition();
     }
   }
@@ -186,13 +208,11 @@
         break;
 
       case 'open':
-        if (!isVisible) {
-          open();
-        }
+        open(event);
         break;
 
       case 'toggle':
-        toggle();
+        toggle(event);
         break;
 
       default:
@@ -205,7 +225,7 @@
       return;
     }
 
-    if (!isVisible) {
+    if (!isOpen) {
       return;
     }
 
@@ -245,21 +265,23 @@
       </div>
     {/if}
 
-    {#if isVisible}
+    {#if isOpen}
       <div
         class="popover"
         bind:this={popover}
         transition:fade={{duration: 100}}
-        use:clickoutside={{enabled: isVisible}}
+        use:clickoutside={{enabled: isOpen}}
         on:clickoutside={({detail: {event}}) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           handleOutsideClick(event);
         }}
         on:introend={() => {
           dispatch('hasopened');
+          afterOpen?.();
         }}
         on:outroend={() => {
           dispatch('hasclosed');
+          afterClose?.();
         }}
         style={position !== undefined
           ? `transform: translate(${position.left}px, ${position.top}px);`
