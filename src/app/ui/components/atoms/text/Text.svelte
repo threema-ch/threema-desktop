@@ -3,23 +3,23 @@
   Renders short, unformatted pieces of text.
 -->
 <script lang="ts">
-  import type {LabelProps} from '~/app/ui/components/atoms/label/props';
+  import type {TextProps} from '~/app/ui/components/atoms/text/props';
 
-  type $$Props = LabelProps;
+  type $$Props = TextProps;
 
   export let text: $$Props['text'];
   export let wrap: NonNullable<$$Props['wrap']> = true;
   export let selectable: NonNullable<$$Props['selectable']> = false;
 </script>
 
-<span class="label" class:wrap class:selectable>
+<span class="text" class:wrap class:selectable>
   {text}
 </span>
 
 <style lang="scss">
   @use 'component' as *;
 
-  .label {
+  .text {
     overflow-wrap: normal;
     white-space: nowrap;
 

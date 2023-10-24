@@ -19,19 +19,21 @@ export interface MessageProps {
     readonly file?: {
         readonly duration?: f64;
         /** Function to use for obtaining the file bytes. */
-        readonly fetchFilePayload: () => Promise<ReadonlyUint8Array | undefined>;
+        readonly fetchFileBytes: () => Promise<ReadonlyUint8Array | undefined>;
+        readonly imageRenderingType?: 'regular' | 'sticker';
         readonly mediaType: FileInfoProps['mediaType'];
         readonly name: FileInfoProps['name'];
         readonly sizeInBytes: FileInfoProps['sizeInBytes'];
         /** Optional thumbnail of the file, if it is previewable. */
         readonly thumbnail?: {
-            /** Function to use for obtaining the thumbnail image bytes. */
-            readonly fetchThumbnailPayload: () => Promise<ReadonlyUint8Array | undefined>;
             /**
              * Expected dimensions of the thumbnail image in its full size, used to render a
              * placeholder.
              */
             readonly expectedDimensions: Dimensions | undefined;
+            /** Function to use for obtaining the thumbnail image bytes. */
+            readonly fetchThumbnailBytes: () => Promise<ReadonlyUint8Array | undefined>;
+            readonly mediaType: string;
         };
         /** Type of the file, used to control how its preview will be rendered. */
         readonly type: 'audio' | 'file' | 'image' | 'video';
@@ -50,7 +52,12 @@ export interface MessageProps {
         Pick<SenderProps, 'color' | 'name'>;
     readonly status: IndicatorProps['status'];
     /** Formatted timestamp of creation. */
-    readonly timestamp: string;
+    readonly timestamp: {
+        /** Human-readable, textual representation of a relative date. */
+        readonly fluent: string;
+        /** Short representation of a timestamp, usually only the time itself. */
+        readonly short: string;
+    };
 }
 
 interface DefaultQuoteProps extends QuoteProps {

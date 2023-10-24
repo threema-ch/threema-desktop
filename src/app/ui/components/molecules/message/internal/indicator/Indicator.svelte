@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import Label from '~/app/ui/components/atoms/label/Label.svelte';
+  import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import {getIndicatorElements} from '~/app/ui/components/molecules/message/internal/indicator/helpers';
   import type {IndicatorProps} from '~/app/ui/components/molecules/message/internal/indicator/props';
 
@@ -16,9 +16,6 @@
   export let status: $$Props['status'];
 
   $: elements = getIndicatorElements(direction, hideStatus, reactions, status);
-
-  // TODO: Check this again, if the correct statii are displayed. Note: Currently, the message
-  // status is displayed in group chats, which shouldn't be the case.
 </script>
 
 <template>
@@ -29,7 +26,7 @@
           <MdIcon theme={element.filled === true ? 'Filled' : 'Outlined'}>{element.icon}</MdIcon>
 
           {#if element.count !== undefined && element.count > 1}
-            <Label text={element.count.toString()} />
+            <Text text={element.count.toString()} />
           {/if}
         </span>
       {/each}

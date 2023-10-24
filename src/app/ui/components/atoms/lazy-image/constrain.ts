@@ -85,6 +85,10 @@ export function constrain({
 }
 
 function getAspectRatio(dimensions: Dimensions): u53 {
+    if (dimensions.width === 0 || dimensions.height === 0) {
+        return 1;
+    }
+
     return dimensions.width / dimensions.height;
 }
 

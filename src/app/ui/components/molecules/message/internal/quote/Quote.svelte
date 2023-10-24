@@ -36,11 +36,16 @@
   {#if file !== undefined}
     {#if file.type === 'audio'}
       <span class="audio">
-        <AudioPlayer duration={file.duration} fetchAudio={file.fetchFilePayload} {onError} />
+        <AudioPlayer duration={file.duration} fetchAudio={file.fetchFileBytes} {onError} />
       </span>
     {:else if file.type === 'file'}
       <span class="file">
-        <FileInfo mediaType={file.mediaType} name={file.name} sizeInBytes={file.sizeInBytes} />
+        <FileInfo
+          disabled={true}
+          mediaType={file.mediaType}
+          name={file.name}
+          sizeInBytes={file.sizeInBytes}
+        />
       </span>
     {:else if file.type === 'image' || file.type === 'video'}
       {#if file.thumbnail !== undefined}
@@ -52,7 +57,7 @@
           {/if}
 
           <LazyImage
-            bytes={file.thumbnail.fetchThumbnailPayload()}
+            bytes={file.thumbnail.fetchThumbnailBytes()}
             constraints={{
               min: {
                 width: 40,

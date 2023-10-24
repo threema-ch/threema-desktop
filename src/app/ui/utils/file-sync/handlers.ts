@@ -35,7 +35,7 @@ export async function handleCopyImage(
     }
     log.debug('Attempting to copy image to clipboard');
 
-    await syncAndCopyImagePayloadToClipboard(file.mediaType, file.fetchFilePayload, t).then(
+    await syncAndCopyImagePayloadToClipboard(file.mediaType, file.fetchFileBytes, t).then(
         (result) => {
             switch (result.status) {
                 case 'ok':
@@ -87,7 +87,7 @@ export async function handleSaveAsFile(
     await syncAndSavePayloadAsFile(
         file.name.raw ?? file.name.default,
         file.mediaType,
-        file.fetchFilePayload,
+        file.fetchFileBytes,
         t,
     ).then((result) => {
         switch (result.status) {

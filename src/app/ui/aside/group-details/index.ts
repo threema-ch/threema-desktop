@@ -2,7 +2,7 @@ import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromGroup,
 } from '~/app/ui/generic/receiver';
-import type {DbReceiverLookup} from '~/common/db';
+import type {DbGroupReceiverLookup} from '~/common/db';
 import {GroupUserState, ReceiverType} from '~/common/enum';
 import type {Contact, Group, ProfilePicture, RemoteModelFor} from '~/common/model';
 import type {RemoteModelStore} from '~/common/model/utils/model-store';
@@ -45,7 +45,7 @@ export function sortGroupMembers(
  * Transformed data necessary to display a contact in several places in the UI.
  */
 export type TransformedGroup = GroupData & {
-    readonly lookup: DbReceiverLookup;
+    readonly lookup: DbGroupReceiverLookup;
     readonly creator: string;
     readonly name: string;
     readonly displayName: string;

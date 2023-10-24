@@ -172,6 +172,12 @@
         ...rememberedUnreadState,
         hasOutgoingMessageChangesSinceOpened,
       };
+
+      /*
+       * Because the user seems to be monitoring the conversation actively, mark the conversation as
+       * read immediately when a new message arrives and the app is `focused`.
+       */
+      markConversationAsRead();
     } else {
       /*
        * If app is in background, refresh the conversation state (i.e., get fresh unread info from
@@ -260,6 +266,7 @@
         {...item}
         boundary={element}
         {conversation}
+        {services}
         on:clickquoteoption={() => dispatch('clickquote', item)}
         on:clickforwardoption={() => handleClickForwardOption(item)}
         on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}

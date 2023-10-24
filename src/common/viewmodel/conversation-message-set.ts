@@ -79,24 +79,32 @@ export function getConversationMessageSetViewModel(
     const activeMessageStores = derive(
         controller.currentViewportMessages,
         (viewPortMessageIds, getAndSubscribe) => {
+            // Note: When messages are deleted from the chat view, they are not removed from
+            // `viewPortMessageIds` because the intersection observer does not trigger. This should
+            // not have any adverse effects (except for a slight inefficiency in the IPC and
+            // database layers).
+
             // Subscribe to the "last conversation update" store. This ensures that the active
             // messages are re-derived whenever a message is added to or removed from the
             // conversation.
             getAndSubscribe(conversationModel.controller.lastConversationUpdateStore());
 
             // Get active messages plus surrounding messages
-            const activeMessageSet =
-                conversationModel.controller.getMessagesWithSurroundingMessages(
-                    viewPortMessageIds,
-                    75,
-                );
+            let activeMessageSet = conversationModel.controller.getMessagesWithSurroundingMessages(
+                viewPortMessageIds,
+                75,
+            );
 
             // If no message is visible currently (might happen during initialization), use last
             // message in chat instead (if any).
             if (activeMessageSet.size === 0) {
                 const lastMessage = conversationModel.controller.lastMessageStore().get();
                 if (lastMessage !== undefined) {
-                    activeMessageSet.add(lastMessage);
+                    activeMessageSet =
+                        conversationModel.controller.getMessagesWithSurroundingMessages(
+                            new Set([lastMessage.get().view.id]),
+                            75,
+                        );
                 }
             }
 

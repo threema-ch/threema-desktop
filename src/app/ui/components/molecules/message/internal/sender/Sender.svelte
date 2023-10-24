@@ -3,7 +3,7 @@
   Renders the name of the sender of a message.
 -->
 <script lang="ts">
-  import Label from '~/app/ui/components/atoms/label/Label.svelte';
+  import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import type {SenderProps} from '~/app/ui/components/molecules/message/internal/sender/props';
 
   type $$Props = SenderProps;
@@ -13,7 +13,7 @@
 </script>
 
 <span class="sender" style="--c-t-text-color: var(--c-profile-picture-initials-{color});">
-  <Label text={name} wrap={false} selectable={true} />
+  <Text text={name} wrap={false} selectable={true} />
 </span>
 
 <style lang="scss">

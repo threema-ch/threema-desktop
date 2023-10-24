@@ -94,7 +94,7 @@
   function updateMediaState(mediaFile: typeof file, t: I18nType['t']): void {
     // `syncAndGetPayload` doesn't need to be caught, as it will never reject and simply return a
     // `SyncFailure` result instead.
-    void syncAndGetPayload(mediaFile.fetchFilePayload, t).then((result) => {
+    void syncAndGetPayload(mediaFile.fetchFileBytes, t).then((result) => {
       revokeLoadedMediaUrl();
 
       switch (result.status) {
@@ -147,6 +147,10 @@
   wrapper={{
     type: 'none',
     actions: [
+      {
+        iconName: 'download',
+        onClick: handleClickSave,
+      },
       {
         iconName: 'close',
         onClick: 'close',

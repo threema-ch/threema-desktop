@@ -3,7 +3,7 @@ import type {
     VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
 import type {PublicKey} from '~/common/crypto';
-import type {DbReceiverLookup} from '~/common/db';
+import type {DbContactReceiverLookup} from '~/common/db';
 import {
     ContactNotificationTriggerPolicy,
     GroupNotificationTriggerPolicy,
@@ -52,6 +52,7 @@ export function transformContact(
     // Done
     return {
         type: 'contact',
+        uid: contact.ctx,
         name: contact.view.displayName,
         profilePicture: {
             img: profilePicture.view.picture,
@@ -166,7 +167,7 @@ export function transformNotificationPolicyFromContact(
  * Transformed data necessary to display a contact in several places in the UI.
  */
 export interface TransformedContact extends ContactData {
-    readonly lookup: DbReceiverLookup;
+    readonly lookup: DbContactReceiverLookup;
     readonly isNew: boolean;
     readonly identity: string;
     readonly publicKey: PublicKey;

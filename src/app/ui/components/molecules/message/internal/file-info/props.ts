@@ -4,6 +4,10 @@ import type {u53} from '~/common/types';
  * Props accepted by the `FileInfo` component.
  */
 export interface FileInfoProps {
+    /**
+     * Whether clicking on the file should be disabled. Defaults to `false`.
+     */
+    readonly disabled?: boolean;
     readonly mediaType: string;
     readonly name: {
         /**

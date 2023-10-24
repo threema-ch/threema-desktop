@@ -473,7 +473,7 @@
       '.' rem(1px)
       'bottom-bar' minmax(rem(64px), auto)
       / 100%;
-    height: 100vh;
+    height: 100%;
     background-color: var(--t-panel-gap-color);
     overflow: inherit;
 

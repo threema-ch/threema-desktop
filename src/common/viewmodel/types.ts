@@ -2,6 +2,7 @@ import type {
     VerificationLevel,
     VerificationLevelColors,
 } from '#3sc/components/threema/VerificationDots';
+import type {DbContactUid} from '~/common/db';
 import type {MessageDirection, MessageReaction} from '~/common/enum';
 import type {ProfilePictureView} from '~/common/model';
 import type {Dimensions, u53} from '~/common/types';
@@ -29,6 +30,7 @@ export type MessageType =
  * Contact data.
  */
 export interface ContactData {
+    readonly uid: DbContactUid;
     /**
      * Optional badge of the receiver.
      */

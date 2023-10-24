@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
-  import Label from '~/app/ui/components/atoms/label/Label.svelte';
+  import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import type {MessageDetailsModalProps} from '~/app/ui/components/partials/chat-view/internal/message-details-modal/props';
@@ -25,8 +25,6 @@
     (acc, curr) => (curr.at > (acc?.at ?? 0) ? curr : acc),
     undefined,
   );
-
-  // TODO: Add correlation-id, media-types (file and thumbnail), image rendering type, and animated.
 </script>
 
 <Modal
@@ -46,37 +44,37 @@
     <KeyValueList>
       <KeyValueList.Section>
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--created-date', 'Created')}>
-          <Label text={formatDateLocalized(status.created.at, $i18n, 'extended')} />
+          <Text text={formatDateLocalized(status.created.at, $i18n, 'extended')} />
         </KeyValueList.Item>
         {#if status.received !== undefined}
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--received-date', 'Received')}
           >
-            <Label text={formatDateLocalized(status.received.at, $i18n, 'extended')} />
+            <Text text={formatDateLocalized(status.received.at, $i18n, 'extended')} />
           </KeyValueList.Item>
         {/if}
         {#if status.sent !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}>
-            <Label text={formatDateLocalized(status.sent.at, $i18n, 'extended')} />
+            <Text text={formatDateLocalized(status.sent.at, $i18n, 'extended')} />
           </KeyValueList.Item>
         {/if}
         {#if status.delivered !== undefined}
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--delivered-date', 'Delivered')}
           >
-            <Label text={formatDateLocalized(status.delivered.at, $i18n, 'extended')} />
+            <Text text={formatDateLocalized(status.delivered.at, $i18n, 'extended')} />
           </KeyValueList.Item>
         {/if}
         {#if status.read !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--read-date', 'Read')}>
-            <Label text={formatDateLocalized(status.read.at, $i18n, 'extended')} />
+            <Text text={formatDateLocalized(status.read.at, $i18n, 'extended')} />
           </KeyValueList.Item>
         {/if}
       </KeyValueList.Section>
 
       <KeyValueList.Section>
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--message-id', 'Message ID')}>
-          <Label text={u64ToHexLe(id)} />
+          <Text text={u64ToHexLe(id)} />
         </KeyValueList.Item>
       </KeyValueList.Section>
 
@@ -94,7 +92,7 @@
                 >
               </div>
               <div class="date">
-                <Label text={formatDateLocalized(lastReaction.at, $i18n, 'extended')} />
+                <Text text={formatDateLocalized(lastReaction.at, $i18n, 'extended')} />
               </div>
             </div>
           {/if}
@@ -104,25 +102,29 @@
       {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
         <KeyValueList.Section title="Debug 🐞">
           <KeyValueList.Item key="Direction">
-            <Label text={direction} />
+            <Text text={direction} />
           </KeyValueList.Item>
 
           {#if file !== undefined}
             <KeyValueList.Item key="File Type">
-              <Label text={file.type} />
+              <Text text={file.type} />
             </KeyValueList.Item>
 
             <KeyValueList.Item key="File Sync State">
-              <Label text={file.sync.state} />
+              <Text text={file.sync.state} />
             </KeyValueList.Item>
 
             <KeyValueList.Item key="File Size (reported)">
-              <Label text={`${(file.sizeInBytes / 1024).toFixed(0)} KiB`} />
+              <Text text={`${(file.sizeInBytes / 1024).toFixed(0)} KiB`} />
+            </KeyValueList.Item>
+
+            <KeyValueList.Item key="Media Types">
+              <Text text={`File: ${file.mediaType}, Thumbnail: ${file.thumbnail?.mediaType}`} />
             </KeyValueList.Item>
 
             {#if file.thumbnail?.expectedDimensions !== undefined}
               <KeyValueList.Item key="Dimensions (reported)">
-                <Label
+                <Text
                   text={`${file.thumbnail.expectedDimensions.width}x${file.thumbnail.expectedDimensions.height}`}
                 />
               </KeyValueList.Item>
@@ -130,7 +132,13 @@
 
             {#if file.duration !== undefined}
               <KeyValueList.Item key="Duration (reported)">
-                <Label text={`${file.duration.toFixed(2)} s`} />
+                <Text text={`${file.duration.toFixed(2)} s`} />
+              </KeyValueList.Item>
+            {/if}
+
+            {#if file.imageRenderingType !== undefined}
+              <KeyValueList.Item key="Image Rendering Type">
+                <Text text={file.imageRenderingType} />
               </KeyValueList.Item>
             {/if}
           {/if}

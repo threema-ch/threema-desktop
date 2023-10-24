@@ -6,6 +6,8 @@
   import IconButtonProgressBarOverlay from '#3sc/components/blocks/Button/IconButtonProgressBarOverlay.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';
   import OverlayProvider from '~/app/ui/components/hocs/overlay-provider/OverlayProvider.svelte';
   import BasicMessage from '~/app/ui/components/molecules/message/Message.svelte';
   import type {MessageProps as BasicMessageProps} from '~/app/ui/components/molecules/message/props';
@@ -40,10 +42,53 @@
   export let quote: $$Props['quote'] = undefined;
   export let reactions: $$Props['reactions'];
   export let sender: $$Props['sender'] = undefined;
+  export let services: $$Props['services'];
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;
 
   let quoteProps: BasicMessageProps['quote'];
+
+  function handleClickAvatar(): void {
+    if (sender === undefined) {
+      log.error('Clicked avatar when sender was undefined');
+      return;
+    }
+    if (sender.uid === undefined) {
+      log.error('Sender UID is undefined of clicked avatar');
+      return;
+    }
+
+    const {router} = services;
+    const route = router.get();
+
+    if (route.aside !== undefined) {
+      router.go(
+        route.nav,
+        ROUTE_DEFINITIONS.main.conversation.withTypedParams({
+          receiverLookup: {
+            type: ReceiverType.CONTACT,
+            uid: sender.uid,
+          },
+        }),
+        ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({
+          contactUid: sender.uid,
+        }),
+        undefined,
+      );
+    } else {
+      router.go(
+        route.nav,
+        ROUTE_DEFINITIONS.main.conversation.withTypedParams({
+          receiverLookup: {
+            type: ReceiverType.CONTACT,
+            uid: sender.uid,
+          },
+        }),
+        undefined,
+        undefined,
+      );
+    }
+  }
 
   function handleClickCopyOption(): void {
     if (text !== undefined) {
@@ -115,7 +160,7 @@
         // Start down- or upload.
         // TODO(DESK-961): Handle upload resumption for local unsynced files.
         // eslint-disable-next-line no-case-declarations
-        const result = await syncAndGetPayload(file.fetchFilePayload, $i18n.t);
+        const result = await syncAndGetPayload(file.fetchFileBytes, $i18n.t);
         switch (result.status) {
           case 'ok':
             break;
@@ -145,6 +190,10 @@
       default:
         unreachable(file.sync.state);
     }
+  }
+
+  function handleClickFileInfo(): void {
+    void handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure);
   }
 
   function updateQuoteProps(rawQuote: $$Props['quote']): void {
@@ -188,143 +237,173 @@
     conversation.type === ReceiverType.CONTACT;
 
   $: timestamp = reactive(
-    () => formatDateLocalized(status.created.at, $i18n, 'auto'),
+    () => ({
+      fluent: formatDateLocalized(status.created.at, $i18n, 'auto'),
+      short: formatDateLocalized(status.created.at, $i18n, 'time'),
+    }),
     [$systemTime.current],
   );
 
   $: updateQuoteProps(quote);
 </script>
 
-<MessageContextMenuProvider
-  {boundary}
-  placement={direction === 'inbound' ? 'right' : 'left'}
-  enabledOptions={{
-    copyLink: true,
-    copySelection: true,
-    copyImage: file !== undefined && file.type === 'image',
-    copy: text !== undefined,
-    saveAsFile: file !== undefined,
-    acknowledge:
-      supportsReactions && reactions !== undefined
-        ? {
-            used: reactions.some(
-              (reaction) => reaction.direction === 'outbound' && reaction.type === 'acknowledged',
-            ),
-          }
-        : false,
-    decline:
-      supportsReactions && reactions !== undefined
-        ? {
-            used: reactions.some(
-              (reaction) => reaction.direction === 'outbound' && reaction.type === 'declined',
-            ),
-          }
-        : false,
-    quote: !conversation.isBlocked,
-    forward: text !== undefined,
-    openDetails: true,
-    deleteMessage: true,
-  }}
-  on:clickcopyimageoption={handleClickCopyImageOption}
-  on:clickcopymessageoption={handleClickCopyOption}
-  on:clicksaveasfileoption={handleClickSaveAsFileOption}
-  on:clickacknowledgeoption={handleClickAcknowledgeOption}
-  on:clickdeclineoption={handleClickDeclineOption}
-  on:clickquoteoption
-  on:clickforwardoption
-  on:clickopendetailsoption
-  on:clickdeleteoption
->
-  <div class="message" slot="message">
-    <OverlayProvider show={isUnsyncedOrSyncingFile(file)}>
-      <svelte:fragment slot="above">
-        {#if isUnsyncedOrSyncingFile(file)}
-          {@const {sync} = file}
+<div class="container">
+  {#if conversation.type === ReceiverType.GROUP && sender !== undefined && direction === 'inbound'}
+    <span class="avatar">
+      <Avatar
+        bytes={sender.bytes}
+        color={sender.color}
+        description={'TODO'}
+        initials={sender.initials}
+        size={24}
+        on:click={handleClickAvatar}
+      />
+    </span>
+  {/if}
 
-          <button class="sync-button" on:click={handleClickSync}>
-            {#if sync.state === 'unsynced'}
-              <MdIcon theme="Filled" title={getTranslatedSyncButtonTitle(file, $i18n.t)}>
-                {#if sync.direction === 'download'}
-                  file_download
-                {:else if sync.direction === 'upload'}
-                  file_upload
-                {:else if sync.direction === undefined}
-                  help
-                {:else}
-                  {unreachable(sync.direction)}
-                {/if}
-              </MdIcon>
-            {:else if sync.state === 'syncing'}
-              <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>. -->
-              <IconButtonProgressBarOverlay />
-            {:else}
-              {unreachable(sync.state)}
-            {/if}
-          </button>
-        {/if}
-      </svelte:fragment>
+  <MessageContextMenuProvider
+    {boundary}
+    placement={direction === 'inbound' ? 'right' : 'left'}
+    enabledOptions={{
+      copyLink: true,
+      copySelection: true,
+      copyImage: file !== undefined && file.type === 'image',
+      copy: text !== undefined,
+      saveAsFile: file !== undefined,
+      acknowledge:
+        supportsReactions && reactions !== undefined
+          ? {
+              used: reactions.some(
+                (reaction) => reaction.direction === 'outbound' && reaction.type === 'acknowledged',
+              ),
+            }
+          : false,
+      decline:
+        supportsReactions && reactions !== undefined
+          ? {
+              used: reactions.some(
+                (reaction) => reaction.direction === 'outbound' && reaction.type === 'declined',
+              ),
+            }
+          : false,
+      quote: !conversation.isBlocked,
+      forward: text !== undefined,
+      openDetails: true,
+      deleteMessage: true,
+    }}
+    on:clickcopyimageoption={handleClickCopyImageOption}
+    on:clickcopymessageoption={handleClickCopyOption}
+    on:clicksaveasfileoption={handleClickSaveAsFileOption}
+    on:clickacknowledgeoption={handleClickAcknowledgeOption}
+    on:clickdeclineoption={handleClickDeclineOption}
+    on:clickquoteoption
+    on:clickforwardoption
+    on:clickopendetailsoption
+    on:clickdeleteoption
+  >
+    <div class="message" slot="message">
+      <OverlayProvider show={isUnsyncedOrSyncingFile(file)}>
+        <svelte:fragment slot="above">
+          {#if isUnsyncedOrSyncingFile(file)}
+            {@const {sync} = file}
 
-      <svelte:fragment slot="below">
-        <BasicMessage
-          alt={$i18n.t('messaging.hint--media-thumbnail')}
-          content={htmlContent === undefined
-            ? undefined
-            : {
-                sanitizedHtml: htmlContent,
-              }}
-          {direction}
-          {file}
-          onError={(error) =>
-            log.error(
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-              `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
-            )}
-          options={{
-            hideSender: conversation.type !== ReceiverType.CONTACT,
-            hideStatus: conversation.type !== ReceiverType.CONTACT,
-            hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
-          }}
-          quote={quoteProps}
-          {reactions}
-          {sender}
-          {status}
-          {timestamp}
-          on:clickthumbnail
-        />
-      </svelte:fragment>
-    </OverlayProvider>
-  </div>
-</MessageContextMenuProvider>
+            <button class="sync-button" on:click={handleClickSync}>
+              {#if sync.state === 'unsynced'}
+                <MdIcon theme="Filled" title={getTranslatedSyncButtonTitle(file, $i18n.t)}>
+                  {#if sync.direction === 'download'}
+                    file_download
+                  {:else if sync.direction === 'upload'}
+                    file_upload
+                  {:else if sync.direction === undefined}
+                    help
+                  {:else}
+                    {unreachable(sync.direction)}
+                  {/if}
+                </MdIcon>
+              {:else if sync.state === 'syncing'}
+                <!-- TODO(DESK-948): Cancellation <MdIcon theme="Filled">close</MdIcon>. -->
+                <IconButtonProgressBarOverlay />
+              {:else}
+                {unreachable(sync.state)}
+              {/if}
+            </button>
+          {/if}
+        </svelte:fragment>
+
+        <svelte:fragment slot="below">
+          <BasicMessage
+            alt={$i18n.t('messaging.hint--media-thumbnail')}
+            content={htmlContent === undefined
+              ? undefined
+              : {
+                  sanitizedHtml: htmlContent,
+                }}
+            {direction}
+            {file}
+            onError={(error) =>
+              log.error(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
+              )}
+            options={{
+              hideSender: conversation.type !== ReceiverType.CONTACT,
+              hideStatus: conversation.type !== ReceiverType.CONTACT && status.sent !== undefined,
+              hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
+            }}
+            quote={quoteProps}
+            {reactions}
+            {sender}
+            {status}
+            {timestamp}
+            on:clickfileinfo={handleClickFileInfo}
+            on:clickthumbnail
+          />
+        </svelte:fragment>
+      </OverlayProvider>
+    </div>
+  </MessageContextMenuProvider>
+</div>
 
 <style lang="scss">
   @use 'component' as *;
 
-  .message {
-    border-radius: rem(10px);
-    overflow: hidden;
+  .container {
+    display: flex;
+    align-items: start;
+    justify-content: start;
+    gap: rem(8px);
 
-    .sync-button {
-      @include clicktarget-button-circle;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--mc-message-overlay-button-color);
-      background-color: var(--mc-message-overlay-button-background-color);
-      width: rem(44px);
-      height: rem(44px);
-      font-size: rem(22px);
+    .avatar {
+      flex: none;
+    }
 
-      --c-icon-button-progress-bar-overlay-color: var(--mc-message-overlay-button-color);
+    .message {
+      border-radius: rem(10px);
+      overflow: hidden;
 
-      --c-icon-button-naked-outer-background-color--hover: var(
-        --mc-message-overlay-button-background-color--hover
-      );
-      --c-icon-button-naked-outer-background-color--focus: var(
-        --mc-message-overlay-button-background-color--focus
-      );
-      --c-icon-button-naked-outer-background-color--active: var(
-        --mc-message-overlay-button-background-color--active
-      );
+      .sync-button {
+        @include clicktarget-button-circle;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--mc-message-overlay-button-color);
+        background-color: var(--mc-message-overlay-button-background-color);
+        width: rem(44px);
+        height: rem(44px);
+        font-size: rem(22px);
+
+        --c-icon-button-progress-bar-overlay-color: var(--mc-message-overlay-button-color);
+
+        --c-icon-button-naked-outer-background-color--hover: var(
+          --mc-message-overlay-button-background-color--hover
+        );
+        --c-icon-button-naked-outer-background-color--focus: var(
+          --mc-message-overlay-button-background-color--focus
+        );
+        --c-icon-button-naked-outer-background-color--active: var(
+          --mc-message-overlay-button-background-color--active
+        );
+      }
     }
   }
 </style>

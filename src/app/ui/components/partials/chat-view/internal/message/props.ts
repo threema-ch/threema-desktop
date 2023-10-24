@@ -1,6 +1,8 @@
+import type {AppServices} from '~/app/types';
 import type {MessageProps as BasicMessageProps} from '~/app/ui/components/molecules/message/props';
 import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/props';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
+import type {DbContactUid} from '~/common/db';
 import type {ReceiverType} from '~/common/enum';
 import type {MessageId} from '~/common/network/types';
 import type {FileMessageDataState} from '~/common/viewmodel/types';
@@ -32,9 +34,12 @@ export interface MessageProps {
         };
     };
     readonly id: MessageId;
-    readonly quote?: Omit<MessageProps, 'boundary' | 'conversation'> | 'not-found';
+    readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
     readonly reactions: BasicMessageProps['reactions'];
-    readonly sender: BasicMessageProps['sender'];
+    readonly sender?: NonNullable<BasicMessageProps['sender']> & {
+        readonly uid?: DbContactUid;
+    };
+    readonly services: AppServices;
     readonly status: BasicMessageProps['status'];
     readonly text?: TextContent;
 }

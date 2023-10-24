@@ -6,9 +6,9 @@
   import {createEventDispatcher} from 'svelte';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import Label from '~/app/ui/components/atoms/label/Label.svelte';
   import LazyImage from '~/app/ui/components/atoms/lazy-image/LazyImage.svelte';
   import Prose from '~/app/ui/components/atoms/prose/Prose.svelte';
+  import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import AudioPlayer from '~/app/ui/components/molecules/audio-player/AudioPlayer.svelte';
   import Bubble from '~/app/ui/components/molecules/message/internal/bubble/Bubble.svelte';
   import FileInfo from '~/app/ui/components/molecules/message/internal/file-info/FileInfo.svelte';
@@ -35,8 +35,13 @@
   export let timestamp: $$Props['timestamp'];
 
   const dispatch = createEventDispatcher<{
+    clickfileinfo: undefined;
     clickthumbnail: undefined;
   }>();
+
+  function handleClickFileInfo(): void {
+    dispatch('clickfileinfo');
+  }
 
   function handleClickThumbnail(): void {
     dispatch('clickthumbnail');
@@ -91,16 +96,16 @@
     {#if file !== undefined}
       {#if file.type === 'audio'}
         <span class="audio">
-          <AudioPlayer duration={file.duration} fetchAudio={file.fetchFilePayload} {onError}>
+          <AudioPlayer duration={file.duration} fetchAudio={file.fetchFileBytes} {onError}>
             <svelte:fragment slot="footer" let:duration>
               <span class="footer">
                 <span class="size">
                   <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-argument -->
-                  <Label text={durationToString(duration ?? 0)} wrap={false} />
+                  <Text text={durationToString(duration ?? 0)} wrap={false} />
                 </span>
                 {#if messageInfoPlacement === 'preview'}
                   <span class="status">
-                    <Label text={timestamp} wrap={false} />
+                    <Text text={timestamp.fluent} wrap={false} />
                     <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
                   </span>
                 {/if}
@@ -110,10 +115,15 @@
         </span>
       {:else if file.type === 'file'}
         <span class="file">
-          <FileInfo mediaType={file.mediaType} name={file.name} sizeInBytes={file.sizeInBytes}>
+          <FileInfo
+            mediaType={file.mediaType}
+            name={file.name}
+            sizeInBytes={file.sizeInBytes}
+            on:click={handleClickFileInfo}
+          >
             <svelte:fragment slot="status">
               {#if messageInfoPlacement === 'preview'}
-                <Label text={timestamp} wrap={false} />
+                <Text text={timestamp.fluent} wrap={false} />
                 <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
               {/if}
             </svelte:fragment>
@@ -127,8 +137,26 @@
             </button>
           {/if}
 
+          <div class="badges">
+            {#if file.type === 'video' && file.duration !== undefined}
+              <span class="badge">
+                <MdIcon theme="Filled">videocam</MdIcon>
+                <span class="label">
+                  {durationToString(file.duration)}
+                </span>
+              </span>
+            {/if}
+
+            {#if messageInfoPlacement === 'preview'}
+              <span class="badge status">
+                <Text text={timestamp.short} wrap={false} />
+                <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
+              </span>
+            {/if}
+          </div>
+
           <LazyImage
-            bytes={file.thumbnail?.fetchThumbnailPayload() ?? Promise.resolve(undefined)}
+            bytes={file.thumbnail?.fetchThumbnailBytes() ?? Promise.resolve(undefined)}
             constraints={{
               min: {
                 // Dynamically increase the min width for longer text.
@@ -162,7 +190,7 @@
     {#if messageInfoPlacement === 'footer'}
       <div class="footer">
         <span class="status">
-          <Label text={timestamp} wrap={false} />
+          <Text text={timestamp.fluent} wrap={false} />
           <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
         </span>
       </div>
@@ -189,6 +217,11 @@
 
     .text {
       @extend %font-normal-400;
+    }
+
+    // If `.text` is a general-subsequent sibling of `.file`.
+    .file ~ .text {
+      padding-top: rem(8px);
     }
 
     // If `.text` is a general-subsequent sibling of `.thumbnail`.
@@ -244,6 +277,35 @@
         --c-icon-button-naked-outer-background-color--active: var(
           --mc-message-overlay-button-background-color--active
         );
+      }
+
+      .badges {
+        position: absolute;
+        display: flex;
+        gap: rem(8px);
+        align-items: center;
+        justify-content: space-between;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+
+        .badge {
+          @extend %font-small-400;
+          @include def-var(--c-icon-font-size, var(--mc-message-indicator-icon-size));
+          display: flex;
+          align-items: center;
+          gap: var(--mc-message-indicator-column-gap);
+          margin: rem(8px);
+          padding: rem(1px) rem(6px);
+          border-radius: rem(10px);
+          color: var(--mc-message-badge-color);
+          background-color: var(--mc-message-badge-background-color);
+
+          &.status {
+            margin-left: auto;
+          }
+        }
       }
     }
 

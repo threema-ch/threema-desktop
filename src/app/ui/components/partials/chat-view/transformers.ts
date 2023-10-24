@@ -1,5 +1,5 @@
 import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
-import {MessageDirection, MessageReaction} from '~/common/enum';
+import {ImageRenderingType, MessageDirection, MessageReaction} from '~/common/enum';
 import type {AnyMessageModel, RemoteModelFor} from '~/common/model';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {InboundFileMessage, OutboundFileMessage} from '~/common/model/types/message/file';
@@ -19,14 +19,14 @@ import type {ConversationMessageSetViewModel} from '~/common/viewmodel/conversat
 /**
  * Defined the shape of props as they should be provided from the backend.
  */
-export type MessagePropsFromBackend = Omit<MessageProps, 'boundary' | 'conversation'>;
+export type MessagePropsFromBackend = Omit<MessageProps, 'boundary' | 'conversation' | 'services'>;
 
 /**
  * A list of messages sorted from oldest to newest.
  */
 export type SortedMessageList = Remote<ConversationMessageViewModelBundle>[];
 
-// TODO: Move this into the ViewModel.
+// TODO(DESK-1216): Move transformations into the ViewModel.
 export function messageSetViewModelToMessagePropsStore(
     viewModel: Remote<ConversationMessageSetViewModel>,
 ): IQueryableStore<MessagePropsFromBackend[]> {
@@ -184,6 +184,7 @@ function getMessageSender(
                 color: sender.profilePicture.color,
                 initials: sender.profilePicture.initials,
                 name: sender.name,
+                uid: sender.uid,
             };
 
         case 'self':
@@ -243,9 +244,27 @@ function getMessageFile(
         return undefined;
     }
 
+    const renderingType = type === 'image' ? messageModel.view.renderingType : undefined;
+    let imageRenderingType: NonNullable<MessagePropsFromBackend['file']>['imageRenderingType'];
+    switch (renderingType) {
+        case ImageRenderingType.REGULAR:
+            imageRenderingType = 'regular';
+            break;
+
+        case ImageRenderingType.STICKER:
+            imageRenderingType = 'sticker';
+            break;
+
+        case undefined:
+            break;
+
+        default:
+            unreachable(renderingType);
+    }
+
     return {
         duration: type === 'audio' || type === 'video' ? messageModel.view.duration : undefined,
-        fetchFilePayload: async () => {
+        fetchFileBytes: async () => {
             switch (type) {
                 case 'audio':
                 case 'file':
@@ -257,6 +276,7 @@ function getMessageFile(
                     return unreachable(messageModel);
             }
         },
+        imageRenderingType,
         mediaType: messageModel.view.mediaType,
         name: {
             raw: messageModel.view.fileName,
@@ -295,7 +315,8 @@ function getMessageThumbnail(
         case 'video':
             return {
                 expectedDimensions: messageModel.view.dimensions,
-                fetchThumbnailPayload: async () => await viewModelController.getThumbnail(),
+                fetchThumbnailBytes: async () => await viewModelController.getThumbnail(),
+                mediaType: messageModel.view.thumbnailMediaType ?? 'image/jpeg',
             };
 
         default:

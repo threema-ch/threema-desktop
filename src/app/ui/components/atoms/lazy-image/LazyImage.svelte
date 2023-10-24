@@ -63,6 +63,7 @@
     dimensions: image.state === 'loaded' ? image.dimensions : dimensions ?? {width: 0, height: 0},
     constraints,
   });
+  $: preferredAspectRatio = `${preferredDisplay.values.width} / ${preferredDisplay.values.height}`;
 
   onDestroy(() => {
     revokeCurrentImageUrl(image);
@@ -70,11 +71,9 @@
 </script>
 
 <button
-  class="image"
+  class={`image ${image.state}`}
   class:clickable={!disabled}
-  style={`--c-t-image-aspect-ratio: ${preferredDisplay.values.width} / ${
-    preferredDisplay.values.height
-  };
+  style={`--c-t-image-aspect-ratio: ${preferredAspectRatio};
           --c-t-image-min-width: ${constraints.min.width}px;
           --c-t-image-min-height: ${constraints.min.height}px;
           --c-t-image-width: ${preferredDisplay.values.width}px;
@@ -127,7 +126,9 @@
     }
 
     img,
-    .placeholder {
+    .placeholder,
+    &.loading :global(> :first-child),
+    &.failed :global(> :first-child) {
       flex: 1;
 
       width: min(var($-temp-vars, --c-t-image-width), var($-temp-vars, --c-t-image-max-width));
@@ -146,13 +147,12 @@
       }
     }
 
-    .placeholder {
-      &.failed {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: rem(24px);
-      }
+    .placeholder.failed,
+    &.failed :global(> :first-child) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: rem(24px);
     }
   }
 </style>

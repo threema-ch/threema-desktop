@@ -20,7 +20,7 @@
   export let lastItemId: $$Props['lastItemId'];
 
   let containerElement: SvelteNullableBinding<HTMLOListElement>;
-  let isNearBottom = true;
+  let isAtBottom = true;
 
   /**
    * Scrolls the view to the item with the given id.
@@ -64,11 +64,11 @@
 
   $: lastObserverOptions = {
     root: containerElement,
-    threshold: 0.95,
+    threshold: 1,
   };
 </script>
 
-<ol bind:this={containerElement} class="list" class:glued={isNearBottom}>
+<ol bind:this={containerElement} class="list" class:glued={isAtBottom}>
   <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -->
   {#each items as item (item.id)}
     <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -->
@@ -79,29 +79,33 @@
       class={`item ${id}`}
       class:last={isLast}
       use:intersection={{
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        options: isLast ? lastObserverOptions : defaultObserverOptions,
+        options: defaultObserverOptions,
       }}
       on:intersectionenter={(event) => {
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        if (isLast) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          isNearBottom = event.detail.entry.intersectionRatio >= 0.95;
-        }
-
         dispatch('itementered', item);
       }}
       on:intersectionexit={() => {
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-        if (isLast) {
-          isNearBottom = false;
-        }
-
         dispatch('itemexited', item);
       }}
     >
       <slot name="item" {item} />
     </li>
+
+    {#if isLast}
+      <span
+        use:intersection={{
+          options: lastObserverOptions,
+        }}
+        class="anchor"
+        on:intersectionenter={(event) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          isAtBottom = event.detail.entry.intersectionRatio >= 1;
+        }}
+        on:intersectionexit={() => {
+          isAtBottom = false;
+        }}
+      />
+    {/if}
   {/each}
 </ol>
 
@@ -116,8 +120,16 @@
     overscroll-behavior-y: contain;
     scroll-snap-type: y mandatory;
 
+    .anchor {
+      position: relative;
+      display: block;
+      height: rem(10px);
+      margin-top: rem(-10px);
+      visibility: hidden;
+    }
+
     &.glued {
-      .last {
+      .anchor {
         scroll-snap-align: end;
       }
     }

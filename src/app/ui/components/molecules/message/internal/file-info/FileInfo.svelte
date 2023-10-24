@@ -3,13 +3,14 @@
   Renders file details as part of a message.
 -->
 <script lang="ts">
-  import Label from '~/app/ui/components/atoms/label/Label.svelte';
+  import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import type {FileInfoProps} from '~/app/ui/components/molecules/message/internal/file-info/props';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
 
   type $$Props = FileInfoProps;
 
+  export let disabled: NonNullable<$$Props['disabled']> = false;
   export let mediaType: $$Props['mediaType'];
   export let name: $$Props['name'];
   export let sizeInBytes: $$Props['sizeInBytes'];
@@ -20,7 +21,7 @@
   });
 </script>
 
-<button class="file-info" on:click>
+<button class="file-info" {disabled} on:click>
   <span class="icon">
     {details.displayType === undefined ? '?' : details.displayType.substring(0, 4)}
   </span>
@@ -29,7 +30,7 @@
   >
   <span class="footer">
     <span class="size">
-      <Label text={byteSizeToHumanReadable(sizeInBytes)} wrap={false} />
+      <Text text={byteSizeToHumanReadable(sizeInBytes)} wrap={false} />
     </span>
     {#if $$slots.status}
       <span class="status">
@@ -54,6 +55,10 @@
     justify-items: start;
     cursor: pointer;
     text-align: start;
+
+    &:disabled {
+      cursor: unset;
+    }
 
     .icon {
       grid-area: icon;
@@ -94,6 +99,16 @@
       min-width: 100%;
       gap: rem(8px);
       color: var(--mc-message-file-size-color);
+
+      .status {
+        @include def-var(--c-icon-font-size, var(--mc-message-indicator-icon-size));
+        justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: var(--mc-message-indicator-column-gap);
+        color: var(--mc-message-indicator-label);
+        @extend %font-small-400;
+      }
     }
   }
 </style>

@@ -30,9 +30,10 @@
     {description}
     dimensions={undefined}
     disabled={false}
+    on:click
   >
-    <span slot="failed" class="initials">
-      {initials}
+    <span slot="failed">
+      <span class="initials">{initials}</span>
     </span>
   </LazyImage>
 </span>
@@ -41,6 +42,11 @@
   @use 'component' as *;
 
   .avatar {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 50%;
+
     @each $color in map-get-req($config, profile-picture-colors) {
       &[data-color='#{$color}'] {
         color: var(--c-profile-picture-initials-#{$color}, default);
@@ -49,6 +55,7 @@
     }
 
     .initials {
+      @extend %font-small-400;
       display: flex;
       place-items: center;
       justify-content: center;

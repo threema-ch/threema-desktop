@@ -204,6 +204,7 @@ export async function transformContact(
     const {verificationLevel, verificationLevelColors} = transformContactVerificationLevel(contact);
 
     return {
+        uid: contact.ctx,
         lookup: {
             type: ReceiverType.CONTACT,
             uid: contact.ctx,

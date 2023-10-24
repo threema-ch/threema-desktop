@@ -3,7 +3,7 @@
   Renders a section in a `KeyValueList`, which groups together multiple `Item`s.
 -->
 <script lang="ts">
-  import Label from '~/app/ui/components/atoms/label/Label.svelte';
+  import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import type {SectionProps} from '~/app/ui/components/molecules/key-value-list/internal/section/props';
 
   type $$Props = SectionProps;
@@ -14,7 +14,7 @@
 <div class="section">
   {#if title !== undefined}
     <div class="title">
-      <Label text={title} />
+      <Text text={title} />
     </div>
   {/if}
 
