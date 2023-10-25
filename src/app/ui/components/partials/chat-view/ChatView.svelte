@@ -248,9 +248,7 @@
     on:itementered={handleItemEntered}
     on:itemexited={handleItemExited}
   >
-    <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -->
     <div class={`message ${item.direction}`} slot="item" let:item>
-      <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -->
       {#if item.id === rememberedUnreadState.firstUnreadMessageId}
         <div class="separator">
           <UnreadMessagesIndicator

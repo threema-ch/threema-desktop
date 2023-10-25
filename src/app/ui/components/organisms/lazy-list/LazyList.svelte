@@ -69,7 +69,6 @@
 </script>
 
 <ol bind:this={containerElement} class="list" class:glued={isAtBottom}>
-  <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -->
   {#each items as item (item.id)}
     <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -->
     {@const {id} = item}
@@ -98,7 +97,6 @@
         }}
         class="anchor"
         on:intersectionenter={(event) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           isAtBottom = event.detail.entry.intersectionRatio >= 1;
         }}
         on:intersectionexit={() => {

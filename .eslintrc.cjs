@@ -175,6 +175,7 @@ function getTypeScriptConfigMixin(extension, override) {
         '@typescript-eslint/naming-convention': namingConvention,
         '@typescript-eslint/no-confusing-void-expression': 'off',
         '@typescript-eslint/no-unnecessary-qualifier': 'error',
+        '@typescript-eslint/no-unsafe-member-access': 'off', // Handled by svelte-check
         '@typescript-eslint/no-useless-empty-export': 'error',
         '@typescript-eslint/non-nullable-type-assertion-style': 'error',
         '@typescript-eslint/prefer-nullish-coalescing': 'error',
