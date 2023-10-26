@@ -16,26 +16,29 @@ export const REGEX_MATCH_MENTION = /@\[(?<identity>[A-Z0-9*]{1}[A-Z0-9]{7}|@{8})
 export const MENTION_ALL = '@@@@@@@@';
 
 export type Mention =
+    // Own ID is mentioned
     | {
           readonly type: 'self';
-          readonly identityString: IdentityString;
-          readonly name: string;
+          readonly identity: IdentityString;
+          readonly nickname: string | undefined;
       }
+    // Everybody is mentioned (@all)
     | {
           readonly type: 'all';
-          readonly identityString: typeof MENTION_ALL;
+          readonly identity: typeof MENTION_ALL;
       }
+    // A contact is mentioned
     | {
           readonly type: 'other';
-          readonly identityString: IdentityString;
-          readonly name: string;
+          readonly identity: IdentityString;
+          readonly displayName: string;
           readonly lookup: Pick<DbContact, 'type' | 'uid'>;
       };
 
 /**
- * Parse and return mention strings of text
+ * Extract all raw mentions from the specified {@link messageModel}.
  *
- * @returns Set of parsed identystrings or `@@@@@@@`
+ * @returns Set of parsed identity strings or `@@@@@@@`
  */
 function getMentionedIdentityStrings(
     messageModel: AnyMessageModel,
@@ -69,33 +72,36 @@ function getMentionedIdentityStrings(
     return mentionedIdentities;
 }
 
-export function getMentions(messageModel: AnyMessageModel, model: Repositories): Mention[] {
+/**
+ * Extract all mentions present in the specified {@link messageModel}.
+ */
+export function getMentions(messageModel: AnyMessageModel, repositories: Repositories): Mention[] {
     const mentions: Mention[] = [];
 
-    for (const identityString of getMentionedIdentityStrings(messageModel)) {
-        if (identityString === MENTION_ALL) {
+    for (const identity of getMentionedIdentityStrings(messageModel)) {
+        if (identity === MENTION_ALL) {
             mentions.push({
                 type: 'all',
-                identityString: MENTION_ALL,
+                identity: MENTION_ALL,
             });
             continue;
         }
 
-        if (identityString === model.user.identity) {
+        if (identity === repositories.user.identity) {
             mentions.push({
                 type: 'self',
-                identityString,
-                name: model.user.displayName.get(),
+                identity,
+                nickname: repositories.user.profileSettings.get().view.nickname,
             });
             continue;
         }
 
-        const otherContact = model.contacts.getByIdentity(identityString);
+        const otherContact = repositories.contacts.getByIdentity(identity);
         if (otherContact !== undefined) {
             mentions.push({
                 type: 'other',
-                identityString,
-                name: otherContact.get().view.displayName,
+                identity,
+                displayName: otherContact.get().view.displayName,
                 lookup: {
                     type: ReceiverType.CONTACT,
                     uid: otherContact.ctx,

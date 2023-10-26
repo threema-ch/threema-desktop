@@ -1,17 +1,17 @@
 import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
-import {sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
+import {type SanitizedHtml, sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
 import {unreachable} from '~/common/utils/assert';
 import type {Mention} from '~/common/viewmodel/utils/mentions';
 
 /**
- * Sanitizes ans parses raw text from a text message to HTML.
+ * Sanitizes and parses raw text from a text message to HTML.
  */
 export function getTextContent(
     raw: string | undefined,
     mentions: Mention | Mention[] | undefined,
     t: I18nType['t'],
-): string | undefined {
+): SanitizedHtml | undefined {
     const html = sanitizeAndParseTextToHtml(raw, t, {
         highlights: [],
         mentions,

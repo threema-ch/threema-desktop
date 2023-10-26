@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 
 import {
+    type SanitizedHtml,
     parseHighlights,
     parseLinks,
     parseMentions,
@@ -28,17 +29,17 @@ export function run(): void {
         } = {
             self: {
                 type: 'self',
-                identityString: ensureIdentityString(testContactId),
-                name: 'Test',
+                identity: ensureIdentityString(testContactId),
+                nickname: 'Test',
             },
             all: {
                 type: 'all',
-                identityString: testAllId,
+                identity: testAllId,
             },
             other: {
                 type: 'other',
-                identityString: ensureIdentityString(testContactId),
-                name: 'Test',
+                identity: ensureIdentityString(testContactId),
+                displayName: 'Test',
                 lookup: {
                     type: ReceiverType.CONTACT,
                     uid: BigInt(0) as DbContactUid,
@@ -59,10 +60,10 @@ export function run(): void {
         function mentionHtmlTemplate(
             props:
                 | {type: 'all'}
-                | {type: 'self'; name: string; identityString: string}
+                | {type: 'self'; nickname: string | undefined; identity: string}
                 | {
                       type: 'other';
-                      name: string;
+                      displayName: string;
                       lookup: Pick<DbContact, 'type' | 'uid'>;
                       linkMentions?: boolean;
                   },
@@ -71,13 +72,11 @@ export function run(): void {
                 case 'all':
                     return `<span class="mention all">@All</span>`;
                 case 'self':
-                    return `<span class="mention me">@${
-                        props.name === props.identityString ? 'Me' : props.name
-                    }</span>`;
+                    return `<span class="mention me">@${props.nickname ?? 'Me'}</span>`;
                 case 'other':
                     return props.linkMentions === false
-                        ? `<span class="mention">@${props.name}</span>`
-                        : `<a href="#/conversation/${props.lookup.type}/${props.lookup.uid}/" draggable="false" class="mention">@${props.name}</a>`;
+                        ? `<span class="mention">@${props.displayName}</span>`
+                        : `<a href="#/conversation/${props.lookup.type}/${props.lookup.uid}/" draggable="false" class="mention">@${props.displayName}</a>`;
                 default:
                     return unreachable(props);
             }
@@ -95,7 +94,7 @@ export function run(): void {
             it('should replace mentions of type "self" in text with HTML (using nickname if set)', function () {
                 const parsedText = parseMentions(
                     mockedT,
-                    `Hello, @[${testContactId}]!`,
+                    `Hello, @[${testContactId}]!` as SanitizedHtml,
                     testMentions.self,
                     true,
                 );
@@ -107,11 +106,11 @@ export function run(): void {
             it('should replace mentions of type "self" in text with HTML (using id if nickname is missing)', function () {
                 const testMentionWithoutName = {
                     ...testMentions.self,
-                    name: testMentions.self.identityString,
+                    name: testMentions.self.identity,
                 };
                 const parsedText = parseMentions(
                     mockedT,
-                    `Hello, @[${testContactId}]!`,
+                    `Hello, @[${testContactId}]!` as SanitizedHtml,
                     testMentionWithoutName,
                     true,
                 );
@@ -123,7 +122,7 @@ export function run(): void {
             it('should replace mentions of type "all" in text with HTML', function () {
                 const parsedText = parseMentions(
                     mockedT,
-                    `Hello, @[${testAllId}]!`,
+                    `Hello, @[${testAllId}]!` as SanitizedHtml,
                     testMentions.all,
                     true,
                 );
@@ -135,7 +134,7 @@ export function run(): void {
             it('should replace mentions of type "other" in text with HTML', function () {
                 const parsedText = parseMentions(
                     mockedT,
-                    `Hello, @[${testContactId}]!`,
+                    `Hello, @[${testContactId}]!` as SanitizedHtml,
                     testMentions.other,
                     true,
                 );
@@ -147,7 +146,7 @@ export function run(): void {
             it('should replace multiple, differing mentions', function () {
                 const parsedText = parseMentions(
                     mockedT,
-                    `Hello, @[${testAllId}] and @[${testContactId}]!`,
+                    `Hello, @[${testAllId}] and @[${testContactId}]!` as SanitizedHtml,
                     [testMentions.all, testMentions.other],
                     true,
                 );
@@ -164,7 +163,7 @@ export function run(): void {
 
             it('should replace all search string occurrences in text with HTML (case-insensitive)', function () {
                 const parsedText = parseHighlights(
-                    'Testgroup of adventurous testers',
+                    'Testgroup of adventurous testers' as SanitizedHtml,
                     testSearchString,
                 );
                 const expected = `${highlightHtmlTemplate(
@@ -179,12 +178,12 @@ export function run(): void {
             const testCases = [
                 {
                     description: 'link without url scheme',
-                    input: 'threema.ch',
+                    input: 'threema.ch' as SanitizedHtml,
                     expected: linkHtmlTemplate({url: 'https://threema.ch', text: 'threema.ch'}),
                 },
                 {
                     description: 'link with "http" url scheme',
-                    input: 'http://threema.ch',
+                    input: 'http://threema.ch' as SanitizedHtml,
                     expected: linkHtmlTemplate({
                         url: 'http://threema.ch',
                         text: 'http://threema.ch',
@@ -192,7 +191,7 @@ export function run(): void {
                 },
                 {
                     description: 'link with "https" url scheme',
-                    input: 'https://threema.ch',
+                    input: 'https://threema.ch' as SanitizedHtml,
                     expected: linkHtmlTemplate({
                         url: 'https://threema.ch',
                         text: 'https://threema.ch',
@@ -273,7 +272,7 @@ export function run(): void {
                         markup: true,
                         mentions: {
                             ...testMentions.other,
-                            identityString: ensureIdentityString('*SUPPORT'),
+                            identity: ensureIdentityString('*SUPPORT'),
                         },
                         highlights: false,
                         links: false,
@@ -287,14 +286,14 @@ export function run(): void {
                         markup: true,
                         mentions: {
                             ...testMentions.other,
-                            name: '*Test*',
+                            displayName: '*Test*',
                         },
                         highlights: false,
                         links: false,
                     },
                     expected: `Hello, ${mentionHtmlTemplate({
                         ...testMentions.other,
-                        name: '*Test*',
+                        displayName: '*Test*',
                     })}!`,
                 },
                 // TODO(DESK-1069): The following test case currently fails and is skipped. Make it
@@ -358,14 +357,14 @@ export function run(): void {
                         markup: false,
                         mentions: {
                             ...testMentions.other,
-                            name: 'https://threema.ch',
+                            displayName: 'https://threema.ch',
                         },
                         highlights: false,
                         links: true,
                     },
                     expected: `Hello, ${mentionHtmlTemplate({
                         ...testMentions.other,
-                        name: 'https://threema.ch',
+                        displayName: 'https://threema.ch',
                     })}!`,
                 },
                 {
@@ -376,7 +375,7 @@ export function run(): void {
                         markup: false,
                         mentions: {
                             ...testMentions.other,
-                            name: 'https://threema.ch',
+                            displayName: 'https://threema.ch',
                         },
                         highlights: false,
                         links: true,
@@ -384,7 +383,7 @@ export function run(): void {
                     },
                     expected: `Hello, ${mentionHtmlTemplate({
                         ...testMentions.other,
-                        name: 'https://threema.ch',
+                        displayName: 'https://threema.ch',
                         linkMentions: false,
                     })}!`,
                 },

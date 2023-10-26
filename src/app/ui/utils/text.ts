@@ -2,8 +2,12 @@ import {markify, TokenType} from '@threema/threema-markup';
 import autolinker from 'autolinker';
 
 import type {I18nType} from '~/app/ui/i18n-types';
+import type {WeakOpaque} from '~/common/types';
+import {unreachable} from '~/common/utils/assert';
 import {escapeRegExp} from '~/common/utils/regex';
 import type {Mention} from '~/common/viewmodel/utils/mentions';
+
+export type SanitizedHtml = WeakOpaque<string, {readonly SanitizedHtml: unique symbol}>;
 
 export interface SanitizeAndParseTextToHtmlOptions {
     /** The {@link Mention}s to search for and replace in the text. */
@@ -22,11 +26,9 @@ export interface SanitizeAndParseTextToHtmlOptions {
  * Parses some text and replaces various tokens with HTML. This is useful to render messages and
  * message previews with formatting.
  *
- * Note: Text input will be sanitized.
+ * Note: Input text will be sanitized.
  *
- * Warning: If you render the output in a web UI, you must absolutely make sure that the input
- *          `text` is sanitized (e.g. with {@link escapeHtmlUnsafeChars})!
- *
+ * @param text The input text
  * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param options See {@link SanitizeAndParseTextToHtmlOptions} for docs
  * @returns The text containing the specified tokens replaced with HTML.
@@ -41,9 +43,9 @@ export function sanitizeAndParseTextToHtml(
         shouldParseMarkup = false,
         shouldParseLinks = false,
     }: SanitizeAndParseTextToHtmlOptions,
-): string {
+): SanitizedHtml {
     if (text === undefined || text === '') {
-        return '';
+        return '' as SanitizedHtml;
     }
 
     let sanitizedText = escapeHtmlUnsafeChars(text);
@@ -74,9 +76,9 @@ export function sanitizeAndParseTextToHtml(
  * @param text string | undefined
  * @returns escaped string
  */
-function escapeHtmlUnsafeChars(text: string | undefined): string {
+function escapeHtmlUnsafeChars(text: string | undefined): SanitizedHtml {
     if (text === undefined || text === '') {
-        return '';
+        return '' as SanitizedHtml;
     }
 
     return text
@@ -84,7 +86,7 @@ function escapeHtmlUnsafeChars(text: string | undefined): string {
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+        .replaceAll("'", '&#039;') as SanitizedHtml;
 }
 
 /**
@@ -95,33 +97,33 @@ function escapeHtmlUnsafeChars(text: string | undefined): string {
  * @param enableLinks Whether to format mentions of contacts as links.
  * @returns A string containing a HTML tag which represents the supplied `Mention`.
  */
-function getMentionHtml(t: I18nType['t'], mention: Mention, enableLinks: boolean): string {
-    if (mention.type === 'all') {
-        const text = t('messaging.label--mention-all', 'All');
-
-        return `<span class="mention all">@${text}</span>`;
+function getMentionHtml(t: I18nType['t'], mention: Mention, enableLinks: boolean): SanitizedHtml {
+    switch (mention.type) {
+        case 'all': {
+            const text = escapeHtmlUnsafeChars(t('messaging.label--mention-all', 'All'));
+            return `<span class="mention all">@${text}</span>` as SanitizedHtml;
+        }
+        case 'self': {
+            const text = escapeHtmlUnsafeChars(
+                mention.nickname ?? t('messaging.label--mention-me', 'Me'),
+            );
+            return `<span class="mention me">@${text}</span>` as SanitizedHtml;
+        }
+        case 'other': {
+            const name = escapeHtmlUnsafeChars(mention.displayName);
+            if (enableLinks) {
+                const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
+                return `<a href="${href}" draggable="false" class="mention">@${name}</a>` as SanitizedHtml;
+            }
+            return `<span class="mention">@${name}</span>` as SanitizedHtml;
+        }
+        default:
+            return unreachable(mention);
     }
-
-    const mentionDisplay = escapeHtmlUnsafeChars(mention.name);
-    if (mention.type === 'self') {
-        const text =
-            mentionDisplay === mention.identityString
-                ? t('messaging.label--mention-me', 'Me')
-                : mentionDisplay;
-
-        return `<span class="mention me">@${text}</span>`;
-    }
-
-    if (enableLinks) {
-        const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
-        return `<a href="${href}" draggable="false" class="mention">@${mentionDisplay}</a>`;
-    }
-
-    return `<span class="mention">@${mentionDisplay}</span>`;
 }
 
-function getHighlightHtml(highlight: string): string {
-    return `<span class="parsed-text-highlight">${highlight}</span>`;
+function getHighlightHtml(highlight: SanitizedHtml): SanitizedHtml {
+    return `<span class="parsed-text-highlight">${highlight}</span>` as SanitizedHtml;
 }
 
 /**
@@ -133,60 +135,64 @@ function getHighlightHtml(highlight: string): string {
  * @param text The text to parse.
  * @returns The text containing the markup replaced with HTML.
  */
-function parseMarkup(text: string): string {
+function parseMarkup(text: SanitizedHtml): SanitizedHtml {
     return markify(text, {
         [TokenType.Asterisk]: 'md-bold',
         [TokenType.Underscore]: 'md-italic',
         [TokenType.Tilde]: 'md-strike',
-    });
+    }) as SanitizedHtml;
 }
 
 /**
- * Parses some text and replaces `@[<IdentityString>]` {@link Mention}s with HTML tags. The
+ * Parses some text and replaces `@[<IdentityString>]` mentions with HTML tags. The
  * replacement will be `@All` or `@<mention.name>`, wrapped in an appropriate tag:
+ *
  * - `span` for mentions of type "all" or "self".
  * - `a` for mentions of type "other" (linking to the corresponding conversation).
  *
  * @param t The function to use for translating labels of special mentions, such as "@All".
  * @param text The text to parse.
- * @param mentions An array of mentions to search for and replace in the text.
+ * @param mentions One or more mentions to search for and replace in the text.
  * @param enableLinks Whether to format mentions of contacts as links.
  * @returns The text containing the mentions replaced with HTML.
  */
 export function parseMentions(
     t: I18nType['t'],
-    text: string,
+    text: SanitizedHtml,
     mentions: Mention | Mention[],
     enableLinks: boolean,
-): string {
+): SanitizedHtml {
     let parsedText = text;
     for (const mention of mentions instanceof Array ? mentions : [mentions]) {
         parsedText = parsedText.replaceAll(
-            `@[${mention.identityString}]`,
+            `@[${mention.identity}]`,
             getMentionHtml(t, mention, enableLinks),
-        );
+        ) as SanitizedHtml;
     }
 
     return parsedText;
 }
 
 /**
- * Parses some text and replaces highlights with HTML tags.
+ * Parses some text and replaces highlights (e.g. from search) with HTML tags.
  *
  * @param text The text to parse.
  * @param highlights An array of highlights to search for and replace in the text.
  * @returns The text containing the highlights replaced with HTML.
  */
-export function parseHighlights(text: string, highlights: string | string[]): string {
+export function parseHighlights(text: SanitizedHtml, highlights: string | string[]): SanitizedHtml {
     let parsedText = text;
-    for (const highlight of highlights instanceof Array ? highlights : [highlights]) {
+    const highlightsArray = highlights instanceof Array ? highlights : [highlights];
+    for (const highlight of highlightsArray) {
         if (highlight.trim() !== '') {
             parsedText = parsedText
                 // Split text at the locations where it matches the highlight string.
                 .split(new RegExp(`(${escapeRegExp(highlight)})`, 'ui'))
                 // Replace chunks to highlight with HTML.
-                .map((chunk, index) => (index % 2 === 0 ? chunk : getHighlightHtml(chunk)))
-                .join('');
+                .map((chunk, index) =>
+                    index % 2 === 0 ? chunk : getHighlightHtml(chunk as SanitizedHtml),
+                )
+                .join('') as SanitizedHtml;
         }
     }
 
@@ -199,7 +205,7 @@ export function parseHighlights(text: string, highlights: string | string[]): st
  * @param text The text to parse.
  * @returns The text containing the urls replaced with HTML.
  */
-export function parseLinks(text: string): string {
+export function parseLinks(text: SanitizedHtml): SanitizedHtml {
     return autolinker.link(text, {
         phone: false,
         stripPrefix: false,
@@ -223,5 +229,5 @@ export function parseLinks(text: string): string {
             }
             return true;
         },
-    });
+    }) as SanitizedHtml;
 }

@@ -1,3 +1,5 @@
+import type {SanitizedHtml} from '~/app/ui/utils/text';
+
 /**
  * Props accepted by the `Prose` component.
  */
@@ -5,11 +7,12 @@ export interface ProseProps {
     content:
         | {
               /**
-               * Sanitized HTML to render as formatted content. Note: As the name implies, the
-               * content must be already sanitized, as it will be rendered as-is, and Svelte does
-               * not sanitize expressions before injecting HTML.
+               * Sanitized HTML to render as formatted content.
+               *
+               * Note: As the name implies, the content must be already sanitized, as it will be
+               * rendered as-is, and Svelte does not sanitize expressions before injecting HTML.
                */
-              sanitizedHtml: string;
+              sanitizedHtml: SanitizedHtml;
           }
         | {
               /** The text to render as the content. */
