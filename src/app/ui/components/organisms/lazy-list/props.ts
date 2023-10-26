@@ -6,6 +6,8 @@ export interface LazyListProps<TId, TProps> {
     readonly items: LazyListItemProps<TId, TProps>[];
     /** The `id` of the last item in the list. */
     readonly lastItemId: TId | undefined;
+    /** The `id` of the message that should be visible. */
+    readonly initiallyVisibleItemId?: TId;
 }
 
 /**

@@ -18,6 +18,7 @@
 
   export let items: $$Props['items'];
   export let lastItemId: $$Props['lastItemId'];
+  export let initiallyVisibleItemId: $$Props['initiallyVisibleItemId'] = undefined;
 
   let containerElement: SvelteNullableBinding<HTMLOListElement>;
   let isAtBottom = true;
@@ -66,21 +67,33 @@
     root: containerElement,
     threshold: 1,
   };
+
+  $: shouldScrollToInitiallyVisible = initiallyVisibleItemId !== undefined;
 </script>
 
-<ol bind:this={containerElement} class="list" class:glued={isAtBottom}>
+<ol
+  bind:this={containerElement}
+  class="list"
+  class:gluedbottom={isAtBottom && !shouldScrollToInitiallyVisible}
+>
   {#each items as item (item.id)}
     <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -->
     {@const {id} = item}
     {@const isLast = lastItemId === id}
+    {@const isInitiallyVisible = initiallyVisibleItemId === id}
 
     <li
       class={`item ${id}`}
       class:last={isLast}
+      class:initiallyvisible={isInitiallyVisible}
+      class:gluedtop={isInitiallyVisible && shouldScrollToInitiallyVisible}
       use:intersection={{
         options: defaultObserverOptions,
       }}
       on:intersectionenter={(event) => {
+        if (isInitiallyVisible) {
+          shouldScrollToInitiallyVisible = false;
+        }
         dispatch('itementered', item);
       }}
       on:intersectionexit={() => {
@@ -126,10 +139,14 @@
       visibility: hidden;
     }
 
-    &.glued {
+    &.gluedbottom {
       .anchor {
         scroll-snap-align: end;
       }
+    }
+
+    .item.gluedtop {
+      scroll-snap-align: start;
     }
   }
 </style>

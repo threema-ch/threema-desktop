@@ -95,14 +95,27 @@ export function getConversationMessageSetViewModel(
                 75,
             );
 
-            // If no message is visible currently (might happen during initialization), use last
-            // message in chat instead (if any).
+            // If no message is visible currently (e.g. during initialization), load initial messages.
             if (activeMessageSet.size === 0) {
+                let referenceMessageId: MessageId | undefined;
+
+                // First, try to use the first unread message as reference
+                const firstUnreadMessageId = conversationModel.controller.getFirstUnreadMessageId();
+                if (firstUnreadMessageId !== undefined) {
+                    referenceMessageId = firstUnreadMessageId;
+                }
+
+                // If no message is unread, use the last message instead (if any)
                 const lastMessage = conversationModel.controller.lastMessageStore().get();
                 if (lastMessage !== undefined) {
+                    referenceMessageId = lastMessage.get().view.id;
+                }
+
+                // If a reference message was chosen, load it together with surrounding messages
+                if (referenceMessageId !== undefined) {
                     activeMessageSet =
                         conversationModel.controller.getMessagesWithSurroundingMessages(
-                            new Set([lastMessage.get().view.id]),
+                            new Set([referenceMessageId]),
                             75,
                         );
                 }

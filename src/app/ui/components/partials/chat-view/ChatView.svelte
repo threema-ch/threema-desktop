@@ -39,6 +39,11 @@
   let lazyListComponent: SvelteNullableBinding<LazyList<MessageId, MessagePropsFromBackend>> = null;
 
   /**
+   * If this value is set, then the chat will scroll to the specified message.
+   */
+  let initiallyVisibleMessageId: MessageId | undefined = conversation.firstUnreadMessageId;
+
+  /**
    * Because the read state of messages is immediately propagated to the frontend as soon as it
    * changes in the database, we need to keep the previous state to display visual cues to the user.
    */
@@ -147,6 +152,7 @@
   }
 
   function handleChangeConversation(): void {
+    initiallyVisibleMessageId = conversation.firstUnreadMessageId;
     rememberUnreadState();
     markConversationAsRead();
   }
@@ -245,6 +251,7 @@
     bind:this={lazyListComponent}
     items={$messagePropsStore}
     lastItemId={currentLastMessage?.id}
+    initiallyVisibleItemId={initiallyVisibleMessageId}
     on:itementered={handleItemEntered}
     on:itemexited={handleItemExited}
   >
