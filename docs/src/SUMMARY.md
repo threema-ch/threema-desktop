@@ -8,6 +8,7 @@
   - [Dependencies](./dependencies.md)
   - [Models](./models.md)
   - [Cryptography](./cryptography.md)
+  - [UI Components](./ui-components.md)
   - [Internationalization](./internationalization.md)
 - [Data](./data.md)
   - [Database](./database.md)
