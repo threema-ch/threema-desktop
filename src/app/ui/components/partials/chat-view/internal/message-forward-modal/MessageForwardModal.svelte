@@ -1,15 +1,15 @@
 <!--
-  @component 
+  @component
   Renders a modal to forward a message to another recipient.
 -->
 <script lang="ts">
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import {getSearchInputPlaceholderForTab} from '~/app/ui/components/partials/chat-view/internal/message-forward-modal/helpers';
+  import ForwardRecipient from '~/app/ui/components/partials/chat-view/internal/message-forward-modal/internal/forward-recipient/ForwardRecipient.svelte';
   import type {MessageForwardModalProps} from '~/app/ui/components/partials/chat-view/internal/message-forward-modal/props';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import ForwardRecipient from '~/app/ui/modal/message-forward/ForwardRecipient.svelte';
   import type {ContactTab} from '~/app/ui/nav';
   import {filterContacts} from '~/app/ui/nav/receiver';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';

@@ -345,22 +345,6 @@
         </div>
       </div>
     {:else}
-      <!-- <div bind:this={messagesContainer} class="messages">
-        {#await conversationViewModel.viewModelController.getConversationMessagesSetStore() then conversationMessagesSet}
-          <ConversationMessageList
-            conversationMessagesSet={conversationMessageViewModel.store}
-            {receiverLookup}
-            {receiver}
-            {conversation}
-            {services}
-            isReceiverBlocked={$isReceiverBlockedStore}
-            container={messagesContainer}
-            on:quoteMessage={quoteMessage}
-            on:deleteMessage={deleteMessage}
-          />
-        {/await}
-        <div class="anchor" class:active={anchorActive} use:scrollSnap />
-      </div> -->
       <div class="messages">
         {#await conversationViewModel.viewModelController.getConversationMessagesSetViewModel() then messageSetViewModel}
           <ChatView

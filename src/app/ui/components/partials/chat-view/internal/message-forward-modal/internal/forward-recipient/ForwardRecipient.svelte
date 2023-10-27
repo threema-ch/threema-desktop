@@ -1,6 +1,6 @@
 <script lang="ts">
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import type {AppServices} from '~/app/types';
+  import type {ForwardRecipientProps} from '~/app/ui/components/partials/chat-view/internal/message-forward-modal/internal/forward-recipient/props';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
@@ -11,14 +11,16 @@
     transformContact,
     type TransformedContact,
   } from '~/app/ui/nav/receiver';
-  import type {Contact, ProfilePicture, RemoteModelStoreFor} from '~/common/model';
-  import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {ProfilePicture} from '~/common/model';
+  import type {RemoteModelStore} from '~/common/model/utils/model-store';
 
-  export let services: AppServices;
+  type $$Props = ForwardRecipientProps;
+
+  export let services: $$Props['services'];
+  export let filter: $$Props['filter'];
+  export let contact: $$Props['contact'];
+
   const {backend} = services;
-
-  export let filter: string;
-  export let contact: RemoteModelStoreFor<LocalModelStore<Contact>>;
 
   let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
   let transformedContact: TransformedContact | undefined = undefined;

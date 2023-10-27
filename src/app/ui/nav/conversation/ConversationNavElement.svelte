@@ -3,7 +3,7 @@
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
   import {getFragmentForRoute, type Router} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
-  import DateTime from '~/app/ui/generic/form/DateTime.svelte';
+  import DateTime from '~/app/ui/components/atoms/datetime/DateTime.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
@@ -12,13 +12,13 @@
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {conversationDrafts} from '~/app/ui/main/conversation';
-  import MessageStatus from '~/app/ui/main/conversation/conversation-messages/MessageStatus.svelte';
   import {
     type ConversationPreviewData,
     conversationPreviewListFilter,
     transformConversation,
     transformReceiver,
   } from '~/app/ui/nav/conversation';
+  import MessageStatus from '~/app/ui/nav/conversation/MessageStatus.svelte';
   import {
     ConversationCategory,
     ConversationVisibility,
