@@ -5,7 +5,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import LazyList from '~/app/ui/components/hocs/lazy-list/LazyList.svelte';
   import type {LazyListItemProps} from '~/app/ui/components/hocs/lazy-list/props';
   import {Viewport} from '~/app/ui/components/partials/chat-view/helpers';
@@ -20,6 +22,7 @@
     messageSetViewModelToMessagePropsStore,
   } from '~/app/ui/components/partials/chat-view/transformers';
   import type {UnreadState, ModalState} from '~/app/ui/components/partials/chat-view/types';
+  import {i18n} from '~/app/ui/i18n';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {DbConversationUid} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
@@ -247,40 +250,58 @@
 </script>
 
 <div bind:this={element} class="chat">
-  <LazyList
-    bind:this={lazyListComponent}
-    items={$messagePropsStore}
-    lastItemId={currentLastMessage?.id}
-    initiallyVisibleItemId={initiallyVisibleMessageId}
-    on:itementered={handleItemEntered}
-    on:itemexited={handleItemExited}
-  >
-    <div class={`message ${item.direction}`} slot="item" let:item>
-      {#if item.id === rememberedUnreadState.firstUnreadMessageId}
-        <div class="separator">
-          <UnreadMessagesIndicator
-            variant={rememberedUnreadState.hasOutgoingMessageChangesSinceOpened
-              ? 'hairline'
-              : 'new-messages'}
-          />
+  {#if $messagePropsStore.length === 0}
+    <div class="empty-chat">
+      <div class="notice">
+        <div class="icon"><MdIcon theme="Outlined">info</MdIcon></div>
+        <div class="content">
+          <SubstitutableText
+            text={$i18n.t(
+              'messaging.markup--chat-empty-state',
+              'This chat is linked with your mobile device.<1/>All future messages will appear here.',
+            )}
+          >
+            <br slot="1" />
+          </SubstitutableText>
         </div>
-      {/if}
-
-      <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
-      <Message
-        {...item}
-        boundary={element}
-        {conversation}
-        {services}
-        on:clickquoteoption={() => dispatch('clickquote', item)}
-        on:clickforwardoption={() => handleClickForwardOption(item)}
-        on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
-        on:clickdeleteoption={() => dispatch('clickdelete', item)}
-        on:clickthumbnail={() => handleClickThumbnail(item)}
-      />
-      <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
+      </div>
     </div>
-  </LazyList>
+  {:else}
+    <LazyList
+      bind:this={lazyListComponent}
+      items={$messagePropsStore}
+      lastItemId={currentLastMessage?.id}
+      initiallyVisibleItemId={initiallyVisibleMessageId}
+      on:itementered={handleItemEntered}
+      on:itemexited={handleItemExited}
+    >
+      <div class={`message ${item.direction}`} slot="item" let:item>
+        {#if item.id === rememberedUnreadState.firstUnreadMessageId}
+          <div class="separator">
+            <UnreadMessagesIndicator
+              variant={rememberedUnreadState.hasOutgoingMessageChangesSinceOpened
+                ? 'hairline'
+                : 'new-messages'}
+            />
+          </div>
+        {/if}
+
+        <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
+        <Message
+          {...item}
+          boundary={element}
+          {conversation}
+          {services}
+          on:clickquoteoption={() => dispatch('clickquote', item)}
+          on:clickforwardoption={() => handleClickForwardOption(item)}
+          on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
+          on:clickdeleteoption={() => dispatch('clickdelete', item)}
+          on:clickthumbnail={() => handleClickThumbnail(item)}
+        />
+        <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
+      </div>
+    </LazyList>
+  {/if}
 </div>
 
 {#if modalState.type === 'none'}
@@ -328,6 +349,26 @@
       .separator {
         padding: rem(8px) 0 rem(16px) 0;
         width: 100%;
+      }
+    }
+  }
+
+  .empty-chat {
+    .notice {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--t-text-e2-color);
+      margin: rem(16px) auto;
+      user-select: none;
+
+      .content {
+        @extend %font-small-400;
+      }
+
+      .icon {
+        margin-right: rem(8px);
+        font-size: rem(16px);
       }
     }
   }

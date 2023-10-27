@@ -324,6 +324,7 @@
     "label--search-conversation": "Find Chat",
     "label--timestamp-yesterday": "Yesterday {time}",
     "label--unread-messages": "New Messages",
+    "markup--chat-empty-state": "This chat is linked with your mobile device. <1/>All future messages will appear here.",
     "success--copy-message-content": "Message copied to clipboard",
     "success--copy-message-image": "Image copied to clipboard",
     "success--copy-message-link": "Link copied to clipboard",
