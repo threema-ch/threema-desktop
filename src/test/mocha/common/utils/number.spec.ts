@@ -2,14 +2,7 @@ import * as chai from 'chai';
 import Long from 'long';
 
 import {ensureU64, type u53, type u64} from '~/common/types';
-import {
-    bigintSortAsc,
-    bigintSortDesc,
-    byteSizeToHumanReadable,
-    hexLeToU64,
-    intoU64,
-    u64ToHexLe,
-} from '~/common/utils/number';
+import {byteSizeToHumanReadable, hexLeToU64, intoU64, u64ToHexLe} from '~/common/utils/number';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 
 const {expect} = chai.use(chaiByteEqual);
@@ -83,20 +76,6 @@ export function run(): void {
                 expect(() => hexLeToU64('1001f0efdecdbcabff')).to.throw(
                     'hexLeToU64 failed: Value does not contain 8 bytes, but 9',
                 );
-            });
-        });
-
-        describe('bigintSortAsc', function () {
-            it('should sort bigints in ascending order', function () {
-                expect([1n, 4n, 3n, 5n, 2n].sort(bigintSortAsc)).to.eql([1n, 2n, 3n, 4n, 5n]);
-                expect([-1n, 1n, -1n].sort(bigintSortAsc)).to.eql([-1n, -1n, 1n]);
-            });
-        });
-
-        describe('bigintSortDesc', function () {
-            it('should sort bigints in descending order', function () {
-                expect([1n, 4n, 3n, 5n, 2n].sort(bigintSortDesc)).to.eql([5n, 4n, 3n, 2n, 1n]);
-                expect([-1n, 1n, -1n].sort(bigintSortDesc)).to.eql([1n, -1n, -1n]);
             });
         });
 

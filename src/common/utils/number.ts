@@ -1,6 +1,6 @@
 import Long from 'long';
 
-import type {i53, ibig, u32, u53, u64} from '~/common/types';
+import type {i53, u32, u53, u64} from '~/common/types';
 
 import {ensureError} from './assert';
 import {bytesToHex, byteView, hexToBytes} from './byte';
@@ -122,26 +122,6 @@ export function dateToUnixTimestampMs(date: Date): u64 {
 export function dateToUnixTimestampS(date: Date): u32 {
     // eslint-disable-next-line no-bitwise
     return (Number(date) / 1000) | 0;
-}
-
-/**
- * A sort function that sorts bigints in ascending order.
- */
-export function bigintSortAsc(a: ibig, b: ibig): u53 {
-    if (a < b) {
-        return -1;
-    }
-    if (a === b) {
-        return 0;
-    }
-    return 1;
-}
-
-/**
- * A sort function that sorts bigints in descending order.
- */
-export function bigintSortDesc(a: ibig, b: ibig): u53 {
-    return -bigintSortAsc(a, b);
 }
 
 const SI_BYTE_UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB'];

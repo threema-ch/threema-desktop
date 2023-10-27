@@ -37,7 +37,6 @@ import type {MessageId} from '~/common/network/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
-import {bigintSortAsc} from '~/common/utils/number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import type {MessageStatus} from '~/common/viewmodel/types';
 
@@ -402,9 +401,7 @@ export function all(
 ): SetOfAnyLocalMessageModelStore {
     return caches.get(conversation.uid).setRef.derefOrCreate(() => {
         const {db, logging} = services;
-        const uids = [...db.getMessageUids(conversation.uid)]; // TODO(DESK-569): Incremental message loading
-        // TODO(DESK-296): Messages don't currently have a defined order. Sort by UID for now.
-        uids.sort(({uid: a}, {uid: b}) => bigintSortAsc(a, b));
+        const uids = [...db.getMessageUids(conversation.uid)];
         const messages = uids.map(({uid}) =>
             getByUid(services, conversation, factory, uid, Existence.ENSURED),
         );
