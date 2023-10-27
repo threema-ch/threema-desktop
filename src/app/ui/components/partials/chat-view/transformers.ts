@@ -180,17 +180,17 @@ function getMessageSender(
     switch (sender.type) {
         case 'contact':
             return {
-                bytes: Promise.resolve(sender.profilePicture.img),
-                color: sender.profilePicture.color,
-                initials: sender.profilePicture.initials,
+                type: 'contact',
+                color: sender.profilePictureFallback.color,
+                initials: sender.profilePictureFallback.initials,
                 name: sender.name,
                 uid: sender.uid,
             };
 
         case 'self':
             return {
-                bytes: Promise.resolve(undefined),
-                color: sender.profilePicture.color,
+                type: 'self',
+                color: sender.profilePictureFallback.color,
                 initials: '',
                 name: sender.name,
             };

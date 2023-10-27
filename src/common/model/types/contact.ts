@@ -21,6 +21,7 @@ import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {FeatureMask, IdentityString, Nickname} from '~/common/network/types';
 import type {StrictExtract, StrictOmit, u8} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
+import type {IdColor} from '~/common/utils/id-color';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
 
 // Contact
@@ -34,6 +35,7 @@ export interface ContactView {
     readonly displayName: string;
     readonly initials: string;
     readonly colorIndex: u8;
+    readonly color: IdColor;
     readonly verificationLevel: VerificationLevel;
     readonly workVerificationLevel: WorkVerificationLevel;
     readonly identityType: IdentityType;
@@ -52,7 +54,7 @@ export interface ContactView {
 
 export type ContactViewDerivedProperties = StrictExtract<
     keyof ContactView,
-    'displayName' | 'initials'
+    'displayName' | 'initials' | 'color'
 >;
 export type ContactInit = StrictOmit<ContactView, ContactViewDerivedProperties> &
     ConversationInitMixin;

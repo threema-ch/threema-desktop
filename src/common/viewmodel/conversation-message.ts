@@ -8,6 +8,7 @@ import type {
     AnyMessageModelStore,
     CommonBaseFileMessageView,
 } from '~/common/model/types/message';
+import {getUserInitials} from '~/common/model/user';
 import type {MessageId} from '~/common/network/types';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
@@ -416,13 +417,7 @@ function getConversationMessageBodyBaseMessage(
     switch (messageModel.ctx) {
         case MessageDirection.INBOUND: {
             const sender = getAndSubscribe(messageModel.controller.sender());
-            const profilePicture = getAndSubscribe(sender.controller.profilePicture);
-            const contact = transformContact(
-                user.privacySettings,
-                sender,
-                profilePicture,
-                getAndSubscribe,
-            );
+            const contact = transformContact(user.privacySettings, sender, getAndSubscribe);
             assert(contact.type === 'contact');
 
             const incomingBaseMessage: Omit<
@@ -441,6 +436,8 @@ function getConversationMessageBodyBaseMessage(
         }
         case MessageDirection.OUTBOUND: {
             const status = statusFromView(messageModel.view)[0];
+            const userProfilePicture = getAndSubscribe(user.profilePicture);
+            const userDisplayName = getAndSubscribe(user.displayName);
             const outgoingBaseMessage: Omit<
                 OutgoingMessage<AnyMessageBody>,
                 BaseMessageOmittedFields
@@ -450,8 +447,11 @@ function getConversationMessageBodyBaseMessage(
                 status,
                 sender: {
                     type: 'self',
-                    name: getAndSubscribe(user.displayName),
-                    profilePicture: getAndSubscribe(user.profilePicture),
+                    name: userDisplayName,
+                    profilePictureFallback: {
+                        color: userProfilePicture.color,
+                        initials: getUserInitials(userDisplayName),
+                    },
                 },
                 updatedAt:
                     messageModel.view.readAt ??

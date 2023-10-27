@@ -1,10 +1,10 @@
 import type {PublicKey} from '~/common/crypto';
 import type {ProfilePictureView} from '~/common/model';
+import {getUserInitials} from '~/common/model/user';
 import type {IdentityString, Nickname} from '~/common/network/types';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {getGraphemeClusters} from '~/common/utils/string';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 
 export type ProfileViewModelStore = LocalStore<ProfileViewModel>;
@@ -26,7 +26,7 @@ export function getProfileViewModelStore(services: ServicesForViewModel): Profil
         return endpoint.exposeProperties({
             profilePicture: getAndSubscribe(model.user.profilePicture),
             nickname,
-            initials: getGraphemeClusters(displayName, 2).join(''),
+            initials: getUserInitials(displayName),
             identity: device.identity.string,
             displayName,
             publicKey: device.csp.ck.public,

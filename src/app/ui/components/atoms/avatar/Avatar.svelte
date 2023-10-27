@@ -7,7 +7,7 @@
 
   type $$Props = AvatarProps;
 
-  export let bytes: $$Props['bytes'];
+  export let byteStore: $$Props['byteStore'];
   export let initials: $$Props['initials'];
   export let description: $$Props['description'];
   export let color: $$Props['color'];
@@ -16,7 +16,7 @@
 
 <span class="avatar" data-color={color}>
   <LazyImage
-    {bytes}
+    {byteStore}
     constraints={{
       min: {
         width: size,

@@ -48,8 +48,7 @@ export interface MessageProps {
     readonly quote?: DefaultQuoteProps | NotFoundQuoteProps;
     readonly reactions?: IndicatorProps['reactions'];
     /** Details about the message sender. */
-    readonly sender?: Pick<AvatarProps, 'bytes' | 'color' | 'initials'> &
-        Pick<SenderProps, 'color' | 'name'>;
+    readonly sender?: Pick<AvatarProps, 'color' | 'initials'> & Pick<SenderProps, 'color' | 'name'>;
     readonly status: IndicatorProps['status'];
     /** Formatted timestamp of creation. */
     readonly timestamp: {

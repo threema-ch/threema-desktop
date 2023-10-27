@@ -12,6 +12,14 @@ import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
+import {getGraphemeClusters} from '~/common/utils/string';
+
+/**
+ * Determine the initials of the user.
+ */
+export function getUserInitials(displayName: string): string {
+    return getGraphemeClusters(displayName, 2).join('');
+}
 
 export class UserModel implements User {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -39,7 +47,7 @@ export class UserModel implements User {
 
         // TODO(DESK-624): Get profile picture from DB
         const colorIndex = idColorIndex({type: ReceiverType.CONTACT, identity: this.identity});
-        this.profilePicture = derive(this.profileSettings, (profileSettings) => ({
+        this.profilePicture = derive(this.profileSettings, (profileSettings, getAndSubscribe) => ({
             color: idColorIndexToString(colorIndex),
             picture: profileSettings.view.profilePicture,
         }));

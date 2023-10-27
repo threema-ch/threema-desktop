@@ -9,11 +9,12 @@
   import {constrain} from '~/app/ui/components/atoms/lazy-image/constrain';
   import type {LazyImageProps} from '~/app/ui/components/atoms/lazy-image/props';
   import type {LazyImageContent} from '~/app/ui/components/atoms/lazy-image/types';
+  import type {ReadonlyUint8Array} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
 
   type $$Props = LazyImageProps;
 
-  export let bytes: $$Props['bytes'];
+  export let byteStore: $$Props['byteStore'];
   export let constraints: $$Props['constraints'];
   export let description: $$Props['description'];
   export let dimensions: $$Props['dimensions'] = undefined;
@@ -23,33 +24,32 @@
   let image: LazyImageContent = {
     state: 'loading',
   };
-  function updateContent(imageBytes: typeof bytes): void {
-    void imageBytes
-      .then(async (value) => {
-        if (value === undefined) {
-          revokeCurrentImageUrl(image);
-          image = {
-            state: 'failed',
-          };
-          return;
-        }
 
-        const blob = new Blob([value]);
-        const imageBitmap = await createImageBitmap(blob);
+  async function updateContent(value: Blob | ReadonlyUint8Array | undefined): Promise<void> {
+    if (value === undefined) {
+      revokeCurrentImageUrl(image);
+      image = {state: 'failed'};
+      return;
+    }
 
-        revokeCurrentImageUrl(image);
-        image = {
-          state: 'loaded',
-          url: URL.createObjectURL(blob),
-          dimensions: {
-            width: imageBitmap.width,
-            height: imageBitmap.height,
-          },
-        };
+    let blob: Blob;
+    if (value instanceof Blob) {
+      blob = value;
+    } else {
+      blob = new Blob([value]);
+    }
 
-        imageBitmap.close();
-      })
-      .catch((error) => {});
+    const imageBitmap = await createImageBitmap(blob);
+    revokeCurrentImageUrl(image);
+    image = {
+      state: 'loaded',
+      url: URL.createObjectURL(blob),
+      dimensions: {
+        width: imageBitmap.width,
+        height: imageBitmap.height,
+      },
+    };
+    imageBitmap.close();
   }
 
   function revokeCurrentImageUrl(currentImage: LazyImageContent): void {
@@ -58,12 +58,13 @@
     }
   }
 
-  $: updateContent(bytes);
   $: preferredDisplay = constrain({
     dimensions: image.state === 'loaded' ? image.dimensions : dimensions ?? {width: 0, height: 0},
     constraints,
   });
   $: preferredAspectRatio = `${preferredDisplay.values.width} / ${preferredDisplay.values.height}`;
+
+  $: void updateContent($byteStore);
 
   onDestroy(() => {
     revokeCurrentImageUrl(image);

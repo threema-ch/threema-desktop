@@ -19,6 +19,7 @@
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {durationToString} from '~/common/utils/date';
+  import {promiseResultStore} from '~/common/utils/store';
 
   type $$Props = MessageProps;
 
@@ -156,7 +157,9 @@
           </div>
 
           <LazyImage
-            bytes={file.thumbnail?.fetchThumbnailBytes() ?? Promise.resolve(undefined)}
+            byteStore={promiseResultStore(
+              file.thumbnail?.fetchThumbnailBytes() ?? Promise.resolve(undefined),
+            )}
             constraints={{
               min: {
                 // Dynamically increase the min width for longer text.

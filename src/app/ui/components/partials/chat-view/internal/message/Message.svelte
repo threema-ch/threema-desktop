@@ -27,6 +27,7 @@
   import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import {ensureError, unreachable} from '~/common/utils/assert';
+  import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
 
   const {uiLogging, systemTime} = globals.unwrap();
   const log = uiLogging.logger('ui.component.message');
@@ -48,13 +49,15 @@
 
   let quoteProps: BasicMessageProps['quote'];
 
+  let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
+
   function handleClickAvatar(): void {
     if (sender === undefined) {
       log.error('Clicked avatar when sender was undefined');
       return;
     }
-    if (sender.uid === undefined) {
-      log.error('Sender UID is undefined of clicked avatar');
+    if (sender.type === 'self') {
+      log.error('Sender type is self of clicked avatar');
       return;
     }
 
@@ -196,6 +199,36 @@
     void handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure);
   }
 
+  function updateProfilePictureStore(
+    conversationValue: typeof conversation,
+    senderValue: typeof sender,
+    directionValue: typeof direction,
+  ): void {
+    if (
+      conversationValue.type === ReceiverType.GROUP &&
+      senderValue !== undefined &&
+      directionValue === 'inbound' &&
+      senderValue.type !== 'self'
+    ) {
+      services.profilePicture
+        .getProfilePictureForReceiver({
+          type: ReceiverType.CONTACT,
+          uid: senderValue.uid,
+        })
+        .then((store) => {
+          if (store === undefined) {
+            profilePictureStore = new ReadableStore(undefined);
+          } else {
+            profilePictureStore = store;
+          }
+        })
+        .catch((error) => {
+          log.warn(`Failed to fetch profile picture store: ${error}`);
+          profilePictureStore = new ReadableStore(undefined);
+        });
+    }
+  }
+
   function updateQuoteProps(rawQuote: $$Props['quote']): void {
     if (rawQuote === undefined) {
       quoteProps = undefined;
@@ -245,15 +278,19 @@
   );
 
   $: updateQuoteProps(quote);
+
+  $: updateProfilePictureStore(conversation, sender, direction);
 </script>
 
 <div class="container">
   {#if conversation.type === ReceiverType.GROUP && sender !== undefined && direction === 'inbound'}
     <span class="avatar">
       <Avatar
-        bytes={sender.bytes}
+        byteStore={profilePictureStore}
         color={sender.color}
-        description={'TODO'}
+        description={$i18n.t('contacts.hint--profile-picture', {
+          name: sender.name,
+        })}
         initials={sender.initials}
         size={24}
         on:click={handleClickAvatar}

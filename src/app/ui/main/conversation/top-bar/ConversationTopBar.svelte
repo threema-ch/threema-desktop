@@ -17,12 +17,14 @@
   import TopBarSearch from '~/app/ui/main/conversation/top-bar/TopBarSearch.svelte';
   import ConversationEmptyConfirmationDialog from '~/app/ui/modal/ConversationEmptyConfirmation.svelte';
   import type {DbReceiverLookup} from '~/common/db';
-  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
+  import type {ProfilePictureBlobStore} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
   import {ReceiverType} from '~/common/enum';
   import type {Conversation} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import {unreachable} from '~/common/utils/assert';
+  import {eternalPromise} from '~/common/utils/promise';
+  import {ReadableStore} from '~/common/utils/store';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-top-bar');
 
@@ -111,10 +113,22 @@
     router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
   }
 
+  function confirmEmptyConversationAction(): void {
+    isConversationEmptyDialogVisible = true;
+  }
+
+  function deleteAllConversationMessages(): void {
+    $conversation.controller.removeAllMessages
+      .fromLocal()
+      .catch((error) => log.error('Could not remove messages from conversation', error));
+  }
+
   let isConversationEmptyDialogVisible = false;
   let isConversationEmptyActionEnabled = false;
   let conversationMessageCount = 0;
+  let profilePictureStore: ProfilePictureBlobStore = new ReadableStore(undefined);
 
+  // Update conversation message count and other flags
   $: $conversation.controller
     .getAllMessages()
     .then((messages) => {
@@ -128,14 +142,14 @@
       isConversationEmptyActionEnabled = false;
     });
 
-  function confirmEmptyConversationAction(): void {
-    isConversationEmptyDialogVisible = true;
-  }
-
-  function deleteAllConversationMessages(): void {
-    $conversation.controller.removeAllMessages
-      .fromLocal()
-      .catch((error) => log.error('Could not remove messages from conversation', error));
+  // Update profile picture store
+  $: {
+    services.profilePicture
+      .getProfilePictureForReceiver(receiverLookup)
+      .then((store) => {
+        profilePictureStore = store ?? new ReadableStore(undefined);
+      })
+      .catch((error) => log.error(`Fetching profile picture for receiver failed: ${error}`));
   }
 </script>
 
@@ -153,10 +167,10 @@
         <div class="profile-picture" on:click={openAside}>
           <div class="inner">
             <ProfilePictureComponent
-              img={transformProfilePicture(receiver.profilePicture.img)}
+              img={$profilePictureStore ?? eternalPromise()}
               alt={$i18n.t('contacts.hint--profile-picture', {name: receiver.name})}
-              initials={receiver.profilePicture.initials}
-              color={receiver.profilePicture.color}
+              initials={receiver.profilePictureFallback.initials}
+              color={receiver.profilePictureFallback.color}
               shape="circle"
             />
             <div class="overlay">

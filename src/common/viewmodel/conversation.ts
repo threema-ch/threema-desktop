@@ -248,13 +248,12 @@ function getInnerConversationViewModelStore(
 ): LocalStore<InnerConversationViewModel> {
     return derive(conversationStore, (conversationModel, getAndSubscribe) => {
         const receiver = getAndSubscribe(conversationModel.controller.receiver());
-        const profilePicture = getAndSubscribe(receiver.controller.profilePicture);
         const lastMessageStore = getAndSubscribe(conversationModel.controller.lastMessageStore());
         const lastMessageView =
             lastMessageStore === undefined ? undefined : getAndSubscribe(lastMessageStore).view;
 
         return endpoint.exposeProperties({
-            receiver: transformReceiver(receiver, profilePicture, model, getAndSubscribe),
+            receiver: transformReceiver(receiver, model, getAndSubscribe),
             lastMessage:
                 lastMessageView === undefined
                     ? undefined

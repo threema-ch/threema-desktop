@@ -271,7 +271,7 @@ export class DerivedStore<
         const unsubscriber = store.subscribe((value) => {
             assert(
                 this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-                'A unwrappedSourceStore subscription may not call an disabled derived store.',
+                'A unwrappedSourceStore subscription may not call a disabled derived store.',
             );
 
             if (this._state.deriving) {
@@ -321,7 +321,7 @@ export class DerivedStore<
         this._state.unsubscriber = this._sourceStore.subscribe((sourceValue) => {
             assert(
                 this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-                'A source store subscription may not call an disabled derived store.',
+                'A source store subscription may not call a disabled derived store.',
             );
             this._state.sourceStoreValue = sourceValue as IQueryableStoreValue<TSourceStore>;
 

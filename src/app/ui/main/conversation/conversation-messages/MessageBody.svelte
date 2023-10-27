@@ -78,7 +78,7 @@
         )}
       </div>
     {:else if !isQuoted && quote !== undefined}
-      <div class="quote" data-color={quotedMessage?.sender.profilePicture.color}>
+      <div class="quote" data-color={quotedMessage?.sender.profilePictureFallback.color}>
         <svelte:self viewModelBundle={quote} {receiver} isQuoted={true} />
       </div>
     {/if}
@@ -87,7 +87,10 @@
       <!-- Sender -->
       {#if isQuoted}
         <div class="sender">
-          <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
+          <MessageContact
+            name={message.sender.name}
+            color={message.sender.profilePictureFallback.color}
+          />
         </div>
       {/if}
 

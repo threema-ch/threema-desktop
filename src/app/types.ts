@@ -8,6 +8,7 @@ import type {Config} from '~/common/config';
 import type {CryptoBackend} from '~/common/crypto';
 import type {BackendController} from '~/common/dom/backend/controller';
 import type {LocalStorageController} from '~/common/dom/ui/local-storage';
+import type {ProfilePictureService} from '~/common/dom/ui/profile-picture';
 import type {LoggerFactory} from '~/common/logging';
 import type {SystemDialogService} from '~/common/system-dialog';
 import type {GlobalTimer} from '~/common/utils/timer';
@@ -19,6 +20,7 @@ export interface AppServices {
     readonly config: Config;
     readonly crypto: Pick<CryptoBackend, 'randomBytes'>;
     readonly logging: LoggerFactory;
+    readonly profilePicture: ProfilePictureService;
     readonly timer: GlobalTimer;
     readonly storage: LocalStorageController;
     readonly backend: BackendController;

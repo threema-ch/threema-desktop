@@ -36,9 +36,16 @@ export interface MessageProps {
     readonly id: MessageId;
     readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
     readonly reactions: BasicMessageProps['reactions'];
-    readonly sender?: NonNullable<BasicMessageProps['sender']> & {
-        readonly uid?: DbContactUid;
-    };
+    readonly sender?: NonNullable<BasicMessageProps['sender']> &
+        (
+            | {
+                  readonly type: 'self';
+              }
+            | {
+                  readonly type: 'contact';
+                  readonly uid: DbContactUid;
+              }
+        );
     readonly services: AppServices;
     readonly status: BasicMessageProps['status'];
     readonly text?: TextContent;

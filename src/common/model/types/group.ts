@@ -18,6 +18,7 @@ import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {GroupId, IdentityString} from '~/common/network/types';
 import type {u8, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
+import type {IdColor} from '~/common/utils/id-color';
 import type {SequenceNumberU53} from '~/common/utils/sequence-number';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
 
@@ -28,6 +29,7 @@ export interface GroupView {
     readonly name: string;
     readonly displayName: string;
     readonly colorIndex: u8;
+    readonly color: IdColor;
     readonly userState: GroupUserState;
     readonly notificationTriggerPolicyOverride?: {
         readonly policy: GroupNotificationTriggerPolicy;
@@ -36,11 +38,18 @@ export interface GroupView {
     readonly notificationSoundPolicyOverride?: NotificationSoundPolicy;
     readonly members: IdentityString[];
 }
-export type GroupInit = Omit<GroupView, 'displayName' | 'members'> & ConversationInitMixin;
+export type GroupInit = Omit<GroupView, 'displayName' | 'members' | 'color'> &
+    ConversationInitMixin;
 export type GroupUpdate = Partial<
     Omit<
         GroupView,
-        'groupId' | 'creatorIdentity' | 'createdAt' | 'displayName' | 'colorIndex' | 'members'
+        | 'groupId'
+        | 'creatorIdentity'
+        | 'createdAt'
+        | 'displayName'
+        | 'colorIndex'
+        | 'color'
+        | 'members'
     >
 >;
 export type GroupUpdateFromLocal = Pick<

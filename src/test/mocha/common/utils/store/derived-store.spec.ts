@@ -217,7 +217,7 @@ export function run(): void {
                     typeAssert(sourceStoreSubscriber !== undefined);
                     sourceStoreSubscriber('World!');
                 }).to.throw(
-                    'Assertion failed, message: A source store subscription may not call an disabled derived store.',
+                    'Assertion failed, message: A source store subscription may not call a disabled derived store.',
                 );
             });
         });

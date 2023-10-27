@@ -4,9 +4,8 @@ import type {
 } from '#3sc/components/threema/VerificationDots';
 import type {DbContactUid} from '~/common/db';
 import type {MessageDirection, MessageReaction} from '~/common/enum';
-import type {ProfilePictureView} from '~/common/model';
 import type {Dimensions, u53} from '~/common/types';
-import type {ProfilePictureData} from '~/common/viewmodel/profile-picture';
+import type {ProfilePictureFallback} from '~/common/viewmodel/profile-picture';
 
 /**
  * Status of a message.
@@ -110,9 +109,9 @@ export type ReceiverData<T extends ReceiverType> = {
      */
     name: string;
     /**
-     * Profile picture of the receiver.
+     * Profile picture fallback data.
      */
-    profilePicture: ProfilePictureData;
+    profilePictureFallback: ProfilePictureFallback;
 } & ReceiverDataFor<T>;
 
 /**
@@ -277,7 +276,7 @@ export type OutgoingMessage<B extends AnyMessageBody> = {
     readonly sender: {
         readonly type: 'self';
         readonly name: string;
-        readonly profilePicture: ProfilePictureView;
+        readonly profilePictureFallback: ProfilePictureFallback;
     };
     readonly updatedAt: Date;
     readonly lastReaction?: Reaction;

@@ -1,14 +1,15 @@
 import type {Constraints} from '~/app/ui/components/atoms/lazy-image/types';
 import type {Dimensions, ReadonlyUint8Array} from '~/common/types';
+import type {IQueryableStore} from '~/common/utils/store';
 
 /**
  * Props accepted by the `LazyImage` component.
  */
 export interface LazyImageProps {
     /**
-     * Bytes of the image to create the blob from.
+     * Bytes of the image.
      */
-    readonly bytes: Promise<ReadonlyUint8Array | undefined>;
+    readonly byteStore: IQueryableStore<Blob | ReadonlyUint8Array | undefined>;
     /**
      * Constraints to control the display size of an image.
      */

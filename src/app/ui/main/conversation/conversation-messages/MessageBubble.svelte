@@ -59,7 +59,10 @@
       <!-- Sender name (only displayed for incoming messages in a multi-user conversation) -->
       {#if isIncoming(message) && isMultiUserConversation(receiver.type)}
         <div class="sender">
-          <MessageContact name={message.sender.name} color={message.sender.profilePicture.color} />
+          <MessageContact
+            name={message.sender.name}
+            color={message.sender.profilePictureFallback.color}
+          />
         </div>
       {/if}
       <MessageBody

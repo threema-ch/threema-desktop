@@ -1,10 +1,11 @@
-import type {ReadonlyUint8Array} from '~/common/types';
 import type {IdColor} from '~/common/utils/id-color';
 
 export type ProfilePictureShape = 'square' | 'circle';
 
-export interface ProfilePictureData {
-    readonly img: ReadonlyUint8Array | undefined;
+/**
+ * Data that is used for the avatar of a contact or group in case there is no profile picture.
+ */
+export interface ProfilePictureFallback {
     readonly color: IdColor;
     readonly initials: string;
 }

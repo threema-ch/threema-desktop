@@ -888,3 +888,18 @@ export class RemoteStore<TValue>
         return initial;
     }
 }
+
+/**
+ * Convert a Promise<T> to a Store<T | undefined>.
+ *
+ * Note: Promise rejections are simply ignored.
+ */
+export function promiseResultStore<T>(promise: Promise<T>): IQueryableStore<T | undefined> {
+    const store = new WritableStore<T | undefined>(undefined);
+    promise
+        .then((value: T) => store.set(value))
+        .catch((error) => {
+            /* Ignored */
+        });
+    return store;
+}

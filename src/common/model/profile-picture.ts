@@ -599,6 +599,7 @@ export type ProfilePictureRepository = {
         identity: IdentityString,
         profilePictureData: ContactProfilePictureFields,
     ) => LocalModelStore<ProfilePicture>;
+
     /**
      * Return the profile picture model store for the specified group.
      */

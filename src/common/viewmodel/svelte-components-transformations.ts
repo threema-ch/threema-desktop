@@ -18,7 +18,6 @@ import type {
     ContactView,
     Group,
     GroupView,
-    ProfilePicture,
     Repositories,
 } from '~/common/model';
 import type {ContactRepository} from '~/common/model/types/contact';
@@ -43,7 +42,6 @@ export type ReceiverNotificationPolicy = 'default' | 'muted' | 'mentioned' | 'ne
 export function transformContact(
     privacySettings: LocalModelStore<PrivacySettings>,
     contact: Contact,
-    profilePicture: ProfilePicture,
     getAndSubscribe: GetAndSubscribeFunction,
 ): TransformedReceiverData {
     // Determine verification level
@@ -54,9 +52,8 @@ export function transformContact(
         type: 'contact',
         uid: contact.ctx,
         name: contact.view.displayName,
-        profilePicture: {
-            img: profilePicture.view.picture,
-            color: profilePicture.view.color,
+        profilePictureFallback: {
+            color: contact.view.color,
             initials: contact.view.initials,
         },
         badge: getContactBadge(contact.view),
@@ -69,19 +66,14 @@ export function transformContact(
     };
 }
 
-function transformGroup(
-    group: Group,
-    profilePicture: ProfilePicture,
-    contacts: ContactRepository,
-): TransformedReceiverData {
+function transformGroup(group: Group, contacts: ContactRepository): TransformedReceiverData {
     const memberNames = getMemberNames(group.view.members, contacts);
 
     return {
         type: 'group',
         name: group.view.displayName,
-        profilePicture: {
-            img: profilePicture.view.picture,
-            color: profilePicture.view.color,
+        profilePictureFallback: {
+            color: group.view.color,
             initials: group.view.displayName.slice(0, 2),
         },
         members: group.view.members,
@@ -92,22 +84,16 @@ function transformGroup(
 
 export function transformReceiver(
     receiver: AnyReceiver,
-    profilePicture: ProfilePicture,
     model: Repositories,
     getAndSubscribe: GetAndSubscribeFunction,
 ): TransformedReceiverData {
     switch (receiver.type) {
         case ReceiverType.CONTACT:
-            return transformContact(
-                model.user.privacySettings,
-                receiver,
-                profilePicture,
-                getAndSubscribe,
-            );
+            return transformContact(model.user.privacySettings, receiver, getAndSubscribe);
         case ReceiverType.DISTRIBUTION_LIST:
             throw new Error('TODO(DESK-236): Implement distribution list');
         case ReceiverType.GROUP:
-            return transformGroup(receiver, profilePicture, model.contacts);
+            return transformGroup(receiver, model.contacts);
         default:
             return unreachable(receiver);
     }

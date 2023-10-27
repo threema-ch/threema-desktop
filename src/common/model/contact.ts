@@ -33,6 +33,7 @@ import type {StrictOmit, u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {
     createExactPropertyValidator,
@@ -94,7 +95,8 @@ function addDerivedData(
     return {
         ...contact,
         displayName: getDisplayName(contact),
-        initials: getInitials(contact),
+        initials: getContactInitials(contact),
+        color: idColorIndexToString(contact.colorIndex),
     };
 }
 
@@ -628,7 +630,7 @@ export function getDisplayName(
 /**
  * Determine the initials of the contact.
  */
-export function getInitials(
+export function getContactInitials(
     contact: Pick<ContactView, 'firstName' | 'lastName' | 'nickname' | 'identity'>,
 ): string {
     if (contact.firstName !== '' && contact.lastName !== '') {

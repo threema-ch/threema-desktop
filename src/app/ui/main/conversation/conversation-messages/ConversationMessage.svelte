@@ -26,7 +26,6 @@
   import MessageForward from '~/app/ui/modal/MessageForward.svelte';
   import {toast} from '~/app/ui/snackbar';
   import type {DbReceiverLookup} from '~/common/db';
-  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {
     MessageDirection,
     MessageDirectionUtils,
@@ -39,6 +38,7 @@
   import type {ReadonlyUint8Array} from '~/common/types';
   import {assert, ensureError, unreachable, unwrap} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
+  import {eternalPromise} from '~/common/utils/promise';
   import type {
     ConversationMessageViewModelBundle,
     ConversationMessageViewModelStore,
@@ -436,8 +436,8 @@
         <div class="profile-picture-container">
           <button class="profile-picture" on:click={async () => await navigateToContact()}>
             <ProfilePictureComponent
-              {...messageBody.sender.profilePicture}
-              img={transformProfilePicture(messageBody.sender.profilePicture.img)}
+              {...messageBody.sender.profilePictureFallback}
+              img={eternalPromise()}
               alt=""
               title={messageBody.sender.name}
               shape="circle"

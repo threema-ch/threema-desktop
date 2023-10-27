@@ -38,6 +38,7 @@ import {getNotificationTagForGroup, type NotificationTag} from '~/common/notific
 import type {Mutable, u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {u64ToHexLe} from '~/common/utils/number';
 import {
@@ -48,6 +49,7 @@ import {
 } from '~/common/utils/property-validator';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {LocalSetStore} from '~/common/utils/store/set-store';
+import {getGraphemeClusters} from '~/common/utils/string';
 
 let cache = new LocalModelStoreCache<DbGroupUid, LocalModelStore<Group>>();
 
@@ -110,6 +112,16 @@ export function getDisplayName(
     identities.unshift(group.creatorIdentity);
     identities.push(services.device.identity.string);
     return identities.join(', ');
+}
+
+/**
+ * Determine the initials of the group.
+ */
+export function getGroupInitials(group: Pick<GroupView, 'name' | 'groupId'>): string {
+    if (group.name.length > 0) {
+        return getGraphemeClusters(group.name, 2).join('');
+    }
+    return u64ToHexLe(group.groupId).substring(0, 2);
 }
 
 /**
@@ -226,6 +238,7 @@ function create(
         ...group,
         displayName: getDisplayName({...group}, memberIdentities, services),
         members: memberIdentities,
+        color: idColorIndexToString(group.colorIndex),
     };
 
     // Extract profile picture fields
@@ -297,6 +310,7 @@ export function getByUid(
             ...group,
             displayName: getDisplayName(group, memberIdentities, services),
             members: memberIdentities,
+            color: idColorIndexToString(group.colorIndex),
         };
 
         // Extract profile picture fields
