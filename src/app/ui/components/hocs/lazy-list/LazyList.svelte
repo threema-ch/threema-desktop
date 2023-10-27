@@ -1,12 +1,14 @@
 <!--
-  @component
-  Renders a chat view.
+  @component Renders a reactive list of keyed items which can be modified.
+
+  The list also abstracts generic list functionality, like scrolling to an item, glueing, and
+  observing items that enter and exit the view.
 -->
 <script lang="ts" generics="TId, TProps">
   import {createEventDispatcher} from 'svelte/internal';
 
   import {intersection} from '~/app/ui/actions/intersection';
-  import type {LazyListProps} from '~/app/ui/components/organisms/lazy-list/props';
+  import type {LazyListProps} from '~/app/ui/components/hocs/lazy-list/props';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {u53} from '~/common/types';
 

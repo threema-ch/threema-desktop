@@ -6,8 +6,8 @@
   import {createEventDispatcher} from 'svelte';
 
   import {globals} from '~/app/globals';
-  import LazyList from '~/app/ui/components/organisms/lazy-list/LazyList.svelte';
-  import type {LazyListItemProps} from '~/app/ui/components/organisms/lazy-list/props';
+  import LazyList from '~/app/ui/components/hocs/lazy-list/LazyList.svelte';
+  import type {LazyListItemProps} from '~/app/ui/components/hocs/lazy-list/props';
   import {Viewport} from '~/app/ui/components/partials/chat-view/helpers';
   import Message from '~/app/ui/components/partials/chat-view/internal/message/Message.svelte';
   import MessageDetailsModal from '~/app/ui/components/partials/chat-view/internal/message-details-modal/MessageDetailsModal.svelte';
