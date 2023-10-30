@@ -157,13 +157,11 @@
   <div data-mode={mode}>
     {#if mode === 'conversation-detail'}
       <div class="detail" data-type={receiver.type} data-display={$display}>
-        {#if $display === 'small'}
-          <div class="back">
-            <IconButton flavor="naked" on:click={closeConversation}>
-              <MdIcon theme="Outlined">arrow_back</MdIcon>
-            </IconButton>
-          </div>
-        {/if}
+        <div class="back">
+          <IconButton flavor="naked" on:click={closeConversation}>
+            <MdIcon theme="Outlined">arrow_back</MdIcon>
+          </IconButton>
+        </div>
         <div class="profile-picture" on:click={openAside}>
           <div class="inner">
             <ProfilePictureComponent
@@ -272,19 +270,28 @@
         'profile-picture details spacer blocked-icon actions' #{rem(16px)}
         / #{rem(40px)} auto 1fr auto;
       column-gap: rem(8px);
-      padding: #{rem(12px)} #{rem(8px)} #{rem(12px)} #{rem(16px)};
+      padding: rem(12px) rem(8px);
 
+      // In small layout, show back button
       &[data-display='small'] {
         grid-template:
           'back profile-picture title   spacer blocked-icon actions' #{rem(24px)}
           'back profile-picture details spacer blocked-icon actions' #{rem(16px)}
           / #{rem(40px)} #{rem(40px)} auto 1fr auto;
+
+        .back {
+          grid-area: back;
+          user-select: none;
+          cursor: pointer;
+        }
       }
 
-      .back {
-        grid-area: back;
-        user-select: none;
-        cursor: pointer;
+      // In non-small layout, don't show back button and increase left padding for profile picture.
+      &:not([data-display='small']) {
+        padding-left: 16px;
+        .back {
+          display: none;
+        }
       }
 
       .profile-picture {

@@ -22,6 +22,7 @@
   import {toast} from '~/app/ui/snackbar';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
+  import {display} from '~/common/dom/ui/state';
   import {
     ContactNotificationTriggerPolicy,
     NotificationSoundPolicy,
@@ -153,12 +154,18 @@
 
 <template>
   <div class="aside-contact">
-    <header>
-      <span />
+    <header data-display={$display}>
+      <div class="back">
+        <IconButton flavor="naked" on:click={closeAside}>
+          <MdIcon theme="Outlined">arrow_back</MdIcon>
+        </IconButton>
+      </div>
       {$i18n.t('contacts.label--contact-detail', 'Contact Detail')}
-      <IconButton flavor="naked" on:click={closeAside}>
-        <MdIcon theme="Outlined">close</MdIcon>
-      </IconButton>
+      <div class="close">
+        <IconButton flavor="naked" on:click={closeAside}>
+          <MdIcon theme="Outlined">close</MdIcon>
+        </IconButton>
+      </div>
     </header>
 
     {#if $contactViewModel !== undefined && $profilePicture !== undefined}
@@ -361,13 +368,21 @@
   .aside-contact {
     header {
       display: grid;
-      padding: #{rem(12px)} #{rem(8px)} #{rem(12px)} #{rem(8px)};
+      padding: rem(12px) rem(8px);
       grid-template:
-        'space title cancel' 100%
+        'back title cancel' 100%
         / #{rem(40px)} auto #{rem(40px)};
       grid-auto-flow: column;
       place-items: center;
       user-select: none;
+
+      &[data-display='large'] .back {
+        visibility: hidden;
+      }
+
+      &:not([data-display='large']) .close {
+        visibility: hidden;
+      }
     }
 
     .profile-picture {
@@ -439,21 +454,5 @@
       position: relative;
       top: rem(2px);
     }
-
-    // .gallery {
-    //   .icon-photo {
-    //     display: grid;
-    //     place-items: center;
-    //     color: var(--t-color-primary);
-    //   }
-    // }
-
-    // .group-members {
-    //   .icon-group {
-    //     display: grid;
-    //     place-items: center;
-    //     color: var(--t-color-primary);
-    //   }
-    // }
   }
 </style>
