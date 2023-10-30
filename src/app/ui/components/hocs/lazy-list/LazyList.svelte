@@ -65,9 +65,12 @@
     threshold: 0,
   };
 
+  // Note: For some reason, with 1.0, the visibility is not being detected reliably.
+  const anchorIntersectionThreshold = 0.9;
+
   $: lastObserverOptions = {
     root: containerElement,
-    threshold: 1,
+    threshold: anchorIntersectionThreshold,
   };
 
   $: shouldScrollToInitiallyVisible = initiallyVisibleItemId !== undefined;
@@ -112,7 +115,7 @@
         }}
         class="anchor"
         on:intersectionenter={(event) => {
-          isAtBottom = event.detail.entry.intersectionRatio >= 1;
+          isAtBottom = event.detail.entry.intersectionRatio >= anchorIntersectionThreshold;
         }}
         on:intersectionexit={() => {
           isAtBottom = false;
