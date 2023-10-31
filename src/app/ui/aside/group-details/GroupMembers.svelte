@@ -4,7 +4,8 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {sortGroupMembers} from '~/app/ui/aside/group-details';
   import GroupMember from '~/app/ui/aside/group-details/GroupMember.svelte';
-  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
+  import type {UserReceiver} from '~/app/ui/generic/receiver';
+  import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
   import {i18n} from '~/app/ui/i18n';
   import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
   import type {DbContactUid} from '~/common/db';
@@ -84,6 +85,26 @@
   }
 
   const userProfilePicture = backend.user.profilePicture;
+
+  let userReceiver: UserReceiver;
+  $: userReceiver = {
+    type: 'user',
+    identity: backend.user.identity,
+    profilePicture: {
+      profilePicture: $userProfilePicture,
+      alt: $i18n.t('contacts.hint--own-profile-picture', 'My profile picture'),
+      initials: $i18n.t('contacts.label--own-initials', 'ME'),
+      unread: 0,
+    },
+    title: {
+      text: $i18n.t('contacts.label--own-name', 'Me'),
+    },
+    subtitle: {
+      badges: {
+        isCreator: isCurrentUserGroupCreator,
+      },
+    },
+  };
 </script>
 
 <template>
@@ -97,21 +118,7 @@
     </div>
     <div class="members">
       {#if isCurrentUserGroupCreator}
-        <DeprecatedReceiver
-          clickable={false}
-          profilePicture={{
-            alt: $i18n.t('contacts.hint--own-profile-picture', 'My profile picture'),
-            profilePicture: $userProfilePicture,
-            initials: $i18n.t('contacts.label--own-initials', 'ME'),
-            unread: 0,
-          }}
-          title={{
-            title: $i18n.t('contacts.label--own-name', 'Me'),
-            isCreator: true,
-          }}
-        >
-          <div class="identity" slot="additional-bottom">{backend.user.identity}</div>
-        </DeprecatedReceiver>
+        <Receiver clickable={false} receiver={userReceiver} />
       {/if}
       {#each getVisibleMembers(sortedMembersExcludingCurrentContact, isParticipantsListExpanded) as member (member.id)}
         <GroupMember
@@ -122,18 +129,7 @@
         />
       {/each}
       {#if !isCurrentUserGroupCreator && !isInactiveGroup}
-        <DeprecatedReceiver
-          clickable={false}
-          profilePicture={{
-            alt: $i18n.t('contacts.hint--own-profile-picture', 'My profile picture'),
-            profilePicture: $userProfilePicture,
-            initials: $i18n.t('contacts.label--own-initials', 'ME'),
-            unread: 0,
-          }}
-          title={{title: $i18n.t('contacts.label--own-name', 'Me')}}
-        >
-          <div class="identity" slot="additional-bottom">{backend.user.identity}</div>
-        </DeprecatedReceiver>
+        <Receiver clickable={false} receiver={userReceiver} />
       {/if}
     </div>
     {#if isExpandCollapseButtonNeeded}

@@ -108,6 +108,9 @@ interface BaseReceiver {
     };
 }
 
+export interface UserReceiver extends BaseReceiver {
+    readonly type: 'user';
+}
 export interface ContactReceiver extends BaseReceiver {
     readonly type: 'contact';
     readonly verificationDot: {
@@ -135,6 +138,7 @@ interface GroupMemberReceiver extends BaseReceiver {
 }
 
 export type Receiver =
+    | UserReceiver
     | ContactReceiver
     | ConversationPreviewReceiver
     | ConversationHeaderReceiver

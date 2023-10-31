@@ -54,6 +54,9 @@
         isDraft = receiverParam.subtitle?.badges?.isDraft ?? false;
         isBlocked = receiverParam.isBlocked;
         break;
+      case 'user':
+        isCreator = receiverParam.subtitle?.badges?.isCreator ?? false;
+        break;
       default:
         isInactive = false;
         isInvalid = false;
@@ -192,7 +195,8 @@
       / #{$-profile-picture-size} 1fr auto;
     align-items: center;
 
-    &[data-type='contact'] {
+    &[data-type='contact'],
+    &[data-type='user'] {
       grid-template:
         'profile-picture name  verification-level' rem(20px)
         'profile-picture name  identity' rem(20px)

@@ -1,9 +1,7 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
 
-  import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
-  import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
-  import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
+  import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {
     getStores,
@@ -24,7 +22,7 @@
   export let creator: IdentityString;
 
   let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
-  let transformedContact: TransformedContact | undefined = undefined;
+  let transformedContact: TransformedContact | undefined;
   let isBlocked = false;
 
   function resetContactData(): void {
@@ -63,55 +61,45 @@
 
 <template>
   {#if transformedContact !== undefined && $profilePicture !== undefined}
-    <DeprecatedReceiver
+    <Receiver
+      receiver={{
+        type: 'contact',
+        verificationDot: {
+          color: transformedContact.verificationLevelColors,
+          level: transformedContact.verificationLevel,
+        },
+        identity: transformedContact.identity,
+        isBlocked,
+        profilePicture: {
+          alt: $i18n.t('contacts.hint--profile-picture', {
+            name: transformedContact.displayName,
+          }),
+          profilePicture: $profilePicture.view,
+          initials: transformedContact.initials,
+          unread: 0,
+          badge: transformedContact.badge,
+        },
+        title: {
+          text: showFullNameAndNickname(transformedContact)
+            ? transformedContact.fullName
+            : transformedContact.displayName,
+        },
+        subtitle: {
+          text: showFullNameAndNickname(transformedContact)
+            ? transformedContact.nickname
+            : undefined,
+          badges: {
+            isInactive: transformedContact.activityState === 'inactive',
+            isInvalid: transformedContact.activityState === 'invalid',
+            isCreator: creator === transformedContact.identity,
+          },
+        },
+      }}
       on:click
-      profilePicture={{
-        alt: $i18n.t('contacts.hint--profile-picture', {
-          name: transformedContact.displayName,
-        }),
-        profilePicture: $profilePicture.view,
-        initials: transformedContact.initials,
-        unread: 0,
-        badge: transformedContact.badge,
-      }}
-      title={{
-        title: showFullNameAndNickname(transformedContact)
-          ? transformedContact.fullName
-          : transformedContact.displayName,
-        subtitle: showFullNameAndNickname(transformedContact)
-          ? transformedContact.nickname
-          : undefined,
-        isInactive: transformedContact.activityState === 'inactive',
-        isCreator: creator === transformedContact.identity,
-      }}
-    >
-      <div class="verification-dots" slot="additional-top">
-        <VerificationDots
-          colors={transformedContact.verificationLevelColors}
-          verificationLevel={transformedContact.verificationLevel}
-        />
-      </div>
-      <div class="identity" slot="additional-bottom">
-        {#if isBlocked}
-          <span class="property" data-property="blocked">
-            <BlockedIcon />
-          </span>
-        {/if}
-        {transformedContact.identity}
-      </div>
-    </DeprecatedReceiver>
+    ></Receiver>
   {/if}
 </template>
 
 <style lang="scss">
   @use 'component' as *;
-
-  .verification-dots {
-    @include def-var(--c-verification-dots-size, rem(6px));
-  }
-
-  [data-property='blocked'] {
-    position: relative;
-    top: rem(2px);
-  }
 </style>

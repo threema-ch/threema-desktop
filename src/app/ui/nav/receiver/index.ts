@@ -18,7 +18,7 @@ import {
 import type {Contact, ContactView, ProfilePicture, RemoteModelFor} from '~/common/model';
 import {getFullName} from '~/common/model/contact';
 import type {RemoteModelStore} from '~/common/model/utils/model-store';
-import {isNickname, type Nickname} from '~/common/network/types';
+import {type IdentityString, isNickname, type Nickname} from '~/common/network/types';
 import type {StrictOmit} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
@@ -40,7 +40,7 @@ import {getContactBadge} from '~/common/viewmodel/utils/contact';
 export type TransformedContact = StrictOmit<Remote<ContactData>, 'isBlocked'> & {
     readonly lookup: DbReceiverLookup;
     readonly isNew: boolean;
-    readonly identity: string;
+    readonly identity: IdentityString;
     readonly publicKey: PublicKey;
     readonly nickname: Nickname | undefined;
     readonly firstName: string;
