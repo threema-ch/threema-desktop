@@ -30,7 +30,7 @@
   export let isInactiveGroup: boolean;
 
   /**
-   * Since the members list does never include the current user, regardless if they are the group
+   * Since the members list never includes the current user, regardless if they are the group
    * creator or not, here we use "participants" as either the group creator, a regular group member
    * or the current user.
    */
@@ -100,7 +100,7 @@
         <DeprecatedReceiver
           clickable={false}
           profilePicture={{
-            alt: $i18n.t('contacts.hint--profile-picture-own', 'My profile picture'),
+            alt: $i18n.t('contacts.hint--own-profile-picture', 'My profile picture'),
             profilePicture: $userProfilePicture,
             initials: $i18n.t('contacts.label--own-initials', 'ME'),
             unread: 0,
