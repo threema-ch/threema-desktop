@@ -1,8 +1,9 @@
 import {type AnyRouteInstance, ROUTE_DEFINITIONS} from '~/app/routing/routes';
 import type {DbReceiverLookup} from '~/common/db';
+import {display} from '~/common/dom/ui/state';
 import {ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import {assert} from '~/common/utils/assert';
+import {assert, assertUnreachable} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
 import {splitAtLeast} from '~/common/utils/string';
 
@@ -305,27 +306,43 @@ export class Router extends WritableStore<RouterState> {
     }
 
     /**
-     * Open the conversation and – if the aside panel is already opened – the conversation details
-     * for the specified receiver.
+     * Open the conversation and the conversation details for the specified receiver.
+     *
+     * By default, the aside panel is always closed in medium and small layout, unless
+     * `options.keepAsidePanelOpen` is set to `true`.
      */
-    public openConversationAndDetailsForReceiver(receiverLookup: DbReceiverLookup): void {
+    public openConversationAndDetailsForReceiver(
+        receiverLookup: DbReceiverLookup,
+        options?: {readonly keepAsidePanelOpen?: boolean},
+    ): void {
         assert(
             [ReceiverType.CONTACT, ReceiverType.GROUP].includes(receiverLookup.type),
             'TODO(DESK-236)',
         );
 
-        const current = this.get();
+        const keepAsidePanelOpen = options?.keepAsidePanelOpen ?? false;
 
+        const currentState = this.get();
+        const displayMode = display.get();
+
+        // Determine what to show in aside panel. If the aside is currently closed, keep it closed.
+        // If it is opened, then show it, but only if layout is in large mode (since otherwise the
+        // chat view is hidden below the aside panel), or if the `keepAsidePanelOpen` option is set.
         let aside = undefined;
-        if (current.aside !== undefined) {
-            if (receiverLookup.type === ReceiverType.CONTACT) {
-                aside = ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({
-                    contactUid: receiverLookup.uid,
-                });
-            } else if (receiverLookup.type === ReceiverType.GROUP) {
-                aside = ROUTE_DEFINITIONS.aside.groupDetails.withTypedParams({
-                    groupUid: receiverLookup.uid,
-                });
+        if (currentState.aside !== undefined && (displayMode === 'large' || keepAsidePanelOpen)) {
+            switch (receiverLookup.type) {
+                case ReceiverType.CONTACT:
+                    aside = ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({
+                        contactUid: receiverLookup.uid,
+                    });
+                    break;
+                case ReceiverType.GROUP:
+                    aside = ROUTE_DEFINITIONS.aside.groupDetails.withTypedParams({
+                        groupUid: receiverLookup.uid,
+                    });
+                    break;
+                default:
+                    assertUnreachable('TODO(DESK-236)');
             }
         }
 

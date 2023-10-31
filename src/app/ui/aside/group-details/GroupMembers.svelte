@@ -1,7 +1,6 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import type {Router} from '~/app/routing/router';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import {sortGroupMembers} from '~/app/ui/aside/group-details';
   import GroupMember from '~/app/ui/aside/group-details/GroupMember.svelte';
   import type {UserReceiver} from '~/app/ui/generic/receiver';
@@ -71,17 +70,7 @@
   }
 
   function navigateToContactConversation(uid: DbContactUid): void {
-    router.go(
-      router.get().nav,
-      ROUTE_DEFINITIONS.main.conversation.withTypedParams({
-        receiverLookup: {
-          type: ReceiverType.CONTACT,
-          uid,
-        },
-      }),
-      ROUTE_DEFINITIONS.aside.contactDetails.withTypedParams({contactUid: uid}),
-      undefined,
-    );
+    router.openConversationAndDetailsForReceiver({type: ReceiverType.CONTACT, uid});
   }
 
   const userProfilePicture = backend.user.profilePicture;

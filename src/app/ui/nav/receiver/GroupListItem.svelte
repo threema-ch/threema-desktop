@@ -49,10 +49,13 @@
   $: profilePicture = group.get().profilePicture;
 
   function switchToConversation(groupUid: DbGroupUid): void {
-    router.openConversationAndDetailsForReceiver({
-      type: ReceiverType.GROUP,
-      uid: groupUid,
-    });
+    router.openConversationAndDetailsForReceiver(
+      {
+        type: ReceiverType.GROUP,
+        uid: groupUid,
+      },
+      {keepAsidePanelOpen: true},
+    );
   }
 
   function handleClick(): void {

@@ -48,10 +48,13 @@
   $: profilePicture = $contact.profilePicture;
 
   function switchToConversation(contactUid: DbContactUid): void {
-    router.openConversationAndDetailsForReceiver({
-      type: ReceiverType.CONTACT,
-      uid: contactUid,
-    });
+    router.openConversationAndDetailsForReceiver(
+      {
+        type: ReceiverType.CONTACT,
+        uid: contactUid,
+      },
+      {keepAsidePanelOpen: true},
+    );
   }
 
   function handleClick(): void {
