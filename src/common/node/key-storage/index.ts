@@ -63,6 +63,7 @@ import {
     wrapRawKey,
 } from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
+import type {ThreemaWorkCredentials} from '~/common/device';
 import {
     ARGON2_MIN_PARAMS,
     type Argon2idParameters,
@@ -201,8 +202,18 @@ export class FileSystemKeyStorage implements KeyStorage {
 
     /** @inheritdoc */
     public async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-        const currentContent = await this.read(currentPassword);
-        await this.write(newPassword, currentContent);
+        const content = await this.read(currentPassword);
+        await this.write(newPassword, content);
+    }
+
+    /** @inheritdoc */
+    public async changeWorkCredentials(
+        password: string,
+        workCredentials: ThreemaWorkCredentials,
+    ): Promise<void> {
+        const oldContent = await this.read(password);
+        const newContent = {...oldContent, workCredentials: {...workCredentials}};
+        await this.write(password, newContent);
     }
 
     private async _write(

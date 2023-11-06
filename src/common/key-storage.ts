@@ -3,6 +3,7 @@ import * as v from '@badrap/valita';
 import type {ServicesForBackend} from '~/common/backend';
 import {ensureEncryptedDataWithNonceAhead} from '~/common/crypto';
 import {wrapRawDatabaseKey} from '~/common/db';
+import {ThreemaWorkCredentials} from '~/common/device';
 import {TransferTag} from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {
@@ -300,6 +301,17 @@ export interface KeyStorage extends ProxyMarked {
      *   fails.
      */
     readonly changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+
+    /**
+     * Change the Threema Work credentials.
+     *
+     * @throws {KeyStorageError} In case encrypting or writing the key storage
+     *   fails.
+     */
+    readonly changeWorkCredentials: (
+        password: string,
+        workCredentials: ThreemaWorkCredentials,
+    ) => Promise<void>;
 }
 
 /**
