@@ -1,24 +1,34 @@
 <script lang="ts">
-  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import UserProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import type {ProfilePictureView} from '~/common/model';
 
   export let profilePicture: ProfilePictureView;
   export let initials: string;
   export let displayName: string;
+
+  let userProfilePictureDialogVisible = false;
 </script>
 
 <template>
   <div class="profile">
-    <div class="profile-picture">
-      <ProfilePicture
-        img={transformProfilePicture(profilePicture.picture)}
-        alt={$i18n.t('settings.hint--own-profile-picture', 'My profile picture')}
-        {initials}
-        color={profilePicture.color}
-        shape="circle"
-      />
+    <div
+      class="profile-picture"
+      on:click={() => {
+        userProfilePictureDialogVisible = true;
+      }}
+    >
+      <span>
+        <UserProfilePicture
+          img={transformProfilePicture(profilePicture.picture)}
+          alt={$i18n.t('settings.hint--own-profile-picture', 'My profile picture')}
+          {initials}
+          color={profilePicture.color}
+          shape="circle"
+        />
+      </span>
     </div>
     <div class="nickname">
       <div class="label">{$i18n.t('settings.label--nickname', 'Nickname')}</div>
@@ -26,6 +36,15 @@
     </div>
     <div class="qr-code" />
   </div>
+  <ProfilePictureDialog bind:visible={userProfilePictureDialogVisible}
+    ><UserProfilePicture
+      img={transformProfilePicture(profilePicture.picture)}
+      alt={$i18n.t('settings.hint--own-profile-picture', 'My profile picture')}
+      {initials}
+      color={profilePicture.color}
+      shape="square"
+    />
+  </ProfilePictureDialog>
 </template>
 
 <style lang="scss">
@@ -43,6 +62,10 @@
     .profile-picture {
       grid-area: profile-picture;
       --c-profile-picture-size: #{rem(60px)};
+
+      span {
+        cursor: pointer;
+      }
     }
 
     .nickname {
