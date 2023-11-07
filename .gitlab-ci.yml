@@ -98,6 +98,16 @@ flatpak-node-generator:
         - .npm/
         - node_modules/
 
+launcher:
+  stage: build
+  needs: []
+  image: rust:1.76
+  script:
+    - cd src/launcher/ && cargo check
+  variables:
+    RUSTFLAGS: '-D warnings'
+    THREEMA_BUILD_FLAVOR: consumer-sandbox
+
 lint:
   stage: test
   needs: []

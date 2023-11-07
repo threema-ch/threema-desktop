@@ -406,11 +406,9 @@ async function init(): Promise<MainInit> {
         const options = argv.slice(offset);
         const unverifiedParameters = options
             .map<[key?: string, value?: string]>((raw) => {
-                // Handle help
                 if (raw === '-h' || raw === '--help') {
                     showUsageAndExit(entrypoint);
                 }
-
                 if (raw === '--version') {
                     log.error(APP_NAME_AND_VERSION);
                     process.exit(0);

@@ -1,0 +1,10 @@
+[package]
+name = "threema-desktop-launcher"
+version = "1.0.0"
+authors = ["Danilo Bargen <danilo.bargen@threema.ch>"]
+edition = "2021"
+homepage = "https://threema.ch/"
+keywords = ["threema", "desktop", "launcher"]
+publish = false
+
+[dependencies]
