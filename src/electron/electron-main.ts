@@ -50,6 +50,7 @@ import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
 const EXIT_CODE_UNCAUGHT_ERROR = 7;
 const EXIT_CODE_RESTART = 8;
+const EXIT_CODE_DELETE_PROFILE_AND_RESTART = 9;
 
 // Path name for user data, see
 // https://www.electronjs.org/docs/latest/api/app#appgetpathname
@@ -344,7 +345,6 @@ interface MainInit {
     readonly appPath: string;
     readonly fileLogger: FileLogger | undefined;
     readonly log: Logger;
-    readonly unlinkedAppPath: string;
     readonly appUrl: string;
     readonly electronSettings: ElectronSettings;
 }
@@ -491,34 +491,6 @@ Version information:
   NODE_MODULE_VERSION: ${process.versions.modules}`);
     log.info(`File system storage path: ${appPath}`);
 
-    // Unlinked app path cleanup
-    const unlinkedAppPath = `${appPath}.unlinked_pending_delete`;
-    let stat;
-    try {
-        stat = fs.statSync(unlinkedAppPath);
-    } catch {
-        // Path does not exist, nothing to do
-    }
-    if (stat !== undefined) {
-        try {
-            if (stat.isDirectory()) {
-                log.info(`Removing unlinked profile folder ${unlinkedAppPath}`);
-                fs.rmSync(unlinkedAppPath, {
-                    recursive: true,
-                    force: true,
-                    maxRetries: 3,
-                });
-                log.info(`Unlinked profile folder successfully removed.`);
-            }
-        } catch (error) {
-            log.warn(
-                `Error while removing unlinked profile folder ${unlinkedAppPath}: ${
-                    ensureError(error).message
-                }`,
-            );
-        }
-    }
-
     // Determine URL
     let appUrl: string;
     if (!import.meta.env.DEBUG) {
@@ -533,7 +505,6 @@ Version information:
         appPath,
         fileLogger,
         log,
-        unlinkedAppPath,
         appUrl,
         electronSettings,
     };
@@ -542,7 +513,7 @@ Version information:
 // Run the Electron process after initialisation. This drives the state of the app. Keep this block
 // to a bare minimum and move stateless functions out of it, so that state is easy to track!
 function main(
-    {parameters, appPath, fileLogger, unlinkedAppPath, appUrl, electronSettings}: MainInit,
+    {parameters, appPath, fileLogger, appUrl, electronSettings}: MainInit,
     signal: {readonly start: boolean},
 ): void {
     function isValidAppUrl(url?: string): boolean {
@@ -550,68 +521,21 @@ function main(
     }
 
     /**
-     * Whether a relaunch was already requested.
+     * Quit immediately with the appropriate exit code, indicating to the launcher binary that the
+     * application should be restarted (and - depending on the options - the profile directory
+     * should be deleted).
      *
-     * Use this property to ensure that `relaunch()` is only called once. Otherwise, multiple windows
-     * would be opened after relaunching.
+     * Note: In development mode, the application will exit, but it will not be restarted and the
+     * profile won't be deleted.
      */
-    let relaunchRequested = false;
-
-    /**
-     * Move the profile folder to {@link unlinkedAppPath} and make sure a relaunch was requested.
-     *
-     * If the profile folder cannot be moved, a message box is shown with instructions to manually
-     * delete the folder.
-     */
-    function renameUnlinkedProfileAndRestart(): void {
-        log.info(`Moving profile directory at ${appPath} to ${unlinkedAppPath}`);
-
-        try {
-            fs.renameSync(appPath, unlinkedAppPath);
-        } catch (error_) {
-            const error = ensureError(error_);
-            log.error(
-                `Error: Moving profile directory ${appPath} to ${unlinkedAppPath} failed:\n  ${error.message}`,
-            );
-            const selection = electron.dialog.showMessageBoxSync({
-                title: 'Removing Old Profile Failed',
-                message: `Removing profile directory failed:\n\n  ${appPath} \n\nError:\n\n  ${error.message}\n\nThis application will now close. You should manually delete the profile directory '${appPath}' before restarting the app.`,
-                type: 'error',
-                buttons: ['Show Instructions', 'OK'],
-                defaultId: 1,
-            });
-
-            if (selection === 0) {
-                electron.shell
-                    .openExternal(import.meta.env.URLS.resetProfile.full)
-                    .catch((openExternalError: unknown) => {
-                        log.error('Unable to open external URL', openExternalError);
-                    });
-            }
+    function restartApplication(options: {deleteProfile: boolean}): void {
+        if (options.deleteProfile) {
+            log.info(`Requesting profile deletion and app restart`);
+            electron.app.exit(EXIT_CODE_DELETE_PROFILE_AND_RESTART);
+        } else {
+            log.info(`Requesting app restart`);
+            electron.app.exit(EXIT_CODE_RESTART);
         }
-    }
-
-    function restartApplication(): void {
-        // Close and relaunch the application
-        if (!relaunchRequested) {
-            // Deleting failed, restart app.
-            relaunchRequested = true;
-            electron.app.relaunch();
-        }
-        electron.app.exit(EXIT_CODE_RESTART);
-    }
-
-    /**
-     * Schedule the execution of {@link renameUnlinkedProfileAndRestart} on quit (so that no files are still
-     * opened / active) and immediately quit the application.
-     */
-    function scheduleRenameUnlinkedProfileAndQuit(): void {
-        log.info(`Scheduled profile directory (${appPath}) rename on quit`);
-        electron.app.on('quit', () => {
-            renameUnlinkedProfileAndRestart();
-        });
-
-        restartApplication();
     }
 
     // Main app window.
@@ -725,11 +649,11 @@ function main(
                 validateSenderFrame(event.senderFrame);
                 event.returnValue = electron.app.getPath(ELECTRON_PATH_USER_DATA);
             })
-            .on(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, (event) => {
+            .on(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, (event: electron.IpcMainEvent) => {
                 validateSenderFrame(event.senderFrame);
-                scheduleRenameUnlinkedProfileAndQuit();
+                restartApplication({deleteProfile: true});
             })
-            .on(ElectronIpcCommand.CLOSE_APP, (event) => {
+            .on(ElectronIpcCommand.CLOSE_APP, (event: electron.IpcMainEvent) => {
                 validateSenderFrame(event.senderFrame);
                 electron.app.quit();
             })
@@ -831,7 +755,7 @@ function main(
                     appPath,
                     log,
                 );
-                restartApplication();
+                restartApplication({deleteProfile: false});
             },
         );
 
