@@ -55,6 +55,7 @@
     justify-items: start;
     cursor: pointer;
     text-align: start;
+    word-break: break-all;
 
     &:disabled {
       cursor: unset;

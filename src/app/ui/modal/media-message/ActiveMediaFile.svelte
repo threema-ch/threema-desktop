@@ -22,7 +22,7 @@
 <template>
   <div class="container">
     <div class="header">
-      <span class="chip">
+      <span class="chip filename">
         {mediaFile.sanitizedFilenameDetails.name} ({byteSizeToHumanReadable(mediaFile.file.size)})
       </span>
       {#if validationResult.status === 'error'}
@@ -106,6 +106,10 @@
           background-color: $alert-red;
           color: white;
         }
+      }
+
+      .filename {
+        word-break: break-all;
       }
     }
 
