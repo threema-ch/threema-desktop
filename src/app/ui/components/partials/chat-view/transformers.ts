@@ -282,7 +282,8 @@ function getMessageFile(
             raw: messageModel.view.fileName,
             default: 'download',
         },
-        sizeInBytes: messageModel.view.fileSize,
+        // Note: Use actual file size if available, and fall back to declared file size otherwise
+        sizeInBytes: messageModel.view.fileData?.unencryptedByteCount ?? messageModel.view.fileSize,
         sync: {
             state: viewModel.body.state.type,
             direction: viewModel.syncDirection,

@@ -15,8 +15,9 @@ export interface FileInfoProps {
          */
         readonly default: string;
         /**
-         * The raw (original) file name. Note: Will be amended to `name.extension` using the
-         * `mediaType`, if needed.
+         * The raw (original) file name.
+         *
+         * Note: Will be amended to `name.extension` using the `mediaType`, if needed.
          */
         readonly raw?: string;
     };

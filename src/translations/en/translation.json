@@ -241,7 +241,10 @@
   "dialog--message-details": {
     "label--created-date": "Created",
     "label--delivered-date": "Delivered",
+    "label--file-name": "File Name",
+    "label--file-size": "File Size",
     "label--last-reaction": "Last Reaction",
+    "label--media-type": "Media Type",
     "label--message-id": "Message ID",
     "label--read-date": "Read",
     "label--received-date": "Received",

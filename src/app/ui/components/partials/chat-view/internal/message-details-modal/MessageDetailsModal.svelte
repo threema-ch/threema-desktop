@@ -1,5 +1,5 @@
 <!--
-  @component 
+  @component
   Renders a modal with details about a message.
 -->
 <script lang="ts">
@@ -78,6 +78,24 @@
         </KeyValueList.Item>
       </KeyValueList.Section>
 
+      {#if file !== undefined}
+        <KeyValueList.Section>
+          <KeyValueList.Item key={$i18n.t('dialog--message-details.label--file-name', 'File Name')}>
+            <Text text={file.name.raw ?? file.name.default} />
+          </KeyValueList.Item>
+
+          <KeyValueList.Item key={$i18n.t('dialog--message-details.label--file-size', 'File Size')}>
+            <Text text={`${(file.sizeInBytes / 1000).toFixed(0)} kB`} />
+          </KeyValueList.Item>
+
+          <KeyValueList.Item
+            key={$i18n.t('dialog--message-details.label--media-type', 'Media Type')}
+          >
+            <Text text={file.mediaType} />
+          </KeyValueList.Item>
+        </KeyValueList.Section>
+      {/if}
+
       <KeyValueList.Section>
         <KeyValueList.Item
           key={$i18n.t('dialog--message-details.label--last-reaction', 'Last Reaction')}
@@ -112,10 +130,6 @@
 
             <KeyValueList.Item key="File Sync State">
               <Text text={file.sync.state} />
-            </KeyValueList.Item>
-
-            <KeyValueList.Item key="File Size (reported)">
-              <Text text={`${(file.sizeInBytes / 1024).toFixed(0)} KiB`} />
             </KeyValueList.Item>
 
             <KeyValueList.Item key="Media Types">
