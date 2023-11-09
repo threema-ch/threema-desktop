@@ -50,9 +50,8 @@ import {createTlsCertificateVerifier} from './tls-cert-verifier';
 const EXIT_CODE_UNCAUGHT_ERROR = 7;
 const EXIT_CODE_RESTART = 8;
 
-// Path name for app / user data, see
+// Path name for user data, see
 // https://www.electronjs.org/docs/latest/api/app#appgetpathname
-const ELECTRON_PATH_APP_DATA = 'appData';
 const ELECTRON_PATH_USER_DATA = 'userData';
 
 /**
@@ -346,29 +345,44 @@ async function init(): Promise<MainInit> {
     /**
      * Return the path to the platform-specific application data base directory.
      *
-     * - Windows: %APPDATA%/threema-desktop/<variant>-<environment>-<profile>
-     * - Linux: $XDG_DATA_HOME/threema-desktop/<variant>-<environment>-<profile>
-     *   or ~/.local/share/threema-desktop/<variant>-<environment>-<profile>
-     * - macOS: ~/Library/Application Support/threema-desktop/<variant>-<environment>-<profile>
+     * - Linux / BSD: $XDG_DATA_HOME/ThreemaDesktop/ or ~/.local/share/ThreemaDesktop/
+     * - macOS: ~/Library/Application Support/ThreemaDesktop/
+     * - Windows: %APPDATA%/ThreemaDesktop/
+     * - Other: ~/.ThreemaDesktop/
      */
     function getPersistentAppDataBaseDir(): string[] {
         const rootDirectoryName = 'ThreemaDesktop';
-        if (process.platform === 'linux') {
-            // By default, Electron stores all app data in XDG_CONFIG_HOME, which is wrong. Thus,
-            // override the default and use XDG_DATA_HOME instead.
-            //
-            // Note: Don't use dot notation below, see https://stackoverflow.com/a/72403165/284318
-            // eslint-disable-next-line @typescript-eslint/dot-notation
-            const XDG_DATA_HOME = (process.env['XDG_DATA_HOME'] ?? '').trim();
-            const baseDir =
-                XDG_DATA_HOME.length > 0
-                    ? XDG_DATA_HOME
-                    : path.join(os.homedir(), '.local', 'share');
-            return [baseDir, rootDirectoryName];
+        switch (process.platform) {
+            case 'linux':
+            case 'freebsd':
+            case 'netbsd':
+            case 'openbsd':
+            case 'sunos': {
+                // Note: Don't use dot notation below, see https://stackoverflow.com/a/72403165/284318
+                // eslint-disable-next-line @typescript-eslint/dot-notation
+                const XDG_DATA_HOME = (process.env['XDG_DATA_HOME'] ?? '').trim();
+                if (XDG_DATA_HOME.length > 0) {
+                    return [XDG_DATA_HOME, rootDirectoryName];
+                }
+                return [os.homedir(), '.local', 'share', rootDirectoryName];
+            }
+            case 'darwin':
+                return [os.homedir(), 'Library', 'Application Support', rootDirectoryName];
+            case 'win32': {
+                // Note: Don't use dot notation below, see https://stackoverflow.com/a/72403165/284318
+                // eslint-disable-next-line @typescript-eslint/dot-notation
+                const appData = process.env['APPDATA'];
+                assert(appData !== undefined && appData !== '', '%APPDATA% is undefined or empty');
+                return [appData, rootDirectoryName];
+            }
+            case 'aix':
+            case 'android':
+            case 'cygwin':
+            case 'haiku':
+                return [os.homedir(), `.${rootDirectoryName}`];
+            default:
+                return unreachable(process.platform);
         }
-
-        // On other operating systems, let Electron decide.
-        return [path.join(electron.app.getPath(ELECTRON_PATH_APP_DATA), rootDirectoryName)];
     }
 
     /**

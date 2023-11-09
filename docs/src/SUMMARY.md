@@ -13,6 +13,7 @@
   - [UI Components](./ui-components.md)
   - [Internationalization](./internationalization.md)
 - [Data](./data.md)
+  - [Profile Directory](./profile-directory.md)
   - [Database](./database.md)
   - [File Storage](./file-storage.md)
 - [Testing](./testing.md)
