@@ -67,7 +67,6 @@ const RUN_PARAMETER_BOOL_SCHEMA = v
     );
 const RUN_PARAMETERS_SCHEMA = v.object({
     'profile': v.string().default('default'),
-    'persist-profile': RUN_PARAMETER_BOOL_SCHEMA.default(true),
     'single-instance-lock': RUN_PARAMETER_BOOL_SCHEMA.optional(),
 });
 type RunParameters = Readonly<v.Infer<typeof RUN_PARAMETERS_SCHEMA>>;
@@ -77,8 +76,6 @@ type RunParameters = Readonly<v.Infer<typeof RUN_PARAMETERS_SCHEMA>>;
  */
 const RUN_PARAMETERS_DOCS: {readonly [K in keyof RunParameters]: string} = {
     'profile': '<session-profile-name> – The name of the profile to use. "default" by default.',
-    'persist-profile':
-        '<true|false> – Persist the profile to a permanent location (default: "true") or use a volatile session and temporary storage ("false").',
     'single-instance-lock':
         '<true|false> – Prevent running multiple instances of Threema Desktop at the same time (default: "true"). Development option, disable at your own risk!',
 };
@@ -356,7 +353,7 @@ async function init(): Promise<MainInit> {
      *   or ~/.local/share/threema-desktop/<variant>-<environment>-<profile>
      * - macOS: ~/Library/Application Support/threema-desktop/<variant>-<environment>-<profile>
      */
-    function getPersistentAppDataDir(): string[] {
+    function getPersistentAppDataBaseDir(): string[] {
         const rootDirectoryName = 'ThreemaDesktop';
         if (process.platform === 'linux') {
             // By default, Electron stores all app data in XDG_CONFIG_HOME, which is wrong. Thus,
@@ -420,9 +417,7 @@ async function init(): Promise<MainInit> {
     // Use subdirectory for user data (where Electron stores all of its data)
     // depending on build variant and profile.
     const appPath = path.join(
-        ...(parameters['persist-profile']
-            ? getPersistentAppDataDir()
-            : [electron.app.getPath('temp'), electron.app.name]),
+        ...getPersistentAppDataBaseDir(),
         `${import.meta.env.BUILD_FLAVOR}-${parameters.profile}`,
     );
     if (!fs.existsSync(appPath)) {
@@ -842,9 +837,7 @@ function main(
             },
         );
 
-        const session = parameters['persist-profile']
-            ? electron.session.defaultSession
-            : electron.session.fromPartition(`volatile-${parameters.profile}`);
+        const session = electron.session.defaultSession;
 
         session.setCertificateVerifyProc(
             createTlsCertificateVerifier(
