@@ -8,3 +8,10 @@ keywords = ["threema", "desktop", "launcher"]
 publish = false
 
 [dependencies]
+home = "0.5.5"
+time = "0.3.30"
+
+[profile.release]
+overflow-checks = true
+lto = true
+strip = "debuginfo"
