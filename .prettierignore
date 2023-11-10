@@ -5,7 +5,7 @@
 /libs/
 /node_modules/
 /package-lock.json
-/packaging/flatpak/generated-sources.json
+/packaging/flatpak/generated-*.json
 /src/common/network/protobuf/js
 /src/common/internal-protobuf/
 /src/launcher/

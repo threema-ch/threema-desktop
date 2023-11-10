@@ -974,10 +974,12 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     requireCommand('python3');
 
     // Layer dependencies
+    const layerDependenciesVersion = '23.08';
     const dependencies = [
-        ['org.electronjs.Electron2.BaseApp', '23.08'],
-        ['org.freedesktop.Sdk', '23.08'],
-        ['org.freedesktop.Sdk.Extension.node20', '23.08'],
+        'org.electronjs.Electron2.BaseApp',
+        'org.freedesktop.Sdk',
+        'org.freedesktop.Sdk.Extension.node20',
+        'org.freedesktop.Sdk.Extension.rust-stable',
     ];
 
     // Child process options
@@ -993,16 +995,30 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
     log.minor('Generating manifest files');
     execFileSync('bash', ['generate-manifest.sh'], options);
 
-    // Run flatpak-node-generator
-    log.minor('Generate source JSON');
+    // Run flatpak source generators
+    log.minor('Generate npm source JSON');
     execFileSync(
         'python3',
         [
             '-m',
-            'flatpak_node_generator',
+            'flatpak-builder-tools.flatpak_node_generator',
             'npm',
             '--electron-node-headers',
+            '-o',
+            'generated-npm-sources.json',
             '../../package-lock.json',
+        ],
+        options,
+    );
+    log.minor('Generate cargo source JSON');
+    execFileSync(
+        'python3',
+        [
+            '-m',
+            'flatpak-builder-tools.flatpak-cargo-generator',
+            '-o',
+            'generated-cargo-sources.json',
+            '../../src/launcher/Cargo.lock',
         ],
         options,
     );
@@ -1022,10 +1038,10 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
             fail(`Unsupported architecture: ${process.arch}`);
     }
     log.minor('Installing layer dependencies');
-    for (const [name, version] of dependencies) {
+    for (const name of dependencies) {
         execFileSync(
             'flatpak',
-            ['install', '-y', '--noninteractive', `${name}/${arch}/${version}`],
+            ['install', '-y', '--noninteractive', `${name}/${arch}/${layerDependenciesVersion}`],
             options,
         );
     }

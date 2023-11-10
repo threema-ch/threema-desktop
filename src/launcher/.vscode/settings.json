@@ -12,7 +12,6 @@
   "editor.formatOnSaveMode": "modificationsIfAvailable",
   "rust-analyzer.cargo.features": "all",
   "rust-analyzer.server.extraEnv": {
-    "THREEMA_BUILD_VARIANT": "consumer",
-    "THREEMA_BUILD_ENVIRONMENT": "sandbox"
+    "THREEMA_BUILD_FLAVOR": "consumer-sandbox"
   }
 }

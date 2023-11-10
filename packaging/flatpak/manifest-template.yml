@@ -6,6 +6,7 @@ base: org.electronjs.Electron2.BaseApp
 base-version: '23.08'
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.node20
+  - org.freedesktop.Sdk.Extension.rust-stable
 command: run.sh
 separate-locales: false
 finish-args:
@@ -28,7 +29,7 @@ finish-args:
   # Allow desktop notifications
   - --talk-name=org.freedesktop.Notifications
 build-options:
-  append-path: /usr/lib/sdk/node20/bin
+  append-path: /usr/lib/sdk/node20/bin:/usr/lib/sdk/rust-stable/bin
   cflags: -O2 -g
   cxxflags: -O2 -g
   env:
@@ -39,6 +40,8 @@ modules:
     build-options:
       env:
         XDG_CACHE_HOME: /run/build/threema-desktop/flatpak-node/cache
+        CARGO_HOME: /run/build/threema-desktop/cargo
+        THREEMA_BUILD_FLAVOR: '{{flavor}}'
         npm_config_cache: /run/build/threema-desktop/flatpak-node/npm-cache
         npm_config_offline: 'true'
       secret-env: ['SENTRY_DSN', 'MINIDUMP_ENDPOINT']
@@ -46,28 +49,27 @@ modules:
       # Project source code
       - type: dir
         path: ../../
-      # Dependencies, updated with flatpak-node-generator
-      - generated-sources.json
+      # Node dependencies, updated with flatpak-node-generator
+      - generated-npm-sources.json
+      # Rust dependencies, updated with flatpak-cargo-generator
+      - generated-cargo-sources.json
       # Wrapper to launch the app
       - type: script
         dest-filename: run.sh
         commands:
           - cd /app/main/
-          - |
-            while true; do
-              # The following options were temporarily disabled to work around a bug in Chromium or Electron:
-              #
-              # --ozone-platform-hint=auto \
-              # --enable-features="WaylandWindowDecorations" \
-              #
-              # See https://github.com/electron/electron/issues/37531
-              zypak-wrapper.sh ./ThreemaDesktop \
-                "$@"
-              if [ "$?" != "8" ]; then
-                break
-              fi
-            done
+          - # Note: The following options were temporarily removed to work around a bug in Chromium or Electron:
+            #
+            # --ozone-platform-hint=auto \
+            # --enable-features="WaylandWindowDecorations" \
+            #
+            # See https://github.com/electron/electron/issues/37531
+            threema-desktop-launcher /app/bin/zypak-wrapper.sh ./ThreemaDesktop "$@"
     build-commands:
+      # Build and install launcher binary
+      - cd src/launcher/ && cargo --offline fetch --manifest-path Cargo.toml --verbose
+      - cd src/launcher/ && cargo --offline build --release
+
       # Install npm dependencies
       #
       # Note: In `package.json`, we pin the node/npm versions to a specific
@@ -81,11 +83,13 @@ modules:
       - |
         ln -s $XDG_CACHE_HOME/node-gyp $HOME/.electron-gyp # https://github.com/flatpak/flatpak-builder-tools/pull/260#discussion_r822084602
         npm run dist:{{flavor}}
+
       # Bundle app and dependencies
       - ls -lah build/electron/packaged/
       - cp -a build/electron/packaged/Threema*-linux-* /app/main
-      # Install app wrapper
+      # Install app wrappers
       - install -Dm755 -t /app/bin/ run.sh
+      - install -Dm755 -t /app/main/ src/launcher/target/release/threema-desktop-launcher
       # Install metadata
       - install -Dm644 packaging/metadata/ch.threema.threema-desktop.metainfo.xml /app/share/metainfo/{{app-id}}.metainfo.xml
       - install -Dm644 packaging/metadata/ch.threema.threema-desktop.desktop /app/share/applications/{{app-id}}.desktop

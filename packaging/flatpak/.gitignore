@@ -1,6 +1,6 @@
 .flatpak-builder/
 build/
 repo/
-generated-sources.json
+generated-*-sources.json
 ch.threema.*.yml
 __pycache__/

@@ -8,8 +8,14 @@ use home::home_dir;
 
 // Compile-time constants
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-const BUILD_VARIANT: &str = env!("THREEMA_BUILD_VARIANT"); // consumer or work
-const BUILD_ENVIRONMENT: &str = env!("THREEMA_BUILD_ENVIRONMENT"); // sandbox or live
+const BUILD_FLAVOR: &str = env!("THREEMA_BUILD_FLAVOR"); // e.g. consumer-sandbox or work-live
+const VALID_BUILD_FLAVORS: [&str; 5] = [
+    "consumer-sandbox",
+    "consumer-live",
+    "work-sandbox",
+    "work-live",
+    "work-onprem",
+];
 
 // Exit codes
 const EXIT_CODE_RESTART: i32 = 8;
@@ -98,10 +104,30 @@ fn determine_profile_directory(args: &[String]) -> PathBuf {
         None => "default",
     };
 
-    profile_directory_location.join(format!("{BUILD_VARIANT}-{BUILD_ENVIRONMENT}-{profile}"))
+    profile_directory_location.join(format!("{BUILD_FLAVOR}-{profile}"))
 }
 
 fn main() {
+    // Assertions
+    assert!(
+        VALID_BUILD_FLAVORS.contains(&BUILD_FLAVOR),
+        "Invalid build flavor: {BUILD_FLAVOR:?}. This is a build configuration error, set the correct THREEMA_BUILD_FLAVOR env var when building!"
+    );
+
+    // Print header
+    if BUILD_FLAVOR.starts_with("work-") {
+        print!("\x1b[34m");
+    } else {
+        print!("\x1b[32m");
+    }
+    println!(" _____ _                         ");
+    println!("|_   _| |_ ___ ___ ___ _____ ___ ");
+    println!("  | | |   |  _| -_| -_|     | .'|");
+    println!("  |_| |_|_|_| |___|___|_|_|_|__,|\x1b[0m");
+    println!();
+    println!("Desktop launcher v{VERSION} ({BUILD_FLAVOR})");
+
+    // Get args
     let mut args: Vec<String> = env::args().collect();
 
     // Extract launcher binary path
@@ -112,25 +138,12 @@ fn main() {
         print_usage_and_exit(&launcher_path);
     }
     if args.iter().any(|arg| arg == "--version") {
-        println!("Desktop launcher v{VERSION}");
         process::exit(0);
     }
 
     // Extract target binary path
     let target_path = PathBuf::from(args.remove(0));
-
-    if BUILD_VARIANT == "work" {
-        print!("\x1b[34m");
-    } else {
-        print!("\x1b[32m");
-    }
-    println!(" _____ _                         ");
-    println!("|_   _| |_ ___ ___ ___ _____ ___ ");
-    println!("  | | |   |  _| -_| -_|     | .'|");
-    println!("  |_| |_|_|_| |___|___|_|_|_|__,|\x1b[0m");
-    println!();
-    println!("Desktop launcher v{VERSION}");
-    println!("Launching Threema Desktop at {target_path:?}");
+    println!("Launching Threema Desktop through {target_path:?}");
 
     // Ensure that target path exists
     if !target_path.exists() {

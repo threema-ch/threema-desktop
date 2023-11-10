@@ -78,16 +78,16 @@ dist:
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
     - npm run "dist:consumer-sandbox"
 
-flatpak-node-generator:
+flatpak-source-generator:
   stage: build
   needs: []
   before_script:
     # Base dependencies
-    - apt-get update && apt-get install -y python3-aiohttp
+    - apt-get update && apt-get install -y python3-aiohttp python3-toml
   script:
     # Install build script deps
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci
-    # Run flatpak-node-generator
+    # Run flatpak source generators
     - npm run package -- flatpak work-sandbox --generate-deps-only
   cache:
     # npm cache
@@ -371,7 +371,7 @@ package:source:
   before_script:
     # Base dependencies
     - apt-get update
-    - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp
+    - apt-get install -y flatpak jq lftp elfutils libyaml-dev libglib2.0-dev libcurl4-gnutls-dev libxml2-dev libxslt1-dev python3-aiohttp python3-toml
     # Set up git
     - git config --global init.defaultBranch main # Avoid warning on stdout
     - git config --global advice.detachedHead false # Don't show detached head warnings
