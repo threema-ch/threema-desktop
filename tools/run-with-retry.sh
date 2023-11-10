@@ -4,7 +4,8 @@
 # This is helpful to avoid spurious CI failures due to connection errors (or similar).
 set -euo pipefail
 
-GREP_PATTERN_NPM="connect ETIMEDOUT"
+GREP_PATTERN_ETIMEDOUT="connect ETIMEDOUT"
+GREP_PATTERN_ECONNRESET="read ECONNRESET"
 GREP_PATTERN_EOF="SyntaxError: unexpected EOF while parsing"
 GREP_PATTERN_ABORTED="ReadError: The server aborted pending request"
 GREP_PATTERN_HTTP500="Error: 500 response downloading"
@@ -40,7 +41,7 @@ if [ "$retries" = "" ]; then echo "Error: Missing --retries argument"; echo ""; 
 if [ "$delay" = "" ]; then echo "Error: Missing --delay argument"; echo ""; print_usage; exit 1; fi
 if [ "$*" = "" ]; then echo "Error: Missing command"; echo ""; print_usage; exit 2; fi
 
-# Run npm ci
+# Run command
 TMPFILE=.run-with-retry.tmp
 for attempt in $(seq "$retries"); do
     if [ "$attempt" -gt 1 ]; then echo ""; fi
@@ -53,18 +54,21 @@ for attempt in $(seq "$retries"); do
     else
         echo "==> Command failed with exit code $exitcode"
         if [ "$attempt" -lt "$retries" ]; then
-            npm_timeout=$(grep -c "$GREP_PATTERN_NPM" $TMPFILE || true)
-            npm_eof=$(grep -c "$GREP_PATTERN_EOF" $TMPFILE || true)
-            npm_aborted=$(grep -c "$GREP_PATTERN_ABORTED" $TMPFILE || true)
-            npm_http500=$(grep -c "$GREP_PATTERN_HTTP500" $TMPFILE || true)
-            if [ "$npm_timeout" -gt 0 ]; then
-                echo "==> Detected npm timeout."
-            elif [ "$npm_eof" -gt 0 ]; then
-                echo "==> Detected npm parsing EOF."
-            elif [ "$npm_aborted" -gt 0 ]; then
-                echo "==> Detected npm server connection abort."
-            elif [ "$npm_http500" -gt 0 ]; then
-                echo "==> Detected npm internal server error."
+            detected_timeout=$(grep -c "$GREP_PATTERN_ETIMEDOUT" $TMPFILE || true)
+            detected_reset=$(grep -c "$GREP_PATTERN_ECONNRESET" $TMPFILE || true)
+            detected_eof=$(grep -c "$GREP_PATTERN_EOF" $TMPFILE || true)
+            detected_aborted=$(grep -c "$GREP_PATTERN_ABORTED" $TMPFILE || true)
+            detected_http500=$(grep -c "$GREP_PATTERN_HTTP500" $TMPFILE || true)
+            if [ "$detected_timeout" -gt 0 ]; then
+                echo "==> Detected timeout."
+            elif [ "$detected_reset" -gt 0 ]; then
+                echo "==> Detected connection reset."
+            elif [ "$detected_eof" -gt 0 ]; then
+                echo "==> Detected parsing EOF."
+            elif [ "$detected_aborted" -gt 0 ]; then
+                echo "==> Detected server connection abort."
+            elif [ "$detected_http500" -gt 0 ]; then
+                echo "==> Detected internal server error."
             else
                 echo "==> No known error detected. Aborting."
                 exit 3
