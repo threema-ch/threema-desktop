@@ -1,5 +1,5 @@
 import {SynchronousPromise} from 'synchronous-promise';
-import type {UpdateSets} from 'ts-sql-query/expressions/update';
+import type {UpdatableValues} from 'ts-sql-query/extras/types';
 import {ConsoleLogQueryRunner} from 'ts-sql-query/queryRunners/ConsoleLogQueryRunner';
 import type {QueryRunner} from 'ts-sql-query/queryRunners/QueryRunner';
 import type {ColumnsForSetOf, OuterJoinSourceOf} from 'ts-sql-query/utils/tableOrViewUtils';
@@ -88,13 +88,13 @@ import {
 type UpdateSetsForDbMessage<
     TDbMessage extends DbFileMessage | DbImageMessage | DbVideoMessage | DbAudioMessage,
 > = TDbMessage extends DbFileMessage
-    ? UpdateSets<typeof tMessageFileData, typeof tMessageFileData>
+    ? UpdatableValues<typeof tMessageFileData>
     : TDbMessage extends DbImageMessage
-    ? UpdateSets<typeof tMessageImageData, typeof tMessageImageData>
+    ? UpdatableValues<typeof tMessageImageData>
     : TDbMessage extends DbVideoMessage
-    ? UpdateSets<typeof tMessageVideoData, typeof tMessageVideoData>
+    ? UpdatableValues<typeof tMessageVideoData>
     : TDbMessage extends DbAudioMessage
-    ? UpdateSets<typeof tMessageAudioData, typeof tMessageAudioData>
+    ? UpdatableValues<typeof tMessageAudioData>
     : never;
 
 /**
@@ -1623,7 +1623,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     return {deletedFileIds: []};
                 case MessageType.FILE: {
                     // Prepare update
-                    const update: UpdateSets<typeof tMessageFileData, typeof tMessageFileData> =
+                    const update: UpdatableValues<typeof tMessageFileData> =
                         pick<DbBaseFileMessageFragment>(message, [
                             'blobId',
                             'thumbnailBlobId',
@@ -1661,7 +1661,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 }
                 case MessageType.IMAGE: {
                     // Prepare update
-                    const update: UpdateSets<typeof tMessageImageData, typeof tMessageImageData> =
+                    const update: UpdatableValues<typeof tMessageImageData> =
                         pick<DbImageMessageFragment>(message, [
                             'blobId',
                             'thumbnailBlobId',
@@ -1702,7 +1702,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 }
                 case MessageType.VIDEO: {
                     // Prepare update
-                    const update: UpdateSets<typeof tMessageVideoData, typeof tMessageVideoData> =
+                    const update: UpdatableValues<typeof tMessageVideoData> =
                         pick<DbVideoMessageFragment>(message, [
                             'blobId',
                             'thumbnailBlobId',
@@ -1742,7 +1742,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 }
                 case MessageType.AUDIO: {
                     // Prepare update
-                    const update: UpdateSets<typeof tMessageAudioData, typeof tMessageAudioData> =
+                    const update: UpdatableValues<typeof tMessageAudioData> =
                         pick<DbAudioMessageFragment>(message, [
                             'blobId',
                             'thumbnailBlobId',
