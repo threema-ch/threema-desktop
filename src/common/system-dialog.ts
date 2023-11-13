@@ -41,6 +41,11 @@ type ConnectionErrorContext =
     | {
           readonly type: 'client-was-dropped';
           readonly userCanReconnect: false;
+      }
+    | {
+          readonly type: 'device-slot-state-mismatch';
+          readonly userCanReconnect: false;
+          readonly clientExpectedState: 'new';
       };
 // TODO(DESK-487): Add other user interactions
 

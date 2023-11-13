@@ -108,7 +108,7 @@
           <p>
             <SubstitutableText
               text={$i18n.t(
-                'dialog--error-connection.markup--client-was-dropped-p3',
+                'dialog--error-connection.markup--see-faq',
                 'For more information, see the <1>FAQ</1>.',
               )}
             >
@@ -121,12 +121,37 @@
               >
             </SubstitutableText>
           </p>
+        {:else if context.type === 'device-slot-state-mismatch'}
+          <p>
+            <SubstitutableText
+              text={$i18n.t(
+                'dialog--error-connection.markup--device-slot-mismatch-p1',
+                'Due to an unexpected error, this device must be re-linked with the server.',
+              )}
+            />
+          </p>
+          <p>
+            <SubstitutableText
+              text={$i18n.t(
+                'dialog--error-connection.markup--see-faq',
+                'For more information, see the <1>FAQ</1>.',
+              )}
+            >
+              <a
+                slot="1"
+                href={import.meta.env.URLS.limitations.full}
+                target="_blank"
+                rel="noreferrer noopener"
+                let:text>{text}</a
+              ></SubstitutableText
+            >
+          </p>
         {:else}
           {unreachable(context)}
         {/if}
       </div>
       <div slot="footer" let:modal>
-        {#if context.type === 'client-was-dropped'}
+        {#if context.type === 'client-was-dropped' || context.type === 'device-slot-state-mismatch'}
           <CancelAndConfirm
             cancelText={$i18n.t('dialog--error-connection.action--client-was-dropped-cancel', 'OK')}
             confirmText={$i18n.t(

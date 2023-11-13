@@ -37,6 +37,7 @@ import {
     D2mAuthStateUtils,
     D2mLeaderState,
     D2mLeaderStateUtils,
+    GlobalPropertyKey,
     NonceScope,
     TransferTag,
 } from '~/common/enum';
@@ -1348,15 +1349,36 @@ class ConnectionManager {
                                 type: 'unrecoverable-state',
                             });
                         } else {
-                            this._log.error('Connection not established: Device is dropped');
-
-                            void systemDialog.open({
-                                type: 'connection-error',
-                                context: {
-                                    type: 'client-was-dropped',
-                                    userCanReconnect: false,
-                                },
-                            });
+                            this._log.error(
+                                `Connection not established: ${CloseCodeUtils.nameOf(
+                                    closeInfo.code,
+                                )}`,
+                            );
+                            // If we get this close code and have never connected before,
+                            // this means we are registered on the Mediator without knowing it.
+                            if (
+                                closeInfo.code === CloseCode.EXPECTED_DEVICE_SLOT_STATE_MISMATCH &&
+                                model.globalProperties
+                                    .get(GlobalPropertyKey.LAST_MEDIATOR_CONNECTION)
+                                    ?.get().view.value.date === undefined
+                            ) {
+                                void systemDialog.open({
+                                    type: 'connection-error',
+                                    context: {
+                                        type: 'device-slot-state-mismatch',
+                                        userCanReconnect: false,
+                                        clientExpectedState: 'new',
+                                    },
+                                });
+                            } else {
+                                void systemDialog.open({
+                                    type: 'connection-error',
+                                    context: {
+                                        type: 'client-was-dropped',
+                                        userCanReconnect: false,
+                                    },
+                                });
+                            }
                         }
 
                         this.disableAutoConnect(closeInfo.code);

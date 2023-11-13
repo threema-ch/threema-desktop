@@ -133,7 +133,8 @@
     "markup--client-update-required-p2": "Bitte <1>installieren Sie die neueste Version</1>, um Threema weiterhin zu nutzen.",
     "markup--client-was-dropped-p1": "Die Verknüpfung mit diesem Gerät wurde aufgehoben, weshalb im Moment keine neuen Nachrichten mehr gesendet oder empfangen werden können.",
     "markup--client-was-dropped-p2": "Falls die Aufhebung der Verknüpfung nicht durch Sie veranlasst wurde, beachten Sie bitte, dass während der Beta-Phase technische Gründe dafür verantwortlich sein können. Wir bitten um Verständnis.",
-    "markup--client-was-dropped-p3": "Weitere Details finden Sie in <1>diesem FAQ-Eintrag</1>.",
+    "markup--device-slot-mismatch-p1": "Aufgrund eines unerwarteten Fehlers muss dieses Gerät neu mit dem Server verknüpft werden.",
+    "markup--see-faq": "Weitere Details finden Sie in <1>diesem FAQ-Eintrag</1>.",
     "prose--mediator-update-required-p1": "Diese Version von Threema ist nicht mit Ihrem Mediator-Server kompatibel. Der Server verwendet eine veraltete Protokollversion und muss zuerst aktualisiert werden.",
     "prose--mediator-update-required-p2": "Bitte kontaktieren Sie Ihren Server-Administrator."
   },
