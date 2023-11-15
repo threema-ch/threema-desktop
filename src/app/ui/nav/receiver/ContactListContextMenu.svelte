@@ -18,6 +18,7 @@
         </span>
         <span>{$i18n.t('contacts.action--edit')}</span>
       </MenuItem>
+      <!-- TODO(IOS-3686): Re-enable contact deletion
       {#if import.meta.env.BUILD_VARIANT !== 'work'}
         <MenuItem on:click={() => dispatchEvent('delete')}>
           <span class="icon" slot="icon">
@@ -26,6 +27,7 @@
           <span>{$i18n.t('contacts.action--delete', 'Delete')}</span>
         </MenuItem>
       {/if}
+      -->
     </MenuContainer>
   </div>
 </template>

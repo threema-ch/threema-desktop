@@ -16,7 +16,6 @@
   import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
   import VerificationLevelsDialog from '~/app/ui/modal/ContactVerificationLevels.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
-  import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
   import Subheader from '~/app/ui/nav/receiver/detail/Subheader.svelte';
   import {toast} from '~/app/ui/snackbar';
@@ -95,6 +94,8 @@
     }
   }
 
+  // TODO(IOS-3686): Re-enable
+  /*
   async function handleClickedOnDeleteContact(): Promise<void> {
     if ($contactViewModel === undefined || contactController === undefined) {
       return;
@@ -106,6 +107,7 @@
       unableToDeleteContactDialogVisible = true;
     }
   }
+  */
 
   function deleteContact(): void {
     if (import.meta.env.BUILD_VARIANT === 'work') {
@@ -316,6 +318,7 @@
       <!-- <LinkElement wip label="Block Contact">
         <MdIcon slot="icon-left" theme="Outlined">block</MdIcon>
       </LinkElement> -->
+      <!-- TODO(IOS-3686): Re-enable contact deletion
       {#if import.meta.env.BUILD_VARIANT !== 'work'}
         <LinkElement
           on:click={handleClickedOnDeleteContact}
@@ -324,6 +327,7 @@
           <MdIcon slot="icon-left" theme="Outlined">delete</MdIcon>
         </LinkElement>
       {/if}
+      -->
 
       <DeleteDialog
         bind:visible={deleteContactDialogVisible}
