@@ -158,11 +158,9 @@ async function main(): Promise<() => void> {
     const identityReady = new ResolvablePromise<void>();
 
     // Set up logging
-    let logging = TagLogger.styled(DOM_CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
-    if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-        const fileLogger = new RemoteFileLogger(window.app.logToFile);
-        logging = TeeLogger.factory([logging, TagLogger.unstyled(fileLogger, 'app')]);
-    }
+    const consoleLogger = TagLogger.styled(DOM_CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);
+    const fileLogger = new RemoteFileLogger(window.app.logToFile);
+    const logging = TeeLogger.factory([consoleLogger, TagLogger.unstyled(fileLogger, 'app')]);
     const log = logging.logger('main');
     initCrashReportingInSandboxBuilds(log);
 

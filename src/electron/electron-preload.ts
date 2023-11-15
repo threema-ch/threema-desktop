@@ -28,6 +28,9 @@ const appApi: ElectronIpc = {
     getAppPath: () => ipcRenderer.sendSync(ElectronIpcCommand.GET_APP_PATH),
     getSystemInfo: () => ipcRenderer.invoke(ElectronIpcCommand.GET_SYSTEM_INFO),
     logToFile: (level, data) => ipcRenderer.invoke(ElectronIpcCommand.LOG_TO_FILE, level, data),
+    isFileLoggingEnabled: () => ipcRenderer.invoke(ElectronIpcCommand.IS_FILE_LOGGING_ENABLED),
+    setFileLoggingEnabledAndRestart: (enabled) =>
+        ipcRenderer.send(ElectronIpcCommand.SET_FILE_LOGGING_ENABLED_AND_RESTART, enabled),
     deleteProfileAndRestartApp: () =>
         ipcRenderer.send(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART),
     closeApp: () => ipcRenderer.send(ElectronIpcCommand.CLOSE_APP),

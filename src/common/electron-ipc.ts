@@ -43,6 +43,18 @@ export interface ElectronIpc {
     ) => Promise<void>;
 
     /**
+     * Return whether or not file logging is enabled.
+     *
+     * If `undefined` is returned, this means that the file logger could not be instantiated.
+     */
+    readonly isFileLoggingEnabled: () => Promise<boolean | undefined>;
+
+    /**
+     * Enable or disable file logging and restart.
+     */
+    readonly setFileLoggingEnabledAndRestart: (enabled: boolean) => void;
+
+    /**
      * Delete the user profile and restart the application.
      *
      * Restarting is done using `app.exit(...)`, which means that the application will be

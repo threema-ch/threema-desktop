@@ -16,6 +16,7 @@ import {
 } from '~/common/logging';
 import {ZlibCompressor} from '~/common/node/compressor';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
+import {loadElectronSettings} from '~/common/node/electron-settings';
 import {FileSystemFileStorage} from '~/common/node/file-storage/system-file-storage';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
@@ -36,11 +37,14 @@ export async function run(): Promise<void> {
         self.addEventListener('message', appPathListener);
     });
 
-    // Try to create a file logger.
+    // Read electron settings
+    const electronSettings = loadElectronSettings(appPath, undefined);
+
+    // Try to create a file logger
     let fileLogger: FileLogger | undefined;
-    const logPath = import.meta.env.LOG_PATH.BACKEND_WORKER;
-    const logFilePath = path.join(appPath, ...logPath);
-    if (import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
+    if (electronSettings.logging.enabled) {
+        const logPath = import.meta.env.LOG_PATH.BACKEND_WORKER;
+        const logFilePath = path.join(appPath, ...logPath);
         try {
             fs.mkdirSync(path.dirname(logFilePath), {
                 recursive: true,
@@ -63,6 +67,7 @@ export async function run(): Promise<void> {
     // Local logger for initialization code
     const logging = loggerFactory('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);
     const initLog = logging.logger('init');
+    initLog.info(`File logging is ${electronSettings.logging.enabled ? 'enabled' : 'disabled'}`);
 
     // Initialize WASM packages
     initLog.debug('Initializing WASM packages');

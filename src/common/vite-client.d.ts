@@ -347,7 +347,7 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly KEY_STORAGE_PATH: readonly string[];
     readonly FILE_STORAGE_PATH: readonly string[];
     readonly DATABASE_PATH: readonly string[] | ':memory:';
-    readonly ELECTRON_WINDOW_SETTINGS_PATH: readonly string[];
+    readonly ELECTRON_SETTINGS_PATH: readonly string[];
     readonly ARGON2_MIN_MEMORY_BYTES: import('./types').u53;
 
     // Public-key pins (HPKP)

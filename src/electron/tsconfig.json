@@ -5,5 +5,5 @@
     "types": ["electron", "node"]
   },
 
-  "include": ["../common/vite-client.d.ts", "**/*.ts"]
+  "include": ["../common/vite-client.d.ts", "**/*.ts", "../common/node/electron-settings.ts"]
 }

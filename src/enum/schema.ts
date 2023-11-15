@@ -647,6 +647,8 @@ export enum ElectronIpcCommand {
     GET_APP_PATH = 'getAppApath',
     GET_SYSTEM_INFO = 'getSystemInfo',
     LOG_TO_FILE = 'logToFile',
+    IS_FILE_LOGGING_ENABLED = 'isFileLoggingEnabled',
+    SET_FILE_LOGGING_ENABLED_AND_RESTART = 'setFileLoggingEnabledAndRestart',
     DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart',
     CLOSE_APP = 'closeApp',
     UPDATE_APP_BADGE = 'updateAppBadge',
