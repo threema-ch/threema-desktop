@@ -227,3 +227,16 @@ export function mapValitaDefaultsToUndefined<
         ]),
     ) as TObjectOut;
 }
+
+/**
+ * Adapter to use a type validation function (ensureXxx) in a Valita chain.
+ */
+export function chainAdapter<T>(ensureT: (val: unknown) => T): (val: unknown) => v.ValitaResult<T> {
+    return (value: unknown) => {
+        try {
+            return v.ok(ensureT(value));
+        } catch (error) {
+            return v.err(`Type guard failed: ${error}`);
+        }
+    };
+}

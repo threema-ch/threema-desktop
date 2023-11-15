@@ -11,7 +11,7 @@ import * as electron from 'electron';
 
 import type {ErrorDetails, SystemInfo} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
-import {extractErrorTraceback} from '~/common/error';
+import {extractErrorMessage, extractErrorTraceback} from '~/common/error';
 import {
     CONSOLE_LOGGER,
     type Logger,
@@ -21,8 +21,9 @@ import {
 } from '~/common/logging';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
-import type {u53} from '~/common/types';
-import {ensureError} from '~/common/utils/assert';
+import {ensureU53, type u53} from '~/common/types';
+import {ensureError, unwrap} from '~/common/utils/assert';
+import {chainAdapter} from '~/common/utils/valita-helpers';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
@@ -33,6 +34,9 @@ const EXIT_CODE_RESTART = 8;
 // https://www.electronjs.org/docs/latest/api/app#appgetpathname
 const ELECTRON_PATH_APP_DATA = 'appData';
 const ELECTRON_PATH_USER_DATA = 'userData';
+
+const DEFAULT_WINDOW_WIDTH = 1280;
+const DEFAULT_WINDOW_HEIGHT = 720;
 
 /**
  * Run parameters parsed from CLI arguments.
@@ -50,6 +54,28 @@ const RUN_PARAMETERS_SCHEMA = v.object({
     'single-instance-lock': RUN_PARAMETER_BOOL_SCHEMA.optional(),
 });
 type RunParameters = Readonly<v.Infer<typeof RUN_PARAMETERS_SCHEMA>>;
+
+const ELECTRON_WINDOW_SETTINGS_SCHEMA = v
+    .object({
+        windowWidth: v
+            .number()
+            .chain(chainAdapter(ensureU53))
+            .optional()
+            .default(DEFAULT_WINDOW_WIDTH),
+        windowHeight: v
+            .number()
+            .chain(chainAdapter(ensureU53))
+            .optional()
+            .default(DEFAULT_WINDOW_HEIGHT),
+    })
+    .rest(v.unknown());
+type ElectronWindowSettings = v.Infer<typeof ELECTRON_WINDOW_SETTINGS_SCHEMA>;
+
+const DEFAULT_WINDOW_SETTINGS: ElectronWindowSettings = {
+    windowWidth: DEFAULT_WINDOW_WIDTH,
+    windowHeight: DEFAULT_WINDOW_HEIGHT,
+};
+
 /**
  * Run parameter documentation.
  */
@@ -450,6 +476,40 @@ Version information:
     };
 }
 
+/**
+ * Store electron window settings in a JSON file.
+ */
+function storeWindowSettings(
+    window: electron.BrowserWindow,
+    electronWindowSettingsFilePath: string,
+): void {
+    let newWindowSettings = DEFAULT_WINDOW_SETTINGS;
+    if (fs.existsSync(electronWindowSettingsFilePath)) {
+        try {
+            // Read File again in case some settings where written from somewhere else
+            const currentSettings: ElectronWindowSettings = ELECTRON_WINDOW_SETTINGS_SCHEMA.parse(
+                JSON.parse(fs.readFileSync(electronWindowSettingsFilePath, 'utf-8')),
+            );
+            newWindowSettings = {
+                ...currentSettings,
+                windowWidth: window.getSize()[0] ?? DEFAULT_WINDOW_WIDTH,
+                windowHeight: window.getSize()[1] ?? DEFAULT_WINDOW_HEIGHT,
+            };
+        } catch (error) {
+            const errorMessage = extractErrorMessage(ensureError(error), 'short');
+            log.debug(
+                `electron-settings.json cannot be properly validated on close, resetting to default. ${errorMessage}`,
+            );
+        }
+    }
+    try {
+        fs.writeFileSync(electronWindowSettingsFilePath, JSON.stringify(newWindowSettings));
+    } catch (error) {
+        const errorMessage = extractErrorMessage(ensureError(error), 'short');
+        log.error(`Failed to write to electron-settings.json: ${errorMessage}`);
+    }
+}
+
 // Run the Electron process after initialisation. This drives the state of the app. Keep this block
 // to a bare minimum and move stateless functions out of it, so that state is easy to track!
 function main(
@@ -519,6 +579,11 @@ function main(
 
     // Main app window.
     let window: electron.BrowserWindow | undefined;
+
+    const electronWindowSettingsFilePath = path.join(
+        appPath,
+        ...import.meta.env.ELECTRON_WINDOW_SETTINGS_PATH,
+    );
 
     function start(): void {
         // Ignore if window is still open
@@ -616,11 +681,26 @@ function main(
             createTlsCertificateVerifier(import.meta.env.TLS_CERTIFICATE_PINS, log),
         );
 
+        // Load window settings from JSON file
+        let windowSettings = DEFAULT_WINDOW_SETTINGS;
+        if (fs.existsSync(electronWindowSettingsFilePath)) {
+            try {
+                windowSettings = ELECTRON_WINDOW_SETTINGS_SCHEMA.parse(
+                    JSON.parse(fs.readFileSync(electronWindowSettingsFilePath, 'utf-8')),
+                );
+            } catch (error) {
+                const errorMessage = extractErrorMessage(ensureError(error), 'short');
+                log.error(
+                    `Failed to read from electron-settings.json (${errorMessage}), defaulting to standard settings`,
+                );
+            }
+        }
+
         window = new electron.BrowserWindow({
             title: import.meta.env.APP_NAME,
             icon: process.platform === 'linux' ? ABOUT_PANEL_OPTIONS.iconPath : undefined,
-            width: 1200,
-            height: 700,
+            width: windowSettings.windowWidth,
+            height: windowSettings.windowHeight,
             webPreferences: {
                 // TODO(DESK-79): Harden this. Disable `nodeIntegrationInWorker` and enable `sandbox`. This means
                 //       we need to have a preload script that runs for all APIs requiring access to Node
@@ -650,6 +730,12 @@ function main(
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 enableWebSQL: false,
             },
+        });
+        window.on('close', () => {
+            storeWindowSettings(
+                unwrap(window, 'Window is undefined in on:close'),
+                electronWindowSettingsFilePath,
+            );
         });
         window.on('closed', () => {
             window = undefined;

@@ -225,6 +225,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         KEY_STORAGE_PATH: ['data', 'keystorage.pb3'],
         FILE_STORAGE_PATH: ['data', 'files'],
         DATABASE_PATH: ['data', 'threema.sqlite'],
+        ELECTRON_WINDOW_SETTINGS_PATH: ['data', 'electron-window-settings.json'],
         ARGON2_MIN_MEMORY_BYTES: env.entry === 'mocha-tests' ? 100 * KiB : 128 * MiB,
 
         // Public-key pins (HPKP)

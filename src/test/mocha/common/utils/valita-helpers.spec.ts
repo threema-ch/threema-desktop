@@ -2,7 +2,13 @@ import * as v from '@badrap/valita';
 import {expect} from 'chai';
 import Long from 'long';
 
-import {instanceOf, nullOptional, unsignedLongAsU64} from '~/common/utils/valita-helpers';
+import {ensureU53} from '~/common/types';
+import {
+    chainAdapter,
+    instanceOf,
+    nullOptional,
+    unsignedLongAsU64,
+} from '~/common/utils/valita-helpers';
 
 export function run(): void {
     describe('utils::valita-helpers', function () {
@@ -110,6 +116,16 @@ export function run(): void {
                 expect(validator.parse({value: undefined})).to.deep.equal({value: undefined});
                 expect(validator.parse({value: null})).to.deep.equal({value: undefined});
                 expect(validator.parse({value: Long.UONE})).to.deep.equal({value: 1n});
+            });
+        });
+
+        describe('chainAdapter', function () {
+            const u53ValidatorChain = v.object({value: v.number().chain(chainAdapter(ensureU53))});
+
+            it('makes it possible to use an ensureXxx function with chain', () => {
+                expect(() => u53ValidatorChain.parse({value: -123})).to.throw(
+                    'custom_error at .value (Type guard failed: Error: Value -123 is not a valid integer in the u53 range)',
+                );
             });
         });
     });
