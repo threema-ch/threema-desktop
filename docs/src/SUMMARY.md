@@ -21,6 +21,8 @@
   - [Karma: DOM Unit Tests](./testing-karma.md)
   - [Cypress: End-to-End Tests](./testing-cypress.md)
   - [Test Coverage](./testing-coverage.md)
+- [Packaging](./packaging.md)
+  - [Windows](./packaging-windows.md)
 - [Development Processes](./dev-processes.md)
   - [Generating Screenshots](./screenshots.md)
   - [Updating better-sqlcipher3](./updating-better-sqlcipher3.md)
