@@ -19,6 +19,7 @@ import type {LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DOM_CONSOLE_LOGGER} from '~/common/dom/logging';
+import {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import {LocalStorageController} from '~/common/dom/ui/local-storage';
 import {FrontendNotificationCreator} from '~/common/dom/ui/notification';
 import {ProfilePictureService} from '~/common/dom/ui/profile-picture';
@@ -365,6 +366,7 @@ async function main(): Promise<() => void> {
         config: CONFIG,
         crypto: {randomBytes},
         logging,
+        blobCache: new BlobCacheService(backend, logging.logger('blob-cache')),
         profilePicture: new ProfilePictureService(backend, logging.logger('profile-picture')),
         timer,
         storage: localStorageController,

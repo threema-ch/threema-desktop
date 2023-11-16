@@ -7,6 +7,7 @@ import type {Router} from '~/app/routing/router';
 import type {Config} from '~/common/config';
 import type {CryptoBackend} from '~/common/crypto';
 import type {BackendController} from '~/common/dom/backend/controller';
+import type {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import type {LocalStorageController} from '~/common/dom/ui/local-storage';
 import type {ProfilePictureService} from '~/common/dom/ui/profile-picture';
 import type {SystemInfo} from '~/common/electron-ipc';
@@ -21,6 +22,7 @@ export interface AppServices {
     readonly config: Config;
     readonly crypto: Pick<CryptoBackend, 'randomBytes'>;
     readonly logging: LoggerFactory;
+    readonly blobCache: BlobCacheService;
     readonly profilePicture: ProfilePictureService;
     readonly timer: GlobalTimer;
     readonly storage: LocalStorageController;

@@ -1,4 +1,6 @@
+import type {AppServices} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
+import type {DbReceiverLookup} from '~/common/db';
 import {ImageRenderingType, MessageDirection, MessageReaction} from '~/common/enum';
 import type {AnyMessageModel, RemoteModelFor} from '~/common/model';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
@@ -29,6 +31,8 @@ export type SortedMessageList = Remote<ConversationMessageViewModelBundle>[];
 // TODO(DESK-1216): Move transformations into the ViewModel.
 export function messageSetViewModelToMessagePropsStore(
     viewModel: Remote<ConversationMessageSetViewModel>,
+    conversationReceiver: DbReceiverLookup,
+    services: AppServices,
 ): IQueryableStore<MessagePropsFromBackend[]> {
     return derive(viewModel.store, (conversationMessageSet, getAndSubscribe) =>
         [...conversationMessageSet]
@@ -52,11 +56,23 @@ export function messageSetViewModelToMessagePropsStore(
                     const quoteViewModelController = messageViewModel.quote.viewModelController;
                     const quoteModel = getAndSubscribe(messageViewModel.quote.messageStore);
 
-                    quote = getMessageProps(quoteViewModel, quoteViewModelController, quoteModel);
+                    quote = getMessageProps(
+                        quoteViewModel,
+                        quoteViewModelController,
+                        quoteModel,
+                        conversationReceiver,
+                        services,
+                    );
                 }
 
                 return {
-                    ...getMessageProps(messageViewModel, viewModelController, messageModel),
+                    ...getMessageProps(
+                        messageViewModel,
+                        viewModelController,
+                        messageModel,
+                        conversationReceiver,
+                        services,
+                    ),
                     quote,
                 };
             }),
@@ -67,11 +83,19 @@ function getMessageProps(
     viewModel: Remote<ConversationMessageViewModel>,
     viewModelController: RemoteProxy<IConversationMessageViewModelController>,
     messageModel: RemoteModelFor<AnyMessageModel>,
+    conversationReceiver: DbReceiverLookup,
+    services: AppServices,
 ): MessagePropsFromBackend {
     return {
         actions: getMessageActions(viewModel, viewModelController, messageModel),
         direction: viewModel.body.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
-        file: getMessageFile(viewModel, viewModelController, messageModel),
+        file: getMessageFile(
+            viewModel,
+            viewModelController,
+            messageModel,
+            conversationReceiver,
+            services,
+        ),
         id: viewModel.messageId,
         reactions:
             messageModel.view.lastReaction !== undefined
@@ -238,6 +262,8 @@ function getMessageFile(
     viewModel: Remote<ConversationMessageViewModel>,
     viewModelController: RemoteProxy<IConversationMessageViewModelController>,
     messageModel: RemoteModelFor<AnyMessageModel>,
+    conversationReceiver: DbReceiverLookup,
+    services: AppServices,
 ): MessagePropsFromBackend['file'] {
     const {type} = messageModel;
     if (type === 'text') {
@@ -289,7 +315,13 @@ function getMessageFile(
             direction: viewModel.syncDirection,
         },
         type: messageModel.type,
-        thumbnail: getMessageThumbnail(viewModel, viewModelController, messageModel),
+        thumbnail: getMessageThumbnail(
+            viewModel,
+            viewModelController,
+            messageModel,
+            conversationReceiver,
+            services,
+        ),
     };
 }
 
@@ -306,6 +338,8 @@ function getMessageThumbnail(
         | OutboundImageMessage['model']
         | OutboundVideoMessage['model']
     >,
+    conversationReceiver: DbReceiverLookup,
+    services: AppServices,
 ): NonNullable<MessagePropsFromBackend['file']>['thumbnail'] {
     switch (messageModel.type) {
         case 'file':
@@ -316,7 +350,10 @@ function getMessageThumbnail(
         case 'video':
             return {
                 expectedDimensions: messageModel.view.dimensions,
-                fetchThumbnailBytes: async () => await viewModelController.getThumbnail(),
+                thumbnailStore: services.blobCache.getMessageThumbnail(
+                    viewModel.messageId,
+                    conversationReceiver,
+                ),
                 mediaType: messageModel.view.thumbnailMediaType ?? 'image/jpeg',
             };
 

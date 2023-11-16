@@ -32,6 +32,9 @@ function cacheKeyFor(receiverLookup: DbReceiverLookup): CacheKey {
     return `${receiverLookup.type}.${receiverLookup.uid}`;
 }
 
+/**
+ * The profile picture service fetches and caches profile pictures for contacts and groups.
+ */
 export class ProfilePictureService {
     private readonly _lock = new AsyncLock();
     private readonly _cache = new Map<CacheKey, ProfilePictureBlobStore>();

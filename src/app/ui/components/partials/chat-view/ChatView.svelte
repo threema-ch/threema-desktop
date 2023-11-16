@@ -24,7 +24,7 @@
   import type {UnreadState, ModalState} from '~/app/ui/components/partials/chat-view/types';
   import {i18n} from '~/app/ui/i18n';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import type {DbConversationUid} from '~/common/db';
+  import type {DbConversationUid, DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
   import {MessageDirection} from '~/common/enum';
   import type {MessageId} from '~/common/network/types';
@@ -234,6 +234,15 @@
   }
 
   /**
+   * Updates only if the value of `conversation.receiverLookup` changes, not on every change of the
+   * `conversation` object.
+   */
+  let currentConversationReceiver: DbReceiverLookup;
+  $: if (currentConversationReceiver !== conversation.receiverLookup) {
+    currentConversationReceiver = conversation.receiverLookup;
+  }
+
+  /**
    * Updates only if the value of `conversation.lastMessage.id` changes, not on every change of the
    * `conversation` object.
    */
@@ -242,7 +251,11 @@
     currentLastMessage = conversation.lastMessage;
   }
 
-  $: messagePropsStore = messageSetViewModelToMessagePropsStore(messageSetViewModel);
+  $: messagePropsStore = messageSetViewModelToMessagePropsStore(
+    messageSetViewModel,
+    currentConversationReceiver,
+    services,
+  );
 
   $: reactive(handleChangeConversation, [currentConversationId]);
   $: reactive(handleChangeApplicationFocus, [$appVisibility]);

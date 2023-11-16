@@ -19,7 +19,6 @@
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {durationToString} from '~/common/utils/date';
-  import {promiseResultStore} from '~/common/utils/store';
 
   type $$Props = MessageProps;
 
@@ -156,28 +155,28 @@
             {/if}
           </div>
 
-          <LazyImage
-            byteStore={promiseResultStore(
-              file.thumbnail?.fetchThumbnailBytes() ?? Promise.resolve(undefined),
-            )}
-            constraints={{
-              min: {
-                // Dynamically increase the min width for longer text.
-                width: Math.min(125 + contentLength, 180),
-                height: 70,
-                size: 16384,
-              },
-              max: {
-                width: 384,
-                height: 384,
-                size: 65536,
-              },
-            }}
-            description={alt}
-            dimensions={file.thumbnail?.expectedDimensions}
-            disabled={false}
-            on:click={handleClickThumbnail}
-          />
+          {#if file.thumbnail !== undefined}
+            <LazyImage
+              byteStore={file.thumbnail.thumbnailStore}
+              constraints={{
+                min: {
+                  // Dynamically increase the min width for longer text.
+                  width: Math.min(125 + contentLength, 180),
+                  height: 70,
+                  size: 16384,
+                },
+                max: {
+                  width: 384,
+                  height: 384,
+                  size: 65536,
+                },
+              }}
+              description={alt}
+              dimensions={file.thumbnail.expectedDimensions}
+              disabled={false}
+              on:click={handleClickThumbnail}
+            />
+          {/if}
         </span>
       {:else}
         {unreachable(file.type)}

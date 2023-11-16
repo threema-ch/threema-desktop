@@ -471,7 +471,6 @@ function getConversationMessageBodyBaseMessage(
 
 export interface IConversationMessageViewModelController extends ProxyMarked {
     getBlob: () => Promise<ReadonlyUint8Array | undefined>;
-    getThumbnail: () => Promise<ReadonlyUint8Array | undefined>;
 }
 
 export class ConversationMessageViewModelController
@@ -488,22 +487,6 @@ export class ConversationMessageViewModelController
             case MessageType.VIDEO:
             case MessageType.AUDIO:
                 return await this._message.get().controller.blob();
-
-            case MessageType.TEXT:
-                return undefined;
-
-            default:
-                return unreachable(this._message);
-        }
-    }
-
-    public async getThumbnail(): Promise<ReadonlyUint8Array | undefined> {
-        switch (this._message.type) {
-            case MessageType.FILE:
-            case MessageType.IMAGE:
-            case MessageType.VIDEO:
-            case MessageType.AUDIO:
-                return await this._message.get().controller.thumbnailBlob();
 
             case MessageType.TEXT:
                 return undefined;

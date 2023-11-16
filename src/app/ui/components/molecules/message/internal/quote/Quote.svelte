@@ -11,7 +11,6 @@
   import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
   import {unreachable} from '~/common/utils/assert';
-  import {promiseResultStore} from '~/common/utils/store';
 
   type $$Props = QuoteProps;
 
@@ -58,7 +57,7 @@
           {/if}
 
           <LazyImage
-            byteStore={promiseResultStore(file.thumbnail.fetchThumbnailBytes())}
+            byteStore={file.thumbnail.thumbnailStore}
             constraints={{
               min: {
                 width: 40,

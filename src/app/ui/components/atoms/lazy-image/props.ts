@@ -9,7 +9,7 @@ export interface LazyImageProps {
     /**
      * Bytes of the image.
      */
-    readonly byteStore: IQueryableStore<Blob | ReadonlyUint8Array | undefined>;
+    readonly byteStore: IQueryableStore<'loading' | Blob | ReadonlyUint8Array | undefined>;
     /**
      * Constraints to control the display size of an image.
      */

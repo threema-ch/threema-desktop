@@ -4,6 +4,7 @@ import type {FileInfoProps} from '~/app/ui/components/molecules/message/internal
 import type {IndicatorProps} from '~/app/ui/components/molecules/message/internal/indicator/props';
 import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
 import type {SenderProps} from '~/app/ui/components/molecules/message/internal/sender/props';
+import type {BlobStore} from '~/common/dom/ui/blob-cache';
 import type {Dimensions, ReadonlyUint8Array, f64} from '~/common/types';
 
 /**
@@ -31,8 +32,8 @@ export interface MessageProps {
              * placeholder.
              */
             readonly expectedDimensions: Dimensions | undefined;
-            /** Function to use for obtaining the thumbnail image bytes. */
-            readonly fetchThumbnailBytes: () => Promise<ReadonlyUint8Array | undefined>;
+            /** Store that will eventually resolve to the thumbnail blob. */
+            readonly thumbnailStore: BlobStore;
             readonly mediaType: string;
         };
         /** Type of the file, used to control how its preview will be rendered. */

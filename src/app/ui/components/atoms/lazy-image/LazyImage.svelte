@@ -25,9 +25,17 @@
     state: 'loading',
   };
 
-  async function updateContent(value: Blob | ReadonlyUint8Array | undefined): Promise<void> {
+  async function updateContent(
+    value: 'loading' | Blob | ReadonlyUint8Array | undefined,
+  ): Promise<void> {
+    revokeCurrentImageUrl(image);
+
+    if (value === 'loading') {
+      image = {state: 'loading'};
+      return;
+    }
+
     if (value === undefined) {
-      revokeCurrentImageUrl(image);
       image = {state: 'failed'};
       return;
     }
