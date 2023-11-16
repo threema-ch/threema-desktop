@@ -9,6 +9,7 @@ import type {
 import type {
     ControllerCustomUpdateFromSource,
     ControllerUpdateFromLocal,
+    ControllerUpdateFromSource,
     LocalModel,
 } from '~/common/model/types/common';
 import type {
@@ -73,7 +74,17 @@ export type ConversationController = {
      * If {@link unreadMessageCountDelta} is set, the unread message count will be incremented or
      * decremented by the specified amount. Note that the unread message count can never go below 0.
      */
-    readonly update: (change: ConversationUpdate, unreadMessageCountDelta?: i53) => void;
+    readonly update: Omit<
+        ControllerUpdateFromSource<[change: ConversationUpdate, unreadMessageCountDelta?: i53]>,
+        'fromLocal' | 'fromRemote'
+    >;
+    /**
+     * Update the visibility of a conversation.
+     */
+    readonly updateVisibility: Omit<
+        ControllerUpdateFromSource<[visibility: ConversationVisibility]>,
+        'fromRemote' | 'fromSync'
+    >;
     /**
      * Add a new message to this conversation.
      *
@@ -126,6 +137,12 @@ export type ConversationController = {
         messageIds: ReadonlySet<MessageId>,
         contextSize: u53,
     ) => Set<AnyMessageModelStore>;
+
+    /**
+     *
+     * @returns The number of messages in this conversation
+     */
+    readonly getMessageCount: () => u53;
     /**
      * Return id of the first (i.e. oldest) unread message, or `undefined` if all messages in the
      * conversation have been read.
@@ -151,21 +168,6 @@ export interface ConversationControllerHandle {
      * Return the {@link ConversationId} for the current conversation.
      */
     readonly conversationId: () => ConversationId;
-
-    /**
-     * Update the conversation.
-     *
-     * If {@link unreadMessageCountDelta} is set, the unread message count will be incremented or
-     * decremented by the specified amount. Note that the unread message count can never go below 0.
-     *
-     * Note: This implicitly adds the conversation to the conversation list, so it should not be
-     *       called before a commitment to the conversation has been made (e.g. a message is being
-     *       sent or has been received).
-     */
-    readonly update: (
-        change: Required<Pick<ConversationUpdate, 'lastUpdate'>> & ConversationUpdate,
-        unreadMessageCountDelta?: i53,
-    ) => void;
 
     /**
      * Decrement the unread message count of the conversation.

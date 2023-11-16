@@ -267,6 +267,75 @@ export class ConversationModelController implements ConversationController {
         },
     };
 
+    /** @inheritdoc */
+    public readonly update: ConversationController['update'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromSync: (
+            change: Mutable<ConversationUpdate, 'lastUpdate'>,
+            unreadMessageCountDelta?: i53,
+        ): void => {
+            this.meta.update((view) => this._update(view, change, unreadMessageCountDelta));
+        },
+    };
+
+    public readonly updateVisibility: ConversationController['updateVisibility'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromLocal: async (
+            visibility: ConversationVisibility,
+            // eslint-disable-next-line @typescript-eslint/require-await
+        ) => {
+            const conversationChange: ConversationUpdateFromToSync = {visibility};
+
+            // No need for a precondition to archive or pin
+            const precondition = (): boolean => this.meta.active;
+
+            let syncTask: ReflectContactSyncTransactionTask | ReflectGroupSyncTransactionTask;
+
+            const conversationId = this.conversationId();
+            switch (conversationId.type) {
+                case ReceiverType.CONTACT:
+                    syncTask = new ReflectContactSyncTransactionTask(this._services, precondition, {
+                        type: 'update-conversation-data',
+                        identity: conversationId.identity,
+                        conversation: conversationChange,
+                    });
+                    break;
+                case ReceiverType.DISTRIBUTION_LIST:
+                    // TODO(DESK-236): Implement distribution list
+                    throw new Error('TODO(DESK-236): Implement distribution list');
+                case ReceiverType.GROUP:
+                    syncTask = new ReflectGroupSyncTransactionTask(this._services, precondition, {
+                        type: 'update',
+                        groupId: conversationId.groupId,
+                        creatorIdentity: conversationId.creatorIdentity,
+                        group: {},
+                        conversation: conversationChange,
+                    });
+                    break;
+                default:
+                    unreachable(conversationId);
+            }
+
+            await this._lock.with(async () => {
+                const result = await this._services.taskManager.schedule(syncTask);
+                // Commit update, if possible
+                switch (result) {
+                    case 'success':
+                        // Update locally
+                        this.meta.update((view) => this._update(view, {visibility}));
+                        break;
+                    case 'aborted':
+                        // Synchronization conflict
+                        throw new Error(
+                            'Failed to update conversation visibility due to synchronization conflict',
+                        );
+                    default:
+                        unreachable(result);
+                }
+            });
+        },
+    };
+
     private readonly _handle: ConversationControllerHandle;
     private readonly _lock = new AsyncLock();
     private readonly _log: Logger;
@@ -287,7 +356,6 @@ export class ConversationModelController implements ConversationController {
             uid,
             receiverLookup: _receiverLookup,
             conversationId: this.conversationId.bind(this),
-            update: this.update.bind(this),
             decrementUnreadMessageCount: this.decrementUnreadMessageCount.bind(this),
         };
 
@@ -345,38 +413,6 @@ export class ConversationModelController implements ConversationController {
     /** @inheritdoc */
     public lastConversationUpdateStore(): LocalStore<Date> {
         return this._lastConversationUpdateStore;
-    }
-
-    /** @inheritdoc */
-    public update(
-        change: Mutable<ConversationUpdate, 'lastUpdate'>,
-        unreadMessageCountDelta?: i53,
-    ): void {
-        this.meta.update((view) => {
-            // Prevent 'downgrading' the last update timestamp
-            if (
-                view.lastUpdate !== undefined &&
-                change.lastUpdate !== undefined &&
-                view.lastUpdate > change.lastUpdate
-            ) {
-                change.lastUpdate = view.lastUpdate;
-            }
-
-            // Determine unread message count
-            const unreadMessageCount =
-                unreadMessageCountDelta === undefined
-                    ? view.unreadMessageCount
-                    : Math.max(view.unreadMessageCount + unreadMessageCountDelta, 0);
-
-            // Commit the change
-            update(
-                this._services,
-                this._receiverLookup,
-                ensureExactConversationUpdate(change),
-                this.uid,
-            );
-            return {...change, unreadMessageCount};
-        });
     }
 
     public decrementUnreadMessageCount(): void {
@@ -458,8 +494,46 @@ export class ConversationModelController implements ConversationController {
     }
 
     /** @inheritdoc */
+    public getMessageCount(): u53 {
+        return message.getConversationMessageCount(this._services, this._handle);
+    }
+
+    /** @inheritdoc */
     public getFirstUnreadMessageId(): MessageId | undefined {
-        return message.getFirstUnreadMessageId(this._services, this._handle, MESSAGE_FACTORY);
+        return message.getFirstUnreadMessageId(this._services, this._handle);
+    }
+
+    /**
+     * Update database with the change, determine derived view data and return the view update.
+     */
+    private _update(
+        view: Readonly<ConversationView>,
+        change: Mutable<ConversationUpdate, 'lastUpdate'>,
+        unreadMessageCountDelta?: i53,
+    ): Partial<ConversationView> {
+        // Prevent 'downgrading' the last update timestamp
+        if (
+            view.lastUpdate !== undefined &&
+            change.lastUpdate !== undefined &&
+            view.lastUpdate > change.lastUpdate
+        ) {
+            change.lastUpdate = view.lastUpdate;
+        }
+
+        // Determine unread message count
+        const unreadMessageCount =
+            unreadMessageCountDelta === undefined
+                ? view.unreadMessageCount
+                : Math.max(view.unreadMessageCount + unreadMessageCountDelta, 0);
+
+        update(
+            this._services,
+            this._receiverLookup,
+            ensureExactConversationUpdate(change),
+            this.uid,
+        );
+
+        return {...change, unreadMessageCount};
     }
 
     private _handleRead(source: TriggerSource.LOCAL, readAt: Date): void {
@@ -650,7 +724,7 @@ export class ConversationModelController implements ConversationController {
                 switch (result) {
                     case 'success':
                         // Update locally
-                        this.update(conversationChange);
+                        this.meta.update((view) => this._update(view, conversationChange));
                         break;
                     case 'aborted':
                         // Synchronization conflict
@@ -680,7 +754,7 @@ export class ConversationModelController implements ConversationController {
         // Update 'last update' date and unread count
         const lastUpdate = isInbound ? init.receivedAt : init.createdAt;
         const unreadMessageCountDelta = isInbound && isUnread ? 1 : 0;
-        this.update({lastUpdate}, unreadMessageCountDelta);
+        this.update.fromSync({lastUpdate}, unreadMessageCountDelta);
 
         // Store the message in the DB and retrieve the model
         const store = message.create(this._services, this._handle, MESSAGE_FACTORY, init);

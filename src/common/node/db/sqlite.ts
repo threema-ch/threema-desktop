@@ -2158,6 +2158,17 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public getConversationMessageCount(conversationUid: DbConversationUid): u53 {
+        return sync(
+            this._db
+                .selectFrom(tMessage)
+                .where(tMessage.conversationUid.equals(conversationUid))
+                .selectCountAll()
+                .executeSelectOne(),
+        );
+    }
+
+    /** @inheritdoc */
     public setSettings<TKey extends keyof Settings>(
         category: TKey,
         settings: Settings[TKey],

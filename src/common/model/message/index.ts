@@ -34,6 +34,7 @@ import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
 import type {MessageId} from '~/common/network/types';
+import type {u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
@@ -295,10 +296,18 @@ export function getLastMessage(
         );
 }
 
+export function getConversationMessageCount(
+    services: ServicesForModel,
+    conversation: ConversationControllerHandle,
+): u53 {
+    const {db} = services;
+
+    return db.getConversationMessageCount(conversation.uid);
+}
+
 export function getFirstUnreadMessageId(
     services: ServicesForModel,
     conversation: ConversationControllerHandle,
-    factory: MessageFactory,
 ): MessageId | undefined {
     const {db} = services;
 

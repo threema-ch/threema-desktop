@@ -771,6 +771,11 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbMessageUid[];
 
     /**
+     * Returns the message count of a conversation
+     */
+    readonly getConversationMessageCount: (conversationUid: DbConversationUid) => u53;
+
+    /**
      * Store settings for a given category. It returns the given settings if the action was successful.
      */
     readonly setSettings: <TKey extends keyof Settings>(
