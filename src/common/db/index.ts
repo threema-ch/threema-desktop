@@ -469,14 +469,14 @@ export type DbAnyMessage =
 export type DbMessageFor<TType extends MessageType> = TType extends 'text'
     ? DbTextMessage
     : TType extends 'file'
-    ? DbFileMessage
-    : TType extends 'image'
-    ? DbImageMessage
-    : TType extends 'video'
-    ? DbVideoMessage
-    : TType extends 'audio'
-    ? DbAudioMessage
-    : never;
+      ? DbFileMessage
+      : TType extends 'image'
+        ? DbImageMessage
+        : TType extends 'video'
+          ? DbVideoMessage
+          : TType extends 'audio'
+            ? DbAudioMessage
+            : never;
 
 /**
  * A database message UID.

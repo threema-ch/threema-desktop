@@ -32,8 +32,8 @@ export type Concatenate<
             ? Concatenate<Rest, `${Acc}${Head}`>
             : Acc
         : Rest extends readonly Primitive[]
-        ? Concatenate<Rest, `${Acc}`>
-        : Acc
+          ? Concatenate<Rest, `${Acc}`>
+          : Acc
     : Acc;
 
 /**

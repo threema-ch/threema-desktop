@@ -83,10 +83,10 @@ export type ReceiverType = 'contact' | 'group' | 'distribution-list';
 export type ReceiverDataFor<T extends ReceiverType> = T extends 'contact'
     ? ContactData
     : T extends 'group'
-    ? GroupData
-    : T extends 'distribution-list'
-    ? DistributionListData
-    : never;
+      ? GroupData
+      : T extends 'distribution-list'
+        ? DistributionListData
+        : never;
 
 /**
  * Any kind of receiver data.
@@ -222,18 +222,18 @@ interface QuoteMessageBody {
 export type MessageBodyFor<T extends MessageType> = T extends 'text'
     ? TextMessageBody
     : T extends 'image'
-    ? ImageMessageBody
-    : T extends 'location'
-    ? LocationMessageBody
-    : T extends 'audio'
-    ? AudioMessageBody
-    : T extends 'video'
-    ? VideoMessageBody
-    : T extends 'file'
-    ? FileMessageBody
-    : T extends 'quote'
-    ? QuoteMessageBody
-    : never;
+      ? ImageMessageBody
+      : T extends 'location'
+        ? LocationMessageBody
+        : T extends 'audio'
+          ? AudioMessageBody
+          : T extends 'video'
+            ? VideoMessageBody
+            : T extends 'file'
+              ? FileMessageBody
+              : T extends 'quote'
+                ? QuoteMessageBody
+                : never;
 
 /**
  * Body associated to a message type.

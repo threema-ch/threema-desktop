@@ -134,9 +134,9 @@ export type TagOf<T> = [type: T] extends [newType: WeakOpaque<unknown, infer I>]
 export type Bare<T> = T extends WeakOpaque<infer I, TagOf<T>>
     ? I
     : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    T extends Record<keyof any, unknown>
-    ? {[K in Exclude<keyof T, keyof OpaqueTag<unknown>>]: Bare<T[K]>}
-    : never;
+      T extends Record<keyof any, unknown>
+      ? {[K in Exclude<keyof T, keyof OpaqueTag<unknown>>]: Bare<T[K]>}
+      : never;
 
 /**
  * Remove the new-type from a type. If the type is an object, it removes
@@ -148,9 +148,9 @@ export type BareFromTag<T, TOpaque extends OpaqueTag<unknown>> = T extends WeakO
 >
     ? I
     : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    T extends Record<any, any>
-    ? {[K in Exclude<keyof T, keyof OpaqueTag<unknown>>]: BareFromTag<T[K], TOpaque>}
-    : T;
+      T extends Record<any, any>
+      ? {[K in Exclude<keyof T, keyof OpaqueTag<unknown>>]: BareFromTag<T[K], TOpaque>}
+      : T;
 
 /**
  * From a new-type object T, pick a set of properties by its keys K.
@@ -187,12 +187,12 @@ type IntoXIfYMap<T, Y, M extends 'args' | 'args+return', X> = {
 type IntoXIfY<T, Y, M extends 'args' | 'args+return', X> = T extends Y
     ? X
     : T extends Primitive | IterableIterator<unknown>
-    ? T
-    : T extends (...args: infer A) => infer R
-    ? (
-          ...args: M extends 'args' | 'args+return' ? IntoXIfYMap<A, Y, M, X> : A
-      ) => M extends 'args+return' ? IntoXIfY<R, Y, M, X> : R
-    : IntoXIfYMap<T, Y, M, X>;
+      ? T
+      : T extends (...args: infer A) => infer R
+        ? (
+              ...args: M extends 'args' | 'args+return' ? IntoXIfYMap<A, Y, M, X> : A
+          ) => M extends 'args+return' ? IntoXIfY<R, Y, M, X> : R
+        : IntoXIfYMap<T, Y, M, X>;
 
 /**
  * Uint8Array methods that do not modify the underlying data including those

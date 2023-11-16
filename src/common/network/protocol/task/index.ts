@@ -221,8 +221,8 @@ export interface ActiveTask<TTaskResult, TPersistence extends ActiveTaskPersiste
     readonly persist: TPersistence extends 'persistent'
         ? true
         : TPersistence extends 'volatile'
-        ? false
-        : never;
+          ? false
+          : never;
 
     /**
      * Whether the task expects to be run inside a specific transaction.

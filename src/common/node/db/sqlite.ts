@@ -90,12 +90,12 @@ type UpdateSetsForDbMessage<
 > = TDbMessage extends DbFileMessage
     ? UpdatableValues<typeof tMessageFileData>
     : TDbMessage extends DbImageMessage
-    ? UpdatableValues<typeof tMessageImageData>
-    : TDbMessage extends DbVideoMessage
-    ? UpdatableValues<typeof tMessageVideoData>
-    : TDbMessage extends DbAudioMessage
-    ? UpdatableValues<typeof tMessageAudioData>
-    : never;
+      ? UpdatableValues<typeof tMessageImageData>
+      : TDbMessage extends DbVideoMessage
+        ? UpdatableValues<typeof tMessageVideoData>
+        : TDbMessage extends DbAudioMessage
+          ? UpdatableValues<typeof tMessageAudioData>
+          : never;
 
 /**
  * All update sets that include thumbnail data.

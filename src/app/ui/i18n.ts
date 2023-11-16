@@ -33,10 +33,10 @@ type BaseTranslationNamespace = {
         ? TKey extends 'locale'
             ? Record<Locale, string>
             : TKey extends `${string}--${string}`
-            ? TKey extends `${OptionalTranslationTopicModifier}--${Lowercase<string>}`
-                ? BaseTranslationTopic<BaseTranslation[TKey]>
-                : never
-            : BaseTranslationTopic<BaseTranslation[TKey]>
+              ? TKey extends `${OptionalTranslationTopicModifier}--${Lowercase<string>}`
+                  ? BaseTranslationTopic<BaseTranslation[TKey]>
+                  : never
+              : BaseTranslationTopic<BaseTranslation[TKey]>
         : never;
 };
 type BaseTranslationTopic<TRecord extends Record<string, string>> = {

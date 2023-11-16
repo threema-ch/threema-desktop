@@ -41,14 +41,14 @@ export * from './common';
 export type InboundMessageFor<TType extends MessageType> = TType extends MessageType.TEXT
     ? InboundTextMessage
     : TType extends MessageType.FILE
-    ? InboundFileMessage
-    : TType extends MessageType.IMAGE
-    ? InboundImageMessage
-    : TType extends MessageType.VIDEO
-    ? InboundVideoMessage
-    : TType extends MessageType.AUDIO
-    ? InboundAudioMessage
-    : never;
+      ? InboundFileMessage
+      : TType extends MessageType.IMAGE
+        ? InboundImageMessage
+        : TType extends MessageType.VIDEO
+          ? InboundVideoMessage
+          : TType extends MessageType.AUDIO
+            ? InboundAudioMessage
+            : never;
 
 /**
  * Helper to return the appropriate bundle for the specified outbound message type.
@@ -56,14 +56,14 @@ export type InboundMessageFor<TType extends MessageType> = TType extends Message
 export type OutboundMessageFor<TType extends MessageType> = TType extends MessageType.TEXT
     ? OutboundTextMessage
     : TType extends MessageType.FILE
-    ? OutboundFileMessage
-    : TType extends MessageType.IMAGE
-    ? OutboundImageMessage
-    : TType extends MessageType.VIDEO
-    ? OutboundVideoMessage
-    : TType extends MessageType.AUDIO
-    ? OutboundAudioMessage
-    : never;
+      ? OutboundFileMessage
+      : TType extends MessageType.IMAGE
+        ? OutboundImageMessage
+        : TType extends MessageType.VIDEO
+          ? OutboundVideoMessage
+          : TType extends MessageType.AUDIO
+            ? OutboundAudioMessage
+            : never;
 
 type BundleProperty = 'view' | 'init' | 'controller' | 'model';
 
@@ -79,10 +79,10 @@ export type DirectedMessageFor<
           readonly direction: MessageDirection.INBOUND;
       } & InboundMessageFor<TType>[TBundleProperty]
     : TDirection extends MessageDirection.OUTBOUND
-    ? {
-          readonly direction: MessageDirection.OUTBOUND;
-      } & OutboundMessageFor<TType>[TBundleProperty]
-    : never;
+      ? {
+            readonly direction: MessageDirection.OUTBOUND;
+        } & OutboundMessageFor<TType>[TBundleProperty]
+      : never;
 
 export type MessageFor<
     TDirection extends MessageDirection,
@@ -91,8 +91,8 @@ export type MessageFor<
 > = TDirection extends MessageDirection.INBOUND
     ? InboundMessageFor<TType>[TVariant]
     : TDirection extends MessageDirection.OUTBOUND
-    ? OutboundMessageFor<TType>[TVariant]
-    : never;
+      ? OutboundMessageFor<TType>[TVariant]
+      : never;
 
 export type AnyMessage<TVariant extends BundleProperty> = MessageFor<
     MessageDirection,

@@ -318,18 +318,18 @@ export type CustomTransferableLocal<T extends CustomTransferredRemoteMarker<unkn
     >
         ? LocalModelStore<TModel, TView, TController, TCtx, TType>
         : T extends RemoteSetStore<infer TValue>
-        ? ISetStore<TValue>
-        : T extends RemoteStore<infer TValue>
-        ? LocalStore<TValue>
-        : T extends PropertiesMarkedRemote<infer TValue>
-        ? TValue & PropertiesMarked
-        : T extends RemoteProxy<infer TValue>
-        ? TValue & ProxyMarked
-        : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
-          // types. Use the following as fallback for other cases:
-          //     T extends Remote<infer TValue>
-          //   ? TValue :
-          never;
+          ? ISetStore<TValue>
+          : T extends RemoteStore<infer TValue>
+            ? LocalStore<TValue>
+            : T extends PropertiesMarkedRemote<infer TValue>
+              ? TValue & PropertiesMarked
+              : T extends RemoteProxy<infer TValue>
+                ? TValue & ProxyMarked
+                : // Remote inferrence doesen't work in every case due to the complexity / depth of the inferred
+                  // types. Use the following as fallback for other cases:
+                  //     T extends Remote<infer TValue>
+                  //   ? TValue :
+                  never;
 
 /**
  * A proxied remote function type. See {@link RemoteProxy}.
@@ -366,14 +366,14 @@ type RemoteProxyObject<T> = keyof Omit<T, typeof TRANSFER_HANDLER> extends never
 type ProxyMarkedRemoteObjectProperty<T> = T extends ProxyMarked // Access nested proxies directly without promise
     ? RemoteProxy<T>
     : T extends Promise<infer TPromised> // Promises are unwrapped and then transferred
-    ? Promisify<Remote<TPromised>>
-    : T extends Primitive // Required to be handled for OpaqueTag types
-    ? Promisify<T>
-    : T extends CustomTransferable // For objects with a custom transferhandler, that one is used.
-    ? Promisify<CustomTransferableRemote<T>>
-    : T extends Function | object // Generic functions and objects calls handled by the proxy.
-    ? RemoteProxy<T>
-    : Promisify<Remote<T>>; // Default: Transfer element with handler or do structural cloning.
+      ? Promisify<Remote<TPromised>>
+      : T extends Primitive // Required to be handled for OpaqueTag types
+        ? Promisify<T>
+        : T extends CustomTransferable // For objects with a custom transferhandler, that one is used.
+          ? Promisify<CustomTransferableRemote<T>>
+          : T extends Function | object // Generic functions and objects calls handled by the proxy.
+            ? RemoteProxy<T>
+            : Promisify<Remote<T>>; // Default: Transfer element with handler or do structural cloning.
 
 /**
  * A remote promise proxy type. See {@link RemoteProxy}.
@@ -384,8 +384,8 @@ type ProxyMarkedRemoteObjectProperty<T> = T extends ProxyMarked // Access nested
 type RemoteProxyPromise<T> = T extends ProxyMarked
     ? unknown
     : Remote<T> extends never
-    ? unknown
-    : Promisify<Remote<Awaited<T>>>;
+      ? unknown
+      : Promisify<Remote<Awaited<T>>>;
 
 /**
  * Map all properties of an object marked with {@link PropertiesMarked} to their remote type.
@@ -414,16 +414,19 @@ type CustomTransferableRemote<T extends CustomTransferable> = T extends LocalMod
 >
     ? RemoteModelStore<TModel, TView, TController, TCtx, TType>
     : T extends IDerivableSetStore<infer TValue>
-    ? // TValue must extends CustomTransferrable. We cannot enforce this since the remote mapping
-      // of a CustomTransferrable is a plain object.
-      RemoteSetStore<MustExtend<object, Remote<TValue>>>
-    : T extends LocalStore<infer TValue, RegisteredTransferHandler<any, any, any, any, TransferTag>>
-    ? RemoteStore<Remote<TValue>>
-    : T extends PropertiesMarked
-    ? PropertiesMarkedRemote<T>
-    : T extends ProxyMarked
-    ? RemoteProxy<T>
-    : never;
+      ? // TValue must extends CustomTransferrable. We cannot enforce this since the remote mapping
+        // of a CustomTransferrable is a plain object.
+        RemoteSetStore<MustExtend<object, Remote<TValue>>>
+      : T extends LocalStore<
+              infer TValue,
+              RegisteredTransferHandler<any, any, any, any, TransferTag>
+          >
+        ? RemoteStore<Remote<TValue>>
+        : T extends PropertiesMarked
+          ? PropertiesMarkedRemote<T>
+          : T extends ProxyMarked
+            ? RemoteProxy<T>
+            : never;
 
 /**
  * Approximation of Structured Clone Algorithm result type. See
@@ -433,24 +436,24 @@ type CustomTransferableRemote<T extends CustomTransferable> = T extends LocalMod
 type StructuredCloneOf<T> = T extends StructuredCloneUnclonableTypes
     ? never
     : T extends TransferredToRemote<infer TTransferred>
-    ? TransferredFromRemote<TTransferred>
-    : T extends TransferredFromRemote<infer TTransferred>
-    ? TransferredToRemote<TTransferred>
-    : T extends Map<infer TKey, infer TValue>
-    ? Map<StructuredCloneOf<TKey>, StructuredCloneOf<TValue>>
-    : T extends Set<infer TValue>
-    ? Set<StructuredCloneOf<TValue>>
-    : T extends (infer TValue)[]
-    ? StructuredCloneOf<TValue>[]
-    : T extends ArrayBuffer | Boolean | DataView | Date | RegExp | String
-    ? T
-    : T extends Primitive // Required to be handled before object for OpaqueTag types
-    ? T
-    : T extends object
-    ? {
-          readonly [P in keyof T]: StructuredCloneOf<T[P]>;
-      }
-    : unknown;
+      ? TransferredFromRemote<TTransferred>
+      : T extends TransferredFromRemote<infer TTransferred>
+        ? TransferredToRemote<TTransferred>
+        : T extends Map<infer TKey, infer TValue>
+          ? Map<StructuredCloneOf<TKey>, StructuredCloneOf<TValue>>
+          : T extends Set<infer TValue>
+            ? Set<StructuredCloneOf<TValue>>
+            : T extends (infer TValue)[]
+              ? StructuredCloneOf<TValue>[]
+              : T extends ArrayBuffer | Boolean | DataView | Date | RegExp | String
+                ? T
+                : T extends Primitive // Required to be handled before object for OpaqueTag types
+                  ? T
+                  : T extends object
+                    ? {
+                          readonly [P in keyof T]: StructuredCloneOf<T[P]>;
+                      }
+                    : unknown;
 
 /**
  * Types that are not cloned by the structuredClone Algorithm, taken from

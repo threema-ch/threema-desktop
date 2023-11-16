@@ -45,8 +45,8 @@ function transformEsm(
                     typeof external === 'string'
                         ? external === n
                         : external instanceof RegExp
-                        ? external.test(n)
-                        : false,
+                          ? external.test(n)
+                          : false,
                 ),
         );
 

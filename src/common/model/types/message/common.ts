@@ -99,8 +99,8 @@ export type BaseMessageView<TDirection extends MessageDirection> =
     TDirection extends MessageDirection.INBOUND
         ? InboundBaseMessageView
         : TDirection extends MessageDirection.OUTBOUND
-        ? OutboundBaseMessageView
-        : never;
+          ? OutboundBaseMessageView
+          : never;
 
 export type CommonBaseMessageInit<TType extends MessageType> = {
     /**

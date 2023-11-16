@@ -317,10 +317,10 @@ export type ReceiverTypeForCspE2eMessageType<T extends CspE2eType> =
     T extends CspE2eGroupConversationType
         ? ReceiverType.GROUP
         : T extends CspE2eGroupStatusUpdateType
-        ? ReceiverType.GROUP
-        : T extends CspE2eGroupControlType
-        ? ReceiverType.GROUP
-        : ReceiverType.CONTACT;
+          ? ReceiverType.GROUP
+          : T extends CspE2eGroupControlType
+            ? ReceiverType.GROUP
+            : ReceiverType.CONTACT;
 
 /**
  * A list of all types in {@link CspE2eType} that are reflected.
