@@ -5,7 +5,7 @@ import type {
     DbCreate,
     DbCreateConversationMixin,
 } from '~/common/db';
-import {Existence, ReceiverType, TriggerSource} from '~/common/enum';
+import {AcquaintanceLevel, Existence, ReceiverType, TriggerSource} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
@@ -268,6 +268,16 @@ export class ContactModelController implements ContactController {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         fromLocal: async (change: ContactUpdate) => {
             this._log.debug('ContactModelController: Update from local');
+
+            // When editing a contact with acquaintance level GROUP, we want the contact to be
+            // visible in the contact list, so we change the acquaintance level to DIRECT.
+            const currentAcquaintanceLevel = this.meta.run(
+                (contactStoreHandle) => contactStoreHandle.view().acquaintanceLevel,
+            );
+            if (currentAcquaintanceLevel === AcquaintanceLevel.GROUP) {
+                change = {acquaintanceLevel: AcquaintanceLevel.DIRECT, ...change};
+            }
+
             return await this._updateAsync({source: TriggerSource.LOCAL}, change);
         },
         fromRemote: async (handle, change: ContactUpdate) => {
