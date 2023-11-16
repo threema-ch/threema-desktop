@@ -319,6 +319,7 @@
         isDisabled={isDisabledReceiver($receiver)}
         isInactive={isInactiveContact($receiver)}
         {conversation}
+        {conversationViewModel}
         {receiverLookup}
         {services}
         isReceiverBlocked={$isReceiverBlockedStore}

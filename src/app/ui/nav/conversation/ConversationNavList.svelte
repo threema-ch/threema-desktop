@@ -1,9 +1,15 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
+  import {globals} from '~/app/globals';
   import type {Router} from '~/app/routing/router';
+  import {contextMenuAction} from '~/app/ui/generic/context-menu';
+  import type {VirtualRect} from '~/app/ui/generic/popover';
+  import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import {conversationListEvent} from '~/app/ui/main/conversation/index';
+  import ConversationTopBarContextMenu from '~/app/ui/main/conversation/top-bar/ConversationTopBarContextMenu.svelte';
+  import ConversationEmptyConfirmationDialog from '~/app/ui/modal/ConversationEmptyConfirmation.svelte';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavElement from '~/app/ui/nav/conversation/ConversationNavElement.svelte';
   import type {DbReceiverLookup} from '~/common/db';
@@ -11,9 +17,13 @@
   import {ConversationVisibility} from '~/common/enum';
   import {unreachable, unwrap} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
+  import type {SetValue} from '~/common/utils/set';
+  import type {IQueryableStoreValue} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
   import type {ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
   import type {SvelteAction} from '~/common/viewmodel/types';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.conversation-nav-list');
 
   /**
    * Set store of all conversation previews.
@@ -28,9 +38,19 @@
   const group = new SwipeAreaGroup();
 
   let conversationPreviewList: HTMLDivElement;
-
+  // Context menu
+  let contextMenuPopover: Popover | null;
+  let contextMenuPosition: VirtualRect | undefined;
+  let currentPreview: SetValue<IQueryableStoreValue<typeof conversationPreviews>> | undefined;
+  $: currentPreviewViewModelStore = currentPreview?.viewModel;
   // Determine whether scroll snapping anchor is active.
   let anchorActive = true;
+
+  // Delete all messages dialogue
+  let isConversationEmptyDialogVisible = false;
+
+  // Message count is calculated when needed by delete dialog
+  let conversationMessageCount = 0;
 
   /**
    * Detect and switch if the scroll snapping anchor should be active based on element visibility.
@@ -168,6 +188,29 @@
     }
   }
 
+  function confirmEmptyConversationAction(): void {
+    contextMenuPopover?.close();
+    currentPreview?.conversationStore
+      .get()
+      .controller.getMessageCount()
+      .then((messagesCount) => {
+        conversationMessageCount = messagesCount;
+      })
+      .catch((error) => {
+        log.error('Failed to fetch conversation messages', error);
+
+        conversationMessageCount = 0;
+      });
+    isConversationEmptyDialogVisible = true;
+  }
+
+  function deleteAllConversationMessages(): void {
+    currentPreview?.conversationStore
+      .get()
+      .controller.removeAllMessages.fromLocal()
+      .catch((error) => log.error('Could not remove messages from conversation', error));
+  }
+
   function rememberNodeForReceiver(node: HTMLElement, receiverLookup: DbReceiverLookup): void {
     nodesByReceiverLookup[`${receiverLookup.type}:${receiverLookup.uid}`] = node;
   }
@@ -184,6 +227,15 @@
       setTimeout(() => scrollToCenterOfView(conversationPreviewNode), 100);
     }
   }
+
+  function setConversationVisibility(newVisibility: ConversationVisibility): void {
+    currentPreview?.conversationStore
+      .get()
+      .controller.updateVisibility.fromLocal(newVisibility)
+      .catch((error) => log.error('Could not change chat visibility', error));
+
+    contextMenuPopover?.close();
+  }
 </script>
 
 <template>
@@ -194,11 +246,68 @@
         class="conversation-preview"
         class:snap={anchorActive}
         use:rememberNodeForReceiver={conversationPreview.viewModel.get().receiverLookup}
+        use:contextMenuAction={(event) => {
+          event.preventDefault();
+          currentPreview = conversationPreview;
+          contextMenuPosition = {
+            left: event.clientX,
+            right: 0,
+            top: event.clientY,
+            bottom: 0,
+            width: 0,
+            height: 0,
+          };
+          contextMenuPopover?.open(event);
+        }}
       >
         <ConversationNavElement {conversationPreview} {router} {group} active={false} />
       </div>
     {/each}
   </div>
+  <Popover
+    bind:this={contextMenuPopover}
+    container={conversationPreviewList}
+    reference={contextMenuPosition}
+    anchorPoints={{
+      reference: {
+        horizontal: 'left',
+        vertical: 'bottom',
+      },
+      popover: {
+        horizontal: 'left',
+        vertical: 'top',
+      },
+    }}
+    on:clickoutside={() => {
+      currentPreview = undefined;
+    }}
+  >
+    <div slot="popover">
+      {#if currentPreviewViewModelStore !== undefined}
+        {@const currentPreviewModel = $currentPreviewViewModelStore}
+        {#if currentPreviewModel !== undefined}
+          <ConversationTopBarContextMenu
+            isConversationEmptyActionEnabled={currentPreviewModel.lastMessage !== undefined}
+            conversationVisibility={currentPreviewModel.visibility}
+            on:emptyConversationActionClicked={confirmEmptyConversationAction}
+            on:setConversationVisibility={(event) => setConversationVisibility(event.detail)}
+          />
+        {/if}
+      {/if}
+    </div>
+  </Popover>
+  {#if currentPreviewViewModelStore !== undefined}
+    {@const currentPreviewModel = $currentPreviewViewModelStore}
+    {#if currentPreviewModel !== undefined}
+      <ConversationEmptyConfirmationDialog
+        bind:visible={isConversationEmptyDialogVisible}
+        receiverName={currentPreviewModel.receiver.displayName}
+        receiverType={currentPreviewModel.receiver.type}
+        {conversationMessageCount}
+        on:confirm={deleteAllConversationMessages}
+      />
+    {/if}
+  {/if}
 </template>
 
 <style lang="scss">

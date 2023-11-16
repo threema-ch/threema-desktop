@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {onDestroy} from 'svelte';
+
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
@@ -19,12 +21,14 @@
   import type {DbReceiverLookup} from '~/common/db';
   import type {ProfilePictureBlobStore} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
-  import {ReceiverType} from '~/common/enum';
+  import {ReceiverType, type ConversationVisibility} from '~/common/enum';
   import type {Conversation} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import {unreachable} from '~/common/utils/assert';
+  import type {Remote} from '~/common/utils/endpoint';
   import {eternalPromise} from '~/common/utils/promise';
   import {ReadableStore} from '~/common/utils/store';
+  import type {ConversationViewModel} from '~/common/viewmodel/conversation';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.conversation-top-bar');
 
@@ -47,6 +51,11 @@
    * The conversation model store.
    */
   export let conversation: RemoteModelStore<Conversation>;
+
+  /**
+   * Conversation view model
+   */
+  export let conversationViewModel: Remote<ConversationViewModel>;
 
   /**
    * Placeholder of the search field.
@@ -79,6 +88,8 @@
    */
   export let isReceiverBlocked: boolean;
 
+  let topBarContextMenuPopover: Popover | null;
+
   /**
    * Reset the top bar state.
    */
@@ -86,6 +97,10 @@
     search = '';
     mode = 'conversation-detail';
   }
+
+  onDestroy((): void => {
+    topBarContextMenuPopover?.close();
+  });
 
   function openAside(): void {
     switch (receiverLookup.type) {
@@ -114,6 +129,17 @@
   }
 
   function confirmEmptyConversationAction(): void {
+    topBarContextMenuPopover?.close();
+    $conversation.controller
+      .getMessageCount()
+      .then((messagesCount) => {
+        conversationMessageCount = messagesCount;
+      })
+      .catch((error) => {
+        log.error('Failed to fetch conversation messages', error);
+
+        conversationMessageCount = 0;
+      });
     isConversationEmptyDialogVisible = true;
   }
 
@@ -123,25 +149,19 @@
       .catch((error) => log.error('Could not remove messages from conversation', error));
   }
 
+  function setConversationVisibility(newVisibility: ConversationVisibility): void {
+    $conversation.controller.updateVisibility
+      .fromLocal(newVisibility)
+      .catch((error) => log.error('Could not change chat visibility', error));
+
+    topBarContextMenuPopover?.close();
+  }
+
   let isConversationEmptyDialogVisible = false;
-  let isConversationEmptyActionEnabled = false;
   let conversationMessageCount = 0;
   let profilePictureStore: ProfilePictureBlobStore = new ReadableStore(undefined);
 
-  // Update conversation message count and other flags
-  $: $conversation.controller
-    .getAllMessages()
-    .then((messages) => {
-      conversationMessageCount = messages.get().size;
-      isConversationEmptyActionEnabled = conversationMessageCount > 0;
-    })
-    .catch((error) => {
-      log.error('Failed to fetch conversation messages', error);
-
-      conversationMessageCount = 0;
-      isConversationEmptyActionEnabled = false;
-    });
-
+  $: innerConversationViewModel = conversationViewModel.viewModel;
   // Update profile picture store
   $: {
     services.profilePicture
@@ -178,6 +198,7 @@
             </div>
           </div>
         </div>
+
         <div class="title" class:disabled={isDisabled} class:inactive={isInactive}>
           <span on:click={openAside}>{receiver.name}</span>
         </div>
@@ -211,6 +232,7 @@
           </IconButton> -->
           {#if receiver.type !== 'distribution-list'}
             <Popover
+              bind:this={topBarContextMenuPopover}
               anchorPoints={{
                 reference: {
                   horizontal: 'right',
@@ -232,8 +254,11 @@
 
               <ConversationTopBarContextMenu
                 slot="popover"
-                {isConversationEmptyActionEnabled}
+                isConversationEmptyActionEnabled={$innerConversationViewModel.lastMessage !==
+                  undefined}
+                conversationVisibility={$conversation.view.visibility}
                 on:emptyConversationActionClicked={confirmEmptyConversationAction}
+                on:setConversationVisibility={(event) => setConversationVisibility(event.detail)}
               />
             </Popover>
           {/if}

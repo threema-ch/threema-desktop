@@ -286,6 +286,8 @@
   "messaging": {
     "action--conversation-option-archive": "Archive",
     "action--conversation-option-more": "More",
+    "action--conversation-option-pin": "Pin",
+    "action--conversation-option-unarchive": "Unarchive",
     "action--conversation-option-unpin": "Unpin",
     "action--empty-conversation": "Empty Chat",
     "action--message-option-agree": "Agree",
