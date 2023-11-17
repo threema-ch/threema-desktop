@@ -61,9 +61,40 @@ const LoggingDownloader = {
     },
 };
 
+/**
+ * Determine the app name used for packaging.
+ *
+ * Note: Keep in sync with identical function in packaging/main.ts
+ *
+ * @throws Error if invalid flavor is passed in.
+ */
+function determineAppName(flavor) {
+    let name = 'Threema';
+    switch (flavor) {
+        case 'consumer-live':
+            break;
+        case 'consumer-sandbox':
+            name += ' Sandbox';
+            break;
+        case 'work-live':
+            name += ' Work';
+            break;
+        case 'work-sandbox':
+            name += ' Red';
+            break;
+        default:
+            throw new Error(`Invalid flavor: ${flavor}`);
+    }
+    name += ' Beta';
+    return name;
+}
+
 async function packageApp(variant, environment) {
     const options = {};
     populateIgnoredPaths(options);
+
+    // Determine app name
+    const appName = determineAppName(`${variant}-${environment}`);
 
     // Load package.json
     const pkg = JSON.parse(fs.readFileSync(resolve(__dirname, '..', 'package.json')));
@@ -130,8 +161,8 @@ async function packageApp(variant, environment) {
                 // DOC: https://electron.github.io/electron-packager/v16.0.0/interfaces/electronpackager.win32metadataoptions.html
                 win32metadata: {
                     'CompanyName': pkg.author,
-                    'ProductName': pkg.productName,
-                    'InternalName': pkg.productName,
+                    'ProductName': appName,
+                    'InternalName': appName,
                     'FileDescription': pkg.description,
                     'requested-execution-level': 'asInvoker',
                 },
@@ -146,7 +177,7 @@ async function packageApp(variant, environment) {
     // DOC: https://electron.github.io/electron-packager/v16.0.0/interfaces/electronpackager.options.html
     const [outputPath] = await packager({
         appCopyright: '© Threema GmbH – Released under the AGPL-3.0 license',
-        name: pkg.productName,
+        name: appName,
         executableName: 'ThreemaDesktop',
         dir: resolve(__dirname, '..'),
         out: resolve(__dirname, '..', 'build', 'electron', 'packaged'),

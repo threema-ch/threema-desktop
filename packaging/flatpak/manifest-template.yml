@@ -90,6 +90,7 @@ modules:
       - sed -i 's/ch.threema.threema-desktop/{{app-id}}/g' /app/share/applications/{{app-id}}.desktop
       - sed -i "s#name>Threema<#name>{{app-name}}<#" /app/share/metainfo/{{app-id}}.metainfo.xml
       - sed -i "s#Name=Threema#Name={{app-name}}#" /app/share/applications/{{app-id}}.desktop
+      - sed -i "s#StartupWMClass=Threema#StartupWMClass={{app-name}}#" /app/share/applications/{{app-id}}.desktop
       # Install Icons
       - mkdir -p /app/share/icons/hicolor/{512x512,scalable}/apps/
       - |

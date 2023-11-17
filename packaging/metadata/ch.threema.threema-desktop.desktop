@@ -3,5 +3,6 @@ Type=Application
 Name=Threema
 Icon=ch.threema.threema-desktop
 Exec=
+StartupWMClass=Threema
 Categories=Network;InstantMessaging;Chat;
 Keywords=encryption;threema;privacy;chat;communications;

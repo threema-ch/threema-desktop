@@ -204,7 +204,6 @@ function buildElectronMenu(): electron.Menu {
     // Menu: macOS-only app menu
     const macAppMenu: MenuItemConstructorOptions = {
         role: 'appMenu',
-        label: electron.app.name,
         submenu: [
             {role: 'about'},
             {type: 'separator'},
@@ -578,6 +577,9 @@ function main(
         }
 
         log.info('Starting');
+
+        // Set app name
+        electron.app.setName(import.meta.env.APP_NAME);
 
         // Configure DNS
         electron.app.configureHostResolver({

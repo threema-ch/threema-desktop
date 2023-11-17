@@ -147,6 +147,8 @@ function requireCommand(command: string): void {
 
 /**
  * Determine the app name used for packaging.
+ *
+ * Note: Keep in sync with identical function in tools/dist-electron.cjs
  */
 function determineAppName(flavor: Flavor): string {
     let name = 'Threema';
@@ -394,7 +396,7 @@ function runElectronDistScript(
     }
 
     const buildOutputDir = path.join(dirs.root, 'build', 'electron', 'packaged');
-    const binaryBasename = 'Threema';
+    const binaryBasename = determineAppName(flavor);
     const binaryDir = `${binaryBasename}-${process.platform}-${process.arch}`;
     const binaryDirPath = path.join(buildOutputDir, binaryDir);
 
@@ -485,6 +487,9 @@ function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[])
 
     // Check requirements
     requireCommand(IS_WINDOWS ? 'powershell' : 'bash');
+    if (!IS_WINDOWS) {
+        requireCommand('sha256sum');
+    }
     if (IS_POSIX) {
         requireCommand('tar');
     }
