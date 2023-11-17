@@ -25,10 +25,11 @@ import {
     updateElectronSettings,
     DEFAULT_ELECTRON_SETTINGS,
 } from '~/common/node/electron-settings';
+import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
 import type {u53} from '~/common/types';
-import {ensureError, unwrap} from '~/common/utils/assert';
+import {ensureError, unreachable, unwrap} from '~/common/utils/assert';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
@@ -275,6 +276,33 @@ function buildElectronMenu(): electron.Menu {
     );
 }
 
+function getMainAppLogPath(appPath: string): string {
+    return path.join(appPath, ...import.meta.env.LOG_PATH.MAIN_AND_APP);
+}
+
+function getLogBackendPath(appPath: string): string {
+    return path.join(appPath, ...import.meta.env.LOG_PATH.BACKEND_WORKER);
+}
+
+function generateLogFileInfo(type: 'app' | 'bw', appPath: string): LogFileInfo {
+    let sizeInBytes = 0;
+    let logPath: string;
+    switch (type) {
+        case 'app':
+            logPath = getMainAppLogPath(appPath);
+            break;
+        case 'bw':
+            logPath = getLogBackendPath(appPath);
+            break;
+        default:
+            unreachable(type);
+    }
+    if (fs.existsSync(logPath)) {
+        sizeInBytes = fs.statSync(logPath).size;
+    }
+    return {sizeInBytes, path: logPath};
+}
+
 interface MainInit {
     readonly parameters: RunParameters;
     readonly appPath: string;
@@ -380,8 +408,7 @@ async function init(): Promise<MainInit> {
     // Initialise logging
     let logging: LoggerFactory;
     let fileLogger: FileLogger | undefined;
-    const logPath = import.meta.env.LOG_PATH.MAIN_AND_APP;
-    const logFilePath = path.join(appPath, ...logPath);
+    const logFilePath = getMainAppLogPath(appPath);
     if (electronSettings.logging.enabled) {
         try {
             fs.mkdirSync(path.dirname(logFilePath), {
@@ -630,10 +657,44 @@ function main(
         electron.ipcMain.on(
             ElectronIpcCommand.SET_FILE_LOGGING_ENABLED_AND_RESTART,
             (event, enabled: boolean) => {
+                if (!enabled) {
+                    const mainAppLogPath = getMainAppLogPath(appPath);
+                    if (fs.existsSync(mainAppLogPath)) {
+                        try {
+                            fs.truncateSync(mainAppLogPath, 0);
+                        } catch (error) {
+                            log.error(
+                                `Failed to truncate file ${mainAppLogPath}:
+                                ${ensureError(error).message}`,
+                            );
+                        }
+                    }
+                    const logBackendPath = getLogBackendPath(appPath);
+                    if (fs.existsSync(logBackendPath)) {
+                        try {
+                            fs.truncateSync(logBackendPath, 0);
+                        } catch (error) {
+                            log.error(
+                                `Failed to truncate file ${logBackendPath}:
+                                ${ensureError(error).message}`,
+                            );
+                        }
+                    }
+                }
                 updateElectronSettings({logging: {enabled}}, appPath, log);
                 restartApplication();
             },
         );
+
+        electron.ipcMain.handle(ElectronIpcCommand.GET_LOG_INFORMATION, (event) => {
+            const logInfo: LogInfo = {
+                logFiles: {
+                    mainApplication: generateLogFileInfo('app', appPath),
+                    backendWorker: generateLogFileInfo('bw', appPath),
+                },
+            };
+            return logInfo;
+        });
 
         const session = parameters['persist-profile']
             ? electron.session.defaultSession

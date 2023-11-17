@@ -2048,6 +2048,8 @@ export namespace ElectronIpcCommand {
     export type LOG_TO_FILE = typeof LOG_TO_FILE;
     export const IS_FILE_LOGGING_ENABLED = 'isFileLoggingEnabled';
     export type IS_FILE_LOGGING_ENABLED = typeof IS_FILE_LOGGING_ENABLED;
+    export const GET_LOG_INFORMATION = 'getLogInformation';
+    export type GET_LOG_INFORMATION = typeof GET_LOG_INFORMATION;
     export const SET_FILE_LOGGING_ENABLED_AND_RESTART = 'setFileLoggingEnabledAndRestart';
     export type SET_FILE_LOGGING_ENABLED_AND_RESTART = typeof SET_FILE_LOGGING_ENABLED_AND_RESTART;
     export const DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart';

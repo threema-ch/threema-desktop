@@ -1,3 +1,4 @@
+import type {LogInfo} from '~/common/node/file-storage/log-info';
 import type {u53} from '~/common/types';
 
 export interface ErrorDetails {
@@ -49,6 +50,10 @@ export interface ElectronIpc {
      */
     readonly isFileLoggingEnabled: () => Promise<boolean | undefined>;
 
+    /**
+     * Return logging information, e.g. log file paths and sizes.
+     */
+    readonly getLogInformation: () => Promise<LogInfo>;
     /**
      * Enable or disable file logging and restart.
      */
