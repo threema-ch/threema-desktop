@@ -394,7 +394,7 @@ function runElectronDistScript(
     }
 
     const buildOutputDir = path.join(dirs.root, 'build', 'electron', 'packaged');
-    const binaryBasename = 'Threema Beta';
+    const binaryBasename = 'Threema';
     const binaryDir = `${binaryBasename}-${process.platform}-${process.arch}`;
     const binaryDirPath = path.join(buildOutputDir, binaryDir);
 

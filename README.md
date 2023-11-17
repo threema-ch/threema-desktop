@@ -94,19 +94,14 @@ Note that this requires a C compiler toolchain due to native dependencies, as me
 
 To build Threema Desktop, run:
 
-    npm run dist:consumer-sandbox
+    npm run package binary consumer-sandbox
 
-Now you can find the application bundle at `build/electron/packaged/`, e.g.:
+Now you can find the application bundle at `build/out/`.
 
-- `build/electron/packaged/Threema Beta-linux-x64/ThreemaDesktop` on 64-bit Linux
-- `build/electron/packaged/Threema Beta-darwin-arm64/Threema Desktop.app/Contents/MacOS/ThreemaDesktop` on macOS with Apple Silicon
+Note 1: To launch Threema directly without unpacking, you can find the uncompressed directory
+(containing the `ThreemaDesktop` binary) in `build/tmp/`.
 
-You can directly open the built version respectively with:
-
-- `npm run dist:open:linux`
-- `npm run dist:open:macos`
-
-Note: If you get an error message while building similar to `Error: ENOENT: no such file or
+Note 2: If you get an error message while building similar to `Error: ENOENT: no such file or
 directory, lstat '...'`, check out the hints about [cloning](#cloning).
 
 ### Package
