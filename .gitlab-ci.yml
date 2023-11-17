@@ -518,7 +518,7 @@ package:flatpak-buildonly:
     GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
     PUBLISH: 'false'
 
-package:flatpak-internal:
+package:flatpak-internal-publish:
   <<: *flatpak
   rules:
     - if: $CI_COMMIT_BRANCH == 'develop'
@@ -536,7 +536,7 @@ package:flatpak-internal:
 
 # Note: Public builds are also pushed to the internal fileserver, and are then
 #       published using a separate script.
-package:flatpak-public:
+package:flatpak-public-publish:
   <<: *flatpak
   rules:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
@@ -551,11 +551,8 @@ package:flatpak-public:
     FTP_USER: flatpak-internal
     # Set FTP_PASS variable in CI!
 
-package:macos:
+.macos: &macos
   stage: package
-  rules:
-    - if: $CI_COMMIT_BRANCH == 'develop'
-    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   parallel:
     matrix:
       - OS: [macos]
@@ -570,6 +567,8 @@ package:macos:
         export BUILD_TYPE=nightly
       elif [[ "$CI_COMMIT_REF_NAME" = v* ]]; then
         export BUILD_TYPE=release
+      elif [[ "$PUBLISH" = "false" ]]; then
+        export BUILD_TYPE=nightly
       else
         echo "Error: Invalid ref"
         exit 1
@@ -651,31 +650,29 @@ package:macos:
         ls -lah build/dmg/
 
         # Upload
-        case "$BUILD_TYPE" in
-          nightly)
-            # Upload, overwrite if it exists
-            curl -T "build/dmg/$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/nightly/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES"
-            ;;
-          release)
-            # Ensure that build wasn't already uploaded
-            FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES" || true)
-            if [ "$FTP_STATUS" = "350" ]; then echo "File already exists"; exit 42; fi
-            # Upload DMG and checksums
-            for ext in '' '.sha256' '.b2'; do
-              curl -T "build/dmg/$FILENAME$ext" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME$ext" --user "$FTP_USER:$FTP_PASS_RELEASES"
-            done
-            ;;
-          *)
-            echo "Invalid build type: $BUILD_TYPE"
-            exit 1
-        esac
+        if [ "$PUBLISH" = "true" ]; then
+          case "$BUILD_TYPE" in
+            nightly)
+              # Upload, overwrite if it exists
+              curl -T "build/dmg/$FILENAME" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/nightly/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES"
+              ;;
+            release)
+              # Ensure that build wasn't already uploaded
+              FTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -I "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME" --user "$FTP_USER:$FTP_PASS_RELEASES" || true)
+              if [ "$FTP_STATUS" = "350" ]; then echo "File already exists"; exit 42; fi
+              # Upload DMG and checksums
+              for ext in '' '.sha256' '.b2'; do
+                curl -T "build/dmg/$FILENAME$ext" "${FTP_PROTO}://${FTP_HOST}${FTP_PATH}/releases/$FILENAME$ext" --user "$FTP_USER:$FTP_PASS_RELEASES"
+              done
+              ;;
+            *)
+              echo "Invalid build type: $BUILD_TYPE"
+              exit 1
+          esac
+        else
+          echo "Skipping publication, \$PUBLISH=$PUBLISH"
+        fi
       done
-  variables:
-    FTP_HOST: $FTP_RELEASE_HOST
-    FTP_PROTO: $FTP_RELEASE_PROTO
-    FTP_PATH: /
-    FTP_USER: threema-desktop
-    # Set FTP_PASS_RELEASES masked variable in CI!
   artifacts:
     paths:
       - build/dmg/
@@ -689,11 +686,35 @@ package:macos:
         - .npm/
         - node_modules/
 
-package:windows:
-  stage: package
+# An optional, manually-triggered, build-but-not-publish macos package job
+package:macos-buildonly:
+  <<: *macos
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: never
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+      when: never
+    - when: manual
+  variables:
+    PUBLISH: 'false'
+
+# Build and publish macOS packages
+package:macos-publish:
+  <<: *macos
   rules:
     - if: $CI_COMMIT_BRANCH == 'develop'
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+  variables:
+    PUBLISH: 'true'
+    FTP_HOST: $FTP_RELEASE_HOST
+    FTP_PROTO: $FTP_RELEASE_PROTO
+    FTP_PATH: /
+    FTP_USER: threema-desktop
+    # Set FTP_PASS_RELEASES masked variable in CI!
+
+.windows: &windows
+  stage: package
   # Build on Windows (powershell)
   tags:
     - windows
@@ -705,7 +726,9 @@ package:windows:
         $BUILD_TYPE = "nightly"
       } elseif ($env:CI_COMMIT_REF_NAME -like "v*") {
         $BUILD_TYPE = "release"
-      } Else {
+      } elseif ($env:PUBLISH -eq "false") {
+        $BUILD_TYPE = "nightly"
+      } else {
         throw "Error: Invalid ref"
       }
       echo "Build type is $BUILD_TYPE"
@@ -723,71 +746,95 @@ package:windows:
     # Upload
     - dir build\out\
     - |
-      foreach ($flavor in "consumer-live","work-sandbox","work-live") {
-        switch ($flavor) {
-          "consumer-live" {
-            $name = "threema"
+      if ($env:PUBLISH -eq "true") {
+        foreach ($flavor in "consumer-live","work-sandbox","work-live") {
+          switch ($flavor) {
+            "consumer-live" {
+              $name = "threema"
+            }
+            "work-sandbox" {
+              $name = "threema-red"
+            }
+            "work-live" {
+              $name = "threema-work"
+            }
           }
-          "work-sandbox" {
-            $name = "threema-red"
-          }
-          "work-live" {
-            $name = "threema-work"
-          }
-        }
-        $sourceFileExe = "build/out/${name}-desktop-bin-win32-${env:ARCH}.zip"
-        $sourceFileMsix = "build/out/${name}-desktop-windows-${env:ARCH}.msix"
-        switch ($BUILD_TYPE) {
-          "nightly" {
-            $filenameExe = "$name-desktop-nightly-windows-${env:ARCH}.zip"
-            $filenameMsix = "$name-desktop-nightly-windows-${env:ARCH}.msix"
+          $sourceFileExe = "build/out/${name}-desktop-bin-win32-${env:ARCH}.zip"
+          $sourceFileMsix = "build/out/${name}-desktop-windows-${env:ARCH}.msix"
+          switch ($BUILD_TYPE) {
+            "nightly" {
+              $filenameExe = "$name-desktop-nightly-windows-${env:ARCH}.zip"
+              $filenameMsix = "$name-desktop-nightly-windows-${env:ARCH}.msix"
 
-            # Upload, overwrite if it exists
-            echo "Uploading $filenameExe"
-            curl.exe -T "$sourceFileExe" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
-            echo "Uploading $filenameMsix"
-            curl.exe -T "$sourceFileMsix" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
-          }
-          "release" {
-            $filenameExe = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.zip"
-            $filenameMsix = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.msix"
+              # Upload, overwrite if it exists
+              echo "Uploading $filenameExe"
+              curl.exe -T "$sourceFileExe" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+              echo "Uploading $filenameMsix"
+              curl.exe -T "$sourceFileMsix" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/nightly/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+            }
+            "release" {
+              $filenameExe = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.zip"
+              $filenameMsix = "$name-desktop-$CI_COMMIT_REF_NAME-windows-${env:ARCH}.msix"
 
-            # Ensure that build wasn't already uploaded
-            $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
-            If ($ftp_status -eq 350) {
-              throw "File $filenameExe already exists on FTP server"
-            }
-            $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
-            If ($ftp_status -eq 350) {
-              throw "File $filenameMsix already exists on FTP server"
-            }
+              # Ensure that build wasn't already uploaded
+              $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
+              If ($ftp_status -eq 350) {
+                throw "File $filenameExe already exists on FTP server"
+              }
+              $ftp_status = (curl.exe -o NUL -s -w "%{http_code}" -I "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}")
+              If ($ftp_status -eq 350) {
+                throw "File $filenameMsix already exists on FTP server"
+              }
 
-            # Upload ZIP, MSIX and checksums
-            Foreach ($ext in '','.sha256') {
-              echo "Uploading $filenameExe$ext"
-              curl.exe -T "$sourceFileExe$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+              # Upload ZIP, MSIX and checksums
+              Foreach ($ext in '','.sha256') {
+                echo "Uploading $filenameExe$ext"
+                curl.exe -T "$sourceFileExe$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameExe$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+              }
+              Foreach ($ext in '','.sha256') {
+                echo "Uploading $filenameMsix$ext"
+                curl.exe -T "$sourceFileMsix$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+              }
             }
-            Foreach ($ext in '','.sha256') {
-              echo "Uploading $filenameMsix$ext"
-              curl.exe -T "$sourceFileMsix$ext" "${env:FTP_PROTO}://${env:FTP_HOST}${env:FTP_PATH}/releases/$filenameMsix$ext" --user "${env:FTP_USER}:${env:FTP_PASS_RELEASES}"
+            default {
+              throw "Error: Invalid build type: $BUILD_TYPE"
             }
           }
-          default {
-            throw "Error: Invalid build type: $BUILD_TYPE"
-          }
+        } else {
+          echo "Skipping publication, \$PUBLISH=$env:PUBLISH"
         }
       }
+  artifacts:
+    paths:
+      - build\out\
+    expire_in: 2d
+
+package:windows-buildonly:
+  <<: *windows
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: never
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+      when: never
+    - when: manual
   variables:
     ARCH: 'x64'
+    PUBLISH: 'false'
+
+package:windows-publish:
+  <<: *windows
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+  variables:
+    ARCH: 'x64'
+    PUBLISH: 'true'
     FTP_HOST: $FTP_RELEASE_HOST
     FTP_PROTO: $FTP_RELEASE_PROTO
     FTP_PATH: /
     FTP_USER: threema-desktop
     # Set FTP_PASS_RELEASES masked variable in CI!
-  artifacts:
-    paths:
-      - build\out\
-    expire_in: 2d
 
 pages:
   stage: build
