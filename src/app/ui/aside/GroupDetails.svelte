@@ -13,9 +13,9 @@
     transformGroup,
   } from '~/app/ui/aside/group-details';
   import GroupMembers from '~/app/ui/aside/group-details/GroupMembers.svelte';
+  import ProfilePictureModal from '~/app/ui/components/modals/profile-picture-modal/ProfilePictureModal.svelte';
   import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
-  import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
@@ -120,6 +120,10 @@
     deleteGroupDialogVisible = false;
     closeAside();
   }
+
+  function handleCloseProfilePictureModal(): void {
+    groupProfilePictureDialogVisible = false;
+  }
 </script>
 
 <template>
@@ -216,17 +220,17 @@
         displayName={group$.displayName}
       />
 
-      <ProfilePictureDialog bind:visible={groupProfilePictureDialogVisible}
-        ><ProfilePicture
-          img={transformProfilePicture($profilePicture.view.picture)}
+      {#if groupProfilePictureDialogVisible}
+        <ProfilePictureModal
           alt={$i18n.t('contacts.hint--profile-picture', {
             name: group$.displayName,
           })}
-          initials={group$.displayName.slice(0, 2)}
           color={$profilePicture.view.color}
-          shape="square"
+          initials={group$.displayName.slice(0, 2)}
+          pictureBytes={$profilePicture.view.picture}
+          on:close={handleCloseProfilePictureModal}
         />
-      </ProfilePictureDialog>
+      {/if}
     {/if}
   </div>
 </template>

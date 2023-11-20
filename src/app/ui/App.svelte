@@ -5,9 +5,9 @@
   import type {AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
+  import ProfileSettings from '~/app/ui/components/partials/profile-settings/ProfileSettings.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
   import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
-  import MainProfile from '~/app/ui/main/Profile.svelte';
   import MainWelcome from '~/app/ui/main/Welcome.svelte';
   import ChangePassword from '~/app/ui/modal/ChangePassword.svelte';
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
@@ -90,7 +90,7 @@
         mainPanelComponent = MainConversation;
         break;
       case 'profile':
-        mainPanelComponent = MainProfile;
+        mainPanelComponent = ProfileSettings;
         break;
       default:
         unreachable($router.main, new Error('Unhandled main panel router state'));

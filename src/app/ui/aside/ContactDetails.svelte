@@ -1,18 +1,17 @@
 <script lang="ts">
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ProfilePictureComponent from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {globals} from '~/app/globals';
   import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
+  import ProfilePictureModal from '~/app/ui/components/modals/profile-picture-modal/ProfilePictureModal.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import IdentityInformationDialog from '~/app/ui/modal/ContactIdentityInformation.svelte';
-  import ProfilePictureDialog from '~/app/ui/modal/ContactProfilePicture.svelte';
   import UnableToDeleteDialog from '~/app/ui/modal/ContactUnableToDelete.svelte';
   import VerificationLevelsDialog from '~/app/ui/modal/ContactVerificationLevels.svelte';
   import Divider from '~/app/ui/nav/receiver/detail/Divider.svelte';
@@ -20,7 +19,6 @@
   import Subheader from '~/app/ui/nav/receiver/detail/Subheader.svelte';
   import {toast} from '~/app/ui/snackbar';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
-  import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
   import {
     ContactNotificationTriggerPolicy,
@@ -151,6 +149,10 @@
 
     deleteContactDialogVisible = false;
     closeAside();
+  }
+
+  function handleCloseProfilePictureModal(): void {
+    contactProfilePictureDialogVisible = false;
   }
 </script>
 
@@ -337,17 +339,17 @@
 
       <UnableToDeleteDialog bind:visible={unableToDeleteContactDialogVisible} {displayName} />
 
-      <ProfilePictureDialog bind:visible={contactProfilePictureDialogVisible}
-        ><ProfilePictureComponent
-          img={transformProfilePicture($profilePicture.view.picture)}
+      {#if contactProfilePictureDialogVisible}
+        <ProfilePictureModal
           alt={$i18n.t('contacts.hint--profile-picture', {
             name: $contactViewModel.fullName,
           })}
-          initials={$contactViewModel.initials}
           color={$profilePicture.view.color}
-          shape="square"
+          initials={$contactViewModel.initials}
+          pictureBytes={$profilePicture.view.picture}
+          on:close={handleCloseProfilePictureModal}
         />
-      </ProfilePictureDialog>
+      {/if}
     {/if}
   </div>
 
