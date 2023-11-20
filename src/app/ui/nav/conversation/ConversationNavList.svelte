@@ -2,7 +2,7 @@
   import {onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
-  import type {Router} from '~/app/routing/router';
+  import type {AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
   import type {VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
@@ -29,11 +29,9 @@
    * Set store of all conversation previews.
    */
   export let conversationPreviews: Remote<ConversationPreviewSetStore>;
+  export let services: AppServices;
 
-  /**
-   * Router.
-   */
-  export let router: Router;
+  const {router} = services;
 
   const group = new SwipeAreaGroup();
 
@@ -260,7 +258,7 @@
           contextMenuPopover?.open(event);
         }}
       >
-        <ConversationNavElement {conversationPreview} {router} {group} active={false} />
+        <ConversationNavElement active={false} {conversationPreview} {group} {services} />
       </div>
     {/each}
   </div>

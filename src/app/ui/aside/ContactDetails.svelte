@@ -6,7 +6,7 @@
   import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
-  import ProfilePictureModal from '~/app/ui/components/modals/profile-picture-modal/ProfilePictureModal.svelte';
+  import ProfilePictureModal from '~/app/ui/components/partials/modals/profile-picture-modal/ProfilePictureModal.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -43,7 +43,11 @@
   export let services: AppServices;
 
   // Unpack services
-  const {router, backend} = services;
+  const {
+    router,
+    backend,
+    storage: {is24hTime},
+  } = services;
 
   let contactViewModel: Remote<LocalStore<ContactListItemViewModel>> | undefined;
   let contactController: RemoteModelController<ContactController> | undefined;
@@ -240,6 +244,9 @@
                   $contactViewModel.notificationTriggerPolicyOverride.expiresAt,
                   $i18n,
                   'auto',
+                  {
+                    hour12: !$is24hTime,
+                  },
                 ),
               })}
             {/if}

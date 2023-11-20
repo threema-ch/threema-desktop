@@ -366,6 +366,7 @@
     "action--play-notification-sound-default": "On",
     "action--play-notification-sound-off": "Off",
     "hint--own-profile-picture": "My profile picture",
+    "label--24-hour-time": "24-Hour Time",
     "label--application-name": "Application Name",
     "label--application-version": "Application Version",
     "label--copyright": "Copyright",

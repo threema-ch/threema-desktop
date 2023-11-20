@@ -7,7 +7,7 @@
 
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
-  import type {ProfilePictureModalProps} from '~/app/ui/components/modals/profile-picture-modal/props';
+  import type {ProfilePictureModalProps} from '~/app/ui/components/partials/modals/profile-picture-modal/props';
   import {nodeIsOrContainsTarget} from '~/app/ui/utils/node';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';

@@ -13,7 +13,7 @@
     transformGroup,
   } from '~/app/ui/aside/group-details';
   import GroupMembers from '~/app/ui/aside/group-details/GroupMembers.svelte';
-  import ProfilePictureModal from '~/app/ui/components/modals/profile-picture-modal/ProfilePictureModal.svelte';
+  import ProfilePictureModal from '~/app/ui/components/partials/modals/profile-picture-modal/ProfilePictureModal.svelte';
   import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import {toast} from '~/app/ui/snackbar';

@@ -13,36 +13,50 @@ import {isToday, isWithinCurrentYear, isWithinLastWeek, isYesterday} from '~/com
  *
  * @param date Date to format.
  * @param i18n Translation provider.
+ * @param format Format variant to use (see above).
+ * @param formatOptionsOverrides Manual overrides of the raw {@link Intl.DateTimeFormatOptions}.
+ *   Note: The `format` presets already set the necessary format options, so this parameter should
+ *   only be used if more granular control is needed.
  * @returns Formatted date.
  */
 export function formatDateLocalized(
     date: Date,
     i18n: I18nType,
     format: 'auto' | 'time' | 'extended' = 'auto',
+    formatOptionsOverrides?: Intl.DateTimeFormatOptions,
 ): string {
     switch (format) {
         case 'auto':
-            return formatDateLocalizedAuto(date, i18n);
+            return formatDateLocalizedAuto(date, i18n, formatOptionsOverrides);
 
         case 'time':
-            return formatDateLocalizedTime(date, i18n);
+            return formatDateLocalizedTime(date, i18n, formatOptionsOverrides);
 
         case 'extended':
-            return formatDateLocalizedExtended(date, i18n);
+            return formatDateLocalizedExtended(date, i18n, formatOptionsOverrides);
 
         default:
             return unreachable(format);
     }
 }
 
-function formatDateLocalizedTime(date: Date, i18n: I18nType): string {
+function formatDateLocalizedTime(
+    date: Date,
+    i18n: I18nType,
+    formatOptionsOverrides?: Intl.DateTimeFormatOptions,
+): string {
     return new Intl.DateTimeFormat(i18n.locale, {
         hour: 'numeric',
         minute: '2-digit',
+        ...formatOptionsOverrides,
     }).format(date);
 }
 
-function formatDateLocalizedExtended(date: Date, i18n: I18nType): string {
+function formatDateLocalizedExtended(
+    date: Date,
+    i18n: I18nType,
+    formatOptionsOverrides?: Intl.DateTimeFormatOptions,
+): string {
     return new Intl.DateTimeFormat(i18n.locale, {
         year: 'numeric',
         month: 'long',
@@ -50,13 +64,19 @@ function formatDateLocalizedExtended(date: Date, i18n: I18nType): string {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
+        ...formatOptionsOverrides,
     }).format(date);
 }
 
-function formatDateLocalizedAuto(date: Date, i18n: I18nType): string {
+function formatDateLocalizedAuto(
+    date: Date,
+    i18n: I18nType,
+    formatOptionsOverrides?: Intl.DateTimeFormatOptions,
+): string {
     const timeOptions: Intl.DateTimeFormatOptions = {
         hour: 'numeric',
         minute: '2-digit',
+        ...formatOptionsOverrides,
     };
 
     if (isToday(date)) {

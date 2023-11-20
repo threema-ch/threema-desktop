@@ -114,7 +114,7 @@
     </div>
     <div class="conversation-preview-list">
       {#await viewModel.conversationPreviews(translationsForBackend) then conversationPreviews}
-        <ConversationNavList bind:this={conversationList} {conversationPreviews} {router} />
+        <ConversationNavList bind:this={conversationList} {conversationPreviews} {services} />
       {/await}
     </div>
   </div>

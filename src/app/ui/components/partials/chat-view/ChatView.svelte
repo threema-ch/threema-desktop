@@ -102,6 +102,7 @@
         file: message.file,
         id: message.id,
         reactions: message.reactions,
+        services,
         status: message.status,
       },
     };

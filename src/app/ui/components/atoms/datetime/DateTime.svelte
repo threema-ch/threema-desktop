@@ -11,14 +11,17 @@
 
   export let date: $$Props['date'];
   export let format: NonNullable<$$Props['format']> = 'auto';
+  export let services: $$Props['services'];
+
+  const {
+    storage: {is24hTime},
+  } = services;
 
   let formattedDate: string;
 
-  function updateFormattedDate(): void {
-    formattedDate = formatDateLocalized(date, $i18n, format);
-  }
-
-  $: reactive(updateFormattedDate, [$systemTime.current]);
+  $: reactive(() => {
+    formattedDate = formatDateLocalized(date, $i18n, format, {hour12: !$is24hTime});
+  }, [$systemTime.current]);
 </script>
 
 <template>

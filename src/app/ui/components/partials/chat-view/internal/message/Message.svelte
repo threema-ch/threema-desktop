@@ -47,6 +47,11 @@
   export let status: $$Props['status'];
   export let text: $$Props['text'] = undefined;
 
+  const {
+    router,
+    storage: {is24hTime},
+  } = services;
+
   let quoteProps: BasicMessageProps['quote'];
 
   let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
@@ -61,7 +66,6 @@
       return;
     }
 
-    const {router} = services;
     const route = router.get();
 
     if (route.aside !== undefined) {
@@ -271,8 +275,8 @@
 
   $: timestamp = reactive(
     () => ({
-      fluent: formatDateLocalized(status.created.at, $i18n, 'auto'),
-      short: formatDateLocalized(status.created.at, $i18n, 'time'),
+      fluent: formatDateLocalized(status.created.at, $i18n, 'auto', {hour12: !$is24hTime}),
+      short: formatDateLocalized(status.created.at, $i18n, 'time', {hour12: !$is24hTime}),
     }),
     [$systemTime.current],
   );

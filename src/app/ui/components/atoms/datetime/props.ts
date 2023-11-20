@@ -1,3 +1,5 @@
+import type {AppServices} from '~/app/types';
+
 export interface DateTimeProps {
     /** The date object to render. */
     readonly date: Date;
@@ -8,4 +10,5 @@ export interface DateTimeProps {
      *  - `extended`: Longer, more detailed, and unambiguous display of date and time.
      */
     readonly format?: 'auto' | 'time' | 'extended';
+    readonly services: AppServices;
 }

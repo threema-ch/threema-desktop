@@ -19,7 +19,12 @@
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'];
   export let reactions: $$Props['reactions'];
+  export let services: $$Props['services'];
   export let status: $$Props['status'];
+
+  const {
+    storage: {is24hTime},
+  } = services;
 
   $: lastReaction = reactions?.reduce<(typeof reactions)[u53] | undefined>(
     (acc, curr) => (curr.at > (acc?.at ?? 0) ? curr : acc),
@@ -44,30 +49,44 @@
     <KeyValueList>
       <KeyValueList.Section>
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--created-date', 'Created')}>
-          <Text text={formatDateLocalized(status.created.at, $i18n, 'extended')} />
+          <Text
+            text={formatDateLocalized(status.created.at, $i18n, 'extended', {hour12: !$is24hTime})}
+          />
         </KeyValueList.Item>
         {#if status.received !== undefined}
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--received-date', 'Received')}
           >
-            <Text text={formatDateLocalized(status.received.at, $i18n, 'extended')} />
+            <Text
+              text={formatDateLocalized(status.received.at, $i18n, 'extended', {
+                hour12: !$is24hTime,
+              })}
+            />
           </KeyValueList.Item>
         {/if}
         {#if status.sent !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}>
-            <Text text={formatDateLocalized(status.sent.at, $i18n, 'extended')} />
+            <Text
+              text={formatDateLocalized(status.sent.at, $i18n, 'extended', {hour12: !$is24hTime})}
+            />
           </KeyValueList.Item>
         {/if}
         {#if status.delivered !== undefined}
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--delivered-date', 'Delivered')}
           >
-            <Text text={formatDateLocalized(status.delivered.at, $i18n, 'extended')} />
+            <Text
+              text={formatDateLocalized(status.delivered.at, $i18n, 'extended', {
+                hour12: !$is24hTime,
+              })}
+            />
           </KeyValueList.Item>
         {/if}
         {#if status.read !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--read-date', 'Read')}>
-            <Text text={formatDateLocalized(status.read.at, $i18n, 'extended')} />
+            <Text
+              text={formatDateLocalized(status.read.at, $i18n, 'extended', {hour12: !$is24hTime})}
+            />
           </KeyValueList.Item>
         {/if}
       </KeyValueList.Section>
@@ -110,7 +129,11 @@
                 >
               </div>
               <div class="date">
-                <Text text={formatDateLocalized(lastReaction.at, $i18n, 'extended')} />
+                <Text
+                  text={formatDateLocalized(lastReaction.at, $i18n, 'extended', {
+                    hour12: !$is24hTime,
+                  })}
+                />
               </div>
             </div>
           {/if}

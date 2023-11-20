@@ -1,3 +1,4 @@
+import type {AppServices} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
 
 /**
@@ -8,5 +9,6 @@ export interface MessageDetailsModalProps {
     readonly file?: MessageProps['file'];
     readonly id: MessageProps['id'];
     readonly reactions: MessageProps['reactions'];
+    readonly services: AppServices;
     readonly status: MessageProps['status'];
 }

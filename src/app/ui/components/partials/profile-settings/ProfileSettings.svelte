@@ -6,6 +6,7 @@
   import Button from '#3sc/components/blocks/Button/Button.svelte';
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import Switch from '#3sc/components/blocks/Switch/Switch.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
@@ -31,7 +32,7 @@
   const {
     backend: {viewModel},
     router,
-    storage: {debugPanelState, theme, locale},
+    storage: {debugPanelState, theme, locale, is24hTime},
   } = services;
 
   // TODO(DESK-800): This type is incorrect, it's actually ` | undefined`. To prevent this, the
@@ -178,6 +179,10 @@
                 </option>
               {/each}
             </select>
+          </KeyValueList.Item>
+
+          <KeyValueList.Item key={$i18n.t('settings.label--24-hour-time', '24-Hour Time')}>
+            <Switch bind:checked={$is24hTime} />
           </KeyValueList.Item>
         </KeyValueList.Section>
       </KeyValueList>
