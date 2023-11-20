@@ -80,12 +80,68 @@
     justify-content: center;
     width: 100vw;
     height: 100vh;
-    padding: rem(41px);
 
+    // TODO(DESK-1160): `:global()` style rules are smelly should be removed. This could be achieved
+    // by refactoring the `ProfilePicture` component and making it responsive, so that we don't need
+    // lots of style tricks here.
     .profile-picture {
-      --c-profile-picture-size: #{rem(480px)};
+      /* 
+       * Styles of a profile picture which doesn't contain an image.
+       */
 
-      background-color: var(--c-modal-dialog-background-color);
+      &:global(:not(:has(> div > img))) {
+        --c-profile-picture-size: #{rem(240px)};
+
+        @extend %elevation-160;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--c-modal-dialog-background-color);
+        border-radius: rem(8px);
+        overflow: hidden;
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      /* 
+       * Styles of a profile picture which contains an image.
+       */
+
+      &:global(:has(> div > img)) {
+        // Disable `pointer-events` here, so that clicks are registered on the modal overlay behind
+        // it.
+        pointer-events: none;
+      }
+
+      &:global(:has(> div > img) > div) {
+        display: grid;
+        position: relative;
+        place-items: center;
+        width: 100vw;
+        height: 100vh;
+        padding: rem(41px);
+        background-color: transparent;
+
+        // Disable `pointer-events` here as well, for the same reason as above.
+        pointer-events: none;
+      }
+
+      &:global(:has(> div > img) > div > img) {
+        @extend %elevation-160;
+        grid-area: 1 / 1;
+        border-radius: rem(8px);
+        display: block;
+        object-fit: contain;
+        min-width: rem(16px);
+        min-height: rem(16px);
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+
+        // Re-enable pointer-events only on the `img`, so that clicking it won't close the modal.
+        pointer-events: auto;
+      }
     }
   }
 </style>
