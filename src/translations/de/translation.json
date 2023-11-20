@@ -165,16 +165,16 @@
     "label--check-credentials": "Zugangsdaten prüfen",
     "label--password": "Passwort",
     "label--store-credentials": "Zugangsdaten speichern und schliessen",
-    "label--subtitle-option-1": "Option 1: Gültige Work-Zugangsdaten eingeben",
+    "label--subtitle-option-1": "Option 1: Gültige Zugangsdaten eingeben",
     "label--subtitle-option-2": "Option 2: Gerät neu verknüpfen",
     "label--title": "Ungültige Threema Work-Zugangsdaten",
     "label--username": "Benutzername",
     "prose--credentials-valid": "Zugangsdaten sind gültig! Bitte geben Sie Ihr App-Passwort ein, um die aktualisierten Zugangsdaten zu speichern:",
-    "prose--description-enter-credentials": "Bitte geben Sie gültige Threema Work-Zugangsdaten ein. Wenn Sie die Zugangsdaten nicht kennen, fragen Sie Ihren Threema Work-Administrator.",
+    "prose--description-enter-credentials": "Bitte geben Sie gültige Threema Work-Zugangsdaten ein. Wenn Sie die Zugangsdaten nicht kennen, kontaktieren Sie Ihren Threema Work-Administrator",
     "prose--description-p1": "Die Zugangsdaten für Threema Work sind ungültig. Entweder wurden sie durch Ihren Threema Work-Administrator deaktiviert, oder die Lizenz von Threema Work ist abgelaufen.",
     "prose--description-p2": "Um {appName} weiterhin zu verwenden, haben Sie zwei Möglichkeiten:",
-    "prose--description-relink": "Alternativ, verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Bitte beachten Sie, dass dabei alle gespeicherten Nachrichten in {appName} für Desktop (aber nicht auf dem Mobilgerät) verloren gehen.",
-    "prose--update-success": "Threema Work-Zugangsdaten erfolgreich aktualisiert!"
+    "prose--description-relink": "Heben Sie die bestehende Verknüpfung auf und verknüpfen Sie {appName} für Desktop erneut mit Ihrem Mobilgerät. Bitte beachten Sie, dass die Chatverläufe in der Desktop-App dadurch gelöscht werden, sie jedoch weiterhin auf dem Mobilgerät verfügbar sind.",
+    "prose--update-success": "Threema Work-Zugangsdaten erfolgreich aktualisiert"
   },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Brauchen Sie Hilfe?",
@@ -197,7 +197,7 @@
     "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
     "prose--message-generic": "Während der Verknüpfung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "prose--message-invalid-identity": "Die Threema-ID, die beim Verknüpfen verwendet wurde, ist ungültig oder wurde widerrufen.",
-    "prose--message-invalid-work-credentials": "Die Zugangsdaten für Threema Work sind ungültig oder abgelaufen. Bitte wiederholen Sie den Vorgang, nachdem Sie Ihre mobile App neu gestartet haben, oder kontaktieren Sie Ihren Threema Work-Administrator.",
+    "prose--message-invalid-work-credentials": "Die Zugangsdaten für Threema Work sind ungültig oder abgelaufen. Bitte starten Sie die App auf dem Mobilgerät neu und wiederholen Sie den Vorgang, oder kontaktieren Sie Ihren Threema Work-Administrator.",
     "prose--message-wrong-app-variant-consumer-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema Work, dann laden Sie die Desktop-App von <1 /> herunter.",
     "prose--message-wrong-app-variant-work-error": "Es ist nicht möglich, Ihre Threema-ID mit dieser App zu verknüpfen. Nutzen Sie auf dem Mobilgerät Threema für Privatanwender, dann laden Sie die Desktop-App von <1 /> herunter."
   },

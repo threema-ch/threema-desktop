@@ -109,7 +109,7 @@
         toast.addSimpleSuccess(
           $i18n.t(
             'dialog--invalid-work-credentials.prose--update-success',
-            'Successfully updated Threema Work credentials',
+            'Threema Work credentials successfully updated',
           ),
         );
         modal.close();
@@ -172,13 +172,13 @@
           <h3>
             {$i18n.t(
               'dialog--invalid-work-credentials.label--subtitle-option-1',
-              'Option 1: Enter Valid Threema Work Credentials',
+              'Option 1: Enter Valid Credentials',
             )}
           </h3>
           <p>
             {$i18n.t(
               'dialog--invalid-work-credentials.prose--description-enter-credentials',
-              "Please enter valid Threema Work credentials. If you don't know the credentials, please ask your Threema Work admin.",
+              "Please enter valid Threema Work credentials. If you don't know the credentials, please contact your Threema Work administrator.",
             )}
           </p>
           <div class="form-fields">
@@ -231,7 +231,7 @@
               <span class="icon"><MdIcon theme="Filled">check_circle</MdIcon></span>
               {$i18n.t(
                 'dialog--invalid-work-credentials.prose--credentials-valid',
-                'Credentials are valid! Please enter your app password to store the updated credentials:',
+                'Credentials are valid! Please enter your app password to save the updated credentials:',
               )}
             </p>
             <div class="form-fields">
@@ -262,7 +262,7 @@
               >
                 {$i18n.t(
                   'dialog--invalid-work-credentials.label--store-credentials',
-                  'Store Credentials and Close',
+                  'Save Credentials and Close',
                 )}
               </Button>
               {#if checkingKeyStoragePassword}
@@ -284,7 +284,7 @@
           <p>
             {$i18n.t(
               'dialog--invalid-work-credentials.prose--description-relink',
-              'Alternatively, re-link {appName} for desktop with your mobile device. Note that you will lose all stored messages in {appName} for desktop (but not on your mobile device).',
+              'Remove the current link, and relink {appName} for desktop to your mobile device. Please note that this will delete the chat history in the desktop app (but not on the mobile device).',
               {appName: import.meta.env.APP_NAME},
             )}
           </p>

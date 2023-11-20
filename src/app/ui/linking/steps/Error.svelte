@@ -122,7 +122,7 @@
         );
         message = t(
           'dialog--linking-error.prose--message-invalid-work-credentials',
-          'The credentials for Threema Work are invalid or expired. Please retry linking after restarting your mobile app, or contact your Threema Work admin.',
+          'The credentials for Threema Work are invalid or expired. Please restart the app on your mobile device and retry linking, or contact your Threema Work administrator.',
         );
         break;
 

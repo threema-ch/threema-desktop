@@ -164,17 +164,17 @@
     "error--validation-failed": "Validation of Threema Work credentials failed.",
     "label--check-credentials": "Re-Check Credentials",
     "label--password": "Password",
-    "label--store-credentials": "Store Credentials and Close",
-    "label--subtitle-option-1": "Option 1: Enter Valid Threema Work Credentials",
+    "label--store-credentials": "Save Credentials and Close",
+    "label--subtitle-option-1": "Option 1: Enter Valid Credentials",
     "label--subtitle-option-2": "Option 2: Relink Device",
     "label--title": "Invalid Threema Work Credentials",
     "label--username": "Username",
-    "prose--credentials-valid": "Credentials are valid! Please enter your app password to store the updated credentials:",
-    "prose--description-enter-credentials": "Please enter valid Threema Work credentials. If you don't know the credentials, please ask your Threema Work admin.",
+    "prose--credentials-valid": "Credentials are valid! Please enter your app password to save the updated credentials:",
+    "prose--description-enter-credentials": "Please enter valid Threema Work credentials. If you don't know the credentials, please contact your Threema Work administrator.",
     "prose--description-p1": "The credentials for Threema Work are invalid. Either they were disabled by your Threema Work admin, or your Threema Work license expired.",
     "prose--description-p2": "To continue using {appName} for desktop, you have two options:",
-    "prose--description-relink": "Alternatively, re-link {appName} for desktop with your mobile device. Note that you will lose all stored messages in {appName} for desktop (but not on your mobile device).",
-    "prose--update-success": "Successfully updated Threema Work credentials"
+    "prose--description-relink": "Remove the current link, and relink {appName} for desktop to your mobile device. Please note that this will delete the chat history in the desktop app (but not on the mobile device).",
+    "prose--update-success": "Threema Work credentials successfully updated"
   },
   "dialog--linking-confirm-emoji": {
     "action--need-help": "Need help?",
@@ -197,7 +197,7 @@
     "prose--message-connection-error-generic": "Connection to the server was lost before linking was complete. If you did not abort the process yourself, please check your Internet connection, and try again.",
     "prose--message-generic": "An error occurred during linking. Please try again.",
     "prose--message-invalid-identity": "The Threema ID used for linking is unknown to the server or has been revoked.",
-    "prose--message-invalid-work-credentials": "The credentials for Threema Work are invalid or expired. Please retry linking after restarting your mobile app, or contact your Threema Work admin.",
+    "prose--message-invalid-work-credentials": "The credentials for Threema Work are invalid or expired. Please restart the app on your mobile device and retry linking, or contact your Threema Work administrator.",
     "prose--message-wrong-app-variant-consumer-error": "It is not possible to link your Threema ID with this app. If you use Threema Work on your mobile device, download the desktop app from <1 />.",
     "prose--message-wrong-app-variant-work-error": "It is not possible to link your Threema ID with this app. If you use the consumer version of Threema on your mobile device, download the desktop app from <1 />."
   },
