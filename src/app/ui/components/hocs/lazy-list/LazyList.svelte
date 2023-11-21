@@ -5,12 +5,13 @@
   observing items that enter and exit the view.
 -->
 <script lang="ts" generics="TId, TProps">
-  import {createEventDispatcher} from 'svelte/internal';
+  import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
   import {intersection} from '~/app/ui/actions/intersection';
   import type {LazyListProps} from '~/app/ui/components/hocs/lazy-list/props';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import type {u53} from '~/common/types';
+  import {debounce} from '~/common/utils/timer';
 
   // Generic parameters are not yet recognized by the linter.
   // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
@@ -21,6 +22,21 @@
   export let items: $$Props['items'];
   export let lastItemId: $$Props['lastItemId'];
   export let initiallyVisibleItemId: $$Props['initiallyVisibleItemId'] = undefined;
+
+  const dispatch = createEventDispatcher<{
+    /** Dispatched when an item has fully entered the visible area of the chat. */
+    itementered: $$Props['items'][u53];
+    /** Dispatched when an item has fully exited the visible area of the chat. */
+    itemexited: $$Props['items'][u53];
+    /**
+     * Dispatched when the list is scrolled. Note: For performance reasons, this event is
+     * debounced.
+     */
+    scroll: {distanceFromBottomPx: u53};
+  }>();
+
+  // Note: For some reason, with 1.0, the visibility is not being detected reliably.
+  const anchorIntersectionThreshold = 0.9;
 
   let containerElement: SvelteNullableBinding<HTMLOListElement>;
   let isAtBottom = true;
@@ -33,10 +49,10 @@
   // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
   // eslint-disable-next-line no-undef
   export function scrollToItem(id: TId, behavior: ScrollBehavior): void {
-    if (containerElement !== null) {
-      const itemElement = containerElement.querySelector(`.item.${id}]`);
+    const itemElement = containerElement?.querySelector(`.item[data-item-id="${id}"]`) ?? undefined;
 
-      itemElement?.scrollIntoView({
+    if (itemElement !== undefined) {
+      itemElement.scrollIntoView({
         behavior,
         block: 'end',
       });
@@ -45,7 +61,7 @@
 
   /**
    * Scrolls the view to the last item. Note: This won't be the last item in the items list, but the
-   * first item found with the `isLast` flag set to true.
+   * item where `id` equals the given `lastItemId`.
    */
   export function scrollToLast(behavior: ScrollBehavior): void {
     if (containerElement !== null && lastItemId !== undefined) {
@@ -53,20 +69,27 @@
     }
   }
 
-  const dispatch = createEventDispatcher<{
-    /** Dispatched when an item has fully entered the visible area of the chat. */
-    itementered: $$Props['items'][u53];
-    /** Dispatched when an item has fully exited the visible area of the chat. */
-    itemexited: $$Props['items'][u53];
-  }>();
+  const handleScrollDebounced = debounce(
+    () => {
+      if (containerElement !== null) {
+        const scrollDistanceFromBottom =
+          containerElement.scrollHeight -
+          containerElement.clientHeight -
+          containerElement.scrollTop;
+
+        dispatch('scroll', {
+          distanceFromBottomPx: scrollDistanceFromBottom,
+        });
+      }
+    },
+    150,
+    false,
+  );
 
   $: defaultObserverOptions = {
     root: containerElement,
     threshold: 0,
   };
-
-  // Note: For some reason, with 1.0, the visibility is not being detected reliably.
-  const anchorIntersectionThreshold = 0.9;
 
   $: lastObserverOptions = {
     root: containerElement,
@@ -74,6 +97,14 @@
   };
 
   $: shouldScrollToInitiallyVisible = initiallyVisibleItemId !== undefined;
+
+  onMount(() => {
+    containerElement?.addEventListener('scroll', handleScrollDebounced);
+  });
+
+  onDestroy(() => {
+    containerElement?.removeEventListener('scroll', handleScrollDebounced);
+  });
 </script>
 
 <ol
@@ -88,7 +119,8 @@
     {@const isInitiallyVisible = initiallyVisibleItemId === id}
 
     <li
-      class={`item ${id}`}
+      data-item-id={`${id}`}
+      class="item"
       class:last={isLast}
       class:initiallyvisible={isInitiallyVisible}
       class:gluedtop={isInitiallyVisible && shouldScrollToInitiallyVisible}

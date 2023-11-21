@@ -28,6 +28,7 @@
   import {appVisibility} from '~/common/dom/ui/state';
   import {MessageDirection} from '~/common/enum';
   import type {MessageId} from '~/common/network/types';
+  import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.chat-view');
@@ -62,6 +63,7 @@
     hasOutgoingMessageChangesSinceOpened: false,
   };
   let modalState: ModalState = {type: 'none'};
+  let isScrollToBottomButtonVisible = false;
 
   /**
    * Scrolls the view to the message with the given id.
@@ -80,6 +82,10 @@
    */
   export function scrollToLast(behavior: ScrollBehavior): void {
     lazyListComponent?.scrollToLast(behavior);
+  }
+
+  function handleClickScrollToBottom(): void {
+    scrollToLast('smooth');
   }
 
   function handleClickForwardOption(message: MessagePropsFromBackend): void {
@@ -209,6 +215,14 @@
     viewport.deleteMessage(event.detail.id);
   }
 
+  function handleScroll(event: CustomEvent<{distanceFromBottomPx: u53}>): void {
+    if (event.detail.distanceFromBottomPx > 512) {
+      isScrollToBottomButtonVisible = true;
+    } else {
+      isScrollToBottomButtonVisible = false;
+    }
+  }
+
   function rememberUnreadState(): void {
     rememberedUnreadState = {
       firstUnreadMessageId: conversation.firstUnreadMessageId,
@@ -264,6 +278,14 @@
 </script>
 
 <div bind:this={element} class="chat">
+  <button
+    class="scroll-to-bottom"
+    class:visible={isScrollToBottomButtonVisible}
+    on:click={handleClickScrollToBottom}
+  >
+    <MdIcon theme="Outlined">arrow_downward</MdIcon>
+  </button>
+
   {#if $messagePropsStore.length === 0}
     <div class="empty-chat">
       <div class="notice">
@@ -288,6 +310,7 @@
       initiallyVisibleItemId={initiallyVisibleMessageId}
       on:itementered={handleItemEntered}
       on:itemexited={handleItemExited}
+      on:scroll={handleScroll}
     >
       <div class={`message ${item.direction}`} slot="item" let:item>
         {#if item.id === rememberedUnreadState.firstUnreadMessageId}
@@ -334,10 +357,46 @@
   @use 'component' as *;
 
   .chat {
+    position: relative;
     height: 100%;
 
     :global(> *) {
       height: 100%;
+    }
+
+    .scroll-to-bottom {
+      --c-icon-font-size: #{rem(24px)};
+
+      @include clicktarget-button-circle;
+      @extend %elevation-060;
+      z-index: $z-index-global-overlay;
+      position: absolute;
+      right: rem(8px);
+      bottom: rem(12px);
+      width: rem(40px);
+      height: rem(40px);
+      color: var(--cc-chat-scroll-to-bottom-button-color);
+      background-color: var(--cc-chat-scroll-to-bottom-button-background-color);
+
+      transition:
+        opacity 0.05s linear,
+        transform 0.1s ease-out;
+
+      --c-icon-button-naked-outer-background-color--hover: var(
+        --cc-chat-scroll-to-bottom-button-background-color--hover
+      );
+      --c-icon-button-naked-outer-background-color--focus: var(
+        --cc-chat-scroll-to-bottom-button-background-color--focus
+      );
+      --c-icon-button-naked-outer-background-color--active: var(
+        --cc-chat-scroll-to-bottom-button-background-color--active
+      );
+
+      &:not(.visible) {
+        pointer-events: none;
+        opacity: 0;
+        transform: scale(0.75) translateY(rem(8px));
+      }
     }
 
     .message {

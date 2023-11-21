@@ -49,6 +49,7 @@
    */
   export let mediaMessageDialogVisible: boolean;
 
+  let chatViewComponent: ChatView;
   let composeHandler: ComposeHandler;
   let lastReceiverLookup = receiverLookup;
   let conversationDraftStore = conversationDrafts.getOrCreateStore(receiverLookup);
@@ -180,6 +181,9 @@
 
     // Dispatch an event to scroll the conversation list all the way to the top.
     conversationListEvent.post({action: 'scroll-to-top'});
+
+    // Scroll chat view all the way to the bottom to display the sent message.
+    chatViewComponent.scrollToLast('instant');
   }
 
   function updateComposeData(
@@ -349,6 +353,7 @@
       <div class="messages">
         {#await conversationViewModel.viewModelController.getConversationMessagesSetViewModel() then messageSetViewModel}
           <ChatView
+            bind:this={chatViewComponent}
             conversation={{
               firstUnreadMessageId: $conversationInnerViewModel.firstUnreadMessageId,
               id: $conversation.ctx,

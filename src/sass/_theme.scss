@@ -199,6 +199,13 @@ $brandings: (
       $lightness: -g($cc, conversation-preview-swipe-area-gap-lightness)
     ),
 
+    // Chat view
+    --cc-chat-scroll-to-bottom-button-color: -g($cc, chat-scroll-to-bottom-button-color),
+    --cc-chat-scroll-to-bottom-button-background-color: -g($cc, chat-scroll-to-bottom-button-background-color),
+    --cc-chat-scroll-to-bottom-button-background-color--hover: -g($cc, chat-scroll-to-bottom-button-background-color--hover),
+    --cc-chat-scroll-to-bottom-button-background-color--focus: -g($cc, chat-scroll-to-bottom-button-background-color--focus),
+    --cc-chat-scroll-to-bottom-button-background-color--active: -g($cc, chat-scroll-to-bottom-button-background-color--active),
+
     // Contact details
     --cc-contact-details-badge-consumer-text-color: -g($cc, contact-details-badge-consumer-text),
     --cc-contact-details-badge-consumer-background-color: -g($cc, contact-details-badge-consumer-background),

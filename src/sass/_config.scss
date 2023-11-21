@@ -143,6 +143,13 @@ $config: config-merge(components.$config, (
       --cc-conversation-preview-status-text-color,
       --cc-conversation-preview-swipe-area-button-gap,
 
+      // Chat view
+      --cc-chat-scroll-to-bottom-button-color,
+      --cc-chat-scroll-to-bottom-button-background-color,
+      --cc-chat-scroll-to-bottom-button-background-color--hover,
+      --cc-chat-scroll-to-bottom-button-background-color--focus,
+      --cc-chat-scroll-to-bottom-button-background-color--active,
+
       // Contact details
       --cc-contact-details-badge-consumer-text-color,
       --cc-contact-details-badge-consumer-background-color,
