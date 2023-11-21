@@ -30,7 +30,16 @@ export class Viewport {
         private readonly _messageSetViewModelController: Remote<
             ConversationMessageSetViewModel['controller']
         >,
-    ) {}
+        initiallyVisibleMessageId?: MessageId,
+    ) {
+        if (initiallyVisibleMessageId !== undefined) {
+            this._messageSetViewModelController
+                .setCurrentViewportMessages(new Set([initiallyVisibleMessageId]))
+                .catch((error) =>
+                    this._log.error(`Failed to set initial viewport message: ${error}`),
+                );
+        }
+    }
 
     /**
      * Mark a message ID as visible in the viewport.

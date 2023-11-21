@@ -1,5 +1,8 @@
 import type {Conversation} from '~/common/model';
-import type {SetOfAnyLocalMessageModelStore} from '~/common/model/types/message';
+import type {
+    AnyMessageModelStore,
+    SetOfAnyLocalMessageModelStore,
+} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {MessageId} from '~/common/network/types';
 import {
@@ -79,6 +82,8 @@ export function getConversationMessageSetViewModel(
     const activeMessageStores = derive(
         controller.currentViewportMessages,
         (viewPortMessageIds, getAndSubscribe) => {
+            const defaultWindowSize = 75;
+
             // Note: When messages are deleted from the chat view, they are not removed from
             // `viewPortMessageIds` because the intersection observer does not trigger. This should
             // not have any adverse effects (except for a slight inefficiency in the IPC and
@@ -90,38 +95,40 @@ export function getConversationMessageSetViewModel(
             getAndSubscribe(conversationModel.controller.lastConversationUpdateStore());
 
             // Get active messages plus surrounding messages
-            let activeMessageSet = conversationModel.controller.getMessagesWithSurroundingMessages(
-                viewPortMessageIds,
-                75,
-            );
+            let visibleMessagesWindowSet =
+                conversationModel.controller.getMessagesWithSurroundingMessages(
+                    viewPortMessageIds,
+                    defaultWindowSize,
+                );
 
-            // If no message is visible currently (e.g. during initialization), load initial messages.
-            if (activeMessageSet.size === 0) {
-                let referenceMessageId: MessageId | undefined;
-
-                // First, try to use the first unread message as reference
+            // If no message is visible currently (e.g. during initialization), make sure that the
+            // first unread message (and surrounding messages) is loaded.
+            if (visibleMessagesWindowSet.size === 0) {
                 const firstUnreadMessageId = conversationModel.controller.getFirstUnreadMessageId();
                 if (firstUnreadMessageId !== undefined) {
-                    referenceMessageId = firstUnreadMessageId;
-                }
-
-                // If no message is unread, use the last message instead (if any)
-                const lastMessage = conversationModel.controller.lastMessageStore().get();
-                if (lastMessage !== undefined) {
-                    referenceMessageId = lastMessage.get().view.id;
-                }
-
-                // If a reference message was chosen, load it together with surrounding messages
-                if (referenceMessageId !== undefined) {
-                    activeMessageSet =
+                    visibleMessagesWindowSet =
                         conversationModel.controller.getMessagesWithSurroundingMessages(
-                            new Set([referenceMessageId]),
-                            75,
+                            new Set([firstUnreadMessageId]),
+                            defaultWindowSize,
                         );
                 }
             }
 
-            return activeMessageSet;
+            // Always load window around last message
+            const lastMessage = conversationModel.controller.lastMessageStore().get();
+            let lastMessageWindowSet: Set<AnyMessageModelStore>;
+            if (lastMessage !== undefined) {
+                const lastMessageId = lastMessage.get().view.id;
+                lastMessageWindowSet =
+                    conversationModel.controller.getMessagesWithSurroundingMessages(
+                        new Set([lastMessageId]),
+                        defaultWindowSize,
+                    );
+            } else {
+                lastMessageWindowSet = new Set();
+            }
+
+            return new Set([...visibleMessagesWindowSet, ...lastMessageWindowSet]);
         },
         storeOptions,
     );

@@ -38,6 +38,11 @@
   export let messageSetViewModel: $$Props['messageSetViewModel'];
   export let services: $$Props['services'];
 
+  const dispatch = createEventDispatcher<{
+    clickquote: MessagePropsFromBackend;
+    clickdelete: MessagePropsFromBackend;
+  }>();
+
   let element: HTMLElement;
   let lazyListComponent: SvelteNullableBinding<LazyList<MessageId, MessagePropsFromBackend>> = null;
 
@@ -45,6 +50,7 @@
    * If this value is set, then the chat will scroll to the specified message.
    */
   let initiallyVisibleMessageId: MessageId | undefined = conversation.firstUnreadMessageId;
+  let viewport = new Viewport(log, messageSetViewModel.controller, initiallyVisibleMessageId);
 
   /**
    * Because the read state of messages is immediately propagated to the frontend as soon as it
@@ -56,13 +62,6 @@
     hasOutgoingMessageChangesSinceOpened: false,
   };
   let modalState: ModalState = {type: 'none'};
-
-  const dispatch = createEventDispatcher<{
-    clickquote: MessagePropsFromBackend;
-    clickdelete: MessagePropsFromBackend;
-  }>();
-
-  const viewport = new Viewport(log, messageSetViewModel.controller);
 
   /**
    * Scrolls the view to the message with the given id.
@@ -157,6 +156,7 @@
 
   function handleChangeConversation(): void {
     initiallyVisibleMessageId = conversation.firstUnreadMessageId;
+    viewport = new Viewport(log, messageSetViewModel.controller, initiallyVisibleMessageId);
     rememberUnreadState();
     markConversationAsRead();
   }
