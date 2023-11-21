@@ -104,4 +104,5 @@ export type ContactRepository = {
     readonly getByUid: (uid: DbContactUid) => LocalModelStore<Contact> | undefined;
     readonly getByIdentity: (identity: IdentityString) => LocalModelStore<Contact> | undefined;
     readonly getAll: () => LocalSetStore<LocalModelStore<Contact>>;
+    readonly getOrCreateByIdentity: (identity: IdentityString) => Promise<LocalModelStore<Contact>>;
 } & ProxyMarked;

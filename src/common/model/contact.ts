@@ -5,7 +5,18 @@ import type {
     DbCreate,
     DbCreateConversationMixin,
 } from '~/common/db';
-import {AcquaintanceLevel, Existence, ReceiverType, TriggerSource} from '~/common/enum';
+import {
+    AcquaintanceLevel,
+    ActivityState,
+    ConversationCategory,
+    ConversationVisibility,
+    Existence,
+    ReceiverType,
+    SyncState,
+    TriggerSource,
+    VerificationLevel,
+    WorkVerificationLevel,
+} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
@@ -25,15 +36,16 @@ import type {ProfilePicture} from '~/common/model/types/profile-picture';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import type {IdentityData} from '~/common/network/protocol/directory';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import type {IdentityString} from '~/common/network/types';
+import {ensureIdentityString, type IdentityString} from '~/common/network/types';
 import {getNotificationTagForContact, type NotificationTag} from '~/common/notification';
 import type {StrictOmit, u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
-import {idColorIndexToString} from '~/common/utils/id-color';
+import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
 import {
     createExactPropertyValidator,
@@ -552,6 +564,22 @@ export class ContactModelRepository implements ContactRepository {
         return getByIdentity(this._services, identity);
     }
 
+    // Should we only allow programatic default add for a specific subset of IDs (e.g *SUPPORT)?
+    public async getOrCreateByIdentity(
+        identity: IdentityString,
+    ): Promise<LocalModelStore<Contact>> {
+        identity = ensureIdentityString(identity);
+        const contact = this.getByIdentity(identity);
+        if (contact !== undefined) {
+            return contact;
+        }
+        const contactInit = await this._createDefaultContactInit(identity);
+        if (contactInit === undefined) {
+            throw new Error('The user tried to add an invalid ID');
+        }
+        return await this.add.fromLocal(contactInit);
+    }
+
     /** @inheritdoc */
     public getAll(): LocalSetStore<LocalModelStore<Contact>> {
         return all(this._services);
@@ -566,6 +594,38 @@ export class ContactModelRepository implements ContactRepository {
         if (init.identity === this._services.device.identity.string) {
             throw new Error('The user cannot add themself as contact.');
         }
+    }
+
+    private async _createDefaultContactInit(
+        identity: IdentityString,
+    ): Promise<ContactInit | undefined> {
+        const identityData: IdentityData = await this._services.directory.identity(identity);
+        if (identityData.state === ActivityState.INVALID) {
+            return undefined;
+        }
+        // Should we put VerificationLevel to fully verified for support as is done on iOS?
+        const contactInit: ContactInit = {
+            identity: identityData.identity,
+            publicKey: identityData.publicKey,
+            firstName: '',
+            lastName: '',
+            nickname: undefined,
+            colorIndex: idColorIndex({
+                type: ReceiverType.CONTACT,
+                identity: identityData.identity,
+            }),
+            createdAt: new Date(),
+            verificationLevel: VerificationLevel.UNVERIFIED,
+            workVerificationLevel: WorkVerificationLevel.NONE,
+            identityType: identityData.type,
+            acquaintanceLevel: AcquaintanceLevel.DIRECT,
+            featureMask: identityData.featureMask,
+            syncState: SyncState.INITIAL,
+            activityState: identityData.state,
+            category: ConversationCategory.DEFAULT,
+            visibility: ConversationVisibility.SHOW,
+        };
+        return contactInit;
     }
 
     private async _addAsync(
