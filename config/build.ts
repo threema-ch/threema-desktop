@@ -2,6 +2,7 @@ import type {u8, u53} from '~/common/types';
 
 export const BUILD_ENTRIES = [
     'app',
+    'cli',
     'electron-main',
     'electron-preload',
     'karma-tests',
@@ -20,9 +21,10 @@ export type BuildMode = (typeof BUILD_MODES)[u53];
 
 /**
  * Build targets:
- * - electron: Runs standalone
+ * - cli: Builds the CLI
+ * - electron: Builds the Electron-wrapped app
  */
-export const BUILD_TARGETS = ['electron'] as const;
+export const BUILD_TARGETS = ['cli', 'electron'] as const;
 /** See {@link BUILD_TARGETS}. */
 export type BuildTarget = (typeof BUILD_TARGETS)[u53];
 

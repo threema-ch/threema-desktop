@@ -874,6 +874,17 @@ module.exports = {
             }),
         },
 
+        // CLI source rules
+        {
+            files: './src/cli/**/*.ts',
+            parserOptions: {
+                project: './src/cli/tsconfig.json',
+            },
+            env: {
+                node: true,
+            },
+        },
+
         // Common source rules
         {
             files: './src/common/**/*.ts',

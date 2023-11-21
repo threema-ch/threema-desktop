@@ -5,7 +5,7 @@ import * as process from 'node:process';
 import * as v from '@badrap/valita';
 import {svelte} from '@sveltejs/vite-plugin-svelte';
 import type {RollupOptions} from 'rollup';
-import type {ConfigEnv as ViteConfigEnv, UserConfig} from 'vite';
+import type {ConfigEnv as ViteConfigEnv, UserConfig, LibraryOptions} from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // Imports cannot be absolute in this file.
@@ -343,6 +343,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
 
                 // Sources
                 './app/tsconfig.json',
+                './cli/tsconfig.json',
                 './common/tsconfig.json',
                 './common/dom/tsconfig.json',
                 './common/node/tsconfig.json',
@@ -371,8 +372,28 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
     } as const;
 
     // Determine rollup options
+    let lib: LibraryOptions | undefined;
     const rollupOptions: RollupOptions = {};
     switch (env.entry) {
+        case 'cli':
+            lib = {
+                entry: './cli/bin.ts',
+                formats: ['cjs'],
+            };
+            rollupOptions.output = {
+                entryFileNames: '[name].cjs',
+            };
+            break;
+        case 'electron-main':
+        case 'electron-preload':
+            lib = {
+                entry: `./electron/${env.entry}.ts`,
+                formats: ['cjs'],
+            };
+            rollupOptions.output = {
+                entryFileNames: '[name].cjs',
+            };
+            break;
         case 'karma-tests':
             rollupOptions.input = './src/test/karma/run-specs.ts';
             rollupOptions.output = {
@@ -385,12 +406,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             rollupOptions.output = {
                 entryFileNames: '[name].cjs',
                 format: 'iife',
-            };
-            break;
-        case 'electron-main':
-        case 'electron-preload':
-            rollupOptions.output = {
-                entryFileNames: '[name].cjs',
             };
             break;
         default: // Nothing to do
@@ -418,13 +433,7 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
             emptyOutDir: true,
             assetsDir: '',
             assetsInlineLimit: 0,
-            lib:
-                env.entry === 'electron-main' || env.entry === 'electron-preload'
-                    ? {
-                          entry: `./electron/${env.entry}.ts`,
-                          formats: ['cjs'],
-                      }
-                    : undefined,
+            lib,
             // TODO(DESK-781): Use: minify: env.mode === 'production',
             minify: false,
             reportCompressedSize: false,
