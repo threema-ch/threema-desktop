@@ -649,6 +649,7 @@ export enum ElectronIpcCommand {
     LOG_TO_FILE = 'logToFile',
     IS_FILE_LOGGING_ENABLED = 'isFileLoggingEnabled',
     GET_LOG_INFORMATION = 'getLogInformation',
+    GET_GZIPPED_LOG_FILE = 'getGzippedLogFiles',
     SET_FILE_LOGGING_ENABLED_AND_RESTART = 'setFileLoggingEnabledAndRestart',
     DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart',
     CLOSE_APP = 'closeApp',

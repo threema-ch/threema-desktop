@@ -19,6 +19,7 @@ import {
     TagLogger,
     TeeLogger,
 } from '~/common/logging';
+import {ZlibCompressor} from '~/common/node/compressor';
 import {
     type ElectronSettings,
     loadElectronSettings,
@@ -28,7 +29,7 @@ import {
 import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
-import type {u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 import {ensureError, unreachable, unwrap} from '~/common/utils/assert';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
@@ -280,7 +281,7 @@ function getMainAppLogPath(appPath: string): string {
     return path.join(appPath, ...import.meta.env.LOG_PATH.MAIN_AND_APP);
 }
 
-function getLogBackendPath(appPath: string): string {
+function getBackendWorkerLogPath(appPath: string): string {
     return path.join(appPath, ...import.meta.env.LOG_PATH.BACKEND_WORKER);
 }
 
@@ -292,7 +293,7 @@ function generateLogFileInfo(type: 'app' | 'bw', appPath: string): LogFileInfo {
             logPath = getMainAppLogPath(appPath);
             break;
         case 'bw':
-            logPath = getLogBackendPath(appPath);
+            logPath = getBackendWorkerLogPath(appPath);
             break;
         default:
             unreachable(type);
@@ -301,6 +302,12 @@ function generateLogFileInfo(type: 'app' | 'bw', appPath: string): LogFileInfo {
         sizeInBytes = fs.statSync(logPath).size;
     }
     return {sizeInBytes, path: logPath};
+}
+
+async function loadCompressedLogBytes(filePath: string): Promise<ReadonlyUint8Array> {
+    const compressor = new ZlibCompressor();
+    const bytes = await fs.promises.readFile(filePath);
+    return await compressor.compress('gzip', bytes);
 }
 
 interface MainInit {
@@ -669,7 +676,7 @@ function main(
                             );
                         }
                     }
-                    const logBackendPath = getLogBackendPath(appPath);
+                    const logBackendPath = getBackendWorkerLogPath(appPath);
                     if (fs.existsSync(logBackendPath)) {
                         try {
                             fs.truncateSync(logBackendPath, 0);
@@ -694,6 +701,20 @@ function main(
                 },
             };
             return logInfo;
+        });
+
+        electron.ipcMain.handle(ElectronIpcCommand.GET_GZIPPED_LOG_FILE, async (event) => {
+            try {
+                const [app, bw] = await Promise.all([
+                    loadCompressedLogBytes(getMainAppLogPath(appPath)),
+                    loadCompressedLogBytes(getBackendWorkerLogPath(appPath)),
+                ]);
+                return {app, bw};
+            } catch (error) {
+                throw new Error(
+                    `Failed to load or compress the log files: ${ensureError(error).message}`,
+                );
+            }
         });
 
         const session = parameters['persist-profile']

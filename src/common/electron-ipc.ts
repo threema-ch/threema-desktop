@@ -1,5 +1,5 @@
 import type {LogInfo} from '~/common/node/file-storage/log-info';
-import type {u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53} from '~/common/types';
 
 export interface ErrorDetails {
     readonly message: string;
@@ -42,6 +42,11 @@ export interface ElectronIpc {
         level: 'trace' | 'debug' | 'info' | 'warn' | 'error',
         data: string,
     ) => Promise<void>;
+
+    /**
+     * Get gzip-compressed contents of the log files.
+     */
+    readonly getGzippedLogFiles: () => Promise<{app: ReadonlyUint8Array; bw: ReadonlyUint8Array}>;
 
     /**
      * Return whether or not file logging is enabled.
