@@ -5,8 +5,9 @@ import {ReceiverTypeUtils} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {VALID_IDENTITY_DATA_SCHEMA} from '~/common/network/protocol/directory';
 import {ensureIdentityString, ensureMessageId} from '~/common/network/types';
-import {ensureU64, type u53, type u64, type WeakOpaque} from '~/common/types';
+import {ensureU64, ReadonlyUint8Array, type u53, type u64, type WeakOpaque} from '~/common/types';
 import {assert} from '~/common/utils/assert';
+import {instanceOf} from '~/common/utils/valita-helpers';
 
 /**
  * Information needed to look up a generic receiver, together with additional data that will be used
@@ -29,6 +30,14 @@ const PARAM_RECEIVER_LOOKUP_SCHEMA = v.object({
                 .map((value) => value as DbReceiverLookup),
             messageId: v.number().map(ensureMessageId),
         })
+        .optional(),
+    preloadedFiles: v
+        .array(
+            v.object({
+                bytes: instanceOf<ReadonlyUint8Array>(Uint8Array),
+                fileName: v.string(),
+            }),
+        )
         .optional(),
 });
 
@@ -453,5 +462,10 @@ export interface AnyRouteInstance {
  */
 export type ForwardedMessageLookup = Exclude<
     v.Infer<typeof PARAM_RECEIVER_LOOKUP_SCHEMA>['forwardedMessage'],
+    undefined
+>;
+
+export type PreloadedFiles = Exclude<
+    v.Infer<typeof PARAM_RECEIVER_LOOKUP_SCHEMA>['preloadedFiles'],
     undefined
 >;

@@ -3,6 +3,7 @@ import type {DbReceiverLookup} from '~/common/db';
 import {display} from '~/common/dom/ui/state';
 import {ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, assertUnreachable} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
 import {splitAtLeast} from '~/common/utils/string';
@@ -306,6 +307,34 @@ export class Router extends WritableStore<RouterState> {
     }
 
     /**
+     * Open the conversation with a list of files that will be added to the media message composer.
+     *
+     * By default, the aside panel is always closed in medium and small layout, unless
+     * `options.keepAsidePanelOpen` is set to `true`.
+     */
+    public openConversationAndFileDialogForReceiver(
+        receiverLookup: DbReceiverLookup,
+        fileInformation: {bytes: ReadonlyUint8Array; fileName: string}[],
+        options?: {readonly keepAsidePanelOpen?: boolean},
+    ): void {
+        assert(
+            [ReceiverType.CONTACT, ReceiverType.GROUP].includes(receiverLookup.type),
+            'TODO(DESK-236)',
+        );
+        const aside = this._getAside(receiverLookup, options?.keepAsidePanelOpen ?? false);
+
+        this.go(
+            this.get().nav,
+            ROUTE_DEFINITIONS.main.conversation.withTypedParams({
+                receiverLookup,
+                preloadedFiles: fileInformation,
+            }),
+            aside,
+            undefined,
+        );
+    }
+
+    /**
      * Open the conversation and the conversation details for the specified receiver.
      *
      * By default, the aside panel is always closed in medium and small layout, unless
@@ -319,9 +348,19 @@ export class Router extends WritableStore<RouterState> {
             [ReceiverType.CONTACT, ReceiverType.GROUP].includes(receiverLookup.type),
             'TODO(DESK-236)',
         );
+        const aside = this._getAside(receiverLookup, options?.keepAsidePanelOpen ?? false);
+        this.go(
+            this.get().nav,
+            ROUTE_DEFINITIONS.main.conversation.withTypedParams({receiverLookup}),
+            aside,
+            undefined,
+        );
+    }
 
-        const keepAsidePanelOpen = options?.keepAsidePanelOpen ?? false;
-
+    private _getAside(
+        receiverLookup: DbReceiverLookup,
+        keepAsidePanelOpen: boolean,
+    ): AnyRouteInstance['aside'] | undefined {
         const currentState = this.get();
         const displayMode = display.get();
 
@@ -345,13 +384,7 @@ export class Router extends WritableStore<RouterState> {
                     assertUnreachable('TODO(DESK-236)');
             }
         }
-
-        this.go(
-            this.get().nav,
-            ROUTE_DEFINITIONS.main.conversation.withTypedParams({receiverLookup}),
-            aside,
-            undefined,
-        );
+        return aside;
     }
 
     /**
