@@ -3,10 +3,16 @@ $-config: null !default;
 
 %markup-bold {
   font-weight: bold;
+  // Prevent fonts that don't support weight "bold" from being automagically synthesized by the
+  // rendering engine.
+  font-synthesis-weight: none;
 }
 
 %markup-italic {
   font-style: italic;
+  // Prevent fonts that don't support an oblique variant (e.g. an emoji typeface) from being
+  // automagically synthesized by the rendering engine.
+  font-synthesis-style: none;
 }
 
 %markup-strike {
