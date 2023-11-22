@@ -688,7 +688,18 @@ function main(
                         }
                     }
                 }
-                updateElectronSettings({logging: {enabled}}, appPath, log);
+                // In the rare (if not impossible) case that window is undefined, we just default to the standard window size
+                updateElectronSettings(
+                    {
+                        window: {
+                            width: window?.getSize()[0] ?? DEFAULT_ELECTRON_SETTINGS.window.width,
+                            height: window?.getSize()[1] ?? DEFAULT_ELECTRON_SETTINGS.window.height,
+                        },
+                        logging: {enabled},
+                    },
+                    appPath,
+                    log,
+                );
                 restartApplication();
             },
         );
