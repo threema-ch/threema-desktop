@@ -99,7 +99,7 @@
     grid-template:
       'sender' min-content
       'preview' 1fr
-      / min-content;
+      / auto;
     column-gap: rem(24px);
     row-gap: 0;
     min-height: rem(40px);
