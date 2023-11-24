@@ -1,4 +1,4 @@
-import type {PublicKey} from '~/common/crypto';
+import {ensurePublicKey, type PublicKey} from '~/common/crypto';
 import type {DbContact, DbContactUid, UidOf} from '~/common/db';
 import type {
     AcquaintanceLevel,
@@ -20,6 +20,7 @@ import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {FeatureMask, IdentityString, Nickname} from '~/common/network/types';
 import type {StrictExtract, StrictOmit, u8} from '~/common/types';
+import {hexToBytes} from '~/common/utils/byte';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 import type {IdColor} from '~/common/utils/id-color';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
@@ -104,5 +105,42 @@ export type ContactRepository = {
     readonly getByUid: (uid: DbContactUid) => LocalModelStore<Contact> | undefined;
     readonly getByIdentity: (identity: IdentityString) => LocalModelStore<Contact> | undefined;
     readonly getAll: () => LocalSetStore<LocalModelStore<Contact>>;
-    readonly getOrCreateByIdentity: (identity: IdentityString) => Promise<LocalModelStore<Contact>>;
+    readonly getOrCreatePredefinedContact: (
+        identity: PredefinedContactIdentity,
+    ) => Promise<LocalModelStore<Contact>>;
 } & ProxyMarked;
+
+/**
+ * List of predefined contacts by Threema.
+ */
+export const PREDEFINED_CONTACTS = {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    '*SUPPORT': {
+        name: 'Threema Support',
+        publicKey: ensurePublicKey(
+            hexToBytes('0f944d18324b2132c61d8e40afce60a0ebd701bb11e89be94972d4229e94722a'),
+        ),
+    },
+    '*THREEMA': {
+        name: 'Threema Channel',
+        publicKey: ensurePublicKey(
+            hexToBytes('3a38650c681435bd1fb8498e213a2919b09388f5803aa44640e0f706326a865c'),
+        ),
+    },
+    '*MY3DATA': {
+        name: 'My Threema Data',
+        publicKey: ensurePublicKey(
+            hexToBytes('3b01854f24736e2d0d2dc387eaf2c0273c5049052147132369bf3960d0a0bf02'),
+        ),
+    },
+    /* eslint-enable @typescript-eslint/naming-convention */
+} as const;
+
+export type PredefinedContactIdentity = keyof typeof PREDEFINED_CONTACTS;
+
+/**
+ * Return whether the specified identity is a {@link PredefinedContactIdentity}.
+ */
+export function isPredefinedContact(identity: string): identity is PredefinedContactIdentity {
+    return Object.keys(PREDEFINED_CONTACTS).includes(identity);
+}

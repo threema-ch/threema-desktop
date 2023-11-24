@@ -3,7 +3,6 @@ import {toast} from '~/app/ui/snackbar';
 import {ReceiverType} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import type {Logger} from '~/common/logging';
-import type {IdentityString} from '~/common/network/types';
 import {ensureError} from '~/common/utils/assert';
 
 export async function collectLogsAndComposeMessageToSupport(
@@ -12,9 +11,8 @@ export async function collectLogsAndComposeMessageToSupport(
 ): Promise<void> {
     try {
         const logFiles = await window.app.getGzippedLogFiles();
-        const supportContact = await services.backend.model.contacts.getOrCreateByIdentity(
-            '*SUPPORT' as IdentityString,
-        );
+        const supportContact =
+            await services.backend.model.contacts.getOrCreatePredefinedContact('*SUPPORT');
 
         services.router.openConversationAndFileDialogForReceiver(
             {

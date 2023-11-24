@@ -11,6 +11,7 @@ import {
     ConversationCategory,
     ConversationVisibility,
     Existence,
+    IdentityType,
     ReceiverType,
     SyncState,
     TriggerSource,
@@ -22,14 +23,17 @@ import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
 import type {ContactProfilePictureFields} from '~/common/model/profile-picture';
 import type {ServicesForModel} from '~/common/model/types/common';
-import type {
-    Contact,
-    ContactController,
-    ContactInit,
-    ContactRepository,
-    ContactUpdate,
-    ContactView,
-    ContactViewDerivedProperties,
+import {
+    PREDEFINED_CONTACTS,
+    type Contact,
+    type ContactController,
+    type ContactInit,
+    type ContactRepository,
+    type ContactUpdate,
+    type ContactView,
+    type ContactViewDerivedProperties,
+    type PredefinedContactIdentity,
+    isPredefinedContact,
 } from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
 import type {ProfilePicture} from '~/common/model/types/profile-picture';
@@ -39,7 +43,7 @@ import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {IdentityData} from '~/common/network/protocol/directory';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {ReflectContactSyncTransactionTask} from '~/common/network/protocol/task/d2d/reflect-contact-sync-transaction';
-import {ensureIdentityString, type IdentityString} from '~/common/network/types';
+import type {IdentityString} from '~/common/network/types';
 import {getNotificationTagForContact, type NotificationTag} from '~/common/notification';
 import type {StrictOmit, u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
@@ -526,7 +530,26 @@ export class ContactModelRepository implements ContactRepository {
 
         fromLocal: async (init: ContactInit) => {
             this._log.debug('ContactModelRepository: Add from local');
-            return await this._addAsync({source: TriggerSource.LOCAL}, init);
+
+            // Detect predefined contacts
+            let contactInit = init;
+            const identity: string = init.identity;
+            if (isPredefinedContact(identity)) {
+                this._log.debug(
+                    'ContactModelRepository: Detected predefined contact, overriding public key and verification level',
+                );
+                contactInit = {
+                    ...init,
+                    firstName:
+                        init.firstName === '' && init.lastName === ''
+                            ? PREDEFINED_CONTACTS[identity].name
+                            : init.firstName,
+                    publicKey: PREDEFINED_CONTACTS[identity].publicKey,
+                    verificationLevel: VerificationLevel.FULLY_VERIFIED,
+                };
+            }
+
+            return await this._addAsync({source: TriggerSource.LOCAL}, contactInit);
         },
 
         fromRemote: async (handle, init: ContactInit) => {
@@ -565,15 +588,14 @@ export class ContactModelRepository implements ContactRepository {
     }
 
     // Should we only allow programatic default add for a specific subset of IDs (e.g *SUPPORT)?
-    public async getOrCreateByIdentity(
-        identity: IdentityString,
+    public async getOrCreatePredefinedContact(
+        identity: PredefinedContactIdentity,
     ): Promise<LocalModelStore<Contact>> {
-        identity = ensureIdentityString(identity);
-        const contact = this.getByIdentity(identity);
+        const contact = this.getByIdentity(identity as IdentityString);
         if (contact !== undefined) {
             return contact;
         }
-        const contactInit = await this._createDefaultContactInit(identity);
+        const contactInit = await this._createPredefinedContactInit(identity);
         if (contactInit === undefined) {
             throw new Error('The user tried to add an invalid ID');
         }
@@ -596,28 +618,30 @@ export class ContactModelRepository implements ContactRepository {
         }
     }
 
-    private async _createDefaultContactInit(
-        identity: IdentityString,
+    private async _createPredefinedContactInit(
+        identity: PredefinedContactIdentity,
     ): Promise<ContactInit | undefined> {
-        const identityData: IdentityData = await this._services.directory.identity(identity);
+        const identityString = identity as IdentityString;
+
+        const identityData: IdentityData = await this._services.directory.identity(identityString);
         if (identityData.state === ActivityState.INVALID) {
             return undefined;
         }
-        // Should we put VerificationLevel to fully verified for support as is done on iOS?
+
         const contactInit: ContactInit = {
-            identity: identityData.identity,
-            publicKey: identityData.publicKey,
-            firstName: '',
+            identity: identityString,
+            publicKey: PREDEFINED_CONTACTS[identity].publicKey,
+            firstName: PREDEFINED_CONTACTS[identity].name,
             lastName: '',
             nickname: undefined,
             colorIndex: idColorIndex({
                 type: ReceiverType.CONTACT,
-                identity: identityData.identity,
+                identity: identityString,
             }),
             createdAt: new Date(),
-            verificationLevel: VerificationLevel.UNVERIFIED,
+            verificationLevel: VerificationLevel.FULLY_VERIFIED,
             workVerificationLevel: WorkVerificationLevel.NONE,
-            identityType: identityData.type,
+            identityType: IdentityType.REGULAR,
             acquaintanceLevel: AcquaintanceLevel.DIRECT,
             featureMask: identityData.featureMask,
             syncState: SyncState.INITIAL,
