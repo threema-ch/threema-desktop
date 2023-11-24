@@ -5,7 +5,13 @@ import {ReceiverTypeUtils} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {VALID_IDENTITY_DATA_SCHEMA} from '~/common/network/protocol/directory';
 import {ensureIdentityString, ensureMessageId} from '~/common/network/types';
-import {ensureU64, ReadonlyUint8Array, type u53, type u64, type WeakOpaque} from '~/common/types';
+import {
+    ensureU64,
+    type ReadonlyUint8Array,
+    type u53,
+    type u64,
+    type WeakOpaque,
+} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {instanceOf} from '~/common/utils/valita-helpers';
 

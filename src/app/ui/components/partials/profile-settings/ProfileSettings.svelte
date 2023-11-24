@@ -12,15 +12,21 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import ProfilePictureModal from '~/app/ui/components/partials/modals/profile-picture-modal/ProfilePictureModal.svelte';
+  import {collectLogsAndComposeMessageToSupport} from '~/app/ui/components/partials/profile-settings/helpers';
   import ProfileInfo from '~/app/ui/components/partials/profile-settings/internal/profile-info/ProfileInfo.svelte';
+  import ToggleLoggerModal from '~/app/ui/components/partials/profile-settings/internal/toggle-logger-modal/ToggleLoggerModal.svelte';
   import type {ProfileSettingsProps} from '~/app/ui/components/partials/profile-settings/props';
   import {i18n, LOCALE_NAMES, LOCALES} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {publicKeyGrid} from '~/common/dom/ui/fingerprint';
   import {display} from '~/common/dom/ui/state';
   import {THEMES} from '~/common/dom/ui/theme';
+  import {extractErrorMessage} from '~/common/error';
+  import type {LogInfo} from '~/common/node/file-storage/log-info';
   import type {u53} from '~/common/types';
+  import {ensureError} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
+  import {byteSizeToHumanReadable} from '~/common/utils/number';
   import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.profile-settings');
@@ -47,10 +53,38 @@
       log.error('Loading profile view model failed', error);
     });
 
+  let isLoggerEnabled: boolean | undefined;
+  window.app
+    .isFileLoggingEnabled()
+    .then((enabled) => {
+      isLoggerEnabled = enabled;
+    })
+    .catch((error) => {
+      log.error(
+        `Couldn't read whether file logging is enabled: ${extractErrorMessage(
+          ensureError(error),
+          'short',
+        )}`,
+      );
+    });
+
+  let logInfo: LogInfo | undefined;
+  window.app
+    .getLogInformation()
+    .then((info) => {
+      logInfo = info;
+    })
+    .catch((error) => {
+      log.error(
+        `Couldn't read logInformation: ${extractErrorMessage(ensureError(error), 'short')}`,
+      );
+    });
+
   let showToggleDebugMode = false;
   let versionClickedCount = 0;
   let versionClickedTimeoutHandler: u53;
   let isProfilePictureModalVisible = false;
+  let isToggleLoggerModalVisible = false;
 
   function handleClickBack(): void {
     router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
@@ -88,6 +122,29 @@
 
   function handleCloseProfilePictureModal(): void {
     isProfilePictureModalVisible = false;
+  }
+
+  function handleClickToggleLogger(): void {
+    isToggleLoggerModalVisible = true;
+  }
+
+  function handleCloseToggleLoggerModal(): void {
+    isToggleLoggerModalVisible = false;
+  }
+
+  function handleClickConfirmAndRestartToggleLoggerModal(): void {
+    if (isLoggerEnabled === undefined) {
+      // It should not be possible to reach this point, because for the modal to be shown,
+      // `isLoggerEnabled` must be defined.
+      log.error('Logger was toggled but its current status was unknown');
+      return;
+    }
+
+    window.app.setFileLoggingEnabledAndRestart(!isLoggerEnabled);
+  }
+
+  async function handleClickSendLogsToSupport(): Promise<void> {
+    await collectLogsAndComposeMessageToSupport(services, log);
   }
 
   $: if ($debugPanelState === 'show') {
@@ -186,7 +243,46 @@
           </KeyValueList.Item>
         </KeyValueList.Section>
       </KeyValueList>
-
+      {#if isLoggerEnabled !== undefined && logInfo !== undefined}
+        {#if isLoggerEnabled}
+          <KeyValueList.Section>
+            <KeyValueList.Item key={$i18n.t('settings.label--log-files', 'Log Files')}>
+              <div class="list">
+                <span class="list-row">
+                  <Text text={logInfo.logFiles.mainApplication.path}></Text>
+                  <Text
+                    text={` (${byteSizeToHumanReadable(
+                      logInfo.logFiles.mainApplication.sizeInBytes,
+                    )})`}
+                  ></Text>
+                </span>
+                <span class="list-row">
+                  <Text text={logInfo.logFiles.backendWorker.path}></Text>
+                  <Text
+                    text={` (${byteSizeToHumanReadable(
+                      logInfo.logFiles.backendWorker.sizeInBytes,
+                    )})`}
+                  ></Text>
+                </span>
+              </div>
+            </KeyValueList.Item>
+          </KeyValueList.Section>
+        {/if}
+        <div class="button">
+          <Button flavor="filled" on:click={handleClickToggleLogger}>
+            {!isLoggerEnabled
+              ? $i18n.t('settings.action--logging-enable', 'Enable Logging')
+              : $i18n.t('settings.action--logging-disable', 'Disable Logging')}</Button
+          >
+        </div>
+        {#if isLoggerEnabled}
+          <div class="button">
+            <Button on:click={handleClickSendLogsToSupport} flavor="filled"
+              >{$i18n.t('settings.action--send-log', 'Send Logs to Support')}</Button
+            >
+          </div>
+        {/if}
+      {/if}
       <div class="button">
         <Button flavor="filled" on:click={handleClickChangePassword}
           >{$i18n.t('dialog--change-password.label--title', 'Change Password')}</Button
@@ -199,7 +295,7 @@
             flavor="filled"
             on:click={() => {
               $debugPanelState = $debugPanelState === 'show' ? 'hide' : 'show';
-            }}>Toggle Debug Panel</Button
+            }}>{$i18n.t('settings.action--toggle-debug-panel', 'Toggle Debug Panel')}</Button
           >
         </div>
       {/if}
@@ -215,6 +311,29 @@
       on:close={handleCloseProfilePictureModal}
     />
   {/if}
+
+  {#if isToggleLoggerModalVisible}
+    {#if isLoggerEnabled !== undefined && logInfo !== undefined}
+      <ToggleLoggerModal
+        {isLoggerEnabled}
+        {logInfo}
+        on:clickconfirmandrestart={handleClickConfirmAndRestartToggleLoggerModal}
+        on:close={handleCloseToggleLoggerModal}
+      />
+    {/if}
+  {/if}
+
+  <!-- {#if isLoggerEnabled !== undefined && logInfo !== undefined}
+    <ToggleLoggerSettingsModal
+      {isLoggerEnabled}
+      {showLoggerSettingChangeDialog}
+      {logInfo}
+      on:clickoutside={onCancelLogDialog}
+      on:close={onCancelLogDialog}
+      on:cancel={onCancelLogDialog}
+      on:confirm={onConfirmNewLogSettings}
+    ></ToggleLoggerSettingsModal>
+  {/if} -->
 </template>
 
 <style lang="scss">
@@ -245,6 +364,16 @@
 
     .button {
       padding: rem(10px) rem(16px) rem(10px) rem(16px);
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      user-select: text;
+    }
+
+    .list-row {
+      flex-wrap: wrap;
     }
   }
 </style>

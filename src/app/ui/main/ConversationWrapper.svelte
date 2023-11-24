@@ -1,11 +1,18 @@
 <script lang="ts">
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
-  import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import {validateFiles} from 'threema-svelte-components/src/utils/filelist';
+  import {globals} from '~/app/globals';
+  import {
+    type ForwardedMessageLookup,
+    ROUTE_DEFINITIONS,
+    type PreloadedFiles,
+  } from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import {i18n} from '~/app/ui/i18n';
   import Welcome from '~/app/ui/main/Welcome.svelte';
   import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
   import {toast} from '~/app/ui/snackbar';
+  import {type SvelteNullableBinding, reactive} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
   import type {AnyReceiverStore} from '~/common/model';
   import type {Remote} from '~/common/utils/endpoint';
@@ -15,6 +22,8 @@
     SendMessageEventDetail,
   } from '~/common/viewmodel/conversation';
 
+  const log = globals.unwrap().uiLogging.logger('ui.component.conversation-wrapper');
+
   export let services: AppServices;
 
   // Unpack services and backend
@@ -23,12 +32,29 @@
   // Get conversation lookup info
   let receiverLookup: DbReceiverLookup;
   let forwardedMessageLookup: ForwardedMessageLookup | undefined;
+  let preloadedFiles: PreloadedFiles | undefined;
 
   $: if ($router.main.id === 'conversation') {
     const route = $router.main;
     receiverLookup = route.params.receiverLookup;
     forwardedMessageLookup = route.params.forwardedMessage;
+    preloadedFiles = route.params.preloadedFiles;
   }
+
+  $: reactive(() => {
+    if (preloadedFiles !== undefined && preloadedFiles.length !== 0) {
+      const fileArray: File[] = [];
+      for (const f of preloadedFiles) {
+        const blob = new Blob([f.bytes]);
+        fileArray.push(new File([blob], f.fileName));
+      }
+      validateFiles(fileArray)
+        .then((fileResult) => {
+          conversationElement?.handleFileDrop(fileResult);
+        })
+        .catch((error) => log.error(`An error occurred when validating files: ${error}`));
+    }
+  }, [$router]);
 
   let conversationViewModel: Remote<ConversationViewModel> | undefined;
   let receiver: Remote<AnyReceiverStore> | undefined;
@@ -52,7 +78,7 @@
     });
   }
 
-  let conversationElement: Conversation;
+  let conversationElement: SvelteNullableBinding<Conversation | undefined>;
 
   async function sendMessage(event: CustomEvent<SendMessageEventDetail>): Promise<void> {
     await viewModelController?.sendMessage(event.detail);
@@ -78,7 +104,7 @@
     <DropZone
       bind:zoneHover
       on:fileDrop={(event) => {
-        conversationElement.handleFileDrop(event.detail);
+        conversationElement?.handleFileDrop(event.detail);
       }}
     >
       <div class="drag-wrapper" class:bodyHover>

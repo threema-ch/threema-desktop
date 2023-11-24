@@ -6,6 +6,7 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
+  import Button from '#3sc/components/blocks/Button/Button.svelte';
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
@@ -127,7 +128,7 @@
 
           <slot />
         {:else if wrapper.type === 'card'}
-          {@const {actions = [], elevated = true, minWidth = 460, title} = wrapper}
+          {@const {actions = [], buttons = [], elevated = true, minWidth = 460, title} = wrapper}
 
           <div class="card" class:elevated style={`--c-t-min-width: ${minWidth}px;`}>
             {#if title !== undefined || actions.length > 0}
@@ -150,9 +151,28 @@
                 {/if}
               </div>
             {/if}
+
             <div class="content">
               <slot />
             </div>
+
+            {#if buttons.length > 0}
+              <div class="footer">
+                {#each buttons as button}
+                  <Button
+                    on:elementReady={(event) => {
+                      if (button.isFocused === true) {
+                        event.detail.element.focus();
+                      }
+                    }}
+                    flavor={button.type}
+                    disabled={button.disabled}
+                    on:click={button.onClick === 'close' ? handleClickClose : button.onClick}
+                    >{button.label}</Button
+                  >
+                {/each}
+              </div>
+            {/if}
           </div>
         {:else}
           {unreachable(wrapper)}
@@ -267,6 +287,10 @@
             align-items: center;
             justify-content: space-between;
 
+            &:not(:has(.title)) {
+              justify-content: end;
+            }
+
             .title {
               @extend %font-large-400;
             }
@@ -280,6 +304,14 @@
             max-width: 100%;
             max-height: 100%;
             overflow: auto;
+          }
+
+          .footer {
+            display: flex;
+            align-items: center;
+            justify-content: end;
+            gap: rem(8px);
+            padding: rem(16px);
           }
         }
       }
