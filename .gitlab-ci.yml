@@ -800,9 +800,9 @@ package:macos-publish:
               throw "Error: Invalid build type: $BUILD_TYPE"
             }
           }
-        } else {
-          echo "Skipping publication, \$PUBLISH=$env:PUBLISH"
         }
+      } else {
+        echo "Skipping publication, \$PUBLISH=$env:PUBLISH"
       }
   artifacts:
     paths:
