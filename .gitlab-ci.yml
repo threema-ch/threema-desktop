@@ -696,6 +696,7 @@ package:macos-buildonly:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
       when: never
     - when: manual
+  allow_failure: true # Job is optional
   variables:
     PUBLISH: 'false'
 
@@ -818,6 +819,7 @@ package:windows-buildonly:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
       when: never
     - when: manual
+  allow_failure: true # Job is optional
   variables:
     ARCH: 'x64'
     PUBLISH: 'false'
