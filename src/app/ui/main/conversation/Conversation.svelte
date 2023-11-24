@@ -529,27 +529,14 @@
 
     .messages {
       grid-area: messages;
-      // scroll-snap-type: y mandatory;
-      // overflow-y: auto;
-      // display: grid;
-      // align-content: start;
-      // gap: rem(8px);
-
-      // .anchor {
-      //   height: 1px;
-      //   align-self: end;
-
-      //   &.active {
-      //     scroll-snap-align: end;
-      //   }
-      // }
-      // :global(> *) {
-      //   height: 100%;
-      // }
+      position: relative;
+      z-index: $z-index-zero;
     }
 
     .bottom-bar {
       grid-area: bottom-bar;
+      position: relative;
+      z-index: $z-index-zero;
 
       .disabled-input-area {
         text-align: center;
