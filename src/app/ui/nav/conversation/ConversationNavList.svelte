@@ -180,8 +180,8 @@
    * Scroll list to bring the currently active conversation into view.
    */
   export function scrollToActiveConversation(): void {
-    const receiverLookup = $router.main.params?.receiverLookup;
-    if (receiverLookup !== undefined) {
+    if ($router.main.id === 'conversation') {
+      const receiverLookup = $router.main.params.receiverLookup;
       conversationListEvent.post({action: 'scroll-to-receiver', receiverLookup});
     }
   }

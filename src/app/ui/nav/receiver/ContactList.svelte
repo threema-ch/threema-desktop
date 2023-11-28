@@ -168,9 +168,11 @@
 
   let currentlyDisplayedConversationContactUid: DbContactUid | undefined;
   $: {
-    const routeReceiverLookup = $router.main.params?.receiverLookup;
-    currentlyDisplayedConversationContactUid =
-      routeReceiverLookup?.type === ReceiverType.CONTACT ? routeReceiverLookup.uid : undefined;
+    if ($router.main.id === 'conversation') {
+      const routeReceiverLookup = $router.main.params.receiverLookup;
+      currentlyDisplayedConversationContactUid =
+        routeReceiverLookup.type === ReceiverType.CONTACT ? routeReceiverLookup.uid : undefined;
+    }
   }
 </script>
 

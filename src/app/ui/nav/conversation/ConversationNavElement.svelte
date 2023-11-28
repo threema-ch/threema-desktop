@@ -119,12 +119,14 @@
   let conversationDraft: string | undefined;
 
   $: {
-    const routeReceiverLookup = $router.main.params?.receiverLookup;
-    active =
-      routeReceiverLookup?.type === receiver$.lookup.type &&
-      routeReceiverLookup.uid === receiver$.lookup.uid;
-    const conversationDraftStore = conversationDrafts.getOrCreateStore(receiver$.lookup);
-    conversationDraft = active ? undefined : conversationDraftStore.get();
+    if ($router.main.id === 'conversation') {
+      const routeReceiverLookup = $router.main.params.receiverLookup;
+      active =
+        routeReceiverLookup.type === receiver$.lookup.type &&
+        routeReceiverLookup.uid === receiver$.lookup.uid;
+      const conversationDraftStore = conversationDrafts.getOrCreateStore(receiver$.lookup);
+      conversationDraft = active ? undefined : conversationDraftStore.get();
+    }
   }
 
   // TODO(DESK-1073): Add default preview text for message types other than `text` or `file`.

@@ -5,6 +5,7 @@ import {ReceiverTypeUtils} from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import {VALID_IDENTITY_DATA_SCHEMA} from '~/common/network/protocol/directory';
 import {ensureIdentityString, ensureMessageId} from '~/common/network/types';
+import {ensureSettingsCategory} from '~/common/settings';
 import {
     ensureU64,
     type ReadonlyUint8Array,
@@ -45,6 +46,10 @@ const PARAM_RECEIVER_LOOKUP_SCHEMA = v.object({
             }),
         )
         .optional(),
+});
+
+const PARAM_SETTINGS_SCHEMA = v.object({
+    category: v.string().map(ensureSettingsCategory),
 });
 
 /**
@@ -366,6 +371,10 @@ export const ROUTE_DEFINITIONS = {
             id: 'contactAddDetails',
             params: PARAM_IDENTITY_DATA_SCHEMA,
         }),
+        settingsList: defineNav({
+            id: 'settingsList',
+            params: undefined,
+        }),
     },
     main: {
         welcome: defineMain({
@@ -389,7 +398,7 @@ export const ROUTE_DEFINITIONS = {
             params: PARAM_RECEIVER_LOOKUP_SCHEMA,
             path: {
                 match: new RegExp(
-                    '^/conversation/(?<receiverType>\\d+)/(?<receiverUid>\\d+)/$',
+                    '^/conversation/(?<receiverType>\\d+)/(?<receiverUid>\\w+)/$',
                     'u',
                 ),
                 template: '/conversation/:receiverLookup.type/:receiverLookup.uid/',
@@ -399,6 +408,15 @@ export const ROUTE_DEFINITIONS = {
                         uid: parseU64IfDefined(captureGroups.receiverUid),
                     },
                 }),
+            },
+        }),
+
+        settings: defineMain({
+            id: 'settings',
+            params: PARAM_SETTINGS_SCHEMA,
+            path: {
+                match: new RegExp('^/settings/(?<category>[a-z]+)/$', 'u'),
+                template: '/settings/:category',
             },
         }),
     },

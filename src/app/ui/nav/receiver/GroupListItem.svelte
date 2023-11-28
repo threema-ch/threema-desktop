@@ -90,10 +90,12 @@
 
   let conversationActive = false;
   $: {
-    const routeReceiverLookup = $router.main.params?.receiverLookup;
-    conversationActive =
-      routeReceiverLookup?.type === ReceiverType.GROUP &&
-      routeReceiverLookup.uid === group.get().uid;
+    if ($router.main.id === 'conversation') {
+      const routeReceiverLookup = $router.main.params.receiverLookup;
+      conversationActive =
+        routeReceiverLookup.type === ReceiverType.GROUP &&
+        routeReceiverLookup.uid === group.get().uid;
+    }
   }
 </script>
 

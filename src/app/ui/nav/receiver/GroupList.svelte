@@ -52,9 +52,11 @@
 
   let currentlyDisplayedConversationGroupUid: DbGroupUid | undefined;
   $: {
-    const routeReceiverLookup = $router.main.params?.receiverLookup;
-    currentlyDisplayedConversationGroupUid =
-      routeReceiverLookup?.type === ReceiverType.GROUP ? routeReceiverLookup.uid : undefined;
+    if ($router.main.id === 'conversation') {
+      const routeReceiverLookup = $router.main.params.receiverLookup;
+      currentlyDisplayedConversationGroupUid =
+        routeReceiverLookup.type === ReceiverType.GROUP ? routeReceiverLookup.uid : undefined;
+    }
   }
 </script>
 

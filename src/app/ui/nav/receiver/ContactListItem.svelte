@@ -107,10 +107,12 @@
 
   let conversationActive = false;
   $: {
-    const routeReceiverLookup = $router.main.params?.receiverLookup;
-    conversationActive =
-      routeReceiverLookup?.type === ReceiverType.CONTACT &&
-      routeReceiverLookup.uid === contact.get().uid;
+    if ($router.main.id === 'conversation') {
+      const routeReceiverLookup = $router.main.params.receiverLookup;
+      conversationActive =
+        routeReceiverLookup.type === ReceiverType.CONTACT &&
+        routeReceiverLookup.uid === contact.get().uid;
+    }
   }
 </script>
 
