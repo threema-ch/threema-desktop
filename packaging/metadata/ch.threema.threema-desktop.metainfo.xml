@@ -25,6 +25,32 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta24" date="2023-11-29">
+            <description>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Don't load all chat messages at once to improve chat performance</li>
+                    <li>Add "scroll to bottom" button to chat view</li>
+                    <li>Allow pinning and archiving of chats</li>
+                    <li>Remember window size across restarts</li>
+                    <li>Allow choosing between 12h and 24h time display</li>
+                    <li>
+                        Improve loading of media thumbnails and avatars to reduce memory consumption
+                    </li>
+                    <li>Improve navigation in small and medium layout</li>
+                    <li>Show own profile picture on click</li>
+                    <li>Allow enabling debug logging</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>Add group contact to contact list after editing</li>
+                    <li>Fix transparent emoji in conversation list</li>
+                    <li>Fix cursive emoji in formatted text</li>
+                    <li>Fix line breaks in long file names</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta23" date="2023-10-13">
             <description>
                 <p>Improvements:</p>
