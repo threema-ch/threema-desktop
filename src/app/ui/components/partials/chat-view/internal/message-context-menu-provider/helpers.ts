@@ -85,7 +85,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: copySelection,
-                      icon: 'subject',
+                      icon: {label: 'subject'},
                       label: t('messaging.action--message-option-copy-selection', 'Copy Selection'),
                   },
               ]
@@ -94,7 +94,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: copyLink,
-                      icon: 'link',
+                      icon: {label: 'link'},
                       label: t('messaging.action--message-option-copy-link', 'Copy Link'),
                   },
               ]
@@ -103,7 +103,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: copyImage,
-                      icon: 'photo_library',
+                      icon: {label: 'photo_library'},
                       label: t('messaging.action--message-option-copy-image', 'Copy Image'),
                   },
               ]
@@ -112,7 +112,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: copy,
-                      icon: 'content_copy',
+                      icon: {label: 'content_copy'},
                       label: t('messaging.action--message-option-copy', 'Copy Message'),
                   },
               ]
@@ -121,7 +121,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: saveAsFile,
-                      icon: 'download',
+                      icon: {label: 'download'},
                       label: t('messaging.action--message-option-save-as-file', 'Save as File'),
                   },
               ]
@@ -136,10 +136,8 @@ export function getContextMenuItems({
         ...(acknowledge?.handler !== undefined
             ? ([
                   {
-                      color: 'acknowledged',
-                      filled: acknowledge.filled,
                       handler: acknowledge.handler,
-                      icon: 'thumb_up',
+                      icon: {label: 'thumb_up', color: 'acknowledged', filled: acknowledge.filled},
                       label: t('messaging.action--message-option-agree', 'Agree'),
                   },
               ] as const)
@@ -147,10 +145,8 @@ export function getContextMenuItems({
         ...(decline?.handler !== undefined
             ? ([
                   {
-                      color: 'declined',
-                      filled: decline.filled,
                       handler: decline.handler,
-                      icon: 'thumb_down',
+                      icon: {label: 'thumb_down', color: 'declined', filled: decline.filled},
                       label: t('messaging.action--message-option-disagree', 'Disagree'),
                   },
               ] as const)
@@ -162,7 +158,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: quote,
-                      icon: 'format_quote',
+                      icon: {label: 'format_quote'},
                       label: t('messaging.action--message-option-quote', 'Quote'),
                   },
               ]
@@ -171,7 +167,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: forward,
-                      icon: 'forward',
+                      icon: {label: 'forward'},
                       label: t('messaging.action--message-option-forward', 'Forward'),
                   },
               ]
@@ -180,7 +176,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: openDetails,
-                      icon: 'info',
+                      icon: {label: 'info'},
                       label: t('messaging.action--message-option-details', 'Message Details'),
                   },
               ]
@@ -189,7 +185,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: deleteMessage,
-                      icon: 'delete',
+                      icon: {label: 'delete'},
                       label: t('messaging.action--message-option-delete', 'Delete'),
                   },
               ]

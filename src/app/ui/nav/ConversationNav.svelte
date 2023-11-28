@@ -4,9 +4,9 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
+  import MainNavBar from '~/app/ui/components/partials/main-nav-bar/MainNavBar.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import MainNavBar from '~/app/ui/nav/MainNavBar.svelte';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavList from '~/app/ui/nav/conversation/ConversationNavList.svelte';
   import type {Remote} from '~/common/utils/endpoint';
@@ -90,15 +90,9 @@
       <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
       {#if profile !== undefined}
         <MainNavBar
+          {services}
           profilePicture={$profile.profilePicture}
           initials={$profile.initials}
-          on:click-profile-picture={() => {
-            const newMainRoute =
-              router.get().main.id === 'profile'
-                ? ROUTE_DEFINITIONS.main.welcome.withoutParams()
-                : ROUTE_DEFINITIONS.main.profile.withoutParams();
-            router.go(router.get().nav, newMainRoute, undefined);
-          }}
           on:click-contact={() =>
             router.replaceNav(ROUTE_DEFINITIONS.nav.contactList.withoutParams())}
         />

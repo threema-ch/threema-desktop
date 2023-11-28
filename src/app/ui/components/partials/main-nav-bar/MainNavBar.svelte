@@ -4,23 +4,25 @@
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import {routeToSettings} from '~/app/ui/components/partials/main-nav-bar/helpers';
+  import ContextMenuProvider from '~/app/ui/components/partials/main-nav-bar/internal/context-menu-provider/ContextMenuProvider.svelte';
+  import type {MainNavBarProps} from '~/app/ui/components/partials/main-nav-bar/props';
   import {i18n} from '~/app/ui/i18n';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
-  import type {ProfilePictureView} from '~/common/model';
 
-  export let profilePicture: ProfilePictureView;
-  export let initials: string;
+  type $$Props = MainNavBarProps;
+  export let profilePicture: $$Props['profilePicture'];
+  export let initials: $$Props['initials'];
+  export let services: $$Props['services'];
+
+  const {router} = services;
 
   const dispatch = createEventDispatcher();
 </script>
 
 <template>
   <header>
-    <button
-      type="button"
-      class="profile-picture"
-      on:click={() => dispatch('click-profile-picture')}
-    >
+    <button type="button" class="profile-picture" on:click={() => routeToSettings(router)}>
       <ProfilePicture
         img={transformProfilePicture(profilePicture.picture)}
         alt={$i18n.t('contacts.hint--own-profile-picture')}
@@ -45,15 +47,7 @@
     >
       <MdIcon theme="Outlined">person_outline</MdIcon>
     </IconButton>
-    <!-- <IconButton
-      on:click={() => {
-        dispatch('click-more');
-      }}
-      flavor="naked"
-      class="wip"
-    >
-      <MdIcon theme="Outlined">more_vert</MdIcon>
-    </IconButton> -->
+    <ContextMenuProvider {services}></ContextMenuProvider>
   </header>
 </template>
 
