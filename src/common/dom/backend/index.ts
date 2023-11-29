@@ -541,9 +541,6 @@ export class Backend implements ProxyMarked {
                 `Backend created.\nDevice IDs:\n  DGID = ${dgid}\n  D2M  = ${d2m}\n  CSP  = ${csp}`,
             );
         }
-
-        // Schedule background jobs
-        this._scheduleBackgroundJobs();
     }
 
     /**
@@ -706,6 +703,9 @@ export class Backend implements ProxyMarked {
 
         // Start connection
         void backend.connectionManager.start();
+
+        // Schedule background jobs
+        backend._scheduleBackgroundJobs();
 
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
@@ -1080,6 +1080,9 @@ export class Backend implements ProxyMarked {
             });
         }
 
+        // Schedule background jobs
+        backend._scheduleBackgroundJobs();
+
         // Expose the backend on a new channel
         const {local, remote} = endpoint.createEndpointPair<BackendHandle>();
         endpoint.exposeProxy(backend, local, logging.logger('com.backend'));
@@ -1135,6 +1138,8 @@ export class Backend implements ProxyMarked {
      * Schedule backend background jobs.
      */
     private _scheduleBackgroundJobs(): void {
+        this._log.info('Scheduling background jobs');
+
         // Schedule license check every 12h
         if (import.meta.env.BUILD_VARIANT === 'work') {
             const workData = this._services.device.workData;
