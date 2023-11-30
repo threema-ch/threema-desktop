@@ -80,13 +80,12 @@ export type ReceiverType = 'contact' | 'group' | 'distribution-list';
 /**
  * Maps a receiver type to its associated raw data.
  */
-export type ReceiverDataFor<T extends ReceiverType> = T extends 'contact'
-    ? ContactData
-    : T extends 'group'
-      ? GroupData
-      : T extends 'distribution-list'
-        ? DistributionListData
-        : never;
+export type ReceiverDataFor<T extends ReceiverType> = {
+    'contact': ContactData;
+    'group': GroupData;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    'distribution-list': DistributionListData;
+}[T];
 
 /**
  * Any kind of receiver data.
@@ -219,21 +218,16 @@ interface QuoteMessageBody {
 /**
  * Maps a message type to its associated raw body type.
  */
-export type MessageBodyFor<T extends MessageType> = T extends 'text'
-    ? TextMessageBody
-    : T extends 'image'
-      ? ImageMessageBody
-      : T extends 'location'
-        ? LocationMessageBody
-        : T extends 'audio'
-          ? AudioMessageBody
-          : T extends 'video'
-            ? VideoMessageBody
-            : T extends 'file'
-              ? FileMessageBody
-              : T extends 'quote'
-                ? QuoteMessageBody
-                : never;
+export type MessageBodyFor<T extends MessageType> = {
+    text: TextMessageBody;
+    image: ImageMessageBody;
+    location: LocationMessageBody;
+    audio: AudioMessageBody;
+    video: VideoMessageBody;
+    file: FileMessageBody;
+    quote: QuoteMessageBody;
+    poll: never; // TODO(DESK-181)
+}[T];
 
 /**
  * Body associated to a message type.

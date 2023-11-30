@@ -96,8 +96,11 @@ type ValidContactMessages =
  *
  * {@link DistributionList}s are treated the same as {@link Contact}s.
  */
-export type ValidCspMessageTypeForReceiver<TReceiver extends AnyReceiver> =
-    TReceiver['type'] extends ReceiverType.GROUP ? ValidGroupMessages : ValidContactMessages;
+export type ValidCspMessageTypeForReceiver<TReceiver extends AnyReceiver> = {
+    [ReceiverType.CONTACT]: ValidContactMessages;
+    [ReceiverType.GROUP]: ValidGroupMessages;
+    [ReceiverType.DISTRIBUTION_LIST]: never; // TODO(DESK-237)
+}[TReceiver['type']];
 
 /**
  * Interface for the {@link OutgoingCspMessageTask}.

@@ -476,17 +476,13 @@ export type DbAnyMessage =
 /**
  * Map from message type to a specific database message type.
  */
-export type DbMessageFor<TType extends MessageType> = TType extends 'text'
-    ? DbTextMessage
-    : TType extends 'file'
-      ? DbFileMessage
-      : TType extends 'image'
-        ? DbImageMessage
-        : TType extends 'video'
-          ? DbVideoMessage
-          : TType extends 'audio'
-            ? DbAudioMessage
-            : never;
+export type DbMessageFor<TType extends MessageType> = {
+    text: DbTextMessage;
+    file: DbFileMessage;
+    image: DbImageMessage;
+    video: DbVideoMessage;
+    audio: DbAudioMessage;
+}[TType];
 
 /**
  * A database message UID.

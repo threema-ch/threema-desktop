@@ -62,6 +62,7 @@ import {
     type TaskController,
     TaskError,
     type TaskQueueItem,
+    type ActiveTaskPersistence,
 } from '.';
 
 // Transaction running token. Must not be exported!
@@ -677,7 +678,7 @@ class DisconnectedTaskManager {
         const done = new ResolvablePromise<TTaskResult>();
         this._tasks.push({
             SYMBOL: TASK_SYMBOL,
-            task,
+            task: task as ActiveTask<TTaskResult, ActiveTaskPersistence>, // Cast specific type to more generic type
             done: done as ResolvablePromise<unknown>,
         });
         return done;
@@ -749,7 +750,7 @@ export class ConnectedTaskManager {
         const done = new ResolvablePromise<TTaskResult>();
         this._tasks.put({
             SYMBOL: TASK_SYMBOL,
-            task,
+            task: task as ActiveTask<TTaskResult, ActiveTaskPersistence>, // Cast specific type to more generic type
             done: done as ResolvablePromise<unknown>,
         });
         return done;

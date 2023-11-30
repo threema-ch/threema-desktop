@@ -184,15 +184,15 @@ export interface InternalActiveTaskCodecHandle extends TaskCodecHandle {
     ) => Promise<TransactionResult<S, T>>;
 }
 
-export type ActiveTaskCodecHandle<TPersistence extends ActiveTaskPersistence> =
-    TPersistence extends 'persistent'
-        ? WeakOpaque<
-              InternalActiveTaskCodecHandle,
-              {
-                  readonly ActiveTaskPersistenceToken: unique symbol;
-              }
-          >
-        : InternalActiveTaskCodecHandle;
+export type ActiveTaskCodecHandle<TPersistence extends ActiveTaskPersistence> = {
+    persistent: WeakOpaque<
+        InternalActiveTaskCodecHandle,
+        {
+            readonly ActiveTaskPersistenceToken: unique symbol;
+        }
+    >;
+    volatile: InternalActiveTaskCodecHandle;
+}[TPersistence];
 
 /**
  * A task that can be directly executed by the task manager.
@@ -218,11 +218,7 @@ export interface ActiveTask<TTaskResult, TPersistence extends ActiveTaskPersiste
      * Whether the task should persist and rerun from the beginning if the
      * connection has been lost or the app has been restarted.
      */
-    readonly persist: TPersistence extends 'persistent'
-        ? true
-        : TPersistence extends 'volatile'
-          ? false
-          : never;
+    readonly persist: {persistent: true; volatile: false}[TPersistence];
 
     /**
      * Whether the task expects to be run inside a specific transaction.
