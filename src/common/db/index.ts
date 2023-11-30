@@ -332,6 +332,11 @@ export interface DbMessageCommon<T extends MessageType> {
     readonly threadId: u64;
 
     /**
+     * Ordinal for message ordering. Note: Higher `ordinal` means the message is newer.
+     */
+    readonly ordinal: u53;
+
+    /**
      * Optional timestamp for when the message...
      *
      * - Outbound: The "sentAt" timestamp.
@@ -367,6 +372,11 @@ export interface DbMessageCommon<T extends MessageType> {
         readonly type: MessageReaction;
     };
 }
+
+/**
+ * Data required to create a message entry.
+ */
+export type DbCreateMessage<T extends DbTable> = Omit<DbCreate<T>, 'ordinal'>;
 
 /**
  * A database text message.
@@ -641,27 +651,37 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     /**
      * Create a new text message.
      */
-    readonly createTextMessage: (message: DbCreate<DbTextMessage>) => DbCreated<DbTextMessage>;
+    readonly createTextMessage: (
+        message: DbCreateMessage<DbTextMessage>,
+    ) => DbCreated<DbTextMessage>;
 
     /**
      * Create a new file message.
      */
-    readonly createFileMessage: (message: DbCreate<DbFileMessage>) => DbCreated<DbFileMessage>;
+    readonly createFileMessage: (
+        message: DbCreateMessage<DbFileMessage>,
+    ) => DbCreated<DbFileMessage>;
 
     /**
      * Create a new image message.
      */
-    readonly createImageMessage: (message: DbCreate<DbImageMessage>) => DbCreated<DbImageMessage>;
+    readonly createImageMessage: (
+        message: DbCreateMessage<DbImageMessage>,
+    ) => DbCreated<DbImageMessage>;
 
     /**
      * Create a new video message.
      */
-    readonly createVideoMessage: (message: DbCreate<DbVideoMessage>) => DbCreated<DbVideoMessage>;
+    readonly createVideoMessage: (
+        message: DbCreateMessage<DbVideoMessage>,
+    ) => DbCreated<DbVideoMessage>;
 
     /**
      * Create a new audio message.
      */
-    readonly createAudioMessage: (message: DbCreate<DbAudioMessage>) => DbCreated<DbAudioMessage>;
+    readonly createAudioMessage: (
+        message: DbCreateMessage<DbAudioMessage>,
+    ) => DbCreated<DbAudioMessage>;
 
     /**
      * If the message ID exists in the conversation, return its UID.

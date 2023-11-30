@@ -56,6 +56,11 @@ export interface CommonBaseMessageView {
         readonly at: Date;
         readonly type: MessageReaction;
     };
+
+    /**
+     * Ordinal for message ordering. Note: Higher `ordinal` means the message is newer.
+     */
+    readonly ordinal: u53;
 }
 export type InboundBaseMessageView = CommonBaseMessageView & {
     /**
@@ -107,7 +112,7 @@ export type CommonBaseMessageInit<TType extends MessageType> = {
      * Message type (e.g. text, file, etc).
      */
     readonly type: TType;
-} & CommonBaseMessageView;
+} & Omit<CommonBaseMessageView, 'ordinal'>;
 export type InboundBaseMessageInit<TType extends MessageType> = CommonBaseMessageInit<TType> &
     Pick<InboundBaseMessageView, 'receivedAt' | 'raw'> & {
         readonly sender: UidOf<DbContact>;

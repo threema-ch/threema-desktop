@@ -44,6 +44,7 @@ import type {
     DbVideoMessage,
     DbVideoMessageFragment,
     RawDatabaseKey,
+    DbCreateMessage,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -894,7 +895,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
      * This method should only be used inside a transaction.
      */
     private _insertCommonMessageData<T extends MessageType>(
-        message: DbCreate<DbMessageCommon<T>>,
+        message: DbCreateMessage<DbMessageCommon<T>>,
     ): DbMessageUid {
         return sync(
             this._db
@@ -918,7 +919,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public createTextMessage(message: DbCreate<DbTextMessage>): DbCreated<DbTextMessage> {
+    public createTextMessage(message: DbCreateMessage<DbTextMessage>): DbCreated<DbTextMessage> {
         return this._db.syncTransaction(() => {
             // Common message
             const messageUid: DbMessageUid = this._insertCommonMessageData(message);
@@ -1091,7 +1092,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
         TMessageType extends MessageType,
         TDbMessage extends DbMessageCommon<TMessageType> & DbBaseFileMessageFragment,
     >(
-        message: DbCreate<TDbMessage>,
+        message: DbCreateMessage<TDbMessage>,
         insertMessageData: (sharedFields: {
             messageUid: DbMessageUid;
             fileDataUid?: DbFileDataUid;
@@ -1135,7 +1136,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public createFileMessage(message: DbCreate<DbFileMessage>): DbCreated<DbFileMessage> {
+    public createFileMessage(message: DbCreateMessage<DbFileMessage>): DbCreated<DbFileMessage> {
         return this._createFileBasedMessage(message, (sharedFields) => {
             sync(
                 this._db
@@ -1151,7 +1152,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public createImageMessage(message: DbCreate<DbImageMessage>): DbCreated<DbImageMessage> {
+    public createImageMessage(message: DbCreateMessage<DbImageMessage>): DbCreated<DbImageMessage> {
         return this._createFileBasedMessage(message, (sharedFields) => {
             sync(
                 this._db
@@ -1173,7 +1174,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public createVideoMessage(message: DbCreate<DbVideoMessage>): DbCreated<DbVideoMessage> {
+    public createVideoMessage(message: DbCreateMessage<DbVideoMessage>): DbCreated<DbVideoMessage> {
         return this._createFileBasedMessage(message, (sharedFields) => {
             sync(
                 this._db
@@ -1194,7 +1195,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public createAudioMessage(message: DbCreate<DbAudioMessage>): DbCreated<DbAudioMessage> {
+    public createAudioMessage(message: DbCreateMessage<DbAudioMessage>): DbCreated<DbAudioMessage> {
         return this._createFileBasedMessage(message, (sharedFields) => {
             sync(
                 this._db
@@ -1262,6 +1263,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             raw: tMessage.raw,
             type: tMessage.messageType,
             threadId: tMessage.threadId,
+            // TODO(DESK-296): Deprecate ordinal in favor of a thread-based solution
+            ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
         });
     }
 
@@ -1543,7 +1546,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
             this._getCommonMessageSelector()
                 .where(tMessage.conversationUid.equals(conversationUid))
                 // TODO(DESK-296): Order correctly
-                .orderBy('uid', 'desc')
+                .orderBy('ordinal', 'desc')
                 .limit(1)
                 .executeSelectNoneOrOne(),
         );
@@ -1564,7 +1567,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                         .and(tMessage.readAt.isNull()),
                 )
                 // TODO(DESK-296): Order correctly
-                .orderBy('uid', 'asc')
+                .orderBy('ordinal', 'asc')
                 .limit(1)
                 .executeSelectNoneOrOne(),
         );
@@ -2061,7 +2064,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .select(selectFields)
                     .where(tMessage.conversationUid.equals(conversationUid))
                     // TODO(DESK-296): Order correctly
-                    .orderBy('uid', 'desc')
+                    .orderBy('ordinal', 'desc')
                     .limitIfValue(limit)
                     .executeSelectMany(),
             );

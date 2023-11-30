@@ -1,4 +1,10 @@
-import type {DbCreate, DbMessageCommon, DbMessageFor, DbVideoMessage, UidOf} from '~/common/db';
+import type {
+    DbCreateMessage,
+    DbMessageCommon,
+    DbMessageFor,
+    DbVideoMessage,
+    UidOf,
+} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
 import {
     InboundBaseMessageModelController,
@@ -36,18 +42,19 @@ import {AsyncLock} from '~/common/utils/lock';
  */
 export function createVideoMessage<TDirection extends MessageDirection>(
     services: ServicesForModel,
-    common: Omit<DbMessageCommon<MessageType.VIDEO>, 'uid' | 'type'>,
+    common: Omit<DbMessageCommon<MessageType.VIDEO>, 'uid' | 'type' | 'ordinal'>,
     init: DirectedMessageFor<TDirection, MessageType.VIDEO, 'init'>,
 ): DbVideoMessage {
     const {db} = services;
 
     // Create video message
-    const message: DbCreate<DbVideoMessage> = {
+    const message: DbCreateMessage<DbVideoMessage> = {
         ...common,
         ...init,
     };
     const uid = db.createVideoMessage(message);
-    return {...message, uid};
+    // Cast is ok here because we know this `uid` is an video message
+    return db.getMessageByUid(uid) as DbVideoMessage;
 }
 
 /**

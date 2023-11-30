@@ -1,4 +1,4 @@
-import type {DbCreate, DbMessageCommon, DbTextMessage, UidOf} from '~/common/db';
+import type {DbCreateMessage, DbMessageCommon, DbTextMessage, UidOf} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
 import type {Contact, ServicesForModel} from '~/common/model';
 import {
@@ -29,20 +29,21 @@ import {assert, unreachable} from '~/common/utils/assert';
 
 export function createTextMessage<TDirection extends MessageDirection>(
     services: ServicesForModel,
-    common: Omit<DbMessageCommon<MessageType.TEXT>, 'uid' | 'type'>,
+    common: Omit<DbMessageCommon<MessageType.TEXT>, 'uid' | 'type' | 'ordinal'>,
     init: DirectedMessageFor<TDirection, MessageType.TEXT, 'init'>,
 ): DbTextMessage {
     const {db} = services;
 
     // Create text message
-    const message: DbCreate<DbTextMessage> = {
+    const message: DbCreateMessage<DbTextMessage> = {
         ...common,
         type: MessageType.TEXT,
         text: init.text,
         quotedMessageId: init.quotedMessageId,
     };
     const uid = db.createTextMessage(message);
-    return {...message, uid};
+    // Cast is ok here because we know this `uid` is a text message
+    return db.getMessageByUid(uid) as DbTextMessage;
 }
 
 export function getTextMessageModelStore<TModelStore extends AnyTextMessageModelStore>(

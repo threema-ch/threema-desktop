@@ -1,4 +1,10 @@
-import type {DbCreate, DbFileMessage, DbMessageCommon, DbMessageFor, UidOf} from '~/common/db';
+import type {
+    DbCreateMessage,
+    DbFileMessage,
+    DbMessageCommon,
+    DbMessageFor,
+    UidOf,
+} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
 import {
     InboundBaseMessageModelController,
@@ -36,18 +42,19 @@ import {AsyncLock} from '~/common/utils/lock';
  */
 export function createFileMessage<TDirection extends MessageDirection>(
     services: ServicesForModel,
-    common: Omit<DbMessageCommon<MessageType.FILE>, 'uid' | 'type'>,
+    common: Omit<DbMessageCommon<MessageType.FILE>, 'uid' | 'type' | 'ordinal'>,
     init: DirectedMessageFor<TDirection, MessageType.FILE, 'init'>,
 ): DbFileMessage {
     const {db} = services;
 
     // Create text message
-    const message: DbCreate<DbFileMessage> = {
+    const message: DbCreateMessage<DbFileMessage> = {
         ...common,
         ...init,
     };
     const uid = db.createFileMessage(message);
-    return {...message, uid};
+    // Cast is ok here because we know this `uid` is an file message
+    return db.getMessageByUid(uid) as DbFileMessage;
 }
 
 /**

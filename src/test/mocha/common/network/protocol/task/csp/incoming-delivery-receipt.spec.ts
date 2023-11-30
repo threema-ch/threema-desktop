@@ -276,7 +276,7 @@ export function run(): void {
             // Ensure that message was not modified
             const messageModel = msg.get();
             assert(messageModel.ctx === MessageDirection.INBOUND, 'Expected message to be inbound');
-            expect(messageModel.view.receivedAt).to.equal(originalReceivedAt);
+            expect(messageModel.view.receivedAt).to.deep.equal(originalReceivedAt);
             expect(messageModel.view.readAt).to.be.undefined;
             expect(messageModel.view.lastReaction).to.be.undefined;
         });

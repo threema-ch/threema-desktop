@@ -57,7 +57,7 @@ import {ReflectedMessageTaskBase} from './reflected-message';
 
 type CommonInboundMessageInitFragment = Omit<
     MessageFor<MessageDirection.INBOUND, MessageType, 'init'>,
-    'id' | 'sender' | 'type'
+    'id' | 'sender' | 'type' | 'ordinal'
 >;
 
 /**

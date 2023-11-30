@@ -58,7 +58,7 @@ import {ReflectedOutgoingGroupSetupTask} from './reflected-outgoing-group-setup'
 
 type CommonOutboundMessageInitFragment = Omit<
     MessageFor<MessageDirection.OUTBOUND, MessageType, 'init'>,
-    'id' | 'type'
+    'id' | 'type' | 'ordinal'
 >;
 
 /**

@@ -1,4 +1,10 @@
-import type {DbCreate, DbImageMessage, DbMessageCommon, DbMessageFor, UidOf} from '~/common/db';
+import type {
+    DbCreateMessage,
+    DbImageMessage,
+    DbMessageCommon,
+    DbMessageFor,
+    UidOf,
+} from '~/common/db';
 import {MessageDirection, MessageType} from '~/common/enum';
 import {
     InboundBaseMessageModelController,
@@ -36,18 +42,19 @@ import {AsyncLock} from '~/common/utils/lock';
  */
 export function createImageMessage<TDirection extends MessageDirection>(
     services: ServicesForModel,
-    common: Omit<DbMessageCommon<MessageType.IMAGE>, 'uid' | 'type'>,
+    common: Omit<DbMessageCommon<MessageType.IMAGE>, 'uid' | 'type' | 'ordinal'>,
     init: DirectedMessageFor<TDirection, MessageType.IMAGE, 'init'>,
 ): DbImageMessage {
     const {db} = services;
 
     // Create image message
-    const message: DbCreate<DbImageMessage> = {
+    const message: DbCreateMessage<DbImageMessage> = {
         ...common,
         ...init,
     };
     const uid = db.createImageMessage(message);
-    return {...message, uid};
+    // Cast is ok here because we know this `uid` is an image message
+    return db.getMessageByUid(uid) as DbImageMessage;
 }
 
 /**

@@ -190,17 +190,17 @@ export function run(): void {
 
             // A delivery receipt of type RECEIVED must be ignored for incoming messages
             await runTask(CspE2eDeliveryReceiptStatus.RECEIVED, new Date());
-            expect(msg.get().view.receivedAt, 'receivedAt').to.equal(originalReceivedAt);
+            expect(msg.get().view.receivedAt, 'receivedAt').to.deep.equal(originalReceivedAt);
 
             // Process READ
             const readTimestamp = secondsAgo(3);
             await runTask(CspE2eDeliveryReceiptStatus.READ, readTimestamp);
-            expect(msg.get().view.readAt, 'readAt').to.equal(readTimestamp);
+            expect(msg.get().view.readAt, 'readAt').to.deep.equal(readTimestamp);
 
             // Process ACKNOWLEDGED
             const ackTimestamp = secondsAgo(2);
             await runTask(CspE2eDeliveryReceiptStatus.ACKNOWLEDGED, ackTimestamp);
-            expect(msg.get().view.lastReaction, 'lastReaction').to.eql({
+            expect(msg.get().view.lastReaction, 'lastReaction').to.deep.equal({
                 at: ackTimestamp,
                 type: MessageReaction.ACKNOWLEDGE,
             });
@@ -208,7 +208,7 @@ export function run(): void {
             // Process DECLINED
             const decTimestamp = secondsAgo(1);
             await runTask(CspE2eDeliveryReceiptStatus.DECLINED, decTimestamp);
-            expect(msg.get().view.lastReaction, 'lastReaction').to.eql({
+            expect(msg.get().view.lastReaction, 'lastReaction').to.deep.equal({
                 at: decTimestamp,
                 type: MessageReaction.DECLINE,
             });
@@ -259,7 +259,7 @@ export function run(): void {
             // Ensure that message was not modified
             const messageModel = msg.get();
             assert(messageModel.ctx === MessageDirection.INBOUND, 'Expected message to be inbound');
-            expect(messageModel.view.receivedAt).to.equal(originalReceivedAt);
+            expect(messageModel.view.receivedAt).to.deep.equal(originalReceivedAt);
             expect(messageModel.view.readAt).to.be.undefined;
             expect(messageModel.view.lastReaction).to.be.undefined;
         });

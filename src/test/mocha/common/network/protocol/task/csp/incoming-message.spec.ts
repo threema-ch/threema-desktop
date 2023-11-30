@@ -559,7 +559,7 @@ export function run(): void {
             function createFileBasedMessage(
                 encryptionKey: RawBlobKey,
                 fileBlobId: BlobId,
-                thumbnailBlobId: BlobId,
+                thumbnailBlobId: BlobId | undefined,
                 fileProperties: {
                     fileName: string;
                     fileMediaType: string;
@@ -595,7 +595,11 @@ export function run(): void {
                             JSON.stringify({
                                 // Blob IDs
                                 b: bytesToHex(fileBlobId),
-                                t: bytesToHex(thumbnailBlobId),
+                                ...(thumbnailBlobId === undefined
+                                    ? {}
+                                    : {
+                                          t: bytesToHex(thumbnailBlobId),
+                                      }),
                                 // Encryption key
                                 k: encryptionKeyHex,
                                 // Media
@@ -827,29 +831,23 @@ export function run(): void {
             }
 
             async function audioMessageTest(duration: f64 | undefined): Promise<void> {
-                const {fileBlobId, thumbnailBlobId, encryptionKey, conversation} =
-                    await setupFileMessageTest();
+                const {fileBlobId, encryptionKey, conversation} = await setupFileMessageTest();
 
                 // Create incoming audio message
                 const fileMediaType = 'audio/x-m4a';
                 const thumbnailMediaType = undefined;
                 const fileName = 'recordAudio-2023-09-11_11-57-58.m4a';
                 const fileSizeBytes = 23523;
-                const fileMessage = createFileBasedMessage(
-                    encryptionKey,
-                    fileBlobId,
-                    thumbnailBlobId,
-                    {
-                        fileMediaType,
-                        thumbnailMediaType,
-                        fileName,
-                        fileSizeBytes,
-                        renderingType: 'media',
-                        metadata: {
-                            d: duration,
-                        },
+                const fileMessage = createFileBasedMessage(encryptionKey, fileBlobId, undefined, {
+                    fileMediaType,
+                    thumbnailMediaType,
+                    fileName,
+                    fileSizeBytes,
+                    renderingType: 'media',
+                    metadata: {
+                        d: duration,
                     },
-                );
+                });
 
                 // Run task
                 await runIncomingFileMessageTask(fileMessage);
@@ -864,12 +862,10 @@ export function run(): void {
                 );
                 const view = message.get().view;
                 expect(view.blobId).to.deep.equal(fileBlobId);
-                expect(view.thumbnailBlobId).to.deep.equal(thumbnailBlobId);
+                expect(view.thumbnailBlobId).to.equal(undefined);
                 expect(view.encryptionKey).to.deep.equal(encryptionKey);
                 expect(view.mediaType).to.equal(fileMediaType);
-                // Protocol expects `image/jpeg` to be assumed when the thumbnail media type is not
-                // defined.
-                expect(view.thumbnailMediaType).to.equal('image/jpeg');
+                expect(view.thumbnailMediaType).to.equal(undefined);
                 expect(view.fileName).to.equal(fileName);
                 expect(view.fileSize).to.equal(fileSizeBytes);
                 expect(view.duration).to.equal(duration);

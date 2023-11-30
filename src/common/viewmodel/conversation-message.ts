@@ -143,7 +143,7 @@ function getViewModel(
             body: getConversationMessageBody(message, model, getAndSubscribe),
             mentions: getMentions(message, model),
             quote,
-            ordinal: getMessageOrdinal(message),
+            ordinal: message.view.ordinal,
             syncDirection,
         };
         return endpoint.exposeProperties(conversationMessage);
@@ -196,17 +196,6 @@ function getQuotedMessage(
     }
 
     return quotedMessageStore;
-}
-
-/**
- * Get an ordinal for message ordering in the frontend.
- */
-function getMessageOrdinal(message: AnyMessageModel): u53 {
-    // TODO(DESK-296): BE: Implement full-featured thread-based message sorting.
-    if (message.view.direction === MessageDirection.INBOUND) {
-        return message.view.receivedAt.getTime();
-    }
-    return message.view.sentAt?.getTime() ?? message.view.createdAt.getTime();
 }
 
 /**

@@ -58,7 +58,7 @@ export interface MessageFactory {
 
     readonly createDbMessage: <TDirection extends MessageDirection, TType extends MessageType>(
         services: ServicesForModel,
-        common: Omit<DbMessageCommon<TType>, 'uid' | 'type'>,
+        common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal'>,
         init: DirectedMessageFor<TDirection, TType, 'init'>,
     ) => DbMessageFor<TType>;
 }
@@ -110,6 +110,7 @@ function getCommonView<TDirection extends MessageDirection>(
         createdAt: message.createdAt,
         readAt: message.readAt,
         lastReaction: message.lastReaction,
+        ordinal: message.ordinal,
     };
     switch (direction) {
         case MessageDirection.INBOUND: {
@@ -178,11 +179,11 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
     conversationUid: UidOf<DbConversation>,
     init: DirectedMessageFor<TDirection, TType, 'init'>,
 ): [
-    common: Omit<DbMessageCommon<TType>, 'uid' | 'type'>,
+    common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal'>,
     store: LocalModelStore<Contact> | undefined,
 ] {
     // Gather common message data
-    const common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'processedAt'> = {
+    const common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'processedAt' | 'ordinal'> = {
         id: init.id,
         conversationUid,
         createdAt: init.createdAt,

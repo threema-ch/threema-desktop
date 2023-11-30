@@ -58,6 +58,7 @@ export function run(): void {
                 fileSize: 12345,
                 caption: 'Hello caption',
                 correlationId: 'abcd',
+                ordinal: 0,
             } as const;
         }
 

@@ -10,8 +10,8 @@ import type {
     DbContactUid,
     DbConversation,
     DbConversationUid,
-    DbCreate,
     DbCreateConversationMixin,
+    DbCreateMessage,
     DbFileData,
     DbGroup,
     DbGroupUid,
@@ -210,7 +210,7 @@ interface CommonMessageInit<T extends MessageType> {
 
 function getCommonMessage<T extends MessageType>(
     init: CommonMessageInit<T>,
-): DbCreate<DbMessageCommon<T>> {
+): DbCreateMessage<DbMessageCommon<T>> {
     return {
         id: (init.id ?? randomMessageId(crypto)) as MessageId,
         type: init.type,
@@ -663,45 +663,46 @@ export function backendTests(
             };
 
             // Get conversation uids
-            const conversationUid1 = db.getConversationOfReceiver(receiver1)?.uid;
-            assert(
-                conversationUid1 !== undefined,
-                'Expected conversation1 uid not to be undefined',
-            );
-            const conversationUid2 = db.getConversationOfReceiver(receiver2)?.uid;
-            assert(
-                conversationUid2 !== undefined,
-                'Expected conversation2 uid not to be undefined',
-            );
+            const c1Uid = db.getConversationOfReceiver(receiver1)?.uid;
+            assert(c1Uid !== undefined, 'Expected conversation1 uid not to be undefined');
+            const c2Uid = db.getConversationOfReceiver(receiver2)?.uid;
+            assert(c2Uid !== undefined, 'Expected conversation2 uid not to be undefined');
 
             // Initially, no messages
-            expect(db.getLastMessage(conversationUid1), 'unread messages conv1').to.be.undefined;
-            expect(db.getLastMessage(conversationUid2), 'unread messages conv2').to.be.undefined;
+            expect(db.getLastMessage(c1Uid), 'unread messages conv1').to.be.undefined;
+            expect(db.getLastMessage(c2Uid), 'unread messages conv2').to.be.undefined;
 
             // Add some messages
             createTextMessage(db, {
-                id: 1n,
-                conversationUid: conversationUid1,
+                id: 11n,
+                conversationUid: c1Uid,
+                createdAt: new Date('2023-11-30T01:00:00.000Z'),
+                processedAt: new Date('2023-11-30T01:00:01.000Z'),
                 readAt: undefined,
                 senderContactUid: contactUid1,
             });
             createTextMessage(db, {
-                id: 2n,
-                conversationUid: conversationUid2,
+                id: 12n,
+                conversationUid: c1Uid,
+                createdAt: new Date('2023-11-30T01:00:02.000Z'),
+                processedAt: new Date('2023-11-30T01:00:03.000Z'),
+                readAt: undefined,
+                senderContactUid: contactUid1,
+            });
+
+            createTextMessage(db, {
+                id: 21n,
+                conversationUid: c2Uid,
+                createdAt: new Date('2023-11-30T01:00:00.000Z'),
+                processedAt: new Date('2023-11-30T01:00:00.000Z'),
                 readAt: new Date(),
                 senderContactUid: contactUid2,
-            });
-            createTextMessage(db, {
-                id: 3n,
-                conversationUid: conversationUid1,
-                readAt: undefined,
-                senderContactUid: contactUid1,
             });
 
             // Latest message should be filtered per-conversation
             // TODO(DESK-296): Test proper ordering
-            expect(db.getLastMessage(conversationUid1)?.id).to.equal(3n);
-            expect(db.getLastMessage(conversationUid2)?.id).to.equal(2n);
+            expect(db.getLastMessage(c1Uid)?.id).to.equal(12n);
+            expect(db.getLastMessage(c2Uid)?.id).to.equal(21n);
         });
     });
 
@@ -1197,11 +1198,15 @@ export function backendTests(
                 id: 1000n,
                 conversationUid: conversation.uid,
                 text: 'Aaa',
+                createdAt: new Date('2023-11-30T01:00:00.000Z'),
+                processedAt: new Date('2023-11-30T01:00:01.000Z'),
             });
             const messageUid2 = createTextMessage(db, {
                 id: 2000n,
                 conversationUid: conversation.uid,
                 text: 'Aaa',
+                createdAt: new Date('2023-11-30T01:00:02.000Z'),
+                processedAt: new Date('2023-11-30T01:00:03.000Z'),
             });
 
             // Ensure messages exist
@@ -1708,7 +1713,7 @@ export function backendTests(
         });
 
         describe('getSortedMessageUids', function () {
-            it('returns the correct UIDs', function () {
+            it('returns correctly sorted UIDs by ordinal', function () {
                 const contactUid = makeContact(db, {identity: 'TESTTEST'});
                 const conversation = db.getConversationOfReceiver({
                     type: ReceiverType.CONTACT,
@@ -1720,8 +1725,19 @@ export function backendTests(
 
                 const messageUids = new Map<MessageId, DbMessageUid>();
 
-                // Add 1000 incoming messages
-                for (let i = 0; i < 1000; i++) {
+                // Add latest message first to ensure order by UID or `processedAt` is different
+                messageUids.set(
+                    ensureMessageId(1000n),
+                    createTextMessage(db, {
+                        id: 1000n,
+                        conversationUid: conversation.uid,
+                        text: 'a message',
+                        processedAt: new Date(now.getTime() + 1001 * 10),
+                    }),
+                );
+
+                // Add 999 incoming messages
+                for (let i = 1; i < 1000; i++) {
                     const messageId = ensureMessageId(1000n + BigInt(i));
                     const messageUid = createTextMessage(db, {
                         id: messageId,
@@ -1748,12 +1764,12 @@ export function backendTests(
                 expect(
                     db.getSortedMessageUids(
                         conversation.uid,
-                        new Set([ensureMessageId(1000n), ensureMessageId(1999n)]),
+                        new Set([ensureMessageId(1000n), ensureMessageId(1001n)]),
                     ),
                     'simple case',
                 ).to.deep.equal([
+                    messageUids.get(ensureMessageId(1001n)),
                     messageUids.get(ensureMessageId(1000n)),
-                    messageUids.get(ensureMessageId(1999n)),
                 ]);
 
                 // All message IDs
@@ -1763,10 +1779,10 @@ export function backendTests(
                 );
                 expect(allUids.length, 'all message IDs (size)').to.equal(messageUids.size);
                 expect(allUids.at(0), 'all message IDs (oldest)').to.equal(
-                    messageUids.get(ensureMessageId(1000n)),
+                    messageUids.get(ensureMessageId(1001n)),
                 );
                 expect(allUids.at(-1), 'all message IDs (newest)').to.equal(
-                    messageUids.get(ensureMessageId(1999n)),
+                    messageUids.get(ensureMessageId(1000n)),
                 );
 
                 // Mixed incoming and outgoing

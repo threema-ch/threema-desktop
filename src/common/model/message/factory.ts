@@ -79,7 +79,7 @@ export const MESSAGE_FACTORY: MessageFactory = {
 
     createDbMessage: <TDirection extends MessageDirection, TType extends MessageType>(
         services: ServicesForModel,
-        common: Omit<DbMessageCommon<TType>, 'uid' | 'type'>,
+        common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal'>,
         init: DirectedMessageFor<TDirection, TType, 'init'>,
     ): DbMessageFor<TType> => {
         switch (init.type) {
