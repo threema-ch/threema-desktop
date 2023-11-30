@@ -12,5 +12,5 @@ export interface ContextMenuProps {
     readonly handleBeforeOpen: ((event?: MouseEvent) => void) | undefined;
     readonly triggerBehavior: TriggerBehavior;
     readonly popover: SvelteNullableBinding<Popover>;
-    readonly virtualTrigger: VirtualRect | undefined;
+    readonly reference: SvelteNullableBinding<HTMLElement | VirtualRect> | undefined;
 }

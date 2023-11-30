@@ -14,11 +14,13 @@
 <div class="section">
   {#if title !== undefined}
     <div class="title">
-      <Text text={title} />
+      <Text text={title} emphasis="low" />
     </div>
   {/if}
 
-  <slot />
+  <div class="content">
+    <slot />
+  </div>
 </div>
 
 <style lang="scss">
@@ -32,11 +34,11 @@
     }
 
     .title {
-      @extend %font-small-400;
-      padding: rem(10px) rem(16px) rem(4px);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 2.4px;
+      padding: rem(14px) rem(16px);
+    }
+
+    .content {
+      // padding: 0 rem(12px) 0 rem(24px);
     }
   }
 </style>
