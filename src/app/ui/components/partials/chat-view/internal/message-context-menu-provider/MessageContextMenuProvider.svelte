@@ -6,10 +6,8 @@
   import {afterUpdate, createEventDispatcher} from 'svelte';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
-  import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
-  import MenuItemDivider from '#3sc/components/generic/Menu/MenuItemDivider.svelte';
   import {globals} from '~/app/globals';
+  import ContextMenu from '~/app/ui/components/hocs/context-menu/ContextMenu.svelte';
   import {
     extractHrefFromEventTarget,
     extractSelectedTextFromEventTarget,
@@ -18,8 +16,8 @@
   import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/props';
   import type {MessageContextMenuItem} from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import type {VirtualRect} from '~/app/ui/generic/popover';
-  import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import type {AnchorPoint, VirtualRect} from '~/app/ui/generic/popover';
+  import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
@@ -31,6 +29,28 @@
   export let boundary: $$Props['boundary'] = undefined;
   export let enabledOptions: $$Props['enabledOptions'];
   export let placement: $$Props['placement'];
+  const anchorPoints: AnchorPoint =
+    placement === 'right'
+      ? {
+          reference: {
+            horizontal: 'left',
+            vertical: 'bottom',
+          },
+          popover: {
+            horizontal: 'left',
+            vertical: 'top',
+          },
+        }
+      : {
+          reference: {
+            horizontal: 'right',
+            vertical: 'bottom',
+          },
+          popover: {
+            horizontal: 'right',
+            vertical: 'top',
+          },
+        };
 
   let popover: SvelteNullableBinding<Popover> = null;
   let virtualTrigger: VirtualRect | undefined = undefined;
@@ -221,61 +241,25 @@
     <slot name="message" />
   </div>
 
-  <Popover
-    bind:this={popover}
+  <ContextMenu
+    bind:popover
     reference={virtualTrigger}
-    container={boundary ?? undefined}
-    anchorPoints={placement === 'right'
-      ? {
-          reference: {
-            horizontal: 'left',
-            vertical: 'bottom',
-          },
-          popover: {
-            horizontal: 'left',
-            vertical: 'top',
-          },
-        }
-      : {
-          reference: {
-            horizontal: 'right',
-            vertical: 'bottom',
-          },
-          popover: {
-            horizontal: 'right',
-            vertical: 'top',
-          },
-        }}
+    {boundary}
+    {anchorPoints}
+    {handleBeforeOpen}
+    items={menuItems}
     offset={{left: 0, top: 4}}
     triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
-    beforeOpen={handleBeforeOpen}
     on:clicktrigger={handleClickTrigger}
     on:hasclosed
     on:hasopened
     on:willclose
     on:willopen
   >
-    <button slot="trigger" class="caret">
+    <button class="caret" slot="trigger">
       <MdIcon theme="Outlined">expand_more</MdIcon>
     </button>
-
-    <div class="menu" slot="popover">
-      <MenuContainer mode="small">
-        {#each menuItems as item}
-          {#if item === 'divider'}
-            <MenuItemDivider />
-          {:else}
-            <MenuItem on:click={item.handler}>
-              <span class={`icon ${item.color}`} slot="icon">
-                <MdIcon theme={item.filled === true ? 'Filled' : 'Outlined'}>{item.icon}</MdIcon>
-              </span>
-              <span>{item.label}</span>
-            </MenuItem>
-          {/if}
-        {/each}
-      </MenuContainer>
-    </div>
-  </Popover>
+  </ContextMenu>
 </div>
 
 <style lang="scss">
