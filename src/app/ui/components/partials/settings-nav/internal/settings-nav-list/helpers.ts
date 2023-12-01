@@ -43,7 +43,7 @@ export function getSettingsInformationMap(
             ),
         },
         about: {
-            title: i18n.t(`settings.label--About`, 'About'),
+            title: i18n.t(`settings.label--about`, 'About'),
             icon: 'info',
             subText: '',
         },

@@ -143,7 +143,7 @@
             {/if}
           {/if}
           <KeyValueList.ItemWithButton
-            key={$i18n.t('settings.profile-settings.label--threema-id', 'Threema ID')}
+            key={$i18n.t('settings--profile-settings.label--threema-id', 'Threema ID')}
             icon="content_copy"
             on:click={() => copyToClipboard($profile.identity)}
           >

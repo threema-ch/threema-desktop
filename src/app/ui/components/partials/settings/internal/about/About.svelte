@@ -105,7 +105,7 @@
   <div>
     <KeyValueList>
       <KeyValueList.Section
-        title={$i18n.t('settings--about.label-version-title', 'Version Information')}
+        title={$i18n.t('settings--about.label--version-title', 'Version Information')}
       >
         <KeyValueList.Item
           key={$i18n.t('settings--about.label--application-name', 'Application Name')}
@@ -134,7 +134,7 @@
         </KeyValueList.Item>
       </KeyValueList.Section>
       <KeyValueList.Section
-        title={$i18n.t('settings--about.label-troubleshooting', 'Troubleshooting')}
+        title={$i18n.t('settings--about.label--troubleshooting', 'Troubleshooting')}
       >
         {#if isLoggerEnabled !== undefined && logInfo !== undefined}
           <!--Change this to switch @TODO (DESK-1255)-->
@@ -195,7 +195,7 @@
       <!--Change this to switch @TODO (DESK-1255)-->
 
       {#if showToggleDebugMode}
-        <KeyValueList.Section title={$i18n.t('settings--about.label-debug', 'Debug')}>
+        <KeyValueList.Section title={$i18n.t('settings--about.label--debug', 'Debug')}>
           <KeyValueList.ItemWithButton
             icon="bug_report"
             on:click={() => {
