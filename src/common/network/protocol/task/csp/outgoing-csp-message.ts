@@ -279,12 +279,10 @@ export class OutgoingCspMessageTask<
         if (this._reflect && isConversationMessage && sentMessagesCount > 0) {
             // TODO(DESK-323): Do this asynchronously?
             const conversationId = conversationIdForReceiver(this._receiver);
-            const task = new ReflectOutgoingMessageUpdateTask(this._services, [
-                {
-                    messageId,
-                    conversation: conversationId,
-                },
-            ]);
+            const task = new ReflectOutgoingMessageUpdateTask(this._services, {
+                messageId,
+                conversation: conversationId,
+            });
             reflectDate = await task.run(handle);
         } else {
             this._log.debug(`Skip reflecting sent state of ${messageTypeDebug} message.`);

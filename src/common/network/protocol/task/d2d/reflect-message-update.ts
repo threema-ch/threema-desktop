@@ -1,6 +1,4 @@
-import {ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {AnyReceiver} from '~/common/model';
 import type * as protobuf from '~/common/network/protobuf';
 import {
     ConversationId as D2dConversationId,
@@ -16,7 +14,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
 import type {ConversationId, MessageId} from '~/common/network/types';
-import {unreachable} from '~/common/utils/assert';
+import {groupArray} from '~/common/utils/array';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -27,83 +25,34 @@ interface UniqueMessageId {
     readonly conversation: ConversationId;
 }
 
-abstract class ReflectMessageUpdateTaskBase {
-    public readonly type: ActiveTaskSymbol = ACTIVE_TASK;
-    public readonly transaction = undefined;
-
-    protected readonly _log: Logger;
-
-    public constructor(
-        services: Pick<ServicesForTasks, 'logging'>,
-        direction: 'incoming' | 'outgoing',
-        protected readonly _uniqueMessageIds: UniqueMessageId[],
-    ) {
-        this._log = services.logging.logger(
-            `network.protocol.task.reflect-${direction}-message-update`,
-        );
-    }
-
-    public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<Date> {
-        const messageUpdate = this._getEnvelope();
-        this._log.info(
-            `Reflecting message update for referenced message(s): ${this._uniqueMessageIds
-                .map((msg) => u64ToHexLe(msg.messageId))
-                .join(',')}`,
-        );
-        const [reflectDate] = await handle.reflect([messageUpdate]);
-        return reflectDate;
-    }
-
-    /**
-     * Get a {@link ConversationId.Type} instance for a {@link DbReceiverLookup}.
-     */
-    protected _getConversationId(receiver: AnyReceiver): D2dConversationId.Type {
-        const baseProps = {
-            contact: undefined,
-            distributionList: undefined,
-            group: undefined,
-        };
-        switch (receiver.type) {
-            case ReceiverType.CONTACT:
-                return {
-                    ...baseProps,
-                    id: 'contact',
-                    contact: receiver.view.identity,
-                };
-            case ReceiverType.GROUP:
-                return {
-                    ...baseProps,
-                    id: 'group',
-                    group: {
-                        groupId: receiver.view.groupId,
-                        creatorIdentity: receiver.view.creatorIdentity,
-                    },
-                };
-            case ReceiverType.DISTRIBUTION_LIST:
-                // TODO(DESK-237): Support distribution lists
-                throw new Error('Receiver type not yet supported');
-            default:
-                return unreachable(receiver);
-        }
-    }
-
-    protected abstract _getEnvelope(): protobuf.d2d.IEnvelope;
-}
-
 /**
  * Send an OutgoingMessageUpdate.
  *
  * Currently, the update is hardcoded to "sent".
  */
 export class ReflectOutgoingMessageUpdateTask
-    extends ReflectMessageUpdateTaskBase
     implements ComposableTask<ActiveTaskCodecHandle<'volatile'>, Date>
 {
+    public readonly type: ActiveTaskSymbol = ACTIVE_TASK;
+    public readonly transaction = undefined;
+
+    protected readonly _log: Logger;
     public constructor(
         services: Pick<ServicesForTasks, 'logging'>,
-        uniqueMessageIds: UniqueMessageId[],
+        private readonly _uniqueMessageId: UniqueMessageId,
     ) {
-        super(services, 'outgoing', uniqueMessageIds);
+        this._log = services.logging.logger(
+            `network.protocol.task.reflect-outgoing-message-update`,
+        );
+    }
+
+    public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<Date> {
+        const messageUpdate = this._getEnvelope();
+        this._log.info(
+            `Reflecting message update for referenced message: ${this._uniqueMessageId.messageId}`,
+        );
+        const [reflectDate] = await handle.reflect([messageUpdate]);
+        return reflectDate;
     }
 
     protected _getEnvelope(): protobuf.d2d.IEnvelope {
@@ -113,15 +62,17 @@ export class ReflectOutgoingMessageUpdateTask
     }
 
     private _getValidatedSentMessage(): OutgoingMessageUpdate.Type {
-        const updates = this._uniqueMessageIds.map((uniqueMessageId) => ({
-            messageId: uniqueMessageId.messageId,
-            conversation: D2dConversationId.fromCommonConversationId(uniqueMessageId.conversation),
-            update: 'sent' as const,
-            sent: {},
-        }));
-        return {
-            updates,
-        };
+        const updates = [
+            {
+                messageId: this._uniqueMessageId.messageId,
+                conversation: D2dConversationId.fromCommonConversationId(
+                    this._uniqueMessageId.conversation,
+                ),
+                update: 'sent' as const,
+                sent: {},
+            },
+        ];
+        return {updates};
     }
 }
 
@@ -130,39 +81,53 @@ export class ReflectOutgoingMessageUpdateTask
  *
  * Currently, the update is hardcoded to "read".
  */
-export class ReflectIncomingMessageUpdateTask
-    extends ReflectMessageUpdateTaskBase
-    implements ActiveTask<Date, 'persistent'>
-{
+export class ReflectIncomingMessageUpdateTask implements ActiveTask<void, 'persistent'> {
     public readonly persist = true;
+    public readonly type: ActiveTaskSymbol = ACTIVE_TASK;
+    public readonly transaction = undefined;
+
+    protected readonly _log: Logger;
+
+    private readonly _chunkSize = 512;
 
     public constructor(
         services: Pick<ServicesForTasks, 'logging'>,
-        uniqueMessageIds: UniqueMessageId[],
+        private readonly _uniqueMessageIds: UniqueMessageId[],
         private readonly _timestamp: Date,
     ) {
-        super(services, 'incoming', uniqueMessageIds);
+        this._log = services.logging.logger(
+            `network.protocol.task.reflect-incoming-message-update`,
+        );
     }
 
-    protected _getEnvelope(): protobuf.d2d.IEnvelope {
-        const validatedMessage = this._getValidatedSentMessage();
+    public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
+        for (const group of groupArray(this._uniqueMessageIds, this._chunkSize)) {
+            const messageUpdate = this._getEnvelope(group);
+            this._log.info(`Reflecting a chunk of ${group.length} message updates`);
+            this._log.debug(
+                `Reflecting message update for referenced message(s): ${group
+                    .map((msg) => u64ToHexLe(msg.messageId))
+                    .join(',')}`,
+            );
+            await handle.reflect([messageUpdate]);
+        }
+    }
+
+    protected _getEnvelope(group: UniqueMessageId[]): protobuf.d2d.IEnvelope {
+        const validatedMessage = this._getValidatedSentMessage(group);
         const incomingMessageUpdate = IncomingMessageUpdate.serialize(validatedMessage);
         return {incomingMessageUpdate};
     }
 
-    private _getValidatedSentMessage(): IncomingMessageUpdate.Type {
-        const updates: IncomingMessageUpdate.Type['updates'] = this._uniqueMessageIds.map(
-            (uniqueMessageId) => ({
-                messageId: uniqueMessageId.messageId,
-                conversation: D2dConversationId.fromCommonConversationId(
-                    uniqueMessageId.conversation,
-                ),
-                update: 'read',
-                read: {
-                    at: this._timestamp,
-                },
-            }),
-        );
+    private _getValidatedSentMessage(group: UniqueMessageId[]): IncomingMessageUpdate.Type {
+        const updates: IncomingMessageUpdate.Type['updates'] = group.map((uniqueMessageId) => ({
+            messageId: uniqueMessageId.messageId,
+            conversation: D2dConversationId.fromCommonConversationId(uniqueMessageId.conversation),
+            update: 'read',
+            read: {
+                at: this._timestamp,
+            },
+        }));
         return {
             updates,
         };
