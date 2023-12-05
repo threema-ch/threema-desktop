@@ -33,4 +33,4 @@
 - [ ] Implemented feature works as intended
 
 
-<!-- Workflow reminders: https://confluence.threema.ch/display/EN/Desktop+MR+Workflow -->
+<!-- Workflow reminders: https://docs.threema.ch/doc/desktop-mr-workflow-afAgx0wptk -->
