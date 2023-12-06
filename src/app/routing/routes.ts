@@ -385,14 +385,6 @@ export const ROUTE_DEFINITIONS = {
                 template: '/',
             },
         }),
-        profile: defineMain({
-            id: 'profile',
-            params: undefined,
-            path: {
-                match: new RegExp('^/profile/$', 'u'),
-                template: '/profile/',
-            },
-        }),
         conversation: defineMain({
             id: 'conversation',
             params: PARAM_RECEIVER_LOOKUP_SCHEMA,

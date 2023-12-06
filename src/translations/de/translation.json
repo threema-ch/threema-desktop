@@ -399,7 +399,13 @@
     "label--theme": "Theme",
     "label--threema-id": "Threema-ID",
     "label--threema-work-username": "Threema Work-Benutzername",
-    "label--typing-indicator": "Melden, wenn ich tippe"
+    "label--title": "Einstellungen",
+    "label--typing-indicator": "Melden, wenn ich tippe",
+    "prose--appearance-settings": "Theme, Sprache, Stundenformat",
+    "prose--call-settings": "Threema-Anrufe, Videoanrufe, Gruppenanrufe",
+    "prose--privacy-settings": "Kontakte, Chats, Listen",
+    "prose--profile-settings": "ThreemaiID",
+    "prose--security-settings": "Passwort"
   },
   "system": {
     "error--check-internet-and-retry": "Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",

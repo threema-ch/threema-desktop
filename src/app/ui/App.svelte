@@ -5,7 +5,8 @@
   import type {AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
-  import ProfileSettings from '~/app/ui/components/partials/profile-settings/ProfileSettings.svelte';
+  import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
+  import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
   import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
   import MainWelcome from '~/app/ui/main/Welcome.svelte';
@@ -79,6 +80,9 @@
       case 'contactAddDetails':
         navPanelComponent = NavContactAddDetail;
         break;
+      case 'settingsList':
+        navPanelComponent = NavSettingsList;
+        break;
       default:
         unreachable($router.nav, new Error('Unhandled nav panel router state'));
     }
@@ -89,8 +93,8 @@
       case 'conversation':
         mainPanelComponent = MainConversation;
         break;
-      case 'profile':
-        mainPanelComponent = ProfileSettings;
+      case 'settings':
+        mainPanelComponent = Settings;
         break;
       default:
         unreachable($router.main, new Error('Unhandled main panel router state'));

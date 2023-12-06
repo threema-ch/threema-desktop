@@ -399,7 +399,13 @@
     "label--theme": "Theme",
     "label--threema-id": "Threema ID",
     "label--threema-work-username": "Threema Work Username",
-    "label--typing-indicator": "Typing Indicator"
+    "label--title": "Settings",
+    "label--typing-indicator": "Typing Indicator",
+    "prose--appearance-settings": "Theme, Language, Hour Format",
+    "prose--call-settings": "Threema Calls, Video Calls, Group Calls",
+    "prose--privacy-settings": "Contacts, Chats, Lists",
+    "prose--profile-settings": "Threema ID",
+    "prose--security-settings": "Password"
   },
   "system": {
     "error--check-internet-and-retry": "Please check your internet connection and try again.",
