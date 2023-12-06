@@ -324,7 +324,7 @@ export class Router extends WritableStore<RouterState> {
         const aside = this._getAside(receiverLookup, options?.keepAsidePanelOpen ?? false);
 
         this.go(
-            this.get().nav,
+            ROUTE_DEFINITIONS.nav.conversationList.withoutParams(),
             ROUTE_DEFINITIONS.main.conversation.withTypedParams({
                 receiverLookup,
                 preloadedFiles: fileInformation,
