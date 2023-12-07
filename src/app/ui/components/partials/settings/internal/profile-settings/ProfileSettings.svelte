@@ -19,8 +19,7 @@
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
-  import type {ProfileSettings, ProfileSettingsView} from '~/common/model/types/settings';
-  import type {RemoteModelStore} from '~/common/model/utils/model-store';
+  import type {ProfileSettingsView} from '~/common/model/types/settings';
   import type {IdentityString} from '~/common/network/types';
   import {unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
@@ -33,11 +32,11 @@
   export let services: $$Props['services'];
 
   const {
-    backend: {viewModel, model},
+    backend: {viewModel},
+    settings: {profile: profileSettings},
   } = services;
 
-  let profile: Remote<ProfileViewModelStore>;
-  let profileSettings: RemoteModelStore<ProfileSettings> | undefined;
+  let profileViewModelStore: Remote<ProfileViewModelStore>;
 
   let modalState: 'none' | 'profile-picture' | 'public-key' = 'none';
   let profilePictureShareWithItems: ContextMenuItem[];
@@ -45,15 +44,11 @@
   void viewModel
     .profile()
     .then((loadedProfile) => {
-      profile = loadedProfile;
+      profileViewModelStore = loadedProfile;
     })
     .catch((error) => {
       log.error('Loading profile view model failed', error);
     });
-
-  void model.user.profileSettings
-    .then((settings) => (profileSettings = settings))
-    .catch(() => log.error('Failed to load profile settings model'));
 
   function handleClickProfilePicture(): void {
     modalState = 'profile-picture';
@@ -69,7 +64,7 @@
 
   function handleClickCopyThreemaId(): void {
     navigator.clipboard
-      .writeText($profile.identity)
+      .writeText($profileViewModelStore.identity)
       .catch(() => log.error('Failed to copy Threema ID to clipboard'));
 
     toast.addSimpleSuccess(
@@ -78,19 +73,16 @@
   }
 
   function handleChangeProfileSettings(settings: typeof $profileSettings, t: typeof $i18n.t): void {
-    if (settings === undefined) {
-      return;
-    }
-
     const sharedArray: Readonly<IdentityString[]> =
-      settings.view.profilePictureShareWith.group === 'allowList'
-        ? settings.view.profilePictureShareWith.allowList
+      $profileSettings.view.profilePictureShareWith.group === 'allowList'
+        ? $profileSettings.view.profilePictureShareWith.allowList
         : [];
 
+    const dropdown = getProfilePictureShareWithDropdown($i18n, sharedArray);
     profilePictureShareWithItems = createDropdownItems<
       ProfileSettingsView,
       ProfilePictureShareWith
-    >(getProfilePictureShareWithDropdown($i18n, sharedArray), updateSetting);
+    >(dropdown, updateSetting);
   }
 
   function updateSetting<N extends keyof ProfileSettingsView>(
@@ -98,17 +90,18 @@
     updateKey: N,
   ): void {
     profileSettings
-      ?.get()
+      .get()
       .controller.update({[updateKey]: newValue})
-      .catch(() => log.error(`Failed to update settings: ${updateKey}`));
+      .catch(() => log.error(`Failed to update setting: ${updateKey}`));
   }
 
   $: handleChangeProfileSettings($profileSettings, $i18n.t);
 </script>
 
 <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
-{#if profile !== undefined}
+{#if $profileViewModelStore !== undefined}
   <div class="profile">
+    <!-- eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -->
     <KeyValueList>
       <KeyValueList.Section
         title={$i18n.t(
@@ -118,46 +111,46 @@
       >
         <KeyValueList.Item key="">
           <ProfileInfo
-            color={$profile.profilePicture.color}
-            displayName={$profile.displayName}
-            initials={$profile.initials}
-            pictureBytes={$profile.profilePicture.picture}
+            color={$profileViewModelStore.profilePicture.color}
+            displayName={$profileViewModelStore.displayName}
+            initials={$profileViewModelStore.initials}
+            pictureBytes={$profileViewModelStore.profilePicture.picture}
             on:clickprofilepicture={handleClickProfilePicture}
           />
         </KeyValueList.Item>
+
         {#if import.meta.env.BUILD_VARIANT === 'work'}
           <KeyValueList.Item
             key={$i18n.t('settings.label--threema-work-username', 'Threema Work Username')}
           >
-            <Text text={$profile.workUsername ?? '-'} />
+            <Text text={$profileViewModelStore.workUsername ?? '-'} selectable={true} />
           </KeyValueList.Item>
         {/if}
-        {#if $profileSettings !== undefined}
-          <!--Not implemented yet-->
-          {#if import.meta.env.DEBUG}
-            <KeyValueList.ItemWithDropdown
-              options={{disabled: false}}
-              key={`🐞 ${$i18n.t(
-                'settings--profile.label--profile-picture-visibility',
-                'Who can see your profile picture?',
-              )}`}
-              items={profilePictureShareWithItems}
-            >
-              <Text
-                text={getProfilePictureShareWithDropdownLabel(
-                  $profileSettings.view.profilePictureShareWith.group,
-                  $i18n,
-                )}
-              ></Text>
-            </KeyValueList.ItemWithDropdown>
-          {/if}
+
+        <!--Not implemented yet-->
+        {#if import.meta.env.DEBUG}
+          <KeyValueList.ItemWithDropdown
+            options={{disabled: false}}
+            key={`🐞 ${$i18n.t(
+              'settings--profile.label--profile-picture-visibility',
+              'Who can see your profile picture?',
+            )}`}
+            items={profilePictureShareWithItems}
+          >
+            <Text
+              text={getProfilePictureShareWithDropdownLabel(
+                $profileSettings.view.profilePictureShareWith.group,
+                $i18n,
+              )}
+            ></Text>
+          </KeyValueList.ItemWithDropdown>
         {/if}
         <KeyValueList.ItemWithButton
           key={$i18n.t('settings--profile.label--threema-id', 'Threema ID')}
           icon="content_copy"
           on:click={handleClickCopyThreemaId}
         >
-          <Text text={$profile.identity} />
+          <Text text={$profileViewModelStore.identity} />
         </KeyValueList.ItemWithButton>
 
         <KeyValueList.ItemWithButton
@@ -177,13 +170,13 @@
 {:else if modalState === 'profile-picture'}
   <ProfilePictureModal
     alt={$i18n.t('settings.hint--own-profile-picture', 'My profile picture')}
-    color={$profile.profilePicture.color}
-    initials={$profile.initials}
-    pictureBytes={$profile.profilePicture.picture}
+    color={$profileViewModelStore.profilePicture.color}
+    initials={$profileViewModelStore.initials}
+    pictureBytes={$profileViewModelStore.profilePicture.picture}
     on:close={handleCloseModal}
   />
 {:else if modalState === 'public-key'}
-  <PublicKeyModal publicKey={$profile.publicKey} on:close={handleCloseModal} />
+  <PublicKeyModal publicKey={$profileViewModelStore.publicKey} on:close={handleCloseModal} />
 {:else}
   {unreachable(modalState)}
 {/if}

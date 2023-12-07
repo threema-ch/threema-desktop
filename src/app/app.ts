@@ -32,6 +32,7 @@ import {createEndpointService} from '~/common/dom/utils/endpoint';
 import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
+import type {SettingsService} from '~/common/model/types/settings';
 import type {u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
@@ -359,6 +360,23 @@ async function main(): Promise<() => void> {
         requestUserPassword,
     );
 
+    const [profileSettings, appearanceSettings, privacySettings, devicesSettings, callsSettings] =
+        await Promise.all([
+            backend.model.user.profileSettings,
+            backend.model.user.appearanceSettings,
+            backend.model.user.privacySettings,
+            backend.model.user.devicesSettings,
+            backend.model.user.callsSettings,
+        ]);
+
+    const settings: SettingsService = {
+        profile: profileSettings,
+        appearance: appearanceSettings,
+        privacy: privacySettings,
+        devices: devicesSettings,
+        calls: callsSettings,
+    };
+
     // Create app services
     const services: AppServices = {
         config: CONFIG,
@@ -372,6 +390,7 @@ async function main(): Promise<() => void> {
         systemInfo,
         backend,
         router,
+        settings,
     };
     systemDialogsAppServices.set(services);
 
