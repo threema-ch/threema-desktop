@@ -11,6 +11,7 @@
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import About from '~/app/ui/components/partials/settings/internal/about/About.svelte';
   import AppearanceSettings from '~/app/ui/components/partials/settings/internal/appearance-settings/AppearanceSettings.svelte';
+  import DevicesSettings from '~/app/ui/components/partials/settings/internal/devices-settings/DevicesSettings.svelte';
   import ProfileSettings from '~/app/ui/components/partials/settings/internal/profile-settings/ProfileSettings.svelte';
   import SecuritySettings from '~/app/ui/components/partials/settings/internal/security-settings/SecuritySettings.svelte';
   import type {SettingsProps} from '~/app/ui/components/partials/settings/props';
@@ -68,6 +69,10 @@
       security: {
         title: $i18n.t('settings--security.label--title', 'Security Settings'),
         component: SecuritySettings,
+      },
+      devices: {
+        title: $i18n.t('settings--devices-settings.label--title', 'Devices Settings'),
+        component: DevicesSettings,
       },
     };
   }

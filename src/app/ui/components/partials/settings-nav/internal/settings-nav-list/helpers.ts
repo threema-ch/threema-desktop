@@ -33,6 +33,14 @@ export function getSettingsNavItems(
             iconName: 'lock',
             subtitle: i18n.t('settings--security.prose--subtitle', 'Password'),
         },
+        devices: {
+            title: i18n.t('settings.label--devices', 'Devices'),
+            iconName: 'computer',
+            subtitle: i18n.t(
+                'settings--devices-settings.prose--subtitle',
+                'Devices linked to your Threema ID',
+            ),
+        },
         appearance: {
             title: i18n.t(`settings.label--appearance`, 'Appearance'),
             iconName: 'palette',

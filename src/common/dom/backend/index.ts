@@ -60,6 +60,7 @@ import {
 import {createLoggerStyle, type Logger, type LoggerFactory} from '~/common/logging';
 import type {Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
+import {DEFAULT_DEVICE_NAME} from '~/common/model/types/settings';
 import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -1553,7 +1554,13 @@ class Connection {
         taskManager: ConnectedTaskManager,
         getCaptureHandlers: () => RawCaptureHandlers | undefined,
     ): Promise<Connection> {
-        const {config, crypto, device, logging} = services;
+        const {
+            config,
+            crypto,
+            device,
+            logging,
+            model: {user},
+        } = services;
         const log = logging.logger(`connection.${taskManager.id}`, connectionLoggerStyle);
         const connectionState = ConnectionStateUtils.createStore(
             MonotonicEnumStore,
@@ -1609,8 +1616,7 @@ class Connection {
                 deviceId: device.d2m.deviceId,
                 deviceSlotExpirationPolicy: protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT,
                 platformDetails: d2mPlatformDetails,
-                // TODO(DESK-773): Make this user-configurable
-                label: `${import.meta.env.APP_NAME} for Desktop`,
+                label: user.devicesSettings.get().view.deviceName ?? DEFAULT_DEVICE_NAME,
             },
             // D2D
             {

@@ -69,9 +69,10 @@ interface ModalAction {
 interface ModalButton {
     readonly disabled?: boolean;
     /**
-     * Whether the button should get autofocused as soon as it's rendered. Note: This should only be
-     * set on one button if you have multiple, as it could lead to unexpected behavior otherwise,
-     * because only one element can be focused at a time.
+     * Whether the button should get autofocused as soon as it's rendered.
+     *
+     * Note: This should only be set on one button if you have multiple, as it could lead to
+     * unexpected behavior otherwise, because only one element can be focused at a time.
      */
     readonly isFocused?: boolean;
     readonly label: string;
