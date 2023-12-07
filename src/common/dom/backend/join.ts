@@ -232,7 +232,7 @@ export class DeviceJoinProtocol {
             profilePicture,
             profilePictureShareWith: essentialData.userProfile.profilePictureShareWith,
         };
-        repositories.user.profileSettings.get().controller.update(profile);
+        await repositories.user.profileSettings.get().controller.update(profile);
 
         // Contacts and groups
         await this._restoreContacts(essentialData.contacts, repositories);

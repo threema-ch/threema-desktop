@@ -82,7 +82,7 @@ export interface CallsSettingsView {
 export type CallsSettingsUpdate = Partial<CallsSettingsView>;
 export type CallsSettingsController = {
     readonly meta: ModelLifetimeGuard<CallsSettingsView>;
-    readonly update: (change: CallsSettingsUpdate) => void;
+    readonly update: (change: CallsSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type CallsSettings = LocalModel<CallsSettingsView, CallsSettingsController>;
 

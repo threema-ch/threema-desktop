@@ -2037,6 +2037,68 @@ export namespace KeyboardDataCollectionPolicyUtils {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
     }
 }
+export namespace TimeFormat {
+    export const USE_24HOUR_TIME = 0;
+    export type USE_24HOUR_TIME = typeof USE_24HOUR_TIME;
+    export const DONT_USE_24HOUR_TIME = 1;
+    export type DONT_USE_24HOUR_TIME = typeof DONT_USE_24HOUR_TIME;
+}
+/** @generate convert */
+export type TimeFormat = (typeof TimeFormat)[keyof typeof TimeFormat];
+export namespace TimeFormatUtils {
+    export const ALL: ReadonlySet<TimeFormat> = new Set([
+        TimeFormat.USE_24HOUR_TIME,
+        TimeFormat.DONT_USE_24HOUR_TIME,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: TimeFormat): TimeFormat {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as TimeFormat;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid TimeFormat`);
+    }
+    export function containsNumber(value: u53): value is TimeFormat {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is TimeFormat {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace InactiveContactsPolicy {
+    export const SHOW = 0;
+    export type SHOW = typeof SHOW;
+    export const HIDE = 1;
+    export type HIDE = typeof HIDE;
+}
+/** @generate convert **/
+export type InactiveContactsPolicy =
+    (typeof InactiveContactsPolicy)[keyof typeof InactiveContactsPolicy];
+export namespace InactiveContactsPolicyUtils {
+    export const ALL: ReadonlySet<InactiveContactsPolicy> = new Set([
+        InactiveContactsPolicy.SHOW,
+        InactiveContactsPolicy.HIDE,
+    ] as const);
+    export function fromNumber(
+        value: u53,
+        fallback?: InactiveContactsPolicy,
+    ): InactiveContactsPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as InactiveContactsPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid InactiveContactsPolicy`);
+    }
+    export function containsNumber(value: u53): value is InactiveContactsPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is InactiveContactsPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
 export namespace ElectronIpcCommand {
     export const ERROR = 'error';
     export type ERROR = typeof ERROR;

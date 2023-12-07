@@ -1,5 +1,11 @@
 import type {ProfilePictureView} from '~/common/model/types/profile-picture';
-import type {CallsSettings, PrivacySettings, ProfileSettings} from '~/common/model/types/settings';
+import type {
+    AppearanceSettings,
+    CallsSettings,
+    DevicesSettings,
+    PrivacySettings,
+    ProfileSettings,
+} from '~/common/model/types/settings';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
@@ -12,4 +18,6 @@ export type User = {
     readonly profileSettings: LocalModelStore<ProfileSettings>;
     readonly privacySettings: LocalModelStore<PrivacySettings>;
     readonly callsSettings: LocalModelStore<CallsSettings>;
+    readonly devicesSettings: LocalModelStore<DevicesSettings>;
+    readonly appearanceSettings: LocalModelStore<AppearanceSettings>;
 } & ProxyMarked;

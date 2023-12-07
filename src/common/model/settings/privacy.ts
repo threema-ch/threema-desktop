@@ -17,7 +17,8 @@ export class PrivacySettingsModelController implements PrivacySettingsController
 
     public constructor(private readonly _services: ServicesForModel) {}
 
-    public update(change: PrivacySettingsUpdate): void {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async update(change: PrivacySettingsUpdate): Promise<void> {
         this.meta.update((view) =>
             this._services.db.setSettings('privacy', {
                 ...view,

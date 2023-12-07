@@ -973,7 +973,7 @@ export function run(): void {
                 addTestUserToFakeDirectory(directory, user1);
 
                 // Set privacy to block unknown
-                model.user.privacySettings.get().controller.update({
+                await model.user.privacySettings.get().controller.update({
                     unknownContactPolicy: UnknownContactPolicy.BLOCK_UNKNOWN,
                 });
 
@@ -1009,7 +1009,7 @@ export function run(): void {
                 const contact2 = addTestUserAsContact(model, user2);
 
                 // Block user2
-                model.user.privacySettings.get().controller.update({
+                await model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user2.identity.string]},
                 });
 
@@ -1112,7 +1112,7 @@ export function run(): void {
                 expect(model.groups.getByUid(group.ctx)?.get()?.view.name).to.equal('AAA');
 
                 // Block creator contact
-                model.user.privacySettings.get().controller.update({
+                await model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [creator.identity.string]},
                 });
 
@@ -1155,7 +1155,7 @@ export function run(): void {
                 expect(conversation.get().controller.getAllMessages().get().size).to.equal(0);
 
                 // Block contact
-                model.user.privacySettings.get().controller.update({
+                await model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user1.identity.string]},
                 });
 

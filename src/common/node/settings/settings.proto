@@ -148,3 +148,26 @@ message CallsSettings {
     optional CallConnectionPolicy call_connection_policy = 2;
 
   }
+
+// Devices Settings
+message DevicesSettings {
+  // The name of the local device
+  optional string deviceName = 1;
+}
+
+// Appearance Settings
+message AppearanceSettings {
+  // Time format (12h vs 24h display)
+  enum TimeFormat {
+    USE_24HOUR_TIME = 0;
+    DONT_USE_24HOUR_TIME = 1;
+  }
+  optional TimeFormat time_format = 1;
+
+  // Whether to show or hide inactive contacts
+  enum HideInactive {
+    SHOW = 0;
+    HIDE = 1;
+  }
+  optional HideInactive inactive_contacts_policy = 2;
+}

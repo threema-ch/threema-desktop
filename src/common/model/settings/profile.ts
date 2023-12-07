@@ -24,7 +24,8 @@ export class ProfileSettingsModelController implements ProfileSettingsController
 
     public constructor(private readonly _services: ServicesForModel) {}
 
-    public update(change: ProfileSettingsUpdate): void {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    public async update(change: ProfileSettingsUpdate): Promise<void> {
         this.meta.update((view) =>
             this._services.db.setSettings('profile', {
                 ...view,

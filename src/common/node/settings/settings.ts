@@ -167,6 +167,30 @@ export const enum CallsSettings_CallConnectionPolicy {
     UNRECOGNIZED = -1,
 }
 
+/** Devices Settings */
+export interface DevicesSettings {
+    /** The name of the local device */
+    deviceName?: string | undefined;
+}
+
+/** Appearance Settings */
+export interface AppearanceSettings {
+    timeFormat?: AppearanceSettings_TimeFormat | undefined;
+    inactiveContactsPolicy?: AppearanceSettings_HideInactive | undefined;
+}
+
+export const enum AppearanceSettings_TimeFormat {
+    USE_24HOUR_TIME = 0,
+    DONT_USE_24HOUR_TIME = 1,
+    UNRECOGNIZED = -1,
+}
+
+export const enum AppearanceSettings_HideInactive {
+    SHOW = 0,
+    HIDE = 1,
+    UNRECOGNIZED = -1,
+}
+
 function createBaseUnit(): Unit {
     return {};
 }
@@ -512,6 +536,88 @@ export const CallsSettings = {
                     }
 
                     message.callConnectionPolicy = reader.int32() as any;
+                    continue;
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
+        }
+        return message;
+    },
+};
+
+function createBaseDevicesSettings(): DevicesSettings {
+    return {deviceName: undefined};
+}
+
+export const DevicesSettings = {
+    encode(message: DevicesSettings, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+        if (message.deviceName !== undefined) {
+            writer.uint32(10).string(message.deviceName);
+        }
+        return writer;
+    },
+
+    decode(input: _m0.Reader | Uint8Array, length?: number): DevicesSettings {
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseDevicesSettings();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
+                    message.deviceName = reader.string();
+                    continue;
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
+        }
+        return message;
+    },
+};
+
+function createBaseAppearanceSettings(): AppearanceSettings {
+    return {timeFormat: undefined, inactiveContactsPolicy: undefined};
+}
+
+export const AppearanceSettings = {
+    encode(message: AppearanceSettings, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+        if (message.timeFormat !== undefined) {
+            writer.uint32(8).int32(message.timeFormat);
+        }
+        if (message.inactiveContactsPolicy !== undefined) {
+            writer.uint32(16).int32(message.inactiveContactsPolicy);
+        }
+        return writer;
+    },
+
+    decode(input: _m0.Reader | Uint8Array, length?: number): AppearanceSettings {
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseAppearanceSettings();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    if (tag !== 8) {
+                        break;
+                    }
+
+                    message.timeFormat = reader.int32() as any;
+                    continue;
+                case 2:
+                    if (tag !== 16) {
+                        break;
+                    }
+
+                    message.inactiveContactsPolicy = reader.int32() as any;
                     continue;
             }
             if ((tag & 7) === 4 || tag === 0) {

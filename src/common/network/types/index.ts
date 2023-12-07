@@ -60,6 +60,25 @@ export function ensureNickname(nickname: string): Nickname {
     return nickname;
 }
 
+export type DeviceName = WeakOpaque<string, {readonly deviceName: unique symbol}>;
+
+/**
+ * Type guard for {@link DeviceName}.
+ */
+export function isDeviceName(deviceName: unknown): deviceName is DeviceName {
+    return typeof deviceName === 'string' && deviceName.length > 0;
+}
+
+/**
+ * Ensure input is a valid {@link Nickname}.
+ */
+export function ensureDeviceName(deviceName: string): DeviceName {
+    if (!isDeviceName(deviceName)) {
+        throw new Error(`Not a valid device name: '${deviceName}'`);
+    }
+    return deviceName;
+}
+
 /**
  * The client's Threema ID as ASCII bytes.
  */

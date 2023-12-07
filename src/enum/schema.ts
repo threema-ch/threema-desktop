@@ -637,6 +637,17 @@ export enum KeyboardDataCollectionPolicy {
     DENY_DATA_COLLECTION = 1,
 }
 
+/** @generate convert */
+export enum TimeFormat {
+    USE_24HOUR_TIME = 0,
+    DONT_USE_24HOUR_TIME = 1,
+}
+
+/** @generate convert **/
+export enum InactiveContactsPolicy {
+    SHOW = 0,
+    HIDE = 1,
+}
 /**
  * ELECTRON
  * ========

@@ -72,7 +72,9 @@ import {
     ProfilePictureModelRepository,
     type ProfilePictureRepository,
 } from '~/common/model/profile-picture';
+import {AppearanceSettingsModelStore} from '~/common/model/settings/appearance';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
+import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import type {ContactRepository} from '~/common/model/types/contact';
@@ -80,10 +82,12 @@ import type {ConversationRepository} from '~/common/model/types/conversation';
 import type {GroupRepository} from '~/common/model/types/group';
 import type {AnyMessageModelStore} from '~/common/model/types/message';
 import type {
-    CallsSettings,
+    DevicesSettings,
     IGlobalPropertyRepository,
     PrivacySettings,
     ProfileSettings,
+    AppearanceSettings,
+    CallsSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -388,6 +392,8 @@ class UserRepository implements User {
     public profileSettings: LocalModelStore<ProfileSettings>;
     public privacySettings: LocalModelStore<PrivacySettings>;
     public callsSettings: LocalModelStore<CallsSettings>;
+    public devicesSettings: LocalModelStore<DevicesSettings>;
+    public appearanceSettings: LocalModelStore<AppearanceSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
@@ -397,6 +403,8 @@ class UserRepository implements User {
         });
         this.privacySettings = new PrivacySettingsModelStore(services, {});
         this.callsSettings = new CallsSettingsModelStore(services, {});
+        this.devicesSettings = new DevicesSettingsModelStore(services, {});
+        this.appearanceSettings = new AppearanceSettingsModelStore(services, {});
 
         this.displayName = derive(
             this.profileSettings,

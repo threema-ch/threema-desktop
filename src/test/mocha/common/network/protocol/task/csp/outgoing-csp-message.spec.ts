@@ -618,7 +618,7 @@ export function run(): void {
                 const user1store = addTestUserAsContact(model, user1);
 
                 // Block user2
-                model.user.privacySettings.get().controller.update({
+                await model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user1.identity.string]},
                 });
 
@@ -661,7 +661,7 @@ export function run(): void {
                 const user2store = addTestUserAsContact(model, user2);
 
                 // Block user2
-                model.user.privacySettings.get().controller.update({
+                await model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user2.identity.string]},
                 });
 
@@ -725,7 +725,7 @@ export function run(): void {
                 const user2store = addTestUserAsContact(model, user2);
 
                 // Block user2
-                model.user.privacySettings.get().controller.update({
+                await model.user.privacySettings.get().controller.update({
                     blockedIdentities: {identities: [user2.identity.string]},
                 });
 

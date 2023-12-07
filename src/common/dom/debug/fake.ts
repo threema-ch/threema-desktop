@@ -379,7 +379,7 @@ export async function generateScreenshotData(
 
     // Set own profile
     if (data.profile !== undefined) {
-        model.user.profileSettings.get().controller.update({
+        await model.user.profileSettings.get().controller.update({
             nickname: data.profile.nickname,
             profilePicture: data.profile.profilePicture,
             profilePictureShareWith: {group: 'everyone'},

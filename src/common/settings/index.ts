@@ -1,4 +1,6 @@
+import {APPEARANCE_SETTINGS_CODEC, type AppearanceSettings} from '~/common/settings/appearance';
 import {CALLS_SETTINGS_CODEC, type CallsSettings} from '~/common/settings/calls';
+import {DEVICES_SETTINGS_CODEC, type DeviceSettings} from '~/common/settings/devices';
 import {PRIVACY_SETTINGS_CODEC, type PrivacySettings} from '~/common/settings/privacy';
 import {PROFILE_SETTINGS_CODEC, type ProfileSettings} from '~/common/settings/profile';
 import type {u53} from '~/common/types';
@@ -11,6 +13,7 @@ const SETTINGS_CATEGORIES = [
     'security',
     'about',
     'appearance',
+    'devices',
 ] as const;
 
 /**
@@ -28,6 +31,8 @@ export interface Settings {
     readonly profile: ProfileSettings;
     readonly privacy: PrivacySettings;
     readonly calls: CallsSettings;
+    readonly devices: DeviceSettings;
+    readonly appearance: AppearanceSettings;
 }
 
 // Ensure that every key in `Settings` is a valid `SettingsCategory`
@@ -64,4 +69,6 @@ export const SETTINGS_CODEC: SettingsCategoryCodecs = {
     profile: PROFILE_SETTINGS_CODEC,
     privacy: PRIVACY_SETTINGS_CODEC,
     calls: CALLS_SETTINGS_CODEC,
+    devices: DEVICES_SETTINGS_CODEC,
+    appearance: APPEARANCE_SETTINGS_CODEC,
 } as const;
