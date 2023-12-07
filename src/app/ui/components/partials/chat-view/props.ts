@@ -13,6 +13,11 @@ import type {ConversationMessageSetViewModel} from '~/common/viewmodel/conversat
 export interface ChatViewProps {
     /** Details about the conversation. */
     readonly conversation: MessageProps['conversation'] & {
+        /**
+         * The `MessageId` of the first (i.e. earliest) message that is still unread in the
+         * conversation. Note: The `ChatView` will make sure this message is visible when the
+         * conversation is first loaded in the `ChatView`.
+         */
         readonly firstUnreadMessageId: MessageId | undefined;
         readonly id: DbConversationUid;
         readonly lastMessage:

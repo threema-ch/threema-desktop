@@ -5,12 +5,20 @@
   observing items that enter and exit the view.
 -->
 <script lang="ts" generics="TId, TProps">
-  import {createEventDispatcher, onDestroy, onMount} from 'svelte';
+  import {createEventDispatcher, onDestroy, onMount, tick} from 'svelte';
 
   import {intersection} from '~/app/ui/actions/intersection';
   import type {LazyListProps} from '~/app/ui/components/hocs/lazy-list/props';
-  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {waitForPresenceOfElement} from '~/app/ui/utils/element';
+  import {scrollIntoViewIfNeededAsync} from '~/app/ui/utils/scroll';
+  import {
+    createBufferedEventDispatcher,
+    reactive,
+    type SvelteNullableBinding,
+  } from '~/app/ui/utils/svelte';
   import type {u53} from '~/common/types';
+  import {ensureError} from '~/common/utils/assert';
+  import {AsyncLock} from '~/common/utils/lock';
   import {debounce} from '~/common/utils/timer';
 
   // Generic parameters are not yet recognized by the linter.
@@ -20,14 +28,14 @@
   type $$Props = LazyListProps<TId, TProps>;
 
   export let items: $$Props['items'];
-  export let lastItemId: $$Props['lastItemId'];
-  export let initiallyVisibleItemId: $$Props['initiallyVisibleItemId'] = undefined;
+  export let onError: $$Props['onError'] = undefined;
+  export let visibleItemId: $$Props['visibleItemId'] = undefined;
 
   const dispatch = createEventDispatcher<{
-    /** Dispatched when an item has fully entered the visible area of the chat. */
-    itementered: $$Props['items'][u53];
-    /** Dispatched when an item has fully exited the visible area of the chat. */
-    itemexited: $$Props['items'][u53];
+    /**
+     * Dispatched when an item was anchored (i.e. it was scrolled to or became the `visibleItem`).
+     */
+    itemanchored: $$Props['items'][u53];
     /**
      * Dispatched when the list is scrolled. Note: For performance reasons, this event is
      * debounced.
@@ -35,38 +43,135 @@
     scroll: {distanceFromBottomPx: u53};
   }>();
 
+  const [dispatchBuffered, suspendBufferedDispatcher, resumeBufferedDispatcher] =
+    createBufferedEventDispatcher<{
+      /** Dispatched when an item has fully entered the visible area of the chat. */
+      itementered: $$Props['items'][u53];
+      /** Dispatched when an item has fully exited the visible area of the chat. */
+      itemexited: $$Props['items'][u53];
+    }>();
+
+  const anchorLock = new AsyncLock();
+
   // Note: For some reason, with 1.0, the visibility is not being detected reliably.
   const anchorIntersectionThreshold = 0.9;
 
   let containerElement: SvelteNullableBinding<HTMLOListElement>;
+
+  let isGlobalAnchorEnabled = true;
+  let isItemAnchorEnabled = visibleItemId !== undefined;
   let isAtBottom = true;
 
   /**
-   * Scrolls the view to the item with the given id.
+   * Scrolls the view to the item with the given id. Note: If the item is not already present, the
+   * view will not scroll.
    */
-  // Generic parameters are not yet recognized by the linter.
-  // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
-  // and https://github.com/sveltejs/svelte-eslint-parser/issues/306
-  // eslint-disable-next-line no-undef
-  export function scrollToItem(id: TId, behavior: ScrollBehavior): void {
-    const itemElement = containerElement?.querySelector(`.item[data-item-id="${id}"]`) ?? undefined;
+  export async function scrollToItem(
+    // eslint-disable-next-line no-undef
+    id: TId,
+    options?: ScrollIntoViewOptions,
+  ): Promise<void> {
+    // Enqueue execution to avoid race conditions if another anchoring process is already in
+    // progress.
+    return await anchorLock.with(async () => {
+      const itemElement =
+        containerElement?.querySelector(`.item[data-item-id="${id}"]`) ?? undefined;
+      if (itemElement === undefined) {
+        return;
+      }
 
-    if (itemElement !== undefined) {
-      itemElement.scrollIntoView({
-        behavior,
-        block: 'end',
+      // Suspend global anchor, or autoscroll might not work if the view is at the very bottom.
+      isGlobalAnchorEnabled = false;
+      await tick();
+
+      // Because items entering or exiting the viewport are under observation, `itementered` and
+      // `itemexited` events might be triggered during automated scrolling, which in turn might
+      // result in additional items to be loaded or removed. As this might result in the browser
+      // ending up scrolling to the wrong place in the list, event dispatching is disabled during
+      // scroll, but the events will be buffered and sent when scrolling is finished.
+      suspendBufferedDispatcher();
+
+      // Scroll item into view and wait until scrolling is done.
+      await scrollIntoViewIfNeededAsync({
+        container: containerElement,
+        element: itemElement,
+        options,
+        timeoutMs: 3000,
+      }).catch((error) => {
+        onError?.(ensureError(error));
       });
-    }
+
+      // Resume event dispatcher and re-emit all buffered events to get the backend in sync.
+      resumeBufferedDispatcher({replay: 'all'});
+
+      // Re-enable global anchor.
+      isGlobalAnchorEnabled = true;
+      await tick();
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const item = items.find((i) => i.id === id);
+      if (item !== undefined) {
+        dispatch('itemanchored', item);
+      }
+    });
   }
 
-  /**
-   * Scrolls the view to the last item. Note: This won't be the last item in the items list, but the
-   * item where `id` equals the given `lastItemId`.
-   */
-  export function scrollToLast(behavior: ScrollBehavior): void {
-    if (containerElement !== null && lastItemId !== undefined) {
-      scrollToItem(lastItemId, behavior);
-    }
+  async function handleChangeVisibleItem(): Promise<void> {
+    // Enqueue execution to avoid race conditions if another anchoring process is already in
+    // progress.
+    return await anchorLock.with(async () => {
+      // If no item is to be made visible, do nothing.
+      if (visibleItemId === undefined) {
+        return;
+      }
+
+      // Enable item anchor to make it "sticky" while we wait for the element to appear and suspend
+      // global anchor, or autoscroll might not work if the view is at the very bottom.
+      isGlobalAnchorEnabled = false;
+      isItemAnchorEnabled = true;
+
+      // Explicitly set `isAtBottom` to `false`, because the target position will probably not be at
+      // the very bottom and this will be re-evaluated anyway.
+      isAtBottom = false;
+
+      // Wait for Svelte to apply changes to the DOM.
+      await tick();
+
+      // Wait until the element of the anchored item is present in the DOM.
+      await waitForPresenceOfElement({
+        container: containerElement,
+        selector: `.item[data-item-id="${visibleItemId}"]`,
+        subtree: false,
+        timeoutMs: 3000,
+      })
+        .then(
+          async (element) =>
+            // Scroll item into view if it isn't already and wait until scrolling is done.
+            await scrollIntoViewIfNeededAsync({
+              container: containerElement,
+              element,
+              options: {
+                behavior: 'instant',
+                block: 'start',
+              },
+              timeoutMs: 3000,
+            }),
+        )
+        .catch((error) => {
+          onError?.(ensureError(error));
+        });
+
+      // Disable item anchor and re-enable global anchor now that scrolling is finished.
+      isItemAnchorEnabled = false;
+      isGlobalAnchorEnabled = true;
+      await tick();
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const item = items.find((i) => i.id === visibleItemId);
+      if (item !== undefined) {
+        dispatch('itemanchored', item);
+      }
+    });
   }
 
   const handleScrollDebounced = debounce(
@@ -86,17 +191,17 @@
     false,
   );
 
-  $: defaultObserverOptions = {
+  $: itemObserverOptions = {
     root: containerElement,
     threshold: 0,
   };
 
-  $: lastObserverOptions = {
+  $: anchorObserverOptions = {
     root: containerElement,
     threshold: anchorIntersectionThreshold,
   };
 
-  $: shouldScrollToInitiallyVisible = initiallyVisibleItemId !== undefined;
+  $: void reactive(handleChangeVisibleItem, [visibleItemId]);
 
   onMount(() => {
     containerElement?.addEventListener('scroll', handleScrollDebounced);
@@ -107,54 +212,49 @@
   });
 </script>
 
-<ol
-  bind:this={containerElement}
-  class="list"
-  class:gluedbottom={isAtBottom && !shouldScrollToInitiallyVisible}
->
+<ol bind:this={containerElement} class="list">
   {#each items as item (item.id)}
     <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -->
     {@const {id} = item}
-    {@const isLast = lastItemId === id}
-    {@const isInitiallyVisible = initiallyVisibleItemId === id}
+    {@const isAnchored = isItemAnchorEnabled && visibleItemId === id}
 
     <li
       data-item-id={`${id}`}
       class="item"
-      class:last={isLast}
-      class:initiallyvisible={isInitiallyVisible}
-      class:gluedtop={isInitiallyVisible && shouldScrollToInitiallyVisible}
+      class:anchored={isAnchored}
       use:intersection={{
-        options: defaultObserverOptions,
+        options: itemObserverOptions,
       }}
       on:intersectionenter={(event) => {
-        if (isInitiallyVisible) {
-          shouldScrollToInitiallyVisible = false;
+        if (isAnchored) {
+          void anchorLock.with(async () => {
+            isItemAnchorEnabled = false;
+            return await Promise.resolve();
+          });
         }
-        dispatch('itementered', item);
+        dispatchBuffered('itementered', item);
       }}
       on:intersectionexit={() => {
-        dispatch('itemexited', item);
+        dispatchBuffered('itemexited', item);
       }}
     >
       <slot name="item" {item} />
     </li>
-
-    {#if isLast}
-      <span
-        use:intersection={{
-          options: lastObserverOptions,
-        }}
-        class="anchor"
-        on:intersectionenter={(event) => {
-          isAtBottom = event.detail.entry.intersectionRatio >= anchorIntersectionThreshold;
-        }}
-        on:intersectionexit={() => {
-          isAtBottom = false;
-        }}
-      />
-    {/if}
   {/each}
+
+  <span
+    use:intersection={{
+      options: anchorObserverOptions,
+    }}
+    class="global-anchor bottom"
+    class:anchored={isGlobalAnchorEnabled && isAtBottom}
+    on:intersectionenter={(event) => {
+      isAtBottom = event.detail.entry.intersectionRatio >= anchorIntersectionThreshold;
+    }}
+    on:intersectionexit={() => {
+      isAtBottom = false;
+    }}
+  />
 </ol>
 
 <style lang="scss">
@@ -168,22 +268,26 @@
     overscroll-behavior-y: contain;
     scroll-snap-type: y mandatory;
 
-    .anchor {
-      position: relative;
-      display: block;
-      height: rem(10px);
-      margin-top: rem(-10px);
-      visibility: hidden;
-    }
-
-    &.gluedbottom {
-      .anchor {
-        scroll-snap-align: end;
+    .item {
+      // Anchor the list.
+      &.anchored {
+        scroll-snap-align: start;
       }
     }
 
-    .item.gluedtop {
-      scroll-snap-align: start;
+    .global-anchor {
+      &.bottom {
+        position: relative;
+        display: block;
+        height: rem(10px);
+        margin-top: rem(-10px);
+        visibility: hidden;
+
+        // Anchor the list only if no item is anchoring the list.
+        &.anchored:not(:has(~ .item.anchored)) {
+          scroll-snap-align: end;
+        }
+      }
     }
   }
 </style>

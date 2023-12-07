@@ -63,6 +63,7 @@
       message-hover-background-color: rgba(#000000, 4%),
       message-background-color-incoming: theme.$grey-100,
       message-background-color-outgoing: -g($branding, primary-color-50),
+      message-highlight-backdrop-filter: brightness(70%),
       message-badge-color: rgb(71, 71, 71),
       message-badge-background-color: rgba(#ffffff, 74%),
       message-overlay-background-color: rgba(#000000, 38%),
@@ -76,6 +77,7 @@
       message-mention-me-background-color: -g($branding, primary-color-600),
       message-mention-me-color: #ffffff,
       message-quote-text-color: rgb(120, 120, 120),
+      message-quote-background-color--hover: rgba(0, 0, 0, 0.03),
       // File Message
       message-file-icon-background-image: url('/res/theme/light/icon/file.svg'),
       message-file-icon-width: em(32px),

@@ -16,16 +16,19 @@
 
   export let alt: $$Props['alt'];
   export let content: $$Props['content'] = undefined;
+  export let clickable: NonNullable<$$Props['clickable']> = false;
   export let file: $$Props['file'] = undefined;
   export let onError: $$Props['onError'];
   export let sender: $$Props['sender'] = undefined;
 </script>
 
-<div
+<button
   class={`quote ${sender?.color ?? 'default'} ${
     file === undefined ? '' : `${file.type}-container`
   }`}
   class:captioned={content !== undefined}
+  disabled={!clickable}
+  on:click
 >
   {#if sender !== undefined}
     <span class="sender">
@@ -41,10 +44,10 @@
     {:else if file.type === 'file'}
       <span class="file">
         <FileInfo
-          disabled={true}
           mediaType={file.mediaType}
           name={file.name}
           sizeInBytes={file.sizeInBytes}
+          disabled={!clickable}
         />
       </span>
     {:else if file.type === 'image' || file.type === 'video'}
@@ -70,8 +73,7 @@
             }}
             description={alt}
             dimensions={file.thumbnail.expectedDimensions}
-            disabled={true}
-            on:click={() => {}}
+            disabled={!clickable}
           />
         </span>
       {:else}
@@ -88,22 +90,27 @@
       <Prose {content} wrap={true} selectable={true} />
     </div>
   {/if}
-</div>
+</button>
 
 <style lang="scss">
   @use 'component' as *;
 
   .quote {
+    @extend %neutral-input;
+    text-align: start;
+
     position: relative;
     display: grid;
     grid-template:
       'sender' min-content
       'preview' 1fr
       / auto;
+    align-items: center;
     column-gap: rem(24px);
     row-gap: 0;
     min-height: rem(40px);
     padding-left: rem(10px);
+    width: 100%;
 
     &.captioned {
       grid-template:
@@ -137,7 +144,7 @@
       left: 0;
       top: rem(5px);
       width: var(--mc-message-quote-border-width);
-      height: calc(100% - rem(8px));
+      height: calc(100% - rem(10px));
       border-radius: calc(var(--mc-message-quote-border-width) / 2);
       // Default quote bar is the same as the text color.
       background-color: var(--mc-message-quote-text-color);
@@ -145,6 +152,7 @@
 
     .sender {
       grid-area: sender;
+      line-height: 1em;
     }
 
     .thumbnail {
@@ -189,8 +197,13 @@
     &:not(.captioned) {
       .thumbnail,
       .audio {
-        padding: rem(4px) 0;
+        margin: rem(4px) 0;
       }
+    }
+
+    &:not(:disabled),
+    &:global(:not(:disabled) *) {
+      cursor: pointer;
     }
   }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
-  import {validateFiles} from 'threema-svelte-components/src/utils/filelist';
+  import {validateFiles} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import {
     type ForwardedMessageLookup,

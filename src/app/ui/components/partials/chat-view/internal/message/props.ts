@@ -33,6 +33,11 @@ export interface MessageProps {
             readonly direction: 'upload' | 'download' | undefined;
         };
     };
+    /**
+     * Whether to play an animation to bring attention to the message. Resets to `false` when the
+     * animation is completed.
+     */
+    readonly highlighted?: BasicMessageProps['highlighted'];
     readonly id: MessageId;
     readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
     readonly reactions: BasicMessageProps['reactions'];

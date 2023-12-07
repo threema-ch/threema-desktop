@@ -1,12 +1,13 @@
 /**
  * A TypeScript async lock implemented with promise chaining.
  *
- * Usage:
- *
- *     this._lock.with(async () => {
- *         await doThing1();
- *         await doThing2(a);
- *     });
+ * @example
+ * ```ts
+ *   this._lock.with(async () => {
+ *       await doThing1();
+ *       await doThing2(a);
+ *   });
+ * ```
  */
 export class AsyncLock {
     private _queue: Promise<unknown> = Promise.resolve();

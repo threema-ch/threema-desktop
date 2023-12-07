@@ -105,6 +105,7 @@ $brandings: (
       --mc-message-hover-background-color: -g($mc, message-hover-background-color),
       --mc-message-background-color-incoming: -g($mc, message-background-color-incoming),
       --mc-message-background-color-outgoing: -g($mc, message-background-color-outgoing),
+      --mc-message-highlight-backdrop-filter: -g($mc, message-highlight-backdrop-filter),
       --mc-message-badge-color: -g($mc, message-badge-color),
       --mc-message-badge-background-color: -g($mc, message-badge-background-color),
       --mc-message-overlay-background-color: -g($mc, message-overlay-background-color),
@@ -119,6 +120,7 @@ $brandings: (
       --mc-message-mention-me-color: -g($mc, message-mention-me-color),
       --mc-message-quote-border-width: rem(2px),
       --mc-message-quote-text-color: -g($mc, message-quote-text-color),
+      --mc-message-quote-background-color--hover: -g($mc, message-quote-background-color--hover),
 
       // File Message
       --mc-message-file-icon-background-image: -g($mc, message-file-icon-background-image),

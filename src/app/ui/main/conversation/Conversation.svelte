@@ -183,7 +183,10 @@
     conversationListEvent.post({action: 'scroll-to-top'});
 
     // Scroll chat view all the way to the bottom to display the sent message.
-    chatViewComponent.scrollToLast('instant');
+    void chatViewComponent.scrollToLast({
+      behavior: 'instant',
+      block: 'end',
+    });
   }
 
   function updateComposeData(

@@ -26,6 +26,7 @@
   export let content: $$Props['content'] = undefined;
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
+  export let highlighted: $$Props['highlighted'] = undefined;
   export let onError: $$Props['onError'];
   export let options: NonNullable<$$Props['options']> = {};
   export let quote: $$Props['quote'] = undefined;
@@ -36,8 +37,13 @@
 
   const dispatch = createEventDispatcher<{
     clickfileinfo: undefined;
+    clickquote: undefined;
     clickthumbnail: undefined;
   }>();
+
+  function handleClickQuote(): void {
+    dispatch('clickquote');
+  }
 
   function handleClickFileInfo(): void {
     dispatch('clickfileinfo');
@@ -71,7 +77,12 @@
     file !== undefined && content === undefined ? ('preview' as const) : ('footer' as const);
 </script>
 
-<Bubble {direction} padding={file?.thumbnail === undefined ? 'normal' : 'thin'}>
+<Bubble
+  {direction}
+  {highlighted}
+  padding={file?.thumbnail === undefined ? 'normal' : 'thin'}
+  on:completehighlightanimation
+>
   <div class="body">
     {#if options.hideSender !== false && sender !== undefined && direction !== 'outbound'}
       <span class="sender">
@@ -89,7 +100,15 @@
       />
     {:else if quote !== undefined}
       <span class="quote">
-        <Quote {alt} content={quote.content} file={quote.file} {onError} sender={quote.sender} />
+        <Quote
+          {alt}
+          content={quote.content}
+          clickable={true}
+          file={quote.file}
+          {onError}
+          sender={quote.sender}
+          on:click={handleClickQuote}
+        />
       </span>
     {/if}
 
@@ -206,7 +225,7 @@
   .body {
     position: relative;
     display: flex;
-    align-items: start;
+    align-items: stretch;
     justify-content: start;
     flex-direction: column;
 
@@ -215,14 +234,19 @@
       &:has(~ .thumbnail) {
         padding: rem(1px) rem(8px) rem(2px);
       }
+
+      &:has(~ .quote) {
+        padding-bottom: rem(4px);
+      }
     }
 
     .text {
       @extend %font-normal-400;
     }
 
-    // If `.text` is a general-subsequent sibling of `.file`.
-    .file ~ .text {
+    // If `.text` is a general-subsequent sibling of `.file` or `.quote`.
+    .file ~ .text,
+    .quote ~ .text {
       padding-top: rem(8px);
     }
 
@@ -236,7 +260,37 @@
     }
 
     .quote {
-      padding-bottom: rem(4px);
+      position: relative;
+
+      &::before {
+        opacity: 0;
+        transition: opacity 0.1s ease-out;
+
+        content: '';
+        display: block;
+        position: absolute;
+        top: rem(-4px);
+        left: rem(-4px);
+        bottom: rem(-4px);
+        right: rem(-4px);
+        background-color: var(--mc-message-quote-background-color--hover);
+        border-radius: rem(10px);
+      }
+
+      &:hover {
+        cursor: pointer;
+
+        &::before {
+          opacity: 1;
+        }
+      }
+    }
+
+    .quote:first-child {
+      &::before {
+        left: rem(-6px);
+        right: rem(-6px);
+      }
     }
 
     .audio {

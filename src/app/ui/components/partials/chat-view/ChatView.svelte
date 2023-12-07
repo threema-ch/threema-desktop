@@ -3,7 +3,7 @@
   Renders a conversation as a chat view.
 -->
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
+  import {createEventDispatcher, tick} from 'svelte';
 
   import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
@@ -24,7 +24,6 @@
   import type {UnreadState, ModalState} from '~/app/ui/components/partials/chat-view/types';
   import {i18n} from '~/app/ui/i18n';
   import {reactive, type SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import type {DbConversationUid, DbReceiverLookup} from '~/common/db';
   import {appVisibility} from '~/common/dom/ui/state';
   import {MessageDirection} from '~/common/enum';
   import type {MessageId} from '~/common/network/types';
@@ -46,12 +45,11 @@
 
   let element: HTMLElement;
   let lazyListComponent: SvelteNullableBinding<LazyList<MessageId, MessagePropsFromBackend>> = null;
-
-  /**
-   * If this value is set, then the chat will scroll to the specified message.
-   */
-  let initiallyVisibleMessageId: MessageId | undefined = conversation.firstUnreadMessageId;
-  let viewport = new Viewport(log, messageSetViewModel.controller, initiallyVisibleMessageId);
+  let viewport = new Viewport(
+    log,
+    messageSetViewModel.controller,
+    conversation.firstUnreadMessageId,
+  );
 
   /**
    * Because the read state of messages is immediately propagated to the frontend as soon as it
@@ -63,29 +61,83 @@
     hasOutgoingMessageChangesSinceOpened: false,
   };
   let modalState: ModalState = {type: 'none'};
+
+  // Message that the chat view should be anchored to when it's (re-)initialized.
+  let anchoredMessageId: MessageId | undefined = conversation.firstUnreadMessageId;
+
+  // `MessageId` of the quote that was last clicked.
+  let lastClickedQuoteId: MessageId | undefined = undefined;
+
+  // `MessageId` of the message that should be highlighted with an animation as soon as it becomes
+  // visible.
+  let highlightedMessageId: MessageId | undefined = undefined;
+
   let isScrollToBottomButtonVisible = false;
+
+  /**
+   * Updates only if the value of `conversation.id` changes, not on every change of the
+   * `conversation` object.
+   */
+  let currentConversationId: $$Props['conversation']['id'] = conversation.id;
+  $: if (currentConversationId !== conversation.id) {
+    currentConversationId = conversation.id;
+  }
+
+  /**
+   * Updates only if the value of `conversation.lastMessage.id` changes, not on every change of the
+   * `conversation` object.
+   */
+  let currentLastMessage: $$Props['conversation']['lastMessage'] = conversation.lastMessage;
+  $: if (currentLastMessage?.id !== conversation.lastMessage?.id) {
+    currentLastMessage = conversation.lastMessage;
+  }
+
+  /**
+   * Updates only if the value of `conversation.receiverLookup` changes, not on every change of the
+   * `conversation` object.
+   */
+  let currentConversationReceiver: $$Props['conversation']['receiverLookup'] =
+    conversation.receiverLookup;
+  $: if (currentConversationReceiver !== conversation.receiverLookup) {
+    currentConversationReceiver = conversation.receiverLookup;
+  }
 
   /**
    * Scrolls the view to the message with the given id.
    */
-  export function scrollToMessage(
+  export async function scrollToMessage(
     id: MessagePropsFromBackend['id'],
-    behavior: ScrollBehavior,
-  ): void {
-    lazyListComponent?.scrollToItem(id, behavior);
+    options?: ScrollIntoViewOptions,
+  ): Promise<void> {
+    if (lazyListComponent === null) {
+      return;
+    }
+
+    // If the message is already loaded, scroll to it directly.
+    if (messagePropsStore.get().find((message) => message.id === id)) {
+      await lazyListComponent.scrollToItem(id, options);
+      return;
+    }
+
+    // If the message is not yet loaded, reinitialize the message list with the respective message
+    // `id` as the initially visible message.
+    await reinitialize(id);
   }
 
   /**
-   * Scrolls the view to the last item. Note: This won't be the last item in the items list, but the
-   * first item found with the `isLast` flag set to true. This means scrolling will only be executed
-   * if a message exists that has the `isLast` flag set to `true`.
+   * Scrolls the view to the last (i.e. latest) message in the chat.
    */
-  export function scrollToLast(behavior: ScrollBehavior): void {
-    lazyListComponent?.scrollToLast(behavior);
+  export async function scrollToLast(options?: ScrollIntoViewOptions): Promise<void> {
+    if (conversation.lastMessage !== undefined) {
+      await scrollToMessage(conversation.lastMessage.id, options);
+    }
   }
 
   function handleClickScrollToBottom(): void {
-    scrollToLast('smooth');
+    void scrollToLast({
+      behavior: 'smooth',
+      block: 'end',
+    });
   }
 
   function handleClickForwardOption(message: MessagePropsFromBackend): void {
@@ -153,6 +205,28 @@
     }
   }
 
+  function handleClickQuote(message: MessagePropsFromBackend): void {
+    switch (message.quote) {
+      case undefined:
+      case 'not-found':
+        log.error('Quote was clicked but it was either undefined or not found');
+        return;
+
+      default:
+        lastClickedQuoteId = message.quote.id;
+
+        void scrollToMessage(message.quote.id, {
+          behavior: 'smooth',
+          block: 'start',
+        });
+    }
+  }
+
+  function handleCompleteHighlightAnimation(): void {
+    lastClickedQuoteId = undefined;
+    highlightedMessageId = undefined;
+  }
+
   function handleCloseModal(): void {
     // Reset modal state.
     modalState = {
@@ -161,9 +235,8 @@
   }
 
   function handleChangeConversation(): void {
-    initiallyVisibleMessageId = conversation.firstUnreadMessageId;
-    viewport = new Viewport(log, messageSetViewModel.controller, initiallyVisibleMessageId);
-    rememberUnreadState();
+    void reinitialize(conversation.firstUnreadMessageId);
+    refreshUnreadState();
     markConversationAsRead();
   }
 
@@ -174,10 +247,13 @@
   }
 
   function handleChangeLastMessage(): void {
+    if (currentLastMessage === undefined) {
+      return;
+    }
+
+    const isOutbound = currentLastMessage.direction === MessageDirection.OUTBOUND;
     const hasOutgoingMessageChangesSinceOpened =
-      rememberedUnreadState.hasOutgoingMessageChangesSinceOpened
-        ? true
-        : currentLastMessage?.direction === MessageDirection.OUTBOUND;
+      rememberedUnreadState.hasOutgoingMessageChangesSinceOpened ? true : isOutbound;
 
     if ($appVisibility === 'focused') {
       /*
@@ -199,8 +275,30 @@
        * If app is in background, refresh the conversation state (i.e., get fresh unread info from
        * the back-end) to move the indicator to the right location.
        */
-      rememberUnreadState();
+      refreshUnreadState();
     }
+
+    // If the added message is outbound, bring it into view.
+    if (isOutbound) {
+      anchoredMessageId = currentLastMessage.id;
+    }
+  }
+
+  function handleLazyListError(error: Error): void {
+    log.error(`An error occurred in LazyList: ${error.message}`);
+  }
+
+  function handleItemAnchored(
+    event: CustomEvent<LazyListItemProps<MessageId, MessagePropsFromBackend>>,
+  ): void {
+    const messageId: MessageId = event.detail.id;
+
+    if (messageId === lastClickedQuoteId) {
+      highlightedMessageId = messageId;
+    }
+
+    // Reset `anchoredMessageId` so that the same message can be repeatedly anchored.
+    anchoredMessageId = undefined;
   }
 
   function handleItemEntered(
@@ -223,7 +321,20 @@
     }
   }
 
-  function rememberUnreadState(): void {
+  /**
+   * Trigger a full refresh of the message list.
+   */
+  async function reinitialize(initiallyVisibleMessageId?: MessageId): Promise<void> {
+    if (initiallyVisibleMessageId !== undefined) {
+      anchoredMessageId = initiallyVisibleMessageId;
+    }
+    await tick();
+
+    // Reinitializing `viewport` will result in the backend sending a new list of messages.
+    viewport = new Viewport(log, messageSetViewModel.controller, initiallyVisibleMessageId);
+  }
+
+  function refreshUnreadState(): void {
     rememberedUnreadState = {
       firstUnreadMessageId: conversation.firstUnreadMessageId,
       hasIncomingUnreadMessages: conversation.unreadMessagesCount > 0,
@@ -237,33 +348,6 @@
    */
   function markConversationAsRead(): void {
     conversation.markAllMessagesAsRead();
-  }
-
-  /**
-   * Updates only if the value of `conversation.id` changes, not on every change of the
-   * `conversation` object.
-   */
-  let currentConversationId: DbConversationUid;
-  $: if (currentConversationId !== conversation.id) {
-    currentConversationId = conversation.id;
-  }
-
-  /**
-   * Updates only if the value of `conversation.receiverLookup` changes, not on every change of the
-   * `conversation` object.
-   */
-  let currentConversationReceiver: DbReceiverLookup;
-  $: if (currentConversationReceiver !== conversation.receiverLookup) {
-    currentConversationReceiver = conversation.receiverLookup;
-  }
-
-  /**
-   * Updates only if the value of `conversation.lastMessage.id` changes, not on every change of the
-   * `conversation` object.
-   */
-  let currentLastMessage: $$Props['conversation']['lastMessage'];
-  $: if (currentLastMessage?.id !== conversation.lastMessage?.id) {
-    currentLastMessage = conversation.lastMessage;
   }
 
   $: messagePropsStore = messageSetViewModelToMessagePropsStore(
@@ -306,8 +390,9 @@
     <LazyList
       bind:this={lazyListComponent}
       items={$messagePropsStore}
-      lastItemId={currentLastMessage?.id}
-      initiallyVisibleItemId={initiallyVisibleMessageId}
+      onError={handleLazyListError}
+      visibleItemId={anchoredMessageId}
+      on:itemanchored={handleItemAnchored}
       on:itementered={handleItemEntered}
       on:itemexited={handleItemExited}
       on:scroll={handleScroll}
@@ -328,12 +413,15 @@
           {...item}
           boundary={element}
           {conversation}
+          highlighted={item.id === highlightedMessageId}
           {services}
           on:clickquoteoption={() => dispatch('clickquote', item)}
           on:clickforwardoption={() => handleClickForwardOption(item)}
           on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
           on:clickdeleteoption={() => dispatch('clickdelete', item)}
           on:clickthumbnail={() => handleClickThumbnail(item)}
+          on:clickquote={() => handleClickQuote(item)}
+          on:completehighlightanimation={handleCompleteHighlightAnimation}
         />
         <!-- eslint-enable @typescript-eslint/no-unsafe-argument -->
       </div>

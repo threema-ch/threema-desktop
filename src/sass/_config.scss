@@ -80,6 +80,7 @@ $config: config-merge(components.$config, (
       --mc-message-border-radius,
       --mc-message-background-color-incoming,
       --mc-message-background-color-outgoing,
+      --mc-message-highlight-backdrop-filter,
       --mc-message-badge-color,
       --mc-message-badge-background-color,
       --mc-message-overlay-background-color,
@@ -94,6 +95,7 @@ $config: config-merge(components.$config, (
       --mc-message-mention-me-color,
       --mc-message-quote-border-width,
       --mc-message-quote-text-color,
+      --mc-message-quote-background-color--hover,
 
       // File Message
       --mc-message-file-icon-background-image,

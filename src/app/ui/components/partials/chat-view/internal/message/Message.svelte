@@ -40,6 +40,7 @@
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'];
+  export let highlighted: $$Props['highlighted'] = undefined;
   export let quote: $$Props['quote'] = undefined;
   export let reactions: $$Props['reactions'];
   export let sender: $$Props['sender'] = undefined;
@@ -381,6 +382,7 @@
                 }}
             {direction}
             {file}
+            {highlighted}
             onError={(error) =>
               log.error(
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -398,6 +400,8 @@
             {timestamp}
             on:clickfileinfo={handleClickFileInfo}
             on:clickthumbnail
+            on:clickquote
+            on:completehighlightanimation
           />
         </svelte:fragment>
       </OverlayProvider>

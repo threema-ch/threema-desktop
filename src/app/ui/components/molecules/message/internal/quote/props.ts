@@ -9,6 +9,10 @@ export interface QuoteProps {
     readonly alt: MessageProps['alt'];
     /** Optional text content or caption of the message. */
     readonly content?: ProseProps['content'];
+    /**
+     * Whether clicking on the quote should be enabled. Defaults to `false`.
+     */
+    readonly clickable?: boolean;
     /** Optional file data, if this is a file-based message. */
     readonly file?: MessageProps['file'];
     readonly onError: (error: Error) => void;

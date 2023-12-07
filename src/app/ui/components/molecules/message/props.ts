@@ -1,5 +1,6 @@
 import type {AvatarProps} from '~/app/ui/components/atoms/avatar/props';
 import type {ProseProps} from '~/app/ui/components/atoms/prose/props';
+import type {BubbleProps} from '~/app/ui/components/molecules/message/internal/bubble/props';
 import type {FileInfoProps} from '~/app/ui/components/molecules/message/internal/file-info/props';
 import type {IndicatorProps} from '~/app/ui/components/molecules/message/internal/indicator/props';
 import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
@@ -39,6 +40,11 @@ export interface MessageProps {
         /** Type of the file, used to control how its preview will be rendered. */
         readonly type: 'audio' | 'file' | 'image' | 'video';
     };
+    /**
+     * Whether to play an animation to bring attention to the message. Resets to `false` when the
+     * animation is completed.
+     */
+    readonly highlighted?: BubbleProps['highlighted'];
     readonly onError: (error: Error) => void;
     readonly options?: {
         readonly hideSender?: boolean;
