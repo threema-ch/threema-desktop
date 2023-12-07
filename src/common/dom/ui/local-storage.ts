@@ -20,7 +20,6 @@ import {
 const KEYS = {
     theme: 'theme',
     locale: 'locale',
-    is24hTime: 'is-24h-time',
     debugPanelState: 'debug-panel-state',
     debugPanelHeight: 'debug-panel-height',
 } as const;
@@ -36,7 +35,6 @@ export class LocalStorageController {
     public readonly debugPanelHeight: IWritableStore<string> & ISubscribableStore<string>;
     public readonly theme: IWritableStore<Theme> & ISubscribableStore<Theme>;
     public readonly locale: IWritableStore<Locale> & IQueryableStore<Locale>;
-    public readonly is24hTime: IWritableStore<boolean> & ISubscribableStore<boolean>;
 
     public constructor(containers: HTMLElement[], systemLocale: string) {
         // Note: We can ignore the unsubscribers because we will also maintain a reference to the
@@ -78,12 +76,5 @@ export class LocalStorageController {
                 localStorage.setItem(KEYS.locale, locale);
             }
         });
-
-        // 24-hour time
-        // Always use 24-hour time if it isn't explicitly set to `false`.
-        this.is24hTime = new WritableStore(localStorage.getItem(KEYS.is24hTime) !== 'false');
-        this.is24hTime.subscribe((is24hTime) =>
-            localStorage.setItem(KEYS.is24hTime, is24hTime ? 'true' : 'false'),
-        );
     }
 }

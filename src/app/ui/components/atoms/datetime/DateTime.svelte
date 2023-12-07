@@ -1,9 +1,11 @@
 <script lang="ts">
   import {globals} from '~/app/globals';
   import type {DateTimeProps} from '~/app/ui/components/atoms/datetime/props';
+  import {enumToBool} from '~/app/ui/components/partials/settings/internal/appearance-settings/helpers';
   import {i18n} from '~/app/ui/i18n';
   import {reactive} from '~/app/ui/utils/svelte';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
+  import {DEFAULT_TIME_FORMAT} from '~/common/model/types/settings';
 
   const systemTime = globals.unwrap().systemTime;
 
@@ -14,13 +16,16 @@
   export let services: $$Props['services'];
 
   const {
-    storage: {is24hTime},
+    settings: {appearance},
   } = services;
 
   let formattedDate: string;
 
+  let is12hTime: boolean;
+  $: is12hTime = enumToBool(appearance.get().view.timeFormat ?? DEFAULT_TIME_FORMAT);
+
   $: reactive(() => {
-    formattedDate = formatDateLocalized(date, $i18n, format, {hour12: !$is24hTime});
+    formattedDate = formatDateLocalized(date, $i18n, format, {hour12: is12hTime});
   }, [$systemTime.current]);
 </script>
 
