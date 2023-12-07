@@ -41,13 +41,10 @@ export function filterUndefinedProperties<const R extends Record<string | u53 | 
  * Returns a copy of the provided object but only with the subset of properties defined in the
  * `props` parameter.
  */
-export function pick<T, K extends keyof T = keyof T>(
-    object: Readonly<Partial<T>>,
-    props: K[],
-): Partial<Pick<T, K>> {
+export function pick<T, K extends keyof T = keyof T>(object: Readonly<T>, props: K[]): Pick<T, K> {
     return Object.fromEntries(
         props.filter((key) => key in object).map((key) => [key, object[key]]),
-    ) as Partial<Pick<T, K>>;
+    ) as Pick<T, K>;
 }
 
 /**

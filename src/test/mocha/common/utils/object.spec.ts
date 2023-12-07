@@ -44,9 +44,9 @@ export function run(): void {
                 }
                 const o: Partial<A> = {a: 1, c: true};
                 expect(pick(o, ['a', 'b'])).to.be.deep.equal({a: 1});
-                expect(pick<A>(o, ['a', 'b'])).to.be.deep.equal({a: 1});
-                expect(pick<Aa>(o, ['a', 'd'])).to.be.deep.equal({a: 1});
-                expect(pick<Aa>(o, ['d'])).to.be.deep.equal({});
+                expect(pick<Partial<A>>(o, ['a', 'b'])).to.be.deep.equal({a: 1});
+                expect(pick<Partial<Aa>>(o, ['a', 'd'])).to.be.deep.equal({a: 1});
+                expect(pick<Partial<Aa>>(o, ['d'])).to.be.deep.equal({});
             });
         });
     });

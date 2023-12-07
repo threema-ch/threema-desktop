@@ -1619,27 +1619,33 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     sync(
                         this._db
                             .update(tMessageTextData)
-                            .set(pick<DbTextMessageFragment>(message, ['text', 'quotedMessageId']))
+                            .set(
+                                pick<Partial<DbTextMessageFragment>>(message, [
+                                    'text',
+                                    'quotedMessageId',
+                                ]),
+                            )
                             .where(tMessageTextData.messageUid.equals(message.uid))
                             .executeUpdate(),
                     );
                     return {deletedFileIds: []};
                 case MessageType.FILE: {
                     // Prepare update
-                    const update: UpdatableValues<typeof tMessageFileData> =
-                        pick<DbBaseFileMessageFragment>(message, [
-                            'blobId',
-                            'thumbnailBlobId',
-                            'blobDownloadState',
-                            'thumbnailBlobDownloadState',
-                            'encryptionKey',
-                            'mediaType',
-                            'thumbnailMediaType',
-                            'fileName',
-                            'fileSize',
-                            'caption',
-                            'correlationId',
-                        ]);
+                    const update: UpdatableValues<typeof tMessageFileData> = pick<
+                        Partial<DbBaseFileMessageFragment>
+                    >(message, [
+                        'blobId',
+                        'thumbnailBlobId',
+                        'blobDownloadState',
+                        'thumbnailBlobDownloadState',
+                        'encryptionKey',
+                        'mediaType',
+                        'thumbnailMediaType',
+                        'fileName',
+                        'fileSize',
+                        'caption',
+                        'correlationId',
+                    ]);
 
                     // Add, update or remove associated file data entries
                     const removedFileDataUids = this._processFileDataChanges(message, update);
@@ -1664,23 +1670,24 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 }
                 case MessageType.IMAGE: {
                     // Prepare update
-                    const update: UpdatableValues<typeof tMessageImageData> =
-                        pick<DbImageMessageFragment>(message, [
-                            'blobId',
-                            'thumbnailBlobId',
-                            'blobDownloadState',
-                            'thumbnailBlobDownloadState',
-                            'encryptionKey',
-                            'mediaType',
-                            'thumbnailMediaType',
-                            'fileName',
-                            'fileSize',
-                            'caption',
-                            'correlationId',
-                            'renderingType',
-                            'animated',
-                            'dimensions',
-                        ]);
+                    const update: UpdatableValues<typeof tMessageImageData> = pick<
+                        Partial<DbImageMessageFragment>
+                    >(message, [
+                        'blobId',
+                        'thumbnailBlobId',
+                        'blobDownloadState',
+                        'thumbnailBlobDownloadState',
+                        'encryptionKey',
+                        'mediaType',
+                        'thumbnailMediaType',
+                        'fileName',
+                        'fileSize',
+                        'caption',
+                        'correlationId',
+                        'renderingType',
+                        'animated',
+                        'dimensions',
+                    ]);
 
                     // Add, update or remove associated file data entries
                     const removedFileDataUids = this._processFileDataChanges(message, update);
@@ -1705,22 +1712,23 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 }
                 case MessageType.VIDEO: {
                     // Prepare update
-                    const update: UpdatableValues<typeof tMessageVideoData> =
-                        pick<DbVideoMessageFragment>(message, [
-                            'blobId',
-                            'thumbnailBlobId',
-                            'blobDownloadState',
-                            'thumbnailBlobDownloadState',
-                            'encryptionKey',
-                            'mediaType',
-                            'thumbnailMediaType',
-                            'fileName',
-                            'fileSize',
-                            'caption',
-                            'correlationId',
-                            'duration',
-                            'dimensions',
-                        ]);
+                    const update: UpdatableValues<typeof tMessageVideoData> = pick<
+                        Partial<DbVideoMessageFragment>
+                    >(message, [
+                        'blobId',
+                        'thumbnailBlobId',
+                        'blobDownloadState',
+                        'thumbnailBlobDownloadState',
+                        'encryptionKey',
+                        'mediaType',
+                        'thumbnailMediaType',
+                        'fileName',
+                        'fileSize',
+                        'caption',
+                        'correlationId',
+                        'duration',
+                        'dimensions',
+                    ]);
 
                     // Add, update or remove associated file data entries
                     const removedFileDataUids = this._processFileDataChanges(message, update);
@@ -1745,21 +1753,22 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 }
                 case MessageType.AUDIO: {
                     // Prepare update
-                    const update: UpdatableValues<typeof tMessageAudioData> =
-                        pick<DbAudioMessageFragment>(message, [
-                            'blobId',
-                            'thumbnailBlobId',
-                            'blobDownloadState',
-                            'thumbnailBlobDownloadState',
-                            'encryptionKey',
-                            'mediaType',
-                            'thumbnailMediaType',
-                            'fileName',
-                            'fileSize',
-                            'caption',
-                            'correlationId',
-                            'duration',
-                        ]);
+                    const update: UpdatableValues<typeof tMessageAudioData> = pick<
+                        Partial<DbAudioMessageFragment>
+                    >(message, [
+                        'blobId',
+                        'thumbnailBlobId',
+                        'blobDownloadState',
+                        'thumbnailBlobDownloadState',
+                        'encryptionKey',
+                        'mediaType',
+                        'thumbnailMediaType',
+                        'fileName',
+                        'fileSize',
+                        'caption',
+                        'correlationId',
+                        'duration',
+                    ]);
 
                     // Add, update or remove associated file data entries
                     const removedFileDataUids = this._processFileDataChanges(message, update);
