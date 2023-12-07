@@ -927,6 +927,7 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
             'pack',
             '/v',
             '/h', 'SHA512',
+            '/o',
             '/d', binaryDirPath,
             '/p', msixOutPath,
         ],
