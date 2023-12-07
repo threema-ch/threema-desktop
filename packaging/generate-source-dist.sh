@@ -102,14 +102,22 @@ log_major "Removing files not needed for source distribution"
 log_minor "Git history"
 find . -depth -name .git -exec rm -rf "{}" \;
 find . -name .gitmodules -type f -delete
+find . -name .gitignore -type f -delete
 find . -name .gitattributes -type f -delete
 log_minor "CI config"
 find . -name '.gitlab-ci*' -type f -delete
 find . -name '.travis.yml' -type f -delete
 find . -name 'appveyor.yml' -type f -delete
 find . -depth -name '.github' -type d -exec rm -rf "{}" \;
+find . -depth -name '.gitlab' -type d -exec rm -rf "{}" \;
 log_minor "Development"
 find . -depth -name .vscode -type d -exec rm -rf "{}" \;
+find . -depth -name .devcontainer -type d -exec rm -rf "{}" \;
+find . -depth -name .eslintrc.cjs -type f -delete
+find . -depth -name .eslintignore -type f -delete
+find . -depth -name .prettierrc.yml -type f -delete
+find . -depth -name .prettierignore -type f -delete
+find . -depth -name .editorconfig -type f -delete
 rm -f .git-pre-commit.sh
 log_minor "Third party documentation"
 find libs/node-argon2/ -depth -name latex -type d -exec rm -rf "{}" \;
