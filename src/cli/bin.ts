@@ -1,39 +1,157 @@
-import * as crypto from 'node:crypto';
-import * as fs from 'node:fs';
-import * as os from 'node:os';
+import {spawnSync} from 'node:child_process';
 import * as path from 'node:path';
+import * as process from 'node:process';
+import * as readline from 'node:readline/promises';
 
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {CONSOLE_LOGGER} from '~/common/logging';
+import {randomBytes} from '~/common/node/crypto/random';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
+import type {u53} from '~/common/types';
+import {assert, unreachable} from '~/common/utils/assert';
+import {bytesToHex} from '~/common/utils/byte';
 
-// TODO: Move into ~/common/node and use this in `backend-mocks.ts`
-export function randomBytes<T extends ArrayBufferView>(buffer: T): T {
-    // The Node.js crypto.getRandomValues API has a quota that cannot be exceeded, so we need to
-    // call it continuously until the buffer has been filled. See:
-    // https://nodejs.org/api/webcrypto.html#cryptogetrandomvaluestypedarray
-    const array =
-        buffer instanceof Uint8Array
-            ? buffer
-            : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-    const length = buffer.byteLength;
-    for (let offset = 0; offset < length; offset += 65536) {
-        crypto.getRandomValues(array.subarray(offset, offset + 65536));
+const COMMANDS = ['openSqlite'] as const;
+
+type Command = (typeof COMMANDS)[u53];
+
+const logger = CONSOLE_LOGGER;
+
+const USAGES: Record<Command, {readonly usage: string; readonly help: string}> = {
+    openSqlite: {
+        usage: '<profile-dir>',
+        help: 'Open the encrypted SQLite database with `sqlcipher`. Requires the `sqlcipher` binary on your system.',
+    },
+};
+
+function printUsage(entrypoint: string): void {
+    logger.info(`Usage: ${entrypoint} COMMAND <command-args>`);
+    logger.info();
+    logger.info('Commands:');
+    for (const command of COMMANDS) {
+        logger.info(`  ${command}: ${USAGES[command].help}`);
+        logger.info(`    Args: ${USAGES[command].usage}`);
     }
-    return buffer;
 }
 
-function main(): void {
-    // I just stole this from the tests, change this
-    const appPath = fs.mkdtempSync(path.join(os.tmpdir(), 'threema-desktop-test-'));
-    const keyStoragePath = path.join(appPath, 'key-storage.pb3');
-    const keyStorage = new FileSystemKeyStorage(
-        {
-            crypto: new TweetNaClBackend(randomBytes),
-        },
-        CONSOLE_LOGGER,
-        keyStoragePath,
-    );
-    CONSOLE_LOGGER.debug("Hi, I think I'm okay!", keyStorage);
+/**
+ * Parse command line arguments.
+ */
+function parseArgs(argv: readonly string[]): Command {
+    const node = argv[0];
+    const entrypoint = argv[1];
+    assert(node !== undefined && entrypoint !== undefined, 'argv does not include entrypoint');
+
+    // Handle --help
+    if (argv.includes('--help')) {
+        printUsage(entrypoint);
+        process.exit(1);
+    }
+
+    // Extract command
+    const command = argv[2];
+    if (command === undefined) {
+        printUsage(entrypoint);
+        process.exit(1);
+    }
+    for (const validCommand of COMMANDS) {
+        if (validCommand === command) {
+            return command;
+        }
+    }
+    logger.error(`Unknown command: ${command}`);
+    printUsage(entrypoint);
+    return process.exit(1);
 }
-main();
+
+async function main(): Promise<void> {
+    logger.info();
+    logger.info('▀█▀ █▄█ █▀▄ ██▀ ██▀ █▄ ▄█ ▄▀▄   ▄▀▀ █   █');
+    logger.info(' █  █ █ █▀▄ █▄▄ █▄▄ █ ▀ █ █▀█   ▀▄▄ █▄▄ █');
+    logger.info();
+
+    const command = parseArgs(process.argv);
+
+    switch (command) {
+        case 'openSqlite':
+            await runSqlite(process.argv.slice(3));
+            break;
+        default:
+            unreachable(command);
+    }
+}
+
+async function runSqlite(argv: string[]): Promise<void> {
+    const crypto = new TweetNaClBackend(randomBytes);
+
+    const profilePath = argv[0];
+    if (profilePath === undefined) {
+        logger.error('Please provide <profile-dir> parameter!');
+        return process.exit(1);
+    }
+
+    // Check for appropriate sqlcipher version
+    const checkVersionResult = spawnSync('sqlcipher', ['--version'], {encoding: 'utf-8'});
+    if (checkVersionResult.error !== undefined) {
+        logger.error(`Could not invoke \`sqlcipher\` binary: ${checkVersionResult.error}`);
+        logger.error('Please ensure that you have installed SQLCipher 4 on your system.');
+        return process.exit(1);
+    }
+    const checkVersionOutput = checkVersionResult.stdout.trim();
+    const sqlCipherVersion = checkVersionOutput.match(/\(SQLCipher (?<version>[^)]*)\)/u)?.groups
+        ?.version;
+    if (sqlCipherVersion === undefined) {
+        logger.error(`SQLCipher version detection failed: ${checkVersionOutput}`);
+        logger.error('Please ensure that you have installed SQLCipher 4 on your system.');
+        return process.exit(1);
+    }
+    logger.info(`Found sqlcipher version: ${sqlCipherVersion}`);
+    if (!sqlCipherVersion.startsWith('4.')) {
+        logger.error('Did not detect SQLCipher version 4.');
+        logger.error('Please ensure that you have installed SQLCipher 4 on your system.');
+        return process.exit(1);
+    }
+
+    // Open key storage
+    const keyStoragePath = path.join(profilePath, 'data', 'keystorage.pb3');
+    const keyStorage = new FileSystemKeyStorage({crypto}, logger, keyStoragePath);
+
+    // Prompt for password
+    //
+    // (Note: Prompting for a password seems to be non-trivial in native NodeJS, and I did not want
+    // to pull in a dependency for this...)
+    const rl = readline.createInterface({input: process.stdin, output: process.stdout});
+    const keyStoragePassword = await rl.question(
+        'Key storage password (WARNING, will be visible): ',
+    );
+    rl.close();
+
+    // Decrypt
+    const contents = await keyStorage.read(keyStoragePassword);
+    logger.info(`Loaded key storage for identity ${contents.identityData.identity}`);
+
+    // Run sqlcipher
+    const databasePath = path.join(profilePath, 'data', 'threema.sqlite');
+    const spawnResult = spawnSync(
+        'sqlcipher',
+        [
+            '-cmd',
+            'PRAGMA cipher_compatibility = 4',
+            '-cmd',
+            `PRAGMA key = "x'${bytesToHex(contents.databaseKey.unwrap())}'"`,
+            databasePath,
+        ],
+        {encoding: 'utf-8', stdio: 'inherit'},
+    );
+    if (spawnResult.status !== 0) {
+        logger.error('Subprocess failed:', spawnResult);
+    }
+    return undefined;
+}
+
+main()
+    .then(() => {})
+    .catch((error) => {
+        logger.error(`Command failed: ${error}`);
+        process.exit(1);
+    });

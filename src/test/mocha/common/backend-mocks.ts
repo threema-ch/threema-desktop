@@ -1,7 +1,7 @@
 /**
  * Mocked services and other aspects of the backend.
  */
-import {randomBytes} from 'node:crypto';
+import {randomBytes as nodeRandomBytes} from 'node:crypto';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -24,7 +24,7 @@ import {
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {deriveDeviceGroupKeys} from '~/common/crypto/device-group-keys';
 import type {INonceGuard, INonceService} from '~/common/crypto/nonce';
-import {type CryptoPrng, randomU64} from '~/common/crypto/random';
+import {randomU64} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import {
     type DatabaseBackend,
@@ -135,6 +135,7 @@ import {
 } from '~/common/network/types';
 import {type ClientKey, wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import {ZlibCompressor} from '~/common/node/compressor';
+import {randomBytes} from '~/common/node/crypto/random';
 import {SqliteDatabaseBackend} from '~/common/node/db/sqlite';
 import {FileSystemKeyStorage} from '~/common/node/key-storage';
 import {
@@ -201,7 +202,7 @@ const FAKE_PROXY_HANDLER = undefined as unknown as typeof PROXY_HANDLER;
 
 export const TEST_CONFIG = {
     /* eslint-disable @typescript-eslint/naming-convention */
-    CHAT_SERVER_KEY: ensurePublicKey(randomBytes(32)),
+    CHAT_SERVER_KEY: ensurePublicKey(nodeRandomBytes(32)),
     MEDIATOR_SERVER_URL: UNCONNECTABLE_URL,
     MEDIATOR_FRAME_MIN_BYTE_LENGTH: 4,
     MEDIATOR_FRAME_MAX_BYTE_LENGTH: 65536,
@@ -222,16 +223,7 @@ export const TEST_CONFIG = {
 
 export class TestTweetNaClBackend extends TweetNaClBackend {
     public constructor() {
-        // eslint-disable-next-line func-style
-        const crpytoPrng: CryptoPrng = (buffer) => {
-            const array =
-                buffer instanceof Uint8Array
-                    ? buffer
-                    : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-            array.set(randomBytes(array.byteLength));
-            return buffer;
-        };
-        super(crpytoPrng);
+        super(randomBytes);
     }
 }
 
@@ -564,13 +556,13 @@ const TEST_SYSTEM_DIALOG_SERVICE: Remote<SystemDialogService> = {
 export class TestBlobBackend implements BlobBackend {
     // eslint-disable-next-line @typescript-eslint/require-await
     public async upload(scope: BlobScope, data: EncryptedData): Promise<BlobId> {
-        return ensureBlobId(randomBytes(16));
+        return ensureBlobId(nodeRandomBytes(16));
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
     public async download(scope: BlobScope, id: BlobId): Promise<BlobDownloadResult> {
         return {
-            data: randomBytes(42) as Uint8Array as EncryptedData,
+            data: nodeRandomBytes(42) as Uint8Array as EncryptedData,
             // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-empty-function
             done: async (doneScope: BlobScope) => {},
         };
@@ -602,11 +594,11 @@ export function makeTestFileSystemKeyStorage(crypto: CryptoBackend): TestKeyStor
 
 export function makeTestServices(identity: IdentityString): TestServices {
     const nonces = new TestNonceService();
-    const rawClientKeyBytes: Uint8Array = randomBytes(32);
+    const rawClientKeyBytes: Uint8Array = nodeRandomBytes(32);
     const crypto = new TestTweetNaClBackend();
     const {keyStorage} = makeTestFileSystemKeyStorage(crypto);
     const logging = new TestLoggerFactory('mocha-test');
-    const rawDeviceGroupKey = wrapRawDeviceGroupKey(randomBytes(32));
+    const rawDeviceGroupKey = wrapRawDeviceGroupKey(nodeRandomBytes(32));
     const deviceGroupBoxes = deriveDeviceGroupKeys(crypto, rawDeviceGroupKey, nonces);
     const device: Device = {
         identity: new Identity(identity),
@@ -1022,7 +1014,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
 export function createClientKey(fromRawKey?: RawKey<32>): ClientKey {
     const crypto = new TestTweetNaClBackend();
     const nonces = new TestNonceService();
-    const rawKey = fromRawKey ?? wrapRawKey(randomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
+    const rawKey = fromRawKey ?? wrapRawKey(nodeRandomBytes(32), NACL_CONSTANTS.KEY_LENGTH);
     return SecureSharedBoxFactory.consume(crypto, nonces, NonceScope.CSP, rawKey) as ClientKey;
 }
 

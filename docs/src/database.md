@@ -65,6 +65,12 @@ Example (for the column `fileData` in the table `messagefileData`):
 CREATE UNIQUE INDEX messageFileDataUniqueFileData ON messageFileData(fileData);
 ```
 
+## Accessing Database During Development
+
+To connect directly to the SQLite database through the command line:
+
+    npm run dev:cli -- openSqlite <path-to-profile-directory>
+
 ## Validation of Insert Sets
 
 TypeScript interfaces only guarantee that certain fields are set, but not that certain fields are
