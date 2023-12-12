@@ -245,7 +245,7 @@ function printUsage(errormsg?: string): void {
     console.info('Usage: <target> [target-args]');
     console.info(`Possible targets: ${TARGETS}`);
     console.info(`\nTarget args:`);
-    console.info(`  source: [VERSION]`);
+    console.info(`  source: none`);
     console.info(`  flatpak: [FLAVORS] [--generate-deps-only]`);
     console.info(`  dmg: [FLAVORS]`);
     console.info(`  dmgSigned: [FLAVORS]`);
