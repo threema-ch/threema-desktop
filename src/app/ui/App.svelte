@@ -1,7 +1,6 @@
 <script lang="ts">
   import {onMount, type SvelteComponent} from 'svelte';
 
-  import {dragEvents} from '#3sc/utils/dragdrop';
   import type {AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
@@ -133,15 +132,10 @@
   }
 </script>
 
-<svelte:body
-  use:dragEvents
-  on:drop|preventDefault
-  on:dragover|preventDefault
-  on:keydown|self={maybeToggleDebugPanelByKey}
-/>
+<svelte:body on:keydown|self={maybeToggleDebugPanelByKey} />
 
 <template>
-  <div class="wrapper" data-connection-state={$connectionState} on:dragstart|preventDefault>
+  <div class="wrapper" data-connection-state={$connectionState}>
     <!-- App -->
 
     {#if $connectionState !== ConnectionState.CONNECTED}

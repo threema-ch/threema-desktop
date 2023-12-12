@@ -1,6 +1,4 @@
 <script lang="ts">
-  import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
-  import {validateFiles} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import {
     type ForwardedMessageLookup,
@@ -8,6 +6,9 @@
     type PreloadedFiles,
   } from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
+  import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';
+  import {validateFiles} from '~/app/ui/components/hocs/drop-zone-provider/helpers';
+  import type {FileDropResult} from '~/app/ui/components/hocs/drop-zone-provider/types';
   import {i18n} from '~/app/ui/i18n';
   import Welcome from '~/app/ui/main/Welcome.svelte';
   import Conversation from '~/app/ui/main/conversation/Conversation.svelte';
@@ -33,6 +34,10 @@
   let receiverLookup: DbReceiverLookup;
   let forwardedMessageLookup: ForwardedMessageLookup | undefined;
   let preloadedFiles: PreloadedFiles | undefined;
+
+  function handleDropFiles(event: CustomEvent<FileDropResult>): void {
+    conversationElement?.handleFileDrop(event.detail);
+  }
 
   $: if ($router.main.id === 'conversation') {
     const route = $router.main;
@@ -85,92 +90,25 @@
   }
 
   let mediaMessageDialogVisible = false;
-  let zoneHover = false;
-  let bodyHover = false;
-  $: zoneHover = zoneHover;
 </script>
 
-<svelte:body
-  on:threemadragstart={() => {
-    bodyHover = true;
-  }}
-  on:threemadragend={() => {
-    bodyHover = false;
-  }}
-/>
-
-<template>
-  {#if conversationViewModel !== undefined && receiver !== undefined && $receiver !== undefined}
-    <DropZone
-      bind:zoneHover
-      on:fileDrop={(event) => {
-        conversationElement?.handleFileDrop(event.detail);
-      }}
-    >
-      <div class="drag-wrapper" class:bodyHover>
-        <Conversation
-          bind:this={conversationElement}
-          bind:mediaMessageDialogVisible
-          {conversationViewModel}
-          {receiverLookup}
-          {forwardedMessageLookup}
-          {services}
-          on:sendMessage={sendMessage}
-        />
-
-        {#if (zoneHover || bodyHover) && !mediaMessageDialogVisible}
-          <div class="drop-wrapper" class:zoneHover class:bodyHover>
-            <div class="border">
-              {$i18n.t('messaging.hint--drop-files-to-send', 'Drop files here to send')}
-            </div>
-          </div>
-        {/if}
-      </div>
-    </DropZone>
-  {:else}
-    <Welcome />
-  {/if}
-</template>
-
-<style lang="scss">
-  @use 'component' as *;
-
-  .drag-wrapper {
-    height: 100%;
-    overflow: auto;
-
-    &.bodyHover {
-      position: relative;
-    }
-    .drop-wrapper {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-
-      &.bodyHover {
-        display: block;
-        padding: rem(8px);
-        background-color: var(--t-main-background-color);
-
-        .border {
-          @extend %font-h5-400;
-          display: grid;
-          align-items: center;
-          justify-items: center;
-          width: 100%;
-          height: 100%;
-          border-radius: rem(8px);
-          border: rem(2px) solid $consumer-green-600;
-        }
-      }
-      &.zoneHover {
-        .border {
-          background-color: rgba($consumer-green-600, 10%);
-        }
-      }
-    }
-  }
-</style>
+{#if conversationViewModel !== undefined && receiver !== undefined && $receiver !== undefined}
+  <DropZoneProvider
+    overlay={{
+      message: $i18n.t('messaging.hint--drop-files-to-send', 'Drop files here to send'),
+    }}
+    on:dropfiles={handleDropFiles}
+  >
+    <Conversation
+      bind:this={conversationElement}
+      bind:mediaMessageDialogVisible
+      {conversationViewModel}
+      {receiverLookup}
+      {forwardedMessageLookup}
+      {services}
+      on:sendMessage={sendMessage}
+    />
+  </DropZoneProvider>
+{:else}
+  <Welcome />
+{/if}

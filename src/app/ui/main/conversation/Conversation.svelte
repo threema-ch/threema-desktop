@@ -4,10 +4,10 @@
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import type {FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
   import {type ForwardedMessageLookup, ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
+  import type {FileDropResult} from '~/app/ui/components/hocs/drop-zone-provider/types';
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
   import ChatView from '~/app/ui/components/partials/chat-view/ChatView.svelte';
   import {getTextContent} from '~/app/ui/components/partials/chat-view/internal/message/helpers';
@@ -69,7 +69,7 @@
   /**
    * Open the media compose message dialog if accessible files have been dropped
    */
-  export function handleFileDrop(fileResult: FileResult): void {
+  export function handleFileDrop(fileResult: FileDropResult): void {
     if (isDisabledReceiver($receiver) || $isReceiverBlockedStore) {
       log.warn('Cannot drop a file in the dropzone if the receiver is disabled or blocked');
       return;

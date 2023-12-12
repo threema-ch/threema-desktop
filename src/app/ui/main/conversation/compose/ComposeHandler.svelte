@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type {FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
+  import type {FileDropResult} from '~/app/ui/components/hocs/drop-zone-provider/types';
   import {i18n} from '~/app/ui/i18n';
   import {showFileResultError} from '~/app/ui/main/conversation/compose';
   import ComposeBar from '~/app/ui/main/conversation/compose/ComposeBar.svelte';
@@ -47,25 +47,25 @@
   /**
    * Handle the dropped files by opening the media compose message dialog.
    */
-  export function handleFileDrop(fileResult: FileResult): void {
-    switch (fileResult.status) {
+  export function handleFileDrop(fileDropResult: FileDropResult): void {
+    switch (fileDropResult.status) {
       case 'empty':
       case 'inaccessible':
-        showFileResultError(fileResult.status, i18n, log);
+        showFileResultError(fileDropResult.status, i18n, log);
         return;
 
       case 'partial':
-        showFileResultError(fileResult.status, i18n, log);
+        showFileResultError(fileDropResult.status, i18n, log);
         break;
 
       case 'ok':
         break;
 
       default:
-        unreachable(fileResult);
+        unreachable(fileDropResult);
     }
 
-    openMediaMessageDialog(fileResult.files, 'local');
+    openMediaMessageDialog(fileDropResult.files, 'local');
   }
 
   /**

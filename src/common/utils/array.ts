@@ -97,3 +97,22 @@ export function* entriesReverse<T>(
         yield [index, unwrap(array[index])];
     }
 }
+
+/**
+ * Filters an array using an async predicate.
+ *
+ * @param predicate A function that accepts up to three arguments. The filter method calls the
+ *   predicate function one time for each element in the array.
+ * @param array The array to filter.
+ * @returns Returns the elements of an array that meet the condition specified in a callback
+ *   function.
+ */
+export async function filterAsync<T>(
+    predicate: (value: T, index: u53, array: T[]) => Promise<boolean>,
+    array: T[],
+): Promise<T[]> {
+    const results = (await Promise.allSettled(array.map(predicate))).map((result) =>
+        result.status === 'fulfilled' ? result.value : false,
+    );
+    return array.filter((_, index) => results[index]);
+}
