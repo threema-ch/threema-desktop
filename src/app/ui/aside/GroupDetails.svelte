@@ -75,7 +75,7 @@
   let deleteGroupDialogVisible = false;
   let groupProfilePictureDialogVisible = false;
 
-  // @ts-expect-error TODO(DESK-653): Implement this
+  // TODO(DESK-653): Implement this
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function openGroupEditDialog(): void {
     if (group !== undefined) {

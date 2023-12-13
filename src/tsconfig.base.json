@@ -37,7 +37,7 @@
     // TODO(DESK-1190): Enable `noPropertyAccessFromIndexSignature`
     // "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false, // (Mostly) checked by eslint
     "noUnusedParameters": false,
     "removeComments": true,
     "sourceMap": true,

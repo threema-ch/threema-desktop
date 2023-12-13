@@ -759,7 +759,7 @@ export class GroupModelController implements GroupController {
      * from their respective caches, and remove the conversation and all of its messages in the
      * database. The group may not be part of any groups at this point.
      */
-    // @ts-expect-error TODO(DESK-551)
+    // TODO(DESK-551)
     private _remove(): void {
         this.meta.deactivate(() => {
             // Deactivate and purge the conversation and all of its messages
