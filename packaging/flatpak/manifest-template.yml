@@ -59,6 +59,8 @@ modules:
               #
               # See https://github.com/electron/electron/issues/37531
               zypak-wrapper.sh ./ThreemaDesktop \
+                --ozone-platform-hint=auto \
+                --enable-features="WaylandWindowDecorations" \
                 "$@"
               if [ "$?" != "8" ]; then
                 break

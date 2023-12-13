@@ -26,4 +26,7 @@ export GIT_REVISION
 # Build main, preload and app
 VITE_MAKE=electron,electron-main,$variant,$environment npx vite build -m development -c config/vite.config.ts
 VITE_MAKE=electron,electron-preload,$variant,$environment npx vite build -m development -c config/vite.config.ts
-VITE_MAKE=electron,app,$variant,$environment tools/run-with-vite.cjs -m development -c config/vite.config.ts -r electron -p electron.pid -- . ${CHROMIUM_FLAGS:-} $*
+VITE_MAKE=electron,app,$variant,$environment tools/run-with-vite.cjs -m development -c config/vite.config.ts -r electron -p electron.pid -- . \
+    ${CHROMIUM_FLAGS:-} \
+    --ozone-platform-hint=auto --enable-features="WaylandWindowDecorations" \
+    $*
