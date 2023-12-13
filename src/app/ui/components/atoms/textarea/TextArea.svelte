@@ -79,7 +79,7 @@
   }
 
   /**
-   * Focuses the text area's {@link HTMLElement}.
+   * Focuses the text area.
    */
   export function focus(): void {
     areaElement.focus();
@@ -288,9 +288,11 @@
     areaElement.addEventListener('compositionend', handleCompositionEnd);
 
     // Load initial text.
-    if (initialText !== undefined) {
-      area.insert_text(initialText);
-    }
+    self.queueMicrotask(() => {
+      if (initialText !== undefined) {
+        area.insert_text(initialText);
+      }
+    });
 
     return () => {
       // Deregister composition start/end event handlers.

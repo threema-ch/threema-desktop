@@ -21,7 +21,7 @@ import type {
     VerificationLevelColors,
 } from '~/common/viewmodel/contact-list-item';
 import type {ReceiverBadgeType} from '~/common/viewmodel/types';
-import type {Mention} from '~/common/viewmodel/utils/mentions';
+import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 
 export interface ReceiverProfilePicture {
     readonly profilePicture: ProfilePictureView;
@@ -37,7 +37,7 @@ export interface ReceiverTitle {
         | string
         | {
               text: string | undefined;
-              mentions?: Mention[];
+              mentions?: AnyMention[];
           };
     /**
      * Whether this receiver is not able to be contacted.

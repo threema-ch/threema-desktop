@@ -1,48 +1,61 @@
-import type {DbContact} from '~/common/db';
+import type {DbContactReceiverLookup} from '~/common/db';
 import {ReceiverType} from '~/common/enum';
-import type {AnyMessageModel, Repositories} from '~/common/model';
+import type {AnyMessageModel} from '~/common/model';
 import {type IdentityString, isIdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
+import type {ServicesForViewModel} from '~/common/viewmodel';
 
 /**
- * Regex to match user mentions
+ * Regex to match user mentions.
  */
 // eslint-disable-next-line threema/ban-stateful-regex-flags
 export const REGEX_MATCH_MENTION = /@\[(?<identity>[A-Z0-9*]{1}[A-Z0-9]{7}|@{8})\]/gu;
 
 /**
- * Mention value to match mention every user
+ * Identity string that matches everyone.
  */
-export const MENTION_ALL = '@@@@@@@@';
+const EVERYONE_IDENTITY_STRING = '@@@@@@@@';
 
-export type Mention =
-    // Own ID is mentioned
-    | {
-          readonly type: 'self';
-          readonly identity: IdentityString;
-          readonly nickname: string | undefined;
-      }
-    // Everybody is mentioned (@all)
-    | {
-          readonly type: 'all';
-          readonly identity: typeof MENTION_ALL;
-      }
-    // A contact is mentioned
-    | {
-          readonly type: 'other';
-          readonly identity: IdentityString;
-          readonly displayName: string;
-          readonly lookup: Pick<DbContact, 'type' | 'uid'>;
-      };
+/**
+ * Union of all types of mention.
+ */
+export type AnyMention = MentionSelf | MentionContact | MentionEveryone;
+
+/**
+ * A mention that matches the user themself.
+ */
+export interface MentionSelf {
+    readonly type: 'self';
+    readonly identity: IdentityString;
+    /** Display name of the user. */
+    readonly name: string | undefined;
+}
+
+/**
+ * A mention that matches a contact.
+ */
+export interface MentionContact {
+    readonly type: 'contact';
+    readonly identity: IdentityString;
+    readonly lookup: DbContactReceiverLookup;
+    /** Display name of the contact. */
+    readonly name: string;
+}
+
+/**
+ * A mention that matches everyone (e.g., all members of a group).
+ */
+export interface MentionEveryone {
+    readonly type: 'everyone';
+    readonly identity: typeof EVERYONE_IDENTITY_STRING;
+}
 
 /**
  * Extract all raw mentions from the specified {@link messageModel}.
  *
- * @returns Set of parsed identity strings or `@@@@@@@`
+ * @returns Set of parsed identity strings or `@@@@@@@`.
  */
-function getMentionedIdentityStrings(
-    messageModel: AnyMessageModel,
-): Set<IdentityString | typeof MENTION_ALL> {
+function getMentionedIdentityStrings(messageModel: AnyMessageModel): Set<AnyMention['identity']> {
     let text: string;
 
     switch (messageModel.type) {
@@ -60,11 +73,11 @@ function getMentionedIdentityStrings(
             unreachable(messageModel);
     }
 
-    const mentionedIdentities = new Set<IdentityString | typeof MENTION_ALL>();
-
+    const mentionedIdentities = new Set<AnyMention['identity']>();
     for (const match of text.matchAll(REGEX_MATCH_MENTION)) {
         const identity = match.groups?.identity;
-        if (isIdentityString(identity) || identity === MENTION_ALL) {
+
+        if (isIdentityString(identity) || identity === EVERYONE_IDENTITY_STRING) {
             mentionedIdentities.add(identity);
         }
     }
@@ -75,37 +88,42 @@ function getMentionedIdentityStrings(
 /**
  * Extract all mentions present in the specified {@link messageModel}.
  */
-export function getMentions(messageModel: AnyMessageModel, repositories: Repositories): Mention[] {
-    const mentions: Mention[] = [];
+export function getMentions(
+    services: Pick<ServicesForViewModel, 'model'>,
+    messageModel: AnyMessageModel,
+): AnyMention[] {
+    const {model} = services;
+
+    const mentions: AnyMention[] = [];
 
     for (const identity of getMentionedIdentityStrings(messageModel)) {
-        if (identity === MENTION_ALL) {
+        if (identity === EVERYONE_IDENTITY_STRING) {
             mentions.push({
-                type: 'all',
-                identity: MENTION_ALL,
+                type: 'everyone',
+                identity: EVERYONE_IDENTITY_STRING,
             });
             continue;
         }
 
-        if (identity === repositories.user.identity) {
+        if (identity === model.user.identity) {
             mentions.push({
                 type: 'self',
                 identity,
-                nickname: repositories.user.profileSettings.get().view.nickname,
+                name: model.user.profileSettings.get().view.nickname,
             });
             continue;
         }
 
-        const otherContact = repositories.contacts.getByIdentity(identity);
-        if (otherContact !== undefined) {
+        const contact = model.contacts.getByIdentity(identity);
+        if (contact !== undefined) {
             mentions.push({
-                type: 'other',
+                type: 'contact',
                 identity,
-                displayName: otherContact.get().view.displayName,
                 lookup: {
                     type: ReceiverType.CONTACT,
-                    uid: otherContact.ctx,
+                    uid: contact.ctx,
                 },
+                name: contact.get().view.displayName,
             });
         }
     }

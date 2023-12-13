@@ -1,26 +1,21 @@
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {
-    MessageDirection,
-    MessageReaction,
-    MessageReactionUtils,
-    ReceiverType,
-  } from '~/common/enum';
+  import {MessageDirection, ReceiverType} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
   import type {MessageStatus} from '~/common/viewmodel/types';
 
   export let direction: MessageDirection;
   export let status: MessageStatus | undefined;
-  export let reaction: MessageReaction | undefined = undefined;
+  export let reaction: 'acknowledged' | 'declined' | undefined = undefined;
   export let outgoingReactionDisplay: 'thumb' | 'arrow';
   export let receiverType: ReceiverType;
 
-  function iconForReaction(value: MessageReaction): string {
+  function iconForReaction(value: 'acknowledged' | 'declined'): string {
     switch (value) {
-      case MessageReaction.ACKNOWLEDGE:
+      case 'acknowledged':
         return 'thumb_up';
 
-      case MessageReaction.DECLINE:
+      case 'declined':
         return 'thumb_down';
 
       default:
@@ -67,11 +62,7 @@
 
 <template>
   {#if isVisible && iconName !== undefined}
-    <span
-      data-direction={direction}
-      data-reaction={reaction === undefined ? undefined : MessageReactionUtils.NAME_OF[reaction]}
-      data-status={status}
-    >
+    <span data-direction={direction} data-reaction={reaction} data-status={status}>
       <MdIcon theme="Filled">{iconName}</MdIcon>
     </span>
   {/if}
@@ -87,11 +78,11 @@
       color: var(--mc-message-status-error-color);
     }
 
-    &[data-reaction='ACKNOWLEDGE'] {
+    &[data-reaction='acknowledged'] {
       color: var(--mc-message-status-acknowledged-color);
     }
 
-    &[data-reaction='DECLINE'] {
+    &[data-reaction='declined'] {
       color: var(--mc-message-status-declined-color);
     }
   }

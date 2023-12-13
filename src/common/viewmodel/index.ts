@@ -2,7 +2,6 @@ import type {ServicesForBackend} from '~/common/backend';
 import type {DbContactUid, DbReceiverLookup} from '~/common/db';
 import type {AnyMessageModelStore} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
-import type {MessageId} from '~/common/network/types';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {WeakValueMap} from '~/common/utils/map';
 import type {LocalStore} from '~/common/utils/store';
@@ -14,17 +13,13 @@ import {
     getContactListItemStore,
 } from '~/common/viewmodel/contact-list-item';
 import {
-    type ConversationViewModel,
-    getConversationViewModel,
-} from '~/common/viewmodel/conversation';
+    type ConversationViewModelBundle,
+    getConversationViewModelBundle,
+} from '~/common/viewmodel/conversation/main';
 import {
     type ConversationMessageViewModelBundle,
     getConversationMessageViewModelBundle,
-} from '~/common/viewmodel/conversation-message';
-import {
-    type ConversationMessageSetViewModel,
-    getConversationMessageSetViewModel,
-} from '~/common/viewmodel/conversation-message-set';
+} from '~/common/viewmodel/conversation/main/message';
 import {
     type ConversationPreviewSetStore,
     type ConversationPreviewTranslationsStore,
@@ -38,7 +33,7 @@ import {
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
 
 /**
- * Services required by the viewmodel backend
+ * Services required by the viewmodel backend.
  */
 export type ServicesForViewModel = Pick<
     ServicesForBackend,
@@ -48,20 +43,11 @@ export interface IViewModelRepository extends ProxyMarked {
     readonly conversationPreviews: (
         translations: ConversationPreviewTranslationsStore,
     ) => ConversationPreviewSetStore;
-    readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModel | undefined;
-
-    readonly conversationMessageSetViewModel: (
-        conversation: ConversationModelStore,
-    ) => ConversationMessageSetViewModel;
+    readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModelBundle | undefined;
     readonly conversationMessage: (
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
     ) => ConversationMessageViewModelBundle;
-    readonly conversationMessageById: (
-        conversation: ConversationModelStore,
-        messageId: MessageId,
-    ) => ConversationMessageViewModelBundle | undefined;
-
     readonly debugPanel: () => DebugPanelViewModel;
     readonly contactListItems: () => ContactListItemSetStore;
     readonly contactListItem: (
@@ -87,21 +73,14 @@ export class ViewModelRepository implements IViewModelRepository {
         );
     }
 
-    public conversation(receiver: DbReceiverLookup): ConversationViewModel | undefined {
-        const conversation = this._services.model.conversations.getForReceiver(receiver);
-        if (conversation === undefined) {
+    public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
+        const conversationModelStore = this._services.model.conversations.getForReceiver(receiver);
+        if (conversationModelStore === undefined) {
             return undefined;
         }
-        return this._cache.conversations.getOrCreate(conversation, () =>
-            getConversationViewModel(this._services, conversation, this),
-        );
-    }
 
-    public conversationMessageSetViewModel(
-        conversation: ConversationModelStore,
-    ): ConversationMessageSetViewModel {
-        return this._cache.conversationMessageSetViewModel.getOrCreate(conversation, () =>
-            getConversationMessageSetViewModel(this._services, this, conversation),
+        return this._cache.conversations.getOrCreate(conversationModelStore, () =>
+            getConversationViewModelBundle(this._services, this, conversationModelStore),
         );
     }
 
@@ -117,17 +96,6 @@ export class ViewModelRepository implements IViewModelRepository {
             .getOrCreate(messageStore, () =>
                 getConversationMessageViewModelBundle(this._services, messageStore, conversation),
             );
-    }
-
-    public conversationMessageById(
-        conversation: ConversationModelStore,
-        messageId: MessageId,
-    ): ConversationMessageViewModelBundle | undefined {
-        const messageStore = conversation.get().controller.getMessage(messageId);
-        if (messageStore === undefined) {
-            return undefined;
-        }
-        return this.conversationMessage(conversation, messageStore);
     }
 
     public contactListItems(): ContactListItemSetStore {

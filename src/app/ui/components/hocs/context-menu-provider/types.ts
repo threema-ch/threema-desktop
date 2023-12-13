@@ -8,6 +8,7 @@ export type ContextMenuItem = ContextMenuOption | 'divider';
  * An interactive option that is part of a context menu.
  */
 export interface ContextMenuOption {
+    readonly disabled?: boolean;
     /**
      * Handler function to run if this option is selected.
      */

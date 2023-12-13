@@ -19,7 +19,9 @@ import {unreachable} from '~/common/utils/assert';
  * @param onFailure Callback to run if copying failed (e.g., show a toast).
  */
 export async function handleCopyImage(
-    file: MessageProps['file'],
+    file:
+        | Pick<NonNullable<MessageProps['file']>, 'type' | 'mediaType' | 'fetchFileBytes'>
+        | undefined,
     log: Logger,
     t: I18nType['t'],
     onSuccess?: (message: string) => void,
@@ -74,7 +76,9 @@ export async function handleCopyImage(
  * @param onFailure Callback to run if saving failed (e.g., show a toast).
  */
 export async function handleSaveAsFile(
-    file: MessageProps['file'],
+    file:
+        | Pick<NonNullable<MessageProps['file']>, 'fetchFileBytes' | 'mediaType' | 'name'>
+        | undefined,
     log: Logger,
     t: I18nType['t'],
     onFailure?: (message: string) => void,

@@ -1,10 +1,10 @@
 <script lang="ts">
   import {i18n} from '~/app/ui/i18n';
   import {sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
-  import type {Mention} from '~/common/viewmodel/utils/mentions';
+  import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 
   export let text: string;
-  export let mentions: Mention | Mention[] | undefined = undefined;
+  export let mentions: AnyMention | AnyMention[] | undefined = undefined;
   export let highlights: string | string[] | undefined = undefined;
   export let shouldLinkMentions = false;
   export let shouldParseMarkup = false;

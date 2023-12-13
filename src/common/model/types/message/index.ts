@@ -101,6 +101,15 @@ export type AnyMessage<TVariant extends BundleProperty> = MessageFor<
 >;
 
 export type AnyMessageModel = AnyInboundMessageModel | AnyOutboundMessageModel;
+export type AnyFileBasedMessageModel =
+    | InboundAudioMessage['model']
+    | InboundFileMessage['model']
+    | InboundImageMessage['model']
+    | InboundVideoMessage['model']
+    | OutboundAudioMessage['model']
+    | OutboundFileMessage['model']
+    | OutboundImageMessage['model']
+    | OutboundVideoMessage['model'];
 export type AnyInboundMessageModel =
     | InboundTextMessage['model']
     | InboundFileMessage['model']

@@ -11,7 +11,6 @@
   import type {GroupedReactionsList} from '~/app/ui/components/partials/chat-view/internal/message-details-modal/types';
   import {i18n} from '~/app/ui/i18n';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
-  import {ReceiverType} from '~/common/enum';
   import type {u53} from '~/common/types';
   import {u64ToHexLe} from '~/common/utils/number';
 
@@ -36,18 +35,18 @@
 
   let ownReaction: $$Props['reactions'][u53]['type'] | undefined = undefined;
 
-  $: if (conversation.type === ReceiverType.GROUP) {
+  $: if (conversation.receiver.type === 'group') {
     const tmpSortedReactions: GroupedReactionsList = {
       acknowledged: [],
       declined: [],
     };
     reactions.forEach((reaction) => {
-      let displayName = reaction.reactionSender.name;
-      if (reaction.reactionSender.identity === 'me') {
+      let displayName = reaction.sender.name;
+      if (reaction.sender.identity === 'me') {
         ownReaction = reaction.type;
         displayName = $i18n.t('contacts.label--own-name');
       }
-      tmpSortedReactions[reaction.type].push(displayName);
+      tmpSortedReactions[reaction.type].push(displayName ?? reaction.sender.identity);
     });
     tmpSortedReactions.acknowledged.sort();
     tmpSortedReactions.declined.sort();
@@ -145,7 +144,7 @@
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--reactions', 'Reactions')}>
           {#if reactions.length === 0}
             -
-          {:else if conversation.type === ReceiverType.CONTACT}
+          {:else if conversation.receiver.type === 'contact'}
             {@const reaction = reactions[0]}
             {#if reaction !== undefined}
               <div class="reaction">

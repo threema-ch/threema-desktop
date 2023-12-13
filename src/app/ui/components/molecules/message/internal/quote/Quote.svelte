@@ -60,7 +60,7 @@
           {/if}
 
           <LazyImage
-            byteStore={file.thumbnail.thumbnailStore}
+            byteStore={file.thumbnail.blobStore}
             constraints={{
               min: {
                 width: 40,

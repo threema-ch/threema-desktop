@@ -11,7 +11,7 @@ import type {LocalStore, RemoteStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalDerivedSetStore, type LocalSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
-import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation-message';
+import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 
 export type ConversationPreviewSetStore = LocalDerivedSetStore<
     LocalSetStore<LocalModelStore<Conversation>>,
@@ -100,8 +100,9 @@ function getViewModel(
                 conversationStore,
                 lastMessageStore,
             );
-            lastMessagePreview = getAndSubscribe(
-                deriveLastMessagePreview(lastMessage, getAndSubscribe(translations)),
+            lastMessagePreview = getLastMessagePreviewText(
+                getAndSubscribe(lastMessage.viewModelStore),
+                getAndSubscribe(translations),
             );
         }
         const commonProperties = {
@@ -178,34 +179,34 @@ function deriveGroupListItem(group: Group): GroupListItem {
     };
 }
 
-export function deriveLastMessagePreview(
-    lastConversationMessage: ConversationMessageViewModelBundle,
+export function getLastMessagePreviewText(
+    messageViewModel: ReturnType<ConversationMessageViewModelBundle['viewModelStore']['get']>,
     translations: ConversationPreviewTranslations,
-): LocalStore<string> {
-    return derive(
-        lastConversationMessage.viewModel,
-        (lastMessageViewModelStore, getAndSubscribe) => {
-            const lastMessage = getAndSubscribe(lastConversationMessage.messageStore);
-            switch (lastMessage.type) {
-                case 'text':
-                    return lastMessage.view.text;
+): string {
+    if (messageViewModel.text !== undefined) {
+        return messageViewModel.text.raw;
+    }
 
-                case 'file':
-                case 'image':
-                case 'video':
-                case 'audio': {
-                    const caption = lastMessage.view.caption;
-                    if (caption !== undefined && caption !== '') {
-                        return caption;
-                    }
-                    return translations[
-                        `messaging.label--default-${lastMessage.type}-message-preview`
-                    ];
-                }
+    if (messageViewModel.file !== undefined) {
+        switch (messageViewModel.file.type) {
+            case 'audio':
+                return translations[`messaging.label--default-audio-message-preview`];
 
-                default:
-                    return unreachable(lastMessage);
-            }
-        },
-    );
+            case 'file':
+                return translations[`messaging.label--default-file-message-preview`];
+
+            case 'image':
+                return translations[`messaging.label--default-image-message-preview`];
+
+            case 'video':
+                return translations[`messaging.label--default-video-message-preview`];
+
+            default:
+                return unreachable(messageViewModel.file.type);
+        }
+    }
+
+    // This case should never happen, because it doesn't make sense to send a message without a text
+    // and file.
+    return '';
 }

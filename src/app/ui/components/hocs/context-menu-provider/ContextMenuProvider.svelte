@@ -77,7 +77,7 @@
         {#if item === 'divider'}
           <MenuItemDivider />
         {:else if item.icon !== undefined}
-          <MenuItem on:click={() => handleClickItem(item)}>
+          <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
             <span class={`icon ${item.icon.color}`} slot="icon">
               <MdIcon theme={item.icon.filled === true ? 'Filled' : 'Outlined'}
                 >{item.icon.name}</MdIcon
@@ -86,7 +86,7 @@
             <span>{item.label}</span>
           </MenuItem>
         {:else}
-          <MenuItem on:click={() => handleClickItem(item)}>
+          <MenuItem on:click={() => handleClickItem(item)} disabled={item.disabled}>
             <span>{item.label}</span>
           </MenuItem>
         {/if}

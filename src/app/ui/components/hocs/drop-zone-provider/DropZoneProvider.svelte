@@ -2,16 +2,15 @@
   import {createEventDispatcher} from 'svelte/internal';
 
   import {safedrag} from '~/app/ui/actions/drag';
-  import {validateFiles} from '~/app/ui/components/hocs/drop-zone-provider/helpers';
   import type {DropZoneProviderProps} from '~/app/ui/components/hocs/drop-zone-provider/props';
-  import type {FileDropResult} from '~/app/ui/components/hocs/drop-zone-provider/types';
+  import {type FileLoadResult, validateFiles} from '~/app/ui/utils/file';
 
   type $$Props = DropZoneProviderProps;
 
   export let overlay: $$Props['overlay'] = undefined;
 
   const dispatch = createEventDispatcher<{
-    dropfiles: FileDropResult;
+    dropfiles: FileLoadResult;
   }>();
 
   let isDragOver = false;
@@ -63,7 +62,7 @@
     overflow: inherit;
 
     .overlay {
-      z-index: $z-index-plus;
+      z-index: $z-index-global-overlay;
       pointer-events: none;
       position: absolute;
       display: none;

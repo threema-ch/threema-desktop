@@ -1,6 +1,11 @@
 import type {u53} from '~/common/types';
 
 /**
+ * A {@link Record} of unknown keys and values.
+ */
+export type UnknownRecord = Record<PropertyKey, unknown>;
+
+/**
  * Check whether an object has a specific property.
  *
  * Note: The functionality of this function is equivalent to {@link Object.hasOwn} with the

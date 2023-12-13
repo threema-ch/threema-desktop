@@ -1,11 +1,11 @@
 import type {AppServices} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
-import type {DbConversationUid, DbReceiverLookup} from '~/common/db';
+import type {DbConversationUid} from '~/common/db';
 import type {MessageDirection} from '~/common/enum';
 import type {MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {Remote} from '~/common/utils/endpoint';
-import type {ConversationMessageSetViewModel} from '~/common/viewmodel/conversation-message-set';
+import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
 
 /**
  * Props accepted by the `ChatView` component.
@@ -27,11 +27,11 @@ export interface ChatViewProps {
               }
             | undefined;
         readonly markAllMessagesAsRead: () => void;
-        readonly receiverLookup: DbReceiverLookup;
+        readonly setCurrentViewportMessages: (ids: Set<MessageId>) => Promise<unknown>;
         readonly unreadMessagesCount: u53;
     };
     /** ViewModel of the set of messages belonging to this conversation. */
-    readonly messageSetViewModel: Remote<ConversationMessageSetViewModel>;
+    readonly messageSetStore: Remote<ConversationMessageSetStore>;
     /** `AppServices` bundle to pass through to child components. */
     readonly services: AppServices;
 }

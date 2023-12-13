@@ -5,13 +5,13 @@ import type {I18nType} from '~/app/ui/i18n-types';
 import type {WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {escapeRegExp} from '~/common/utils/regex';
-import type {Mention} from '~/common/viewmodel/utils/mentions';
+import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 
 export type SanitizedHtml = WeakOpaque<string, {readonly SanitizedHtml: unique symbol}>;
 
 export interface SanitizeAndParseTextToHtmlOptions {
     /** The {@link Mention}s to search for and replace in the text. */
-    readonly mentions?: Mention | Mention[];
+    readonly mentions?: AnyMention | AnyMention[];
     /** The highlights to search for and replace in the text. */
     readonly highlights?: string | string[];
     /** If mentions should link to the conversation with the respective contact. */
@@ -97,25 +97,29 @@ function escapeHtmlUnsafeChars(text: string | undefined): SanitizedHtml {
  * @param enableLinks Whether to format mentions of contacts as links.
  * @returns A string containing a HTML tag which represents the supplied `Mention`.
  */
-function getMentionHtml(t: I18nType['t'], mention: Mention, enableLinks: boolean): SanitizedHtml {
+function getMentionHtml(
+    t: I18nType['t'],
+    mention: AnyMention,
+    enableLinks: boolean,
+): SanitizedHtml {
     switch (mention.type) {
-        case 'all': {
-            const text = escapeHtmlUnsafeChars(t('messaging.label--mention-all', 'All'));
-            return `<span class="mention all">@${text}</span>` as SanitizedHtml;
-        }
         case 'self': {
             const text = escapeHtmlUnsafeChars(
-                mention.nickname ?? t('messaging.label--mention-me', 'Me'),
+                mention.name ?? t('messaging.label--mention-me', 'Me'),
             );
             return `<span class="mention me">@${text}</span>` as SanitizedHtml;
         }
-        case 'other': {
-            const name = escapeHtmlUnsafeChars(mention.displayName);
+        case 'contact': {
+            const name = escapeHtmlUnsafeChars(mention.name);
             if (enableLinks) {
                 const href = `#/conversation/${mention.lookup.type}/${mention.lookup.uid}/`;
                 return `<a href="${href}" draggable="false" class="mention">@${name}</a>` as SanitizedHtml;
             }
             return `<span class="mention">@${name}</span>` as SanitizedHtml;
+        }
+        case 'everyone': {
+            const text = escapeHtmlUnsafeChars(t('messaging.label--mention-all', 'All'));
+            return `<span class="mention all">@${text}</span>` as SanitizedHtml;
         }
         default:
             return unreachable(mention);
@@ -159,7 +163,7 @@ function parseMarkup(text: SanitizedHtml): SanitizedHtml {
 export function parseMentions(
     t: I18nType['t'],
     text: SanitizedHtml,
-    mentions: Mention | Mention[],
+    mentions: AnyMention | AnyMention[],
     enableLinks: boolean,
 ): SanitizedHtml {
     let parsedText = text;

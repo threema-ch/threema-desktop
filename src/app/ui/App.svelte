@@ -6,9 +6,9 @@
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
   import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
+  import MainConversation from '~/app/ui/components/partials/views/conversation/ConversationView.svelte';
+  import MainWelcome from '~/app/ui/components/partials/views/welcome/Welcome.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
-  import MainConversation from '~/app/ui/main/ConversationWrapper.svelte';
-  import MainWelcome from '~/app/ui/main/Welcome.svelte';
   import ChangePassword from '~/app/ui/modal/ChangePassword.svelte';
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';
   import ModalGroupEdit from '~/app/ui/modal/GroupEdit.svelte';

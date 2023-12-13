@@ -178,15 +178,11 @@ import {
     getContactListItemSetStore,
     getContactListItemStore,
 } from '~/common/viewmodel/contact-list-item';
-import type {ConversationViewModel} from '~/common/viewmodel/conversation';
+import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
 import {
     type ConversationMessageViewModelBundle,
     getConversationMessageViewModelBundle,
-} from '~/common/viewmodel/conversation-message';
-import {
-    type ConversationMessageSetViewModel,
-    getConversationMessageSetViewModel,
-} from '~/common/viewmodel/conversation-message-set';
+} from '~/common/viewmodel/conversation/main/message';
 import {
     type ConversationPreviewSetStore,
     type ConversationPreviewTranslationsStore,
@@ -462,14 +458,8 @@ export class TestViewModel implements IViewModelRepository {
         return getConversationPreviewSetStore(this._services, this, translations);
     }
 
-    public conversation(receiver: DbReceiverLookup): ConversationViewModel | undefined {
+    public conversation(receiver: DbReceiverLookup): ConversationViewModelBundle | undefined {
         return undefined;
-    }
-
-    public conversationMessageSetViewModel(
-        conversation: ConversationModelStore,
-    ): ConversationMessageSetViewModel {
-        return getConversationMessageSetViewModel(this._services, this, conversation);
     }
 
     public conversationMessage(

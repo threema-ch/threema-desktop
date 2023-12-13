@@ -17,6 +17,7 @@
     isUnsyncedOrSyncingFile,
   } from '~/app/ui/components/partials/chat-view/internal/message/helpers';
   import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
+  import {transformMessageFileProps} from '~/app/ui/components/partials/chat-view/internal/message/transformers';
   import MessageContextMenuProvider from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
@@ -210,7 +211,7 @@
     directionValue: typeof direction,
   ): void {
     if (
-      conversationValue.type === ReceiverType.GROUP &&
+      conversationValue.receiver.type === 'group' &&
       senderValue !== undefined &&
       directionValue === 'inbound' &&
       senderValue.type !== 'self'
@@ -257,7 +258,12 @@
             : {
                 sanitizedHtml,
               },
-        file: rawQuote.file,
+        file: transformMessageFileProps(
+          rawQuote.file,
+          rawQuote.id,
+          conversation.receiver.lookup,
+          services,
+        ),
         onError: (error) =>
           log.error(
             `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
@@ -269,10 +275,27 @@
 
   $: htmlContent = getTextContent(text?.raw, text?.mentions, $i18n.t);
 
-  $: supportsReactions =
-    !conversation.isBlocked &&
-    !conversation.isDisabled &&
-    (direction === 'inbound' || conversation.type === ReceiverType.GROUP);
+  let supportsReactions: boolean;
+  $: {
+    const receiver = conversation.receiver;
+
+    switch (receiver.type) {
+      case 'contact':
+        supportsReactions = !receiver.isDisabled && !receiver.isBlocked && direction === 'inbound';
+        break;
+
+      case 'group':
+        supportsReactions = !receiver.isDisabled && !receiver.isLeft;
+        break;
+
+      case 'distribution-list':
+        supportsReactions = false;
+        break;
+
+      default:
+        unreachable(receiver);
+    }
+  }
 
   $: timestamp = reactive(
     () => ({
@@ -288,7 +311,7 @@
 </script>
 
 <div class="container">
-  {#if conversation.type === ReceiverType.GROUP && sender !== undefined && direction === 'inbound'}
+  {#if conversation.receiver.type === 'group' && sender !== undefined && direction === 'inbound'}
     <span class="avatar">
       <Avatar
         byteStore={profilePictureStore}
@@ -326,7 +349,10 @@
             ),
           }
         : false,
-      quote: !conversation.isBlocked && !conversation.isDisabled,
+      quote:
+        conversation.receiver.type === 'contact'
+          ? !conversation.receiver.isBlocked
+          : !conversation.receiver.isDisabled,
       forward: text !== undefined,
       openDetails: true,
       deleteMessage: true,
@@ -380,7 +406,7 @@
                   sanitizedHtml: htmlContent,
                 }}
             {direction}
-            {file}
+            file={transformMessageFileProps(file, id, conversation.receiver.lookup, services)}
             {highlighted}
             onError={(error) =>
               log.error(
@@ -388,11 +414,11 @@
                 `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
               )}
             options={{
-              hideSender: conversation.type !== ReceiverType.CONTACT,
+              hideSender: conversation.receiver.type !== 'contact',
               indicatorOptions: {
-                hideStatus: conversation.type !== ReceiverType.CONTACT && status.sent !== undefined,
-                fillReactions: conversation.type === ReceiverType.CONTACT,
-                alwaysShowNumber: conversation.type === ReceiverType.GROUP,
+                hideStatus: conversation.receiver.type !== 'contact' && status.sent !== undefined,
+                fillReactions: conversation.receiver.type === 'contact',
+                alwaysShowNumber: conversation.receiver.type === 'group',
               },
               hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
             }}

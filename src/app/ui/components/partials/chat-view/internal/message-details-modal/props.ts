@@ -1,6 +1,6 @@
 import type {AppServices} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
-import type {IdentityString} from '~/common/network/types';
+import type {IdentityStringOrMe} from '~/common/model/types/message';
 
 /**
  * Props accepted by the `MessageDetailsModal` component.
@@ -18,11 +18,11 @@ export interface MessageDetailsModalProps {
 interface Reaction {
     readonly at: Date;
     readonly direction: 'inbound' | 'outbound';
-    readonly reactionSender: {
-        // We keep the indentity here to have a clear distinction
-        // In case somebody has the display name 'me'
-        identity: IdentityString | 'me';
-        name: string;
+    readonly sender: {
+        // We keep the indentity here to have a clear distinction in case somebody has the display
+        // name `"me"`.
+        identity: IdentityStringOrMe;
+        name?: string;
     };
     readonly type: 'acknowledged' | 'declined';
 }

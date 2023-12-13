@@ -1,8 +1,6 @@
 import type {Logger} from '~/common/logging';
 import type {MessageId} from '~/common/network/types';
-import type {Remote} from '~/common/utils/endpoint';
 import {debounce} from '~/common/utils/timer';
-import type {ConversationMessageSetViewModel} from '~/common/viewmodel/conversation-message-set';
 
 /**
  * This object tracks the messages currently visible in the viewport and debounces notifications
@@ -15,11 +13,9 @@ export class Viewport {
 
     private readonly _notifyController = debounce(
         () => {
-            this._messageSetViewModelController
-                .setCurrentViewportMessages(new Set(this._messages))
-                .catch((error) =>
-                    this._log.error(`Failed to set current viewport messages: ${error}`),
-                );
+            this._setCurrentViewportMessagesHandler(new Set(this._messages)).catch((error) =>
+                this._log.error(`Failed to set current viewport messages: ${error}`),
+            );
         },
         Viewport._DEBOUNCE_MS,
         false,
@@ -27,17 +23,15 @@ export class Viewport {
 
     public constructor(
         private readonly _log: Logger,
-        private readonly _messageSetViewModelController: Remote<
-            ConversationMessageSetViewModel['controller']
-        >,
+        private readonly _setCurrentViewportMessagesHandler: (
+            ids: Set<MessageId>,
+        ) => Promise<unknown>,
         initiallyVisibleMessageId?: MessageId,
     ) {
         if (initiallyVisibleMessageId !== undefined) {
-            this._messageSetViewModelController
-                .setCurrentViewportMessages(new Set([initiallyVisibleMessageId]))
-                .catch((error) =>
-                    this._log.error(`Failed to set initial viewport message: ${error}`),
-                );
+            this._setCurrentViewportMessagesHandler(new Set([initiallyVisibleMessageId])).catch(
+                (error) => this._log.error(`Failed to set initial viewport message: ${error}`),
+            );
         }
     }
 

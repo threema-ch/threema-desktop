@@ -19,7 +19,7 @@
   import type {ChatViewProps} from '~/app/ui/components/partials/chat-view/props';
   import {
     type MessagePropsFromBackend,
-    messageSetViewModelToMessagePropsStore,
+    messageSetStoreToMessagePropsStore,
   } from '~/app/ui/components/partials/chat-view/transformers';
   import type {UnreadState, ModalState} from '~/app/ui/components/partials/chat-view/types';
   import {i18n} from '~/app/ui/i18n';
@@ -35,7 +35,7 @@
   type $$Props = ChatViewProps;
 
   export let conversation: $$Props['conversation'];
-  export let messageSetViewModel: $$Props['messageSetViewModel'];
+  export let messageSetStore: $$Props['messageSetStore'];
   export let services: $$Props['services'];
 
   const dispatch = createEventDispatcher<{
@@ -47,7 +47,7 @@
   let lazyListComponent: SvelteNullableBinding<LazyList<MessageId, MessagePropsFromBackend>> = null;
   let viewport = new Viewport(
     log,
-    messageSetViewModel.controller,
+    conversation.setCurrentViewportMessages,
     conversation.firstUnreadMessageId,
   );
 
@@ -93,13 +93,12 @@
   }
 
   /**
-   * Updates only if the value of `conversation.receiverLookup` changes, not on every change of the
+   * Updates only if the value of `conversation.receiver` changes, not on every change of the
    * `conversation` object.
    */
-  let currentConversationReceiver: $$Props['conversation']['receiverLookup'] =
-    conversation.receiverLookup;
-  $: if (currentConversationReceiver !== conversation.receiverLookup) {
-    currentConversationReceiver = conversation.receiverLookup;
+  let currentConversationReceiver: $$Props['conversation']['receiver'] = conversation.receiver;
+  $: if (currentConversationReceiver !== conversation.receiver) {
+    currentConversationReceiver = conversation.receiver;
   }
 
   /**
@@ -145,7 +144,7 @@
       type: 'message-forward',
       props: {
         id: message.id,
-        receiverLookup: conversation.receiverLookup,
+        receiverLookup: conversation.receiver.lookup,
         services,
       },
     };
@@ -332,7 +331,11 @@
     await tick();
 
     // Reinitializing `viewport` will result in the backend sending a new list of messages.
-    viewport = new Viewport(log, messageSetViewModel.controller, initiallyVisibleMessageId);
+    viewport = new Viewport(
+      log,
+      conversation.setCurrentViewportMessages,
+      initiallyVisibleMessageId,
+    );
   }
 
   function refreshUnreadState(): void {
@@ -351,11 +354,7 @@
     conversation.markAllMessagesAsRead();
   }
 
-  $: messagePropsStore = messageSetViewModelToMessagePropsStore(
-    messageSetViewModel,
-    currentConversationReceiver,
-    services,
-  );
+  $: messagePropsStore = messageSetStoreToMessagePropsStore(messageSetStore);
 
   $: reactive(handleChangeConversation, [currentConversationId]);
   $: reactive(handleChangeApplicationFocus, [$appVisibility]);

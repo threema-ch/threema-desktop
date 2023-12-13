@@ -181,7 +181,7 @@
 
           {#if file.thumbnail !== undefined}
             <LazyImage
-              byteStore={file.thumbnail.thumbnailStore}
+              byteStore={file.thumbnail.blobStore}
               constraints={{
                 min: {
                   // Dynamically increase the min width for longer text.

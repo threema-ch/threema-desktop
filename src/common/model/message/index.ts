@@ -50,7 +50,6 @@ import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {LocalSetStore} from '~/common/utils/store/set-store';
-import type {MessageStatus} from '~/common/viewmodel/types';
 
 /**
  * Factory for creating stores and database entries for concrete message types.
@@ -833,20 +832,4 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             }
         });
     }
-}
-
-/**
- * Return the message status and the corresponding date for the specified outbound message view.
- */
-export function statusFromView(
-    view: Readonly<OutboundBaseMessageView>,
-): [status: MessageStatus, updatedAt: Date] {
-    if (view.readAt !== undefined) {
-        return ['read', view.readAt];
-    } else if (view.deliveredAt !== undefined) {
-        return ['delivered', view.deliveredAt];
-    } else if (view.sentAt !== undefined) {
-        return ['sent', view.sentAt];
-    }
-    return ['pending', view.createdAt];
 }

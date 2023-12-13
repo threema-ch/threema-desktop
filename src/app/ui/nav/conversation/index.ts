@@ -1,3 +1,5 @@
+import {SyncEvent} from 'ts-events';
+
 import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromContact,
@@ -21,6 +23,11 @@ import {unreachable} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
 import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
+
+type ConversationListEvent =
+    | {action: 'scroll-to-top'}
+    | {action: 'scroll-to-receiver'; receiverLookup: DbReceiverLookup};
+export const conversationListEvent = new SyncEvent<ConversationListEvent>();
 
 /**
  * Transformed data necessary to display a conversation preview.

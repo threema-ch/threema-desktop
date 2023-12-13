@@ -4,9 +4,9 @@ import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials
 import type {MessageDetailsModalProps} from '~/app/ui/components/partials/chat-view/internal/message-details-modal/props';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
 import type {DbContactUid} from '~/common/db';
-import type {ReceiverType} from '~/common/enum';
 import type {MessageId} from '~/common/network/types';
 import type {FileMessageDataState} from '~/common/viewmodel/types';
+import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
  * Props accepted by the `Message` component.
@@ -18,12 +18,10 @@ export interface MessageProps {
     };
     readonly boundary?: MessageContextMenuProviderProps['boundary'];
     readonly conversation: {
-        readonly type: ReceiverType;
-        readonly isBlocked: boolean;
-        readonly isDisabled: boolean;
+        receiver: AnyReceiverData;
     };
     readonly direction: BasicMessageProps['direction'];
-    readonly file?: NonNullable<BasicMessageProps['file']> & {
+    readonly file?: Omit<NonNullable<BasicMessageProps['file']>, 'thumbnail'> & {
         readonly sync: {
             /**
              * Whether the message content (i.e. file data) has been synced.
@@ -34,6 +32,10 @@ export interface MessageProps {
              */
             readonly direction: 'upload' | 'download' | undefined;
         };
+        readonly thumbnail?: Omit<
+            NonNullable<NonNullable<BasicMessageProps['file']>['thumbnail']>,
+            'blobStore'
+        >;
     };
     /**
      * Whether to play an animation to bring attention to the message. Resets to `false` when the

@@ -5,6 +5,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import DateTime from '~/app/ui/components/atoms/datetime/DateTime.svelte';
+  import {conversationDrafts} from '~/app/ui/components/partials/views/conversation/drafts';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
@@ -12,25 +13,24 @@
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {conversationDrafts} from '~/app/ui/main/conversation';
   import {
     type ConversationPreviewData,
     conversationPreviewListFilter,
     transformConversation,
     transformReceiver,
   } from '~/app/ui/nav/conversation';
-  import MessageStatus from '~/app/ui/nav/conversation/MessageStatus.svelte';
+  import MessageStatusComponent from '~/app/ui/nav/conversation/MessageStatus.svelte';
   import {
     ConversationCategory,
     ConversationVisibility,
     MessageDirection,
     ReceiverType,
   } from '~/common/enum';
-  import {statusFromView} from '~/common/model/message';
   import {unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {derive} from '~/common/utils/store/derived-store';
   import type {ConversationPreview} from '~/common/viewmodel/conversation-preview';
+  import type {MessageStatus} from '~/common/viewmodel/types';
 
   /**
    * ConversationPreview
@@ -65,8 +65,7 @@
    * Store containing the conversation's last message
    */
   $: lastConversationMessage = $viewModel.lastMessage;
-  $: lastMessageStore = lastConversationMessage?.messageStore;
-  $: lastMessageViewModelStore = lastConversationMessage?.viewModel;
+  $: lastMessageViewModelStore = lastConversationMessage?.viewModelStore;
   $: lastMessagePreviewText = $viewModel.lastMessagePreview;
 
   export let services: AppServices;
@@ -115,6 +114,25 @@
     return `#${getFragmentForRoute(route) ?? ''}`;
   }
 
+  /**
+   * Return the message status and the corresponding date for the specified outbound message view.
+   */
+  function getStatus(
+    viewModelStore: Exclude<typeof $lastMessageViewModelStore, undefined>,
+  ): [status: MessageStatus, updatedAt: Date] {
+    const status = viewModelStore.status;
+
+    if (status.read !== undefined) {
+      return ['read', status.read.at];
+    } else if (status.delivered !== undefined) {
+      return ['delivered', status.delivered.at];
+    } else if (status.sent !== undefined) {
+      return ['sent', status.sent.at];
+    }
+
+    return ['pending', status.created.at];
+  }
+
   // Temporary draft mechanism. TODO(DESK-306) full implementation.
   let conversationDraft: string | undefined;
 
@@ -149,7 +167,7 @@
     // Use last message as preview text.
     if (lastMessagePreviewText !== undefined) {
       if (isGroupConversation) {
-        const sender = $lastMessageViewModelStore?.body.sender;
+        const sender = $lastMessageViewModelStore?.sender;
 
         switch (sender?.type) {
           case 'self':
@@ -198,7 +216,7 @@
             title: receiver$.name,
             subtitle: {
               text: previewText,
-              mentions: $lastMessageViewModelStore?.mentions,
+              mentions: $lastMessageViewModelStore?.text?.mentions,
             },
             isDisabled: isDisabledReceiver($receiver),
             isInactive: isInactiveContact($receiver),
@@ -241,8 +259,9 @@
           </div>
 
           <div class="status" slot="additional-bottom">
-            {#if $lastMessageStore !== undefined}
-              <DateTime date={$lastMessageStore.view.createdAt} {services} />
+            {#if $lastMessageViewModelStore !== undefined}
+              <DateTime date={$lastMessageViewModelStore.status.created.at} {services} />
+
               <span class="icon">
                 {#if isGroupConversation}
                   <MdIcon theme="Filled">group</MdIcon>
@@ -251,14 +270,14 @@
                     The reaction indexing here is safe because we only show reactions in the navlist
                     that are in single chats. Therefore, there can only ever be one reaction.
                   -->
-                  <MessageStatus
-                    direction={$lastMessageStore.view.direction}
-                    status={$lastMessageStore.view.direction === MessageDirection.OUTBOUND
-                      ? statusFromView($lastMessageStore.view)[0]
+                  <MessageStatusComponent
+                    direction={$lastMessageViewModelStore.direction === 'inbound'
+                      ? MessageDirection.INBOUND
+                      : MessageDirection.OUTBOUND}
+                    status={$lastMessageViewModelStore.direction === 'outbound'
+                      ? getStatus($lastMessageViewModelStore)[0]
                       : 'delivered'}
-                    reaction={receiver.type === ReceiverType.CONTACT
-                      ? $lastMessageStore.view.reactions[0]?.reaction
-                      : undefined}
+                    reaction={$lastMessageViewModelStore.reactions[0]?.type}
                     outgoingReactionDisplay="arrow"
                     receiverType={receiver.type}
                   />

@@ -5,7 +5,7 @@ import type {Contact} from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {ensureIdentityString, ensureNickname} from '~/common/network/types';
-import {type Mention, getMentions} from '~/common/viewmodel/utils/mentions';
+import {type AnyMention, getMentions} from '~/common/viewmodel/utils/mentions';
 import {
     type TestUser,
     addTestUserAsContact,
@@ -36,7 +36,7 @@ export function run(): void {
                 services: TestServices,
                 message: string,
                 recipient: LocalModelStore<Contact>,
-                expectedMentions: Mention[],
+                expectedMentions: AnyMention[],
             ): Promise<void> {
                 const msg = await recipient
                     .get()
@@ -49,7 +49,7 @@ export function run(): void {
                         createdAt: new Date(),
                         text: message,
                     });
-                const mentions = getMentions(msg.get(), services.model);
+                const mentions = getMentions(services, msg.get());
                 expect(mentions).to.deep.equal(expectedMentions);
             }
 
@@ -63,9 +63,9 @@ export function run(): void {
                     contactBästeli,
                     [
                         {
-                            type: 'other',
+                            type: 'contact',
                             identity: ensureIdentityString('EUGEN000'),
-                            displayName: 'Eugen Pfister',
+                            name: 'Eugen Pfister',
                             lookup: {type: ReceiverType.CONTACT, uid: contactEugen.ctx},
                         },
                     ],
@@ -83,27 +83,27 @@ export function run(): void {
                     contactBästeli,
                     [
                         {
-                            type: 'other',
+                            type: 'contact',
                             identity: ensureIdentityString('EUGEN000'),
-                            displayName: 'Eugen Pfister',
+                            name: 'Eugen Pfister',
                             lookup: {type: ReceiverType.CONTACT, uid: contactEugen.ctx},
                         },
                         {
-                            type: 'other',
+                            type: 'contact',
                             identity: ensureIdentityString('WRIGLEY0'),
-                            displayName: 'WRIGLEY0',
+                            name: 'WRIGLEY0',
                             lookup: {type: ReceiverType.CONTACT, uid: contactWrigley.ctx},
                         },
                     ],
                 );
             });
 
-            it('all mention', async () => {
+            it('mention everyone', async () => {
                 const services = makeTestServices(me);
                 const contactBästeli = addTestUserAsContact(services.model, userBästeli);
                 await testMessageMentions(services, 'Mention to @[@@@@@@@@]', contactBästeli, [
                     {
-                        type: 'all',
+                        type: 'everyone',
                         identity: '@@@@@@@@',
                     },
                 ]);

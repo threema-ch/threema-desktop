@@ -34,7 +34,7 @@ export interface MessageProps {
              */
             readonly expectedDimensions: Dimensions | undefined;
             /** Store that will eventually resolve to the thumbnail blob. */
-            readonly thumbnailStore: BlobStore;
+            readonly blobStore: BlobStore;
             readonly mediaType: string;
         };
         /** Type of the file, used to control how its preview will be rendered. */

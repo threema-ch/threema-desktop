@@ -6,18 +6,17 @@
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
   import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import DropZone from '#3sc/components/blocks/DropZone/DropZone.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import TitleAndClose from '#3sc/components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import type {FileResult} from '#3sc/utils/filelist';
   import {globals} from '~/app/globals';
-  import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
+  import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';
+  import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
+  import EmojiPicker from '~/app/ui/components/molecules/emoji-picker/EmojiPicker.svelte';
+  import {showFileResultErrorToast} from '~/app/ui/components/partials/views/conversation/helpers';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import Tooltip from '~/app/ui/generic/popover/Tooltip.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import {showFileResultError} from '~/app/ui/main/conversation/compose';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import {
     generateThumbnail,
     type MediaFile,
@@ -29,15 +28,17 @@
   import Caption from '~/app/ui/modal/media-message/Caption.svelte';
   import ConfirmClose from '~/app/ui/modal/media-message/ConfirmClose.svelte';
   import Miniatures from '~/app/ui/modal/media-message/Miniatures.svelte';
+  import type {FileLoadResult} from '~/app/ui/utils/file';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {type Dimensions, ensureU53, type u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {isSupportedImageType} from '~/common/utils/image';
   import {WritableStore} from '~/common/utils/store';
   import type {
-    SendFileBasedMessagesEventDetail,
+    SendFileBasedMessageEventDetail,
     SendMessageEventDetail,
-  } from '~/common/viewmodel/conversation';
+  } from '~/common/viewmodel/conversation/main/controller/types';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.media-message-modal');
   const hotkeyManager = globals.unwrap().hotkeyManager;
@@ -45,6 +46,8 @@
   export let title: string;
   export let mediaFiles: MediaFile[];
   export let visible: boolean;
+
+  let modalComponent: SvelteNullableBinding<Modal> = null;
 
   /**
    * Whether or not more files can be attached to the message.
@@ -64,7 +67,7 @@
   /**
    * Component event dispatcher.
    */
-  const dispatch = createEventDispatcher<{sendMessage: SendMessageEventDetail}>();
+  const dispatch = createEventDispatcher<{close: undefined; clicksend: SendMessageEventDetail}>();
 
   /**
    * Handle change events of the caption textarea.
@@ -108,6 +111,7 @@
     } else {
       // Close the modal if all files have been removed.
       visible = false;
+      dispatch('close');
     }
   }
 
@@ -135,9 +139,10 @@
     }
 
     visible = false;
+    dispatch('close');
 
     // Prepare files to be sent
-    const files: SendFileBasedMessagesEventDetail['files'] = await Promise.all(
+    const files: SendFileBasedMessageEventDetail['files'] = await Promise.all(
       mediaFiles.map(async (mediaFile) => {
         const isImage = isSupportedImageType(mediaFile.file.type);
 
@@ -177,21 +182,21 @@
       }),
     );
 
-    dispatch('sendMessage', {
+    dispatch('clicksend', {
       type: 'files',
       files,
     });
   }
 
-  function attachMoreFiles(fileResult: FileResult): void {
+  function attachMoreFiles(fileResult: FileLoadResult): void {
     switch (fileResult.status) {
       case 'empty':
       case 'inaccessible':
-        showFileResultError(fileResult.status, i18n, log);
+        showFileResultErrorToast(fileResult.status, i18n, log);
         return;
 
       case 'partial':
-        showFileResultError(fileResult.status, i18n, log);
+        showFileResultErrorToast(fileResult.status, i18n, log);
         break;
 
       case 'ok':
@@ -231,15 +236,18 @@
     }
   }
 
+  function handleDropFiles(event: CustomEvent<FileLoadResult>): void {
+    attachMoreFiles(event.detail);
+    event.stopPropagation();
+  }
+
   /**
    * Close this media message modal.
    */
   function close(_: CustomEvent): void {
     visible = false;
+    dispatch('close');
   }
-
-  let zoneHover = false;
-  let bodyHover = false;
 
   $: validatedMediaFiles = validateMediaFiles(mediaFiles);
 
@@ -285,176 +293,129 @@
   });
 </script>
 
-<svelte:body
-  on:threemadragstart={() => {
-    bodyHover = true;
+<Modal
+  bind:this={modalComponent}
+  wrapper={{
+    type: 'none',
   }}
-  on:threemadragend={() => {
-    bodyHover = false;
+  options={{
+    allowClosingWithEsc: false,
+    suspendHotkeysWhenVisible: false,
   }}
-/>
-
-<template>
-  <ModalWrapper {visible} suspendHotkeysWhenVisible={false}>
-    <DropZone
-      bind:zoneHover
-      on:fileDrop={(event) => {
-        attachMoreFiles(event.detail);
-        event.stopPropagation();
-      }}
-    >
-      <div class="drag-wrapper" class:bodyHover>
-        <ModalDialog
-          bind:visible
-          on:confirm
-          on:close={closeWithOptionalConfirmation}
-          on:cancel={closeWithOptionalConfirmation}
-        >
-          <TitleAndClose let:modal {modal} slot="header" {title} />
-          <div class="body" slot="body">
-            {#if activeMediaFile !== undefined && activeValidationResult !== undefined}
-              <ActiveMediaFile
-                mediaFile={activeMediaFile}
-                validationResult={activeValidationResult}
-                on:remove={removeActiveMediaFile}
-              />
+>
+  <DropZoneProvider
+    overlay={{
+      message: $i18n.t(
+        'dialog--compose-media-message.hint--drop-files-to-add',
+        'Drop files here to add',
+      ),
+    }}
+    on:dropfiles={handleDropFiles}
+  >
+    <div class="content">
+      <ModalDialog
+        bind:visible
+        on:close={closeWithOptionalConfirmation}
+        on:cancel={closeWithOptionalConfirmation}
+      >
+        <TitleAndClose let:modal {modal} slot="header" {title} />
+        <div class="body" slot="body">
+          {#if activeMediaFile !== undefined && activeValidationResult !== undefined}
+            <ActiveMediaFile
+              mediaFile={activeMediaFile}
+              validationResult={activeValidationResult}
+              on:remove={removeActiveMediaFile}
+            />
+          {/if}
+        </div>
+        <div class="footer" slot="footer">
+          <div class="caption">
+            <Caption
+              bind:this={captionComposeArea}
+              initialText={activeMediaFile?.caption.get()}
+              on:submit={sendMessages}
+              on:textbytelengthdidchange={handleTextChange}
+            />
+          </div>
+          <Popover
+            bind:this={emojiPickerPopover}
+            anchorPoints={{
+              reference: {
+                horizontal: 'right',
+                vertical: 'top',
+              },
+              popover: {
+                horizontal: 'right',
+                vertical: 'bottom',
+              },
+            }}
+            offset={{
+              left: -10,
+              top: -24,
+            }}
+          >
+            <IconButton slot="trigger" flavor="naked">
+              <MdIcon theme="Outlined">insert_emoticon</MdIcon>
+            </IconButton>
+            <EmojiPicker
+              slot="popover"
+              on:clickemoji={(event) => captionComposeArea?.insertText(event.detail)}
+            />
+          </Popover>
+          <div class="miniatures">
+            <Miniatures
+              {validatedMediaFiles}
+              {activeMediaFileIndex}
+              {moreFilesAttachable}
+              on:select={(event) => {
+                saveAndClearCurrentCaption();
+                const index = mediaFiles.indexOf(event.detail);
+                if (index !== -1) {
+                  setNewActiveMediaFile(index);
+                }
+              }}
+              on:fileDrop={(event) => attachMoreFiles(event.detail)}
+            />
+          </div>
+          <div class="action" class:disabled={!isSendingEnabled}>
+            <div
+              bind:this={sendButtonWrapper}
+              on:mouseenter={handleTriggerMouseEnter}
+              on:mouseleave={handleTriggerMouseLeave}
+            >
+              <IconButton flavor="filled" disabled={!isSendingEnabled} on:click={sendMessages}>
+                <MdIcon theme="Filled">arrow_upward</MdIcon>
+              </IconButton>
+            </div>
+            {#if !isSendingEnabled && sendButtonPopover !== null}
+              <Tooltip bind:popover={sendButtonPopover} reference={sendButtonWrapper}>
+                <p class="tooltip-content">
+                  {$i18n.t(
+                    'messaging.error--send-file-miscellaneous-errors',
+                    'Some files contain errors',
+                  )}
+                </p>
+              </Tooltip>
             {/if}
           </div>
-          <div class="footer" slot="footer">
-            <div class="caption">
-              <Caption
-                bind:this={captionComposeArea}
-                initialText={activeMediaFile?.caption.get()}
-                on:submit={sendMessages}
-                on:textbytelengthdidchange={handleTextChange}
-              />
-            </div>
-            <Popover
-              bind:this={emojiPickerPopover}
-              anchorPoints={{
-                reference: {
-                  horizontal: 'right',
-                  vertical: 'top',
-                },
-                popover: {
-                  horizontal: 'right',
-                  vertical: 'bottom',
-                },
-              }}
-              offset={{
-                left: 0,
-                top: -14,
-              }}
-            >
-              <IconButton slot="trigger" flavor="naked">
-                <MdIcon theme="Outlined">insert_emoticon</MdIcon>
-              </IconButton>
+        </div>
+      </ModalDialog>
+    </div>
+  </DropZoneProvider>
 
-              <EmojiPicker
-                slot="popover"
-                on:insertEmoji={(event) => captionComposeArea?.insertText(event.detail)}
-              />
-            </Popover>
-            <div class="miniatures">
-              <Miniatures
-                {validatedMediaFiles}
-                {activeMediaFileIndex}
-                {moreFilesAttachable}
-                on:select={(event) => {
-                  saveAndClearCurrentCaption();
-
-                  const index = mediaFiles.indexOf(event.detail);
-                  if (index !== -1) {
-                    setNewActiveMediaFile(index);
-                  }
-                }}
-                on:fileDrop={(event) => attachMoreFiles(event.detail)}
-              />
-            </div>
-            <div class="action" class:disabled={!isSendingEnabled}>
-              <div
-                bind:this={sendButtonWrapper}
-                on:mouseenter={handleTriggerMouseEnter}
-                on:mouseleave={handleTriggerMouseLeave}
-              >
-                <IconButton flavor="filled" disabled={!isSendingEnabled} on:click={sendMessages}>
-                  <MdIcon theme="Filled">arrow_upward</MdIcon>
-                </IconButton>
-              </div>
-
-              {#if !isSendingEnabled && sendButtonPopover !== null}
-                <Tooltip bind:popover={sendButtonPopover} reference={sendButtonWrapper}>
-                  <p class="tooltip-content">
-                    {$i18n.t(
-                      'messaging.error--send-file-miscellaneous-errors',
-                      'Some files contain errors',
-                    )}
-                  </p>
-                </Tooltip>
-              {/if}
-            </div>
-          </div>
-        </ModalDialog>
-
-        {#if zoneHover || bodyHover}
-          <div class="drop-wrapper" class:zoneHover class:bodyHover>
-            <div class="border">
-              {$i18n.t(
-                'dialog--compose-media-message.hint--drop-files-to-add',
-                'Drop files here to add',
-              )}
-            </div>
-          </div>
-        {/if}
-      </div>
-    </DropZone>
-  </ModalWrapper>
   <ConfirmClose bind:visible={confirmCloseDialogVisible} on:confirm={close} />
-</template>
+</Modal>
 
 <style lang="scss">
   @use 'component' as *;
 
   $width: 640px;
 
-  .drag-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-
-    .drop-wrapper {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: calc($z-index-modal + $z-index-plus);
-
-      &.bodyHover {
-        display: block;
-        padding: rem(8px);
-        background-color: var(--t-main-background-color);
-
-        .border {
-          @extend %font-h5-400;
-          display: grid;
-          align-items: center;
-          justify-items: center;
-          width: 100%;
-          height: 100%;
-          border-radius: rem(8px);
-          border: rem(2px) solid $consumer-green-600;
-        }
-      }
-      &.zoneHover {
-        .border {
-          background-color: rgba($consumer-green-600, 10%);
-        }
-      }
-    }
+  .content {
+    position: relative;
+    z-index: 0;
+    width: 100vw;
+    height: 100vh;
   }
 
   .body {
@@ -463,6 +424,7 @@
     width: rem($width);
     height: rem(368px);
   }
+
   .footer {
     display: grid;
     width: rem($width);
