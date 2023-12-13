@@ -1,6 +1,5 @@
-import type {TSESTree} from '@typescript-eslint/utils';
+import {TSESTree} from '@typescript-eslint/utils';
 import {ESLintUtils} from '@typescript-eslint/utils';
-import type {Expression, PrivateIdentifier} from '@typescript-eslint/types/dist/generated/ast-spec';
 
 const createRule = ESLintUtils.RuleCreator(() => 'ban-typed-array-length');
 
@@ -16,7 +15,7 @@ export default createRule({
         type: 'suggestion',
         docs: {
             description: 'Ban the comparison of two typed arrays with ===',
-            recommended: 'error',
+            recommended: 'recommended',
         },
         schema: [],
         messages: {
@@ -57,7 +56,7 @@ export default createRule({
                 /**
                  * Helper function to detect whether a node is array-like.
                  */
-                function isTypedArrayLike(key: Expression | PrivateIdentifier) {
+                function isTypedArrayLike(key: TSESTree.Expression | TSESTree.PrivateIdentifier) {
                     // We don't actually check whether it's a `TypedArray`, just
                     // if it has the property `byteLength`.
                     const node = parserServices.esTreeNodeToTSNodeMap.get(key);

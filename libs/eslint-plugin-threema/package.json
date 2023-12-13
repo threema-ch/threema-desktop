@@ -16,7 +16,7 @@
   "author": "Threema GmbH",
   "license": "AGPL-3.0+",
   "devDependencies": {
-    "@typescript-eslint/utils": "~5.60.1",
+    "@typescript-eslint/utils": "~6.14.0",
     "typescript": "~5.1.6"
   }
 }

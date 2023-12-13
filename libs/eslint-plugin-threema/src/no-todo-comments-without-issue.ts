@@ -9,7 +9,7 @@ export default createRule({
         type: 'suggestion',
         docs: {
             description: "Ban TODO comments that are not linked to an issue.",
-            recommended: 'warn',
+            recommended: 'recommended',
         },
         schema: [],
         messages: {

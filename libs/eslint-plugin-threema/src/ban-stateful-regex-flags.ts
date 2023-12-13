@@ -11,7 +11,7 @@ export default createRule({
         type: 'suggestion',
         docs: {
             description: 'Ban the use of stateful flags for RegExp',
-            recommended: 'error',
+            recommended: 'recommended',
         },
         schema: [],
         messages: {
