@@ -102,7 +102,7 @@ export function randomU32Uniform(crypto: Pick<CryptoBackend, 'randomBytes'>, upp
 export function randomString(
     crypto: Pick<CryptoBackend, 'randomBytes'>,
     length = 8,
-    charset = 'abcdefghijklmnopqrstuvwxyz1234567890',
+    charset = 'abcdefghijklmnopqrstuvwxyz1234567890'.split(''),
 ): string {
     return [...Array<undefined>(length)]
         .map(() => charset[randomU32Uniform(crypto, charset.length)])
