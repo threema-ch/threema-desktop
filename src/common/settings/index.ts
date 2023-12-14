@@ -1,35 +1,44 @@
 import {CALLS_SETTINGS_CODEC, type CallsSettings} from '~/common/settings/calls';
 import {PRIVACY_SETTINGS_CODEC, type PrivacySettings} from '~/common/settings/privacy';
 import {PROFILE_SETTINGS_CODEC, type ProfileSettings} from '~/common/settings/profile';
+import type {u53} from '~/common/types';
+import type {AssertAssignable} from '~/common/utils/type-assertions';
+
+const SETTINGS_CATEGORIES = [
+    'profile',
+    'privacy',
+    'calls',
+    'security',
+    'about',
+    'appearance',
+] as const;
+
+/**
+ * The default category, shown when opening the settings.
+ */
+export const DEFAULT_CATEGORY: SettingsCategory = 'profile';
+
+/**
+ * Note: Categories that are not keyof Setting only contain local settings, options or information.
+ */
+export type SettingsCategory = (typeof SETTINGS_CATEGORIES)[u53];
 
 // Whenever this is extended, the function isSettingCategory needs to be updated as well
 export interface Settings {
-    profile: ProfileSettings;
-    privacy: PrivacySettings;
-    calls: CallsSettings;
+    readonly profile: ProfileSettings;
+    readonly privacy: PrivacySettings;
+    readonly calls: CallsSettings;
 }
 
-/**
- * Categories that are not keyof Setting only contain local settings, options or information
- */
-export type SettingsCategory = keyof Settings | 'security' | 'about' | 'appearance';
+// Ensure that every key in `Settings` is a valid `SettingsCategory`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+type SettingsAssertions = AssertAssignable<Record<SettingsCategory, any>, Settings>;
 
-export type DefaultSetting = 'profile';
 /**
  * Checks if a string can be mapped to a setting category
  */
 function isSettingsCategory(category: string): category is SettingsCategory {
-    switch (category) {
-        case 'profile':
-        case 'privacy':
-        case 'calls':
-        case 'security':
-        case 'about':
-        case 'appearance':
-            return true;
-        default:
-            return false;
-    }
+    return (SETTINGS_CATEGORIES as readonly string[]).includes(category);
 }
 
 /**
@@ -41,6 +50,8 @@ export function ensureSettingsCategory(category: string): SettingsCategory {
     }
     return category;
 }
+
+export type DefaultSetting = 'profile';
 
 export interface SettingsCategoryCodec<TKey extends keyof Settings> {
     readonly encode: (settings: Settings[TKey]) => Uint8Array;
