@@ -1,11 +1,11 @@
 <script lang="ts">
+  import TextArea from '~/app/ui/components/atoms/textarea/TextArea.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
   import type {u53} from '~/common/types';
 
   export let initialText: string | undefined = undefined;
 
-  let composeArea: ComposeArea;
+  let composeArea: TextArea;
 
   /**
    * Focus caption input
@@ -40,21 +40,21 @@
    * Clear the contents of the compose area.
    */
   export function clearText(): void {
-    composeArea.clearText();
+    composeArea.clear();
   }
 </script>
 
 <template>
   <div>
-    <ComposeArea
-      on:submit
-      on:textByteLengthChanged
+    <TextArea
       bind:this={composeArea}
+      {initialText}
       placeholder={$i18n.t(
         'dialog--compose-media-message.label--media-message-caption',
         'Add a caption to this media format',
       )}
-      {initialText}
+      on:submit
+      on:textbytelengthdidchange
     />
   </div>
 </template>

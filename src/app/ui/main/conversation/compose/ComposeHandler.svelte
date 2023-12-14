@@ -126,7 +126,7 @@
     {displayAttachmentButton}
     on:sendTextMessage
     on:recordAudio
-    on:filePaste={(event) => handleFilePaste(event.detail)}
+    on:pastefiles={(event) => handleFilePaste(event.detail)}
     on:fileDrop={(event) => handleFileDrop(event.detail)}
   />
 

@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 
 import type {u8} from '~/common/types';
-import {entriesReverse, groupArray, joinConstArray} from '~/common/utils/array';
+import {entriesReverse, chunk, joinConstArray, group} from '~/common/utils/array';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
 
 const {expect} = chai.use(chaiByteEqual);
@@ -11,7 +11,7 @@ const {expect} = chai.use(chaiByteEqual);
  */
 export function run(): void {
     describe('utils::array', function () {
-        describe('groupArray', function () {
+        describe('chunk', function () {
             const testCases: {array: u8[]; size: u8; expected: u8[][]}[] = [
                 {
                     array: [1, 2, 3, 4, 5],
@@ -46,11 +46,27 @@ export function run(): void {
                 },
             ];
             for (const {array, size, expected} of testCases) {
-                it(`group array with ${array.length} entries into groups of ${size}`, function () {
-                    const grouped = groupArray(array, size);
-                    expect(grouped).to.deep.equal(expected);
+                it(`split array with ${array.length} entries into chunks of ${size}`, function () {
+                    const chunked = chunk(array, size);
+                    expect(chunked).to.deep.equal(expected);
                 });
             }
+        });
+
+        describe('group', function () {
+            it('groups values according to the grouping function', function () {
+                const array = [1.5, 2.5, 2.75, 3];
+
+                const grouped = group(array, (value) => Math.floor(value));
+
+                expect(grouped).to.deep.equal(
+                    new Map<u8, u8[]>([
+                        [1, [1.5]],
+                        [2, [2.5, 2.75]],
+                        [3, [3]],
+                    ]),
+                );
+            });
         });
 
         describe('joinArray', function () {

@@ -6,10 +6,10 @@
   import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
+  import TextArea from '~/app/ui/components/atoms/textarea/TextArea.svelte';
   import EmojiPicker from '~/app/ui/generic/emoji-picker/EmojiPicker.svelte';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import ComposeArea from '~/app/ui/main/conversation/compose/ComposeArea.svelte';
   import type {u53} from '~/common/types';
 
   const hotkeyManager = globals.unwrap().hotkeyManager;
@@ -31,7 +31,7 @@
   }>();
 
   let composeBar: HTMLElement | undefined;
-  let composeArea: ComposeArea;
+  let composeArea: TextArea;
   let composeAreaIsEmpty: Readable<boolean>;
   let composeAreaTextByteLength: u53;
 
@@ -56,7 +56,7 @@
    * Remove entered text
    */
   export function clearText(): void {
-    composeArea.clearText();
+    composeArea.clear();
   }
 
   /**
@@ -80,7 +80,7 @@
     }
 
     dispatch('sendTextMessage', composeArea.getText());
-    composeArea.clearText();
+    composeArea.clear();
     emojiPickerPopover?.close();
   }
 
@@ -117,17 +117,17 @@
         </FileTrigger>
       {/if}
     </div>
-    <ComposeArea
-      {initialText}
+    <TextArea
       bind:this={composeArea}
       bind:isEmpty={composeAreaIsEmpty}
-      on:textByteLengthChanged={handleTextChange}
-      on:submit={sendTextMessage}
-      on:filePaste
-      on:heightDidChange={() => {
+      {initialText}
+      placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
+      on:heightdidchange={() => {
         emojiPickerPopover?.forceReposition();
       }}
-      placeholder={$i18n.t('messaging.label--compose-area', 'Write a message...')}
+      on:pastefiles
+      on:submit={sendTextMessage}
+      on:textbytelengthdidchange={handleTextChange}
     />
     <div class="icons-right">
       {#if isTextByteLengthVisible}

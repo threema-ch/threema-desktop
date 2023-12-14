@@ -14,7 +14,7 @@ import {
     type ServicesForTasks,
 } from '~/common/network/protocol/task/';
 import type {ConversationId, MessageId} from '~/common/network/types';
-import {groupArray} from '~/common/utils/array';
+import {chunk} from '~/common/utils/array';
 import {u64ToHexLe} from '~/common/utils/number';
 
 /**
@@ -101,7 +101,7 @@ export class ReflectIncomingMessageUpdateTask implements ActiveTask<void, 'persi
     }
 
     public async run(handle: ActiveTaskCodecHandle<'volatile'>): Promise<void> {
-        for (const group of groupArray(this._uniqueMessageIds, this._chunkSize)) {
+        for (const group of chunk(this._uniqueMessageIds, this._chunkSize)) {
             const messageUpdate = this._getEnvelope(group);
             this._log.info(`Reflecting a chunk of ${group.length} message updates`);
             this._log.debug(

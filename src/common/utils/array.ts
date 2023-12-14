@@ -2,17 +2,36 @@ import type {Primitive, u53} from '~/common/types';
 import {unwrap} from '~/common/utils/assert';
 
 /**
- * Group a large array into multiple smaller arrays with the same max size.
+ * Split a large array into multiple smaller arrays with the same max size.
  *
- * Example: Grouping `[1, 2, 3, 4, 5]` with `groupSize` 2 will return `[[1, 2], [3, 4], [5]]`
+ * @example
+ * ```ts
+ * const chunked = chunk([1, 2, 3, 4, 5], 2); // Returns `[[1, 2], [3, 4], [5]]`.
+ * ```
  */
-export function groupArray<T>(array: T[], groupSize: u53): T[][] {
+export function chunk<T>(array: T[], chunkSize: u53): T[][] {
     const arrays = [];
-    const groupCount = Math.ceil(array.length / groupSize);
+    const groupCount = Math.ceil(array.length / chunkSize);
     for (let i = 0; i < groupCount; i++) {
-        arrays.push(array.slice(i * groupSize, (i + 1) * groupSize));
+        arrays.push(array.slice(i * chunkSize, (i + 1) * chunkSize));
     }
     return arrays;
+}
+
+/**
+ * Split an array into distinct sets, grouped by the result of the keying function.
+ *
+ * @example
+ * ```ts
+ * const grouped = group([1.5, 2.5, 2.75, 3], (value) => Math.floor(value)); // Returns `{ 1: [1.5], 2: [2.5, 2.75], 3: [3] }`;
+ * ```
+ */
+export function group<K, V>(array: V[], getKey: (value: V) => K): ReadonlyMap<K, V[]> {
+    return array.reduce((acc, curr) => {
+        const key = getKey(curr);
+        acc.set(key, [...(acc.get(key) ?? []), curr]);
+        return acc;
+    }, new Map<K, V[]>());
 }
 
 /**

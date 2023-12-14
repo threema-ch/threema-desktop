@@ -326,7 +326,7 @@
                 bind:this={captionComposeArea}
                 initialText={activeMediaFile?.caption.get()}
                 on:submit={sendMessages}
-                on:textByteLengthChanged={handleTextChange}
+                on:textbytelengthdidchange={handleTextChange}
               />
             </div>
             <Popover

@@ -26,7 +26,7 @@ import type {
     GroupMemberContainerEncodable,
 } from '~/common/network/structbuf/csp/e2e';
 import type {MessageId} from '~/common/network/types';
-import {groupArray} from '~/common/utils/array';
+import {chunk} from '~/common/utils/array';
 import {unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';
@@ -83,7 +83,7 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
         // Send delivery receipts in groups of up to 512 message IDs
-        for (const group of groupArray(this._messageIds, 512)) {
+        for (const group of chunk(this._messageIds, 512)) {
             this._log.info(
                 `Sending a delivery receipt of type ${CspE2eDeliveryReceiptStatusUtils.nameOf(
                     this._status,
