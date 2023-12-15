@@ -30,8 +30,7 @@ export interface SettingsDropdownItem<TValue, TLabel> {
  *
  * The type ensures that each item can only have a label that is a valid key of {@link TSetting}.
  */
-export type SettingsDropdown<
-    TSetting,
-    TSettingKey extends keyof TSetting,
+export type SettingsDropdown<TSetting, TSettingType> = SettingsDropdownItem<
     TSettingType,
-> = SettingsDropdownItem<TSettingType, TSettingKey>[];
+    keyof TSetting
+>[];

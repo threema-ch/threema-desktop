@@ -28,7 +28,7 @@ export function profilePictureSharedWithLabel(
 export function profilePictureShareWithDropdown(
     i18n: I18nType,
     currentAllowList: Readonly<IdentityString[]>,
-): SettingsDropdown<ProfileSettingsView, keyof ProfileSettingsView, ProfilePictureShareWith> {
+): SettingsDropdown<ProfileSettingsView, ProfilePictureShareWith> {
     return [
         {
             text: profilePictureSharedWithLabel('everyone', i18n),

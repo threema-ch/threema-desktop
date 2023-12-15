@@ -21,7 +21,7 @@ export function themeLabel(label: ThemeType, i18n: I18nType): string {
     }
 }
 
-export function themeDropdown(i18n: I18nType): SettingsDropdown<ThemeRecord, ThemeType, ThemeType> {
+export function themeDropdown(i18n: I18nType): SettingsDropdown<ThemeRecord, ThemeType> {
     return [
         {
             text: themeLabel('light', i18n),
@@ -54,9 +54,7 @@ export function localeLabel(label: LocaleType, i18n: I18nType): string {
     }
 }
 
-export function localeDropdown(
-    i18n: I18nType,
-): SettingsDropdown<LocaleRecord, LocaleType, LocaleType> {
+export function localeDropdown(i18n: I18nType): SettingsDropdown<LocaleRecord, LocaleType> {
     return [
         {
             text: localeLabel('de', i18n),

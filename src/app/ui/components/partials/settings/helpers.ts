@@ -11,12 +11,12 @@ import type {ContextMenuItem} from '~/app/ui/utils/context-menu/types';
  * @param handler Callback to be called when the item is selected in the dropdown
  * @returns A list of ContextMenuItems
  */
-export function createDropdownItems<TSettings, TSettingsKeys extends keyof TSettings, TSettingType>(
-    dropdown: SettingsDropdown<TSettings, TSettingsKeys, TSettingType>,
-    handler: (newValue: TSettingType, changeName: TSettingsKeys) => void,
+export function createDropdownItems<TSettings, TSettingType>(
+    dropdown: SettingsDropdown<TSettings, TSettingType>,
+    handler: (newValue: TSettingType, newLabel: keyof TSettings) => void,
 ): ContextMenuItem[] {
     const dropdownItems: ContextMenuItem[] = [];
-    Object.entries<SettingsDropdownItem<TSettingType, TSettingsKeys>>({...dropdown}).forEach(
+    Object.entries<SettingsDropdownItem<TSettingType, keyof TSettings>>({...dropdown}).forEach(
         ([value, item]) => {
             function cb(): void {
                 handler(item.value, item.label);

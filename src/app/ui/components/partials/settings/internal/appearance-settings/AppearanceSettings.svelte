@@ -33,12 +33,9 @@
     $locale = newValue;
   }
 
-  const themeItems = createDropdownItems<ThemeRecord, ThemeType, ThemeType>(
-    themeDropdown($i18n),
-    updateTheme,
-  );
+  const themeItems = createDropdownItems<ThemeRecord, ThemeType>(themeDropdown($i18n), updateTheme);
 
-  const localeItems = createDropdownItems<LocaleRecord, LocaleType, LocaleType>(
+  const localeItems = createDropdownItems<LocaleRecord, LocaleType>(
     localeDropdown($i18n),
     updateLocale,
   );

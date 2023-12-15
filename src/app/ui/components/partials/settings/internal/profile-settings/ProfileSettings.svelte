@@ -60,7 +60,6 @@
     const dropdown = profilePictureShareWithDropdown($i18n, sharedArray);
     profilePictureSharedWithItems = createDropdownItems<
       ProfileSettingsView,
-      keyof ProfileSettingsView,
       ProfilePictureShareWith
     >(dropdown, localChange);
   }
