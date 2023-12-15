@@ -183,7 +183,7 @@ function getQuotedMessage(
         log.info(
             `Quoted message id ${u64ToHexLe(
                 messageModel.view.quotedMessageId,
-            )} could be found (quote message ${u64ToHexLe(messageModel.view.id)})`,
+            )} could not be found (quote message ${u64ToHexLe(messageModel.view.id)})`,
         );
         return 'not-found';
     }
