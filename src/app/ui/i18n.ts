@@ -92,7 +92,7 @@ export const LOCALES = import.meta.env.DEBUG
 export const LOCALE_NAMES: {[Locale in keyof typeof resources]: string} & {
     readonly cimode: string;
 } = {
-    cimode: 'Translation Keys',
+    cimode: 'Translation Mode',
     de: 'Deutsch',
     en: 'English',
 };

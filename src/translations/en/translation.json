@@ -411,9 +411,6 @@
   "settings--appearance-settings": {
     "label--24-hour-time-format-title": "Time Format",
     "label--24-hour-time-format-value": "Enable 24-Hour Time",
-    "label--cimode": "Translation Mode",
-    "label--english": "English",
-    "label--german": "German",
     "label--locale": "Language",
     "label--section-date-time": "Date & Time",
     "label--section-general-appearance": "General Appearance",

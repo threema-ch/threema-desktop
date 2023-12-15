@@ -5,6 +5,7 @@ import type {
     ThemeType,
 } from '~/app/ui/components/partials/settings/internal/appearance-settings/types';
 import type {SettingsDropdown} from '~/app/ui/components/partials/settings/types';
+import {LOCALES, LOCALE_NAMES} from '~/app/ui/i18n';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {unreachable} from '~/common/utils/assert';
 
@@ -41,35 +42,17 @@ export function themeDropdown(i18n: I18nType): SettingsDropdown<ThemeRecord, The
     ];
 }
 
-export function localeLabel(label: LocaleType, i18n: I18nType): string {
-    switch (label) {
-        case 'de':
-            return i18n.t('settings--appearance-settings.label--german', 'German');
-        case 'en':
-            return i18n.t('settings--appearance-settings.label--english', 'English');
-        case 'cimode':
-            return i18n.t('settings--appearance-settings.label--cimode', 'Translation Mode');
-        default:
-            return unreachable(label);
-    }
+/**
+ * Return the label corresponding to the specified {@link LocaleType}.
+ */
+export function localeLabel(locale: LocaleType): string {
+    return LOCALE_NAMES[locale];
 }
 
-export function localeDropdown(i18n: I18nType): SettingsDropdown<LocaleRecord, LocaleType> {
-    return [
-        {
-            text: localeLabel('de', i18n),
-            value: 'de',
-            label: 'de',
-        },
-        {
-            text: localeLabel('en', i18n),
-            value: 'en',
-            label: 'en',
-        },
-        {
-            text: localeLabel('cimode', i18n),
-            value: 'cimode',
-            label: 'cimode',
-        },
-    ];
+export function localeDropdown(): SettingsDropdown<LocaleRecord, LocaleType> {
+    return LOCALES.map((locale) => ({
+        text: localeLabel(locale),
+        value: locale,
+        label: locale,
+    }));
 }

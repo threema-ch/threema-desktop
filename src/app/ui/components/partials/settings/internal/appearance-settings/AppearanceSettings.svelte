@@ -35,10 +35,7 @@
 
   const themeItems = createDropdownItems<ThemeRecord, ThemeType>(themeDropdown($i18n), updateTheme);
 
-  const localeItems = createDropdownItems<LocaleRecord, LocaleType>(
-    localeDropdown($i18n),
-    updateLocale,
-  );
+  const localeItems = createDropdownItems<LocaleRecord, LocaleType>(localeDropdown(), updateLocale);
 </script>
 
 <template>
@@ -61,7 +58,7 @@
           items={localeItems}
           key={$i18n.t('settings--appearance-settings.label--locale', 'Language')}
         >
-          <Text text={localeLabel($locale, $i18n)}></Text>
+          <Text text={localeLabel($locale)}></Text>
         </KeyValueList.ItemWithDropdown>
       </KeyValueList.Section>
       <KeyValueList.Section
