@@ -10,9 +10,7 @@
   } from '~/app/ui/components/partials/settings/internal/appearance-settings/helpers';
   import type {AppearanceSettingsProps} from '~/app/ui/components/partials/settings/internal/appearance-settings/props';
   import type {
-    ThemeRecord,
     ThemeType,
-    LocaleRecord,
     LocaleType,
   } from '~/app/ui/components/partials/settings/internal/appearance-settings/types';
   import {i18n} from '~/app/ui/i18n';
@@ -33,9 +31,9 @@
     $locale = newValue;
   }
 
-  const themeItems = createDropdownItems<ThemeRecord, ThemeType>(themeDropdown($i18n), updateTheme);
+  $: themeItems = createDropdownItems(themeDropdown($i18n), updateTheme);
 
-  const localeItems = createDropdownItems<LocaleRecord, LocaleType>(localeDropdown(), updateLocale);
+  $: localeItems = createDropdownItems(localeDropdown(), updateLocale);
 </script>
 
 <template>
@@ -47,7 +45,6 @@
           'General Appearance',
         )}
       >
-        <!--@TODO (DESK-630) This popover binding does not close on click -->
         <KeyValueList.ItemWithDropdown
           items={themeItems}
           key={$i18n.t('settings--appearance.label--theme', 'Theme')}

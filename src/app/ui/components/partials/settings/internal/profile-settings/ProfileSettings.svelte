@@ -33,9 +33,10 @@
   let profileSettings: RemoteModelStore<ProfileSettings> | undefined;
 
   let publicKeyModalOpen: boolean = false;
-  function handleClosePublicKeyModal(): void {
-    publicKeyModalOpen = false;
-  }
+
+  let profilePictureSharedWithItems: ContextMenuItem[];
+
+  let isProfilePictureModalVisible = false;
 
   viewModel
     .profile()
@@ -50,7 +51,36 @@
     .then((settings) => (profileSettings = settings))
     .catch(() => log.error('Failed to load profile settings model'));
 
-  let profilePictureSharedWithItems: ContextMenuItem[];
+  function localChange<N extends keyof ProfileSettingsView>(
+    newValue: ProfileSettingsView[N],
+    updateKey: N,
+  ): void {
+    profileSettings
+      ?.get()
+      .controller.update({[updateKey]: newValue})
+      .catch(() => log.error(`Failed to update settings: ${updateKey}`));
+  }
+
+  function handleClosePublicKeyModal(): void {
+    publicKeyModalOpen = false;
+  }
+
+  function handleClickProfilePicture(): void {
+    isProfilePictureModalVisible = true;
+  }
+  function handleCloseProfilePictureModal(): void {
+    isProfilePictureModalVisible = false;
+  }
+
+  function copyToClipboard(textToCopy: string): void {
+    navigator.clipboard
+      .writeText(textToCopy)
+      .catch(() => log.error('Failed to copy ID to clipboard'));
+    toast.addSimpleSuccess(
+      $i18n.t('settings--profile.prose--copy-id-content', 'Threema ID copied to clipboard'),
+    );
+  }
+
   $: if ($profileSettings !== undefined) {
     const sharedArray: Readonly<IdentityString[]> =
       $profileSettings.view.profilePictureShareWith.group === 'allowList'
@@ -62,32 +92,6 @@
       ProfileSettingsView,
       ProfilePictureShareWith
     >(dropdown, localChange);
-  }
-
-  let isProfilePictureModalVisible = false;
-  function handleClickProfilePicture(): void {
-    isProfilePictureModalVisible = true;
-  }
-  function handleCloseProfilePictureModal(): void {
-    isProfilePictureModalVisible = false;
-  }
-  function localChange<N extends keyof ProfileSettingsView>(
-    newValue: ProfileSettingsView[N],
-    changeName: N,
-  ): void {
-    profileSettings
-      ?.get()
-      .controller.update({[changeName]: newValue})
-      .catch(() => log.error(`Failed to update settings: ${changeName}`));
-  }
-
-  function copyToClipboard(textToCopy: string): void {
-    navigator.clipboard
-      .writeText(textToCopy)
-      .catch(() => log.error('Failed to copy ID to clipboard'));
-    toast.addSimpleSuccess(
-      $i18n.t('settings--profile.prose--copy-id-content', 'Threema ID copied to clipboard'),
-    );
   }
 </script>
 

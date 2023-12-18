@@ -9,14 +9,18 @@ import type {u53} from '~/common/types';
  * @param handler Callback to be called when the item is selected in the dropdown
  * @returns A list of ContextMenuItems
  */
-export function createDropdownItems<TSettings, TSettingType>(
-    dropdown: SettingsDropdown<TSettings, TSettingType>,
-    handler: (newValue: TSettingType, newLabel: keyof TSettings) => void,
+export function createDropdownItems<
+    TSettings,
+    TSettingType,
+    TUpdateKey extends keyof TSettings | undefined = keyof TSettings,
+>(
+    dropdown: SettingsDropdown<TSettings, TSettingType, TUpdateKey>,
+    handler: (newValue: TSettingType, updateKey: TUpdateKey) => void,
 ): ContextMenuItem[] {
-    type DropdownItem = (typeof dropdown)[u53];
+    type DropdownItem = (typeof dropdown.items)[u53];
 
-    return Object.values<DropdownItem>({...dropdown}).map((item) => ({
-        handler: () => handler(item.value, item.label),
+    return Object.values<DropdownItem>({...dropdown.items}).map((item) => ({
+        handler: () => handler(item.value, dropdown.updateKey),
         icon: item.options?.icon ?? undefined,
         label: item.text,
     }));

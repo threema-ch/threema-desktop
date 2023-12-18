@@ -29,21 +29,21 @@ export function profilePictureShareWithDropdown(
     i18n: I18nType,
     currentAllowList: Readonly<IdentityString[]>,
 ): SettingsDropdown<ProfileSettingsView, ProfilePictureShareWith> {
-    return [
-        {
-            text: profilePictureSharedWithLabel('everyone', i18n),
-            value: {group: 'everyone'},
-            label: 'profilePictureShareWith',
-        },
-        {
-            text: profilePictureSharedWithLabel('nobody', i18n),
-            value: {group: 'nobody'},
-            label: 'profilePictureShareWith',
-        },
-        {
-            text: profilePictureSharedWithLabel('allowList', i18n),
-            value: {group: 'allowList', allowList: currentAllowList},
-            label: 'profilePictureShareWith',
-        },
-    ];
+    return {
+        updateKey: 'profilePictureShareWith',
+        items: [
+            {
+                text: profilePictureSharedWithLabel('everyone', i18n),
+                value: {group: 'everyone'},
+            },
+            {
+                text: profilePictureSharedWithLabel('nobody', i18n),
+                value: {group: 'nobody'},
+            },
+            {
+                text: profilePictureSharedWithLabel('allowList', i18n),
+                value: {group: 'allowList', allowList: currentAllowList},
+            },
+        ],
+    };
 }

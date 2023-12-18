@@ -22,24 +22,24 @@ export function themeLabel(label: ThemeType, i18n: I18nType): string {
     }
 }
 
-export function themeDropdown(i18n: I18nType): SettingsDropdown<ThemeRecord, ThemeType> {
-    return [
-        {
-            text: themeLabel('light', i18n),
-            value: 'light',
-            label: 'light',
-        },
-        {
-            text: themeLabel('dark', i18n),
-            value: 'dark',
-            label: 'dark',
-        },
-        {
-            text: themeLabel('system', i18n),
-            value: 'system',
-            label: 'system',
-        },
-    ];
+export function themeDropdown(i18n: I18nType): SettingsDropdown<ThemeRecord, ThemeType, undefined> {
+    return {
+        updateKey: undefined,
+        items: [
+            {
+                text: themeLabel('light', i18n),
+                value: 'light',
+            },
+            {
+                text: themeLabel('dark', i18n),
+                value: 'dark',
+            },
+            {
+                text: themeLabel('system', i18n),
+                value: 'system',
+            },
+        ],
+    };
 }
 
 /**
@@ -49,10 +49,12 @@ export function localeLabel(locale: LocaleType): string {
     return LOCALE_NAMES[locale];
 }
 
-export function localeDropdown(): SettingsDropdown<LocaleRecord, LocaleType> {
-    return LOCALES.map((locale) => ({
-        text: localeLabel(locale),
-        value: locale,
-        label: locale,
-    }));
+export function localeDropdown(): SettingsDropdown<LocaleRecord, LocaleType, undefined> {
+    return {
+        updateKey: undefined,
+        items: LOCALES.map((locale) => ({
+            text: localeLabel(locale),
+            value: locale,
+        })),
+    };
 }

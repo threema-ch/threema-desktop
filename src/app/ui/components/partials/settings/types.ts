@@ -1,7 +1,7 @@
 /**
  * A single item in a dropdown menu.
  */
-export interface SettingsDropdownItem<TValue, TLabel> {
+export interface SettingsDropdownItem<TValue> {
     /**
      * Textual description of the item
      */
@@ -17,10 +17,6 @@ export interface SettingsDropdownItem<TValue, TLabel> {
      * The value that the item represents
      */
     readonly value: TValue;
-    /**
-     * The label that it belongs to (e.g for updates)
-     */
-    readonly label: TLabel;
 }
 
 /**
@@ -30,7 +26,11 @@ export interface SettingsDropdownItem<TValue, TLabel> {
  *
  * The type ensures that each item can only have a label that is a valid key of {@link TSetting}.
  */
-export type SettingsDropdown<TSetting, TSettingType> = SettingsDropdownItem<
+export interface SettingsDropdown<
+    TSetting,
     TSettingType,
-    keyof TSetting
->[];
+    TUpdateKey extends keyof TSetting | undefined = keyof TSetting,
+> {
+    readonly updateKey: TUpdateKey;
+    readonly items: SettingsDropdownItem<TSettingType>[];
+}
