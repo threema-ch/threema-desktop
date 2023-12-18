@@ -62,9 +62,5 @@
         cursor: pointer;
       }
     }
-
-    .value {
-      user-select: all;
-    }
   }
 </style>

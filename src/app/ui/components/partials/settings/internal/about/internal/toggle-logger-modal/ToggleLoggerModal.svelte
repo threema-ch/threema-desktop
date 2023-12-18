@@ -74,6 +74,7 @@
               text={`${logInfo.logFiles.mainApplication.path} (${byteSizeToHumanReadable(
                 logInfo.logFiles.mainApplication.sizeInBytes,
               )})`}
+              selectable
             />
           </KeyValueList.Item>
 
@@ -87,6 +88,7 @@
               text={`${logInfo.logFiles.backendWorker.path} (${byteSizeToHumanReadable(
                 logInfo.logFiles.backendWorker.sizeInBytes,
               )})`}
+              selectable
             />
           </KeyValueList.Item>
         </KeyValueList.Section>
@@ -116,7 +118,7 @@
           <KeyValueList.Item
             key={$i18n.t('dialog--toggle-logger.label--application-log-path', 'Application Log')}
           >
-            <Text text={logInfo.logFiles.mainApplication.path} />
+            <Text text={logInfo.logFiles.mainApplication.path} selectable />
           </KeyValueList.Item>
 
           <KeyValueList.Item
@@ -125,7 +127,7 @@
               'Backend Worker Log',
             )}
           >
-            <Text text={logInfo.logFiles.backendWorker.path} />
+            <Text text={logInfo.logFiles.backendWorker.path} selectable />
           </KeyValueList.Item>
         </KeyValueList.Section>
       </KeyValueList>

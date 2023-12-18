@@ -128,7 +128,6 @@
       }
 
       .value {
-        user-select: all;
         display: flex;
         justify-content: space-between;
         align-items: center;

@@ -110,7 +110,7 @@
         <KeyValueList.Item
           key={$i18n.t('settings--about.label--application-name', 'Application Name')}
         >
-          <Text text={import.meta.env.APP_NAME} />
+          <Text text={import.meta.env.APP_NAME} selectable />
         </KeyValueList.Item>
 
         <KeyValueList.Item
@@ -119,18 +119,18 @@
           <!-- A11y is currently not important here, as this is a developer-only feature. -->
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div on:click={handleClickVersion}>
-            <Text text={import.meta.env.BUILD_VERSION} />
+            <Text text={import.meta.env.BUILD_VERSION} selectable />
           </div>
         </KeyValueList.Item>
 
         {#if `v${import.meta.env.BUILD_VERSION}` !== import.meta.env.GIT_REVISION && import.meta.env.GIT_REVISION !== ''}
           <KeyValueList.Item key={$i18n.t('settings--about.label--git-revision', 'Git Revision')}>
-            <Text text={import.meta.env.GIT_REVISION} />
+            <Text text={import.meta.env.GIT_REVISION} selectable />
           </KeyValueList.Item>
         {/if}
 
         <KeyValueList.Item key={$i18n.t('settings--about.label--copyright', 'Copyright')}>
-          <Text text={'Threema GmbH © 2020-2023'} />
+          <Text text={'Threema GmbH © 2020-2023'} selectable />
         </KeyValueList.Item>
       </KeyValueList.Section>
       <KeyValueList.Section
@@ -163,7 +163,7 @@
             >
               <div class="list">
                 <span class="list-row">
-                  <Text text={logInfo.logFiles.mainApplication.path}></Text>
+                  <Text text={logInfo.logFiles.mainApplication.path} selectable></Text>
                   <Text
                     text={` (${byteSizeToHumanReadable(
                       logInfo.logFiles.mainApplication.sizeInBytes,

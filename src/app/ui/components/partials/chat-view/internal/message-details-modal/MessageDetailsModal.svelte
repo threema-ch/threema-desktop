@@ -51,6 +51,7 @@
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--created-date', 'Created')}>
           <Text
             text={formatDateLocalized(status.created.at, $i18n, 'extended', {hour12: !$is24hTime})}
+            selectable
           />
         </KeyValueList.Item>
         {#if status.received !== undefined}
@@ -61,6 +62,7 @@
               text={formatDateLocalized(status.received.at, $i18n, 'extended', {
                 hour12: !$is24hTime,
               })}
+              selectable
             />
           </KeyValueList.Item>
         {/if}
@@ -68,6 +70,7 @@
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}>
             <Text
               text={formatDateLocalized(status.sent.at, $i18n, 'extended', {hour12: !$is24hTime})}
+              selectable
             />
           </KeyValueList.Item>
         {/if}
@@ -79,6 +82,7 @@
               text={formatDateLocalized(status.delivered.at, $i18n, 'extended', {
                 hour12: !$is24hTime,
               })}
+              selectable
             />
           </KeyValueList.Item>
         {/if}
@@ -86,6 +90,7 @@
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--read-date', 'Read')}>
             <Text
               text={formatDateLocalized(status.read.at, $i18n, 'extended', {hour12: !$is24hTime})}
+              selectable
             />
           </KeyValueList.Item>
         {/if}
@@ -93,24 +98,24 @@
 
       <KeyValueList.Section>
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--message-id', 'Message ID')}>
-          <Text text={u64ToHexLe(id)} />
+          <Text text={u64ToHexLe(id)} selectable />
         </KeyValueList.Item>
       </KeyValueList.Section>
 
       {#if file !== undefined}
         <KeyValueList.Section>
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--file-name', 'File Name')}>
-            <Text text={file.name.raw ?? file.name.default} />
+            <Text text={file.name.raw ?? file.name.default} selectable />
           </KeyValueList.Item>
 
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--file-size', 'File Size')}>
-            <Text text={`${(file.sizeInBytes / 1000).toFixed(0)} kB`} />
+            <Text text={`${(file.sizeInBytes / 1000).toFixed(0)} kB`} selectable />
           </KeyValueList.Item>
 
           <KeyValueList.Item
             key={$i18n.t('dialog--message-details.label--media-type', 'Media Type')}
           >
-            <Text text={file.mediaType} />
+            <Text text={file.mediaType} selectable />
           </KeyValueList.Item>
         </KeyValueList.Section>
       {/if}
@@ -133,6 +138,7 @@
                   text={formatDateLocalized(lastReaction.at, $i18n, 'extended', {
                     hour12: !$is24hTime,
                   })}
+                  selectable
                 />
               </div>
             </div>
@@ -143,39 +149,43 @@
       {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
         <KeyValueList.Section title="Debug 🐞">
           <KeyValueList.Item key="Direction">
-            <Text text={direction} />
+            <Text text={direction} selectable />
           </KeyValueList.Item>
 
           {#if file !== undefined}
             <KeyValueList.Item key="File Type">
-              <Text text={file.type} />
+              <Text text={file.type} selectable />
             </KeyValueList.Item>
 
             <KeyValueList.Item key="File Sync State">
-              <Text text={file.sync.state} />
+              <Text text={file.sync.state} selectable />
             </KeyValueList.Item>
 
             <KeyValueList.Item key="Media Types">
-              <Text text={`File: ${file.mediaType}, Thumbnail: ${file.thumbnail?.mediaType}`} />
+              <Text
+                text={`File: ${file.mediaType}, Thumbnail: ${file.thumbnail?.mediaType}`}
+                selectable
+              />
             </KeyValueList.Item>
 
             {#if file.thumbnail?.expectedDimensions !== undefined}
               <KeyValueList.Item key="Dimensions (reported)">
                 <Text
                   text={`${file.thumbnail.expectedDimensions.width}x${file.thumbnail.expectedDimensions.height}`}
+                  selectable
                 />
               </KeyValueList.Item>
             {/if}
 
             {#if file.duration !== undefined}
               <KeyValueList.Item key="Duration (reported)">
-                <Text text={`${file.duration.toFixed(2)} s`} />
+                <Text text={`${file.duration.toFixed(2)} s`} selectable />
               </KeyValueList.Item>
             {/if}
 
             {#if file.imageRenderingType !== undefined}
               <KeyValueList.Item key="Image Rendering Type">
-                <Text text={file.imageRenderingType} />
+                <Text text={file.imageRenderingType} selectable />
               </KeyValueList.Item>
             {/if}
           {/if}
