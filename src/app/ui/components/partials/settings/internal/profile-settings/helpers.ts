@@ -6,7 +6,11 @@ import type {ProfileSettingsView} from '~/common/model/types/settings';
 import type {IdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 
-export function profilePictureSharedWithLabel(
+/**
+ * Returns the corresponding dropdown label for a specific value of
+ * {@link ProfilePictureShareWithOptions}.
+ */
+export function getProfilePictureShareWithDropdownLabel(
     label: ProfilePictureShareWithOptions,
     i18n: I18nType,
 ): string {
@@ -25,7 +29,10 @@ export function profilePictureSharedWithLabel(
     }
 }
 
-export function profilePictureShareWithDropdown(
+/**
+ * Returns a {@link SettingsDropdown} spec for the profile picture sharing dropdown.
+ */
+export function getProfilePictureShareWithDropdown(
     i18n: I18nType,
     currentAllowList: Readonly<IdentityString[]>,
 ): SettingsDropdown<ProfileSettingsView, ProfilePictureShareWith> {
@@ -33,15 +40,15 @@ export function profilePictureShareWithDropdown(
         updateKey: 'profilePictureShareWith',
         items: [
             {
-                text: profilePictureSharedWithLabel('everyone', i18n),
+                text: getProfilePictureShareWithDropdownLabel('everyone', i18n),
                 value: {group: 'everyone'},
             },
             {
-                text: profilePictureSharedWithLabel('nobody', i18n),
+                text: getProfilePictureShareWithDropdownLabel('nobody', i18n),
                 value: {group: 'nobody'},
             },
             {
-                text: profilePictureSharedWithLabel('allowList', i18n),
+                text: getProfilePictureShareWithDropdownLabel('allowList', i18n),
                 value: {group: 'allowList', allowList: currentAllowList},
             },
         ],

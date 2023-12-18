@@ -1,34 +1,45 @@
+<!--
+  @component
+  Renders a list of settings nav items that link to the various settings pages.
+-->
 <script lang="ts">
-  import {getSettingsInformationMap} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/helpers';
-  import SettingsNavElement from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/internal/settings-nav-element/SettingsNavElement.svelte';
+  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
+  import {getSettingsNavItems} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/helpers';
+  import SettingsNavElement from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/internal/settings-nav-item/SettingsNavItem.svelte';
+  import type {SettingsNavItemProps} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/internal/settings-nav-item/props';
   import type {SettingsNavListProps} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/props';
-  import type {SettingsInformation} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/types';
   import {i18n} from '~/app/ui/i18n';
-  import {ensureSettingsCategory} from '~/common/settings';
+  import {ensureSettingsCategory, type SettingsCategory} from '~/common/settings';
 
   type $$Props = SettingsNavListProps;
 
   export let services: $$Props['services'];
 
-  $: settingsInformation = getSettingsInformationMap($i18n);
-  // TODO(DESK-1238) let svelte 4 directly iterate over the object
-  $: iterableSettingsWithIcon = Object.entries<SettingsInformation>({...settingsInformation});
+  const {router} = services;
+
+  function handleClickItem(category: SettingsCategory): void {
+    router.replaceMain(ROUTE_DEFINITIONS.main.settings.withTypedParams({category}));
+  }
+
+  // TODO(DESK-1238): Let svelte 4 directly iterate over the object.
+  $: settingsNavItems = Object.entries<SettingsNavItemProps>({...getSettingsNavItems($i18n)});
 </script>
 
-<template>
-  <div class="settings-category-list">
-    <div class="anchor" />
-    {#each iterableSettingsWithIcon as [category, info]}
-      <div class="settings-category">
-        <SettingsNavElement
-          {services}
-          settingsInformation={info}
-          category={ensureSettingsCategory(category)}
-        ></SettingsNavElement>
-      </div>
-    {/each}
-  </div>
-</template>
+<div class="settings-category-list">
+  <div class="anchor" />
+  {#each settingsNavItems as [category, props]}
+    {@const isActive =
+      $router.main.id === 'settings' ? $router.main.params.category === category : false}
+
+    <div class="settings-category">
+      <SettingsNavElement
+        {isActive}
+        {...props}
+        on:click={() => handleClickItem(ensureSettingsCategory(category))}
+      />
+    </div>
+  {/each}
+</div>
 
 <style lang="scss">
   @use 'component' as *;

@@ -112,6 +112,8 @@
       conversationActive =
         routeReceiverLookup.type === ReceiverType.CONTACT &&
         routeReceiverLookup.uid === contact.get().uid;
+    } else {
+      conversationActive = false;
     }
   }
 </script>

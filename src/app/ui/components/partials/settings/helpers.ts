@@ -3,11 +3,12 @@ import type {ContextMenuItem} from '~/app/ui/utils/context-menu/types';
 import type {u53} from '~/common/types';
 
 /**
- * This functions creates a list of dropdownitems that can be used in a contextmenu
+ * This functions creates a list of {@link ContextMenuItem}s that can be used for a settings
+ * dropdown.
  *
- * @param dropdown A list of Dropdownitems of appropriate type
- * @param handler Callback to be called when the item is selected in the dropdown
- * @returns A list of ContextMenuItems
+ * @param dropdown A list of dropdown items of the appropriate type.
+ * @param handler Handler function to call when a dropdown item is selected.
+ * @returns A list of ContextMenuItems.
  */
 export function createDropdownItems<
     TSettings,

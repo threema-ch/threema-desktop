@@ -51,8 +51,6 @@ export function ensureSettingsCategory(category: string): SettingsCategory {
     return category;
 }
 
-export type DefaultSetting = 'profile';
-
 export interface SettingsCategoryCodec<TKey extends keyof Settings> {
     readonly encode: (settings: Settings[TKey]) => Uint8Array;
     readonly decode: (encoded: Uint8Array) => Settings[TKey];

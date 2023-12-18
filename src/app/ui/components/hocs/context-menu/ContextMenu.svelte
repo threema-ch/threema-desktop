@@ -1,10 +1,10 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
-  import MenuItemDivider from 'threema-svelte-components/src/components/generic/Menu/MenuItemDivider.svelte';
+  import MenuItemDivider from '#3sc/components/generic/Menu/MenuItemDivider.svelte';
   import type {ContextMenuProps} from '~/app/ui/components/hocs/context-menu/props';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {ContextMenuItem} from '~/app/ui/utils/context-menu/types';

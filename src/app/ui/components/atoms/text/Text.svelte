@@ -7,18 +7,15 @@
 
   type $$Props = TextProps;
 
-  export let color: NonNullable<$$Props['color']> = 'mono';
-  export let emphasis: NonNullable<$$Props['emphasis']> = 'high';
-  export let family: NonNullable<$$Props['family']> = 'secondary';
+  export let color: NonNullable<$$Props['color']> = 'inherit';
+  export let family: NonNullable<$$Props['family']> = 'inherit';
   export let selectable: NonNullable<$$Props['selectable']> = false;
-  export let size: NonNullable<$$Props['size']> = 'body';
+  export let size: NonNullable<$$Props['size']> = 'inherit';
   export let text: $$Props['text'];
   export let wrap: NonNullable<$$Props['wrap']> = true;
-
-  // TODO(DESK-1259) finish css tasks.
 </script>
 
-<span class={`text ${color} ${emphasis} ${family} ${size}`} class:selectable class:wrap>
+<span class={`text c-${color} f-${family} s-${size}`} class:selectable class:wrap>
   {text}
 </span>
 
@@ -30,95 +27,74 @@
     white-space: nowrap;
 
     // Color variants
-    &.primary {
-      // Emphasis variants
-      &.high {
-        // TODO
-        // color: var(--t-primary-text-e1-color);
-      }
-
-      &.low {
-        // TODO
-        // color: var(--t-primary-text-e2-color);
-      }
-
-      &.disabled {
-        // TODO
-        // color: var(--t-primary-text-e3-color);
-      }
+    &.c-mono-high {
+      color: var(--t-text-e1-color);
     }
 
-    &.mono {
-      // Emphasis variants
-      &.high {
-        color: var(--t-text-e1-color);
-      }
+    &.c-mono-low {
+      color: var(--t-text-e2-color);
+    }
 
-      &.low {
-        color: var(--t-text-e2-color);
-      }
-
-      &.disabled {
-        color: var(--t-text-e3-color);
-      }
+    &.c-mono-disabled {
+      color: var(--t-text-e3-color);
     }
 
     // Font family variants
-    &.primary {
+    &.f-primary {
       font-weight: 700;
     }
 
-    &.secondary {
+    &.f-secondary {
       font-weight: 400;
     }
 
     // Sizes
-    &.h1 {
+    &.s-h1 {
       font-size: rem(48px);
       line-height: rem(48px);
     }
 
-    &.h2 {
+    &.s-h2 {
       font-size: rem(40px);
       line-height: rem(40px);
     }
 
-    &.h3 {
+    &.s-h3 {
       font-size: rem(32px);
       line-height: rem(32px);
     }
 
-    &.h4 {
+    &.s-h4 {
       font-size: rem(24px);
       line-height: rem(24px);
     }
 
-    &.h5 {
+    &.s-h5 {
       font-size: rem(20px);
       line-height: rem(20px);
     }
 
-    &.h6 {
+    &.s-h6 {
       font-size: rem(18px);
       line-height: rem(18px);
     }
 
-    &.body-large {
+    &.s-body-large {
       font-size: rem(16px);
       line-height: rem(24px);
     }
 
-    &.body {
+    &.s-body {
       font-size: rem(14px);
       line-height: rem(20px);
     }
 
-    &.body-small {
+    &.s-body-small {
       font-size: rem(12px);
       line-height: rem(18px);
     }
 
-    &.meta {
+    &.s-meta {
       font-size: rem(10px);
       line-height: rem(16px);
     }

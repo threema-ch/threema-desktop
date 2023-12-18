@@ -126,6 +126,8 @@
         routeReceiverLookup.uid === receiver$.lookup.uid;
       const conversationDraftStore = conversationDrafts.getOrCreateStore(receiver$.lookup);
       conversationDraft = active ? undefined : conversationDraftStore.get();
+    } else {
+      active = false;
     }
   }
 

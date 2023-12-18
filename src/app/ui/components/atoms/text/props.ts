@@ -2,15 +2,13 @@
  * Props accepted by the `Text` component.
  */
 export interface TextProps {
-    /** Color variant to use. Defaults to `"mono"`. */
-    readonly color?: 'primary' | 'mono';
-    /** Emphasis (i.e. opacity) of the color. Defaults to `"high"`. */
-    readonly emphasis?: 'high' | 'low' | 'disabled';
-    /** Font family variant to use. Defaults to `"secondary"`. */
-    readonly family?: 'primary' | 'secondary';
-    /** Whether text is selectable. */
+    /** Color variant to use. Defaults to `"inherit"`. */
+    readonly color?: 'mono-high' | 'mono-low' | 'mono-disabled' | 'inherit';
+    /** Font family variant to use. Defaults to `"inherit"`. */
+    readonly family?: 'primary' | 'secondary' | 'inherit';
+    /** Whether text is selectable. Defaults to `false`. */
     readonly selectable?: boolean;
-    /** Font size. Defaults to `"body"`. */
+    /** Font size. Defaults to `"inherit"`. */
     readonly size?:
         | 'h1'
         | 'h2'
@@ -21,7 +19,8 @@ export interface TextProps {
         | 'body-large'
         | 'body'
         | 'body-small'
-        | 'meta';
+        | 'meta'
+        | 'inherit';
     /** The text to render. */
     readonly text: string;
     /** Whether text should wrap. Defaults to `true`. */

@@ -390,7 +390,7 @@ export const ROUTE_DEFINITIONS = {
             params: PARAM_RECEIVER_LOOKUP_SCHEMA,
             path: {
                 match: new RegExp(
-                    '^/conversation/(?<receiverType>\\d+)/(?<receiverUid>\\w+)/$',
+                    '^/conversation/(?<receiverType>\\d+)/(?<receiverUid>\\d+)/$',
                     'u',
                 ),
                 template: '/conversation/:receiverLookup.type/:receiverLookup.uid/',

@@ -1,3 +1,7 @@
+<!--
+  @component
+  Renders the main settings view.
+-->
 <script lang="ts">
   import type {SvelteComponentDev} from 'svelte/internal';
 
@@ -83,7 +87,7 @@
     {/if}
 
     <div class="center">
-      <Text text={settingsPage.title} />
+      <Text text={settingsPage.title} color="mono-high" family="secondary" size="body" />
     </div>
   </div>
 

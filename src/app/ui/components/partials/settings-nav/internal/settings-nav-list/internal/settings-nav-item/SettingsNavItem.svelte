@@ -1,32 +1,27 @@
+<!--
+  @component
+  Renders a single list item in the settings navigation sidebar.
+-->
 <script lang="ts">
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
-  import type {SettingsNavElementProps} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/internal/settings-nav-element/props';
+  import type {SettingsNavItemProps} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/internal/settings-nav-item/props';
 
-  type $$Props = SettingsNavElementProps;
+  type $$Props = SettingsNavItemProps;
 
-  export let services: $$Props['services'];
-
-  export let category: $$Props['category'];
-  export let settingsInformation: $$Props['settingsInformation'];
-
-  const {router} = services;
-
-  function onClickSettings(): void {
-    router.replaceMain(ROUTE_DEFINITIONS.main.settings.withTypedParams({category}));
-  }
-
-  $: isActive = $router.main.id === 'settings' ? $router.main.params.category === category : false;
+  export let iconName: $$Props['iconName'];
+  export let isActive: NonNullable<$$Props['isActive']> = false;
+  export let subtitle: $$Props['subtitle'];
+  export let title: $$Props['title'];
 </script>
 
-<button class="container" class:active={isActive} on:click={onClickSettings}>
+<button class="container" class:active={isActive} on:click>
   <span class="icon">
-    <MdIcon theme="Outlined">{settingsInformation.icon}</MdIcon>
+    <MdIcon theme="Outlined">{iconName}</MdIcon>
   </span>
   <div class="content">
-    <Text text={settingsInformation.title} size="body" />
-    <Text text={settingsInformation.subText} emphasis="low" size="body-small" />
+    <Text text={title} color="mono-high" family="secondary" size="body" />
+    <Text text={subtitle} color="mono-low" family="secondary" size="body-small" />
   </div>
 </button>
 

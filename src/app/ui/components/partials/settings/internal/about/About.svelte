@@ -1,3 +1,7 @@
+<!--
+  @component
+  Renders a settings page that contains app information and settings.
+-->
 <script lang="ts">
   import {globals} from '~/app/globals';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
@@ -16,16 +20,24 @@
   const log = globals.unwrap().uiLogging.logger('ui.component.settings-about');
 
   type $$Props = AboutProps;
+
   export let services: $$Props['services'];
+
+  let isDebugModeEnabled = false;
+  let versionClickedCount = 0;
+  let versionClickedTimeoutHandler: u53;
+
   const {
     storage: {debugPanelState},
   } = services;
 
   let isLoggerEnabled: boolean | undefined;
+  let isLoggerEnabledToggleState = false;
   window.app
     .isFileLoggingEnabled()
     .then((enabled) => {
       isLoggerEnabled = enabled;
+      isLoggerEnabledToggleState = enabled ?? false;
     })
     .catch((error) => {
       log.error(
@@ -54,7 +66,7 @@
   }
 
   function handleCloseToggleLoggerModal(): void {
-    isLoggerEnabledToggleState = isLoggerEnabled;
+    isLoggerEnabledToggleState = isLoggerEnabled ?? false;
     isToggleLoggerModalVisible = false;
   }
 
@@ -73,13 +85,8 @@
     window.app.setFileLoggingEnabledAndRestart(!isLoggerEnabled);
   }
 
-  $: isLoggerEnabledToggleState = isLoggerEnabled;
-
-  let showToggleDebugMode = false;
-  let versionClickedCount = 0;
-  let versionClickedTimeoutHandler: u53;
   function handleClickVersion(): void {
-    if (!showToggleDebugMode) {
+    if (!isDebugModeEnabled) {
       versionClickedCount++;
 
       clearTimeout(versionClickedTimeoutHandler);
@@ -95,133 +102,115 @@
           type: 'md-icon',
           color: 'green',
         });
-        showToggleDebugMode = true;
+
+        isDebugModeEnabled = true;
       }
     }
   }
 </script>
 
-<template>
-  <div>
-    <KeyValueList>
-      <KeyValueList.Section
-        title={$i18n.t('settings--about.label--version-title', 'Version Information')}
-      >
-        <KeyValueList.Item
-          key={$i18n.t('settings--about.label--application-name', 'Application Name')}
-        >
-          <Text text={import.meta.env.APP_NAME} selectable />
-        </KeyValueList.Item>
+<KeyValueList>
+  <KeyValueList.Section
+    title={$i18n.t('settings--about.label--version-title', 'Version Information')}
+  >
+    <KeyValueList.Item key={$i18n.t('settings--about.label--application-name', 'Application Name')}>
+      <Text text={import.meta.env.APP_NAME} selectable />
+    </KeyValueList.Item>
 
-        <KeyValueList.Item
-          key={$i18n.t('settings--about.label--application-version', 'Application Version')}
-        >
-          <!-- A11y is currently not important here, as this is a developer-only feature. -->
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div on:click={handleClickVersion}>
-            <Text text={import.meta.env.BUILD_VERSION} selectable />
+    <KeyValueList.Item
+      key={$i18n.t('settings--about.label--application-version', 'Application Version')}
+    >
+      <!-- A11y is currently not important here, as this is a developer-only feature. -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div on:click={handleClickVersion}>
+        <Text text={import.meta.env.BUILD_VERSION} selectable />
+      </div>
+    </KeyValueList.Item>
+
+    {#if `v${import.meta.env.BUILD_VERSION}` !== import.meta.env.GIT_REVISION && import.meta.env.GIT_REVISION !== ''}
+      <KeyValueList.Item key={$i18n.t('settings--about.label--git-revision', 'Git Revision')}>
+        <Text text={import.meta.env.GIT_REVISION} selectable />
+      </KeyValueList.Item>
+    {/if}
+
+    <KeyValueList.Item key={$i18n.t('settings--about.label--copyright', 'Copyright')}>
+      <Text text={'Threema GmbH © 2020-2023'} selectable />
+    </KeyValueList.Item>
+  </KeyValueList.Section>
+  <KeyValueList.Section
+    title={$i18n.t('settings--about.label--troubleshooting', 'Troubleshooting')}
+  >
+    {#if isLoggerEnabled !== undefined && logInfo !== undefined}
+      <KeyValueList.ItemWithSwitch
+        bind:checked={isLoggerEnabledToggleState}
+        on:switchevent={handleClickToggleLogger}
+        key={$i18n.t('settings--about.label--log-to-file', 'Logging')}
+      >
+        {#if isLoggerEnabled}
+          <Text text={$i18n.t('settings--about.prose--logging-turned-on', 'Logging is turned on')}
+          ></Text>
+        {:else}
+          <Text
+            text={$i18n.t(
+              'settings--about.prose--logging-turned-off',
+              'Logging is currently turned off',
+            )}
+          ></Text>
+        {/if}
+      </KeyValueList.ItemWithSwitch>
+
+      {#if isLoggerEnabled}
+        <KeyValueList.Item key={$i18n.t('settings--about.label--log-file-paths', 'Log File Paths')}>
+          <div class="list">
+            <span class="list-row">
+              <Text text={logInfo.logFiles.mainApplication.path} selectable></Text>
+              <Text
+                text={` (${byteSizeToHumanReadable(logInfo.logFiles.mainApplication.sizeInBytes)})`}
+              ></Text>
+            </span>
+            <span class="list-row">
+              <Text text={logInfo.logFiles.backendWorker.path}></Text>
+              <Text
+                text={` (${byteSizeToHumanReadable(logInfo.logFiles.backendWorker.sizeInBytes)})`}
+              ></Text>
+            </span>
           </div>
         </KeyValueList.Item>
 
-        {#if `v${import.meta.env.BUILD_VERSION}` !== import.meta.env.GIT_REVISION && import.meta.env.GIT_REVISION !== ''}
-          <KeyValueList.Item key={$i18n.t('settings--about.label--git-revision', 'Git Revision')}>
-            <Text text={import.meta.env.GIT_REVISION} selectable />
-          </KeyValueList.Item>
-        {/if}
-
-        <KeyValueList.Item key={$i18n.t('settings--about.label--copyright', 'Copyright')}>
-          <Text text={'Threema GmbH © 2020-2023'} selectable />
-        </KeyValueList.Item>
-      </KeyValueList.Section>
-      <KeyValueList.Section
-        title={$i18n.t('settings--about.label--troubleshooting', 'Troubleshooting')}
-      >
-        {#if isLoggerEnabled !== undefined && logInfo !== undefined}
-          <!--Change this to switch @TODO (DESK-1255)-->
-          <KeyValueList.ItemWithSwitch
-            bind:checked={isLoggerEnabledToggleState}
-            on:switchevent={handleClickToggleLogger}
-            key={$i18n.t('settings--about.label--log-to-file', 'Logging')}
-          >
-            {#if isLoggerEnabled}
-              <Text
-                text={$i18n.t('settings--about.prose--logging-turned-on', 'Logging is turned on')}
-              ></Text>
-            {:else}
-              <Text
-                text={$i18n.t(
-                  'settings--about.prose--logging-turned-off',
-                  'Logging is currently turned off',
-                )}
-              ></Text>
-            {/if}
-          </KeyValueList.ItemWithSwitch>
-
-          {#if isLoggerEnabled}
-            <KeyValueList.Item
-              key={$i18n.t('settings--about.label--log-file-paths', 'Log File Paths')}
-            >
-              <div class="list">
-                <span class="list-row">
-                  <Text text={logInfo.logFiles.mainApplication.path} selectable></Text>
-                  <Text
-                    text={` (${byteSizeToHumanReadable(
-                      logInfo.logFiles.mainApplication.sizeInBytes,
-                    )})`}
-                  ></Text>
-                </span>
-                <span class="list-row">
-                  <Text text={logInfo.logFiles.backendWorker.path}></Text>
-                  <Text
-                    text={` (${byteSizeToHumanReadable(
-                      logInfo.logFiles.backendWorker.sizeInBytes,
-                    )})`}
-                  ></Text>
-                </span>
-              </div>
-            </KeyValueList.Item>
-
-            <KeyValueList.ItemWithButton icon="send" key="" on:click={handleClickSendLogsToSupport}>
-              <Text
-                text={$i18n.t(
-                  'settings--about.action--send-logs-to-support',
-                  'Send Logs to Support',
-                )}
-              ></Text>
-            </KeyValueList.ItemWithButton>
-          {/if}
-        {/if}
-      </KeyValueList.Section>
-      <!--Change this to switch @TODO (DESK-1255)-->
-
-      {#if showToggleDebugMode}
-        <KeyValueList.Section title={$i18n.t('settings--about.label--debug', 'Debug')}>
-          <KeyValueList.ItemWithButton
-            icon="bug_report"
-            on:click={() => {
-              $debugPanelState = $debugPanelState === 'show' ? 'hide' : 'show';
-            }}
-            key=""
-          >
-            <Text text={$i18n.t('settings.action--toggle-debug-panel', 'Toggle Debug Panel')}
-            ></Text>
-          </KeyValueList.ItemWithButton>
-        </KeyValueList.Section>
+        <KeyValueList.ItemWithButton icon="send" key="" on:click={handleClickSendLogsToSupport}>
+          <Text
+            text={$i18n.t('settings--about.action--send-logs-to-support', 'Send Logs to Support')}
+          ></Text>
+        </KeyValueList.ItemWithButton>
       {/if}
-    </KeyValueList>
-  </div>
-
-  {#if isToggleLoggerModalVisible}
-    {#if isLoggerEnabled !== undefined && logInfo !== undefined}
-      <ToggleLoggerModal
-        {isLoggerEnabled}
-        {logInfo}
-        on:clickconfirmandrestart={handleClickConfirmAndRestartToggleLoggerModal}
-        on:close={handleCloseToggleLoggerModal}
-      />
     {/if}
+  </KeyValueList.Section>
+
+  {#if isDebugModeEnabled}
+    <KeyValueList.Section title={$i18n.t('settings--about.label--debug', 'Debug')}>
+      <KeyValueList.ItemWithButton
+        icon="bug_report"
+        on:click={() => {
+          $debugPanelState = $debugPanelState === 'show' ? 'hide' : 'show';
+        }}
+        key=""
+      >
+        <Text text={$i18n.t('settings.action--toggle-debug-panel', 'Toggle Debug Panel')}></Text>
+      </KeyValueList.ItemWithButton>
+    </KeyValueList.Section>
   {/if}
-</template>
+</KeyValueList>
+
+{#if isToggleLoggerModalVisible}
+  {#if isLoggerEnabled !== undefined && logInfo !== undefined}
+    <ToggleLoggerModal
+      {isLoggerEnabled}
+      {logInfo}
+      on:clickconfirmandrestart={handleClickConfirmAndRestartToggleLoggerModal}
+      on:close={handleCloseToggleLoggerModal}
+    />
+  {/if}
+{/if}
 
 <style lang="scss">
   @use 'component' as *;

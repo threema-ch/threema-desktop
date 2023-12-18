@@ -1,16 +1,14 @@
-import type {
-    LocaleRecord,
-    LocaleType,
-    ThemeRecord,
-    ThemeType,
-} from '~/app/ui/components/partials/settings/internal/appearance-settings/types';
 import type {SettingsDropdown} from '~/app/ui/components/partials/settings/types';
-import {LOCALES, LOCALE_NAMES} from '~/app/ui/i18n';
+import {LOCALES, LOCALE_NAMES, type Locale} from '~/app/ui/i18n';
 import type {I18nType} from '~/app/ui/i18n-types';
+import type {Theme} from '~/common/dom/ui/theme';
 import {unreachable} from '~/common/utils/assert';
 
-export function themeLabel(label: ThemeType, i18n: I18nType): string {
-    switch (label) {
+/**
+ * Returns the corresponding dropdown label for a specific {@link Theme}.
+ */
+export function getThemeDropdownLabel(theme: Theme, i18n: I18nType): string {
+    switch (theme) {
         case 'light':
             return i18n.t('settings--appearance.label--theme-light', 'Light');
         case 'dark':
@@ -18,24 +16,29 @@ export function themeLabel(label: ThemeType, i18n: I18nType): string {
         case 'system':
             return i18n.t('settings--appearance.label--theme-system', 'System');
         default:
-            return unreachable(label);
+            return unreachable(theme);
     }
 }
 
-export function themeDropdown(i18n: I18nType): SettingsDropdown<ThemeRecord, ThemeType, undefined> {
+/**
+ * Returns a {@link SettingsDropdown} spec for the theme dropdown.
+ */
+export function getThemeDropdown(
+    i18n: I18nType,
+): SettingsDropdown<Record<Theme, string>, Theme, undefined> {
     return {
         updateKey: undefined,
         items: [
             {
-                text: themeLabel('light', i18n),
+                text: getThemeDropdownLabel('light', i18n),
                 value: 'light',
             },
             {
-                text: themeLabel('dark', i18n),
+                text: getThemeDropdownLabel('dark', i18n),
                 value: 'dark',
             },
             {
-                text: themeLabel('system', i18n),
+                text: getThemeDropdownLabel('system', i18n),
                 value: 'system',
             },
         ],
@@ -43,17 +46,20 @@ export function themeDropdown(i18n: I18nType): SettingsDropdown<ThemeRecord, The
 }
 
 /**
- * Return the label corresponding to the specified {@link LocaleType}.
+ * Returns the corresponding dropdown label for a specific {@link Locale}.
  */
-export function localeLabel(locale: LocaleType): string {
+export function getLocaleDropdownLabel(locale: Locale): string {
     return LOCALE_NAMES[locale];
 }
 
-export function localeDropdown(): SettingsDropdown<LocaleRecord, LocaleType, undefined> {
+/**
+ * Returns a {@link SettingsDropdown} spec for the theme dropdown.
+ */
+export function getLocaleDropdown(): SettingsDropdown<Record<Locale, string>, Locale, undefined> {
     return {
         updateKey: undefined,
         items: LOCALES.map((locale) => ({
-            text: localeLabel(locale),
+            text: getLocaleDropdownLabel(locale),
             value: locale,
         })),
     };

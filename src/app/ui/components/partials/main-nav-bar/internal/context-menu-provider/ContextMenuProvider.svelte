@@ -1,6 +1,6 @@
 <script lang="ts">
-  import IconButton from 'threema-svelte-components/src/components/blocks/Button/IconButton.svelte';
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
+  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ContextMenu from '~/app/ui/components/hocs/context-menu/ContextMenu.svelte';
   import {provideContextMenuEntries} from '~/app/ui/components/partials/main-nav-bar/internal/context-menu-provider/helpers';
   import type {ContextMenuProviderProps} from '~/app/ui/components/partials/main-nav-bar/internal/context-menu-provider/props';
@@ -37,6 +37,7 @@
     reference={undefined}
     boundary={undefined}
     triggerBehavior="toggle"
+    on:elementchosen={() => popover?.close()}
   >
     <IconButton slot="trigger" flavor="naked">
       <MdIcon theme="Outlined">more_vert</MdIcon>

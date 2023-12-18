@@ -8,17 +8,20 @@
 
   type $$Props = SectionProps;
 
+  export let options: NonNullable<$$Props['options']> = {};
   export let title: $$Props['title'] = undefined;
+
+  $: isItemInsetEnabled = title !== undefined && options.disableItemInset !== true;
 </script>
 
 <div class="section">
   {#if title !== undefined}
     <div class="title">
-      <Text text={title} emphasis="low" />
+      <Text text={title} color="mono-low" family="secondary" size="body" />
     </div>
   {/if}
 
-  <div class="content">
+  <div class="content" class:inset={isItemInsetEnabled}>
     <slot />
   </div>
 </div>
@@ -38,7 +41,11 @@
     }
 
     .content {
-      // padding: 0 rem(12px) 0 rem(24px);
+      &.inset {
+        :global(.item) {
+          padding-left: rem(40px);
+        }
+      }
     }
   }
 </style>

@@ -1,6 +1,10 @@
+<!--
+  @component
+  Renders the settings navigation sidebar.
+-->
 <script lang="ts">
-  import IconButton from 'threema-svelte-components/src/components/blocks/Button/IconButton.svelte';
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
+  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
+  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import SettingsNavList from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/SettingsNavList.svelte';
@@ -10,6 +14,7 @@
   type $$Props = SettingsNavProps;
 
   export let services: $$Props['services'];
+
   const {router} = services;
 
   function handleClickBack(): void {
@@ -30,7 +35,12 @@
       </IconButton>
     </div>
     <div class="center">
-      <Text text={$i18n.t('settings.label--title')} />
+      <Text
+        text={$i18n.t('settings.label--title')}
+        color="mono-high"
+        family="secondary"
+        size="body"
+      />
     </div>
   </div>
   <div class="list">

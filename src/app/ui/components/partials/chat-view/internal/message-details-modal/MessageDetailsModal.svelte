@@ -147,7 +147,7 @@
       </KeyValueList.Section>
 
       {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
-        <KeyValueList.Section title="Debug 🐞">
+        <KeyValueList.Section title="Debug 🐞" options={{disableItemInset: true}}>
           <KeyValueList.Item key="Direction">
             <Text text={direction} selectable />
           </KeyValueList.Item>
