@@ -12,13 +12,13 @@ export function profilePictureSharedWithLabel(
 ): string {
     switch (label) {
         case 'nobody':
-            return i18n.t('settings--profile-settings.label--profile-picture-nobody', 'Nobody');
+            return i18n.t('settings--profile.label--profile-picture-nobody', 'Nobody');
 
         case 'everyone':
-            return i18n.t('settings--profile-settings.label--profile-picture-everyone', 'Everyone');
+            return i18n.t('settings--profile.label--profile-picture-everyone', 'Everyone');
 
         case 'allowList':
-            return i18n.t('settings--profile-settings.label--profile-picture-selected', 'Selected');
+            return i18n.t('settings--profile.label--profile-picture-selected', 'Selected');
 
         default:
             return unreachable(label);

@@ -12,14 +12,14 @@ export function getSettingsInformationMap(
         profile: {
             title: i18n.t(`settings.label--profile`, 'Profile'),
             icon: 'account_circle',
-            subText: i18n.t('settings--profile-settings.prose--subtitle', 'Threema ID'),
+            subText: i18n.t('settings--profile.prose--subtitle', 'Threema ID'),
         },
 
         // Will be added later
         /*
         privacy: {
             icon: 'shield',
-            subText: i18n.t('settings--privacy-settings.prose--subtitle', 'Contacts, Chats, Lists'),
+            subText: i18n.t('settings--privacy.prose--subtitle', 'Contacts, Chats, Lists'),
         },
         calls: {
             icon: 'call',
@@ -32,15 +32,12 @@ export function getSettingsInformationMap(
         security: {
             title: i18n.t(`settings.label--security`, 'Security'),
             icon: 'lock',
-            subText: i18n.t('settings--security-settings.prose--subtitle', 'Password'),
+            subText: i18n.t('settings--security.prose--subtitle', 'Password'),
         },
         appearance: {
             title: i18n.t(`settings.label--appearance`, 'Appearance'),
             icon: 'palette',
-            subText: i18n.t(
-                'settings--appearance-settings.prose--subtitle',
-                'Theme, Language, Hour Format',
-            ),
+            subText: i18n.t('settings--appearance.prose--subtitle', 'Theme, Language, Hour Format'),
         },
         about: {
             title: i18n.t(`settings.label--about`, 'About'),

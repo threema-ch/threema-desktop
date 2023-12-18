@@ -408,7 +408,7 @@
     "prose--logging-turned-off": "Logging is currently turned off",
     "prose--logging-turned-on": "Logging is turned on"
   },
-  "settings--appearance-settings": {
+  "settings--appearance": {
     "label--24-hour-time-format-title": "Time Format",
     "label--24-hour-time-format-value": "Enable 24-Hour Time",
     "label--locale": "Language",
@@ -421,10 +421,10 @@
     "label--title": "Appearance Settings",
     "prose--subtitle": "Theme, Language, Hour Format"
   },
-  "settings--privacy-settings": {
+  "settings--privacy": {
     "prose--subtitle": "Contacts, Chats, Lists"
   },
-  "settings--profile-settings": {
+  "settings--profile": {
     "label--profile-picture-everyone": "Everyone",
     "label--profile-picture-nobody": "Nobody",
     "label--profile-picture-selected": "Selected",
@@ -436,7 +436,7 @@
     "prose--main-section-title": "Nickname, Avatar & Threema ID",
     "prose--subtitle": "Threema ID"
   },
-  "settings--security-settings": {
+  "settings--security": {
     "label--app-protection": "App Protection",
     "label--change-password": "Change Password",
     "label--title": "Security Settings",

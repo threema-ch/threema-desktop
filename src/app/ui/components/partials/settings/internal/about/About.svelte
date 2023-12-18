@@ -145,12 +145,12 @@
           >
             {#if isLoggerEnabled}
               <Text
-                text={$i18n.t('setttings--about.prose-logging-turned-on', 'Logging is turned on')}
+                text={$i18n.t('settings--about.prose--logging-turned-on', 'Logging is turned on')}
               ></Text>
             {:else}
               <Text
                 text={$i18n.t(
-                  'settings--about.prose-logging-turned-off',
+                  'settings--about.prose--logging-turned-off',
                   'Logging is currently turned off',
                 )}
               ></Text>

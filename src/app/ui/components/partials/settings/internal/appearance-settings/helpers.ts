@@ -12,11 +12,11 @@ import {unreachable} from '~/common/utils/assert';
 export function themeLabel(label: ThemeType, i18n: I18nType): string {
     switch (label) {
         case 'light':
-            return i18n.t('settings--appearance-settings.label--theme-light', 'Light');
+            return i18n.t('settings--appearance.label--theme-light', 'Light');
         case 'dark':
-            return i18n.t('settings--appearance-settings.label--theme-dark', 'Dark');
+            return i18n.t('settings--appearance.label--theme-dark', 'Dark');
         case 'system':
-            return i18n.t('settings--appearance-settings.label--theme-system', 'System');
+            return i18n.t('settings--appearance.label--theme-system', 'System');
         default:
             return unreachable(label);
     }

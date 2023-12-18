@@ -86,10 +86,7 @@
       .writeText(textToCopy)
       .catch(() => log.error('Failed to copy ID to clipboard'));
     toast.addSimpleSuccess(
-      $i18n.t(
-        'settings--profile-settings.prose--copy-id-content',
-        'Threema ID copied to clipboard',
-      ),
+      $i18n.t('settings--profile.prose--copy-id-content', 'Threema ID copied to clipboard'),
     );
   }
 </script>
@@ -101,7 +98,7 @@
       <KeyValueList>
         <KeyValueList.Section
           title={$i18n.t(
-            'settings--profile-settings.prose--main-section-title',
+            'settings--profile.prose--main-section-title',
             'Nickname, Avatar & Threema ID',
           )}
         >
@@ -127,7 +124,7 @@
               <KeyValueList.ItemWithDropdown
                 options={{disabled: false}}
                 key={`🐞 ${$i18n.t(
-                  'settings--profile-settings.label--profile-picture-visibility',
+                  'settings--profile.label--profile-picture-visibility',
                   'Who can see your profile picture?',
                 )}`}
                 items={profilePictureSharedWithItems}
@@ -142,7 +139,7 @@
             {/if}
           {/if}
           <KeyValueList.ItemWithButton
-            key={$i18n.t('settings--profile-settings.label--threema-id', 'Threema ID')}
+            key={$i18n.t('settings--profile.label--threema-id', 'Threema ID')}
             icon="content_copy"
             on:click={() => copyToClipboard($profile.identity)}
           >
@@ -154,8 +151,7 @@
             icon="chevron_right"
             on:click={() => (publicKeyModalOpen = true)}
           >
-            <Text text={$i18n.t('settings--profile-settings.label--public-key', 'Public Key')}
-            ></Text>
+            <Text text={$i18n.t('settings--profile.label--public-key', 'Public Key')}></Text>
           </KeyValueList.ItemWithButton>
         </KeyValueList.Section>
       </KeyValueList>

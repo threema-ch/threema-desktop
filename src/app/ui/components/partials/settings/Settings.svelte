@@ -54,15 +54,15 @@
         component: About,
       },
       appearance: {
-        title: $i18n.t('settings--appearance-settings.label--title', 'Appearance Settings'),
+        title: $i18n.t('settings--appearance.label--title', 'Appearance Settings'),
         component: AppearanceSettings,
       },
       profile: {
-        title: $i18n.t('settings--profile-settings.label--title', 'Profile Settings'),
+        title: $i18n.t('settings--profile.label--title', 'Profile Settings'),
         component: ProfileSettings,
       },
       security: {
-        title: $i18n.t('settings--security-settings.label--title', 'Security Settings'),
+        title: $i18n.t('settings--security.label--title', 'Security Settings'),
         component: SecuritySettings,
       },
     };

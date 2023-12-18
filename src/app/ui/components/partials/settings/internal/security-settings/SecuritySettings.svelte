@@ -17,14 +17,10 @@
   <div>
     <KeyValueList>
       <KeyValueList.Section
-        title={$i18n.t('settings--security-settings.label--app-protection', 'App Protection')}
+        title={$i18n.t('settings--security.label--app-protection', 'App Protection')}
       >
         <KeyValueList.ItemWithButton key="" icon="edit" on:click={handleClickChangePassword}>
-          <Text
-            text={$i18n.t(
-              'settings--security-settings.label--change-password',
-              'Change App Password',
-            )}
+          <Text text={$i18n.t('settings--security.label--change-password', 'Change App Password')}
           ></Text>
         </KeyValueList.ItemWithButton>
       </KeyValueList.Section>

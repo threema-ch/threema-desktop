@@ -43,37 +43,34 @@
     <KeyValueList>
       <KeyValueList.Section
         title={$i18n.t(
-          'settings--appearance-settings.label--section-general-appearance',
+          'settings--appearance.label--section-general-appearance',
           'General Appearance',
         )}
       >
         <!--@TODO (DESK-630) This popover binding does not close on click -->
         <KeyValueList.ItemWithDropdown
           items={themeItems}
-          key={$i18n.t('settings--appearance-settings.label--theme', 'Theme')}
+          key={$i18n.t('settings--appearance.label--theme', 'Theme')}
         >
           <Text text={themeLabel($theme, $i18n)}></Text>
         </KeyValueList.ItemWithDropdown>
         <KeyValueList.ItemWithDropdown
           items={localeItems}
-          key={$i18n.t('settings--appearance-settings.label--locale', 'Language')}
+          key={$i18n.t('settings--appearance.label--locale', 'Language')}
         >
           <Text text={localeLabel($locale)}></Text>
         </KeyValueList.ItemWithDropdown>
       </KeyValueList.Section>
       <KeyValueList.Section
-        title={$i18n.t('settings--appearance-settings.label--section-date-time', 'Date & Time')}
+        title={$i18n.t('settings--appearance.label--section-date-time', 'Date & Time')}
       >
         <KeyValueList.ItemWithSwitch
           bind:checked={$is24hTime}
-          key={$i18n.t(
-            'settings--appearance-settings.label--24-hour-time-format-title',
-            'Time Format',
-          )}
+          key={$i18n.t('settings--appearance.label--24-hour-time-format-title', 'Time Format')}
         >
           <Text
             text={$i18n.t(
-              'settings--appearance-settings.label--24-hour-time-format-value',
+              'settings--appearance.label--24-hour-time-format-value',
               'Enable 24-Hour Time',
             )}
           ></Text>
