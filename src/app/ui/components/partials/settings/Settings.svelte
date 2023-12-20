@@ -105,6 +105,7 @@
       'navbar' min-content
       'content' auto
       / auto;
+    overflow: hidden;
 
     .navbar {
       grid-area: navbar;
@@ -128,6 +129,10 @@
 
     .content {
       grid-area: content;
+      max-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-bottom: rem(12px);
     }
   }
 </style>
