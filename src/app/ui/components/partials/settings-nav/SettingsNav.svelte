@@ -82,6 +82,7 @@
 
     .list {
       grid-area: list;
+      overflow: hidden;
     }
   }
 </style>

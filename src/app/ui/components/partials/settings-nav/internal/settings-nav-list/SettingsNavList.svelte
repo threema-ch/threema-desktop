@@ -26,7 +26,6 @@
 </script>
 
 <div class="settings-category-list">
-  <div class="anchor" />
   {#each settingsNavItems as [category, props]}
     {@const isActive =
       $router.main.id === 'settings' ? $router.main.params.category === category : false}
@@ -45,17 +44,8 @@
   @use 'component' as *;
 
   .settings-category-list {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: start;
-
-    overflow-y: auto;
+    max-height: 100%;
     overflow-x: hidden;
-    scroll-snap-type: y mandatory;
-
-    .anchor {
-      height: 1px;
-    }
+    overflow-y: auto;
   }
 </style>
