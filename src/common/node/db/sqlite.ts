@@ -45,12 +45,12 @@ import type {
     DbVideoMessageFragment,
     RawDatabaseKey,
     DbCreateMessage,
+    DbMessageReaction,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
     GroupUserState,
     MessageQueryDirection,
-    type MessageReaction,
     MessageType,
     type NonceScope,
     ReceiverType,
@@ -63,7 +63,7 @@ import type {u53} from '~/common/types';
 import {groupArray} from '~/common/utils/array';
 import {assert, assertUnreachable, isNotUndefined, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
-import {hasProperty, pick} from '~/common/utils/object';
+import {hasProperty, omit, pick} from '~/common/utils/object';
 
 import {DBConnection} from './connection';
 import {MigrationHelper} from './migrations';
@@ -80,6 +80,7 @@ import {
     tMessageAudioData,
     tMessageFileData,
     tMessageImageData,
+    tMessageReaction,
     tMessageTextData,
     tMessageVideoData,
     tNonce,
@@ -907,8 +908,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     createdAt: message.createdAt,
                     processedAt: message.processedAt,
                     readAt: message.readAt,
-                    lastReaction: message.lastReaction?.type,
-                    lastReactionAt: message.lastReaction?.at,
                     raw: message.raw,
                     messageType: message.type,
                     threadId: message.threadId,
@@ -1249,23 +1248,34 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getCommonMessageSelector() {
-        return this._db.selectFrom(tMessage).select({
-            uid: tMessage.uid,
-            id: tMessage.messageId,
-            senderContactUid: tMessage.senderContactUid,
-            conversationUid: tMessage.conversationUid,
-            createdAt: tMessage.createdAt,
-            processedAt: tMessage.processedAt,
-            deliveredAt: tMessage.deliveredAt,
-            readAt: tMessage.readAt,
-            lastReaction: tMessage.lastReaction,
-            lastReactionAt: tMessage.lastReactionAt,
-            raw: tMessage.raw,
-            type: tMessage.messageType,
-            threadId: tMessage.threadId,
-            // TODO(DESK-296): Deprecate ordinal in favor of a thread-based solution
-            ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
-        });
+        const tMessageLeftJoin = tMessageReaction.forUseInLeftJoin();
+        return this._db
+            .selectFrom(tMessage)
+            .leftJoin(tMessageLeftJoin)
+            .on(tMessageLeftJoin.messageUid.equals(tMessage.uid))
+            .select({
+                uid: tMessage.uid,
+                id: tMessage.messageId,
+                senderContactUid: tMessage.senderContactUid,
+                conversationUid: tMessage.conversationUid,
+                createdAt: tMessage.createdAt,
+                processedAt: tMessage.processedAt,
+                deliveredAt: tMessage.deliveredAt,
+                readAt: tMessage.readAt,
+                raw: tMessage.raw,
+                type: tMessage.messageType,
+                threadId: tMessage.threadId,
+                // TODO(DESK-296): Deprecate ordinal in favor of a thread-based solution
+                ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
+                reactions: this._db
+                    .aggregateAsArray({
+                        reaction: tMessageLeftJoin.reaction,
+                        reactionAt: tMessageLeftJoin.reactionAt,
+                        senderContactIdentity: tMessageLeftJoin.senderContactIdentity,
+                    })
+                    .useEmptyArrayForNoValue(),
+            })
+            .groupBy('uid');
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -1294,20 +1304,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private _getMessage<TType extends MessageType>(
-        common: Omit<DbMessageCommon<TType>, 'lastReaction'> & {
-            lastReaction?: MessageReaction | undefined;
-            lastReactionAt?: Date | undefined;
-        },
+        common: DbMessageCommon<TType>,
     ): DbGet<DbAnyMessage> {
-        // Convert last reaction
-        let lastReaction: DbMessageCommon<TType>['lastReaction'] = undefined;
-        if (common.lastReaction !== undefined && common.lastReactionAt !== undefined) {
-            lastReaction = {
-                type: common.lastReaction,
-                at: common.lastReactionAt,
-            };
-        }
-
         // Depending on type, fetch appropriate data
         switch (common.type) {
             case MessageType.TEXT: {
@@ -1324,7 +1322,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 return {
                     ...common,
                     ...text,
-                    lastReaction,
                     type: MessageType.TEXT,
                 };
             }
@@ -1371,7 +1368,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 );
                 return {
                     ...common,
-                    lastReaction,
                     type: MessageType.FILE,
                     ...file,
                 };
@@ -1427,7 +1423,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 );
                 return {
                     ...common,
-                    lastReaction,
                     type: MessageType.IMAGE,
                     ...image,
                 };
@@ -1482,7 +1477,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 );
                 return {
                     ...common,
-                    lastReaction,
                     type: MessageType.VIDEO,
                     ...video,
                 };
@@ -1517,7 +1511,6 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 );
                 return {
                     ...common,
-                    lastReaction,
                     type: MessageType.AUDIO,
                     ...audio,
                 };
@@ -1578,10 +1571,47 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public createOrUpdateMessageReaction(update: DbCreate<DbMessageReaction>): void {
+        const updated = sync(
+            this._db
+                .insertInto(tMessageReaction)
+                .set({
+                    ...update,
+                })
+                .onConflictDoUpdateSet({...update})
+                .executeInsert(),
+        );
+        assert(
+            updated === 1,
+            `Expected to update exactly one message reaction with message UID ${update.messageUid}, but we updated ${updated} rows.`,
+        );
+    }
+
+    /** @inheritdoc */
+    public getReactionsByMessageUid(messageUid: DbMessageUid): DbGet<DbMessageReaction>[] {
+        const result = sync(
+            this._db
+                .selectFrom(tMessageReaction)
+                .select({
+                    reactionAt: tMessageReaction.reactionAt,
+                    reaction: tMessageReaction.reaction,
+                    senderContactIdentity: tMessageReaction.senderContactIdentity,
+                    uid: tMessageReaction.uid,
+                    messageUid: tMessageReaction.messageUid,
+                })
+                .where(tMessageReaction.messageUid.equals(messageUid))
+                .executeSelectMany(),
+        );
+        return result;
+    }
+
+    /** @inheritdoc */
     public updateMessage(
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyMessage, 'type'>,
     ): {deletedFileIds: FileId[]} {
+        const messageWithoutReactions = omit<typeof message, 'reactions'>(message, ['reactions']);
+
         return this._db.syncTransaction(() => {
             // Update common data
             //
@@ -1591,15 +1621,8 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 this._db
                     .update(tMessage)
                     .set({
-                        ...message,
-                        lastReaction: message.lastReaction?.type,
-                        lastReactionAt: message.lastReaction?.at,
+                        ...messageWithoutReactions,
                     })
-                    .ignoreIfSet(
-                        ...(!hasProperty(message, 'lastReaction')
-                            ? (['lastReaction', 'lastReactionAt'] as const)
-                            : ([] as const)),
-                    )
                     .where(tMessage.uid.equals(message.uid))
                     .and(tMessage.messageType.equals(message.type))
                     .and(tMessage.conversationUid.equals(conversationUid))
@@ -1610,6 +1633,13 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 `Expected to update exactly one message with UID ${message.uid} and type ` +
                     `${message.type}, but we updated ${updated} rows.`,
             );
+
+            message.reactions?.forEach((reaction) => {
+                this.createOrUpdateMessageReaction({
+                    ...reaction,
+                    messageUid: messageWithoutReactions.uid,
+                });
+            });
 
             // Update associated data as well
             //

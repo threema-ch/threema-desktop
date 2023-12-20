@@ -25,6 +25,7 @@ import type {
     WorkVerificationLevel,
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
+import type {IdentityStringOrMe} from '~/common/model/types/message';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {
     FeatureMask,
@@ -345,7 +346,7 @@ export interface DbMessageCommon<T extends MessageType> {
      * Note: The value is always known for inbound messages but not known until acknowledged for
      *       outbound messages.
      */
-    processedAt?: Date;
+    readonly processedAt?: Date;
 
     /**
      * Optional timestamp for when the message...
@@ -354,7 +355,7 @@ export interface DbMessageCommon<T extends MessageType> {
      *   lead device, i.e. "fromRemote", or reflected, i.e. "fromSync") for a message that we sent.
      * - Inbound: Must be undefined
      */
-    deliveredAt?: Date;
+    readonly deliveredAt?: Date;
 
     /**
      * Optional timestamp for when the 'read' delivery receipt message...
@@ -362,21 +363,44 @@ export interface DbMessageCommon<T extends MessageType> {
      * - Outbound: Has been reflected to other devices / by another device.
      * - Inbound: Has been reflected to other devices / by another device.
      */
-    readAt?: Date;
+    readonly readAt?: Date;
 
     /**
-     * Optional reaction to a message.
+     * An array of reactions to the corresponding message
+     * Is empty when no value is present
      */
-    lastReaction?: {
-        readonly at: Date;
-        readonly type: MessageReaction;
-    };
+    readonly reactions: Pick<
+        DbMessageReaction,
+        'reaction' | 'reactionAt' | 'senderContactIdentity'
+    >[];
 }
 
 /**
  * Data required to create a message entry.
  */
 export type DbCreateMessage<T extends DbTable> = Omit<DbCreate<T>, 'ordinal'>;
+
+export type DbMessageReactionUid = WeakOpaque<DbUid, {readonly dbGroupReactions: unique symbol}>;
+
+/** The table for group reactions */
+export interface DbMessageReaction {
+    readonly uid: DbMessageReactionUid;
+
+    /**
+     * The timestamp of the reaction
+     * Is changed when the reaction goes from ACKNOWLEDGED to DECLINED and vice versa
+     */
+    readonly reactionAt: Date;
+
+    readonly reaction: MessageReaction;
+
+    /**
+     * The sender of the reaction. If it is oneself, the senderContactIdentity is 'me'
+     */
+    readonly senderContactIdentity: IdentityStringOrMe;
+
+    readonly messageUid: DbMessageUid;
+}
 
 /**
  * A database text message.
@@ -715,6 +739,13 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
         conversationUid: DbConversationUid,
         message: DbUpdate<DbAnyMessage, 'type'>,
     ) => {deletedFileIds: FileId[]};
+
+    /**
+     * Update the reaction to a specified message
+     */
+    readonly createOrUpdateMessageReaction: (update: DbCreate<DbMessageReaction>) => void;
+
+    readonly getReactionsByMessageUid: (message: DbMessageUid) => DbGet<DbMessageReaction>[];
 
     /**
      * Remove the message and associated data.

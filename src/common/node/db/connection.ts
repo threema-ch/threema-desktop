@@ -9,6 +9,7 @@ import type {SqliteSqlBuilder} from 'ts-sql-query/sqlBuilders/SqliteSqlBuilder';
 import {isNonceHash, isPublicKey, isReadonlyRawKey} from '~/common/crypto';
 import {
     DATABASE_KEY_LENGTH,
+    type DbMessageReactionUid,
     type DbContactUid,
     type DbConversationUid,
     type DbDistributionListUid,
@@ -44,6 +45,7 @@ import {
 import {TypeTransformError} from '~/common/error';
 import {isFileId, wrapFileEncryptionKey} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
+import {OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import {isBlobId} from '~/common/network/protocol/blob';
 import {
     ensureDistributionListId,
@@ -71,6 +73,7 @@ export const CUSTOM_TYPES = {
     CONVERSATION_UID: 'DbConversationUid',
     DISTRIBUTION_LIST_UID: 'DbDistributionListUid',
     GROUP_UID: 'DbGroupUid',
+    MESSAGE_REACTION_UID: 'DbMessageReactionUid',
     MESSAGE_UID: 'DbMessageUid',
     GROUP_MEMBER_UID: 'DbGroupMemberUid',
     FILE_DATA_UID: 'DbFileDataUid',
@@ -104,6 +107,7 @@ export const CUSTOM_TYPES = {
     FILE_ID: 'FileId',
     FEATURE_MASK: 'FeatureMask',
     IDENTITY: 'IdentityString',
+    IDENTITY_OR_ME: 'IdentityOrMe',
     PUBLIC_KEY: 'PublicKey',
     NICKNAME: 'Nickname',
     NONCE_HASH: 'NonceHash',
@@ -250,6 +254,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return typeof value === 'bigint' ? (value as DbGroupMemberUid) : fail();
             case CUSTOM_TYPES.FILE_DATA_UID:
                 return typeof value === 'bigint' ? (value as DbFileDataUid) : fail();
+            case CUSTOM_TYPES.MESSAGE_REACTION_UID:
+                return typeof value === 'bigint' ? (value as DbMessageReactionUid) : fail();
             case CUSTOM_TYPES.MESSAGE_UID:
                 return typeof value === 'bigint' ? (value as DbMessageUid) : fail();
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
@@ -281,7 +287,11 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.MESSAGE_TYPE:
                 return MessageTypeUtils.contains(value) ? value : fail();
             case CUSTOM_TYPES.MESSAGE_REACTION:
-                return u64ToU53(value, MessageReactionUtils.contains);
+                if (typeof value === 'bigint') {
+                    return u64ToU53(value, MessageReactionUtils.contains);
+                }
+                return MessageReactionUtils.contains(value) ? value : fail();
+
             case CUSTOM_TYPES.GROUP_USER_STATE:
                 return u64ToU53(value, GroupUserStateUtils.contains);
             case CUSTOM_TYPES.NOTIFICATION_SOUND_POLICY:
@@ -308,6 +318,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return isFeatureMask(value) ? value : fail();
             case CUSTOM_TYPES.IDENTITY:
                 return isIdentityString(value) ? value : fail();
+            case CUSTOM_TYPES.IDENTITY_OR_ME:
+                return isIdentityString(value) || value === OWN_IDENTITY_ALIAS ? value : fail();
             case CUSTOM_TYPES.PUBLIC_KEY:
                 return isPublicKey(value) ? value : fail();
             case CUSTOM_TYPES.NICKNAME:
@@ -387,6 +399,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
         //
         // IMPORTANT: Since we're dealing with `value` being of `unknown` type
         //            here, double check that your match arm is correct!
+
         const maybeCustomType = type as CustomType;
         switch (maybeCustomType) {
             // UIDs (tagging)
@@ -396,6 +409,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.GROUP_UID:
             case CUSTOM_TYPES.GROUP_MEMBER_UID:
             case CUSTOM_TYPES.FILE_DATA_UID:
+            case CUSTOM_TYPES.MESSAGE_REACTION_UID:
             case CUSTOM_TYPES.MESSAGE_UID:
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
             case CUSTOM_TYPES.NONCE_UID:
@@ -431,6 +445,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.FILE_ID:
             case CUSTOM_TYPES.FEATURE_MASK:
             case CUSTOM_TYPES.IDENTITY:
+            case CUSTOM_TYPES.IDENTITY_OR_ME:
             case CUSTOM_TYPES.NICKNAME:
             case CUSTOM_TYPES.PUBLIC_KEY:
             case CUSTOM_TYPES.NONCE_HASH:
