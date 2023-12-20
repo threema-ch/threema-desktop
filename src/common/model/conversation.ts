@@ -357,6 +357,7 @@ export class ConversationModelController implements ConversationController {
             receiverLookup: _receiverLookup,
             conversationId: this.conversationId.bind(this),
             decrementUnreadMessageCount: this.decrementUnreadMessageCount.bind(this),
+            getReceiver: this.receiver.bind(this),
         };
 
         this._lastMessageStore = new WritableStore(
@@ -604,7 +605,7 @@ export class ConversationModelController implements ConversationController {
         void this._services.taskManager.schedule(
             new OutgoingDeliveryReceiptTask(
                 this._services,
-                contactReceiver,
+                contactReceiver.get(),
                 CspE2eDeliveryReceiptStatus.READ,
                 readAt,
                 readMessageIds,

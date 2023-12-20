@@ -362,6 +362,7 @@ interface GroupControlMessageInstructions extends BaseProcessingInstructions {
 interface StatusUpdateInstructions extends BaseProcessingInstructions {
     readonly messageCategory: 'status-update';
     readonly deliveryReceipt: false;
+    readonly conversationId: ContactConversationId | GroupConversationId;
     readonly missingContactHandling: 'discard';
     readonly reflectFragment: D2dIncomingMessageFragment;
     readonly task: ComposableTask<ActiveTaskCodecHandle<'volatile'>, unknown>;
@@ -640,7 +641,8 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // For group conversation messages, run the common group receive steps
         let group: LocalModelStore<Group> | undefined = undefined;
         if (
-            (instructions.messageCategory === 'conversation-message' &&
+            ((instructions.messageCategory === 'conversation-message' ||
+                instructions.messageCategory === 'status-update') &&
                 instructions.conversationId.type === ReceiverType.GROUP) ||
             (instructions.messageCategory === 'unhandled' &&
                 instructions.conversationId.type === ReceiverType.GROUP &&
@@ -1122,10 +1124,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         function unhandledGroupMemberMessage(
-            d2dMessageType:
-                | CspE2eGroupConversationType
-                | CspE2eGroupStatusUpdateType
-                | CspE2eGroupControlType.GROUP_CALL_START,
+            d2dMessageType: CspE2eGroupConversationType | CspE2eGroupControlType.GROUP_CALL_START,
         ): UnhandledMessageInstructions {
             const validatedContainer = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                 structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
@@ -1465,6 +1464,50 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
 
             // Status messages
+            case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
+                const validatedContainer =
+                    structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(cspMessageBody as Uint8Array),
+                    );
+                const deliveryReceipt = structbuf.csp.e2e.DeliveryReceipt.decode(
+                    validatedContainer.innerData,
+                );
+                const validatedDeliveryReceipt =
+                    structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(deliveryReceipt);
+
+                switch (validatedDeliveryReceipt.status) {
+                    case CspE2eDeliveryReceiptStatus.ACKNOWLEDGED:
+                    case CspE2eDeliveryReceiptStatus.DECLINED:
+                        break;
+                    default:
+                        throw new Error(
+                            `Received group delivery receipt with type ${validatedDeliveryReceipt.status} which is not accepted`,
+                        );
+                }
+
+                const groupConversationId: GroupConversationId = {
+                    type: ReceiverType.GROUP,
+                    groupId: validatedContainer.groupId,
+                    creatorIdentity: validatedContainer.creatorIdentity,
+                };
+                const instructions: StatusUpdateInstructions = {
+                    messageCategory: 'status-update',
+                    conversationId: groupConversationId,
+                    missingContactHandling: 'discard',
+                    deliveryReceipt: false,
+                    task: new IncomingDeliveryReceiptTask(
+                        this._services,
+                        messageId,
+                        groupConversationId,
+                        validatedDeliveryReceipt,
+                        clampedCreatedAt,
+                        senderIdentity,
+                    ),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
+
             case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
                 const deliveryReceipt = structbuf.csp.e2e.DeliveryReceipt.decode(
                     cspMessageBody as Uint8Array,
@@ -1473,6 +1516,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                     structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(deliveryReceipt);
                 const instructions: StatusUpdateInstructions = {
                     messageCategory: 'status-update',
+                    conversationId: senderConversationId,
                     missingContactHandling: 'discard',
                     deliveryReceipt: false,
                     task: new IncomingDeliveryReceiptTask(
@@ -1481,6 +1525,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         senderConversationId,
                         validatedDeliveryReceipt,
                         clampedCreatedAt,
+                        senderIdentity,
                     ),
                     reflectFragment: reflectFragmentFor(maybeCspE2eType),
                 };
@@ -1547,9 +1592,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return unhandledGroupMemberMessage(maybeCspE2eType);
             case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
                 return unhandledGroupMemberMessage(maybeCspE2eType);
-            case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(DESK-594)
-                return unhandledGroupMemberMessage(maybeCspE2eType);
-
             default:
                 return exhausted(maybeCspE2eType, 'forward');
         }

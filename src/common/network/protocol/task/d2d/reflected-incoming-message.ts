@@ -8,6 +8,7 @@ import {
     type MessageType,
     NonceScope,
     ReceiverType,
+    CspE2eGroupStatusUpdateType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
@@ -39,7 +40,7 @@ import {
     type InboundVideoMessageInitFragment,
     messageReferenceDebugFor,
 } from '~/common/network/protocol/task/message-processing-helpers';
-import type * as structbuf from '~/common/network/structbuf';
+import * as structbuf from '~/common/network/structbuf';
 import type {
     ContactConversationId,
     D2mDeviceId,
@@ -57,7 +58,7 @@ import {ReflectedMessageTaskBase} from './reflected-message';
 
 type CommonInboundMessageInitFragment = Omit<
     MessageFor<MessageDirection.INBOUND, MessageType, 'init'>,
-    'id' | 'sender' | 'type' | 'ordinal'
+    'id' | 'sender' | 'type' | 'ordinal' | 'reactions'
 >;
 
 /**
@@ -462,10 +463,28 @@ export class ReflectedIncomingMessageTask
                 return 'discard';
 
             // Status messages
+            case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
+                const deliveryReceipt = structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
+                    structbuf.csp.e2e.DeliveryReceipt.decode(validatedBody.message.innerData),
+                );
+                const instructions: StatusUpdateInstructions = {
+                    messageCategory: 'status-update',
+                    task: new ReflectedDeliveryReceiptTask(
+                        this._services,
+                        messageId,
+                        {
+                            type: ReceiverType.GROUP,
+                            creatorIdentity: validatedBody.message.creatorIdentity,
+                            groupId: validatedBody.message.groupId,
+                        },
+                        deliveryReceipt,
+                        createdAt,
+                        senderContact.get().view.identity,
+                    ),
+                };
+                return instructions;
+            }
             case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
-                // Since this is a reflected incoming delivery receipt, we expect that it's a
-                // reaction to an outbound message.
-                const expectedMessageDirection = MessageDirection.OUTBOUND;
                 const instructions: StatusUpdateInstructions = {
                     messageCategory: 'status-update',
                     task: new ReflectedDeliveryReceiptTask(
@@ -474,7 +493,7 @@ export class ReflectedIncomingMessageTask
                         {type: ReceiverType.CONTACT, identity: senderIdentity},
                         validatedBody.message,
                         createdAt,
-                        expectedMessageDirection,
+                        senderContact.get().view.identity,
                     ),
                 };
                 return instructions;

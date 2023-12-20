@@ -288,6 +288,22 @@ export abstract class ReflectedMessageTaskBase<
                     };
                 }
 
+                case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
+                    const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
+                        structbuf.csp.e2e.GroupMemberContainer.decode(body),
+                    );
+
+                    return {
+                        type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+                        message: {
+                            groupId: container.groupId,
+                            creatorIdentity: container.creatorIdentity,
+                            innerData: container.innerData,
+                        },
+                        container: undefined,
+                    };
+                }
+
                 // Status messages
                 case CspE2eStatusUpdateType.DELIVERY_RECEIPT:
                     return {
@@ -324,7 +340,6 @@ export abstract class ReflectedMessageTaskBase<
                 case CspE2eGroupConversationType.GROUP_VIDEO: // TODO(DESK-586)
                 case CspE2eGroupConversationType.GROUP_POLL_SETUP: // TODO(DESK-244)
                 case CspE2eGroupConversationType.GROUP_POLL_VOTE: // TODO(DESK-244)
-                case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: // TODO(DESK-594)
                     return unhandled({maybeReflectedE2eType, body});
                 default:
                     this._log.warn(

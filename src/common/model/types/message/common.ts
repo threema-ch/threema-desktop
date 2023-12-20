@@ -7,6 +7,7 @@ import type {
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
 import type {
+    ControllerCustomUpdateFromSource,
     ControllerUpdateFromSource,
     ControllerUpdateFromSync,
 } from '~/common/model/types/common';
@@ -14,11 +15,18 @@ import type {Contact} from '~/common/model/types/contact';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {BlobId} from '~/common/network/protocol/blob';
-import type {MessageId} from '~/common/network/types';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import type {RawBlobKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
+export const OWN_IDENTITY_ALIAS = 'me';
+export type IdentityStringOrMe = IdentityString | typeof OWN_IDENTITY_ALIAS;
+export interface MessageReactionView {
+    readonly reactionAt: Date;
+    readonly reaction: MessageReaction;
+    readonly senderContactIdentity: IdentityStringOrMe;
+}
 /**
  * Base view for all message types and directions.
  */
@@ -50,12 +58,10 @@ export interface CommonBaseMessageView {
     readonly readAt?: Date;
 
     /**
-     * Optional reaction to a message.
+     * Reactions to a message.
+     * Is empty if no reaction is present
      */
-    readonly lastReaction?: {
-        readonly at: Date;
-        readonly type: MessageReaction;
-    };
+    readonly reactions: MessageReactionView[];
 
     /**
      * Ordinal for message ordering. Note: Higher `ordinal` means the message is newer.
@@ -112,7 +118,7 @@ export type CommonBaseMessageInit<TType extends MessageType> = {
      * Message type (e.g. text, file, etc).
      */
     readonly type: TType;
-} & Omit<CommonBaseMessageView, 'ordinal'>;
+} & Omit<CommonBaseMessageView, 'ordinal' | 'reactions'>;
 export type InboundBaseMessageInit<TType extends MessageType> = CommonBaseMessageInit<TType> &
     Pick<InboundBaseMessageView, 'receivedAt' | 'raw'> & {
         readonly sender: UidOf<DbContact>;
@@ -154,9 +160,10 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
         /**
          * The user's reaction towards the message.
          */
-        readonly reaction: Omit<
-            ControllerUpdateFromSource<[type: MessageReaction, reactedAt: Date]>,
-            'fromRemote'
+        readonly reaction: ControllerCustomUpdateFromSource<
+            [type: MessageReaction, reactedAt: Date], // From Local
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe], // FromSync
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
         >;
     };
 
@@ -185,9 +192,10 @@ export type OutboundBaseMessageController<TView extends OutboundBaseMessageView>
         /**
          * The receiver's reaction towards the message.
          */
-        readonly reaction: Omit<
-            ControllerUpdateFromSource<[type: MessageReaction, reactedAt: Date]>,
-            'fromLocal'
+        readonly reaction: ControllerCustomUpdateFromSource<
+            [type: MessageReaction, reactedAt: Date], // From Local
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe], // FromSync
+            [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
         >;
     };
 

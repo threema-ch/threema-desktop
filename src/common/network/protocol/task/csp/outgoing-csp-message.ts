@@ -17,6 +17,7 @@ import {
     NonceScope,
     ReceiverType,
     ReceiverTypeUtils,
+    type CspE2eGroupStatusUpdateType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {AnyReceiver, Contact} from '~/common/model';
@@ -77,6 +78,7 @@ export interface MessageProperties<TMessageEncoder, MessageType extends CspE2eTy
  */
 type ValidGroupMessages =
     | CspE2eGroupConversationType
+    | CspE2eGroupStatusUpdateType
     // Note: GROUP_SYNC_REQUEST is excluded, because it is only sent to the creator, not to all members
     | Exclude<CspE2eGroupControlType, CspE2eGroupControlType.GROUP_SYNC_REQUEST>;
 

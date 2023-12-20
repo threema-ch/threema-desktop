@@ -39,7 +39,6 @@ export abstract class DeliveryReceiptTaskBase<
         private readonly _conversationId: ConversationId,
         private readonly _validatedDeliveryReceipt: DeliveryReceipt.Type,
         private readonly _createdAt: Date,
-        private readonly _expectedReferencedMessageDirection: MessageDirection,
     ) {
         const messageIdHex = u64ToHexLe(deliveryReceiptMessageId);
         this._log = _services.logging.logger(
@@ -73,19 +72,6 @@ export abstract class DeliveryReceiptTaskBase<
             const message = conversation.get().controller.getMessage(messageId)?.get();
             if (message === undefined) {
                 this._log.info(`Message with ID ${u64ToHexLe(messageId)} not found, ignoring`);
-                continue;
-            }
-            if (message.ctx !== this._expectedReferencedMessageDirection) {
-                this._log.warn(`Received delivery receipt for wrong message direction, ignoring`);
-                if (message.ctx === MessageDirection.INBOUND) {
-                    this._log.warn(
-                        `Message direction was inbound (${message.ctx}), expected ${this._expectedReferencedMessageDirection}`,
-                    );
-                } else {
-                    this._log.warn(
-                        `Message direction was outbound (${message.ctx}), expected ${this._expectedReferencedMessageDirection}`,
-                    );
-                }
                 continue;
             }
             switch (this._validatedDeliveryReceipt.status) {

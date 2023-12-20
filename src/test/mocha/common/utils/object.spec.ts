@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 
 import type {u53} from '~/common/types';
-import {isIterable, pick} from '~/common/utils/object';
+import {isIterable, omit, pick} from '~/common/utils/object';
 
 /**
  * Test of object utils.
@@ -47,6 +47,36 @@ export function run(): void {
                 expect(pick<Partial<A>>(o, ['a', 'b'])).to.be.deep.equal({a: 1});
                 expect(pick<Partial<Aa>>(o, ['a', 'd'])).to.be.deep.equal({a: 1});
                 expect(pick<Partial<Aa>>(o, ['d'])).to.be.deep.equal({});
+            });
+        });
+
+        describe('omit', function () {
+            it('example 1', () => expect(omit({}, [])).to.deep.equal({}));
+            it('example 2', () => expect(omit({a: 1, b: 2}, [])).to.deep.equal({a: 1, b: 2}));
+            it('example 3', () => expect(omit({a: 1, b: 2}, ['a'])).to.deep.equal({b: 2}));
+            it('example 4', () => expect(omit({a: 1, b: 2}, ['a', 'b'])).to.deep.equal({}));
+            it('example 5', () => {
+                const o: Partial<{a: u53; b: u53; c: u53}> = {a: 1, c: 4};
+                expect(omit(o, ['a', 'b'])).to.be.deep.equal({c: 4});
+            });
+        });
+
+        describe('omit with parametrized restricted type', function () {
+            it('example 6', () => {
+                interface A {
+                    a: u53;
+                    b: u53;
+                    c: boolean;
+                }
+                interface Aa {
+                    a: u53;
+                    d: u53;
+                }
+                const o: Partial<A> = {a: 1, c: true};
+                expect(omit(o, ['a', 'b'])).to.be.deep.equal({c: true});
+                expect(omit<Partial<A>>(o, ['a', 'b'])).to.be.deep.equal({c: true});
+                expect(omit<Partial<Aa>>(o, ['a', 'd'])).to.be.deep.equal({c: true});
+                expect(omit<Partial<Aa>>(o, ['d'])).to.be.deep.equal({a: 1, c: true});
             });
         });
     });

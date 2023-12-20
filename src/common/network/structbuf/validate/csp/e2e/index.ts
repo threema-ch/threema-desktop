@@ -2,6 +2,7 @@ import type {
     CspE2eConversationType,
     CspE2eGroupControlType,
     CspE2eGroupConversationType,
+    CspE2eGroupStatusUpdateType,
     CspE2eStatusUpdateType,
 } from '~/common/enum';
 import type {CspE2eType} from '~/common/network/protocol';
@@ -100,4 +101,8 @@ export type ValidatedCspE2eTypes =
       >
 
     // Status messages
-    | ValidatedCspE2eMessageType<CspE2eStatusUpdateType.DELIVERY_RECEIPT, DeliveryReceipt.Type>;
+    | ValidatedCspE2eMessageType<CspE2eStatusUpdateType.DELIVERY_RECEIPT, DeliveryReceipt.Type>
+    | ValidatedCspE2eMessageType<
+          CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+          GroupMemberContainer.Type
+      >;

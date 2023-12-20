@@ -3,10 +3,12 @@ import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model';
 import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';
 import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
-import type {ConversationId, MessageId} from '~/common/network/types';
-import {assert} from '~/common/utils/assert';
-
-const EXPECTED_MESSAGE_DIRECTION = MessageDirection.OUTBOUND;
+import {
+    ensureIdentityString,
+    type ConversationId,
+    type IdentityString,
+    type MessageId,
+} from '~/common/network/types';
 
 /**
  * Receive and process incoming delivery receipts from CSP.
@@ -22,6 +24,7 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         conversationId: ConversationId,
         validatedDeliveryReceipt: DeliveryReceipt.Type,
         clampedCreatedAt: Date,
+        private readonly _senderIdentity: IdentityString,
     ) {
         super(
             services,
@@ -29,7 +32,6 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
             conversationId,
             validatedDeliveryReceipt,
             clampedCreatedAt,
-            EXPECTED_MESSAGE_DIRECTION,
         );
     }
 
@@ -46,8 +48,9 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         message: AnyMessageModel,
         readAt: Date,
     ): void {
-        assert(message.ctx === EXPECTED_MESSAGE_DIRECTION);
-        void message.controller.read.fromRemote(handle, readAt);
+        if (message.ctx === MessageDirection.OUTBOUND) {
+            void message.controller.read.fromRemote(handle, readAt);
+        }
     }
 
     protected _reaction(
@@ -56,7 +59,11 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         reaction: MessageReaction,
         reactedAt: Date,
     ): void {
-        assert(message.ctx === EXPECTED_MESSAGE_DIRECTION);
-        void message.controller.reaction.fromRemote(handle, reaction, reactedAt);
+        void message.controller.reaction.fromRemote(
+            handle,
+            reaction,
+            reactedAt,
+            ensureIdentityString(this._senderIdentity),
+        );
     }
 }

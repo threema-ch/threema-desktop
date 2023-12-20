@@ -6,6 +6,7 @@ import {
     MessageReaction,
     type MessageType,
     TriggerSource,
+    ReceiverType,
 } from '~/common/enum';
 import {deleteFilesInBackground} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
@@ -19,21 +20,24 @@ import * as contact from '~/common/model/contact';
 import {NO_SENDER} from '~/common/model/message/common';
 import type {GuardedStoreHandle} from '~/common/model/types/common';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
-import type {
-    BaseMessageView,
-    CommonBaseMessageView,
-    InboundBaseMessageController,
-    InboundBaseMessageView,
-    OutboundBaseMessageController,
-    OutboundBaseMessageView,
-    SetOfAnyLocalMessageModelStore,
+import {
+    type BaseMessageView,
+    type CommonBaseMessageView,
+    type InboundBaseMessageController,
+    type InboundBaseMessageView,
+    type OutboundBaseMessageController,
+    type OutboundBaseMessageView,
+    type SetOfAnyLocalMessageModelStore,
+    type MessageReactionView,
+    type IdentityStringOrMe,
+    OWN_IDENTITY_ALIAS,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {ActiveTaskCodecHandle} from '~/common/network/protocol/task';
 import {OutgoingDeliveryReceiptTask} from '~/common/network/protocol/task/csp/outgoing-delivery-receipt';
-import type {MessageId} from '~/common/network/types';
+import type {IdentityString, MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -105,13 +109,16 @@ function getCommonView<TDirection extends MessageDirection>(
     direction: TDirection,
     message: DbAnyMessage,
 ): BaseMessageView<TDirection> {
+    const reactionsView: MessageReactionView[] = message.reactions;
+
     const common: CommonBaseMessageView = {
         id: message.id,
         createdAt: message.createdAt,
         readAt: message.readAt,
-        lastReaction: message.lastReaction,
         ordinal: message.ordinal,
+        reactions: reactionsView,
     };
+
     switch (direction) {
         case MessageDirection.INBOUND: {
             assert(message.raw !== undefined, 'Expected inbound message to have a raw body');
@@ -183,12 +190,14 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
     store: LocalModelStore<Contact> | undefined,
 ] {
     // Gather common message data
-    const common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'processedAt' | 'ordinal'> = {
+    const common: Omit<
+        DbMessageCommon<TType>,
+        'uid' | 'type' | 'processedAt' | 'ordinal' | 'reactions'
+    > = {
         id: init.id,
         conversationUid,
         createdAt: init.createdAt,
         readAt: init.readAt,
-        lastReaction: init.lastReaction,
         threadId: 1337n, // TODO(DESK-296): Set this properly
     };
     switch (init.direction) {
@@ -198,6 +207,7 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
             return [
                 {
                     ...common,
+                    reactions: [],
                     senderContactUid: init.sender,
                     processedAt: init.receivedAt,
                     raw: init.raw,
@@ -209,6 +219,7 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
             return [
                 {
                     ...common,
+                    reactions: [],
                 },
                 undefined,
             ];
@@ -337,6 +348,23 @@ function update(
     const {db, file} = services;
     const {deletedFileIds} = db.updateMessage(conversationUid, {...change, type, uid});
     deleteFilesInBackground(file, log, deletedFileIds);
+}
+
+/**
+ * Update a message group reaction
+ */
+function createOrUpdateReaction(
+    services: ServicesForModel,
+    messageUid: UidOf<DbMessageCommon<MessageType>>,
+    reaction: MessageReactionView,
+): void {
+    const {db} = services;
+    db.createOrUpdateMessageReaction({
+        messageUid,
+        reactionAt: reaction.reactionAt,
+        senderContactIdentity: reaction.senderContactIdentity,
+        reaction: reaction.reaction,
+    });
 }
 
 /**
@@ -485,21 +513,24 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
         message: GuardedStoreHandle<TView>,
         view: Readonly<TView>,
         reaction: MessageReaction,
-        reactedAt: Date,
+        reactionAt: Date,
+        senderContactIdentity: IdentityStringOrMe,
     ): void {
         // Update the message
         message.update(() => {
-            const change = {
-                lastReaction: {at: reactedAt, type: reaction},
-            } as const;
-            update(
-                this._services,
-                this._log,
-                this._conversation.uid,
-                this._uid,
-                this._type,
-                change,
+            const messageReaction: MessageReactionView = {
+                reactionAt,
+                reaction,
+                senderContactIdentity,
+            };
+            const filtered = view.reactions.filter(
+                (r) => r.senderContactIdentity !== senderContactIdentity,
             );
+            filtered.push(messageReaction);
+            const change = {
+                reactions: filtered,
+            };
+            createOrUpdateReaction(this._services, this._uid, messageReaction);
             return change as Partial<TView>;
         });
     }
@@ -522,9 +553,17 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         [TRANSFER_HANDLER]: PROXY_HANDLER,
         // eslint-disable-next-line @typescript-eslint/require-await
         fromLocal: async (type: MessageReaction, reactedAt: Date) =>
-            this._handleReaction(TriggerSource.LOCAL, type, reactedAt),
-        fromSync: (type: MessageReaction, reactedAt: Date) =>
-            this._handleReaction(TriggerSource.SYNC, type, reactedAt),
+            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, OWN_IDENTITY_ALIAS),
+        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
+            this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
+
+        fromRemote: async (
+            handle: ActiveTaskCodecHandle<'volatile'>,
+            type: MessageReaction,
+            reactedAt: Date,
+            reactionSender: IdentityString,
+            // eslint-disable-next-line @typescript-eslint/require-await
+        ) => this._handleReaction(TriggerSource.REMOTE, type, reactedAt, reactionSender),
     };
 
     public constructor(
@@ -559,23 +598,44 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
     /** @inheritdoc */
     private _handleReaction(
-        source: TriggerSource.SYNC | TriggerSource.LOCAL,
+        source: TriggerSource,
         type: MessageReaction,
         reactedAt: Date,
+        reactionSender: IdentityStringOrMe,
     ): void {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.meta.run((handle) => {
             const view = handle.view();
 
-            // Ignore if reaction has been repeated
-            if (view.lastReaction !== undefined && view.lastReaction.type === type) {
+            // Ignore if this reaction of this person already exists
+            if (
+                view.reactions.filter(
+                    (reaction) =>
+                        reaction.senderContactIdentity === reactionSender &&
+                        reaction.reaction === type,
+                ).length !== 0
+            ) {
+                return;
+            }
+
+            // Ignore if somebody acks their own message outside of a group chat
+            if (
+                this._sender.get().view.identity === reactionSender &&
+                this._conversation.receiverLookup.type !== ReceiverType.GROUP
+            ) {
                 return;
             }
 
             // Update database
-            this._reaction(handle, view, type, reactedAt);
+            this._reaction(handle, view, type, reactedAt, reactionSender);
 
             // Queue a persistent task to send a notification, then reflect it.
             if (source === TriggerSource.LOCAL) {
+                assert(
+                    reactionSender === 'me',
+                    'Reaction with trigger source LOCAL must be from current user',
+                );
+
                 let status: CspE2eDeliveryReceiptStatus;
                 switch (type) {
                     case MessageReaction.ACKNOWLEDGE:
@@ -587,9 +647,10 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                     default:
                         unreachable(type);
                 }
+
                 const task = new OutgoingDeliveryReceiptTask(
                     this._services,
-                    this._sender,
+                    this._conversation.getReceiver().get(),
                     status,
                     reactedAt,
                     [view.id],
@@ -618,14 +679,21 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
 
     public readonly reaction: OutboundBaseMessageController<TView>['reaction'] = {
         [TRANSFER_HANDLER]: PROXY_HANDLER,
-        fromSync: (type: MessageReaction, reactedAt: Date) => this._handleReaction(type, reactedAt),
+
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (type: MessageReaction, reactedAt: Date) =>
+            this._handleReaction(TriggerSource.LOCAL, type, reactedAt, OWN_IDENTITY_ALIAS),
+
+        fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
+            this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
 
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             type: MessageReaction,
             reactedAt: Date,
+            reactionSender: IdentityString,
             // eslint-disable-next-line @typescript-eslint/require-await
-        ) => this._handleReaction(type, reactedAt),
+        ) => this._handleReaction(TriggerSource.REMOTE, type, reactedAt, reactionSender),
     };
 
     public readonly read: OutboundBaseMessageController<TView>['read'] = {
@@ -708,17 +776,64 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         });
     }
 
-    private _handleReaction(type: MessageReaction, reactedAt: Date): void {
+    private _handleReaction(
+        source: TriggerSource,
+        type: MessageReaction,
+        reactedAt: Date,
+        reactionSender: IdentityStringOrMe,
+    ): void {
+        this._log.warn('We are running the outbound task');
+
         this.meta.run((handle) => {
             const view = handle.view();
 
-            // Ignore if reaction has been repeated
-            if (view.lastReaction !== undefined && view.lastReaction.type === type) {
+            // Ignore if this reaction of this person already exists
+            // We also filter messages that were wrongly acked by ourselves if this was not a group
+            if (
+                view.reactions.filter((reaction) => {
+                    const reactionExists =
+                        reaction.senderContactIdentity === reactionSender &&
+                        reaction.reaction === type;
+                    const isOwnReactionInPrivateChat =
+                        this._conversation.receiverLookup.type !== ReceiverType.GROUP &&
+                        reactionSender === OWN_IDENTITY_ALIAS;
+                    return reactionExists || isOwnReactionInPrivateChat;
+                }).length !== 0
+            ) {
                 return;
             }
 
             // Update database
-            this._reaction(handle, view, type, reactedAt);
+            this._reaction(handle, view, type, reactedAt, reactionSender);
+
+            // Queue a persistent task to send a notification, then reflect it.
+            if (source === TriggerSource.LOCAL) {
+                assert(
+                    reactionSender === 'me',
+                    'Reaction with trigger source LOCAL must be from current user',
+                );
+
+                let status: CspE2eDeliveryReceiptStatus;
+                switch (type) {
+                    case MessageReaction.ACKNOWLEDGE:
+                        status = CspE2eDeliveryReceiptStatus.ACKNOWLEDGED;
+                        break;
+                    case MessageReaction.DECLINE:
+                        status = CspE2eDeliveryReceiptStatus.DECLINED;
+                        break;
+                    default:
+                        unreachable(type);
+                }
+
+                const task = new OutgoingDeliveryReceiptTask(
+                    this._services,
+                    this._conversation.getReceiver().get(),
+                    status,
+                    reactedAt,
+                    [view.id],
+                );
+                void this._services.taskManager.schedule(task);
+            }
         });
     }
 }

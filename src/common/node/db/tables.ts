@@ -565,11 +565,6 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
     public readAt = this.optionalColumn('readAt', 'localDateTime');
 
     /**
-     * Timestamp of the last reaction.
-     */
-    public lastReactionAt = this.optionalColumn('lastReactionAt', 'localDateTime');
-
-    /**
      * Unparsed raw body. Only provided for inbound messages.
      */
     public raw = this.optionalColumn<ReadonlyUint8Array>('raw', 'custom', CUSTOM_TYPES.UINT8ARRAY);
