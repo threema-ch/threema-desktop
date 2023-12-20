@@ -48,12 +48,12 @@ export interface MessageProps {
     readonly onError: (error: Error) => void;
     readonly options?: {
         readonly hideSender?: boolean;
-        readonly hideStatus?: IndicatorProps['hideStatus'];
+        readonly indicatorOptions?: IndicatorProps['options'];
         readonly hideVideoPlayButton?: boolean;
     };
     /** Data of the quoted message. */
     readonly quote?: DefaultQuoteProps | NotFoundQuoteProps;
-    readonly reactions?: IndicatorProps['reactions'];
+    readonly reactions: IndicatorProps['reactions'];
     /** Details about the message sender. */
     readonly sender?: Pick<AvatarProps, 'color' | 'initials'> & Pick<SenderProps, 'color' | 'name'>;
     readonly status: IndicatorProps['status'];

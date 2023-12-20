@@ -13,6 +13,7 @@ import {
     WorkVerificationLevel,
 } from '~/common/enum';
 import type {
+    AnyMessageModel,
     AnyReceiver,
     Contact,
     ContactView,
@@ -27,7 +28,7 @@ import type {Nickname} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {getMemberNames} from '~/common/viewmodel/group-list-item';
-import type {AnyReceiverData, ContactData} from '~/common/viewmodel/types';
+import type {AnyReceiverData, ContactData, Reactions} from '~/common/viewmodel/types';
 import {getContactBadge} from '~/common/viewmodel/utils/contact';
 
 export type TransformedReceiverData = AnyReceiverData & {
@@ -38,6 +39,34 @@ export type TransformedReceiverData = AnyReceiverData & {
 };
 
 export type ReceiverNotificationPolicy = 'default' | 'muted' | 'mentioned' | 'never';
+
+export function transformReactions(
+    message: AnyMessageModel,
+    contacts: ContactRepository,
+): Reactions {
+    const reactions = message.view.reactions;
+    const transformedReactions: Reactions = [];
+    reactions.forEach((reaction) => {
+        // If the contact was deleted the reaction should still be there
+        // so we just display the identity that is associated with the reaction
+        const reactionSenderName =
+            reaction.senderContactIdentity !== 'me'
+                ? contacts.getByIdentity(reaction.senderContactIdentity)?.get().view.displayName ??
+                  reaction.senderContactIdentity
+                : reaction.senderContactIdentity;
+
+        transformedReactions.push({
+            at: reaction.reactionAt,
+            reactionSender: {
+                identity: reaction.senderContactIdentity,
+                name: reactionSenderName,
+            },
+            type: reaction.reaction,
+        });
+    });
+
+    return transformedReactions;
+}
 
 export function transformContact(
     privacySettings: LocalModelStore<PrivacySettings>,

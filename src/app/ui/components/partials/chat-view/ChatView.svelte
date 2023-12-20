@@ -161,6 +161,7 @@
         reactions: message.reactions,
         services,
         status: message.status,
+        conversation,
       },
     };
   }

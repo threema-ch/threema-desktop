@@ -4,6 +4,7 @@ import type {
 } from '#3sc/components/threema/VerificationDots';
 import type {DbContactUid} from '~/common/db';
 import type {MessageDirection, MessageReaction} from '~/common/enum';
+import type {IdentityStringOrMe} from '~/common/model/types/message';
 import type {Dimensions, u53} from '~/common/types';
 import type {ProfilePictureFallback} from '~/common/viewmodel/profile-picture';
 
@@ -246,10 +247,14 @@ export type AnyMessageBody =
     | MessageBody<'file'>
     | MessageBody<'quote'>;
 
-export interface Reaction {
-    readonly at: Date;
+export type Reactions = {
     readonly type: MessageReaction;
-}
+    readonly at: Date;
+    readonly reactionSender: {
+        readonly identity: IdentityStringOrMe;
+        readonly name: string;
+    };
+}[];
 
 export type IncomingMessage<B extends AnyMessageBody> = {
     readonly direction: MessageDirection.INBOUND;
@@ -257,7 +262,7 @@ export type IncomingMessage<B extends AnyMessageBody> = {
     readonly sender: ReceiverData<'contact'>;
     readonly isRead: boolean;
     readonly updatedAt: Date;
-    readonly lastReaction?: Reaction;
+    readonly reactions: Reactions;
     // The state field is only relevant for file messages. For all other messages,
     // it can be set to 'synced'.
     readonly state: FileMessageDataState;
@@ -273,7 +278,7 @@ export type OutgoingMessage<B extends AnyMessageBody> = {
         readonly profilePictureFallback: ProfilePictureFallback;
     };
     readonly updatedAt: Date;
-    readonly lastReaction?: Reaction;
+    readonly reactions: Reactions;
     // The state field is only relevant for file messages. For all other messages,
     // it can be set to 'synced'.
     readonly state: FileMessageDataState;

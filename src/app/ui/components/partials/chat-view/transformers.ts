@@ -1,8 +1,9 @@
 import type {AppServices} from '~/app/types';
 import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
 import type {DbReceiverLookup} from '~/common/db';
-import {ImageRenderingType, MessageDirection, MessageReaction} from '~/common/enum';
+import {ImageRenderingType, MessageDirection, MessageReaction, ReceiverType} from '~/common/enum';
 import type {AnyMessageModel, RemoteModelFor} from '~/common/model';
+import {OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import type {InboundAudioMessage, OutboundAudioMessage} from '~/common/model/types/message/audio';
 import type {InboundFileMessage, OutboundFileMessage} from '~/common/model/types/message/file';
 import type {InboundImageMessage, OutboundImageMessage} from '~/common/model/types/message/image';
@@ -17,6 +18,7 @@ import type {
     IConversationMessageViewModelController,
 } from '~/common/viewmodel/conversation-message';
 import type {ConversationMessageSetViewModel} from '~/common/viewmodel/conversation-message-set';
+import type {Reactions} from '~/common/viewmodel/types';
 
 /**
  * Defined the shape of props as they should be provided from the backend.
@@ -79,6 +81,18 @@ export function messageSetViewModelToMessagePropsStore(
     );
 }
 
+function getMessageReactions(reactionView: Reactions): MessageProps['reactions'] {
+    return reactionView.map((reaction) => ({
+        direction: reaction.reactionSender.identity === OWN_IDENTITY_ALIAS ? 'outbound' : 'inbound',
+        type: reaction.type === MessageReaction.ACKNOWLEDGE ? 'acknowledged' : 'declined',
+        at: reaction.at,
+        reactionSender: {
+            identity: reaction.reactionSender.identity,
+            name: reaction.reactionSender.name,
+        },
+    }));
+}
+
 function getMessageProps(
     viewModel: Remote<ConversationMessageViewModel>,
     viewModelController: RemoteProxy<IConversationMessageViewModelController>,
@@ -87,7 +101,12 @@ function getMessageProps(
     services: AppServices,
 ): MessagePropsFromBackend {
     return {
-        actions: getMessageActions(viewModel, viewModelController, messageModel),
+        actions: getMessageActions(
+            viewModel,
+            viewModelController,
+            messageModel,
+            conversationReceiver.type,
+        ),
         direction: viewModel.body.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(
             viewModel,
@@ -97,22 +116,7 @@ function getMessageProps(
             services,
         ),
         id: viewModel.messageId,
-        reactions:
-            messageModel.view.lastReaction !== undefined
-                ? [
-                      {
-                          at: messageModel.view.lastReaction.at,
-                          direction:
-                              viewModel.body.direction === MessageDirection.INBOUND
-                                  ? 'outbound'
-                                  : 'inbound',
-                          type:
-                              messageModel.view.lastReaction.type === MessageReaction.ACKNOWLEDGE
-                                  ? 'acknowledged'
-                                  : 'declined',
-                      },
-                  ]
-                : [],
+        reactions: getMessageReactions(viewModel.body.reactions),
         status: getMessageStatus(viewModel, viewModelController, messageModel),
         sender: getMessageSender(viewModel, viewModelController, messageModel),
         text: getMessageText(viewModel, viewModelController, messageModel),
@@ -123,8 +127,9 @@ function getMessageActions(
     viewModel: Remote<ConversationMessageViewModel>,
     viewModelController: RemoteProxy<IConversationMessageViewModelController>,
     messageModel: RemoteModelFor<AnyMessageModel>,
+    type: ReceiverType,
 ): MessagePropsFromBackend['actions'] {
-    if (messageModel.ctx !== MessageDirection.INBOUND) {
+    if (messageModel.ctx !== MessageDirection.INBOUND && type !== ReceiverType.GROUP) {
         return {
             acknowledge: async () =>
                 await Promise.reject(

@@ -8,8 +8,10 @@
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import type {MessageDetailsModalProps} from '~/app/ui/components/partials/chat-view/internal/message-details-modal/props';
+  import type {GroupedReactionsList} from '~/app/ui/components/partials/chat-view/internal/message-details-modal/types';
   import {i18n} from '~/app/ui/i18n';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
+  import {ReceiverType} from '~/common/enum';
   import type {u53} from '~/common/types';
   import {u64ToHexLe} from '~/common/utils/number';
 
@@ -21,17 +23,38 @@
   export let reactions: $$Props['reactions'];
   export let services: $$Props['services'];
   export let status: $$Props['status'];
+  export let conversation: $$Props['conversation'];
 
   const {
     settings: {appearance},
   } = services;
 
-  $: use24hTime = $appearance.view.use24hTime;
+  let groupedSortedReactions: GroupedReactionsList = {
+    acknowledged: [],
+    declined: [],
+  };
 
-  $: lastReaction = reactions?.reduce<(typeof reactions)[u53] | undefined>(
-    (acc, curr) => (curr.at > (acc?.at ?? 0) ? curr : acc),
-    undefined,
-  );
+  let ownReaction: $$Props['reactions'][u53]['type'] | undefined = undefined;
+
+  $: if (conversation.type === ReceiverType.GROUP) {
+    const tmpSortedReactions: GroupedReactionsList = {
+      acknowledged: [],
+      declined: [],
+    };
+    reactions.forEach((reaction) => {
+      let displayName = reaction.reactionSender.name;
+      if (reaction.reactionSender.identity === 'me') {
+        ownReaction = reaction.type;
+        displayName = $i18n.t('contacts.label--own-name');
+      }
+      tmpSortedReactions[reaction.type].push(displayName);
+    });
+    tmpSortedReactions.acknowledged.sort();
+    tmpSortedReactions.declined.sort();
+    groupedSortedReactions = {...tmpSortedReactions};
+  }
+
+  $: use24hTime = $appearance.view.use24hTime;
 </script>
 
 <Modal
@@ -119,23 +142,44 @@
       {/if}
 
       <KeyValueList.Section>
-        <KeyValueList.Item
-          key={$i18n.t('dialog--message-details.label--last-reaction', 'Last Reaction')}
-        >
-          {#if lastReaction === undefined}
+        <KeyValueList.Item key={$i18n.t('dialog--message-details.label--reactions', 'Reactions')}>
+          {#if reactions.length === 0}
             -
-          {:else}
+          {:else if conversation.type === ReceiverType.CONTACT}
+            {@const reaction = reactions[0]}
+            {#if reaction !== undefined}
+              <div class="reaction">
+                <div class={`thumb ${reaction.type}`}>
+                  <MdIcon theme="Filled"
+                    >{reaction.type === 'acknowledged' ? 'thumb_up' : 'thumb_down'}</MdIcon
+                  >
+                </div>
+                <div class="date">
+                  <Text text={formatDateLocalized(reaction.at, $i18n, 'extended', use24hTime)} />
+                </div>
+              </div>
+            {/if}
+          {:else if groupedSortedReactions.acknowledged.length !== 0}
             <div class="reaction">
-              <div class={`thumb ${lastReaction.type}`}>
-                <MdIcon theme="Filled"
-                  >{lastReaction.type === 'acknowledged' ? 'thumb_up' : 'thumb_down'}</MdIcon
+              <div class={'thumb acknowledged'}>
+                <MdIcon theme={ownReaction === 'acknowledged' ? 'Filled' : 'Outlined'}
+                  >{'thumb_up'}</MdIcon
                 >
               </div>
               <div class="date">
-                <Text
-                  text={formatDateLocalized(lastReaction.at, $i18n, 'extended', use24hTime)}
-                  selectable
-                />
+                <Text text={groupedSortedReactions.acknowledged.join(', ')} selectable />
+              </div>
+            </div>
+          {/if}
+          {#if groupedSortedReactions.declined.length !== 0}
+            <div class="reaction">
+              <div class={'thumb declined'}>
+                <MdIcon theme={ownReaction === 'declined' ? 'Filled' : 'Outlined'}
+                  >{'thumb_down'}</MdIcon
+                >
+              </div>
+              <div class="date">
+                <Text text={groupedSortedReactions.declined.join(', ')} selectable />
               </div>
             </div>
           {/if}
@@ -200,6 +244,7 @@
       align-items: center;
       justify-content: start;
       gap: rem(8px);
+      margin-top: rem(8px);
 
       .thumb {
         display: flex;

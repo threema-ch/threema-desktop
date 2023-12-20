@@ -247,12 +247,17 @@
                 {#if isGroupConversation}
                   <MdIcon theme="Filled">group</MdIcon>
                 {:else}
+                  <!--The reaction calculation is safe because we only show reactions in the navlist that are in single chats
+                Therefore, there can only ever be one reaction
+                -->
                   <MessageStatus
                     direction={$lastMessageStore.view.direction}
                     status={$lastMessageStore.view.direction === MessageDirection.OUTBOUND
                       ? statusFromView($lastMessageStore.view)[0]
                       : 'delivered'}
-                    reaction={$lastMessageStore.view.lastReaction?.type}
+                    reaction={receiver.type === ReceiverType.CONTACT
+                      ? $lastMessageStore.view.reactions[0]?.reaction
+                      : undefined}
                     outgoingReactionDisplay="arrow"
                     receiverType={receiver.type}
                   />

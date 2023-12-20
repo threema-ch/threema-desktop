@@ -271,8 +271,7 @@
 
   $: supportsReactions =
     !conversation.isBlocked &&
-    direction === 'inbound' &&
-    conversation.type === ReceiverType.CONTACT;
+    (direction === 'inbound' || conversation.type === ReceiverType.GROUP);
 
   $: timestamp = reactive(
     () => ({
@@ -312,22 +311,20 @@
       copyImage: file !== undefined && file.type === 'image',
       copy: text !== undefined,
       saveAsFile: file !== undefined,
-      acknowledge:
-        supportsReactions && reactions !== undefined
-          ? {
-              used: reactions.some(
-                (reaction) => reaction.direction === 'outbound' && reaction.type === 'acknowledged',
-              ),
-            }
-          : false,
-      decline:
-        supportsReactions && reactions !== undefined
-          ? {
-              used: reactions.some(
-                (reaction) => reaction.direction === 'outbound' && reaction.type === 'declined',
-              ),
-            }
-          : false,
+      acknowledge: supportsReactions
+        ? {
+            used: reactions.some(
+              (reaction) => reaction.direction === 'outbound' && reaction.type === 'acknowledged',
+            ),
+          }
+        : false,
+      decline: supportsReactions
+        ? {
+            used: reactions.some(
+              (reaction) => reaction.direction === 'outbound' && reaction.type === 'declined',
+            ),
+          }
+        : false,
       quote: !conversation.isBlocked && !conversation.isDisabled,
       forward: text !== undefined,
       openDetails: true,
@@ -373,6 +370,7 @@
         </svelte:fragment>
 
         <svelte:fragment slot="below">
+          <!--TODO(DESK-771) handle distribution list conversation type-->
           <BasicMessage
             alt={$i18n.t('messaging.hint--media-thumbnail')}
             content={htmlContent === undefined
@@ -390,7 +388,10 @@
               )}
             options={{
               hideSender: conversation.type !== ReceiverType.CONTACT,
-              hideStatus: conversation.type !== ReceiverType.CONTACT && status.sent !== undefined,
+              indicatorOptions: {
+                hideStatus: conversation.type !== ReceiverType.CONTACT && status.sent !== undefined,
+                fillReactions: conversation.type === ReceiverType.CONTACT,
+              },
               hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
             }}
             quote={quoteProps}

@@ -5,15 +5,22 @@ export interface IndicatorProps {
     /** Direction of the message. */
     readonly direction: 'inbound' | 'outbound';
     /** Whether to forcefully hide status icons, even if a status is provided. */
-    readonly hideStatus?: boolean;
-    readonly reactions: Readonly<Reaction[]> | undefined;
+    readonly options?: {
+        /** Whether to forcefully hide status icons, even if a status is provided. */
+        readonly hideStatus?: boolean;
+        /**
+         * Whether to forcefully display the reaction icons as filled, even if none of the reactions
+         * is outbound.
+         */
+        readonly fillReactions?: boolean;
+    };
+    readonly reactions: Readonly<Reaction[]>;
     readonly status: Status;
 }
 
 interface Reaction {
     readonly direction: 'inbound' | 'outbound';
     readonly type: 'acknowledged' | 'declined';
-    readonly at: Date;
 }
 
 interface Status {

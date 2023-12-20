@@ -14,11 +14,11 @@ interface IndicatorElement {
  */
 export function getIndicatorElements(
     direction: IndicatorProps['direction'],
-    hideStatus: NonNullable<IndicatorProps['hideStatus']>,
+    options: NonNullable<IndicatorProps['options']>,
     reactions: IndicatorProps['reactions'],
     status: IndicatorProps['status'],
 ): IndicatorElement[] {
-    const reactionElements = getIndicatorElementsForReactions(reactions);
+    const reactionElements = getIndicatorElementsForReactions(reactions, options);
     if (reactionElements.length === 0 && direction === 'inbound') {
         return [];
     }
@@ -26,7 +26,7 @@ export function getIndicatorElements(
         return reactionElements;
     }
 
-    if (hideStatus) {
+    if (options.hideStatus === true) {
         return [];
     }
 
@@ -40,23 +40,24 @@ export function getIndicatorElements(
 
 function getIndicatorElementsForReactions(
     reactions: IndicatorProps['reactions'] = [],
+    options: Pick<NonNullable<IndicatorProps['options']>, 'fillReactions'> = {fillReactions: false},
 ): IndicatorElement[] {
     const elements: IndicatorElement[] = [];
 
     let hasOutboundAcknowledge = false;
     let hasOutboundDecline = false;
-    let inboundAcknowledgeCount = 0;
-    let inboundDeclineCount = 0;
+    let acknowledgeCount = 0;
+    let declineCount = 0;
     for (const reaction of reactions) {
         switch (reaction.direction) {
             case 'inbound':
                 switch (reaction.type) {
                     case 'acknowledged':
-                        inboundAcknowledgeCount += 1;
+                        acknowledgeCount += 1;
                         break;
 
                     case 'declined':
-                        inboundDeclineCount += 1;
+                        declineCount += 1;
                         break;
 
                     default:
@@ -68,10 +69,12 @@ function getIndicatorElementsForReactions(
                 switch (reaction.type) {
                     case 'acknowledged':
                         hasOutboundAcknowledge = true;
+                        acknowledgeCount += 1;
                         break;
 
                     case 'declined':
                         hasOutboundDecline = true;
+                        declineCount += 1;
                         break;
 
                     default:
@@ -84,21 +87,21 @@ function getIndicatorElementsForReactions(
         }
     }
 
-    if (hasOutboundAcknowledge || inboundAcknowledgeCount > 0) {
+    if (hasOutboundAcknowledge || acknowledgeCount > 0) {
         elements.push({
             icon: 'thumb_up',
             color: 'acknowledged',
-            count: inboundAcknowledgeCount > 0 ? inboundAcknowledgeCount : undefined,
-            filled: true, // TODO(DESK-594): Use "hasOutboundAcknowledge" instead
+            count: acknowledgeCount > 0 ? acknowledgeCount : undefined,
+            filled: hasOutboundAcknowledge || options.fillReactions,
         });
     }
 
-    if (hasOutboundDecline || inboundDeclineCount > 0) {
+    if (hasOutboundDecline || declineCount > 0) {
         elements.push({
             icon: 'thumb_down',
             color: 'declined',
-            count: inboundDeclineCount > 0 ? inboundDeclineCount : undefined,
-            filled: true, // TODO(DESK-594): Use "hasOutboundDecline" instead
+            count: declineCount > 0 ? declineCount : undefined,
+            filled: hasOutboundDecline || options.fillReactions,
         });
     }
 

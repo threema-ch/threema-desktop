@@ -11,11 +11,11 @@
   type $$Props = IndicatorProps;
 
   export let direction: $$Props['direction'];
-  export let hideStatus: NonNullable<$$Props['hideStatus']> = false;
+  export let options: NonNullable<$$Props['options']> = {};
   export let reactions: NonNullable<$$Props['reactions']> = [];
   export let status: $$Props['status'];
 
-  $: elements = getIndicatorElements(direction, hideStatus, reactions, status);
+  $: elements = getIndicatorElements(direction, options, reactions, status);
 </script>
 
 <template>

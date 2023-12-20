@@ -1,6 +1,6 @@
-import {MessageDirection, type MessageReaction, MessageType} from '~/common/enum';
+import {MessageDirection, MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {Repositories, User} from '~/common/model';
+import type {ContactRepository, Repositories, User} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import {statusFromView} from '~/common/model/message';
 import type {
@@ -22,7 +22,10 @@ import {u64ToHexLe} from '~/common/utils/number';
 import type {LocalStore} from '~/common/utils/store';
 import {derive, type GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
-import {transformContact} from '~/common/viewmodel/svelte-components-transformations';
+import {
+    transformContact,
+    transformReactions,
+} from '~/common/viewmodel/svelte-components-transformations';
 import type {
     AnyMessageBody,
     FileMessageDataState,
@@ -219,6 +222,7 @@ function getConversationMessageBody(
 ): ConversationMessageViewModel['body'] {
     const baseMessage = getConversationMessageBodyBaseMessage(
         messageModel,
+        model.contacts,
         model.user,
         getAndSubscribe,
     );
@@ -385,21 +389,10 @@ function getConversationMessageBody(
 
 function getConversationMessageBodyBaseMessage(
     messageModel: AnyMessageModel,
+    contacts: ContactRepository,
     user: User,
     getAndSubscribe: GetAndSubscribeFunction,
 ): Omit<Message<AnyMessageBody>, BaseMessageOmittedFields> {
-    let lastReaction:
-        | {
-              at: Date;
-              type: MessageReaction;
-          }
-        | undefined;
-    if (messageModel.view.lastReaction !== undefined) {
-        lastReaction = {
-            ...messageModel.view.lastReaction,
-        };
-    }
-
     // Determine base message contents depending on direction
     let baseMessage: Omit<Message<AnyMessageBody>, BaseMessageOmittedFields>;
     const id = u64ToHexLe(messageModel.view.id);
@@ -418,7 +411,7 @@ function getConversationMessageBodyBaseMessage(
                 sender: contact,
                 isRead: messageModel.view.readAt !== undefined,
                 updatedAt: messageModel.view.createdAt,
-                lastReaction,
+                reactions: transformReactions(messageModel, contacts),
             };
             baseMessage = incomingBaseMessage;
             break;
@@ -447,7 +440,7 @@ function getConversationMessageBodyBaseMessage(
                     messageModel.view.deliveredAt ??
                     messageModel.view.sentAt ??
                     messageModel.view.createdAt,
-                lastReaction,
+                reactions: transformReactions(messageModel, contacts),
             };
             baseMessage = outgoingBaseMessage;
             break;

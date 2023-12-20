@@ -30,7 +30,7 @@
   export let onError: $$Props['onError'];
   export let options: NonNullable<$$Props['options']> = {};
   export let quote: $$Props['quote'] = undefined;
-  export let reactions: $$Props['reactions'] = undefined;
+  export let reactions: $$Props['reactions'];
   export let sender: $$Props['sender'] = undefined;
   export let status: $$Props['status'];
   export let timestamp: $$Props['timestamp'];
@@ -125,7 +125,12 @@
                 {#if messageInfoPlacement === 'preview'}
                   <span class="status">
                     <Text text={timestamp.fluent} wrap={false} />
-                    <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
+                    <Indicator
+                      {direction}
+                      options={options.indicatorOptions}
+                      {reactions}
+                      {status}
+                    />
                   </span>
                 {/if}
               </span>
@@ -143,7 +148,7 @@
             <svelte:fragment slot="status">
               {#if messageInfoPlacement === 'preview'}
                 <Text text={timestamp.fluent} wrap={false} />
-                <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
+                <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
               {/if}
             </svelte:fragment>
           </FileInfo>
@@ -169,7 +174,7 @@
             {#if messageInfoPlacement === 'preview'}
               <span class="badge status">
                 <Text text={timestamp.short} wrap={false} />
-                <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
+                <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
               </span>
             {/if}
           </div>
@@ -212,7 +217,7 @@
       <div class="footer">
         <span class="status">
           <Text text={timestamp.fluent} wrap={false} />
-          <Indicator {direction} hideStatus={options.hideStatus} {reactions} {status} />
+          <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
         </span>
       </div>
     {/if}
