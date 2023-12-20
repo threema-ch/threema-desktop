@@ -9,7 +9,7 @@
 
   import {intersection} from '~/app/ui/actions/intersection';
   import type {LazyListProps} from '~/app/ui/components/hocs/lazy-list/props';
-  import {waitForPresenceOfElement} from '~/app/ui/utils/element';
+  import {isFullyVisibleVertical, waitForPresenceOfElement} from '~/app/ui/utils/element';
   import {scrollIntoViewIfNeededAsync} from '~/app/ui/utils/scroll';
   import {
     createBufferedEventDispatcher,
@@ -57,8 +57,9 @@
   const anchorIntersectionThreshold = 0.9;
 
   let containerElement: SvelteNullableBinding<HTMLOListElement>;
+  let anchorElement: SvelteNullableBinding<HTMLSpanElement>;
 
-  let isGlobalAnchorEnabled = true;
+  let isGlobalAnchorEnabled = visibleItemId === undefined;
   let isItemAnchorEnabled = visibleItemId !== undefined;
   let isAtBottom = true;
 
@@ -130,10 +131,6 @@
       isGlobalAnchorEnabled = false;
       isItemAnchorEnabled = true;
 
-      // Explicitly set `isAtBottom` to `false`, because the target position will probably not be at
-      // the very bottom and this will be re-evaluated anyway.
-      isAtBottom = false;
-
       // Wait for Svelte to apply changes to the DOM.
       await tick();
 
@@ -160,6 +157,12 @@
         .catch((error) => {
           onError?.(ensureError(error));
         });
+
+      // Re-evaluate whether the view is scrolled all the way to the bottom.
+      isAtBottom = isFullyVisibleVertical({
+        container: containerElement,
+        element: anchorElement,
+      });
 
       // Disable item anchor and re-enable global anchor now that scrolling is finished.
       isItemAnchorEnabled = false;
@@ -243,6 +246,7 @@
   {/each}
 
   <span
+    bind:this={anchorElement}
     use:intersection={{
       options: anchorObserverOptions,
     }}
