@@ -1,4 +1,4 @@
-import type {MessageContextMenuItem} from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/types';
+import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {nodeContainsTarget, nodeIsTarget} from '~/app/ui/utils/node';
 
@@ -42,7 +42,7 @@ export function extractSelectedTextFromEventTarget(event: MouseEvent): string | 
     return undefined;
 }
 
-type ContextMenuItemHandler = Exclude<MessageContextMenuItem, 'divider'>['handler'];
+type ContextMenuItemHandler = Exclude<ContextMenuItem, 'divider'>['handler'];
 
 /**
  * Get the appropriate context menu options for a specific message configuration.
@@ -79,13 +79,13 @@ export function getContextMenuItems({
     openDetails?: ContextMenuItemHandler;
     deleteMessage?: ContextMenuItemHandler;
     t: I18nType['t'];
-}): Readonly<MessageContextMenuItem[]> {
+}): Readonly<ContextMenuItem[]> {
     return [
         ...(copySelection !== undefined
             ? [
                   {
                       handler: copySelection,
-                      icon: {label: 'subject'},
+                      icon: {name: 'subject'},
                       label: t('messaging.action--message-option-copy-selection', 'Copy Selection'),
                   },
               ]
@@ -94,7 +94,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: copyLink,
-                      icon: {label: 'link'},
+                      icon: {name: 'link'},
                       label: t('messaging.action--message-option-copy-link', 'Copy Link'),
                   },
               ]
@@ -103,7 +103,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: copyImage,
-                      icon: {label: 'photo_library'},
+                      icon: {name: 'photo_library'},
                       label: t('messaging.action--message-option-copy-image', 'Copy Image'),
                   },
               ]
@@ -112,7 +112,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: copy,
-                      icon: {label: 'content_copy'},
+                      icon: {name: 'content_copy'},
                       label: t('messaging.action--message-option-copy', 'Copy Message'),
                   },
               ]
@@ -121,7 +121,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: saveAsFile,
-                      icon: {label: 'download'},
+                      icon: {name: 'download'},
                       label: t('messaging.action--message-option-save-as-file', 'Save as File'),
                   },
               ]
@@ -137,7 +137,7 @@ export function getContextMenuItems({
             ? ([
                   {
                       handler: acknowledge.handler,
-                      icon: {label: 'thumb_up', color: 'acknowledged', filled: acknowledge.filled},
+                      icon: {name: 'thumb_up', color: 'acknowledged', filled: acknowledge.filled},
                       label: t('messaging.action--message-option-agree', 'Agree'),
                   },
               ] as const)
@@ -146,7 +146,7 @@ export function getContextMenuItems({
             ? ([
                   {
                       handler: decline.handler,
-                      icon: {label: 'thumb_down', color: 'declined', filled: decline.filled},
+                      icon: {name: 'thumb_down', color: 'declined', filled: decline.filled},
                       label: t('messaging.action--message-option-disagree', 'Disagree'),
                   },
               ] as const)
@@ -158,7 +158,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: quote,
-                      icon: {label: 'format_quote'},
+                      icon: {name: 'format_quote'},
                       label: t('messaging.action--message-option-quote', 'Quote'),
                   },
               ]
@@ -167,7 +167,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: forward,
-                      icon: {label: 'forward'},
+                      icon: {name: 'forward'},
                       label: t('messaging.action--message-option-forward', 'Forward'),
                   },
               ]
@@ -176,7 +176,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: openDetails,
-                      icon: {label: 'info'},
+                      icon: {name: 'info'},
                       label: t('messaging.action--message-option-details', 'Message Details'),
                   },
               ]
@@ -185,7 +185,7 @@ export function getContextMenuItems({
             ? [
                   {
                       handler: deleteMessage,
-                      icon: {label: 'delete'},
+                      icon: {name: 'delete'},
                       label: t('messaging.action--message-option-delete', 'Delete'),
                   },
               ]

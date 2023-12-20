@@ -15,8 +15,8 @@
   import VideoPreview from '~/app/ui/components/partials/chat-view/internal/message-media-viewer-modal/internal/video-preview/VideoPreview.svelte';
   import type {MessageMediaViewerModalProps} from '~/app/ui/components/partials/chat-view/internal/message-media-viewer-modal/props';
   import type {MediaState} from '~/app/ui/components/partials/chat-view/internal/message-media-viewer-modal/types';
-  import type {VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import type {VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
   import type {I18nType} from '~/app/ui/i18n-types';
   import {toast} from '~/app/ui/snackbar';

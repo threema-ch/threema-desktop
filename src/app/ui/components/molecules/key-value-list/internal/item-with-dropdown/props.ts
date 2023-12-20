@@ -1,14 +1,16 @@
-import type {AnchorPoint, Offset} from '~/app/ui/generic/popover';
-import type {ContextMenuItem} from '~/app/ui/utils/context-menu/types';
+import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
 
+/**
+ * Props accepted by the `KeyValueList.ItemWithDropdown` component.
+ */
 export interface ItemWithDropdownProps {
+    readonly items: ContextMenuItem[];
+    /**
+     * The key of the list item. Note: Will be used as the title.
+     */
     readonly key: string;
     readonly options?: {
         readonly showInfoIcon?: boolean;
         readonly disabled?: boolean;
     };
-    readonly icon?: string;
-    readonly items: ContextMenuItem[];
-    readonly anchorPoints?: AnchorPoint;
-    readonly offset?: Offset;
 }

@@ -5,6 +5,7 @@
 <script lang="ts">
   import {globals} from '~/app/globals';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
+  import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import ProfilePictureModal from '~/app/ui/components/partials/modals/profile-picture-modal/ProfilePictureModal.svelte';
   import {createDropdownItems} from '~/app/ui/components/partials/settings/helpers';
@@ -17,7 +18,6 @@
   import type {ProfileSettingsProps} from '~/app/ui/components/partials/settings/internal/profile-settings/props';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
-  import type {ContextMenuItem} from '~/app/ui/utils/context-menu/types';
   import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
   import type {ProfileSettings, ProfileSettingsView} from '~/common/model/types/settings';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
@@ -29,7 +29,9 @@
   const log = globals.unwrap().uiLogging.logger('ui.component.profile-settings');
 
   type $$Props = ProfileSettingsProps;
+
   export let services: $$Props['services'];
+
   const {
     backend: {viewModel, model},
   } = services;

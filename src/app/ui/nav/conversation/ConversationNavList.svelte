@@ -4,8 +4,8 @@
   import {globals} from '~/app/globals';
   import type {AppServices} from '~/app/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import type {VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import type {VirtualRect} from '~/app/ui/generic/popover/types';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
   import {conversationListEvent} from '~/app/ui/main/conversation/index';
   import ConversationTopBarContextMenu from '~/app/ui/main/conversation/top-bar/ConversationTopBarContextMenu.svelte';

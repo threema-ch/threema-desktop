@@ -1,5 +1,5 @@
+import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
 import type {SettingsDropdown} from '~/app/ui/components/partials/settings/types';
-import type {ContextMenuItem} from '~/app/ui/utils/context-menu/types';
 import type {u53} from '~/common/types';
 
 /**

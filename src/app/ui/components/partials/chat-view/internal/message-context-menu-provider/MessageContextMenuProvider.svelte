@@ -7,17 +7,17 @@
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
-  import ContextMenu from '~/app/ui/components/hocs/context-menu/ContextMenu.svelte';
+  import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
+  import type {ContextMenuItem} from '~/app/ui/components/hocs/context-menu-provider/types';
   import {
     extractHrefFromEventTarget,
     extractSelectedTextFromEventTarget,
     getContextMenuItems,
   } from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/helpers';
   import type {MessageContextMenuProviderProps} from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/props';
-  import type {MessageContextMenuItem} from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/types';
   import {contextMenuAction} from '~/app/ui/generic/context-menu';
-  import type {AnchorPoint, VirtualRect} from '~/app/ui/generic/popover';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import type {AnchorPoint, VirtualRect} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
@@ -29,6 +29,7 @@
   export let boundary: $$Props['boundary'] = undefined;
   export let enabledOptions: $$Props['enabledOptions'];
   export let placement: $$Props['placement'];
+
   const anchorPoints: AnchorPoint =
     placement === 'right'
       ? {
@@ -199,7 +200,7 @@
     }
   }
 
-  let menuItems: Readonly<MessageContextMenuItem[]>;
+  let menuItems: Readonly<ContextMenuItem[]>;
   $: menuItems = getContextMenuItems({
     copyLink:
       enabledOptions.copyLink && selectedLink !== undefined ? handleClickCopyLink : undefined,
@@ -241,14 +242,14 @@
     <slot name="message" />
   </div>
 
-  <ContextMenu
+  <ContextMenuProvider
     bind:popover
-    reference={virtualTrigger}
-    {boundary}
     {anchorPoints}
-    {handleBeforeOpen}
+    beforeOpen={handleBeforeOpen}
+    container={boundary}
     items={menuItems}
     offset={{left: 0, top: 4}}
+    reference={virtualTrigger}
     triggerBehavior={virtualTrigger === undefined ? 'toggle' : 'open'}
     on:clicktrigger={handleClickTrigger}
     on:hasclosed
@@ -256,10 +257,10 @@
     on:willclose
     on:willopen
   >
-    <button class="caret" slot="trigger">
+    <button class="caret">
       <MdIcon theme="Outlined">expand_more</MdIcon>
     </button>
-  </ContextMenu>
+  </ContextMenuProvider>
 </div>
 
 <style lang="scss">
@@ -288,24 +289,6 @@
 
     &:hover .caret {
       visibility: visible;
-    }
-
-    .menu {
-      --c-menu-container-min-width: #{rem(180px)};
-      @extend %elevation-060;
-
-      .icon {
-        display: flex;
-        align-items: center;
-
-        &.acknowledged {
-          color: var(--mc-message-status-acknowledged-color);
-        }
-
-        &.declined {
-          color: var(--mc-message-status-declined-color);
-        }
-      }
     }
   }
 </style>

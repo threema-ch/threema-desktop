@@ -1,6 +1,6 @@
 <!--
   @component
-  Renders an item of a `KeyValueList` with a button at the other side of a div.
+  Renders an item of a `KeyValueList` that contains a button.
 -->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
@@ -10,13 +10,13 @@
 
   type $$Props = ItemWithButtonProps;
 
+  export let icon: $$Props['icon'];
+  export let key: $$Props['key'];
+  export let options: NonNullable<$$Props['options']> = {};
+
   const dispatch = createEventDispatcher<{
     clickinfoicon: MouseEvent;
   }>();
-
-  export let key: $$Props['key'];
-  export let options: NonNullable<$$Props['options']> = {};
-  export let icon: $$Props['icon'];
 
   function handleClickInfoIcon(event: MouseEvent): void {
     dispatch('clickinfoicon', event);

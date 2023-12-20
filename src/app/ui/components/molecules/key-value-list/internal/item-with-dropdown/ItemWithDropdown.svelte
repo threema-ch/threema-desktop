@@ -1,25 +1,28 @@
+<!--
+  @component
+  Renders an item of a `KeyValueList` that contains a dropdown with options to choose from.
+-->
 <script lang="ts">
   import {createEventDispatcher} from 'svelte/internal';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ContextMenu from '~/app/ui/components/hocs/context-menu/ContextMenu.svelte';
+  import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import type {ItemWithDropdownProps} from '~/app/ui/components/molecules/key-value-list/internal/item-with-dropdown/props';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import type {AnchorPoint, Offset} from '~/app/ui/generic/popover/types';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
   type $$Props = ItemWithDropdownProps;
 
-  export const dispatch = createEventDispatcher<{
-    clickinfoicon: MouseEvent;
-    clickbutton: MouseEvent;
-  }>();
-
+  export let items: $$Props['items'];
   export let key: $$Props['key'];
   export let options: NonNullable<$$Props['options']> = {};
-  export let icon: NonNullable<$$Props['icon']> = 'expand_more';
-  export let items: $$Props['items'];
 
-  export let anchorPoints: NonNullable<$$Props['anchorPoints']> = {
+  const dispatch = createEventDispatcher<{
+    clickinfoicon: MouseEvent;
+  }>();
+
+  const anchorPoints: AnchorPoint = {
     reference: {
       horizontal: 'right',
       vertical: 'bottom',
@@ -30,35 +33,33 @@
     },
   };
 
-  export let offset: NonNullable<$$Props['offset']> = {
+  const offset: Offset = {
     left: 0,
     top: 4,
   };
 
   let referenceElement: SvelteNullableBinding<HTMLElement> = null;
-  let popover: SvelteNullableBinding<Popover>;
+  let popover: SvelteNullableBinding<Popover> = null;
+
+  function handleClickItem(): void {
+    popover?.close();
+  }
 
   function handleClickInfoIcon(event: MouseEvent): void {
     dispatch('clickinfoicon', event);
   }
-
-  function closePopover(): void {
-    popover?.close();
-  }
 </script>
 
-<ContextMenu
+<ContextMenuProvider
   bind:popover
-  on:elementchosen={closePopover}
   {items}
   {anchorPoints}
   {offset}
-  handleBeforeOpen={undefined}
   reference={referenceElement}
-  boundary={undefined}
   triggerBehavior="toggle"
+  on:clickitem={handleClickItem}
 >
-  <button slot="trigger" class="item" on:click>
+  <button class="item" on:click>
     <div class="left">
       <div class="header">
         <div class="key">{key}</div>
@@ -75,11 +76,11 @@
 
     <div class="right">
       <span bind:this={referenceElement} class="icon">
-        <MdIcon theme="Outlined">{icon}</MdIcon>
+        <MdIcon theme="Outlined">expand_more</MdIcon>
       </span>
     </div>
   </button>
-</ContextMenu>
+</ContextMenuProvider>
 
 <style lang="scss">
   @use 'component' as *;

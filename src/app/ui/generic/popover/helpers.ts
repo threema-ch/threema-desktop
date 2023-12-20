@@ -1,54 +1,15 @@
-import type {i53, u53} from '~/common/types';
+import type {
+    AnchorPoint,
+    Flip,
+    Offset,
+    PartialDOMRect,
+    PopoverCloseFunction,
+    RectPoint,
+    VirtualRect,
+} from '~/app/ui/generic/popover/types';
+import type {i53} from '~/common/types';
 import {clamp} from '~/common/utils/number';
 import {WritableStore} from '~/common/utils/store';
-
-/*
- * Popover
- */
-
-/**
- * Describes a relative or absolute distance from another position.
- */
-export interface Offset {
-    readonly left: u53;
-    readonly top: u53;
-}
-
-/**
- * Describes a point on a rectangular shape.
- */
-export interface RectPoint {
-    readonly horizontal: 'left' | 'center' | 'right';
-    readonly vertical: 'top' | 'center' | 'bottom';
-}
-
-/**
- * Describes the desired convergence point of the `reference` and popover.
- */
-export interface AnchorPoint {
-    readonly reference: RectPoint;
-    readonly popover: RectPoint;
-}
-
-/**
- * Describes a rectangle which is similar to a {@link DOMRect}, but doesn't have to acually exist in
- * the DOM.
- */
-export interface VirtualRect extends PartialDOMRect {
-    readonly left: u53;
-    readonly right: u53;
-    readonly top: u53;
-    readonly bottom: u53;
-    readonly width: u53;
-    readonly height: u53;
-}
-
-type PartialDOMRect = Omit<DOMRect, 'x' | 'y' | 'toJSON'>;
-
-/**
- * A function which will close the currently opened popover.
- */
-type PopoverCloseFunction = (event?: MouseEvent) => void;
 
 /**
  * A store that stores a {@link PopoverCloseFunction}.
@@ -56,9 +17,6 @@ type PopoverCloseFunction = (event?: MouseEvent) => void;
  * If the store contains `undefined`, then no menu is currently visible.
  */
 export const popoverStore = new WritableStore<PopoverCloseFunction | undefined>(undefined);
-
-const flips = ['horizontal', 'vertical', 'both', 'none'] as const;
-type Flip = (typeof flips)[u53];
 
 /**
  * Calculates and returns the {@link Offset} that can be used to move/translate the popover to the

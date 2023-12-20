@@ -1,3 +1,6 @@
+/**
+ * Props accepted by the `KeyValueList.ItemWithSwitch` component.
+ */
 export interface ItemWithSwitchProps {
     readonly checked?: boolean;
     readonly disabled?: boolean;

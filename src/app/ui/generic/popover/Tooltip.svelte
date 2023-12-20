@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type {VirtualRect} from '~/app/ui/generic/popover';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import type {VirtualRect} from '~/app/ui/generic/popover/types';
 
   /**
    * The reference element the tooltip should attach to.

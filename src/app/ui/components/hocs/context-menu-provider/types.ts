@@ -1,6 +1,13 @@
+/**
+ * Single item in a context menu. Either it's a {@link ContextMenuOption} or a "divider" (to create
+ * distinct sections of options).
+ */
 export type ContextMenuItem = ContextMenuOption | 'divider';
 
-interface ContextMenuOption {
+/**
+ * An interactive option that is part of a context menu.
+ */
+export interface ContextMenuOption {
     /**
      * Handler function to run if this option is selected.
      */
@@ -9,8 +16,8 @@ interface ContextMenuOption {
      * Icon displayed next to the option's label.
      */
     readonly icon?: {
-        readonly label: string;
-        readonly color?: string;
+        readonly name: string;
+        readonly color?: 'acknowledged' | 'declined' | 'default';
         readonly filled?: boolean;
     };
     /**

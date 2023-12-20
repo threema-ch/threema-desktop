@@ -1,3 +1,5 @@
+import type {ContextMenuOption} from '~/app/ui/components/hocs/context-menu-provider/types';
+
 /**
  * A single item in a dropdown menu.
  */
@@ -7,11 +9,7 @@ export interface SettingsDropdownItem<TValue> {
      */
     readonly text: string;
     readonly options?: {
-        readonly icon?: {
-            readonly label: string;
-            readonly color?: string;
-            readonly filled?: boolean;
-        };
+        readonly icon?: ContextMenuOption['icon'];
     };
     /**
      * The value that the item represents
