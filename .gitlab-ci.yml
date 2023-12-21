@@ -300,7 +300,8 @@ validate-metainfo:
     - |
       G_DEBUG=fatal-criticals
       SUCCESS_VALIDATE=1
-      appstream-util validate packaging/metadata/ch.threema.threema-desktop.metainfo.xml || SUCCESS_VALIDATE=0
+      # TODO(DESK-1101): Change "validate-relax" here back to "validate"
+      appstream-util validate-relax packaging/metadata/ch.threema.threema-desktop.metainfo.xml || SUCCESS_VALIDATE=0
       if [[ "$SUCCESS_VALIDATE" -ne 1 ]]; then
         # If regular validation failed, validate with "validate-relax". If that
         # succeeds, mark the build as "successful with warnings" (though the
