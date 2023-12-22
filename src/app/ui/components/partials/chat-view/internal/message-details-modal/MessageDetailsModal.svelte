@@ -8,10 +8,8 @@
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import type {MessageDetailsModalProps} from '~/app/ui/components/partials/chat-view/internal/message-details-modal/props';
-  import {enumToBool} from '~/app/ui/components/partials/settings/internal/appearance-settings/helpers';
   import {i18n} from '~/app/ui/i18n';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
-  import {DEFAULT_TIME_FORMAT} from '~/common/model/types/settings';
   import type {u53} from '~/common/types';
   import {u64ToHexLe} from '~/common/utils/number';
 
@@ -28,8 +26,7 @@
     settings: {appearance},
   } = services;
 
-  let is12hTime: boolean;
-  $: is12hTime = enumToBool(appearance.get().view.timeFormat ?? DEFAULT_TIME_FORMAT);
+  $: use12hTime = $appearance.view.use12hTime;
 
   $: lastReaction = reactions?.reduce<(typeof reactions)[u53] | undefined>(
     (acc, curr) => (curr.at > (acc?.at ?? 0) ? curr : acc),
@@ -55,7 +52,7 @@
       <KeyValueList.Section>
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--created-date', 'Created')}>
           <Text
-            text={formatDateLocalized(status.created.at, $i18n, 'extended', {hour12: is12hTime})}
+            text={formatDateLocalized(status.created.at, $i18n, 'extended', {hour12: use12hTime})}
             selectable
           />
         </KeyValueList.Item>
@@ -65,7 +62,7 @@
           >
             <Text
               text={formatDateLocalized(status.received.at, $i18n, 'extended', {
-                hour12: is12hTime,
+                hour12: use12hTime,
               })}
               selectable
             />
@@ -74,7 +71,7 @@
         {#if status.sent !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}>
             <Text
-              text={formatDateLocalized(status.sent.at, $i18n, 'extended', {hour12: is12hTime})}
+              text={formatDateLocalized(status.sent.at, $i18n, 'extended', {hour12: use12hTime})}
               selectable
             />
           </KeyValueList.Item>
@@ -85,7 +82,7 @@
           >
             <Text
               text={formatDateLocalized(status.delivered.at, $i18n, 'extended', {
-                hour12: is12hTime,
+                hour12: use12hTime,
               })}
               selectable
             />
@@ -94,7 +91,7 @@
         {#if status.read !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--read-date', 'Read')}>
             <Text
-              text={formatDateLocalized(status.read.at, $i18n, 'extended', {hour12: is12hTime})}
+              text={formatDateLocalized(status.read.at, $i18n, 'extended', {hour12: use12hTime})}
               selectable
             />
           </KeyValueList.Item>
@@ -141,7 +138,7 @@
               <div class="date">
                 <Text
                   text={formatDateLocalized(lastReaction.at, $i18n, 'extended', {
-                    hour12: is12hTime,
+                    hour12: use12hTime,
                   })}
                   selectable
                 />

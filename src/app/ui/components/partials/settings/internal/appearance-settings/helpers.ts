@@ -64,7 +64,3 @@ export function getLocaleDropdown(): SettingsDropdown<Record<Locale, string>, Lo
         })),
     };
 }
-
-export function enumToBool(enumInput: 0 | 1): boolean {
-    return enumInput === 0;
-}

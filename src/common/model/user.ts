@@ -1,4 +1,4 @@
-import {ReceiverType, TimeFormat} from '~/common/enum';
+import {ReceiverType} from '~/common/enum';
 import {AppearanceSettingsModelStore} from '~/common/model/settings/appearance';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
 import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
@@ -51,9 +51,7 @@ export class UserModel implements User {
         this.devicesSettings = new DevicesSettingsModelStore(services, {
             deviceName: ensureDeviceName(`${import.meta.env.APP_NAME} for Desktop`),
         });
-        this.appearanceSettings = new AppearanceSettingsModelStore(services, {
-            timeFormat: TimeFormat.USE_24HOUR_TIME,
-        });
+        this.appearanceSettings = new AppearanceSettingsModelStore(services);
 
         this.displayName = derive(
             this.profileSettings,

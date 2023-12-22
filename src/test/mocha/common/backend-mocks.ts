@@ -404,7 +404,7 @@ class UserRepository implements User {
         this.privacySettings = new PrivacySettingsModelStore(services, {});
         this.callsSettings = new CallsSettingsModelStore(services, {});
         this.devicesSettings = new DevicesSettingsModelStore(services, {});
-        this.appearanceSettings = new AppearanceSettingsModelStore(services, {});
+        this.appearanceSettings = new AppearanceSettingsModelStore(services);
 
         this.displayName = derive(
             this.profileSettings,

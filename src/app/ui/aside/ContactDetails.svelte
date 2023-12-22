@@ -7,7 +7,6 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import ProfilePictureModal from '~/app/ui/components/partials/modals/profile-picture-modal/ProfilePictureModal.svelte';
-  import {enumToBool} from '~/app/ui/components/partials/settings/internal/appearance-settings/helpers';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -30,7 +29,6 @@
   } from '~/common/enum';
   import type {ContactController, ProfilePicture} from '~/common/model';
   import type {RemoteModelController} from '~/common/model/types/common';
-  import {DEFAULT_TIME_FORMAT} from '~/common/model/types/settings';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import {unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
@@ -77,9 +75,6 @@
   function closeAside(): void {
     router.closeAside();
   }
-
-  let is12hTime: boolean;
-  $: is12hTime = enumToBool(appearance.get().view.timeFormat ?? DEFAULT_TIME_FORMAT);
 
   // Switch different modal dialogs
   let deleteContactDialogVisible = false;
@@ -249,7 +244,7 @@
                   $i18n,
                   'auto',
                   {
-                    hour12: !is12hTime,
+                    hour12: $appearance.view.use12hTime,
                   },
                 ),
               })}

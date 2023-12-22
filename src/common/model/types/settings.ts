@@ -1,17 +1,17 @@
 // Profile Settings
 
-import {
-    type CallConnectionPolicy,
-    type CallPolicy,
-    type ContactSyncPolicy,
-    type GlobalPropertyKey,
+import type {
+    CallConnectionPolicy,
+    CallPolicy,
+    ContactSyncPolicy,
+    GlobalPropertyKey,
     InactiveContactsPolicy,
-    type KeyboardDataCollectionPolicy,
-    type ReadReceiptPolicy,
-    type ScreenshotPolicy,
+    KeyboardDataCollectionPolicy,
+    ReadReceiptPolicy,
+    ScreenshotPolicy,
     TimeFormat,
-    type TypingIndicatorPolicy,
-    type UnknownContactPolicy,
+    TypingIndicatorPolicy,
+    UnknownContactPolicy,
 } from '~/common/enum';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import type {LocalModel} from '~/common/model/types/common';
@@ -24,7 +24,7 @@ import {
     type Nickname,
 } from '~/common/network/types';
 import type {Settings} from '~/common/settings';
-import type {ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array, StrictExtract} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
 
 // Note: Type must be compatible with common.settings.ProfileSettings
@@ -106,18 +106,30 @@ export const DEFAULT_DEVICE_NAME = ensureDeviceName(`${import.meta.env.APP_NAME}
 
 // Note: Must be compatible with common.settings.AppearanceSettings
 export interface AppearanceSettingsView {
-    readonly timeFormat?: TimeFormat;
-    readonly inactiveContactsPolicy?: InactiveContactsPolicy;
+    readonly timeFormat: TimeFormat;
+    readonly inactiveContactsPolicy: InactiveContactsPolicy;
+
+    // Derived properties
+
+    /**
+     * Whether to show time in 12h (AM/PM) format.
+     */
+    readonly use12hTime: boolean;
 }
-export type AppearanceSettingsUpdate = Partial<AppearanceSettingsView>;
+export type AppearanceSettingsViewDerivedProperties = StrictExtract<
+    keyof AppearanceSettingsView,
+    'use12hTime'
+>;
+export type AppearanceSettingsViewNonDerivedProperties = Omit<
+    AppearanceSettingsView,
+    AppearanceSettingsViewDerivedProperties
+>;
+export type AppearanceSettingsUpdate = Omit<Partial<AppearanceSettingsView>, 'use12hTime'>;
 export type AppearanceSettingsController = {
     readonly meta: ModelLifetimeGuard<AppearanceSettingsView>;
     readonly update: (change: AppearanceSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type AppearanceSettings = LocalModel<AppearanceSettingsView, AppearanceSettingsController>;
-
-export const DEFAULT_TIME_FORMAT = TimeFormat.USE_24HOUR_TIME;
-export const DEFAULT_INACTIVE_CONTACT_POLICY = InactiveContactsPolicy.SHOW;
 
 // Settings service interface, bundling all available settings stores
 

@@ -8,7 +8,6 @@
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import {createDropdownItems} from '~/app/ui/components/partials/settings/helpers';
   import {
-    enumToBool,
     getThemeDropdownLabel,
     getLocaleDropdownLabel,
     getThemeDropdown,
@@ -17,12 +16,8 @@
   import type {AppearanceSettingsProps} from '~/app/ui/components/partials/settings/internal/appearance-settings/props';
   import {type Locale, i18n} from '~/app/ui/i18n';
   import type {Theme} from '~/common/dom/ui/theme';
-  import {InactiveContactsPolicyUtils, TimeFormatUtils} from '~/common/enum';
-  import {
-    DEFAULT_TIME_FORMAT,
-    DEFAULT_INACTIVE_CONTACT_POLICY,
-    type AppearanceSettingsView,
-  } from '~/common/model/types/settings';
+  import {InactiveContactsPolicy, InactiveContactsPolicyUtils, TimeFormat} from '~/common/enum';
+  import type {AppearanceSettingsView} from '~/common/model/types/settings';
 
   type $$Props = AppearanceSettingsProps;
 
@@ -35,23 +30,17 @@
     settings: {appearance},
   } = services;
 
-  let is24hTime: boolean;
-  let showInactiveContacts: boolean;
-  $: {
-    is24hTime = !enumToBool(appearance.get().view.timeFormat ?? DEFAULT_TIME_FORMAT);
-    showInactiveContacts = enumToBool(
-      appearance.get().view.inactiveContactsPolicy ?? DEFAULT_INACTIVE_CONTACT_POLICY,
-    );
-  }
+  $: use24hTime = !$appearance.view.use12hTime;
+  $: showInactiveContacts = $appearance.view.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
 
-  function changeSetting<N extends keyof AppearanceSettingsView>(
+  function updateSetting<N extends keyof AppearanceSettingsView>(
     newValue: AppearanceSettingsView[N],
-    changeName: N,
+    updateKey: N,
   ): void {
     appearance
       .get()
-      .controller.update({[changeName]: newValue})
-      .catch(() => log.error(`Failed to update settings: ${changeName}`));
+      .controller.update({[updateKey]: newValue})
+      .catch(() => log.error(`Failed to update setting: ${updateKey}`));
   }
 
   function updateTheme(newValue: Theme): void {
@@ -87,10 +76,13 @@
     title={$i18n.t('settings--appearance.label--section-date-time', 'Date & Time')}
   >
     <KeyValueList.ItemWithSwitch
-      checked={is24hTime}
+      checked={use24hTime}
       key={$i18n.t('settings--appearance.label--24-hour-time-format-title', 'Time Format')}
       on:switchevent={() =>
-        changeSetting(TimeFormatUtils.fromNumber(is24hTime ? 0 : 1), 'timeFormat')}
+        updateSetting(
+          use24hTime ? TimeFormat.USE_24HOUR_TIME : TimeFormat.DONT_USE_24HOUR_TIME,
+          'timeFormat',
+        )}
     >
       <Text
         text={$i18n.t(
@@ -105,7 +97,7 @@
       key=""
       checked={showInactiveContacts}
       on:switchevent={() =>
-        changeSetting(
+        updateSetting(
           InactiveContactsPolicyUtils.fromNumber(showInactiveContacts ? 1 : 0),
           'inactiveContactsPolicy',
         )}

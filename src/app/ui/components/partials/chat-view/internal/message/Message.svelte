@@ -18,7 +18,6 @@
   } from '~/app/ui/components/partials/chat-view/internal/message/helpers';
   import type {MessageProps} from '~/app/ui/components/partials/chat-view/internal/message/props';
   import MessageContextMenuProvider from '~/app/ui/components/partials/chat-view/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
-  import {enumToBool} from '~/app/ui/components/partials/settings/internal/appearance-settings/helpers';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
   import {handleCopyImage, handleSaveAsFile} from '~/app/ui/utils/file-sync/handlers';
@@ -27,7 +26,6 @@
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
-  import {DEFAULT_TIME_FORMAT} from '~/common/model/types/settings';
   import {ensureError, unreachable} from '~/common/utils/assert';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
 
@@ -58,9 +56,6 @@
   let quoteProps: BasicMessageProps['quote'];
 
   let profilePictureStore: IQueryableStore<Blob | undefined> = new ReadableStore(undefined);
-
-  let is12hTime: boolean;
-  $: is12hTime = enumToBool(appearance.get().view.timeFormat ?? DEFAULT_TIME_FORMAT);
 
   function handleClickAvatar(): void {
     if (sender === undefined) {
@@ -281,8 +276,12 @@
 
   $: timestamp = reactive(
     () => ({
-      fluent: formatDateLocalized(status.created.at, $i18n, 'auto', {hour12: is12hTime}),
-      short: formatDateLocalized(status.created.at, $i18n, 'time', {hour12: is12hTime}),
+      fluent: formatDateLocalized(status.created.at, $i18n, 'auto', {
+        hour12: $appearance.view.use12hTime,
+      }),
+      short: formatDateLocalized(status.created.at, $i18n, 'time', {
+        hour12: $appearance.view.use12hTime,
+      }),
     }),
     [$systemTime.current],
   );
