@@ -98,12 +98,15 @@ export function randomU32Uniform(crypto: Pick<CryptoBackend, 'randomBytes'>, upp
 
 /**
  * Return a random string with uniform distribution using a CSPRNG.
+ *
+ * The `length` must be at least 1.
  */
 export function randomString(
     crypto: Pick<CryptoBackend, 'randomBytes'>,
-    length = 8,
+    length: u53,
     charset = 'abcdefghijklmnopqrstuvwxyz1234567890'.split(''),
 ): string {
+    assert(length > 0, `Random string length must be at least 1, not ${length}`);
     return [...Array<undefined>(length)]
         .map(() => charset[randomU32Uniform(crypto, charset.length)])
         .join('');
