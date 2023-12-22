@@ -160,28 +160,30 @@
       </KeyValueList.ItemWithSwitch>
 
       {#if isLoggerEnabled}
-        <KeyValueList.Item key={$i18n.t('settings--about.label--log-file-paths', 'Log File Paths')}>
-          <div class="list">
-            <span class="list-row">
-              <Text text={logInfo.logFiles.mainApplication.path} selectable></Text>
-              <Text
-                text={` (${byteSizeToHumanReadable(logInfo.logFiles.mainApplication.sizeInBytes)})`}
-              ></Text>
-            </span>
-            <span class="list-row">
-              <Text text={logInfo.logFiles.backendWorker.path}></Text>
-              <Text
-                text={` (${byteSizeToHumanReadable(logInfo.logFiles.backendWorker.sizeInBytes)})`}
-              ></Text>
-            </span>
-          </div>
-        </KeyValueList.Item>
-
         <KeyValueList.ItemWithButton icon="send" key="" on:click={handleClickSendLogsToSupport}>
           <Text
             text={$i18n.t('settings--about.action--send-logs-to-support', 'Send Logs to Support')}
           ></Text>
         </KeyValueList.ItemWithButton>
+        <KeyValueList.Item key={$i18n.t('settings--about.label--log-file-paths', 'Log File Paths')}>
+          <div class="list">
+            <span class="list-row">
+              <Text text={logInfo.logFiles.mainApplication.path} selectable size="body-small"
+              ></Text>
+              <Text
+                text={` (${byteSizeToHumanReadable(logInfo.logFiles.mainApplication.sizeInBytes)})`}
+                size="body-small"
+              ></Text>
+            </span>
+            <span class="list-row">
+              <Text text={logInfo.logFiles.backendWorker.path} size="body-small" selectable></Text>
+              <Text
+                text={` (${byteSizeToHumanReadable(logInfo.logFiles.backendWorker.sizeInBytes)})`}
+                size="body-small"
+              ></Text>
+            </span>
+          </div>
+        </KeyValueList.Item>
       {/if}
     {/if}
   </KeyValueList.Section>
@@ -218,7 +220,6 @@
   .list {
     display: flex;
     flex-direction: column;
-    user-select: text;
   }
 
   .list-row {
