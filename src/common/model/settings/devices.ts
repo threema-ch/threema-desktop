@@ -7,6 +7,7 @@ import type {
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {ensureDeviceName} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 export class DevicesSettingsModelController implements DevicesSettingsController {
@@ -26,17 +27,28 @@ export class DevicesSettingsModelController implements DevicesSettingsController
     }
 }
 
+const DEFAULT_DEVICE_NAME = ensureDeviceName(`${import.meta.env.APP_NAME} for Desktop`);
+
 export class DevicesSettingsModelStore extends LocalModelStore<DevicesSettings> {
-    public constructor(services: ServicesForModel, devicesSettingsDefault: DevicesSettingsView) {
+    public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'devices-settings';
-        const devicesSettings = services.db.getSettings('devices') ?? devicesSettingsDefault;
 
-        super(devicesSettings, new DevicesSettingsModelController(services), undefined, undefined, {
-            debug: {
-                log: logging.logger(`model.${tag}`),
-                tag,
+        const devicesSettings = services.db.getSettings('devices') ?? {
+            deviceName: DEFAULT_DEVICE_NAME,
+        };
+
+        super(
+            {...devicesSettings, deviceName: devicesSettings.deviceName ?? DEFAULT_DEVICE_NAME},
+            new DevicesSettingsModelController(services),
+            undefined,
+            undefined,
+            {
+                debug: {
+                    log: logging.logger(`model.${tag}`),
+                    tag,
+                },
             },
-        });
+        );
     }
 }

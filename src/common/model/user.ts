@@ -15,7 +15,7 @@ import type {
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import {ensureDeviceName, ensureNickname, type IdentityString} from '~/common/network/types';
+import {ensureNickname, type IdentityString} from '~/common/network/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import type {LocalStore} from '~/common/utils/store';
@@ -48,9 +48,7 @@ export class UserModel implements User {
         });
         this.privacySettings = new PrivacySettingsModelStore(services, {});
         this.callsSettings = new CallsSettingsModelStore(services, {});
-        this.devicesSettings = new DevicesSettingsModelStore(services, {
-            deviceName: ensureDeviceName(`${import.meta.env.APP_NAME} for Desktop`),
-        });
+        this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
 
         this.displayName = derive(

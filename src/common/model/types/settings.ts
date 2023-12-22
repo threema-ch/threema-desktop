@@ -17,12 +17,7 @@ import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import type {LocalModel} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
-import {
-    ensureDeviceName,
-    type DeviceName,
-    type IdentityString,
-    type Nickname,
-} from '~/common/network/types';
+import type {DeviceName, IdentityString, Nickname} from '~/common/network/types';
 import type {Settings} from '~/common/settings';
 import type {ReadonlyUint8Array, StrictExtract} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
@@ -90,7 +85,7 @@ export type CallsSettings = LocalModel<CallsSettingsView, CallsSettingsControlle
 
 // Note: Type must be compatible with common.settings.DevicesSettings
 export interface DevicesSettingsView {
-    readonly deviceName?: DeviceName;
+    readonly deviceName: DeviceName;
 }
 export type DevicesSettingsUpdate = Partial<DevicesSettingsView>;
 export type DevicesSettingsController = {
@@ -98,9 +93,6 @@ export type DevicesSettingsController = {
     readonly update: (change: DevicesSettingsUpdate) => Promise<void>;
 } & ProxyMarked;
 export type DevicesSettings = LocalModel<DevicesSettingsView, DevicesSettingsController>;
-
-/** The default device name, used if users did not name the current device themselves. */
-export const DEFAULT_DEVICE_NAME = ensureDeviceName(`${import.meta.env.APP_NAME} for Desktop`);
 
 // Appearance Settings
 

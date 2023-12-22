@@ -6,55 +6,48 @@
   import EditDeviceNameModal from '~/app/ui/components/partials/settings/internal/devices-settings/internal/edit-device-name-modal/EditDeviceNameModal.svelte';
   import type {DevicesSettingsProps} from '~/app/ui/components/partials/settings/internal/devices-settings/props';
   import {i18n} from '~/app/ui/i18n';
-  import {toast} from '~/app/ui/snackbar';
-  import {DEFAULT_DEVICE_NAME, type DevicesSettingsView} from '~/common/model/types/settings';
-  import {ensureDeviceName} from '~/common/network/types';
+  import type {DevicesSettingsView} from '~/common/model/types/settings';
+  import {isDeviceName} from '~/common/network/types';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.settings-devices');
 
   type $$Props = DevicesSettingsProps;
 
   export let services: $$Props['services'];
+
   const {
     settings: {devices},
   } = services;
 
-  $: deviceName = devices.get().view.deviceName ?? DEFAULT_DEVICE_NAME;
+  let isEditDeviceNameModalVisible = false;
 
-  function onClickEditDeviceName(): void {
+  function handleClickEditDeviceName(): void {
     isEditDeviceNameModalVisible = true;
   }
 
-  function onEditDeviceModalClose(): void {
-    deviceName = devices.get().view.deviceName ?? DEFAULT_DEVICE_NAME;
+  function handleCloseEditDeviceModal(): void {
     isEditDeviceNameModalVisible = false;
   }
 
-  function setDeviceSettings<N extends keyof DevicesSettingsView>(
+  function handleNewDeviceName(event: CustomEvent<string>): void {
+    const newDeviceName = event.detail;
+    if (isDeviceName(newDeviceName)) {
+      updateSetting(newDeviceName, 'deviceName');
+    }
+    isEditDeviceNameModalVisible = false;
+  }
+
+  function updateSetting<N extends keyof DevicesSettingsView>(
     newValue: DevicesSettingsView[N],
-    changeName: N,
+    updateKey: N,
   ): void {
     devices
       .get()
-      .controller.update({[changeName]: newValue})
+      .controller.update({[updateKey]: newValue})
       .catch(() => {
-        deviceName = devices.get().view.deviceName ?? DEFAULT_DEVICE_NAME;
-        log.error('Failed to update and reflect the device name');
-        toast.addSimpleFailure(
-          $i18n.t(
-            'settings--devices-settings.prose--name-change-error',
-            'Could not update the device name',
-          ),
-        );
+        log.error(`Failed to update setting: ${updateKey}`);
       });
   }
-
-  function onEditDeviceModalConfirm(): void {
-    isEditDeviceNameModalVisible = false;
-    setDeviceSettings(ensureDeviceName(deviceName), 'deviceName');
-  }
-
-  let isEditDeviceNameModalVisible = false;
 </script>
 
 <template>
@@ -62,14 +55,14 @@
     <KeyValueList.Section
       title={$i18n.t('settings--devices-settings.label--this-device', 'This Device')}
     >
-      <KeyValueList.ItemWithButton icon="edit" key="" on:click={onClickEditDeviceName}>
+      <KeyValueList.ItemWithButton icon="edit" key="" on:click={handleClickEditDeviceName}>
         <div class="container">
           <div class="icon">
             <MdIcon theme="Outlined">computer</MdIcon>
           </div>
 
           <div class="content">
-            <Text text={$devices.view.deviceName ?? DEFAULT_DEVICE_NAME}></Text>
+            <Text text={$devices.view.deviceName}></Text>
           </div>
         </div>
       </KeyValueList.ItemWithButton>
@@ -78,10 +71,9 @@
 
   {#if isEditDeviceNameModalVisible}
     <EditDeviceNameModal
-      on:clickconfirm={onEditDeviceModalConfirm}
-      on:close={onEditDeviceModalClose}
-      bind:value={deviceName}
-      label={$devices.view.deviceName ?? DEFAULT_DEVICE_NAME}
+      on:newDeviceName={handleNewDeviceName}
+      on:close={handleCloseEditDeviceModal}
+      value={devices.get().view.deviceName}
     ></EditDeviceNameModal>
   {/if}
 </template>

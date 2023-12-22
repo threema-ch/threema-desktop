@@ -70,7 +70,7 @@ export function isDeviceName(deviceName: unknown): deviceName is DeviceName {
 }
 
 /**
- * Ensure input is a valid {@link Nickname}.
+ * Ensure input is a valid {@link DeviceName}.
  */
 export function ensureDeviceName(deviceName: string): DeviceName {
     if (!isDeviceName(deviceName)) {

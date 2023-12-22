@@ -60,7 +60,6 @@ import {
 import {createLoggerStyle, type Logger, type LoggerFactory} from '~/common/logging';
 import type {Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
-import {DEFAULT_DEVICE_NAME} from '~/common/model/types/settings';
 import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -1616,7 +1615,7 @@ class Connection {
                 deviceId: device.d2m.deviceId,
                 deviceSlotExpirationPolicy: protobuf.d2m.DeviceSlotExpirationPolicy.PERSISTENT,
                 platformDetails: d2mPlatformDetails,
-                label: user.devicesSettings.get().view.deviceName ?? DEFAULT_DEVICE_NAME,
+                label: user.devicesSettings.get().view.deviceName,
             },
             // D2D
             {

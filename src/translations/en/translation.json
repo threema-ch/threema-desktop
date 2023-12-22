@@ -433,7 +433,6 @@
   "settings--devices-settings": {
     "label--this-device": "This Device",
     "label--title": "Devices Settings",
-    "prose--name-change-error": "Could not update the device name",
     "prose--subtitle": "Devices linked to your Threema ID"
   },
   "settings--privacy": {

@@ -433,7 +433,6 @@
   "settings--devices-settings": {
     "label--this-device": "Dieses Gerät",
     "label--title": "Devices Settings",
-    "prose--name-change-error": "Der Gerätename konnte nicht angepasst werden.",
     "prose--subtitle": "Geräte, die mit deiner ID verknüpft sind"
   },
   "settings--privacy": {

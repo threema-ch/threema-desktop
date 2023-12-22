@@ -10,16 +10,15 @@
 
   type $$Props = EditDeviceNameModalProps;
 
-  export let label: $$Props['label'];
   export let value: $$Props['value'];
   export let maxlength: $$Props['maxlength'] = 128;
 
   const dispatch = createEventDispatcher<{
-    clickconfirm: undefined;
+    newDeviceName: string;
   }>();
 
   function handleClickConfirm(): void {
-    dispatch('clickconfirm');
+    dispatch('newDeviceName', value);
   }
 </script>
 
