@@ -79,10 +79,7 @@
       checked={use24hTime}
       key={$i18n.t('settings--appearance.label--24-hour-time-format-title', 'Time Format')}
       on:switchevent={() =>
-        updateSetting(
-          use24hTime ? TimeFormat.USE_24HOUR_TIME : TimeFormat.DONT_USE_24HOUR_TIME,
-          'timeFormat',
-        )}
+        updateSetting(use24hTime ? TimeFormat.TIME_24H : TimeFormat.TIME_12H, 'timeFormat')}
     >
       <Text
         text={$i18n.t(

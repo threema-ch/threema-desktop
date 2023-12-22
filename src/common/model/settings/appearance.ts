@@ -32,12 +32,12 @@ export class AppearanceSettingsController implements AppearanceSettingsControlle
 function addDerivedData(view: AppearanceSettingsViewNonDerivedProperties): AppearanceSettingsView {
     const augmentedView: AppearanceSettingsView = {
         ...view,
-        use12hTime: view.timeFormat === TimeFormat.DONT_USE_24HOUR_TIME,
+        use12hTime: view.timeFormat === TimeFormat.TIME_12H,
     };
     return augmentedView;
 }
 
-const DEFAULT_TIME_FORMAT = TimeFormat.USE_24HOUR_TIME;
+const DEFAULT_TIME_FORMAT = TimeFormat.TIME_24H;
 const DEFAULT_INACTIVE_CONTACT_POLICY = InactiveContactsPolicy.SHOW;
 
 export class AppearanceSettingsModelStore extends LocalModelStore<AppearanceSettings> {

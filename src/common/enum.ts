@@ -2038,17 +2038,17 @@ export namespace KeyboardDataCollectionPolicyUtils {
     }
 }
 export namespace TimeFormat {
-    export const USE_24HOUR_TIME = 0;
-    export type USE_24HOUR_TIME = typeof USE_24HOUR_TIME;
-    export const DONT_USE_24HOUR_TIME = 1;
-    export type DONT_USE_24HOUR_TIME = typeof DONT_USE_24HOUR_TIME;
+    export const TIME_24H = 0;
+    export type TIME_24H = typeof TIME_24H;
+    export const TIME_12H = 1;
+    export type TIME_12H = typeof TIME_12H;
 }
 /** @generate convert */
 export type TimeFormat = (typeof TimeFormat)[keyof typeof TimeFormat];
 export namespace TimeFormatUtils {
     export const ALL: ReadonlySet<TimeFormat> = new Set([
-        TimeFormat.USE_24HOUR_TIME,
-        TimeFormat.DONT_USE_24HOUR_TIME,
+        TimeFormat.TIME_24H,
+        TimeFormat.TIME_12H,
     ] as const);
     export function fromNumber(value: u53, fallback?: TimeFormat): TimeFormat {
         if ((ALL as ReadonlySet<u53>).has(value)) {

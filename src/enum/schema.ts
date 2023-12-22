@@ -639,8 +639,8 @@ export enum KeyboardDataCollectionPolicy {
 
 /** @generate convert */
 export enum TimeFormat {
-    USE_24HOUR_TIME = 0,
-    DONT_USE_24HOUR_TIME = 1,
+    TIME_24H = 0,
+    TIME_12H = 1,
 }
 
 /** @generate convert **/

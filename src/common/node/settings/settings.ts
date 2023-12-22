@@ -179,12 +179,14 @@ export interface AppearanceSettings {
     inactiveContactsPolicy?: AppearanceSettings_HideInactive | undefined;
 }
 
+/** Time format (12h vs 24h display) */
 export const enum AppearanceSettings_TimeFormat {
-    USE_24HOUR_TIME = 0,
-    DONT_USE_24HOUR_TIME = 1,
+    TIME_24H = 0,
+    TIME_12H = 1,
     UNRECOGNIZED = -1,
 }
 
+/** Whether to show or hide inactive contacts */
 export const enum AppearanceSettings_HideInactive {
     SHOW = 0,
     HIDE = 1,
