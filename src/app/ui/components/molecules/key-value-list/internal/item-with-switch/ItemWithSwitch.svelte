@@ -23,7 +23,6 @@
 
   function handleClickItem(event: MouseEvent): void {
     event.preventDefault();
-    event.stopImmediatePropagation();
 
     if (disabled) {
       return;
