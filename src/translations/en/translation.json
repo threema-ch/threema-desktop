@@ -105,6 +105,12 @@
     "label--last-name": "Last Name",
     "label--title": "Edit {name}"
   },
+  "dialog--edit-device-name": {
+    "action--cancel": "Cancel",
+    "action--confirm": "Confirm",
+    "action--title": "Edit Device Name",
+    "prose--after-restart": "The new device name will be visibile on your other devices after the next restart."
+  },
   "dialog--edit-group": {
     "action--cancel": "Cancel",
     "action--confirm": "OK",
@@ -381,6 +387,7 @@
     "hint--own-profile-picture": "My profile picture",
     "label--about": "About",
     "label--appearance": "Appearance",
+    "label--devices": "Devices",
     "label--do-not-disturb": "Do Not Disturb",
     "label--nickname": "Nickname",
     "label--notifications": "Notifications",
@@ -411,15 +418,23 @@
   "settings--appearance": {
     "label--24-hour-time-format-title": "Time Format",
     "label--24-hour-time-format-value": "Enable 24-Hour Time",
+    "label--contact-list": "Contact List",
     "label--locale": "Language",
     "label--section-date-time": "Date & Time",
     "label--section-general-appearance": "General Appearance",
+    "label--show-inactive-contacts": "Show Inactive Contacts",
     "label--theme": "Theme",
     "label--theme-dark": "Dark",
     "label--theme-light": "Light",
     "label--theme-system": "System",
     "label--title": "Appearance Settings",
     "prose--subtitle": "Theme, Language, Hour Format"
+  },
+  "settings--devices-settings": {
+    "label--this-device": "This Device",
+    "label--title": "Devices Settings",
+    "prose--name-change-error": "Could not update the device name",
+    "prose--subtitle": "Devices linked to your Threema ID"
   },
   "settings--privacy": {
     "prose--subtitle": "Contacts, Chats, Lists"

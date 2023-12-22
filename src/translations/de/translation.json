@@ -105,6 +105,12 @@
     "label--last-name": "Nachname",
     "label--title": "{name} bearbeiten"
   },
+  "dialog--edit-device-name": {
+    "action--cancel": "Abbrechen",
+    "action--confirm": "Bestätigen",
+    "action--title": "Gerätenamen bearbeiten",
+    "prose--after-restart": "Der neue Gerätename wird nach dem nächsten Neustart von Threema Desktop auf den anderen Geräten zu sehen sein."
+  },
   "dialog--edit-group": {
     "action--cancel": "Abbrechen",
     "action--confirm": "OK",
@@ -381,6 +387,7 @@
     "hint--own-profile-picture": "Mein Profilbild",
     "label--about": "Über Threema Desktop",
     "label--appearance": "Erscheinungsbild",
+    "label--devices": "Geräte",
     "label--do-not-disturb": "Nicht stören",
     "label--nickname": "Nickname",
     "label--notifications": "Benachrichtigungen",
@@ -411,15 +418,23 @@
   "settings--appearance": {
     "label--24-hour-time-format-title": "Zeitformat",
     "label--24-hour-time-format-value": "24-Stunden Anzeige aktivieren",
+    "label--contact-list": "Kontaktliste",
     "label--locale": "Sprache",
     "label--section-date-time": "Datum & Uhrzeit",
-    "label--section-general-appearance": "Allgemeines Erscheinungsbild",
-    "label--theme": "Theme",
+    "label--section-general-appearance": "Generelles Erscheinungsbild",
+    "label--show-inactive-contacts": "Inaktive Kontakte anzeigen",
+    "label--theme": "Designstil",
     "label--theme-dark": "Dunkel",
     "label--theme-light": "Hell",
     "label--theme-system": "System",
     "label--title": "Erscheinungsbild",
-    "prose--subtitle": "Theme, Sprache, Zeitformat"
+    "prose--subtitle": "Designstil, Sprache, Stundenformat"
+  },
+  "settings--devices-settings": {
+    "label--this-device": "Dieses Gerät",
+    "label--title": "Devices Settings",
+    "prose--name-change-error": "Der Gerätename konnte nicht angepasst werden.",
+    "prose--subtitle": "Geräte, die mit deiner ID verknüpft sind"
   },
   "settings--privacy": {
     "prose--subtitle": "Kontakte, Chats und Listen"
