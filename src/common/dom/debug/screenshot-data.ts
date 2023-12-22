@@ -9,6 +9,7 @@ import {
     MessageReaction,
     VerificationLevelUtils,
 } from '~/common/enum';
+import {OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import {
     ensureGroupId,
     ensureIdentityString,
@@ -63,23 +64,30 @@ const TEST_MESSAGE_BASE = {
         }
     }),
     isRead: v.boolean().optional(),
-    lastReaction: v
-        .union(v.literal('ACKNOWLEDGE'), v.literal('DECLINE'))
-        .map((value) => {
-            switch (value) {
-                case 'ACKNOWLEDGE':
-                    return MessageReaction.ACKNOWLEDGE;
-                case 'DECLINE':
-                    return MessageReaction.DECLINE;
-                default:
-                    return unreachable(value);
-            }
-        })
+
+    reactions: v
+        .array(
+            v.object({
+                reaction: v.union(v.literal('ACKNOWLEDGE'), v.literal('DECLINE')).map((value) => {
+                    switch (value) {
+                        case 'ACKNOWLEDGE':
+                            return MessageReaction.ACKNOWLEDGE;
+                        case 'DECLINE':
+                            return MessageReaction.DECLINE;
+                        default:
+                            return unreachable(value);
+                    }
+                }),
+                senderIdentity: v.union(
+                    v.string().map(ensureIdentityString),
+                    v.literal(OWN_IDENTITY_ALIAS),
+                ),
+            }),
+        )
         .optional(),
     // Note: Only defined for groups
     identity: v.string().map(ensureIdentityString).optional(),
 };
-
 const TEST_MESSAGE_SCHEMA = v.union(
     v
         .object({

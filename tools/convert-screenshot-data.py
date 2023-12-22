@@ -14,7 +14,7 @@ def print_usage():
     print(f'Usage: {sys.argv[0]} <path-to-screenshots-dir>')
 
 
-def convert_conversation_messages(messages, current_dir, conversation_type, own_identity):
+def convert_conversation_messages(messages, current_dir, conversation_type, own_identity, senderIdentity):
     converted = []
 
     for message in messages:
@@ -31,13 +31,15 @@ def convert_conversation_messages(messages, current_dir, conversation_type, own_
             converted_message['identity'] = message['identity']
 
         if 'state' in message:
+            converted_message['reactions'] = [dict()]
             if message['state'] == 'USERACK':
-                converted_message['lastReaction'] = 'ACKNOWLEDGE'
+
+                converted_message['reactions'][0]['reaction'] = 'ACKNOWLEDGE'
             elif message['state'] == 'USERDEC':
-                converted_message['lastReaction'] = 'DECLINE'
+                converted_message['reactions'][0]['reaction'] = 'DECLINE'
             else:
                 raise RuntimeError('Unsupported message state: ' + message['state'])
-
+            converted_message['reactions'][0]['senderIdentity'] = senderIdentity
         if converted_message['type'] == 'IMAGE':
             assert message['content']['default'].endswith('.jpg')
             media_type = 'image/jpeg'
@@ -103,7 +105,7 @@ def convert_contacts(contacts, current_dir, own_identity):
                 contact['avatar'] = b64encode(avatar.read()).decode('ascii')
 
         # Conversation messages
-        contact['conversation'] = convert_conversation_messages(data.get('conversation', []), current_dir, 'contact', own_identity)
+        contact['conversation'] = convert_conversation_messages(data.get('conversation', []), current_dir, 'contact', own_identity, identity)
 
         converted.append(contact)
     return converted
@@ -138,7 +140,7 @@ def convert_groups(groups, current_dir, contact_list_identities, own_identity):
                 group['avatar'] = b64encode(avatar.read()).decode('ascii')
 
         # Conversation messages
-        group['conversation'] = convert_conversation_messages(data.get('conversation', []), current_dir, 'group', own_identity)
+        group['conversation'] = convert_conversation_messages(data.get('conversation', []), current_dir, 'group', own_identity, own_identity)
 
         converted.append(group)
     return converted
@@ -183,7 +185,7 @@ def main():
         exit(1)
     screenshots_dir = sys.argv[1]
     root_dir = path.join(path.dirname(path.realpath(__file__)), '..')
-
+    print(root_dir)
     convert('work', screenshots_dir, root_dir)
     convert('consumer', screenshots_dir, root_dir)
     print('Done!')

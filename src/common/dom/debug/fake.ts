@@ -36,6 +36,7 @@ import type {Logger} from '~/common/logging';
 import type {Contact} from '~/common/model';
 import type {ContactModelStore} from '~/common/model/contact';
 import type {GroupModelStore} from '~/common/model/group';
+import {type IdentityStringOrMe, OWN_IDENTITY_ALIAS} from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {BLOB_ID_LENGTH, ensureBlobId} from '~/common/network/protocol/blob';
 import {parsePossibleTextQuote} from '~/common/network/protocol/task/common/quotes';
@@ -45,6 +46,7 @@ import {
     ensureIdentityString,
     ensureMessageId,
     FEATURE_MASK_FLAG,
+    type IdentityString,
     type GroupId,
 } from '~/common/network/types';
 import {wrapRawBlobKey} from '~/common/network/types/keys';
@@ -165,28 +167,37 @@ export async function generateFakeContactConversation(
             MessageDirection.INBOUND,
             MessageDirection.OUTBOUND,
         ]);
+        const reaction = generateFakeReaction(crypto, new Date(nowMs - minutesAgo-- * 1000 * 60));
+
         switch (direction) {
             case MessageDirection.INBOUND:
-                conversation.controller.addMessage.fromSync({
-                    id: messageId,
-                    direction,
-                    sender: contact.ctx,
-                    createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
-                    receivedAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
-                    type: 'text',
-                    text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
-                    raw: new Uint8Array(0),
-                    lastReaction: generateFakeReaction(
-                        crypto,
-                        new Date(nowMs - minutesAgo-- * 1000 * 60),
-                    ),
-                });
+                {
+                    const modelStore = conversation.controller.addMessage.fromSync({
+                        id: messageId,
+                        direction,
+                        sender: contact.ctx,
+                        createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
+                        receivedAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
+                        type: 'text',
+                        text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
+                        raw: new Uint8Array(0),
+                    });
+                    if (reaction !== undefined) {
+                        modelStore
+                            .get()
+                            .controller.reaction.fromSync(
+                                reaction.type,
+                                reaction.at,
+                                OWN_IDENTITY_ALIAS,
+                            );
+                    }
+                }
                 break;
             case MessageDirection.OUTBOUND:
                 if (Math.random() < 0.1) {
                     const fileData = await file.store(TEST_IMAGE);
                     const thumbnailFileData = await file.store(TEST_THUMBNAIL);
-                    conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
@@ -202,23 +213,33 @@ export async function generateFakeContactConversation(
                         encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
                         fileData,
                         thumbnailFileData,
-                        lastReaction: generateFakeReaction(
-                            crypto,
-                            new Date(nowMs - minutesAgo-- * 1000 * 60),
-                        ),
                     });
+                    if (reaction !== undefined) {
+                        modelStore
+                            .get()
+                            .controller.reaction.fromSync(
+                                reaction.type,
+                                reaction.at,
+                                contact.get().view.identity,
+                            );
+                    }
                 } else {
-                    conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                         type: 'text',
                         text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
-                        lastReaction: generateFakeReaction(
-                            crypto,
-                            new Date(nowMs - minutesAgo-- * 1000 * 60),
-                        ),
                     });
+                    if (reaction !== undefined) {
+                        modelStore
+                            .get()
+                            .controller.reaction.fromSync(
+                                reaction.type,
+                                reaction.at,
+                                contact.get().view.identity,
+                            );
+                    }
                 }
                 break;
             default:
@@ -243,6 +264,7 @@ export async function generateFakeGroupConversation(
 
     const contactUids: DbContactUid[] = [];
     const contactObjects: LocalModelStore<Contact>[] = [];
+
     contacts.get().forEach((contact) => {
         contactUids.push(contact.get().ctx);
         contactObjects.push(contact);
@@ -267,12 +289,32 @@ export async function generateFakeGroupConversation(
     );
 
     // Add message(s)
-    const nowMs = new Date().getTime();
     const messageCount = randomChoice(crypto, [3, 7, 32, 42]);
+    const nowMs = new Date().getTime();
     let minutesAgo = 240;
+
     for (let i = 0; i < messageCount; i++) {
+        const reactions: {
+            reaction: {
+                readonly at: Date;
+                readonly type: MessageReaction;
+            };
+            senderIdentity: IdentityString;
+        }[] = [];
+        for (const contact of contacts.get()) {
+            const reaction = generateFakeReaction(
+                crypto,
+                new Date(nowMs - minutesAgo-- * 1000 * 60),
+            );
+            if (reaction !== undefined) {
+                reactions.push({
+                    reaction,
+                    senderIdentity: contact.get().view.identity,
+                });
+            }
+        }
         // Set a random group contact
-        const contact = randomChoice(crypto, contactObjects);
+        const senderContact = randomChoice(crypto, contactObjects);
 
         const conversation = group.get().controller.conversation().get();
         const messageId = ensureMessageId(randomU64(crypto));
@@ -280,28 +322,35 @@ export async function generateFakeGroupConversation(
             MessageDirection.INBOUND,
             MessageDirection.OUTBOUND,
         ]);
+
         switch (direction) {
-            case MessageDirection.INBOUND:
-                conversation.controller.addMessage.fromSync({
+            case MessageDirection.INBOUND: {
+                const modelStore = conversation.controller.addMessage.fromSync({
                     id: messageId,
                     direction,
-                    sender: contact.ctx,
+                    sender: senderContact.ctx,
                     createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                     receivedAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                     type: 'text',
                     text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
                     raw: new Uint8Array(0),
-                    lastReaction: generateFakeReaction(
-                        crypto,
-                        new Date(nowMs - minutesAgo-- * 1000 * 60),
-                    ),
                 });
+                for (const reaction of reactions) {
+                    modelStore
+                        .get()
+                        .controller.reaction.fromSync(
+                            reaction.reaction.type,
+                            reaction.reaction.at,
+                            reaction.senderIdentity,
+                        );
+                }
                 break;
+            }
             case MessageDirection.OUTBOUND:
                 if (Math.random() < 0.1) {
                     const fileData = await file.store(TEST_IMAGE);
                     const thumbnailFileData = await file.store(TEST_THUMBNAIL);
-                    conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
@@ -317,23 +366,35 @@ export async function generateFakeGroupConversation(
                         encryptionKey: wrapRawBlobKey(randomBytes(new Uint8Array(32))),
                         fileData,
                         thumbnailFileData,
-                        lastReaction: generateFakeReaction(
-                            crypto,
-                            new Date(nowMs - minutesAgo-- * 1000 * 60),
-                        ),
                     });
+                    for (const reaction of reactions) {
+                        // eslint-disable-next-line max-depth
+                        modelStore
+                            .get()
+                            .controller.reaction.fromSync(
+                                reaction.reaction.type,
+                                reaction.reaction.at,
+                                reaction.senderIdentity,
+                            );
+                    }
                 } else {
-                    conversation.controller.addMessage.fromSync({
+                    const modelStore = conversation.controller.addMessage.fromSync({
                         id: messageId,
                         direction,
                         createdAt: new Date(nowMs - minutesAgo-- * 1000 * 60),
                         type: 'text',
                         text: generateFakeText(crypto, randomU8(crypto) / 2 + 1),
-                        lastReaction: generateFakeReaction(
-                            crypto,
-                            new Date(nowMs - minutesAgo-- * 1000 * 60),
-                        ),
                     });
+                    for (const reaction of reactions) {
+                        // eslint-disable-next-line max-depth
+                        modelStore
+                            .get()
+                            .controller.reaction.fromSync(
+                                reaction.reaction.type,
+                                reaction.reaction.at,
+                                reaction.senderIdentity,
+                            );
+                    }
                 }
                 break;
             default:
@@ -526,10 +587,20 @@ async function addConversationMessages(
         const messageDate = new Date(
             getReferenceTimestamp().getTime() - message.minutesAgo * 60 * 1000,
         );
-        const lastReaction =
-            message.lastReaction === undefined
-                ? undefined
-                : {type: message.lastReaction, at: messageDate};
+        const reactions: {
+            readonly at: Date;
+            readonly type: MessageReaction;
+            readonly senderIdentity: IdentityStringOrMe;
+        }[] = [];
+
+        message.reactions?.forEach((reaction, idx) => {
+            const randomOffset = randomU8(crypto);
+            reactions.push({
+                at: new Date(messageDate.getTime() + idx * 60 * 1000 * randomOffset),
+                type: reaction.reaction,
+                senderIdentity: reaction.senderIdentity,
+            });
+        });
 
         switch (message.type) {
             case 'TEXT': {
@@ -607,29 +678,46 @@ async function addConversationMessages(
                     default:
                         unreachable(receiver);
                 }
-                conversation.controller.addMessage.fromSync({
+                const modelStore = conversation.controller.addMessage.fromSync({
                     id: messageId,
                     direction: message.direction,
                     sender: senderUid,
                     createdAt: messageDate,
                     receivedAt: messageDate,
                     readAt: unwrap(message.isRead) ? messageDate : undefined,
-                    lastReaction,
                     raw: new Uint8Array(0),
                     ...content,
                 });
+                for (const reaction of reactions) {
+                    modelStore
+                        .get()
+                        .controller.reaction.fromSync(
+                            reaction.type,
+                            reaction.at,
+                            reaction.senderIdentity,
+                        );
+                }
                 break;
             }
-            case MessageDirection.OUTBOUND:
-                conversation.controller.addMessage.fromSync({
+            case MessageDirection.OUTBOUND: {
+                const modelStore = conversation.controller.addMessage.fromSync({
                     id: messageId,
                     direction: message.direction,
                     createdAt: messageDate,
                     readAt: messageDate,
-                    lastReaction,
                     ...content,
                 });
+                for (const reaction of reactions) {
+                    modelStore
+                        .get()
+                        .controller.reaction.fromSync(
+                            reaction.type,
+                            reaction.at,
+                            reaction.senderIdentity,
+                        );
+                }
                 break;
+            }
             default:
                 throw new Error(`Invalid message direction: ${message.direction}`);
         }
