@@ -3,15 +3,15 @@ import {expect} from 'chai';
 import type {DbContactUid} from '~/common/db';
 import {
     CspE2eDeliveryReceiptStatus,
-    CspE2eDeliveryReceiptStatusUtils,
     MessageDirection,
     MessageReaction,
     ReceiverType,
 } from '~/common/enum';
 import type {Conversation} from '~/common/model';
-import type {
-    AnyInboundMessageModelStore,
-    AnyOutboundMessageModelStore,
+import {
+    OWN_IDENTITY_ALIAS,
+    type AnyInboundMessageModelStore,
+    type AnyOutboundMessageModelStore,
 } from '~/common/model/types/message';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {ReflectedDeliveryReceiptTask} from '~/common/network/protocol/task/d2d/reflected-delivery-receipt';
@@ -75,12 +75,11 @@ export function run(): void {
             }
         });
 
-        it('process incoming delivery receipt for outgoing message', async function () {
+        it('process incoming delivery receipt for outbound message', async function () {
             const {crypto} = services;
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
-            const expectedMessageDirection = MessageDirection.OUTBOUND;
             conversation.get().controller.addMessage.fromSync({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
@@ -98,10 +97,7 @@ export function run(): void {
                 'Message should not yet be marked as delivered',
             );
             assert(msg.get().view.readAt === undefined, 'Message should not yet be marked as read');
-            assert(
-                msg.get().view.lastReaction === undefined,
-                'Message should not yet have a reaction',
-            );
+            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
 
             async function runTask(
                 status: CspE2eDeliveryReceiptStatus,
@@ -117,7 +113,7 @@ export function run(): void {
                         messageIds: [messageId],
                     },
                     timestamp,
-                    expectedMessageDirection,
+                    OWN_IDENTITY_ALIAS,
                 ).run(handle);
                 handle.finish();
             }
@@ -135,19 +131,20 @@ export function run(): void {
             // Thumbs down
             const decTimestamp = new Date();
             await runTask(CspE2eDeliveryReceiptStatus.DECLINED, decTimestamp);
-            expect(msg.get().view.lastReaction, 'lastReaction').to.eql({
-                at: decTimestamp,
-                type: MessageReaction.DECLINE,
+            expect(msg.get().view.reactions.length === 1);
+            expect(msg.get().view.reactions[0], 'lastReaction').to.eql({
+                reactionAt: decTimestamp,
+                reaction: MessageReaction.DECLINE,
+                senderContactIdentity: OWN_IDENTITY_ALIAS,
             });
         });
 
-        it('process outgoing delivery receipt for incoming message', async function () {
+        it('process outgoing delivery receipt for inbound message', async function () {
             const {crypto} = services;
 
             // Add incoming message
             const messageId = randomMessageId(crypto);
             const originalReceivedAt = new Date();
-            const expectedMessageDirection = MessageDirection.INBOUND;
             conversation.get().controller.addMessage.fromSync({
                 direction: MessageDirection.INBOUND,
                 type: 'text',
@@ -173,7 +170,7 @@ export function run(): void {
                         messageIds: [messageId],
                     },
                     timestamp,
-                    expectedMessageDirection,
+                    OWN_IDENTITY_ALIAS,
                 ).run(handle);
                 handle.finish();
             }
@@ -183,10 +180,7 @@ export function run(): void {
                 .get()
                 .controller.getMessage(messageId) as AnyInboundMessageModelStore;
             assert(msg.get().view.readAt === undefined, 'Message should not yet be marked as read');
-            assert(
-                msg.get().view.lastReaction === undefined,
-                'Message should not yet have a reaction',
-            );
+            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
 
             // A delivery receipt of type RECEIVED must be ignored for incoming messages
             await runTask(CspE2eDeliveryReceiptStatus.RECEIVED, new Date());
@@ -200,117 +194,23 @@ export function run(): void {
             // Process ACKNOWLEDGED
             const ackTimestamp = secondsAgo(2);
             await runTask(CspE2eDeliveryReceiptStatus.ACKNOWLEDGED, ackTimestamp);
-            expect(msg.get().view.lastReaction, 'lastReaction').to.deep.equal({
-                at: ackTimestamp,
-                type: MessageReaction.ACKNOWLEDGE,
+            assert(msg.get().view.reactions.length === 1, 'There should be one reaction');
+            expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
+                reactionAt: ackTimestamp,
+                reaction: MessageReaction.ACKNOWLEDGE,
+                senderContactIdentity: OWN_IDENTITY_ALIAS,
             });
 
             // Process DECLINED
             const decTimestamp = secondsAgo(1);
             await runTask(CspE2eDeliveryReceiptStatus.DECLINED, decTimestamp);
-            expect(msg.get().view.lastReaction, 'lastReaction').to.deep.equal({
-                at: decTimestamp,
-                type: MessageReaction.DECLINE,
+            // Ensure only one reactions with updated values
+            assert(msg.get().view.reactions.length === 1);
+            expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
+                reactionAt: decTimestamp,
+                reaction: MessageReaction.DECLINE,
+                senderContactIdentity: OWN_IDENTITY_ALIAS,
             });
-        });
-
-        it('ignore delivery receipt for inbound message when expecting outbound message', async function () {
-            const {crypto} = services;
-
-            // Add incoming message
-            const messageId = randomMessageId(crypto);
-            const originalReceivedAt = new Date();
-            conversation.get().controller.addMessage.fromSync({
-                direction: MessageDirection.INBOUND,
-                type: 'text',
-                id: messageId,
-                text: `Message with ID ${messageId}`,
-                sender: conversation.get().controller.receiver().ctx as DbContactUid,
-                createdAt: new Date(),
-                receivedAt: originalReceivedAt,
-                raw: new Uint8Array(0),
-            });
-
-            // Ensure that message does not yet have a reaction
-            const msg = conversation.get().controller.getMessage(messageId);
-            assert(msg !== undefined, 'Message not found');
-            assert(
-                msg.get().view.lastReaction === undefined,
-                'Message should not yet have a reaction',
-            );
-
-            // Run task with expected direction OUTBOUND
-            for (const status of CspE2eDeliveryReceiptStatusUtils.ALL) {
-                const handle = new TestHandle(services, []);
-                await new ReflectedDeliveryReceiptTask(
-                    services,
-                    randomMessageId(crypto),
-                    user1.conversationId,
-                    {
-                        status,
-                        messageIds: [messageId],
-                    },
-                    new Date(),
-                    MessageDirection.OUTBOUND,
-                ).run(handle);
-                handle.finish();
-            }
-
-            // Ensure that message was not modified
-            const messageModel = msg.get();
-            assert(messageModel.ctx === MessageDirection.INBOUND, 'Expected message to be inbound');
-            expect(messageModel.view.receivedAt).to.deep.equal(originalReceivedAt);
-            expect(messageModel.view.readAt).to.be.undefined;
-            expect(messageModel.view.lastReaction).to.be.undefined;
-        });
-
-        it('ignore delivery receipt for outbound message when expecting inbound message', async function () {
-            const {crypto} = services;
-
-            // Add outgoing message
-            const messageId = randomMessageId(crypto);
-            conversation.get().controller.addMessage.fromSync({
-                direction: MessageDirection.OUTBOUND,
-                type: 'text',
-                id: messageId,
-                text: `Message with ID ${messageId}`,
-                createdAt: new Date(),
-            });
-
-            // Ensure that message does not yet have a reaction
-            const msg = conversation.get().controller.getMessage(messageId);
-            assert(msg !== undefined, 'Message not found');
-            assert(
-                msg.get().view.lastReaction === undefined,
-                'Message should not yet have a reaction',
-            );
-
-            // Run task with expected direction INBOUND
-            for (const status of CspE2eDeliveryReceiptStatusUtils.ALL) {
-                const handle = new TestHandle(services, []);
-                await new ReflectedDeliveryReceiptTask(
-                    services,
-                    randomMessageId(crypto),
-                    user1.conversationId,
-                    {
-                        status,
-                        messageIds: [messageId],
-                    },
-                    new Date(),
-                    MessageDirection.INBOUND,
-                ).run(handle);
-                handle.finish();
-            }
-
-            // Ensure that message was not modified
-            const messageModel = msg.get();
-            assert(
-                messageModel.ctx === MessageDirection.OUTBOUND,
-                'Expected message to be outbound',
-            );
-            expect(messageModel.view.deliveredAt).to.be.undefined;
-            expect(messageModel.view.readAt).to.be.undefined;
-            expect(messageModel.view.lastReaction).to.be.undefined;
         });
     });
 }

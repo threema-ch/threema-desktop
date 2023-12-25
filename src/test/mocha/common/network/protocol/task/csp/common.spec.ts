@@ -2,6 +2,7 @@ import {expect} from 'chai';
 
 import {ImageRenderingType, MessageDirection} from '~/common/enum';
 import {randomFileEncryptionKey, randomFileId} from '~/common/file-storage';
+import type {MessageReactionView} from '~/common/model/types/message';
 import {getFileJsonData} from '~/common/network/protocol/task/csp/common';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import {ensureIdentityString} from '~/common/network/types';
@@ -59,6 +60,7 @@ export function run(): void {
                 caption: 'Hello caption',
                 correlationId: 'abcd',
                 ordinal: 0,
+                reactions: [] as MessageReactionView[],
             } as const;
         }
 

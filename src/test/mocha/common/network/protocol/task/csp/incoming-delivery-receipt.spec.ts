@@ -11,6 +11,7 @@ import {
 import type {
     AnyOutboundMessageModel,
     AnyOutboundMessageModelStore,
+    ContactView,
     Conversation,
 } from '~/common/model';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -20,16 +21,38 @@ import {
     type ContactConversationId,
     ensureIdentityString,
     type Nickname,
+    type IdentityString,
+    type GroupConversationId,
 } from '~/common/network/types';
-import {assert} from '~/common/utils/assert';
+import type {i53} from '~/common/types';
+import {assert, unreachable} from '~/common/utils/assert';
 import {Identity} from '~/common/utils/identity';
 import {
     addTestUserAsContact,
     createClientKey,
     makeTestServices,
+    type TestGroup,
     TestHandle,
+    type TestUser,
     type TestServices,
+    addTestGroup,
 } from '~/test/mocha/common/backend-mocks';
+
+function createTestUsers(num: i53): TestUser[] {
+    const res: TestUser[] = [];
+
+    for (let i = 1; i < num + 1; i++) {
+        const zeroes = i > 9 ? '00' : '000';
+        const user = {
+            identity: new Identity(ensureIdentityString(`USER${zeroes}${i}`)),
+            nickname: `user${i}` as Nickname,
+            ck: createClientKey(),
+        };
+        res.push(user);
+    }
+
+    return res;
+}
 
 /**
  * Test incoming CSP delivery receipt task.
@@ -37,22 +60,27 @@ import {
 export function run(): void {
     describe('IncomingDeliveryReceiptTask', function () {
         const me = ensureIdentityString('MEMEMEME');
-        const user1 = {
-            identity: new Identity(ensureIdentityString('USER0001')),
-            nickname: 'user1' as Nickname,
-            ck: createClientKey(),
-            conversationId: {
-                type: ReceiverType.CONTACT,
-                identity: ensureIdentityString('USER0001'),
-            } as ContactConversationId,
-        };
+        const testUsers = createTestUsers(10);
+
+        // Group for group reactions
+        let testGroup: TestGroup;
 
         // Set up services, log printing and a conversation
         let services: TestServices;
-        let conversation: LocalModelStore<Conversation>;
+        let user1: TestUser;
+
+        let singleConversation: LocalModelStore<Conversation>;
+        let singleConversationId: ContactConversationId;
+
+        let groupConversation: LocalModelStore<Conversation>;
+        let groupConversationId: GroupConversationId;
+        let singleConversationReceiverIdentity: IdentityString;
         this.beforeEach(function () {
             // Create test services
             services = makeTestServices(me);
+
+            assert(testUsers[0] !== undefined);
+            user1 = testUsers[0];
 
             // Create conversation with user1
             const user1Uid = addTestUserAsContact(services.model, user1).ctx;
@@ -61,8 +89,48 @@ export function run(): void {
                 uid: user1Uid,
             });
             assert(user1Conversation !== undefined, 'Conversation for user1 not found');
-            conversation = user1Conversation;
+            singleConversation = user1Conversation;
+            singleConversationId = {
+                type: ReceiverType.CONTACT,
+                identity: ensureIdentityString('USER0001'),
+            };
+
+            assert(
+                singleConversation.get().view.type === ReceiverType.CONTACT,
+                'Unexpected conversation type',
+            );
+
+            // Here we know that this is a contact view so this conversion is safe
+            const receiverView = singleConversation.get().controller.receiver().get()
+                .view as Readonly<Readonly<ContactView>>;
+            singleConversationReceiverIdentity = receiverView.identity;
+
+            // Set up a group for testing of group reactions
+            const groupMembers: DbContactUid[] = [];
+            for (const testUser of testUsers.slice(1)) {
+                const userUid = addTestUserAsContact(services.model, testUser).ctx;
+                groupMembers.push(userUid);
+            }
+            testGroup = {
+                creatorIdentity: me,
+                members: groupMembers,
+            };
+            const groupModelStore = addTestGroup(services.model, testGroup);
+
+            const group1conv = services.model.conversations.getForReceiver({
+                type: ReceiverType.GROUP,
+                uid: groupModelStore.ctx,
+            });
+
+            assert(group1conv !== undefined);
+            groupConversation = group1conv;
+            groupConversationId = {
+                type: ReceiverType.GROUP,
+                creatorIdentity: me,
+                groupId: groupModelStore.get().view.groupId,
+            };
         });
+
         this.afterEach(function () {
             if (this.currentTest?.state === 'failed') {
                 console.log('--- Failed test logs start ---');
@@ -88,7 +156,7 @@ export function run(): void {
                 randomMessageId(crypto),
             ] as const;
             for (const messageId of messageIds) {
-                conversation.get().controller.addMessage.fromSync({
+                singleConversation.get().controller.addMessage.fromSync({
                     direction: MessageDirection.OUTBOUND,
                     type: 'text',
                     id: messageId,
@@ -99,7 +167,7 @@ export function run(): void {
 
             // Ensure that all messages are not yet marked as delivered or read
             for (const messageId of messageIds) {
-                const msg = conversation.get().controller.getMessage(messageId)?.get();
+                const msg = singleConversation.get().controller.getMessage(messageId)?.get();
                 assert(msg !== undefined, 'Message not found');
                 assert(msg.ctx === MessageDirection.OUTBOUND, 'Expected message to be outbound');
                 assert(
@@ -108,17 +176,28 @@ export function run(): void {
                 );
             }
 
+            assert(
+                singleConversation.get().view.type === ReceiverType.CONTACT,
+                'Unexpected conversation type',
+            );
+
+            // Here we know that this is a contact view so this conversion is safe
+            const receiverView = singleConversation.get().controller.receiver().get()
+                .view as Readonly<Readonly<ContactView>>;
+            singleConversationReceiverIdentity = receiverView.identity;
             // Mark first two messages as received or read
             const actionTimestamp = new Date();
+
             const task = new IncomingDeliveryReceiptTask(
                 services,
                 randomMessageId(crypto),
-                user1.conversationId,
+                singleConversationId,
                 {
                     status,
                     messageIds: [messageIds[0], messageIds[1]],
                 },
                 actionTimestamp,
+                singleConversationReceiverIdentity,
             );
 
             // Run task. No network side effects expected.
@@ -128,7 +207,7 @@ export function run(): void {
 
             // Ensure that first two messages (but not the third) were marked as received or read
             for (const [index, messageId] of messageIds.entries()) {
-                const msg = conversation.get().controller.getMessage(messageId)?.get();
+                const msg = singleConversation.get().controller.getMessage(messageId)?.get();
                 assert(msg !== undefined, `Message ${index + 1} not found`);
                 assert(
                     msg.ctx === MessageDirection.OUTBOUND,
@@ -137,7 +216,7 @@ export function run(): void {
                 if (index < 2) {
                     assert(
                         getActionDate(msg.view) !== undefined,
-                        `Message ${index + 1} should be marked as ${action}`,
+                        `Message ${index + 1} should be marked as ${action}, ${msg.view.direction}`,
                     );
                     expect(
                         getActionDate(msg.view),
@@ -149,11 +228,11 @@ export function run(): void {
                         `Message ${index + 1} should not be marked as ${action}`,
                     );
                 }
-                assert(msg.view.lastReaction === undefined, 'Message should not have a reaction');
+                assert(msg.view.reactions.length === 0, 'Message should not have a reaction');
             }
         }
 
-        it('process incoming "received" for outgoing message', async function () {
+        it('process incoming "received" for outbound message', async function () {
             await testReceivedOrRead(
                 'received',
                 CspE2eDeliveryReceiptStatus.RECEIVED,
@@ -161,7 +240,7 @@ export function run(): void {
             );
         });
 
-        it('process incoming "read" for outgoing message', async function () {
+        it('process incoming "read" for outbound message', async function () {
             await testReceivedOrRead(
                 'read',
                 CspE2eDeliveryReceiptStatus.READ,
@@ -169,13 +248,13 @@ export function run(): void {
             );
         });
 
-        it('process incoming "acknowledge" or "decline" for outgoing message', async function () {
+        it('process incoming "acknowledge" or "decline" for outbound message', async function () {
             const {crypto} = services;
             const handle = new TestHandle(services, []);
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
-            conversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.fromSync({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,
@@ -184,12 +263,9 @@ export function run(): void {
             });
 
             // Ensure that message does not yet have a reaction
-            const msg = conversation.get().controller.getMessage(messageId);
+            const msg = singleConversation.get().controller.getMessage(messageId);
             assert(msg !== undefined, 'Message not found');
-            assert(
-                msg.get().view.lastReaction === undefined,
-                'Message should not yet have a reaction',
-            );
+            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
 
             async function runTask(
                 status: CspE2eDeliveryReceiptStatus,
@@ -198,12 +274,13 @@ export function run(): void {
                 await new IncomingDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
-                    user1.conversationId,
+                    singleConversationId,
                     {
                         status,
                         messageIds: [messageId],
                     },
                     timestamp,
+                    singleConversationReceiverIdentity,
                 ).run(handle);
                 handle.finish();
             }
@@ -213,9 +290,11 @@ export function run(): void {
             await runTask(CspE2eDeliveryReceiptStatus.ACKNOWLEDGED, ackTimestamp);
 
             // Ensure that reaction was recorded
-            expect(msg.get().view.lastReaction).to.eql({
-                at: ackTimestamp,
-                type: MessageReaction.ACKNOWLEDGE,
+            expect(msg.get().view.reactions.length === 1);
+            expect(msg.get().view.reactions[0]).to.eql({
+                reactionAt: ackTimestamp,
+                reaction: MessageReaction.ACKNOWLEDGE,
+                senderContactIdentity: singleConversationReceiverIdentity,
             });
 
             // Change to thumbs down
@@ -223,9 +302,10 @@ export function run(): void {
             await runTask(CspE2eDeliveryReceiptStatus.DECLINED, decTimestamp);
 
             // Ensure that reaction was recorded
-            expect(msg.get().view.lastReaction).to.eql({
-                at: decTimestamp,
-                type: MessageReaction.DECLINE,
+            expect(msg.get().view.reactions[0]).to.eql({
+                reactionAt: decTimestamp,
+                reaction: MessageReaction.DECLINE,
+                senderContactIdentity: singleConversationReceiverIdentity,
             });
         });
 
@@ -238,24 +318,21 @@ export function run(): void {
             // Add incoming message
             const messageId = randomMessageId(crypto);
             const originalReceivedAt = new Date();
-            conversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.fromSync({
                 direction: MessageDirection.INBOUND,
                 type: 'text',
                 id: messageId,
                 text: `Message with ID ${messageId}`,
-                sender: conversation.get().controller.receiver().ctx as DbContactUid,
+                sender: singleConversation.get().controller.receiver().ctx as DbContactUid,
                 createdAt: new Date(),
                 receivedAt: originalReceivedAt,
                 raw: new Uint8Array(0),
             });
 
             // Ensure that message does not yet have a reaction
-            const msg = conversation.get().controller.getMessage(messageId);
+            const msg = singleConversation.get().controller.getMessage(messageId);
             assert(msg !== undefined, 'Message not found');
-            assert(
-                msg.get().view.lastReaction === undefined,
-                'Message should not yet have a reaction',
-            );
+            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
 
             // Process all types of delivery receipt
             for (const status of CspE2eDeliveryReceiptStatusUtils.ALL) {
@@ -263,12 +340,13 @@ export function run(): void {
                 await new IncomingDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
-                    user1.conversationId,
+                    singleConversationId,
                     {
                         status,
                         messageIds: [messageId],
                     },
                     new Date(),
+                    singleConversationReceiverIdentity,
                 ).run(handle);
                 handle.finish();
             }
@@ -276,9 +354,15 @@ export function run(): void {
             // Ensure that message was not modified
             const messageModel = msg.get();
             assert(messageModel.ctx === MessageDirection.INBOUND, 'Expected message to be inbound');
-            expect(messageModel.view.receivedAt).to.deep.equal(originalReceivedAt);
+            expect(
+                messageModel.view.receivedAt,
+                'Expected received at to not have been altered',
+            ).to.deep.equal(originalReceivedAt);
             expect(messageModel.view.readAt).to.be.undefined;
-            expect(messageModel.view.lastReaction).to.be.undefined;
+            expect(
+                messageModel.view.reactions.length === 0,
+                'Expected message to not have any reactions',
+            );
         });
 
         it('ignore repeated "received" or "read" delivery receipts', async function () {
@@ -286,7 +370,7 @@ export function run(): void {
 
             // Add outgoing message
             const messageId = randomMessageId(crypto);
-            conversation.get().controller.addMessage.fromSync({
+            singleConversation.get().controller.addMessage.fromSync({
                 direction: MessageDirection.OUTBOUND,
                 type: 'text',
                 id: messageId,
@@ -295,7 +379,7 @@ export function run(): void {
             });
 
             // Ensure that message does not yet have a reaction
-            const msg = conversation
+            const msg = singleConversation
                 .get()
                 .controller.getMessage(messageId) as AnyOutboundMessageModelStore;
             assert(
@@ -312,12 +396,13 @@ export function run(): void {
                 await new IncomingDeliveryReceiptTask(
                     services,
                     randomMessageId(crypto),
-                    user1.conversationId,
+                    singleConversationId,
                     {
                         status,
                         messageIds: [messageId],
                     },
                     timestamp,
+                    singleConversationReceiverIdentity,
                 ).run(handle);
                 handle.finish();
             }
@@ -335,6 +420,358 @@ export function run(): void {
             expect(msg.get().view.readAt).to.equal(readTimestamp);
             await runTask(CspE2eDeliveryReceiptStatus.READ, new Date());
             expect(msg.get().view.readAt).to.equal(readTimestamp);
+        });
+
+        it('should register multiple incoming reactions on an outbound message in a group conversation', async function () {
+            const {crypto, model} = services;
+            const handle = new TestHandle(services, []);
+
+            // Add outbound message
+            const messageId = randomMessageId(crypto);
+            groupConversation.get().controller.addMessage.fromSync({
+                direction: MessageDirection.OUTBOUND,
+                type: 'text',
+                id: messageId,
+                text: `Message with ID ${messageId}`,
+                createdAt: new Date(),
+            });
+
+            // Ensure that message does not yet have a reaction
+            const msg = groupConversation.get().controller.getMessage(messageId);
+            assert(msg !== undefined, 'Message not found');
+            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
+
+            const reactions = testGroup.members.map((value, idx) => {
+                const senderIdentity = model.contacts.getByUid(value)?.get().view.identity;
+                assert(senderIdentity !== undefined, 'Sender identity should not be unknown');
+                return {
+                    status:
+                        idx % 2 === 0
+                            ? CspE2eDeliveryReceiptStatus.DECLINED
+                            : CspE2eDeliveryReceiptStatus.ACKNOWLEDGED,
+                    senderIdentity,
+                    timestamp: new Date(),
+                };
+            });
+
+            async function runTask(
+                status: CspE2eDeliveryReceiptStatus,
+                timestamp: Date,
+                senderIdentity: IdentityString,
+            ): Promise<void> {
+                await new IncomingDeliveryReceiptTask(
+                    services,
+                    randomMessageId(crypto),
+                    groupConversationId,
+                    {
+                        status,
+                        messageIds: [messageId],
+                    },
+                    timestamp,
+                    senderIdentity,
+                ).run(handle);
+                handle.finish();
+            }
+
+            for (const reaction of reactions) {
+                await runTask(
+                    reaction.status as CspE2eDeliveryReceiptStatus,
+                    reaction.timestamp,
+                    reaction.senderIdentity,
+                );
+            }
+
+            function reactionToStatus(
+                status: MessageReaction.ACKNOWLEDGE | MessageReaction.DECLINE,
+            ): CspE2eDeliveryReceiptStatus {
+                switch (status) {
+                    case MessageReaction.ACKNOWLEDGE:
+                        return CspE2eDeliveryReceiptStatus.ACKNOWLEDGED;
+                    case MessageReaction.DECLINE:
+                        return CspE2eDeliveryReceiptStatus.DECLINED;
+                    default:
+                        return unreachable(status);
+                }
+            }
+
+            // Ensure that the reactions were all registered
+            assert(
+                msg.get().view.reactions.length === reactions.length,
+                'Number of reactions should be consistent',
+            );
+            // Ensure that the messages were correctly registered
+            // and that we added this reaction exactly once
+            for (const reaction of reactions) {
+                const correspondingReaction = msg
+                    .get()
+                    .view.reactions.filter(
+                        (r) => r.senderContactIdentity === reaction.senderIdentity,
+                    );
+                assert(
+                    correspondingReaction.length === 1,
+                    'There should be exactly one reaction per sender',
+                );
+                // Dummy check since the compiler cant handle it otherwise
+                assert(correspondingReaction[0] !== undefined);
+                assert(
+                    reactionToStatus(correspondingReaction[0]?.reaction) === reaction.status,
+                    `The reaction of ${reaction.senderIdentity} was ${correspondingReaction[0]?.reaction} but was expected to be ${reaction.status}`,
+                );
+                assert(
+                    correspondingReaction[0]?.reactionAt === reaction.timestamp,
+                    `The reaction timestamp of ${reaction.senderIdentity} was ${correspondingReaction[0]?.reactionAt} but was expected to be ${reaction.timestamp}`,
+                );
+            }
+
+            // Ensure that reactions are updated and not added if sent by the same group member
+            const reactionLength = msg.get().view.reactions.length;
+
+            const lastReaction = reactions.at(-1);
+            assert(lastReaction !== undefined, 'There should be at least one reaction');
+            // Change the reactions
+            lastReaction.status =
+                (reactions.length - 1) % 2 === 0
+                    ? CspE2eDeliveryReceiptStatus.ACKNOWLEDGED
+                    : CspE2eDeliveryReceiptStatus.DECLINED;
+
+            await runTask(
+                lastReaction.status as CspE2eDeliveryReceiptStatus,
+                lastReaction.timestamp,
+                lastReaction.senderIdentity,
+            );
+
+            assert(
+                msg.get().view.reactions.length === reactionLength,
+                'The reaction length should not have been changed',
+            );
+            const changedLastReaction = msg
+                .get()
+                .view.reactions.filter(
+                    (r) => r.senderContactIdentity === lastReaction.senderIdentity,
+                );
+            assert(
+                changedLastReaction.length === 1,
+                'There should be exactly one reaction per sender',
+            );
+            // Dummy check since the compiler cant handle it otherwise
+            assert(changedLastReaction[0] !== undefined);
+            assert(
+                reactionToStatus(changedLastReaction[0].reaction) === lastReaction.status &&
+                    changedLastReaction[0].reactionAt === lastReaction.timestamp,
+                'The changed reaction should correspond',
+            );
+
+            const newReactions = [...reactions.slice(0, reactionLength - 1), lastReaction];
+
+            // Ensure that the other reactions where not modified
+            for (const reaction of newReactions) {
+                const correspondingReaction = msg
+                    .get()
+                    .view.reactions.filter(
+                        (r) => r.senderContactIdentity === reaction.senderIdentity,
+                    );
+                assert(
+                    correspondingReaction.length === 1,
+                    'There should be only one reaction per sender',
+                );
+
+                // Dummy check since the compiler cant handle it otherwise
+                assert(correspondingReaction[0] !== undefined);
+                assert(
+                    reactionToStatus(correspondingReaction[0].reaction) === reaction.status &&
+                        correspondingReaction[0].reactionAt === reaction.timestamp,
+                    'The reaction should correspond',
+                );
+            }
+
+            const myTimestamp = new Date();
+            // Check that it is possible to add our own reaction
+            await runTask(CspE2eDeliveryReceiptStatus.ACKNOWLEDGED, myTimestamp, me);
+
+            assert(
+                msg.get().view.reactions.length === newReactions.length + 1,
+                'There should be exactly one added reaction',
+            );
+            const myReaction = msg
+                .get()
+                .view.reactions.filter((r) => r.senderContactIdentity === me);
+            assert(myReaction.length === 1, 'There should be only one reaction per sender');
+
+            // Dummy check since the compiler cant handle it otherwise
+            assert(myReaction[0] !== undefined);
+            assert(
+                reactionToStatus(myReaction[0].reaction) ===
+                    CspE2eDeliveryReceiptStatus.ACKNOWLEDGED &&
+                    myReaction[0]?.reactionAt === myTimestamp,
+                'My reaction should correspond',
+            );
+        });
+
+        // This is essentially the same test as for an outbound message
+        // Implicitly, we test here too if we accept incoming reactions of the sender of a message on his/her own message
+        it('should register multiple incoming reactions on an inbound message in a group conversation', async function () {
+            const {crypto, model} = services;
+            const handle = new TestHandle(services, []);
+
+            // Add inbound message
+            const messageId = randomMessageId(crypto);
+            const originalReceivedAt = new Date();
+            const sender = testGroup.members[0];
+            assert(sender !== undefined);
+            groupConversation.get().controller.addMessage.fromSync({
+                direction: MessageDirection.INBOUND,
+                type: 'text',
+                id: messageId,
+                text: `Message with ID ${messageId}`,
+                sender,
+                createdAt: new Date(),
+                receivedAt: originalReceivedAt,
+                raw: new Uint8Array(0),
+            });
+
+            // Ensure that message does not yet have a reaction
+            const msg = groupConversation.get().controller.getMessage(messageId);
+            assert(msg !== undefined, 'Message not found');
+            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
+
+            const reactions = testGroup.members.map((value, idx) => {
+                const senderIdentity = model.contacts.getByUid(value)?.get().view.identity;
+                assert(senderIdentity !== undefined);
+                return {
+                    status:
+                        idx % 2 === 0
+                            ? CspE2eDeliveryReceiptStatus.DECLINED
+                            : CspE2eDeliveryReceiptStatus.ACKNOWLEDGED,
+                    senderIdentity,
+                    timestamp: new Date(),
+                };
+            });
+
+            function reactionToStatus(
+                status: MessageReaction.ACKNOWLEDGE | MessageReaction.DECLINE,
+            ): CspE2eDeliveryReceiptStatus {
+                switch (status) {
+                    case MessageReaction.ACKNOWLEDGE:
+                        return CspE2eDeliveryReceiptStatus.ACKNOWLEDGED;
+                    case MessageReaction.DECLINE:
+                        return CspE2eDeliveryReceiptStatus.DECLINED;
+                    default:
+                        return unreachable(status);
+                }
+            }
+
+            async function runTask(
+                status: CspE2eDeliveryReceiptStatus,
+                timestamp: Date,
+                senderIdentity: IdentityString,
+            ): Promise<void> {
+                await new IncomingDeliveryReceiptTask(
+                    services,
+                    randomMessageId(crypto),
+                    groupConversationId,
+                    {
+                        status,
+                        messageIds: [messageId],
+                    },
+                    timestamp,
+                    senderIdentity,
+                ).run(handle);
+                handle.finish();
+            }
+
+            for (const reaction of reactions) {
+                await runTask(
+                    reaction.status as CspE2eDeliveryReceiptStatus,
+                    reaction.timestamp,
+                    reaction.senderIdentity,
+                );
+            }
+
+            // Ensure that the reactions were all registered
+            assert(msg.get().view.reactions.length === reactions.length);
+            // Ensure that the messages were correctly registered
+            // and that we added this reaction exactly once
+            for (const reaction of reactions) {
+                const correspondingReaction = msg
+                    .get()
+                    .view.reactions.filter(
+                        (r) => r.senderContactIdentity === reaction.senderIdentity,
+                    );
+                assert(
+                    correspondingReaction.length === 1,
+                    'There should be exactly one reaction per sender',
+                );
+                // Dummy check since the compiler cant handle it otherwise
+                assert(correspondingReaction[0] !== undefined);
+                assert(
+                    reactionToStatus(correspondingReaction[0]?.reaction) === reaction.status,
+                    `The reaction of ${reaction.senderIdentity} should correspond but is ${correspondingReaction[0]?.reaction}`,
+                );
+                assert(
+                    correspondingReaction[0]?.reactionAt === reaction.timestamp,
+                    `The reaction timestamp of ${reaction.senderIdentity} should correspond to ${reaction.timestamp} but is ${correspondingReaction[0]?.reactionAt}`,
+                );
+            }
+
+            // Ensure that reactions are updated and not added if sent by the same group member
+            const reactionLength = msg.get().view.reactions.length;
+
+            const lastReaction = reactions[reactions.length - 1];
+            assert(lastReaction !== undefined);
+            // Change the reactions
+            lastReaction.status =
+                (reactions.length - 1) % 2 === 0
+                    ? CspE2eDeliveryReceiptStatus.ACKNOWLEDGED
+                    : CspE2eDeliveryReceiptStatus.DECLINED;
+
+            await runTask(
+                lastReaction.status as CspE2eDeliveryReceiptStatus,
+                lastReaction.timestamp,
+                lastReaction.senderIdentity,
+            );
+
+            assert(msg.get().view.reactions.length === reactionLength);
+            const correspondingReaction = msg
+                .get()
+                .view.reactions.filter(
+                    (r) => r.senderContactIdentity === lastReaction.senderIdentity,
+                );
+            assert(
+                correspondingReaction.length === 1,
+                'There should be exactly one reaction per sender',
+            );
+            // Dummy check since the compiler cant handle it otherwise
+            assert(correspondingReaction[0] !== undefined);
+            assert(
+                reactionToStatus(correspondingReaction[0]?.reaction) === lastReaction.status,
+                `The reaction of ${lastReaction.senderIdentity} should correspond but is ${correspondingReaction[0]?.reaction}`,
+            );
+            assert(
+                correspondingReaction[0]?.reactionAt === lastReaction.timestamp,
+                `The reaction timestamp of ${lastReaction.senderIdentity} should correspond to ${lastReaction.timestamp} but is ${correspondingReaction[0]?.reactionAt}`,
+            );
+
+            const newReactions = [...reactions.slice(0, reactionLength - 1), lastReaction];
+
+            // Ensure that the other reactions where not modified
+            for (const reaction of newReactions) {
+                const newReaction = msg
+                    .get()
+                    .view.reactions.filter(
+                        (r) => r.senderContactIdentity === reaction.senderIdentity,
+                    );
+                assert(newReaction.length === 1, 'There should be exactly one reaction per sender');
+                // Dummy check since the compiler cant handle it otherwise
+                assert(newReaction[0] !== undefined);
+                assert(
+                    reactionToStatus(newReaction[0]?.reaction) === reaction.status,
+                    `The reaction of ${reaction.senderIdentity} should correspond but is ${newReaction[0]?.reaction}`,
+                );
+                assert(
+                    newReaction[0]?.reactionAt === reaction.timestamp,
+                    `The reaction timestamp of ${reaction.senderIdentity} should correspond to ${reaction.timestamp} but is ${newReaction[0]?.reactionAt}`,
+                );
+            }
         });
     });
 }

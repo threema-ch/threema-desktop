@@ -6,7 +6,6 @@ import {randomString} from '~/common/crypto/random';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
 import type {
     DatabaseBackend,
-    DbAnyMessage,
     DbContactUid,
     DbConversation,
     DbConversationUid,
@@ -200,12 +199,14 @@ interface CommonMessageInit<T extends MessageType> {
     createdAt?: Date;
     processedAt?: Date;
     readAt?: Date;
-    lastReaction?: {
-        readonly at: Date;
-        readonly type: MessageReaction;
-    };
     raw?: Uint8Array;
     threadId?: u64;
+}
+
+interface Reaction {
+    readonly type: MessageReaction;
+    readonly at: Date;
+    readonly senderIdentity: IdentityString;
 }
 
 function getCommonMessage<T extends MessageType>(
@@ -219,9 +220,9 @@ function getCommonMessage<T extends MessageType>(
         createdAt: init.createdAt ?? new Date(),
         processedAt: init.processedAt,
         readAt: init.readAt,
-        lastReaction: init.lastReaction,
         raw: init.raw,
         threadId: init.threadId ?? 1n, // TODO(DESK-296)
+        reactions: [],
     };
 }
 
@@ -236,6 +237,19 @@ export function createTextMessage(db: DatabaseBackend, init: TestTextMessageInit
     return db.createTextMessage({
         ...getCommonMessage({...init, type: MessageType.TEXT}),
         text: init.text ?? 'Hey!',
+    });
+}
+
+export function createMessageReaction(
+    db: DatabaseBackend,
+    messageUid: DbMessageUid,
+    reaction: Reaction,
+): void {
+    return db.createOrUpdateMessageReaction({
+        messageUid,
+        reaction: reaction.type,
+        reactionAt: reaction.at,
+        senderContactIdentity: reaction.senderIdentity,
     });
 }
 
@@ -882,18 +896,29 @@ export function backendTests(
             });
             assert(conversation1 !== undefined && conversation2 !== undefined);
 
+            const contact1Identity = 'TESTTEST';
+            const contact2Identity = 'ZZZZZZZZ';
+
             // Create text messages
             const messageUid1 = createTextMessage(db, {
                 id: 1000n,
                 conversationUid: conversation1.uid,
-                lastReaction: {
-                    type: MessageReaction.ACKNOWLEDGE,
-                    at: new Date(),
-                },
+            });
+
+            createMessageReaction(db, messageUid1, {
+                type: MessageReaction.ACKNOWLEDGE,
+                at: new Date(),
+                senderIdentity: ensureIdentityString(contact1Identity),
             });
             const messageUid2 = createTextMessage(db, {
                 id: 2000n,
                 conversationUid: conversation1.uid,
+            });
+
+            createMessageReaction(db, messageUid2, {
+                type: MessageReaction.DECLINE,
+                at: new Date(),
+                senderIdentity: ensureIdentityString(contact2Identity),
             });
             const messageUid3 = createTextMessage(db, {
                 id: 3000n,
@@ -911,13 +936,38 @@ export function backendTests(
             expect(msg2?.id).to.equal(2000n);
             expect(msg3?.id).to.equal(3000n);
 
-            // Ensure that lastReaction is properly split
-            expect(msg1?.lastReaction?.type).to.equal(MessageReaction.ACKNOWLEDGE);
-            expect(msg2?.lastReaction).to.be.undefined;
-            expect(msg3?.lastReaction).to.be.undefined;
+            // Make sure reactions are properly stored in db
+            // and that no reaction does not result in undefined
+            expect(msg1?.reactions.length === 1);
+            expect(msg2?.reactions.length === 1);
+            expect(msg3?.reactions.length === 0);
+            expect(msg1?.reactions[0]?.reaction).to.equal(MessageReaction.ACKNOWLEDGE);
+            expect(msg2?.reactions[0]?.reaction).to.equal(MessageReaction.DECLINE);
+            expect(msg3?.reactions[0]?.reaction).to.be.undefined;
 
             // Unknown messages are undefined
             expect(db.getMessageByUid(9999n as DbMessageUid)).to.be.undefined;
+
+            const formerReaction = db.getReactionsByMessageUid(messageUid1);
+
+            createMessageReaction(db, messageUid1, {
+                type: MessageReaction.DECLINE,
+                at: new Date(),
+                senderIdentity: ensureIdentityString(contact1Identity),
+            });
+
+            const newReaction = db.getReactionsByMessageUid(messageUid1);
+
+            // Check that the same database entry has been changed
+            expect(formerReaction.length === 1);
+            expect(newReaction.length === 1);
+            expect(formerReaction[0]?.reaction).to.not.equal(undefined);
+            expect(newReaction[0]?.reaction).to.not.equal(undefined);
+            expect(formerReaction[0]?.reaction).to.not.equal(newReaction[0]?.reaction);
+            expect(formerReaction[0]?.reactionAt).to.not.equal(newReaction[0]?.reactionAt);
+            expect(formerReaction[0]?.senderContactIdentity).to.equal(
+                newReaction[0]?.senderContactIdentity,
+            );
 
             // Ensure that we cannot create two messages with the same ID in
             // the same conversation
@@ -1084,15 +1134,17 @@ export function backendTests(
 
             // Update `readAt` and `lastReaction` of the second message
             const readAt = new Date(1981);
-            const lastReaction: DbAnyMessage['lastReaction'] = {
-                type: MessageReaction.ACKNOWLEDGE,
-                at: new Date(1980),
-            };
             const updateInfo2 = db.updateMessage(conversation.uid, {
                 uid: message2.uid,
                 type: MessageType.TEXT,
                 readAt,
-                lastReaction,
+                reactions: [
+                    {
+                        reaction: MessageReaction.DECLINE as MessageReaction,
+                        reactionAt: new Date(1980),
+                        senderContactIdentity: ensureIdentityString('TESTTEST'),
+                    },
+                ],
             });
             expect(updateInfo2.deletedFileIds).to.be.empty;
 
@@ -1122,8 +1174,9 @@ export function backendTests(
             expect(message1.readAt).to.be.undefined;
             expect(message2.text).to.equal('Bbb');
             expect(message2.readAt).to.deep.equal(readAt);
-            expect(message2.lastReaction).to.deep.equal(lastReaction);
             expect(message2.raw).to.deep.equal(raw);
+            expect(message2.reactions.length === 1);
+            expect(message2.reactions[0]?.reaction).to.equal(MessageReaction.DECLINE);
             expect(message3.fileData).to.deep.equal(fileData);
             expect(message3.thumbnailFileData).to.deep.equal(thumbnailFileData);
 
@@ -1133,19 +1186,20 @@ export function backendTests(
                 type: MessageType.TEXT,
                 readAt: new Date(),
             });
-            expect(db.getMessageByUid(message2.uid)?.lastReaction).to.deep.equal(lastReaction);
 
-            // Reset `lastReaction` of the second message
-            db.updateMessage(conversation.uid, {
-                uid: message2.uid,
-                type: MessageType.TEXT,
-                lastReaction: undefined,
+            const lastReaction = {
+                reaction: MessageReaction.ACKNOWLEDGE as MessageReaction,
+                reactionAt: new Date(180),
+                senderContactIdentity: ensureIdentityString('TESTTEST'),
+            };
+
+            createMessageReaction(db, message2.uid, {
+                type: lastReaction.reaction,
+                at: lastReaction.reactionAt,
+                senderIdentity: lastReaction.senderContactIdentity,
             });
 
-            // Refresh second message and verify updated `lastReaction`
-            message2 = db.getMessageByUid(messageUid2);
-            assert(message2?.type === MessageType.TEXT);
-            expect(message2.lastReaction).to.be.undefined;
+            expect(db.getMessageByUid(message2.uid)?.reactions[0]).to.deep.equal(lastReaction);
 
             // Ensure that an update of the file data is processed
             const fileData2 = makeFileData();
@@ -1209,9 +1263,17 @@ export function backendTests(
                 processedAt: new Date('2023-11-30T01:00:03.000Z'),
             });
 
-            // Ensure messages exist
+            // Add a reaction
+            createMessageReaction(db, messageUid1, {
+                type: MessageReaction.ACKNOWLEDGE,
+                at: new Date(),
+                senderIdentity: ensureIdentityString('TESTTEST'),
+            });
+
+            // Ensure messages and reactions exist
             expect(db.getMessageByUid(messageUid1), 'Message 1 does not exist').not.to.be.undefined;
             expect(db.getMessageByUid(messageUid2), 'Message 2 does not exist').not.to.be.undefined;
+            expect(db.getReactionsByMessageUid(messageUid1)).not.to.be.undefined;
             expect(db.getLastMessage(conversation.uid)?.id).to.equal(2000n);
 
             // Delete first message
