@@ -193,6 +193,25 @@ export const enum AppearanceSettings_HideInactive {
     UNRECOGNIZED = -1,
 }
 
+/** Media Settings */
+export interface MediaSettings {
+    autoDownload?: MediaSettings_AutoDownload | undefined;
+}
+
+/** Whether or not to automatically download file and media content for incoming messages. */
+export interface MediaSettings_AutoDownload {
+    policy?:
+        | {$case: 'off'; off: Unit}
+        | {$case: 'on'; on: MediaSettings_AutoDownload_AutoDownloadOn}
+        | undefined;
+}
+
+export interface MediaSettings_AutoDownload_AutoDownloadOn {
+    on: Unit | undefined;
+    /** If 0: No limit */
+    limitInMb: number;
+}
+
 function createBaseUnit(): Unit {
     return {};
 }
@@ -620,6 +639,160 @@ export const AppearanceSettings = {
                     }
 
                     message.inactiveContactsPolicy = reader.int32() as any;
+                    continue;
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
+        }
+        return message;
+    },
+};
+
+function createBaseMediaSettings(): MediaSettings {
+    return {autoDownload: undefined};
+}
+
+export const MediaSettings = {
+    encode(message: MediaSettings, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+        if (message.autoDownload !== undefined) {
+            MediaSettings_AutoDownload.encode(
+                message.autoDownload,
+                writer.uint32(10).fork(),
+            ).ldelim();
+        }
+        return writer;
+    },
+
+    decode(input: _m0.Reader | Uint8Array, length?: number): MediaSettings {
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseMediaSettings();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
+                    message.autoDownload = MediaSettings_AutoDownload.decode(
+                        reader,
+                        reader.uint32(),
+                    );
+                    continue;
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
+        }
+        return message;
+    },
+};
+
+function createBaseMediaSettings_AutoDownload(): MediaSettings_AutoDownload {
+    return {policy: undefined};
+}
+
+export const MediaSettings_AutoDownload = {
+    encode(
+        message: MediaSettings_AutoDownload,
+        writer: _m0.Writer = _m0.Writer.create(),
+    ): _m0.Writer {
+        switch (message.policy?.$case) {
+            case 'off':
+                Unit.encode(message.policy.off, writer.uint32(10).fork()).ldelim();
+                break;
+            case 'on':
+                MediaSettings_AutoDownload_AutoDownloadOn.encode(
+                    message.policy.on,
+                    writer.uint32(18).fork(),
+                ).ldelim();
+                break;
+        }
+        return writer;
+    },
+
+    decode(input: _m0.Reader | Uint8Array, length?: number): MediaSettings_AutoDownload {
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseMediaSettings_AutoDownload();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
+                    message.policy = {$case: 'off', off: Unit.decode(reader, reader.uint32())};
+                    continue;
+                case 2:
+                    if (tag !== 18) {
+                        break;
+                    }
+
+                    message.policy = {
+                        $case: 'on',
+                        on: MediaSettings_AutoDownload_AutoDownloadOn.decode(
+                            reader,
+                            reader.uint32(),
+                        ),
+                    };
+                    continue;
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
+        }
+        return message;
+    },
+};
+
+function createBaseMediaSettings_AutoDownload_AutoDownloadOn(): MediaSettings_AutoDownload_AutoDownloadOn {
+    return {on: undefined, limitInMb: 0};
+}
+
+export const MediaSettings_AutoDownload_AutoDownloadOn = {
+    encode(
+        message: MediaSettings_AutoDownload_AutoDownloadOn,
+        writer: _m0.Writer = _m0.Writer.create(),
+    ): _m0.Writer {
+        if (message.on !== undefined) {
+            Unit.encode(message.on, writer.uint32(10).fork()).ldelim();
+        }
+        if (message.limitInMb !== 0) {
+            writer.uint32(16).uint32(message.limitInMb);
+        }
+        return writer;
+    },
+
+    decode(
+        input: _m0.Reader | Uint8Array,
+        length?: number,
+    ): MediaSettings_AutoDownload_AutoDownloadOn {
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseMediaSettings_AutoDownload_AutoDownloadOn();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
+                    message.on = Unit.decode(reader, reader.uint32());
+                    continue;
+                case 2:
+                    if (tag !== 16) {
+                        break;
+                    }
+
+                    message.limitInMb = reader.uint32();
                     continue;
             }
             if ((tag & 7) === 4 || tag === 0) {

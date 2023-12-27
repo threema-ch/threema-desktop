@@ -3,6 +3,7 @@ import type {
     AppearanceSettings,
     CallsSettings,
     DevicesSettings,
+    MediaSettings,
     PrivacySettings,
     ProfileSettings,
 } from '~/common/model/types/settings';
@@ -20,4 +21,5 @@ export type User = {
     readonly callsSettings: LocalModelStore<CallsSettings>;
     readonly devicesSettings: LocalModelStore<DevicesSettings>;
     readonly appearanceSettings: LocalModelStore<AppearanceSettings>;
+    readonly mediaSettings: LocalModelStore<MediaSettings>;
 } & ProxyMarked;

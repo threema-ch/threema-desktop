@@ -52,7 +52,7 @@ const PROFILE_SETTINGS_SCHEMA = v
         profilePictureShareWith: v
             .record()
             .map(simplifyProfilePictureShareWith)
-            .default({group: 'everyone'} as ProfilePictureShareWith),
+            .default<ProfilePictureShareWith>({group: 'everyone'}),
     })
     .rest(v.unknown());
 

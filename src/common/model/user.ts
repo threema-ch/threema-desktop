@@ -2,6 +2,7 @@ import {ReceiverType} from '~/common/enum';
 import {AppearanceSettingsModelStore} from '~/common/model/settings/appearance';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
 import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
+import {MediaSettingsModelStore} from '~/common/model/settings/media';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import type {ServicesForModel} from '~/common/model/types/common';
@@ -9,6 +10,7 @@ import type {ProfilePictureView} from '~/common/model/types/profile-picture';
 import type {
     CallsSettings,
     DevicesSettings,
+    MediaSettings,
     PrivacySettings,
     ProfileSettings,
     AppearanceSettings,
@@ -16,6 +18,7 @@ import type {
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {ensureNickname, type IdentityString} from '~/common/network/types';
+import {RESTRICTED_DOWNLOAD_SIZE_IN_MB} from '~/common/settings/media';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import type {LocalStore} from '~/common/utils/store';
@@ -40,6 +43,7 @@ export class UserModel implements User {
     public readonly callsSettings: LocalModelStore<CallsSettings>;
     public readonly devicesSettings: LocalModelStore<DevicesSettings>;
     public readonly appearanceSettings: LocalModelStore<AppearanceSettings>;
+    public readonly mediaSettings: LocalModelStore<MediaSettings>;
     public constructor(services: ServicesForModel) {
         this.identity = services.device.identity.string;
         this.profileSettings = new ProfileSettingsModelStore(services, {
@@ -50,6 +54,9 @@ export class UserModel implements User {
         this.callsSettings = new CallsSettingsModelStore(services, {});
         this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
+        this.mediaSettings = new MediaSettingsModelStore(services, {
+            autoDownload: {on: true, limitInMb: RESTRICTED_DOWNLOAD_SIZE_IN_MB},
+        });
 
         this.displayName = derive(
             this.profileSettings,

@@ -784,6 +784,25 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                                 ),
                             );
                     }
+
+                    // If the settings are configured for autodownload, directly download the associated blob
+                    if (messageStore.type !== 'text') {
+                        const autoDownload = model.user.mediaSettings.get().view.autoDownload;
+                        if (
+                            autoDownload.on &&
+                            (autoDownload.limitInMb === 0 ||
+                                messageStore.get().view.fileSize / 1e6 < autoDownload.limitInMb)
+                        ) {
+                            void messageStore
+                                .get()
+                                .controller.blob()
+                                .catch((error) => {
+                                    this._log.error(
+                                        `Downloading the blob of an incoming message failed: ${error}`,
+                                    );
+                                });
+                        }
+                    }
                 }
                 break;
             }

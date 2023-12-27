@@ -170,4 +170,21 @@ message AppearanceSettings {
     HIDE = 1;
   }
   optional HideInactive inactive_contacts_policy = 2;
+
+}
+// Media Settings
+message MediaSettings {
+  // Whether or not to automatically download file and media content for incoming messages.
+  message AutoDownload {
+    message AutoDownloadOn {
+      Unit on = 1;
+      // If 0: No limit
+      uint32 limitInMb = 2;
+    }
+    oneof policy {
+      Unit off = 1;
+      AutoDownloadOn on = 2;
+    }
+  }
+  optional AutoDownload auto_download = 1;
 }

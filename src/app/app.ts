@@ -360,14 +360,21 @@ async function main(): Promise<() => void> {
         requestUserPassword,
     );
 
-    const [profileSettings, appearanceSettings, privacySettings, devicesSettings, callsSettings] =
-        await Promise.all([
-            backend.model.user.profileSettings,
-            backend.model.user.appearanceSettings,
-            backend.model.user.privacySettings,
-            backend.model.user.devicesSettings,
-            backend.model.user.callsSettings,
-        ]);
+    const [
+        profileSettings,
+        appearanceSettings,
+        privacySettings,
+        devicesSettings,
+        callsSettings,
+        mediaSettings,
+    ] = await Promise.all([
+        backend.model.user.profileSettings,
+        backend.model.user.appearanceSettings,
+        backend.model.user.privacySettings,
+        backend.model.user.devicesSettings,
+        backend.model.user.callsSettings,
+        backend.model.user.mediaSettings,
+    ]);
 
     const settings: SettingsService = {
         profile: profileSettings,
@@ -375,6 +382,7 @@ async function main(): Promise<() => void> {
         privacy: privacySettings,
         devices: devicesSettings,
         calls: callsSettings,
+        media: mediaSettings,
     };
 
     // Create app services

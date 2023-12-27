@@ -13,6 +13,7 @@ import type {
     TypingIndicatorPolicy,
     UnknownContactPolicy,
 } from '~/common/enum';
+import type {AutoDownload} from '~/common/model/settings/media';
 import type {ProfilePictureShareWith} from '~/common/model/settings/profile';
 import type {LocalModel} from '~/common/model/types/common';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -123,6 +124,17 @@ export type AppearanceSettingsController = {
 } & ProxyMarked;
 export type AppearanceSettings = LocalModel<AppearanceSettingsView, AppearanceSettingsController>;
 
+// Media settings
+export interface MediaSettingsView {
+    readonly autoDownload: AutoDownload;
+}
+export type MediaSettingsUpdate = Partial<MediaSettingsView>;
+export type MediaSettingsController = {
+    readonly meta: ModelLifetimeGuard<MediaSettingsView>;
+    readonly update: (change: MediaSettingsUpdate) => Promise<void>;
+} & ProxyMarked;
+export type MediaSettings = LocalModel<MediaSettingsView, MediaSettingsController>;
+
 // Settings service interface, bundling all available settings stores
 
 export interface SettingsService extends Record<keyof Settings, unknown> {
@@ -131,6 +143,7 @@ export interface SettingsService extends Record<keyof Settings, unknown> {
     readonly devices: RemoteModelStore<DevicesSettings>;
     readonly appearance: RemoteModelStore<AppearanceSettings>;
     readonly calls: RemoteModelStore<CallsSettings>;
+    readonly media: RemoteModelStore<MediaSettings>;
 }
 
 // Global Properties

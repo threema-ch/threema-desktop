@@ -75,6 +75,7 @@ import {
 import {AppearanceSettingsModelStore} from '~/common/model/settings/appearance';
 import {CallsSettingsModelStore} from '~/common/model/settings/calls';
 import {DevicesSettingsModelStore} from '~/common/model/settings/devices';
+import {MediaSettingsModelStore} from '~/common/model/settings/media';
 import {PrivacySettingsModelStore} from '~/common/model/settings/privacy';
 import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import type {ContactRepository} from '~/common/model/types/contact';
@@ -88,6 +89,7 @@ import type {
     ProfileSettings,
     AppearanceSettings,
     CallsSettings,
+    MediaSettings,
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
@@ -148,6 +150,7 @@ import {
     type NotificationHandle,
     NotificationService,
 } from '~/common/notification';
+import {RESTRICTED_DOWNLOAD_SIZE_IN_MB} from '~/common/settings/media';
 import type {SystemDialog, SystemDialogHandle, SystemDialogService} from '~/common/system-dialog';
 import type {u8, u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
@@ -394,6 +397,7 @@ class UserRepository implements User {
     public callsSettings: LocalModelStore<CallsSettings>;
     public devicesSettings: LocalModelStore<DevicesSettings>;
     public appearanceSettings: LocalModelStore<AppearanceSettings>;
+    public mediaSettings: LocalModelStore<MediaSettings>;
 
     public constructor(userIdentity: IdentityString, services: ServicesForModel) {
         this.identity = userIdentity;
@@ -405,6 +409,9 @@ class UserRepository implements User {
         this.callsSettings = new CallsSettingsModelStore(services, {});
         this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
+        this.mediaSettings = new MediaSettingsModelStore(services, {
+            autoDownload: {on: true, limitInMb: RESTRICTED_DOWNLOAD_SIZE_IN_MB},
+        });
 
         this.displayName = derive(
             this.profileSettings,
