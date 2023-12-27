@@ -25,6 +25,15 @@ export function formatDateLocalized(
     format: 'auto' | 'time' | 'extended' = 'auto',
     formatOptionsOverrides?: Intl.DateTimeFormatOptions,
 ): string {
+    // We use h23 always unless 12h format is explicitly set
+    // In order for the 24h time format to work with h23, we need to set hour12 to undefined
+    const isHour12 = formatOptionsOverrides?.hour12 === true ? true : undefined;
+    const hourFormat: Intl.DateTimeFormatOptions = {
+        hourCycle: 'h23',
+        hour12: isHour12,
+    };
+    formatOptionsOverrides = {...formatOptionsOverrides, ...hourFormat};
+
     switch (format) {
         case 'auto':
             return formatDateLocalizedAuto(date, i18n, formatOptionsOverrides);
