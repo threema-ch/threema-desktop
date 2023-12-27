@@ -5,6 +5,7 @@
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
+  import ContactNavBar from '~/app/ui/components/partials/contact-nav-bar/ContactNavBar.svelte';
   import IconText from '~/app/ui/generic/menu/item/IconText.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -12,7 +13,6 @@
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import {contactListFilter} from '~/app/ui/nav/receiver';
   import ContactList from '~/app/ui/nav/receiver/ContactList.svelte';
-  import ContactNavBar from '~/app/ui/nav/receiver/ContactNavBar.svelte';
   import GroupList from '~/app/ui/nav/receiver/GroupList.svelte';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
   import {WorkVerificationLevel} from '~/common/enum';
@@ -105,7 +105,7 @@
 <template>
   <div id="nav-wrapper" data-tab={activeTab} data-variant={import.meta.env.BUILD_VARIANT}>
     <div class="bar">
-      <ContactNavBar on:back={navigateBack} />
+      <ContactNavBar {services} on:back={navigateBack} />
     </div>
     <div class="context">
       <ReceiverTabSwitcher bind:activeTab />
