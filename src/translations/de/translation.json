@@ -325,7 +325,7 @@
     "action--sync-file-upload": "Datei hochladen",
     "action--sync-image-download": "Bild herunterladen",
     "action--sync-image-upload": "Bild hochladen",
-    "action--sync-unknown-direction": "Unknown sync direction",
+    "action--sync-unknown-direction": "Unbekannte Synchronsationsrichtung",
     "action--sync-video-download": "Video herunterladen",
     "action--sync-video-upload": "Video hochladen",
     "error--add-files-empty": "Dateien konnten nicht hinzugefügt werden",
@@ -389,6 +389,7 @@
     "label--appearance": "Erscheinungsbild",
     "label--devices": "Geräte",
     "label--do-not-disturb": "Nicht stören",
+    "label--media": "Medien & Speicher",
     "label--nickname": "Nickname",
     "label--notifications": "Benachrichtigungen",
     "label--play-notification-sound": "Benachrichtigungston abspielen",
@@ -430,10 +431,19 @@
     "label--title": "Erscheinungsbild",
     "prose--subtitle": "Designstil, Sprache, Stundenformat"
   },
-  "settings--devices-settings": {
+  "settings--devices": {
     "label--this-device": "Dieses Gerät",
     "label--title": "Devices Settings",
     "prose--subtitle": "Geräte, die mit deiner ID verknüpft sind"
+  },
+  "settings--media": {
+    "label--auto-download-off": "Nie herunterladen",
+    "label--auto-download-on": "Immer herunterladen",
+    "label--auto-download-on-restricted": "Herunterladen, sofern kleiner als {restrictedSize} MB",
+    "label--auto-save": "Automatisches Herunterladen",
+    "label--section-media": "Medien",
+    "label--title": "Medien & Speicher",
+    "prose--subtitle": "Medien automatisch herunterladen"
   },
   "settings--privacy": {
     "prose--subtitle": "Kontakte, Chats und Listen"

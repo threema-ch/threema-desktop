@@ -37,7 +37,7 @@ export function getSettingsNavItems(
             title: i18n.t('settings.label--devices', 'Devices'),
             iconName: 'computer',
             subtitle: i18n.t(
-                'settings--devices-settings.prose--subtitle',
+                'settings--devices.prose--subtitle',
                 'Devices linked to your Threema ID',
             ),
         },
@@ -46,8 +46,14 @@ export function getSettingsNavItems(
             iconName: 'palette',
             subtitle: i18n.t(
                 'settings--appearance.prose--subtitle',
-                'Theme, Language, Hour Format',
+                'Theme, language, hour format',
             ),
+        },
+
+        media: {
+            title: i18n.t('settings.label--media', 'Media & Storage'),
+            iconName: 'image',
+            subtitle: i18n.t('settings--media.prose--subtitle', 'Automatically download media'),
         },
         about: {
             title: i18n.t(`settings.label--about`, 'About'),

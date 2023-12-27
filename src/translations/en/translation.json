@@ -389,6 +389,7 @@
     "label--appearance": "Appearance",
     "label--devices": "Devices",
     "label--do-not-disturb": "Do Not Disturb",
+    "label--media": "Media & Storage",
     "label--nickname": "Nickname",
     "label--notifications": "Notifications",
     "label--play-notification-sound": "Play Notification Sound",
@@ -428,12 +429,21 @@
     "label--theme-light": "Light",
     "label--theme-system": "System",
     "label--title": "Appearance Settings",
-    "prose--subtitle": "Theme, Language, Hour Format"
+    "prose--subtitle": "Theme, language, hour format"
   },
-  "settings--devices-settings": {
+  "settings--devices": {
     "label--this-device": "This Device",
     "label--title": "Devices Settings",
     "prose--subtitle": "Devices linked to your Threema ID"
+  },
+  "settings--media": {
+    "label--auto-download-off": "Never download",
+    "label--auto-download-on": "Always download",
+    "label--auto-download-on-restricted": "Download if smaller than {restrictedSize} MB",
+    "label--auto-save": "Auto-Download Incoming Media",
+    "label--section-media": "Media",
+    "label--title": "Media & Storage",
+    "prose--subtitle": "Automatically download media"
   },
   "settings--privacy": {
     "prose--subtitle": "Contacts, Chats, Lists"

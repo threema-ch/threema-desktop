@@ -52,9 +52,7 @@
 
 <template>
   <KeyValueList>
-    <KeyValueList.Section
-      title={$i18n.t('settings--devices-settings.label--this-device', 'This Device')}
-    >
+    <KeyValueList.Section title={$i18n.t('settings--devices.label--this-device', 'This Device')}>
       <KeyValueList.ItemWithButton icon="edit" key="" on:click={handleClickEditDeviceName}>
         <div class="container">
           <div class="icon">

@@ -30,9 +30,6 @@
     settings: {appearance},
   } = services;
 
-  $: use24hTime = $appearance.view.use24hTime;
-  $: showInactiveContacts = $appearance.view.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
-
   function updateSetting<N extends keyof AppearanceSettingsView>(
     newValue: AppearanceSettingsView[N],
     updateKey: N,
@@ -53,6 +50,9 @@
 
   $: themeDropdownItems = createDropdownItems(getThemeDropdown($i18n), updateTheme);
   $: localeDropdownItems = createDropdownItems(getLocaleDropdown(), updateLocale);
+
+  $: use24hTime = !$appearance.view.use24hTime;
+  $: showInactiveContacts = $appearance.view.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
 </script>
 
 <KeyValueList>
