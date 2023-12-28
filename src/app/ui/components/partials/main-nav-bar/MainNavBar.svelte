@@ -18,6 +18,7 @@
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
+  import {display} from '~/common/dom/ui/state';
 
   type $$Props = MainNavBarProps;
 
@@ -27,7 +28,7 @@
 
   const {router} = services;
 
-  const items = provideContextMenuEntries(router, $i18n);
+  $: items = provideContextMenuEntries(router, $i18n, $display);
 
   const dispatch = createEventDispatcher();
 
