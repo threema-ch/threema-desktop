@@ -9,6 +9,7 @@
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {display} from '~/common/dom/ui/state';
 
   type $$Props = ContactNavBarProps;
 
@@ -16,7 +17,7 @@
 
   const {router} = services;
 
-  $: items = provideContextMenuEntries(router, $i18n);
+  $: items = provideContextMenuEntries(router, $i18n, $display);
 
   const dispatch = createEventDispatcher();
 
