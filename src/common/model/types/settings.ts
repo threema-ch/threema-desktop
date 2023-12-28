@@ -104,19 +104,19 @@ export interface AppearanceSettingsView {
     // Derived properties
 
     /**
-     * Whether to show time in 12h (AM/PM) format.
+     * Whether to show time in 24h format.
      */
-    readonly use12hTime: boolean;
+    readonly use24hTime: boolean;
 }
 export type AppearanceSettingsViewDerivedProperties = StrictExtract<
     keyof AppearanceSettingsView,
-    'use12hTime'
+    'use24hTime'
 >;
 export type AppearanceSettingsViewNonDerivedProperties = Omit<
     AppearanceSettingsView,
     AppearanceSettingsViewDerivedProperties
 >;
-export type AppearanceSettingsUpdate = Omit<Partial<AppearanceSettingsView>, 'use12hTime'>;
+export type AppearanceSettingsUpdate = Omit<Partial<AppearanceSettingsView>, 'use24hTime'>;
 export type AppearanceSettingsController = {
     readonly meta: ModelLifetimeGuard<AppearanceSettingsView>;
     readonly update: (change: AppearanceSettingsUpdate) => Promise<void>;

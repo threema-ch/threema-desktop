@@ -32,7 +32,7 @@ export class AppearanceSettingsController implements AppearanceSettingsControlle
 function addDerivedData(view: AppearanceSettingsViewNonDerivedProperties): AppearanceSettingsView {
     const augmentedView: AppearanceSettingsView = {
         ...view,
-        use12hTime: view.timeFormat === TimeFormat.TIME_12H,
+        use24hTime: view.timeFormat === TimeFormat.TIME_24H,
     };
     return augmentedView;
 }

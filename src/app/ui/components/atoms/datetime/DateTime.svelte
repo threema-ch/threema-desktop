@@ -20,7 +20,7 @@
   let formattedDate: string;
 
   $: reactive(() => {
-    formattedDate = formatDateLocalized(date, $i18n, format, {hour12: $appearance.view.use12hTime});
+    formattedDate = formatDateLocalized(date, $i18n, format, $appearance.view.use24hTime);
   }, [$systemTime.current]);
 </script>
 

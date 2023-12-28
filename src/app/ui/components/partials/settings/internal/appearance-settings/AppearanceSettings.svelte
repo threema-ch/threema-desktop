@@ -30,7 +30,7 @@
     settings: {appearance},
   } = services;
 
-  $: use24hTime = !$appearance.view.use12hTime;
+  $: use24hTime = $appearance.view.use24hTime;
   $: showInactiveContacts = $appearance.view.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
 
   function updateSetting<N extends keyof AppearanceSettingsView>(

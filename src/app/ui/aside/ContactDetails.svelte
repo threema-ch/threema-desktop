@@ -243,9 +243,7 @@
                   $contactViewModel.notificationTriggerPolicyOverride.expiresAt,
                   $i18n,
                   'auto',
-                  {
-                    hour12: $appearance.view.use12hTime,
-                  },
+                  $appearance.view.use24hTime,
                 ),
               })}
             {/if}

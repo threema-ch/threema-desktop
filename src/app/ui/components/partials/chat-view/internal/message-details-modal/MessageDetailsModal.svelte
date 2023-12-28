@@ -26,7 +26,7 @@
     settings: {appearance},
   } = services;
 
-  $: use12hTime = $appearance.view.use12hTime;
+  $: use24hTime = $appearance.view.use24hTime;
 
   $: lastReaction = reactions?.reduce<(typeof reactions)[u53] | undefined>(
     (acc, curr) => (curr.at > (acc?.at ?? 0) ? curr : acc),
@@ -52,7 +52,7 @@
       <KeyValueList.Section>
         <KeyValueList.Item key={$i18n.t('dialog--message-details.label--created-date', 'Created')}>
           <Text
-            text={formatDateLocalized(status.created.at, $i18n, 'extended', {hour12: use12hTime})}
+            text={formatDateLocalized(status.created.at, $i18n, 'extended', use24hTime)}
             selectable
           />
         </KeyValueList.Item>
@@ -61,9 +61,7 @@
             key={$i18n.t('dialog--message-details.label--received-date', 'Received')}
           >
             <Text
-              text={formatDateLocalized(status.received.at, $i18n, 'extended', {
-                hour12: use12hTime,
-              })}
+              text={formatDateLocalized(status.received.at, $i18n, 'extended', use24hTime)}
               selectable
             />
           </KeyValueList.Item>
@@ -71,7 +69,7 @@
         {#if status.sent !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--sent-date', 'Sent')}>
             <Text
-              text={formatDateLocalized(status.sent.at, $i18n, 'extended', {hour12: use12hTime})}
+              text={formatDateLocalized(status.sent.at, $i18n, 'extended', use24hTime)}
               selectable
             />
           </KeyValueList.Item>
@@ -81,9 +79,7 @@
             key={$i18n.t('dialog--message-details.label--delivered-date', 'Delivered')}
           >
             <Text
-              text={formatDateLocalized(status.delivered.at, $i18n, 'extended', {
-                hour12: use12hTime,
-              })}
+              text={formatDateLocalized(status.delivered.at, $i18n, 'extended', use24hTime)}
               selectable
             />
           </KeyValueList.Item>
@@ -91,7 +87,7 @@
         {#if status.read !== undefined}
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--read-date', 'Read')}>
             <Text
-              text={formatDateLocalized(status.read.at, $i18n, 'extended', {hour12: use12hTime})}
+              text={formatDateLocalized(status.read.at, $i18n, 'extended', use24hTime)}
               selectable
             />
           </KeyValueList.Item>
@@ -137,9 +133,7 @@
               </div>
               <div class="date">
                 <Text
-                  text={formatDateLocalized(lastReaction.at, $i18n, 'extended', {
-                    hour12: use12hTime,
-                  })}
+                  text={formatDateLocalized(lastReaction.at, $i18n, 'extended', use24hTime)}
                   selectable
                 />
               </div>

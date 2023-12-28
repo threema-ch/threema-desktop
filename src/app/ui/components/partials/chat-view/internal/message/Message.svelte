@@ -276,12 +276,8 @@
 
   $: timestamp = reactive(
     () => ({
-      fluent: formatDateLocalized(status.created.at, $i18n, 'auto', {
-        hour12: $appearance.view.use12hTime,
-      }),
-      short: formatDateLocalized(status.created.at, $i18n, 'time', {
-        hour12: $appearance.view.use12hTime,
-      }),
+      fluent: formatDateLocalized(status.created.at, $i18n, 'auto', $appearance.view.use24hTime),
+      short: formatDateLocalized(status.created.at, $i18n, 'time', $appearance.view.use24hTime),
     }),
     [$systemTime.current],
   );

@@ -14,25 +14,21 @@ import {isToday, isWithinCurrentYear, isWithinLastWeek, isYesterday} from '~/com
  * @param date Date to format.
  * @param i18n Translation provider.
  * @param format Format variant to use (see above).
- * @param formatOptionsOverrides Manual overrides of the raw {@link Intl.DateTimeFormatOptions}.
- *   Note: The `format` presets already set the necessary format options, so this parameter should
- *   only be used if more granular control is needed.
+ * @param use24hTimeFormat Whether or not to use 24h time format. Defaults to true.
  * @returns Formatted date.
  */
 export function formatDateLocalized(
     date: Date,
     i18n: I18nType,
     format: 'auto' | 'time' | 'extended' = 'auto',
-    formatOptionsOverrides?: Intl.DateTimeFormatOptions,
+    use24hTimeFormat = true,
 ): string {
-    // We use h23 always unless 12h format is explicitly set
-    // In order for the 24h time format to work with h23, we need to set hour12 to undefined
-    const isHour12 = formatOptionsOverrides?.hour12 === true ? true : undefined;
-    const hourFormat: Intl.DateTimeFormatOptions = {
-        hourCycle: 'h23',
-        hour12: isHour12,
-    };
-    formatOptionsOverrides = {...formatOptionsOverrides, ...hourFormat};
+    // Note: Be careful when changing these options. With some options (e.g. `{hourCycle: 'h23',
+    // hour12: false}`), the format will silently revert to h24 (which does funny things like the
+    // time "24:13").
+    const formatOptionsOverrides: Intl.DateTimeFormatOptions = use24hTimeFormat
+        ? {hourCycle: 'h23'}
+        : {hour12: true};
 
     switch (format) {
         case 'auto':
