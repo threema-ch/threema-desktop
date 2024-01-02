@@ -109,7 +109,7 @@
     }
   },
   "devDependencies": {
-    "@electron/notarize": "1.2.3",
+    "@electron/notarize": "2.2.0",
     "@electron/osx-sign": "1.0.4",
     "@electron/rebuild": "3.4.1",
     "@prettier/plugin-xml": "3.2.0",
