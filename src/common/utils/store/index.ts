@@ -468,9 +468,8 @@ export class MonotonicEnumStore<TValue extends u53>
 
         // Error case: Attempt to decrease
         const error =
-            'Attempted to decrease enum ' +
-            `${this._representation(this._value)} to ` +
-            `${this._representation(value)}`;
+            `Attempted to decrease enum ` +
+            `${this._representation(this._value)} to ${this._representation(value)}`;
         this.options?.debug?.log?.error(error);
         throw new Error(error);
     }

@@ -82,7 +82,7 @@ export class FetchBlobBackend implements BlobBackend {
     public async download(scope: BlobScope, id: BlobId): Promise<BlobDownloadResult> {
         let response: Response;
         try {
-            response = await fetch(`${this._getUrlForPath(`${bytesToHex(id)}`, scope)}`, {
+            response = await fetch(`${this._getUrlForPath(bytesToHex(id), scope)}`, {
                 ...this._requestInit,
                 method: 'GET',
                 headers: {

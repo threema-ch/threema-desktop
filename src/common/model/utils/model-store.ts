@@ -45,7 +45,7 @@ export const MODEL_MARKER = Symbol('model-marker');
 export const MODEL_STORE_REMOTE_MARKER: symbol = Symbol('model-store-remote-marker');
 
 function defaultModelRepresentation<TView>({view}: {readonly view: TView}): string {
-    return `${JSON.stringify(view)}`;
+    return JSON.stringify(view);
 }
 
 /** Marker to ensure that an updated view is not the same object as the previous view. */

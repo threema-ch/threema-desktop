@@ -43,7 +43,7 @@ export interface SetStoreDeltaListener<TValue> {
 }
 
 function defaultSetStoreRepresentation(set: ReadonlySet<unknown>): string {
-    return `${JSON.stringify([...set])}`;
+    return JSON.stringify([...set]);
 }
 
 export type ISetStore<TValue> = IQueryableStore<ReadonlySet<TValue>> &

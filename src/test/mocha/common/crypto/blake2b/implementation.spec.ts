@@ -16,8 +16,7 @@ function failureMessage(testVector: Blake2bTestVector, error?: unknown): string 
     const errorMessage = error === undefined ? '' : `Error: '${error}'\n     `;
 
     return (
-        `${errorMessage}` +
-        `Blake2b implementation failed for:\n` +
+        `${errorMessage}Blake2b implementation failed for:\n` +
         `       outlen: '${testVector.outlen}'\n` +
         `       out: '${testVector.out}'\n` +
         `       input: '${testVector.input}'\n` +

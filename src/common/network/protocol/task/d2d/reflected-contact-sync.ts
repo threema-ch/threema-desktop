@@ -135,7 +135,7 @@ export class ReflectedContactSyncTask implements PassiveTask<void> {
         // Handle updates
         if (deltaImage.updated !== undefined) {
             const image = deltaImage.updated;
-            switch (image.type) {
+            switch (image.type as common.Image.Type) {
                 case common.Image.Type.JPEG:
                     break;
                 default:

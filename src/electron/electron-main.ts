@@ -367,7 +367,7 @@ async function init(): Promise<MainInit> {
                 }
 
                 if (raw === '--version') {
-                    log.error(`${APP_NAME_AND_VERSION}`);
+                    log.error(APP_NAME_AND_VERSION);
                     process.exit(0);
                 }
 
