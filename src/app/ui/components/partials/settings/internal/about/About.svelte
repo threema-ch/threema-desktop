@@ -134,7 +134,7 @@
     {/if}
 
     <KeyValueList.Item key={$i18n.t('settings--about.label--copyright', 'Copyright')}>
-      <Text text={'Threema GmbH © 2020-2023'} selectable />
+      <Text text={'Threema GmbH © 2020-2024'} selectable />
     </KeyValueList.Item>
   </KeyValueList.Section>
   <KeyValueList.Section
