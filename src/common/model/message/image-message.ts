@@ -119,10 +119,8 @@ export class InboundImageMessageModelController
     extends InboundBaseMessageModelController<InboundImageMessage['view']>
     implements InboundImageMessageController
 {
-    /**
-     * Async lock to guard blob download logic.
-     */
-    protected readonly _lock = new AsyncLock();
+    protected readonly _blobLock = new AsyncLock();
+    protected readonly _thumbnailBlobLock = new AsyncLock();
 
     /** @inheritdoc */
     public async blob(): Promise<ReadonlyUint8Array> {
@@ -133,7 +131,7 @@ export class InboundImageMessageModelController
             this._uid,
             this._conversation,
             this._services,
-            this._lock,
+            this._blobLock,
             this.meta,
             this._log,
         );
@@ -148,7 +146,7 @@ export class InboundImageMessageModelController
             this._uid,
             this._conversation,
             this._services,
-            this._lock,
+            this._thumbnailBlobLock,
             this.meta,
             this._log,
         );
@@ -162,10 +160,8 @@ export class OutboundImageMessageModelController
     extends OutboundBaseMessageModelController<OutboundImageMessage['view']>
     implements OutboundImageMessageController
 {
-    /**
-     * Async lock to guard blob download logic.
-     */
-    protected readonly _lock = new AsyncLock();
+    protected readonly _blobLock = new AsyncLock();
+    protected readonly _thumbnailBlobLock = new AsyncLock();
 
     /** @inheritdoc */
     public async blob(): Promise<ReadonlyUint8Array> {
@@ -176,7 +172,7 @@ export class OutboundImageMessageModelController
             this._uid,
             this._conversation,
             this._services,
-            this._lock,
+            this._blobLock,
             this.meta,
             this._log,
         );
@@ -191,7 +187,7 @@ export class OutboundImageMessageModelController
             this._uid,
             this._conversation,
             this._services,
-            this._lock,
+            this._thumbnailBlobLock,
             this.meta,
             this._log,
         );
