@@ -51,7 +51,7 @@
   $: themeDropdownItems = createDropdownItems(getThemeDropdown($i18n), updateTheme);
   $: localeDropdownItems = createDropdownItems(getLocaleDropdown(), updateLocale);
 
-  $: use24hTime = !$appearance.view.use24hTime;
+  $: use24hTime = $appearance.view.use24hTime;
   $: showInactiveContacts = $appearance.view.inactiveContactsPolicy === InactiveContactsPolicy.SHOW;
 </script>
 
