@@ -25,7 +25,29 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
-        <release version="2.0~publicbeta24" date="2023-11-29">
+        <release version="2.0~publicbeta25" date="2024-01-05">
+            <description>
+                <p>New Features:</p>
+                <ul>
+                    <li>Added app settings</li>
+                    <li>Jump to the original message when clicking on a quote</li>
+                    <li>Automatically download media from incoming messages</li>
+                    <li>Allow hiding inactive contacts</li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed bugs that caused chats not to properly scroll to the latest message
+                    </li>
+                    <li>
+                        Fixed a bug that caused the app not to reconnect after waking up from
+                        standby on macOS
+                    </li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
+        <release version="2.0~publicbeta24" date="2023-12-02">
             <description>
                 <p>Improvements:</p>
                 <ul>
