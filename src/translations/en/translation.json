@@ -176,7 +176,7 @@
     "label--title": "Invalid Threema Work Credentials",
     "label--username": "Username",
     "prose--credentials-valid": "Credentials are valid! Please enter your app password to save the updated credentials:",
-    "prose--description-enter-credentials": "Please enter valid Threema Work credentials. If you don't know the credentials, please contact your Threema Work administrator.",
+    "prose--description-enter-credentials": "Please enter valid Threema Work credentials. If you don’t know the credentials, please contact your Threema Work administrator.",
     "prose--description-p1": "The credentials for Threema Work are invalid. Either they were disabled by your Threema Work admin, or your Threema Work license expired.",
     "prose--description-p2": "To continue using {appName} for desktop, you have two options:",
     "prose--description-relink": "Remove the current link, and relink {appName} for desktop to your mobile device. Please note that this will delete the chat history in the desktop app (but not on the mobile device).",
@@ -346,7 +346,7 @@
     "error--file-permanent-download-error": "Data could not be downloaded, the download expired.",
     "error--file-storage-read-error": "Could not read data from file storage.",
     "error--file-storage-write-error": "Downloaded data could not be stored in file storage. Do you have enough free disk space?",
-    "error--file-temporary-download-error": "Download failed. Please check your internet connection and try again.",
+    "error--file-temporary-download-error": "Download failed. Please check your Internet connection and try again.",
     "error--group-membership": "You are no longer part of this group.",
     "error--quoted-message-not-found": "The quoted message could not be found.",
     "error--reaction": "Could not react to message",
@@ -376,7 +376,7 @@
   },
   "settings": {
     "action--control-message-default-send": "Default (Send)",
-    "action--control-message-do-not-send": "Don't Send",
+    "action--control-message-do-not-send": "Don’t Send",
     "action--control-message-send": "Send",
     "action--do-not-disturb-default": "Off",
     "action--do-not-disturb-indefinite": "Indefinitely",
@@ -385,11 +385,11 @@
     "action--play-notification-sound-off": "Off",
     "action--toggle-debug-panel": "Toggle Debug Panel",
     "hint--own-profile-picture": "My profile picture",
-    "label--about": "About",
+    "label--about": "About Threema",
     "label--appearance": "Appearance",
     "label--devices": "Devices",
     "label--do-not-disturb": "Do Not Disturb",
-    "label--media": "Media & Storage",
+    "label--media": "Media and Storage",
     "label--nickname": "Nickname",
     "label--notifications": "Notifications",
     "label--play-notification-sound": "Play Notification Sound",
@@ -410,7 +410,7 @@
     "label--git-revision": "Git Revision",
     "label--log-file-paths": "Log File Paths",
     "label--log-to-file": "Logging",
-    "label--title": "About Threema",
+    "label--title": "About Threema for Desktop",
     "label--troubleshooting": "Troubleshooting",
     "label--version-title": "Version Information",
     "prose--logging-turned-off": "Logging is currently turned off",
@@ -421,7 +421,7 @@
     "label--24-hour-time-format-value": "Enable 24-Hour Time",
     "label--contact-list": "Contact List",
     "label--locale": "Language",
-    "label--section-date-time": "Date & Time",
+    "label--section-date-time": "Date and Time",
     "label--section-general-appearance": "General Appearance",
     "label--show-inactive-contacts": "Show Inactive Contacts",
     "label--theme": "Theme",
@@ -429,7 +429,7 @@
     "label--theme-light": "Light",
     "label--theme-system": "System",
     "label--title": "Appearance Settings",
-    "prose--subtitle": "Theme, language, hour format"
+    "prose--subtitle": "Theme, language, time format"
   },
   "settings--devices": {
     "label--this-device": "This Device",
@@ -442,7 +442,7 @@
     "label--auto-download-on-restricted": "Download if smaller than {restrictedSize} MB",
     "label--auto-save": "Auto-Download Incoming Media",
     "label--section-media": "Media",
-    "label--title": "Media & Storage Settings",
+    "label--title": "Media and Storage",
     "prose--subtitle": "Automatically download media"
   },
   "settings--privacy": {
@@ -457,7 +457,7 @@
     "label--threema-id": "Threema ID",
     "label--title": "Profile Settings",
     "prose--copy-id-content": "Threema ID copied to clipboard",
-    "prose--main-section-title": "Nickname, Avatar & Threema ID",
+    "prose--main-section-title": "Nickname, Avatar, and Threema ID",
     "prose--subtitle": "Threema ID"
   },
   "settings--security": {
@@ -467,7 +467,7 @@
     "prose--subtitle": "Password"
   },
   "system": {
-    "error--check-internet-and-retry": "Please check your internet connection and try again.",
+    "error--check-internet-and-retry": "Please check your Internet connection and try again.",
     "error--connection": "No server connection. Try reconnecting to Wi-Fi, or check your modem and router.",
     "error--connection-unrecoverable-state": "This device was disconnected from the server due to an unexpected error. Please restart the app, and relink the device."
   }

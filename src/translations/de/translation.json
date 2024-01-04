@@ -383,13 +383,13 @@
     "action--do-not-disturb-until": "Bis {date}",
     "action--play-notification-sound-default": "Ein",
     "action--play-notification-sound-off": "Aus",
-    "action--toggle-debug-panel": "Debug Panel toggeln",
+    "action--toggle-debug-panel": "Debug-Panel toggeln",
     "hint--own-profile-picture": "Mein Profilbild",
-    "label--about": "Über Threema Desktop",
+    "label--about": "Über Threema",
     "label--appearance": "Erscheinungsbild",
     "label--devices": "Geräte",
     "label--do-not-disturb": "Nicht stören",
-    "label--media": "Medien & Speicher",
+    "label--media": "Medien und Speicher",
     "label--nickname": "Nickname",
     "label--notifications": "Benachrichtigungen",
     "label--play-notification-sound": "Benachrichtigungston abspielen",
@@ -410,7 +410,7 @@
     "label--git-revision": "Git-Revision",
     "label--log-file-paths": "Pfade der Logdateien",
     "label--log-to-file": "Logging",
-    "label--title": "Über Threema",
+    "label--title": "Über Threema für Desktop",
     "label--troubleshooting": "Fehlerbehebung",
     "label--version-title": "Versionsinformationen",
     "prose--logging-turned-off": "Logging ist derzeit ausgeschaltet.",
@@ -418,31 +418,31 @@
   },
   "settings--appearance": {
     "label--24-hour-time-format-title": "Zeitformat",
-    "label--24-hour-time-format-value": "24-Stunden Anzeige aktivieren",
+    "label--24-hour-time-format-value": "24-Stunden-Anzeige aktivieren",
     "label--contact-list": "Kontaktliste",
     "label--locale": "Sprache",
-    "label--section-date-time": "Datum & Uhrzeit",
-    "label--section-general-appearance": "Generelles Erscheinungsbild",
+    "label--section-date-time": "Datum und Uhrzeit",
+    "label--section-general-appearance": "Allgemeines Erscheinungsbild",
     "label--show-inactive-contacts": "Inaktive Kontakte anzeigen",
     "label--theme": "Designstil",
     "label--theme-dark": "Dunkel",
     "label--theme-light": "Hell",
     "label--theme-system": "System",
     "label--title": "Erscheinungsbild",
-    "prose--subtitle": "Designstil, Sprache, Stundenformat"
+    "prose--subtitle": "Designstil, Sprache, Zeitformat"
   },
   "settings--devices": {
     "label--this-device": "Dieses Gerät",
     "label--title": "Geräteeinstellungen",
-    "prose--subtitle": "Geräte, die mit deiner ID verknüpft sind"
+    "prose--subtitle": "Geräte, die mit Ihrer ID verknüpft sind"
   },
   "settings--media": {
     "label--auto-download-off": "Nie herunterladen",
     "label--auto-download-on": "Immer herunterladen",
-    "label--auto-download-on-restricted": "Herunterladen, sofern kleiner als {restrictedSize} MB",
+    "label--auto-download-on-restricted": "Herunterladen, wenn kleiner als {restrictedSize} MB",
     "label--auto-save": "Automatisches Herunterladen",
     "label--section-media": "Medien",
-    "label--title": "Medien & Speicher",
+    "label--title": "Medien und Speicher",
     "prose--subtitle": "Medien automatisch herunterladen"
   },
   "settings--privacy": {
@@ -457,7 +457,7 @@
     "label--threema-id": "Threema-ID",
     "label--title": "Profileinstellungen",
     "prose--copy-id-content": "Die Threema-ID wurde in die Zwischenablage kopiert.",
-    "prose--main-section-title": "Nickname, Avatar & Threema-ID",
+    "prose--main-section-title": "Nickname, Avatar und Threema-ID",
     "prose--subtitle": "Threema-ID"
   },
   "settings--security": {
