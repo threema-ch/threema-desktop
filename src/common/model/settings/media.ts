@@ -7,6 +7,7 @@ import type {
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import {RESTRICTED_DOWNLOAD_SIZE_IN_MB} from '~/common/settings/media';
 import type {u53} from '~/common/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
@@ -41,11 +42,15 @@ export class MediaSettingsModelController implements MediaSettingsController {
     }
 }
 
+const DEFAULT_AUTO_DOWNLOAD: AutoDownload = {on: true, limitInMb: RESTRICTED_DOWNLOAD_SIZE_IN_MB};
+
 export class MediaSettingsModelStore extends LocalModelStore<MediaSettings> {
-    public constructor(services: ServicesForModel, mediaSettingsDefault: MediaSettingsView) {
+    public constructor(services: ServicesForModel) {
         const {logging} = services;
         const tag = 'media-settings';
-        const mediaSettings = services.db.getSettings('media') ?? mediaSettingsDefault;
+        const mediaSettings = services.db.getSettings('media') ?? {
+            autoDownload: DEFAULT_AUTO_DOWNLOAD,
+        };
         super(mediaSettings, new MediaSettingsModelController(services), undefined, undefined, {
             debug: {
                 log: logging.logger(`model.${tag}`),

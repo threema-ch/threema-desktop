@@ -150,7 +150,6 @@ import {
     type NotificationHandle,
     NotificationService,
 } from '~/common/notification';
-import {RESTRICTED_DOWNLOAD_SIZE_IN_MB} from '~/common/settings/media';
 import type {SystemDialog, SystemDialogHandle, SystemDialogService} from '~/common/system-dialog';
 import type {u8, u53} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
@@ -409,9 +408,7 @@ class UserRepository implements User {
         this.callsSettings = new CallsSettingsModelStore(services, {});
         this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
-        this.mediaSettings = new MediaSettingsModelStore(services, {
-            autoDownload: {on: true, limitInMb: RESTRICTED_DOWNLOAD_SIZE_IN_MB},
-        });
+        this.mediaSettings = new MediaSettingsModelStore(services);
 
         this.displayName = derive(
             this.profileSettings,

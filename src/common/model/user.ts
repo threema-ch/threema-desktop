@@ -18,7 +18,6 @@ import type {
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import {ensureNickname, type IdentityString} from '~/common/network/types';
-import {RESTRICTED_DOWNLOAD_SIZE_IN_MB} from '~/common/settings/media';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndex, idColorIndexToString} from '~/common/utils/id-color';
 import type {LocalStore} from '~/common/utils/store';
@@ -54,9 +53,7 @@ export class UserModel implements User {
         this.callsSettings = new CallsSettingsModelStore(services, {});
         this.devicesSettings = new DevicesSettingsModelStore(services);
         this.appearanceSettings = new AppearanceSettingsModelStore(services);
-        this.mediaSettings = new MediaSettingsModelStore(services, {
-            autoDownload: {on: true, limitInMb: RESTRICTED_DOWNLOAD_SIZE_IN_MB},
-        });
+        this.mediaSettings = new MediaSettingsModelStore(services);
 
         this.displayName = derive(
             this.profileSettings,
