@@ -1441,8 +1441,13 @@ class ConnectionManager {
             } else if (!skipConnectionDelay) {
                 // When we were connected, we ensure that the total wait time does not exceed 5s
                 // between connection attempts.
-                const waitMs =
-                    elapsedMs > reconnectionDelayMs ? 0 : reconnectionDelayMs - elapsedMs;
+
+                // In practise, we observe very rare time jumps in connection with stand-by on MacOS.
+                // Therefore, we clamp the values to a sane range to avoid very long reconnect timeouts.
+                const waitMs = Math.min(
+                    elapsedMs > reconnectionDelayMs ? 0 : reconnectionDelayMs - elapsedMs,
+                    reconnectionDelayMs,
+                );
                 this._log.debug(
                     `Waiting ${(waitMs / 1000).toFixed(
                         1,
