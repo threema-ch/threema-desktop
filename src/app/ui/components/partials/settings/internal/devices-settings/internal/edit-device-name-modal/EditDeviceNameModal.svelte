@@ -55,7 +55,7 @@
         <Text
           text={$i18n.t(
             'dialog--edit-device-name.prose--after-restart',
-            'The new device name will be visibile on your other devices after the next restart.',
+            'The new device name will be visible on your other devices after the next restart.',
           )}
         />
       </div>

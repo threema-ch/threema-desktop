@@ -433,7 +433,7 @@
   },
   "settings--devices": {
     "label--this-device": "Dieses Gerät",
-    "label--title": "Devices Settings",
+    "label--title": "Geräteeinstellungen",
     "prose--subtitle": "Geräte, die mit deiner ID verknüpft sind"
   },
   "settings--media": {

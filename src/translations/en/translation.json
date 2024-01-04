@@ -109,7 +109,7 @@
     "action--cancel": "Cancel",
     "action--confirm": "Confirm",
     "action--title": "Edit Device Name",
-    "prose--after-restart": "The new device name will be visibile on your other devices after the next restart."
+    "prose--after-restart": "The new device name will be visible on your other devices after the next restart."
   },
   "dialog--edit-group": {
     "action--cancel": "Cancel",
@@ -433,7 +433,7 @@
   },
   "settings--devices": {
     "label--this-device": "This Device",
-    "label--title": "Devices Settings",
+    "label--title": "Device Settings",
     "prose--subtitle": "Devices linked to your Threema ID"
   },
   "settings--media": {
@@ -442,7 +442,7 @@
     "label--auto-download-on-restricted": "Download if smaller than {restrictedSize} MB",
     "label--auto-save": "Auto-Download Incoming Media",
     "label--section-media": "Media",
-    "label--title": "Media & Storage",
+    "label--title": "Media & Storage Settings",
     "prose--subtitle": "Automatically download media"
   },
   "settings--privacy": {

@@ -72,7 +72,7 @@
         component: SecuritySettings,
       },
       devices: {
-        title: $i18n.t('settings--devices.label--title', 'Devices Settings'),
+        title: $i18n.t('settings--devices.label--title', 'Device Settings'),
         component: DevicesSettings,
       },
       media: {
