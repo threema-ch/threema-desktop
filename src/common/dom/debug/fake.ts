@@ -248,7 +248,7 @@ export async function generateFakeGroupConversation(
         contactObjects.push(contact);
     });
 
-    const group = await backend.model.groups.add.fromLocal(
+    const group = backend.model.groups.add.fromSync(
         {
             groupId: randomU64(crypto) as GroupId,
             creatorIdentity: backend.model.user.identity,
