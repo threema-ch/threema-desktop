@@ -21,9 +21,14 @@ export interface ModalProps {
          */
         readonly suspendHotkeysWhenVisible?: boolean;
         /**
-         * Whether the modal should be closable by pressing `esc`. Defaults to `true`.
+         * Whether the modal should be closable by pressing `Esc`. Defaults to `true`.
          */
         readonly allowClosingWithEsc?: boolean;
+        /**
+         * Whether to fire the submit event on click `Enter`. Defaults to `false`. Note: Closing
+         * needs to be handled from outside.
+         */
+        readonly allowSubmittingWithEnter?: boolean;
     };
     /**
      * Options to configure the modal wrapper.
@@ -76,6 +81,6 @@ interface ModalButton {
      */
     readonly isFocused?: boolean;
     readonly label: string;
-    readonly onClick?: (() => void) | 'close';
+    readonly onClick?: (() => void) | 'close' | 'submit';
     readonly type: 'naked' | 'filled';
 }

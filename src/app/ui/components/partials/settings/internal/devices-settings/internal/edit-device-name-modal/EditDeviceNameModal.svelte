@@ -44,7 +44,12 @@
       ],
       title: $i18n.t('dialog--edit-device-name.action--title', 'Edit Device Name'),
     }}
+    options={{
+      allowClosingWithEsc: true,
+      allowSubmittingWithEnter: true,
+    }}
     on:close
+    on:submit={handleClickConfirm}
   >
     <div class="description">
       <Input bind:value {maxlength}></Input>

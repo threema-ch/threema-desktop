@@ -11,10 +11,14 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import type {ModalProps} from '~/app/ui/components/hocs/modal/props';
+  import type {ButtonState} from '~/app/ui/components/hocs/modal/types';
   import Portal from '~/app/ui/components/hocs/portal/Portal.svelte';
+  import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
 
   const hotkeyManager = globals.unwrap().hotkeyManager;
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.modal');
 
   type $$Props = ModalProps;
 
@@ -26,10 +30,12 @@
   const target: HTMLElement | null = document.body.querySelector('#container');
 
   let closed = false;
+  let buttonStates: ButtonState[] | undefined = undefined;
 
   const dispatch = createEventDispatcher<{
     open: undefined;
     close: undefined;
+    submit: undefined;
   }>();
 
   /**
@@ -47,6 +53,18 @@
     if ((options.allowClosingWithEsc ?? true) && event.key === 'Escape') {
       closeDialog(element);
     }
+
+    // If a button is focused, its functionality overrides onEnterSubmit.
+    if (event.key === 'Enter' && buttonStates?.some((state) => state.isFocused) === true) {
+      return;
+    }
+
+    if (options.allowSubmittingWithEnter === true && event.key === 'Enter') {
+      // Prohibit the Enter button to trigger anything that is beneath the modal.
+      event.preventDefault();
+
+      dispatch('submit');
+    }
   }
 
   function handleCloseEvent(): void {
@@ -56,6 +74,10 @@
 
   function handleClickClose(): void {
     closeDialog(element);
+  }
+
+  function handleClickSubmit(): void {
+    dispatch('submit');
   }
 
   function handleClosedStateChange(isClosed: boolean): void {
@@ -70,6 +92,14 @@
       hotkeyManager.suspend();
       window.addEventListener('keydown', handleKeydown);
     }
+  }
+
+  function handleChangeButtonFocus(focused: boolean, index: u53): void {
+    if (buttonStates?.[index] !== undefined) {
+      buttonStates[index] = {isFocused: focused};
+      return;
+    }
+    log.error('Cannot set focus because there is a mismatch in number of Buttons and ButtonStates');
   }
 
   function openDialog(dialog: typeof element): void {
@@ -92,6 +122,10 @@
         dispatch('close');
       }
     }
+  }
+
+  $: if (wrapper.type === 'card') {
+    buttonStates = wrapper.buttons?.map((button) => ({isFocused: button.isFocused === true}));
   }
 
   $: handleClosedStateChange(closed);
@@ -158,7 +192,7 @@
 
             {#if buttons.length > 0}
               <div class="footer">
-                {#each buttons as button}
+                {#each buttons as button, index}
                   <Button
                     on:elementReady={(event) => {
                       if (button.isFocused === true) {
@@ -167,8 +201,17 @@
                     }}
                     flavor={button.type}
                     disabled={button.disabled}
-                    on:click={button.onClick === 'close' ? handleClickClose : button.onClick}
-                    >{button.label}</Button
+                    on:focus={() => handleChangeButtonFocus(true, index)}
+                    on:blur={() => handleChangeButtonFocus(false, index)}
+                    on:click={() => {
+                      if (button.onClick === 'close') {
+                        handleClickClose();
+                      } else if (button.onClick === 'submit') {
+                        handleClickSubmit();
+                      } else if (button.onClick !== undefined) {
+                        button.onClick();
+                      }
+                    }}>{button.label}</Button
                   >
                 {/each}
               </div>
