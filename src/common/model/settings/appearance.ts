@@ -5,12 +5,13 @@ import type {
     AppearanceSettings,
     AppearanceSettingsView,
     AppearanceSettingsViewNonDerivedProperties,
+    AppearanceSettingsController,
 } from '~/common/model/types/settings';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
-export class AppearanceSettingsController implements AppearanceSettingsController {
+export class AppearanceSettingsModelController implements AppearanceSettingsController {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<AppearanceSettingsView>();
 
@@ -56,7 +57,7 @@ export class AppearanceSettingsModelStore extends LocalModelStore<AppearanceSett
                 inactiveContactsPolicy:
                     appearanceSettings.inactiveContactsPolicy ?? DEFAULT_INACTIVE_CONTACT_POLICY,
             }),
-            new AppearanceSettingsController(services),
+            new AppearanceSettingsModelController(services),
             undefined,
             undefined,
             {
