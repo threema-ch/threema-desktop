@@ -16,6 +16,7 @@
   export let services: $$Props['services'];
 
   const {
+    backend,
     settings: {devices},
   } = services;
 
@@ -34,6 +35,7 @@
     if (isDeviceName(newDeviceName)) {
       updateSetting(newDeviceName, 'deviceName');
     }
+    void backend.reconnect();
     isEditDeviceNameModalVisible = false;
   }
 

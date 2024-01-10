@@ -1271,6 +1271,20 @@ class ConnectionManager {
         }
     }
 
+    /**
+     * Turn connection off and on again. If there was no connection in the first place, try turning it on.
+     */
+    public reconnect(): void {
+        if (this._autoConnect.done) {
+            this.disableAutoConnect();
+        }
+
+        if (!this._autoConnect.done) {
+            this._log.debug('Turning on auto-connect');
+            this._autoConnect.resolve();
+        }
+    }
+
     private async _run(): Promise<never> {
         const {model, config, systemDialog} = this._services;
         const reconnectionDelayMs = config.MEDIATOR_RECONNECTION_DELAY_S * 1000;

@@ -1,9 +1,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
   import Input from '~/app/ui/components/atoms/input/Input.svelte';
-  import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import type {EditDeviceNameModalProps} from '~/app/ui/components/partials/settings/internal/devices-settings/internal/edit-device-name-modal/props';
   import {i18n} from '~/app/ui/i18n';
@@ -50,15 +48,6 @@
   >
     <div class="description">
       <Input bind:value {maxlength}></Input>
-      <div class="warning">
-        <MdIcon theme="Filled">warning</MdIcon>
-        <Text
-          text={$i18n.t(
-            'dialog--edit-device-name.prose--after-restart',
-            'The new device name will be visible on your other devices after the next restart.',
-          )}
-        />
-      </div>
     </div></Modal
   >
 </template>

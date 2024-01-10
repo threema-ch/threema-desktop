@@ -365,6 +365,14 @@ export class BackendController {
     }
 
     /**
+     * Turn connection off and on again. This method will always try to establish a connection in the end,
+     * no matter the previous state of the connection.
+     */
+    public async reconnect(): Promise<void> {
+        await this._remote.connectionManager.reconnect();
+    }
+
+    /**
      * Self-kick device from mediator server.
      */
     public async selfKickFromMediator(): Promise<void> {

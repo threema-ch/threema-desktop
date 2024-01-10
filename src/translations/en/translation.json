@@ -108,8 +108,7 @@
   "dialog--edit-device-name": {
     "action--cancel": "Cancel",
     "action--confirm": "Confirm",
-    "action--title": "Edit Device Name",
-    "prose--after-restart": "The new device name will be visible on your other devices after the next restart."
+    "action--title": "Edit Device Name"
   },
   "dialog--edit-group": {
     "action--cancel": "Cancel",

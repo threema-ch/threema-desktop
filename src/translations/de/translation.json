@@ -108,8 +108,7 @@
   "dialog--edit-device-name": {
     "action--cancel": "Abbrechen",
     "action--confirm": "Bestätigen",
-    "action--title": "Gerätenamen bearbeiten",
-    "prose--after-restart": "Der neue Gerätename wird nach dem nächsten Neustart von Threema Desktop auf den anderen Geräten zu sehen sein."
+    "action--title": "Gerätenamen bearbeiten"
   },
   "dialog--edit-group": {
     "action--cancel": "Abbrechen",
