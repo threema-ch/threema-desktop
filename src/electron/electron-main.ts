@@ -905,8 +905,7 @@ function main(
                         // Fetch directives
                         "default-src 'self'",
                         "child-src 'none'",
-                        // "connect-src 'self' https://*.threema.ch wss://*.threema.ch", // TODO(DESK-707): Restrict csp again
-                        'connect-src *',
+                        "connect-src 'self' https://*.threema.ch wss://*.threema.ch",
                         "font-src 'self' https://static.threema.ch",
                         "frame-src 'none'",
                         "img-src 'self' data: blob:",
