@@ -70,6 +70,10 @@
    * Open the media compose message dialog if accessible files have been dropped
    */
   export function handleFileDrop(fileResult: FileResult): void {
+    if (isDisabledReceiver($receiver) || $isReceiverBlockedStore) {
+      log.warn('Cannot drop a file in the dropzone if the receiver is disabled or blocked');
+      return;
+    }
     composeHandler.handleFileDrop(fileResult);
   }
 
