@@ -309,6 +309,21 @@ async function loadCompressedLogBytes(filePath: string): Promise<ReadonlyUint8Ar
     return await compressor.compress('gzip', bytes);
 }
 
+// IPC message handler validation
+//
+// See https://www.electronjs.org/docs/latest/tutorial/security#17-validate-the-sender-of-all-ipc-messages
+function validateSenderFrame(senderFrame: Electron.WebFrameMain): void {
+    if (import.meta.env.DEBUG && senderFrame.url.startsWith('http://localhost:')) {
+        return;
+    }
+    if (senderFrame.url.startsWith('file://')) {
+        return;
+    }
+    throw new Error(
+        `Security violation: Attempt to send IPC message from invalid sender frame: ${senderFrame.url}`,
+    );
+}
+
 interface MainInit {
     readonly parameters: RunParameters;
     readonly appPath: string;
@@ -598,22 +613,27 @@ function main(
             .on(
                 ElectronIpcCommand.ERROR,
                 (event: electron.IpcMainEvent, errorDetails: ErrorDetails) => {
+                    validateSenderFrame(event.senderFrame);
                     // Handle error from renderer process
                     handleCriticalError('renderer or worker', errorDetails, window?.webContents);
                 },
             )
             .on(ElectronIpcCommand.GET_APP_PATH, (event: electron.IpcMainEvent) => {
+                validateSenderFrame(event.senderFrame);
                 event.returnValue = electron.app.getPath(ELECTRON_PATH_USER_DATA);
             })
-            .on(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, () => {
+            .on(ElectronIpcCommand.DELETE_PROFILE_AND_RESTART, (event) => {
+                validateSenderFrame(event.senderFrame);
                 scheduleRenameUnlinkedProfileAndQuit();
             })
-            .on(ElectronIpcCommand.CLOSE_APP, () => {
+            .on(ElectronIpcCommand.CLOSE_APP, (event) => {
+                validateSenderFrame(event.senderFrame);
                 electron.app.quit();
             })
             .on(
                 ElectronIpcCommand.UPDATE_APP_BADGE,
                 (event: electron.IpcMainEvent, totalUnreadMessageCount: u53) => {
+                    validateSenderFrame(event.senderFrame);
                     // Set the badge count on supported systems (currently macOS and some Linux
                     // versions).
                     //
@@ -629,7 +649,8 @@ function main(
         electron.ipcMain.handle(
             ElectronIpcCommand.GET_SYSTEM_INFO,
             // eslint-disable-next-line @typescript-eslint/require-await
-            async (): Promise<SystemInfo> => {
+            async (event): Promise<SystemInfo> => {
+                validateSenderFrame(event.senderFrame);
                 let operatingSystem: SystemInfo['os'];
                 switch (process.platform) {
                     case 'win32':
@@ -655,17 +676,20 @@ function main(
         );
         electron.ipcMain.handle(
             ElectronIpcCommand.LOG_TO_FILE,
-            (event, level: 'trace' | 'debug' | 'info' | 'warn' | 'error', data: string) =>
+            (event, level: 'trace' | 'debug' | 'info' | 'warn' | 'error', data: string) => {
+                validateSenderFrame(event.senderFrame);
                 // @ts-expect-error: TODO(DESK-684): Don't access private properties
-                fileLogger?._write(level, data),
+                fileLogger?._write(level, data);
+            },
         );
-        electron.ipcMain.handle(
-            ElectronIpcCommand.IS_FILE_LOGGING_ENABLED,
-            (event) => fileLogger !== undefined,
-        );
+        electron.ipcMain.handle(ElectronIpcCommand.IS_FILE_LOGGING_ENABLED, (event) => {
+            validateSenderFrame(event.senderFrame);
+            return fileLogger !== undefined;
+        });
         electron.ipcMain.on(
             ElectronIpcCommand.SET_FILE_LOGGING_ENABLED_AND_RESTART,
             (event, enabled: boolean) => {
+                validateSenderFrame(event.senderFrame);
                 if (!enabled) {
                     const mainAppLogPath = getMainAppLogPath(appPath);
                     if (fs.existsSync(mainAppLogPath)) {
@@ -707,6 +731,7 @@ function main(
         );
 
         electron.ipcMain.handle(ElectronIpcCommand.GET_LOG_INFORMATION, (event) => {
+            validateSenderFrame(event.senderFrame);
             const logInfo: LogInfo = {
                 logFiles: {
                     mainApplication: generateLogFileInfo('app', appPath),
@@ -717,6 +742,7 @@ function main(
         });
 
         electron.ipcMain.handle(ElectronIpcCommand.GET_GZIPPED_LOG_FILE, async (event) => {
+            validateSenderFrame(event.senderFrame);
             try {
                 const [app, bw] = await Promise.all([
                     loadCompressedLogBytes(getMainAppLogPath(appPath)),
