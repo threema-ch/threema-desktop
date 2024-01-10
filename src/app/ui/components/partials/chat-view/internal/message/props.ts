@@ -19,6 +19,7 @@ export interface MessageProps {
     readonly conversation: {
         readonly type: ReceiverType;
         readonly isBlocked: boolean;
+        readonly isDisabled: boolean;
     };
     readonly direction: BasicMessageProps['direction'];
     readonly file?: NonNullable<BasicMessageProps['file']> & {

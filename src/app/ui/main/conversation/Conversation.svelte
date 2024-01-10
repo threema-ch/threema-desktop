@@ -77,6 +77,10 @@
    * Set a message as the current quote.
    */
   function handleClickQuoteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+    if (isDisabledReceiver($receiver) || $isReceiverBlockedStore) {
+      log.warn('Cannot quote from a disabled or blocked receiver');
+      return;
+    }
     updateComposeData({
       mode: 'quote',
       quotedMessageProps: event.detail,
@@ -361,6 +365,7 @@
               firstUnreadMessageId: $conversationInnerViewModel.firstUnreadMessageId,
               id: $conversation.ctx,
               isBlocked: $isReceiverBlockedStore,
+              isDisabled: isDisabledReceiver($receiver),
               lastMessage: $conversationInnerViewModel.lastMessage,
               markAllMessagesAsRead: handleMarkAllMessagesAsRead,
               receiverLookup,

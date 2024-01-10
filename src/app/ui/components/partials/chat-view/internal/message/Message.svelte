@@ -328,7 +328,7 @@
               ),
             }
           : false,
-      quote: !conversation.isBlocked,
+      quote: !conversation.isBlocked && !conversation.isDisabled,
       forward: text !== undefined,
       openDetails: true,
       deleteMessage: true,
