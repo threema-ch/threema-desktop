@@ -744,27 +744,33 @@ function main(
             width: electronSettings.window.width,
             height: electronSettings.window.height,
             webPreferences: {
-                // TODO(DESK-79): Harden this. Disable `nodeIntegrationInWorker` and enable `sandbox`. This means
-                //       we need to have a preload script that runs for all APIs requiring access to Node
-                //       (so far that is only the worker) and then expose the necessary APIs on `self`.
-                //       However, this is currently not supported in Electron, see
-                //       https://github.com/electron/electron/issues/28620
+                // # SECURITY
                 //
-                //       The only alternative we have right now is to harden Electron so it must not
-                //       under any circumstances load any worker except our dedicated workers.
+                // We disable node integration (i.e. access to NodeJS APIs from JS code) in the
+                // renderer. Communication with the main process happens through the Electron
+                // context bridge via IPC (set up in the preload script). We enable
+                // `contextIsolation`, and sandboxing is enabled by default.
                 //
-                // Order from https://www.electronjs.org/docs/latest/api/browser-window/
+                // Unfortunately we cannot get rid of `nodeIntegrationInWorker` because preload
+                // scripts for workers are not currently supported by Electron[1]. We try to
+                // compensate for this using the `script-src` in our Content Security Policy (CSP)
+                // as far as possible.
+                //
+                // [1] https://github.com/electron/electron/issues/28620
+                //
+                // Preferences ordering from
+                // https://www.electronjs.org/docs/latest/api/browser-window/:
                 nodeIntegration: false,
-                nodeIntegrationInWorker: true, // TODO(DESK-79): This must be hardened so only our workers can use it
+                nodeIntegrationInWorker: true, // TODO(DESK-79): Change to false once worker preload scripts are supported in Electron
                 nodeIntegrationInSubFrames: false,
                 preload: path.join(__dirname, '..', 'electron-preload', 'electron-preload.cjs'),
-                // TODO(DESK-79): sandbox: true
+                // TODO(DESK-79): Enable `sandbox: true` once worker preload scripts are supported in Electron
                 webSecurity: true,
                 allowRunningInsecureContent: false,
                 webgl: false,
                 plugins: false,
                 experimentalFeatures: false,
-                disableBlinkFeatures: [].join(','), // TODO(DESK-79): Harden
+                disableBlinkFeatures: [].join(','),
                 contextIsolation: true,
                 webviewTag: false,
                 navigateOnDragDrop: false,
