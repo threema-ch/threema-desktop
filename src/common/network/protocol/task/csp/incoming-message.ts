@@ -26,6 +26,7 @@ import {
     SyncState,
     VerificationLevel,
     WorkVerificationLevel,
+    CspE2eWebSessionResumeType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {
@@ -36,6 +37,7 @@ import type {
     Group,
     MessageFor,
 } from '~/common/model';
+import {isPredefinedContact} from '~/common/model/types/contact';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import * as protobuf from '~/common/network/protobuf';
 import {
@@ -463,10 +465,16 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
         }
 
-        // Get the public key of the sender (and the contact model store, if
-        // already existing).
-        let senderContactOrInitFragment: ContactOrInitFragment | undefined =
-            model.contacts.getByIdentity(sender.string);
+        // Look up the sender contact. If not found, create it (for predefined contacts) or prepare
+        // an init fragment (for all other contacts).
+        let senderContactOrInitFragment: ContactOrInitFragment | undefined;
+        if (isPredefinedContact(sender.string)) {
+            senderContactOrInitFragment = await model.contacts.getOrCreatePredefinedContact(
+                sender.string,
+            );
+        } else {
+            senderContactOrInitFragment = model.contacts.getByIdentity(sender.string);
+        }
         if (senderContactOrInitFragment === undefined) {
             // Fetch from contact directory
             try {
@@ -548,7 +556,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 return await this._discard(handle);
             }
         }
-
         // Decode message and flags (default for the message) according to type
         this._log.debug(`Processing ${messageTypeDebug} message`);
         let cspMessageBody;
@@ -597,57 +604,61 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // Determine flags
         const flags = CspMessageFlags.fromBitmask(this._message.flags);
 
-        // Sync the contact within a transaction and store it permanently,
-        // if necessary.
-        if (senderContactOrInit instanceof LocalModelStore) {
-            // Contact exists. Update the nickname if necessary.
-            const nicknameFromMessage = this._getSenderNickname(type, this._message, metadata);
-            if (nicknameFromMessage !== undefined) {
-                // 4. If `nickname` is present and `contact-or-init` contains an existing contact:
-                const contactModel = senderContactOrInit.get();
-                if (
-                    isNickname(nicknameFromMessage) &&
-                    contactModel.view.nickname !== nicknameFromMessage
-                ) {
-                    // Update the contact's nickname with `nickname`.
-                    await contactModel.controller.update.fromRemote(handle, {
-                        nickname: nicknameFromMessage,
-                    });
-                } else if (nicknameFromMessage.length === 0) {
-                    // Remove the contact's nickname if `nickname` is empty.
-                    await contactModel.controller.update.fromRemote(handle, {
-                        nickname: undefined,
-                    });
-                }
-            }
-        } else {
-            // Note: Some message types (e.g. status messages) should not trigger implicit contact
-            //       creation. In this case, the message should be discarded without reflection,
-            //       because without the contact (and a conversation belonging to this contact), the
-            //       message cannot be processed anyways.
-            switch (instructions.missingContactHandling) {
-                case 'create':
-                    try {
-                        senderContactOrInit = await model.contacts.add.fromRemote(
-                            handle,
-                            senderContactOrInit,
-                        );
-                    } catch (error) {
-                        this._log.warn(`Unable to reflect and locally store contact: ${error}`);
-                        throw ensureError(error);
+        // If we have a special contact, it has already been added and reflected. Furthermore, no
+        // nickname handling is required.
+        if (!isPredefinedContact(sender.string)) {
+            // Sync the contact within a transaction and store it permanently,
+            // if necessary.
+            if (senderContactOrInit instanceof LocalModelStore) {
+                // Contact exists. Update the nickname if necessary.
+                const nicknameFromMessage = this._getSenderNickname(type, this._message, metadata);
+                if (nicknameFromMessage !== undefined) {
+                    // 4. If `nickname` is present and `contact-or-init` contains an existing contact:
+                    const contactModel = senderContactOrInit.get();
+                    if (
+                        isNickname(nicknameFromMessage) &&
+                        contactModel.view.nickname !== nicknameFromMessage
+                    ) {
+                        // Update the contact's nickname with `nickname`.
+                        await contactModel.controller.update.fromRemote(handle, {
+                            nickname: nicknameFromMessage,
+                        });
+                    } else if (nicknameFromMessage.length === 0) {
+                        // Remove the contact's nickname if `nickname` is empty.
+                        await contactModel.controller.update.fromRemote(handle, {
+                            nickname: undefined,
+                        });
                     }
-                    break;
-                case 'discard':
-                    this._log.info(
-                        `Discarding ${messageTypeDebug} message from unknown contact`,
-                        messageReferenceDebug,
-                    );
-                    return await this._discard(handle);
-                case 'ignore':
-                    // Carry on!
-                    break;
-                default:
-                    unreachable(instructions);
+                }
+            } else {
+                // Note: Some message types (e.g. status messages) should not trigger implicit contact
+                //       creation. In this case, the message should be discarded without reflection,
+                //       because without the contact (and a conversation belonging to this contact), the
+                //       message cannot be processed anyways.
+                switch (instructions.missingContactHandling) {
+                    case 'create':
+                        try {
+                            senderContactOrInit = await model.contacts.add.fromRemote(
+                                handle,
+                                senderContactOrInit,
+                            );
+                        } catch (error) {
+                            this._log.warn(`Unable to reflect and locally store contact: ${error}`);
+                            throw ensureError(error);
+                        }
+                        break;
+                    case 'discard':
+                        this._log.info(
+                            `Discarding ${messageTypeDebug} message from unknown contact`,
+                            messageReferenceDebug,
+                        );
+                        return await this._discard(handle);
+                    case 'ignore':
+                        // Carry on!
+                        break;
+                    default:
+                        unreachable(instructions);
+                }
             }
         }
 
@@ -1122,6 +1133,27 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             identity: senderIdentity,
         };
 
+        // 19. If `sender-identity` equals `*3MAPUSH`
+        if (senderIdentity === '*3MAPUSH') {
+            // 1. If `inner-type` is not any of `0xa0` or `0xfe`, log a warning, _Acknowledge_ and
+            //    discard the message and abort these steps.
+            // 2. Run the receive steps associated to `inner-type` with `inner-message`. If this
+            //    fails, exceptionally abort these steps and the connection. If the message has been
+            //    discarded, _Acknowledge_ the message and abort these steps.
+            const maybeCspE2eType = type as CspE2eType;
+            switch (maybeCspE2eType) {
+                case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE: // TODO(DESK-887): Probably unreachable once we have PFS
+                case CspE2eWebSessionResumeType.WEB_SESSION_RESUME:
+                    // Continue processing
+                    break;
+                default:
+                    this._log.warn(
+                        `Message from *3MAPUSH has unexpected type ${cspE2eTypeNameOf(type)}`,
+                    );
+                    return 'discard';
+            }
+        }
+
         function reflectFragmentFor(d2dMessageType: D2dCspMessageType): D2dIncomingMessageFragment {
             return getD2dIncomingReflectFragment(
                 d2dMessageType,
@@ -1591,6 +1623,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                 };
                 return instructions;
             }
+
+            // Push control messages
+            case CspE2eWebSessionResumeType.WEB_SESSION_RESUME:
+                this._log.warn('Discarding web session resume message');
+                return 'discard';
 
             // Forwarding of known but unhandled messages. These messages will be reflected and
             // discarded. The messages won't appear in Threema Desktop, but they will appear on

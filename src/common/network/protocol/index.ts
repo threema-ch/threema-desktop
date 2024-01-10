@@ -13,6 +13,8 @@ import {
     CspE2eGroupStatusUpdateTypeUtils,
     CspE2eStatusUpdateType,
     CspE2eStatusUpdateTypeUtils,
+    CspE2eWebSessionResumeType,
+    CspE2eWebSessionResumeTypeUtils,
     CspExtensionType,
     CspMessageFlag,
     CspPayloadType,
@@ -279,7 +281,8 @@ export type CspE2eType =
     | CspE2eGroupConversationType
     | CspE2eGroupStatusUpdateType
     | CspE2eGroupControlType
-    | CspE2eForwardSecurityType;
+    | CspE2eForwardSecurityType
+    | CspE2eWebSessionResumeType;
 export const CSP_E2E_TYPE_NAME_OF = {
     ...CspE2eConversationTypeUtils.NAME_OF,
     ...CspE2eStatusUpdateTypeUtils.NAME_OF,
@@ -288,6 +291,7 @@ export const CSP_E2E_TYPE_NAME_OF = {
     ...CspE2eGroupStatusUpdateTypeUtils.NAME_OF,
     ...CspE2eGroupControlTypeUtils.NAME_OF,
     ...CspE2eForwardSecurityTypeUtils.NAME_OF,
+    ...CspE2eWebSessionResumeTypeUtils.NAME_OF,
 } as const;
 export function cspE2eTypeNameOf<T extends u53>(value: T): string | undefined {
     return (CSP_E2E_TYPE_NAME_OF as Record<u53, string | undefined>)[value];
@@ -695,6 +699,17 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
     [CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE]: {
         userProfileDistribution: 'it-depends',
         exemptFromBlocking: false,
+        reflect: {
+            incoming: false,
+            outgoing: false,
+        },
+        sendToGatewayGroupCreator: 'not-applicable',
+    },
+
+    // Push control
+    [CspE2eWebSessionResumeType.WEB_SESSION_RESUME]: {
+        userProfileDistribution: false,
+        exemptFromBlocking: true,
         reflect: {
             incoming: false,
             outgoing: false,

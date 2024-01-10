@@ -8,6 +8,7 @@ import {
     CspE2eGroupConversationType,
     CspE2eGroupStatusUpdateType,
     CspE2eStatusUpdateType,
+    CspE2eWebSessionResumeType,
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type * as protobuf from '~/common/network/protobuf';
@@ -318,6 +319,11 @@ export abstract class ReflectedMessageTaskBase<
                 // Forward security messages (not currently supported, should not get reflected)
                 case CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE:
                     // TODO(DESK-887): Implement support for PFS
+                    return undefined;
+
+                // Web session resume messages
+                case CspE2eWebSessionResumeType.WEB_SESSION_RESUME:
+                    this._log.warn('Received an unexpected reflected web-session-resume message');
                     return undefined;
 
                 // Unhandled messages

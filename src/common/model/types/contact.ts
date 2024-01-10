@@ -120,18 +120,28 @@ export const PREDEFINED_CONTACTS = {
         publicKey: ensurePublicKey(
             hexToBytes('0f944d18324b2132c61d8e40afce60a0ebd701bb11e89be94972d4229e94722a'),
         ),
+        visibleInContactList: true,
     },
     '*THREEMA': {
         name: 'Threema Channel',
         publicKey: ensurePublicKey(
             hexToBytes('3a38650c681435bd1fb8498e213a2919b09388f5803aa44640e0f706326a865c'),
         ),
+        visibleInContactList: true,
     },
     '*MY3DATA': {
         name: 'My Threema Data',
         publicKey: ensurePublicKey(
             hexToBytes('3b01854f24736e2d0d2dc387eaf2c0273c5049052147132369bf3960d0a0bf02'),
         ),
+        visibleInContactList: true,
+    },
+    '*3MAPUSH': {
+        name: 'Threema Push',
+        publicKey: ensurePublicKey(
+            hexToBytes('fd711e1a0db0e2f03fcaab6c43da2575b9513664a62a12bd0728d87f7125cc24'),
+        ),
+        visibleInContactList: false,
     },
     /* eslint-enable @typescript-eslint/naming-convention */
 } as const;

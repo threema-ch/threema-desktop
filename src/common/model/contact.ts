@@ -628,10 +628,11 @@ export class ContactModelRepository implements ContactRepository {
             return undefined;
         }
 
+        const predefinedContact = PREDEFINED_CONTACTS[identity];
         const contactInit: ContactInit = {
             identity: identityString,
-            publicKey: PREDEFINED_CONTACTS[identity].publicKey,
-            firstName: PREDEFINED_CONTACTS[identity].name,
+            publicKey: predefinedContact.publicKey,
+            firstName: predefinedContact.name,
             lastName: '',
             nickname: undefined,
             colorIndex: idColorIndex({
@@ -642,7 +643,12 @@ export class ContactModelRepository implements ContactRepository {
             verificationLevel: VerificationLevel.FULLY_VERIFIED,
             workVerificationLevel: WorkVerificationLevel.NONE,
             identityType: IdentityType.REGULAR,
-            acquaintanceLevel: AcquaintanceLevel.DIRECT,
+            // Note: Semantics of "AcquaintanceLevel.GROUP" are not quite correct, but since the
+            // behavior should be exactly the same as for group contacts, this should be fine for
+            // now.
+            acquaintanceLevel: predefinedContact.visibleInContactList
+                ? AcquaintanceLevel.DIRECT
+                : AcquaintanceLevel.GROUP,
             featureMask: identityData.featureMask,
             syncState: SyncState.INITIAL,
             activityState: identityData.state,

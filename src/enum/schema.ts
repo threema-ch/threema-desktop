@@ -341,6 +341,15 @@ export enum CspE2eForwardSecurityType {
 }
 
 /**
+ * E2EE Web session resume type.
+ *
+ * @generate name
+ */
+export enum CspE2eWebSessionResumeType {
+    WEB_SESSION_RESUME = 0xfe,
+}
+
+/**
  * E2EE delivery receipt status.
  *
  * @generate convert name
@@ -507,6 +516,7 @@ export enum D2dCspMessageType {
     GROUP_POLL_SETUP = 82,
     GROUP_POLL_VOTE = 83,
     GROUP_DELIVERY_RECEIPT = 129,
+    WEB_SESSION_RESUME = 254,
 }
 /** @generate convert */
 export enum AcquaintanceLevel {

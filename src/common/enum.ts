@@ -872,6 +872,25 @@ export namespace CspE2eForwardSecurityTypeUtils {
         return (NAME_OF as Record<u53, string | undefined>)[value];
     }
 }
+export namespace CspE2eWebSessionResumeType {
+    export const WEB_SESSION_RESUME = 254;
+    export type WEB_SESSION_RESUME = typeof WEB_SESSION_RESUME;
+}
+/**
+ * E2EE Web session resume type.
+ *
+ * @generate name
+ */
+export type CspE2eWebSessionResumeType =
+    (typeof CspE2eWebSessionResumeType)[keyof typeof CspE2eWebSessionResumeType];
+export namespace CspE2eWebSessionResumeTypeUtils {
+    export const NAME_OF = {
+        [CspE2eWebSessionResumeType.WEB_SESSION_RESUME]: 'WEB_SESSION_RESUME',
+    } as const;
+    export function nameOf<T extends u53>(value: T): string | undefined {
+        return (NAME_OF as Record<u53, string | undefined>)[value];
+    }
+}
 export namespace CspE2eDeliveryReceiptStatus {
     export const RECEIVED = 1;
     export type RECEIVED = typeof RECEIVED;
@@ -1254,6 +1273,8 @@ export namespace D2dCspMessageType {
     export type GROUP_POLL_VOTE = typeof GROUP_POLL_VOTE;
     export const GROUP_DELIVERY_RECEIPT = 129;
     export type GROUP_DELIVERY_RECEIPT = typeof GROUP_DELIVERY_RECEIPT;
+    export const WEB_SESSION_RESUME = 254;
+    export type WEB_SESSION_RESUME = typeof WEB_SESSION_RESUME;
 }
 /**
  * PROTOBUF
@@ -1303,6 +1324,7 @@ export namespace D2dCspMessageTypeUtils {
         D2dCspMessageType.GROUP_POLL_SETUP,
         D2dCspMessageType.GROUP_POLL_VOTE,
         D2dCspMessageType.GROUP_DELIVERY_RECEIPT,
+        D2dCspMessageType.WEB_SESSION_RESUME,
     ] as const);
     export function fromNumber(value: u53, fallback?: D2dCspMessageType): D2dCspMessageType {
         if ((ALL as ReadonlySet<u53>).has(value)) {
