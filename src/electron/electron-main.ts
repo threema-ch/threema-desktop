@@ -912,9 +912,14 @@ function main(
                         "img-src 'self' data: blob:",
                         "media-src 'self' data: blob:",
                         "object-src 'none'",
-                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // TODO(DESK-81): Remove unsafe-inline and unsafe-eval
-                        // "style-src 'self' https://static.threema.ch",
-                        "style-src 'self' 'unsafe-inline' https://static.threema.ch", // TODO(DESK-81): Remove unsafe-inline and unsafe-eval
+                        // TODO(DESK-154): Get rid of 'unsafe-inline' by generating and injecting
+                        //       script and stylesheet resource hashes using our build system. This
+                        //       probably requires writing a custom Vite plugin.
+                        //
+                        // Note: wasm-unsafe-eval is a requirement for being able to load any
+                        //       WebAssembly module.
+                        "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+                        "style-src 'self' 'unsafe-inline' https://static.threema.ch",
                         "worker-src 'self'",
 
                         // Document directives
