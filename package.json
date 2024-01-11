@@ -109,6 +109,7 @@
     }
   },
   "devDependencies": {
+    "@electron/fuses": "1.7.0",
     "@electron/notarize": "2.2.0",
     "@electron/osx-sign": "1.0.5",
     "@electron/rebuild": "3.4.1",
