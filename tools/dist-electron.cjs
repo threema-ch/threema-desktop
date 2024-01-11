@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const {join, resolve} = require('node:path');
+const process = require('node:process');
 
 // Note: Not listed as a dependency because this is tied to electron and we take whatever we get here.
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -309,5 +310,8 @@ if (require.main === module) {
     const variant = argv[0];
     const environment = argv[1];
 
-    packageApp(variant, environment).catch((error) => console.error(error));
+    packageApp(variant, environment).catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
 }
