@@ -249,7 +249,7 @@ export function createMessageReaction(
         messageUid,
         reaction: reaction.type,
         reactionAt: reaction.at,
-        senderContactIdentity: reaction.senderIdentity,
+        senderIdentity: reaction.senderIdentity,
     });
 }
 
@@ -965,9 +965,7 @@ export function backendTests(
             expect(newReaction[0]?.reaction).to.not.equal(undefined);
             expect(formerReaction[0]?.reaction).to.not.equal(newReaction[0]?.reaction);
             expect(formerReaction[0]?.reactionAt).to.not.equal(newReaction[0]?.reactionAt);
-            expect(formerReaction[0]?.senderContactIdentity).to.equal(
-                newReaction[0]?.senderContactIdentity,
-            );
+            expect(formerReaction[0]?.senderIdentity).to.equal(newReaction[0]?.senderIdentity);
 
             // Ensure that we cannot create two messages with the same ID in
             // the same conversation
@@ -1142,7 +1140,7 @@ export function backendTests(
                     {
                         reaction: MessageReaction.DECLINE as MessageReaction,
                         reactionAt: new Date(1980),
-                        senderContactIdentity: ensureIdentityString('TESTTEST'),
+                        senderIdentity: ensureIdentityString('TESTTEST'),
                     },
                 ],
             });
@@ -1190,13 +1188,13 @@ export function backendTests(
             const lastReaction = {
                 reaction: MessageReaction.ACKNOWLEDGE as MessageReaction,
                 reactionAt: new Date(180),
-                senderContactIdentity: ensureIdentityString('TESTTEST'),
+                senderIdentity: ensureIdentityString('TESTTEST'),
             };
 
             createMessageReaction(db, message2.uid, {
                 type: lastReaction.reaction,
                 at: lastReaction.reactionAt,
-                senderIdentity: lastReaction.senderContactIdentity,
+                senderIdentity: lastReaction.senderIdentity,
             });
 
             expect(db.getMessageByUid(message2.uid)?.reactions[0]).to.deep.equal(lastReaction);

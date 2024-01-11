@@ -362,7 +362,7 @@ function createOrUpdateReaction(
     db.createOrUpdateMessageReaction({
         messageUid,
         reactionAt: reaction.reactionAt,
-        senderContactIdentity: reaction.senderContactIdentity,
+        senderIdentity: reaction.senderIdentity,
         reaction: reaction.reaction,
     });
 }
@@ -514,18 +514,16 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
         view: Readonly<TView>,
         reaction: MessageReaction,
         reactionAt: Date,
-        senderContactIdentity: IdentityStringOrMe,
+        senderIdentity: IdentityStringOrMe,
     ): void {
         // Update the message
         message.update(() => {
             const messageReaction: MessageReactionView = {
                 reactionAt,
                 reaction,
-                senderContactIdentity,
+                senderIdentity,
             };
-            const filtered = view.reactions.filter(
-                (r) => r.senderContactIdentity !== senderContactIdentity,
-            );
+            const filtered = view.reactions.filter((r) => r.senderIdentity !== senderIdentity);
             filtered.push(messageReaction);
             const change = {
                 reactions: filtered,
@@ -611,8 +609,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             if (
                 view.reactions.filter(
                     (reaction) =>
-                        reaction.senderContactIdentity === reactionSender &&
-                        reaction.reaction === type,
+                        reaction.senderIdentity === reactionSender && reaction.reaction === type,
                 ).length !== 0
             ) {
                 return;
@@ -792,8 +789,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             if (
                 view.reactions.filter((reaction) => {
                     const reactionExists =
-                        reaction.senderContactIdentity === reactionSender &&
-                        reaction.reaction === type;
+                        reaction.senderIdentity === reactionSender && reaction.reaction === type;
                     const isOwnReactionInPrivateChat =
                         this._conversation.receiverLookup.type !== ReceiverType.GROUP &&
                         reactionSender === OWN_IDENTITY_ALIAS;

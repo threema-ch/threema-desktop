@@ -1101,10 +1101,11 @@ export const tMessageReaction = new (class TMessageReactions extends Table<
 
     /**
      * The sender of the reaction
-     * For oneself, a special string is used
+     *
+     * If the current user sent the reaction, the special string 'me' is used.
      */
-    public senderContactIdentity = this.column<IdentityStringOrMe>(
-        'senderContactIdentity',
+    public senderIdentity = this.column<IdentityStringOrMe>(
+        'senderIdentity',
         'custom',
         CUSTOM_TYPES.IDENTITY_OR_ME,
     );

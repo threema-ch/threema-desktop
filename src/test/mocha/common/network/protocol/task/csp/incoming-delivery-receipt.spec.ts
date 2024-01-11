@@ -294,7 +294,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0]).to.eql({
                 reactionAt: ackTimestamp,
                 reaction: MessageReaction.ACKNOWLEDGE,
-                senderContactIdentity: singleConversationReceiverIdentity,
+                senderIdentity: singleConversationReceiverIdentity,
             });
 
             // Change to thumbs down
@@ -305,7 +305,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0]).to.eql({
                 reactionAt: decTimestamp,
                 reaction: MessageReaction.DECLINE,
-                senderContactIdentity: singleConversationReceiverIdentity,
+                senderIdentity: singleConversationReceiverIdentity,
             });
         });
 
@@ -504,9 +504,7 @@ export function run(): void {
             for (const reaction of reactions) {
                 const correspondingReaction = msg
                     .get()
-                    .view.reactions.filter(
-                        (r) => r.senderContactIdentity === reaction.senderIdentity,
-                    );
+                    .view.reactions.filter((r) => r.senderIdentity === reaction.senderIdentity);
                 assert(
                     correspondingReaction.length === 1,
                     'There should be exactly one reaction per sender',
@@ -546,9 +544,7 @@ export function run(): void {
             );
             const changedLastReaction = msg
                 .get()
-                .view.reactions.filter(
-                    (r) => r.senderContactIdentity === lastReaction.senderIdentity,
-                );
+                .view.reactions.filter((r) => r.senderIdentity === lastReaction.senderIdentity);
             assert(
                 changedLastReaction.length === 1,
                 'There should be exactly one reaction per sender',
@@ -567,9 +563,7 @@ export function run(): void {
             for (const reaction of newReactions) {
                 const correspondingReaction = msg
                     .get()
-                    .view.reactions.filter(
-                        (r) => r.senderContactIdentity === reaction.senderIdentity,
-                    );
+                    .view.reactions.filter((r) => r.senderIdentity === reaction.senderIdentity);
                 assert(
                     correspondingReaction.length === 1,
                     'There should be only one reaction per sender',
@@ -592,9 +586,7 @@ export function run(): void {
                 msg.get().view.reactions.length === newReactions.length + 1,
                 'There should be exactly one added reaction',
             );
-            const myReaction = msg
-                .get()
-                .view.reactions.filter((r) => r.senderContactIdentity === me);
+            const myReaction = msg.get().view.reactions.filter((r) => r.senderIdentity === me);
             assert(myReaction.length === 1, 'There should be only one reaction per sender');
 
             // Dummy check since the compiler cant handle it otherwise
@@ -694,9 +686,7 @@ export function run(): void {
             for (const reaction of reactions) {
                 const correspondingReaction = msg
                     .get()
-                    .view.reactions.filter(
-                        (r) => r.senderContactIdentity === reaction.senderIdentity,
-                    );
+                    .view.reactions.filter((r) => r.senderIdentity === reaction.senderIdentity);
                 assert(
                     correspondingReaction.length === 1,
                     'There should be exactly one reaction per sender',
@@ -733,9 +723,7 @@ export function run(): void {
             assert(msg.get().view.reactions.length === reactionLength);
             const correspondingReaction = msg
                 .get()
-                .view.reactions.filter(
-                    (r) => r.senderContactIdentity === lastReaction.senderIdentity,
-                );
+                .view.reactions.filter((r) => r.senderIdentity === lastReaction.senderIdentity);
             assert(
                 correspondingReaction.length === 1,
                 'There should be exactly one reaction per sender',
@@ -757,9 +745,7 @@ export function run(): void {
             for (const reaction of newReactions) {
                 const newReaction = msg
                     .get()
-                    .view.reactions.filter(
-                        (r) => r.senderContactIdentity === reaction.senderIdentity,
-                    );
+                    .view.reactions.filter((r) => r.senderIdentity === reaction.senderIdentity);
                 assert(newReaction.length === 1, 'There should be exactly one reaction per sender');
                 // Dummy check since the compiler cant handle it otherwise
                 assert(newReaction[0] !== undefined);

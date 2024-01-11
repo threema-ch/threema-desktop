@@ -135,7 +135,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'lastReaction').to.eql({
                 reactionAt: decTimestamp,
                 reaction: MessageReaction.DECLINE,
-                senderContactIdentity: OWN_IDENTITY_ALIAS,
+                senderIdentity: OWN_IDENTITY_ALIAS,
             });
         });
 
@@ -198,7 +198,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
                 reactionAt: ackTimestamp,
                 reaction: MessageReaction.ACKNOWLEDGE,
-                senderContactIdentity: OWN_IDENTITY_ALIAS,
+                senderIdentity: OWN_IDENTITY_ALIAS,
             });
 
             // Process DECLINED
@@ -209,7 +209,7 @@ export function run(): void {
             expect(msg.get().view.reactions[0], 'reactions').to.deep.equal({
                 reactionAt: decTimestamp,
                 reaction: MessageReaction.DECLINE,
-                senderContactIdentity: OWN_IDENTITY_ALIAS,
+                senderIdentity: OWN_IDENTITY_ALIAS,
             });
         });
     });

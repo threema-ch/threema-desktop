@@ -369,10 +369,7 @@ export interface DbMessageCommon<T extends MessageType> {
      * An array of reactions to the corresponding message
      * Is empty when no value is present
      */
-    readonly reactions: Pick<
-        DbMessageReaction,
-        'reaction' | 'reactionAt' | 'senderContactIdentity'
-    >[];
+    readonly reactions: Pick<DbMessageReaction, 'reaction' | 'reactionAt' | 'senderIdentity'>[];
 }
 
 /**
@@ -388,16 +385,17 @@ export interface DbMessageReaction {
 
     /**
      * The timestamp of the reaction
-     * Is changed when the reaction goes from ACKNOWLEDGED to DECLINED and vice versa
+     *
+     * It is updated when the reaction goes from ACKNOWLEDGED to DECLINED and vice versa.
      */
     readonly reactionAt: Date;
 
     readonly reaction: MessageReaction;
 
     /**
-     * The sender of the reaction. If it is oneself, the senderContactIdentity is 'me'
+     * The sender of the reaction. If it is oneself, the identity string is 'me'
      */
-    readonly senderContactIdentity: IdentityStringOrMe;
+    readonly senderIdentity: IdentityStringOrMe;
 
     readonly messageUid: DbMessageUid;
 }

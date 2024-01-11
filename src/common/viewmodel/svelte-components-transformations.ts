@@ -50,15 +50,15 @@ export function transformReactions(
         // If the contact was deleted the reaction should still be there
         // so we just display the identity that is associated with the reaction
         const reactionSenderName =
-            reaction.senderContactIdentity !== 'me'
-                ? contacts.getByIdentity(reaction.senderContactIdentity)?.get().view.displayName ??
-                  reaction.senderContactIdentity
-                : reaction.senderContactIdentity;
+            reaction.senderIdentity !== 'me'
+                ? contacts.getByIdentity(reaction.senderIdentity)?.get().view.displayName ??
+                  reaction.senderIdentity
+                : reaction.senderIdentity;
 
         transformedReactions.push({
             at: reaction.reactionAt,
             reactionSender: {
-                identity: reaction.senderContactIdentity,
+                identity: reaction.senderIdentity,
                 name: reactionSenderName,
             },
             type: reaction.reaction,

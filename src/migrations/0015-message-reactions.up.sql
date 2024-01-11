@@ -8,17 +8,17 @@ CREATE TABLE messageReactions (
     -- We use the sender contact's identity instead of the uid to be able to show reactions of
     -- people that have left the group. The special string "me" is used to indicate that the user is
     -- the reaction sender; `NULL` is not used for this due to its behavior in unique constraints.
-    senderContactIdentity TEXT NOT NULL,
+    senderIdentity TEXT NOT NULL,
     -- The message which the reaction belongs to
     messageUid INTEGER NOT NULL REFERENCES messages(uid) ON DELETE CASCADE,
     -- Exactly one reaction per message is allowed for each sender
-    UNIQUE(senderContactIdentity, messageUid)
+    UNIQUE(senderIdentity, messageUid)
 );
 
 -- 2: Migrate the old reactions, which were previously stored directly in the `messages` table
 
-INSERT INTO messageReactions (reactionAt, reaction, senderContactIdentity, messageUid)
-SELECT 
+INSERT INTO messageReactions (reactionAt, reaction, senderIdentity, messageUid)
+SELECT
     lastReactionAt,
     lastReaction,
     -- Until now, it was only possible to react to inbound messages, which allows the following

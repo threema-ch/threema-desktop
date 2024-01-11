@@ -1271,7 +1271,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     .aggregateAsArray({
                         reaction: tMessageLeftJoin.reaction,
                         reactionAt: tMessageLeftJoin.reactionAt,
-                        senderContactIdentity: tMessageLeftJoin.senderContactIdentity,
+                        senderIdentity: tMessageLeftJoin.senderIdentity,
                     })
                     .useEmptyArrayForNoValue(),
             })
@@ -1595,7 +1595,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .select({
                     reactionAt: tMessageReaction.reactionAt,
                     reaction: tMessageReaction.reaction,
-                    senderContactIdentity: tMessageReaction.senderContactIdentity,
+                    senderIdentity: tMessageReaction.senderIdentity,
                     uid: tMessageReaction.uid,
                     messageUid: tMessageReaction.messageUid,
                 })
