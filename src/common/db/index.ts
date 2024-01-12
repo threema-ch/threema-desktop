@@ -739,11 +739,14 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => {deletedFileIds: FileId[]};
 
     /**
-     * Update the reaction to a specified message
+     * Create or update the reaction to a specified message.
      */
-    readonly createOrUpdateMessageReaction: (update: DbCreate<DbMessageReaction>) => void;
+    readonly createOrUpdateMessageReaction: (reaction: DbCreate<DbMessageReaction>) => void;
 
-    readonly getReactionsByMessageUid: (message: DbMessageUid) => DbGet<DbMessageReaction>[];
+    /**
+     * Return all reactions for the message with the specified {@link uid}.
+     */
+    readonly getReactionsByMessageUid: (uid: DbMessageUid) => DbGet<DbMessageReaction>[];
 
     /**
      * Remove the message and associated data.

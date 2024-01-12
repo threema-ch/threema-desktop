@@ -54,9 +54,7 @@ export function pick<T, K extends keyof T = keyof T>(object: Readonly<T>, props:
 export function omit<T, K extends keyof T = keyof T>(object: Readonly<T>, props: K[]): Omit<T, K> {
     return Object.fromEntries(
         keys(object)
-            // We need to trick the typechecker here
-            // We know that every entry of keys.object must be of type K
-            .filter((key) => !props.includes(key as K))
+            .filter((key) => !(props as (keyof T)[]).includes(key))
             .map((key) => [key, object[key]]),
     ) as Omit<T, K>;
 }
@@ -69,6 +67,8 @@ export function isIterable(object: unknown): object is Iterable<unknown> {
 
 /**
  * Returns all keys in the provided object.
+ *
+ * This is a typed version of {@link Object.keys}.
  */
 export function keys<T>(object: {[key in keyof T]: unknown}): (keyof T)[] {
     return Object.keys(object) as (keyof T)[];

@@ -332,7 +332,7 @@ export function run(): void {
             // Ensure that message does not yet have a reaction
             const msg = singleConversation.get().controller.getMessage(messageId);
             assert(msg !== undefined, 'Message not found');
-            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
+            expect(msg.get().view.reactions, 'Message should not yet have a reaction').to.be.empty;
 
             // Process all types of delivery receipt
             for (const status of CspE2eDeliveryReceiptStatusUtils.ALL) {
@@ -359,10 +359,8 @@ export function run(): void {
                 'Expected received at to not have been altered',
             ).to.deep.equal(originalReceivedAt);
             expect(messageModel.view.readAt).to.be.undefined;
-            expect(
-                messageModel.view.reactions.length === 0,
-                'Expected message to not have any reactions',
-            );
+            expect(messageModel.view.reactions, 'Expected message to not have any reactions').to.be
+                .empty;
         });
 
         it('ignore repeated "received" or "read" delivery receipts', async function () {
@@ -439,7 +437,7 @@ export function run(): void {
             // Ensure that message does not yet have a reaction
             const msg = groupConversation.get().controller.getMessage(messageId);
             assert(msg !== undefined, 'Message not found');
-            assert(msg.get().view.reactions.length === 0, 'Message should not yet have a reaction');
+            expect(msg.get().view.reactions, 'Message should not yet have a reaction').to.be.empty;
 
             const reactions = testGroup.members.map((value, idx) => {
                 const senderIdentity = model.contacts.getByUid(value)?.get().view.identity;
@@ -495,20 +493,21 @@ export function run(): void {
             }
 
             // Ensure that the reactions were all registered
-            assert(
-                msg.get().view.reactions.length === reactions.length,
+            expect(
+                msg.get().view.reactions.length,
                 'Number of reactions should be consistent',
-            );
+            ).to.equal(reactions.length);
+
             // Ensure that the messages were correctly registered
             // and that we added this reaction exactly once
             for (const reaction of reactions) {
                 const correspondingReaction = msg
                     .get()
                     .view.reactions.filter((r) => r.senderIdentity === reaction.senderIdentity);
-                assert(
-                    correspondingReaction.length === 1,
+                expect(
+                    correspondingReaction.length,
                     'There should be exactly one reaction per sender',
-                );
+                ).to.equal(1);
                 // Dummy check since the compiler cant handle it otherwise
                 assert(correspondingReaction[0] !== undefined);
                 assert(

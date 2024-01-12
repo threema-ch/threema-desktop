@@ -3,12 +3,7 @@ import type {AnyMessageModel, AnyOutboundMessageModel} from '~/common/model';
 import type {ActiveTaskCodecHandle, ServicesForTasks} from '~/common/network/protocol/task';
 import {DeliveryReceiptTaskBase} from '~/common/network/protocol/task/common/delivery-receipt';
 import type {DeliveryReceipt} from '~/common/network/structbuf/validate/csp/e2e';
-import {
-    ensureIdentityString,
-    type ConversationId,
-    type IdentityString,
-    type MessageId,
-} from '~/common/network/types';
+import type {ConversationId, IdentityString, MessageId} from '~/common/network/types';
 
 /**
  * Receive and process incoming delivery receipts from CSP.
@@ -50,6 +45,10 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
     ): void {
         if (message.ctx === MessageDirection.OUTBOUND) {
             void message.controller.read.fromRemote(handle, readAt);
+        } else {
+            this._log.warn(
+                `Received inbound delivery receipt of type READ for inbound message (ID ${message.ctx})`,
+            );
         }
     }
 
@@ -63,7 +62,7 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
             handle,
             reaction,
             reactedAt,
-            ensureIdentityString(this._senderIdentity),
+            this._senderIdentity,
         );
     }
 }

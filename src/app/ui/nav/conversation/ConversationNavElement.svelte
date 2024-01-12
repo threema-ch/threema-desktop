@@ -247,9 +247,10 @@
                 {#if isGroupConversation}
                   <MdIcon theme="Filled">group</MdIcon>
                 {:else}
-                  <!--The reaction calculation is safe because we only show reactions in the navlist that are in single chats
-                Therefore, there can only ever be one reaction
-                -->
+                  <!--
+                    The reaction indexing here is safe because we only show reactions in the navlist
+                    that are in single chats. Therefore, there can only ever be one reaction.
+                  -->
                   <MessageStatus
                     direction={$lastMessageStore.view.direction}
                     status={$lastMessageStore.view.direction === MessageDirection.OUTBOUND

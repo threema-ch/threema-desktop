@@ -31,6 +31,7 @@ export class ReflectedDeliveryReceiptTask extends DeliveryReceiptTaskBase<Passiv
             clampedCreatedAt,
         );
     }
+
     protected _markAsDelivered(
         handle: PassiveTaskCodecHandle,
         message: AnyOutboundMessageModel,

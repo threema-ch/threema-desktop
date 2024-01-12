@@ -491,6 +491,20 @@ export class ReflectedOutgoingMessageTask
                 return 'discard';
 
             // Status messages
+            case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
+                const instructions: StatusUpdateInstructions = {
+                    messageCategory: 'status-update',
+                    task: new ReflectedDeliveryReceiptTask(
+                        this._services,
+                        messageId,
+                        conversationId,
+                        validatedBody.message,
+                        createdAt,
+                        OWN_IDENTITY_ALIAS,
+                    ),
+                };
+                return instructions;
+            }
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
                 const deliveryReceipt = structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
                     structbuf.csp.e2e.DeliveryReceipt.decode(validatedBody.message.innerData),
@@ -506,21 +520,6 @@ export class ReflectedOutgoingMessageTask
                             groupId: validatedBody.message.groupId,
                         },
                         {status: deliveryReceipt.status, messageIds: deliveryReceipt.messageIds},
-                        createdAt,
-                        OWN_IDENTITY_ALIAS,
-                    ),
-                };
-                return instructions;
-            }
-
-            case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
-                const instructions: StatusUpdateInstructions = {
-                    messageCategory: 'status-update',
-                    task: new ReflectedDeliveryReceiptTask(
-                        this._services,
-                        messageId,
-                        conversationId,
-                        validatedBody.message,
                         createdAt,
                         OWN_IDENTITY_ALIAS,
                     ),

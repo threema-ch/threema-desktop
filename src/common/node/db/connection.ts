@@ -287,6 +287,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.MESSAGE_TYPE:
                 return MessageTypeUtils.contains(value) ? value : fail();
             case CUSTOM_TYPES.MESSAGE_REACTION:
+                // Note: When queried directly, a bigint is returned, but in an aggregation,
+                // ts-sql-query returns a number. For now, support both variants.
                 if (typeof value === 'bigint') {
                     return u64ToU53(value, MessageReactionUtils.contains);
                 }

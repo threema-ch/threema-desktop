@@ -288,11 +288,19 @@ export abstract class ReflectedMessageTaskBase<
                     };
                 }
 
+                // Status messages
+                case CspE2eStatusUpdateType.DELIVERY_RECEIPT:
+                    return {
+                        type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
+                        message: structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
+                            structbuf.csp.e2e.DeliveryReceipt.decode(body),
+                        ),
+                        container: undefined,
+                    };
                 case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
                     const container = structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
                         structbuf.csp.e2e.GroupMemberContainer.decode(body),
                     );
-
                     return {
                         type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
                         message: {
@@ -303,16 +311,6 @@ export abstract class ReflectedMessageTaskBase<
                         container: undefined,
                     };
                 }
-
-                // Status messages
-                case CspE2eStatusUpdateType.DELIVERY_RECEIPT:
-                    return {
-                        type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
-                        message: structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(
-                            structbuf.csp.e2e.DeliveryReceipt.decode(body),
-                        ),
-                        container: undefined,
-                    };
                 case CspE2eStatusUpdateType.TYPING_INDICATOR:
                     // TODO(DESK-589): Implement
                     return undefined;

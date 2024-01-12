@@ -1464,6 +1464,29 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             }
 
             // Status messages
+            case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
+                const deliveryReceipt = structbuf.csp.e2e.DeliveryReceipt.decode(
+                    cspMessageBody as Uint8Array,
+                );
+                const validatedDeliveryReceipt =
+                    structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(deliveryReceipt);
+                const instructions: StatusUpdateInstructions = {
+                    messageCategory: 'status-update',
+                    conversationId: senderConversationId,
+                    missingContactHandling: 'discard',
+                    deliveryReceipt: false,
+                    task: new IncomingDeliveryReceiptTask(
+                        this._services,
+                        messageId,
+                        senderConversationId,
+                        validatedDeliveryReceipt,
+                        clampedCreatedAt,
+                        senderIdentity,
+                    ),
+                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
+                };
+                return instructions;
+            }
             case CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT: {
                 const validatedContainer =
                     structbuf.validate.csp.e2e.GroupMemberContainer.SCHEMA.parse(
@@ -1499,30 +1522,6 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
                         this._services,
                         messageId,
                         groupConversationId,
-                        validatedDeliveryReceipt,
-                        clampedCreatedAt,
-                        senderIdentity,
-                    ),
-                    reflectFragment: reflectFragmentFor(maybeCspE2eType),
-                };
-                return instructions;
-            }
-
-            case CspE2eStatusUpdateType.DELIVERY_RECEIPT: {
-                const deliveryReceipt = structbuf.csp.e2e.DeliveryReceipt.decode(
-                    cspMessageBody as Uint8Array,
-                );
-                const validatedDeliveryReceipt =
-                    structbuf.validate.csp.e2e.DeliveryReceipt.SCHEMA.parse(deliveryReceipt);
-                const instructions: StatusUpdateInstructions = {
-                    messageCategory: 'status-update',
-                    conversationId: senderConversationId,
-                    missingContactHandling: 'discard',
-                    deliveryReceipt: false,
-                    task: new IncomingDeliveryReceiptTask(
-                        this._services,
-                        messageId,
-                        senderConversationId,
                         validatedDeliveryReceipt,
                         clampedCreatedAt,
                         senderIdentity,

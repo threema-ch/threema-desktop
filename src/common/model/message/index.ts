@@ -1,4 +1,11 @@
-import type {DbAnyMessage, DbConversation, DbMessageCommon, DbMessageFor, UidOf} from '~/common/db';
+import type {
+    DbAnyMessage,
+    DbConversation,
+    DbMessageCommon,
+    DbMessageFor,
+    DbMessageUid,
+    UidOf,
+} from '~/common/db';
 import {
     CspE2eDeliveryReceiptStatus,
     Existence,
@@ -109,14 +116,12 @@ function getCommonView<TDirection extends MessageDirection>(
     direction: TDirection,
     message: DbAnyMessage,
 ): BaseMessageView<TDirection> {
-    const reactionsView: MessageReactionView[] = message.reactions;
-
     const common: CommonBaseMessageView = {
         id: message.id,
         createdAt: message.createdAt,
         readAt: message.readAt,
         ordinal: message.ordinal,
-        reactions: reactionsView,
+        reactions: message.reactions,
     };
 
     switch (direction) {
@@ -351,11 +356,11 @@ function update(
 }
 
 /**
- * Update a message group reaction
+ * Create or update a message reaction.
  */
 function createOrUpdateReaction(
     services: ServicesForModel,
-    messageUid: UidOf<DbMessageCommon<MessageType>>,
+    messageUid: DbMessageUid,
     reaction: MessageReactionView,
 ): void {
     const {db} = services;
@@ -554,7 +559,6 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             this._handleReaction(TriggerSource.LOCAL, type, reactedAt, OWN_IDENTITY_ALIAS),
         fromSync: (type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe) =>
             this._handleReaction(TriggerSource.SYNC, type, reactedAt, reactionSender),
-
         fromRemote: async (
             handle: ActiveTaskCodecHandle<'volatile'>,
             type: MessageReaction,
@@ -601,7 +605,6 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         reactedAt: Date,
         reactionSender: IdentityStringOrMe,
     ): void {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.meta.run((handle) => {
             const view = handle.view();
 
@@ -629,7 +632,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             // Queue a persistent task to send a notification, then reflect it.
             if (source === TriggerSource.LOCAL) {
                 assert(
-                    reactionSender === 'me',
+                    reactionSender === OWN_IDENTITY_ALIAS,
                     'Reaction with trigger source LOCAL must be from current user',
                 );
 
@@ -779,22 +782,20 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         reactedAt: Date,
         reactionSender: IdentityStringOrMe,
     ): void {
-        this._log.warn('We are running the outbound task');
-
         this.meta.run((handle) => {
             const view = handle.view();
 
             // Ignore if this reaction of this person already exists
             // We also filter messages that were wrongly acked by ourselves if this was not a group
             if (
-                view.reactions.filter((reaction) => {
+                view.reactions.some((reaction) => {
                     const reactionExists =
                         reaction.senderIdentity === reactionSender && reaction.reaction === type;
-                    const isOwnReactionInPrivateChat =
+                    const isOwnReactionInNonGroupChat =
                         this._conversation.receiverLookup.type !== ReceiverType.GROUP &&
                         reactionSender === OWN_IDENTITY_ALIAS;
-                    return reactionExists || isOwnReactionInPrivateChat;
-                }).length !== 0
+                    return reactionExists || isOwnReactionInNonGroupChat;
+                })
             ) {
                 return;
             }
@@ -802,10 +803,10 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             // Update database
             this._reaction(handle, view, type, reactedAt, reactionSender);
 
-            // Queue a persistent task to send a notification, then reflect it.
+            // For local reactions, queue a persistent task to send and reflect the reaction.
             if (source === TriggerSource.LOCAL) {
                 assert(
-                    reactionSender === 'me',
+                    reactionSender === OWN_IDENTITY_ALIAS,
                     'Reaction with trigger source LOCAL must be from current user',
                 );
 

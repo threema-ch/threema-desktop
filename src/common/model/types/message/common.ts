@@ -22,11 +22,13 @@ import type {ProxyMarked} from '~/common/utils/endpoint';
 
 export const OWN_IDENTITY_ALIAS = 'me';
 export type IdentityStringOrMe = IdentityString | typeof OWN_IDENTITY_ALIAS;
+
 export interface MessageReactionView {
     readonly reactionAt: Date;
     readonly reaction: MessageReaction;
     readonly senderIdentity: IdentityStringOrMe;
 }
+
 /**
  * Base view for all message types and directions.
  */
@@ -59,7 +61,6 @@ export interface CommonBaseMessageView {
 
     /**
      * Reactions to a message.
-     * Is empty if no reaction is present
      */
     readonly reactions: MessageReactionView[];
 

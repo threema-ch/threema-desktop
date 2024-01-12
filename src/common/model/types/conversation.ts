@@ -178,8 +178,7 @@ export interface ConversationControllerHandle {
     readonly decrementUnreadMessageCount: () => void;
 
     /**
-     * Get the receiver of this conversation
-     * this is particularly important to know if we are sending reactions to a group or a a single chat
+     * Return the receiver model store of this conversation.
      */
     readonly getReceiver: () => AnyReceiverStore;
 }

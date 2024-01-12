@@ -1275,7 +1275,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     })
                     .useEmptyArrayForNoValue(),
             })
-            .groupBy('uid');
+            .groupBy(tMessage.uid);
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -1571,24 +1571,23 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
-    public createOrUpdateMessageReaction(update: DbCreate<DbMessageReaction>): void {
+    public createOrUpdateMessageReaction(reaction: DbCreate<DbMessageReaction>): void {
+        const update = pick(reaction, ['reactionAt', 'reaction', 'senderIdentity', 'messageUid']);
         const updated = sync(
             this._db
                 .insertInto(tMessageReaction)
-                .set({
-                    ...update,
-                })
-                .onConflictDoUpdateSet({...update})
+                .set(update)
+                .onConflictDoUpdateSet(update)
                 .executeInsert(),
         );
         assert(
             updated === 1,
-            `Expected to update exactly one message reaction with message UID ${update.messageUid}, but we updated ${updated} rows.`,
+            `Expected to update exactly one message reaction with message UID ${reaction.messageUid}, but we updated ${updated} rows.`,
         );
     }
 
     /** @inheritdoc */
-    public getReactionsByMessageUid(messageUid: DbMessageUid): DbGet<DbMessageReaction>[] {
+    public getReactionsByMessageUid(uid: DbMessageUid): DbGet<DbMessageReaction>[] {
         const result = sync(
             this._db
                 .selectFrom(tMessageReaction)
@@ -1599,7 +1598,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     uid: tMessageReaction.uid,
                     messageUid: tMessageReaction.messageUid,
                 })
-                .where(tMessageReaction.messageUid.equals(messageUid))
+                .where(tMessageReaction.messageUid.equals(uid))
                 .executeSelectMany(),
         );
         return result;
@@ -1634,12 +1633,18 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                     `${message.type}, but we updated ${updated} rows.`,
             );
 
-            message.reactions?.forEach((reaction) => {
+            // Add reactions.
+            //
+            // Note: This logic only enables adding or updating reactions, but it cannot remove
+            // reactions. This is fine for now, since that's not supported by the protocol anyways.
+            // But if we extend the protocol (emoji reactions and removable reactions), we'll need
+            // to update the code (probably using diffing).
+            for (const reaction of message.reactions ?? []) {
                 this.createOrUpdateMessageReaction({
                     ...reaction,
                     messageUid: messageWithoutReactions.uid,
                 });
-            });
+            }
 
             // Update associated data as well
             //

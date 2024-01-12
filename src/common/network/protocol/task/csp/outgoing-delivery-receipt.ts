@@ -82,10 +82,6 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
     }
 
     public async run(handle: ActiveTaskCodecHandle<'persistent'>): Promise<void> {
-        // Common message properties
-        const createdAt = this._createdAt;
-        const allowUserProfileDistribution = isReaction(this._status);
-
         // Send delivery receipts in groups of up to 512 message IDs
         for (const group of groupArray(this._messageIds, 512)) {
             this._log.info(
@@ -96,63 +92,78 @@ export class OutgoingDeliveryReceiptTask<TReceiver extends AnyReceiver>
                     .join(',')}`,
             );
             switch (this._receiver.type) {
-                case ReceiverType.CONTACT: {
-                    const messageProperties: MessageProperties<
-                        DeliveryReceiptEncodable,
-                        CspE2eStatusUpdateType
-                    > = {
-                        type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
-                        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
-                            messageIds: group,
-                            status: this._status,
-                        }),
-                        cspMessageFlags: CspMessageFlags.none(),
-                        messageId: randomMessageId(this._services.crypto),
-                        createdAt,
-                        allowUserProfileDistribution,
-                    } as const;
-                    const messageTask = new OutgoingCspMessageTask<
-                        DeliveryReceiptEncodable,
-                        Contact,
-                        CspE2eStatusUpdateType
-                    >(this._services, this._receiver, messageProperties);
-                    await messageTask.run(handle);
+                case ReceiverType.CONTACT:
+                    await this._sendContactDeliveryReceipt(this._receiver, group, handle);
                     break;
-                }
-                case ReceiverType.GROUP: {
-                    const messageProperties: MessageProperties<
-                        GroupMemberContainerEncodable,
-                        CspE2eGroupStatusUpdateType
-                    > = {
-                        type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
-                        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
-                            groupId: this._receiver.view.groupId,
-                            creatorIdentity: UTF8.encode(this._receiver.view.creatorIdentity),
-                            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
-                                messageIds: group,
-                                status: this._status,
-                            }),
-                        }),
-                        cspMessageFlags: CspMessageFlags.none(),
-                        messageId: randomMessageId(this._services.crypto),
-                        createdAt,
-                        allowUserProfileDistribution,
-                    };
-                    const messageTask = new OutgoingCspMessageTask<
-                        GroupMemberContainerEncodable,
-                        Group,
-                        CspE2eGroupStatusUpdateType
-                    >(this._services, this._receiver, messageProperties);
-                    await messageTask.run(handle);
+                case ReceiverType.GROUP:
+                    await this._sendGroupDeliveryReceipt(this._receiver, group, handle);
                     break;
-                }
                 case ReceiverType.DISTRIBUTION_LIST:
                     // TODO(DESK-237)
                     return;
-
                 default:
                     unreachable(this._receiver);
             }
         }
+    }
+
+    private async _sendContactDeliveryReceipt(
+        contact: Contact,
+        messageIds: MessageId[],
+        handle: ActiveTaskCodecHandle<'persistent'>,
+    ): Promise<void> {
+        const messageProperties: MessageProperties<
+            DeliveryReceiptEncodable,
+            CspE2eStatusUpdateType
+        > = {
+            type: CspE2eStatusUpdateType.DELIVERY_RECEIPT,
+            encoder: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
+                messageIds,
+                status: this._status,
+            }),
+            cspMessageFlags: CspMessageFlags.none(),
+            messageId: randomMessageId(this._services.crypto),
+            createdAt: this._createdAt,
+            allowUserProfileDistribution: isReaction(this._status),
+        } as const;
+
+        const messageTask = new OutgoingCspMessageTask<
+            DeliveryReceiptEncodable,
+            Contact,
+            CspE2eStatusUpdateType
+        >(this._services, contact, messageProperties);
+        await messageTask.run(handle);
+    }
+
+    private async _sendGroupDeliveryReceipt(
+        group: Group,
+        messageIds: MessageId[],
+        handle: ActiveTaskCodecHandle<'persistent'>,
+    ): Promise<void> {
+        const messageProperties: MessageProperties<
+            GroupMemberContainerEncodable,
+            CspE2eGroupStatusUpdateType
+        > = {
+            type: CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT,
+            encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupMemberContainer, {
+                groupId: group.view.groupId,
+                creatorIdentity: UTF8.encode(group.view.creatorIdentity),
+                innerData: structbuf.bridge.encoder(structbuf.csp.e2e.DeliveryReceipt, {
+                    messageIds,
+                    status: this._status,
+                }),
+            }),
+            cspMessageFlags: CspMessageFlags.none(),
+            messageId: randomMessageId(this._services.crypto),
+            createdAt: this._createdAt,
+            allowUserProfileDistribution: isReaction(this._status),
+        };
+
+        const messageTask = new OutgoingCspMessageTask<
+            GroupMemberContainerEncodable,
+            Group,
+            CspE2eGroupStatusUpdateType
+        >(this._services, group, messageProperties);
+        await messageTask.run(handle);
     }
 }
