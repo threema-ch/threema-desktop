@@ -25,7 +25,7 @@
         <span class={`element ${element.color ?? 'default'}`}>
           <MdIcon theme={element.filled === true ? 'Filled' : 'Outlined'}>{element.icon}</MdIcon>
 
-          {#if element.count !== undefined && element.count > 1}
+          {#if element.count !== undefined && (element.count > 1 || options.alwaysShowNumber === true)}
             <Text text={element.count.toString()} />
           {/if}
         </span>

@@ -271,6 +271,7 @@
 
   $: supportsReactions =
     !conversation.isBlocked &&
+    !conversation.isDisabled &&
     (direction === 'inbound' || conversation.type === ReceiverType.GROUP);
 
   $: timestamp = reactive(
@@ -391,6 +392,7 @@
               indicatorOptions: {
                 hideStatus: conversation.type !== ReceiverType.CONTACT && status.sent !== undefined,
                 fillReactions: conversation.type === ReceiverType.CONTACT,
+                alwaysShowNumber: conversation.type === ReceiverType.GROUP,
               },
               hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
             }}

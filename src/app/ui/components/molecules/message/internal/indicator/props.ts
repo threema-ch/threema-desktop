@@ -13,6 +13,11 @@ export interface IndicatorProps {
          * is outbound.
          */
         readonly fillReactions?: boolean;
+
+        /**
+         * Whether to always show the number, even if only one reaction is there.
+         */
+        readonly alwaysShowNumber?: boolean;
     };
     readonly reactions: Readonly<Reaction[]>;
     readonly status: Status;
