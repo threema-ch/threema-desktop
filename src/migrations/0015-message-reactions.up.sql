@@ -19,18 +19,23 @@ CREATE TABLE messageReactions (
 
 INSERT INTO messageReactions (reactionAt, reaction, senderIdentity, messageUid)
 SELECT
-    lastReactionAt,
-    lastReaction,
+    m.lastReactionAt,
+    m.lastReaction,
     -- Until now, it was only possible to react to inbound messages, which allows the following
     -- assumptions:
     --     - If the message was outbound, the reaction has to be from a contact, and needs to be
     --       looked up.
     --     - If the message was inbound, the reaction was by the user themself, and will be marked
     --       using the special string "me".
-    CASE WHEN senderContactUid IS NULL THEN
-        (SELECT identity FROM contacts
-            WHERE contacts.uid =
-                (SELECT contactUid FROM conversations WHERE uid = conversationUid)) ELSE 'me' END,
-    uid
-FROM messages
-WHERE messages.lastReaction IS NOT NULL AND messages.lastReactionAt IS NOT NULL;
+    CASE WHEN m.senderContactUid IS NULL THEN
+        ct.identity
+    ELSE
+        'me'
+    END,
+    m.uid
+FROM messages AS m
+INNER JOIN conversations AS cv ON m.conversationUid = cv.uid
+INNER JOIN contacts AS ct ON cv.contactUid = ct.uid
+WHERE m.lastReaction IS NOT NULL
+  AND m.lastReactionAt IS NOT NULL
+  AND cv.contactUid IS NOT NULL;
