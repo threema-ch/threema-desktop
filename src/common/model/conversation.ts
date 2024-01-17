@@ -1,4 +1,4 @@
-import type {DatabaseBackend, DbConversationUid, DbReceiverLookup, UidOf} from '~/common/db';
+import type {DbConversationUid, DbReceiverLookup, UidOf} from '~/common/db';
 import {
     AcquaintanceLevel,
     ConversationVisibility,
@@ -11,7 +11,7 @@ import {
     ReceiverType,
     TriggerSource,
 } from '~/common/enum';
-import {getGroupTag, type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {
     Conversation,
@@ -30,6 +30,7 @@ import type {
     SetOfAnyLocalMessageModelStore,
 } from '~/common/model/types/message';
 import type {AnyReceiver, AnyReceiverStore} from '~/common/model/types/receiver';
+import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {LazyWeakRef, LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -346,7 +347,7 @@ export class ConversationModelController implements ConversationController {
 
     public constructor(
         private readonly _services: ServicesForModel,
-        private readonly _receiverLookup: DbReceiverLookup,
+        public readonly receiverLookup: DbReceiverLookup,
         public readonly uid: DbConversationUid,
         tag: string,
     ) {
@@ -354,7 +355,7 @@ export class ConversationModelController implements ConversationController {
         this._log = this._services.logging.logger(tag);
         this._handle = {
             uid,
-            receiverLookup: _receiverLookup,
+            receiverLookup,
             conversationId: this.conversationId.bind(this),
             decrementUnreadMessageCount: this.decrementUnreadMessageCount.bind(this),
             getReceiver: this.receiver.bind(this),
@@ -391,7 +392,7 @@ export class ConversationModelController implements ConversationController {
 
     public receiver(): AnyReceiverStore {
         return this.meta.run(() => {
-            const receiver = this._receiverLookup;
+            const receiver = this.receiverLookup;
             switch (receiver.type) {
                 case ReceiverType.CONTACT:
                     return contact.getByUid(this._services, receiver.uid, Existence.ENSURED);
@@ -529,7 +530,7 @@ export class ConversationModelController implements ConversationController {
 
         update(
             this._services,
-            this._receiverLookup,
+            this.receiverLookup,
             ensureExactConversationUpdate(change),
             this.uid,
         );
@@ -576,7 +577,7 @@ export class ConversationModelController implements ConversationController {
      * has to be sent instead.
      */
     private _shouldSendReadReceipt(): boolean {
-        if (this._receiverLookup.type !== ReceiverType.CONTACT) {
+        if (this.receiverLookup.type !== ReceiverType.CONTACT) {
             return false;
         }
 
@@ -803,36 +804,6 @@ export class ConversationModelController implements ConversationController {
     }
 }
 
-/**
- * Return a log tag for the specified receiver.
- * This should only be used for debugging purposes.
- */
-// eslint-disable-next-line consistent-return
-function getDebugTagForReceiver(
-    db: DatabaseBackend,
-    receiver: DbReceiverLookup,
-): string | undefined {
-    if (!import.meta.env.DEBUG) {
-        return undefined;
-    }
-    switch (receiver.type) {
-        case ReceiverType.CONTACT:
-            return db.getContactByUid(receiver.uid)?.identity;
-        case ReceiverType.DISTRIBUTION_LIST:
-            // TODO(DESK-236): Implement distribution list
-            throw new Error('TODO(DESK-236): Implement distribution list');
-        case ReceiverType.GROUP: {
-            const groupReceiver = db.getGroupByUid(receiver.uid);
-            if (groupReceiver !== undefined) {
-                return getGroupTag(groupReceiver.creatorIdentity, groupReceiver.groupId);
-            }
-            return undefined;
-        }
-        default:
-            unreachable(receiver);
-    }
-}
-
 function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Conversation>> {
     // Note: This may be inefficient. It would be more efficient to get all UIDs, then filter
     // out all UIDs we have cached stores for and then make an aggregated request for the
@@ -840,10 +811,10 @@ function all(services: ServicesForModel): LocalSetStore<LocalModelStore<Conversa
     return cache.set.derefOrCreate(() => {
         const {db, logging} = services;
         const stores = db.getAllConversationReceivers().map(({receiver}) => {
-            const tag = getDebugTagForReceiver(db, receiver);
+            const tag = getDebugTagForReceiver(receiver);
             return getByReceiver(services, receiver, Existence.ENSURED, tag);
         });
-        const tag = `conversation[]`;
+        const tag = 'conversation[]';
         return new LocalSetStore(new Set(stores), {
             debug: {
                 log: logging.logger(`model.${tag}`),
@@ -862,7 +833,7 @@ export class ConversationModelStore extends LocalModelStore<Conversation> {
         tag: string,
     ) {
         const {logging} = services;
-        tag = `conversation.${tag}`;
+        tag = `${tag}.conversation`;
         super(
             conversation,
             new ConversationModelController(services, receiverLookup, uid, tag),
@@ -906,7 +877,7 @@ export class ConversationModelRepository implements ConversationRepository {
 
     /** @inheritdoc */
     public getForReceiver(receiver: DbReceiverLookup): LocalModelStore<Conversation> | undefined {
-        const tag = getDebugTagForReceiver(this._services.db, receiver);
+        const tag = getDebugTagForReceiver(receiver);
         return getByReceiver(this._services, receiver, Existence.UNKNOWN, tag);
     }
 

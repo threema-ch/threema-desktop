@@ -15,6 +15,7 @@ import type {
     ProfilePictureSource,
     ProfilePictureView,
 } from '~/common/model/types/profile-picture';
+import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import {LocalModelStore} from '~/common/model/utils/model-store';
@@ -294,25 +295,9 @@ export class ProfilePictureModelController implements ProfilePictureController {
         private readonly _services: ServicesForModel,
         private readonly _receiver: DbReceiverLookup & ConversationId,
     ) {
-        switch (_receiver.type) {
-            case ReceiverType.CONTACT:
-                this._log = _services.logging.logger(
-                    `model.contact.${_receiver.uid}.profile-picture`,
-                );
-                break;
-            case ReceiverType.GROUP:
-                this._log = _services.logging.logger(
-                    `model.group.${_receiver.uid}.profile-picture`,
-                );
-                break;
-            case ReceiverType.DISTRIBUTION_LIST:
-                this._log = _services.logging.logger(
-                    `model.distribution-list.${_receiver.uid}.profile-picture`,
-                );
-                break;
-            default:
-                unreachable(_receiver);
-        }
+        this._log = _services.logging.logger(
+            `model.${getDebugTagForReceiver(_receiver)}.profile-picture`,
+        );
     }
 
     /**
@@ -507,7 +492,7 @@ export class ProfilePictureModelStore extends LocalModelStore<ProfilePicture> {
             undefined,
             {
                 debug: {
-                    log: logging.logger(`model.${tag}`),
+                    log: logging.logger(`model.${getDebugTagForReceiver(receiver)}.${tag}`),
                     tag,
                 },
             },

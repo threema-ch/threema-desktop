@@ -32,7 +32,7 @@ const DEFAULT_DEVICE_NAME = ensureDeviceName(`${import.meta.env.APP_NAME} for De
 export class DevicesSettingsModelStore extends LocalModelStore<DevicesSettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
-        const tag = 'devices-settings';
+        const tag = 'settings.devices';
 
         const devicesSettings = services.db.getSettings('devices') ?? {
             deviceName: DEFAULT_DEVICE_NAME,

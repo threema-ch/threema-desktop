@@ -1,6 +1,4 @@
 import type {ElectronIpc} from '~/common/electron-ipc';
-import type {GroupId, IdentityString} from '~/common/network/types';
-import {u64ToHexLe} from '~/common/utils/number';
 
 /**
  * Log function to log a record for a specific level.
@@ -255,11 +253,6 @@ export class RemoteFileLogger implements Logger {
             CONSOLE_LOGGER.error('Unable to write log entry (via IPC):', error);
         });
     }
-}
-
-// TODO(DESK-607): replace occurences with groupDebugString
-export function getGroupTag(identity: IdentityString, groupId: GroupId): string {
-    return `group.${identity}.${u64ToHexLe(groupId)}`;
 }
 
 /**

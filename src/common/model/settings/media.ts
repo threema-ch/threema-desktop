@@ -47,7 +47,7 @@ const DEFAULT_AUTO_DOWNLOAD: AutoDownload = {on: true, limitInMb: RESTRICTED_DOW
 export class MediaSettingsModelStore extends LocalModelStore<MediaSettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
-        const tag = 'media-settings';
+        const tag = 'settings.media';
         const mediaSettings = services.db.getSettings('media') ?? {
             autoDownload: DEFAULT_AUTO_DOWNLOAD,
         };

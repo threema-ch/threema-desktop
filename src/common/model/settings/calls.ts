@@ -29,7 +29,7 @@ export class CallsSettingsModelController implements CallsSettingsController {
 export class CallsSettingsModelStore extends LocalModelStore<CallsSettings> {
     public constructor(services: ServicesForModel, callsSettingsDefaults: CallsSettingsView) {
         const {logging} = services;
-        const tag = 'calls-settings';
+        const tag = 'settings.calls';
         const callsSettings = services.db.getSettings('calls') ?? callsSettingsDefaults;
 
         super(callsSettings, new CallsSettingsModelController(services), undefined, undefined, {

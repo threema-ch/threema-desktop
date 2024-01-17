@@ -44,7 +44,7 @@ const DEFAULT_INACTIVE_CONTACT_POLICY = InactiveContactsPolicy.SHOW;
 export class AppearanceSettingsModelStore extends LocalModelStore<AppearanceSettings> {
     public constructor(services: ServicesForModel) {
         const {logging} = services;
-        const tag = 'appearance-settings';
+        const tag = 'settings.appearance';
 
         const appearanceSettings = services.db.getSettings('appearance') ?? {
             timeFormat: DEFAULT_TIME_FORMAT,

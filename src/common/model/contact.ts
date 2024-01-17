@@ -504,7 +504,7 @@ export class ContactModelStore extends LocalModelStore<Contact> {
         initialProfilePictureData: ContactProfilePictureFields,
     ) {
         const {logging} = services;
-        const tag = `contact.${contact.identity}`;
+        const tag = `contact.${uid}`;
         super(
             contact,
             new ContactModelController(services, uid, contact.identity, initialProfilePictureData),
@@ -568,7 +568,7 @@ export class ContactModelRepository implements ContactRepository {
     private readonly _log: Logger;
 
     public constructor(private readonly _services: ServicesForModel) {
-        this._log = _services.logging.logger('model.contact.contacts-model');
+        this._log = _services.logging.logger('model.contact-repository');
 
         // TODO(DESK-697): This is a quick workaround to make test/mocha/common/model/contact.spec.ts work,
         // but should be probably a private class attribute (not a trivial change as of now), or maybe be

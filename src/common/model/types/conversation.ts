@@ -48,6 +48,7 @@ export type ConversationUpdate = Partial<Omit<ConversationView, 'unreadMessageCo
 export type ConversationUpdateFromToSync = Pick<ConversationUpdate, 'category' | 'visibility'>;
 export type ConversationController = {
     readonly uid: UidOf<DbConversation>;
+    readonly receiverLookup: DbReceiverLookup;
     readonly meta: ModelLifetimeGuard<ConversationView>;
     readonly receiver: () => AnyReceiverStore;
     /**

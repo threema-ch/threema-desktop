@@ -1,6 +1,7 @@
 import type {Conversation} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModelStore} from '~/common/model/types/message';
+import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import {LocalSetBasedSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
@@ -19,9 +20,10 @@ export function getMessageSetStore(
 ): ConversationViewModel['messageSetStore'] {
     const {logging} = services;
     const conversationModel = conversationModelStore.get();
+    const receiverLookup = conversationModel.controller.receiverLookup;
 
     // Options for all derived stores below.
-    const tag = `conversation.main.store.message-set-store`;
+    const tag = `${getDebugTagForReceiver(receiverLookup)}.conversation-message[]`;
     const storeOptions = {
         debug: {
             log: logging.logger(`viewmodel.${tag}`),

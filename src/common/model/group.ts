@@ -7,7 +7,7 @@ import type {
     DbReceiverLookup,
 } from '~/common/db';
 import {Existence, GroupUserState, ReceiverType, TriggerSource} from '~/common/enum';
-import {getGroupTag, type Logger} from '~/common/logging';
+import type {Logger} from '~/common/logging';
 import * as contact from '~/common/model/contact';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import * as conversation from '~/common/model/conversation';
@@ -419,7 +419,7 @@ class GroupMemberModelController implements GroupMemberController {
         private readonly _group: GroupControllerHandle,
         private readonly _meta: ModelLifetimeGuard<GroupView>,
     ) {
-        this._log = _services.logging.logger(`model.group-members.${_group.debugString}`);
+        this._log = _services.logging.logger(`model.group.${_group.uid}.members`);
     }
 
     /** @inheritdoc */
@@ -647,7 +647,7 @@ export class GroupModelController implements GroupController {
             uid: this.uid,
         };
         this._groupDebugString = groupDebugString(_creator, _groupId);
-        this._log = _services.logging.logger(`model.group.${this._groupDebugString}`);
+        this._log = _services.logging.logger(`model.group.${uid}`);
         this.notificationTag = getNotificationTagForGroup(_creator, _groupId);
         this.members = new GroupMemberModelController(
             _services,
@@ -780,7 +780,7 @@ export class GroupModelController implements GroupController {
                 // Safe because the executor context ensures that the group exists, therefore
                 // an associated conversation must also exist.
                 Existence.ENSURED,
-                getGroupTag(this._creator, this._groupId),
+                this._groupDebugString,
             ),
         );
     }
@@ -801,7 +801,7 @@ export class GroupModelStore extends LocalModelStore<Group> {
         initialGrofilePictureData: GroupProfilePictureFields,
     ) {
         const {logging} = services;
-        const tag = getGroupTag(group.creatorIdentity, group.groupId);
+        const tag = `group.${uid}`;
         super(
             group,
             new GroupModelController(
