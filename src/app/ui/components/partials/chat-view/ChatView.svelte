@@ -410,11 +410,19 @@
 
         <!-- eslint-disable @typescript-eslint/no-unsafe-argument -->
         <Message
-          {...item}
+          actions={item.actions}
           boundary={element}
           {conversation}
+          direction={item.direction}
+          file={item.file}
           highlighted={item.id === highlightedMessageId}
+          id={item.id}
+          quote={item.quote}
+          reactions={item.reactions}
+          sender={item.sender}
           {services}
+          status={item.status}
+          text={item.text}
           on:clickquoteoption={() => dispatch('clickquote', item)}
           on:clickforwardoption={() => handleClickForwardOption(item)}
           on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
