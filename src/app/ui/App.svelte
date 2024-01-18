@@ -4,10 +4,10 @@
   import type {AppServices} from '~/app/types';
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
+  import MainConversation from '~/app/ui/components/partials/conversation/ConversationView.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
   import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
-  import MainConversation from '~/app/ui/components/partials/views/conversation/ConversationView.svelte';
-  import MainWelcome from '~/app/ui/components/partials/views/welcome/Welcome.svelte';
+  import MainWelcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
   import DebugPanel from '~/app/ui/debug/DebugPanel.svelte';
   import ChangePassword from '~/app/ui/modal/ChangePassword.svelte';
   import ModalContactEdit from '~/app/ui/modal/ContactEdit.svelte';

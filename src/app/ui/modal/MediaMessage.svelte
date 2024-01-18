@@ -13,7 +13,7 @@
   import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import EmojiPicker from '~/app/ui/components/molecules/emoji-picker/EmojiPicker.svelte';
-  import {showFileResultErrorToast} from '~/app/ui/components/partials/views/conversation/helpers';
+  import {showFileResultErrorToast} from '~/app/ui/components/partials/conversation/helpers';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
   import Tooltip from '~/app/ui/generic/popover/Tooltip.svelte';
   import {i18n} from '~/app/ui/i18n';

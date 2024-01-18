@@ -5,7 +5,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import DateTime from '~/app/ui/components/atoms/datetime/DateTime.svelte';
-  import {conversationDrafts} from '~/app/ui/components/partials/views/conversation/drafts';
+  import {conversationDrafts} from '~/app/ui/components/partials/conversation/drafts';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
