@@ -15,6 +15,7 @@ import type {D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import type {KeyStorage} from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
+import type {ThumbnailGenerator} from '~/common/media';
 import type {ProfilePictureView, Repositories} from '~/common/model';
 import type {DisplayPacket} from '~/common/network/protocol/capture';
 import type {DirectoryBackend} from '~/common/network/protocol/directory';
@@ -103,6 +104,7 @@ export class BackendController {
         init: {
             readonly notification: NotificationCreator;
             readonly systemDialog: SystemDialogService;
+            readonly thumbnailGenerator: ThumbnailGenerator;
         },
         systemInfo: SystemInfo,
         services: ServicesForBackendController,
@@ -120,6 +122,16 @@ export class BackendController {
          * Helper function to assemble a {@link BackendInit} object.
          */
         function assembleBackendInit(): BackendInitAfterTransfer {
+            // Thumbnail Generator
+            const {local: localThumbnailGeneratorEndpoint, remote: thumbnailGeneratorEndpoint} =
+                endpoint.createEndpointPair<ThumbnailGenerator>();
+
+            endpoint.exposeProxy(
+                init.thumbnailGenerator,
+                localThumbnailGeneratorEndpoint,
+                logging.logger('com.thumbnail-generator'),
+            );
+
             // Notifications
             const {local: localNotificationEndpoint, remote: notificationEndpoint} =
                 endpoint.createEndpointPair<NotificationCreator>();
@@ -140,6 +152,7 @@ export class BackendController {
 
             // Transfer
             const result = {
+                thumbnailGeneratorEndpoint,
                 notificationEndpoint,
                 systemDialogEndpoint,
                 systemInfo,
@@ -147,6 +160,7 @@ export class BackendController {
             return endpoint.transfer(result, [
                 result.notificationEndpoint,
                 result.systemDialogEndpoint,
+                result.thumbnailGeneratorEndpoint,
             ]);
         }
 

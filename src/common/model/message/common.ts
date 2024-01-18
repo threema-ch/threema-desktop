@@ -1,11 +1,16 @@
 import {type Nonce, NONCE_UNGUARDED_SCOPE} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import type {DbBaseFileMessageFragment, DbConversationUid, DbMessageUid} from '~/common/db';
+import type {
+    DbBaseFileMessageFragment,
+    DbConversationUid,
+    DbMessageUid,
+    DbReceiverLookup,
+} from '~/common/db';
 import {
     BlobDownloadState,
     MessageDirection,
     MessageDirectionUtils,
-    type MessageType,
+    MessageType,
     ReceiverType,
 } from '~/common/enum';
 import {BlobFetchError} from '~/common/error';
@@ -21,6 +26,7 @@ import type {
     FileData,
     FileMessageDataState,
     OutboundBaseFileMessageView,
+    UpdateFileBasedMessage,
 } from '~/common/model/types/message';
 import {
     BlobBackendError,
@@ -108,13 +114,13 @@ function determineBlobDoneScope(
 /**
  * Update the download state of a file-based message.
  */
-export function updateFileBasedMessageDownloadState(
+export function updateFileBasedMessage(
     services: ServicesForModel,
     log: Logger,
     messageType: MessageType,
     conversationUid: DbConversationUid,
     messageUid: DbMessageUid,
-    change: Pick<CommonBaseFileMessageView, 'blobDownloadState' | 'thumbnailBlobDownloadState'>,
+    change: UpdateFileBasedMessage,
 ): void {
     const {db, file} = services;
     const {deletedFileIds} = db.updateMessage(conversationUid, {
@@ -194,7 +200,7 @@ export async function downloadBlob(
                 unreachable(type);
         }
         lifetimeGuard.update(() => {
-            updateFileBasedMessageDownloadState(
+            updateFileBasedMessage(
                 services,
                 log,
                 messageType,
@@ -374,7 +380,7 @@ export async function downloadBlob(
                 unreachable(type);
         }
         lifetimeGuard.update(() => {
-            updateFileBasedMessageDownloadState(
+            updateFileBasedMessage(
                 services,
                 log,
                 messageType,
@@ -429,13 +435,16 @@ async function uploadFileAsBlob(
     }
 }
 
+/**
+ * Returns the storage information of the full-size uploaded blob for further processing
+ */
 export async function uploadBlobs(
     messageType: MessageType,
     messageUid: DbMessageUid,
     conversationUid: DbConversationUid,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'db' | 'file'>,
     lifetimeGuard: AnyFileBasedOutboundMessageModelLifetimeGuard,
-): Promise<void> {
+): Promise<FileData | undefined> {
     type FileDataToUpload = Pick<
         CommonBaseFileMessageView,
         'fileData' | 'thumbnailFileData' | 'encryptionKey'
@@ -460,7 +469,7 @@ export async function uploadBlobs(
         fileDataToUpload.thumbnailFileData === undefined
     ) {
         // Nothing to upload
-        return;
+        return undefined;
     }
 
     // Upload all blobs concurrently
@@ -510,4 +519,84 @@ export async function uploadBlobs(
 
         return {...change, state: 'synced'};
     });
+
+    return fileDataToUpload.fileData;
+}
+
+export async function overwriteThumbnail(
+    data: ReadonlyUint8Array,
+    messageType: MessageType,
+    messageUid: DbMessageUid,
+    conversation: ConversationControllerHandle,
+    services: ServicesForModel,
+    lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
+    log: Logger,
+): Promise<void> {
+    const {file} = services;
+    let storedFile;
+    try {
+        storedFile = await file.store(data);
+    } catch (error) {
+        const message = `Could not write bytes to file system: ${error}`;
+        if (error instanceof FileStorageError) {
+            throw new BlobFetchError({kind: 'file-storage-error', cause: error.type}, message);
+        }
+        throw new BlobFetchError({kind: 'file-storage-error'}, message);
+    }
+    const storedFileData = {
+        fileId: storedFile.fileId,
+        encryptionKey: storedFile.encryptionKey,
+        unencryptedByteCount: data.byteLength,
+        storageFormatVersion: storedFile.storageFormatVersion,
+    };
+
+    // Update database
+    const dbChange = {thumbnailFileData: storedFileData, thumbnailBlobDownloadState: undefined};
+    const viewChange = {...dbChange};
+    lifetimeGuard.update(() => {
+        updateFileBasedMessage(services, log, messageType, conversation.uid, messageUid, dbChange);
+        return viewChange;
+    });
+}
+
+export async function regenerateThumbnail(
+    data: ReadonlyUint8Array,
+    dbMessageUid: DbMessageUid,
+    conversation: ConversationControllerHandle,
+    lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
+    messageType: MessageType,
+    services: ServicesForModel,
+    log: Logger,
+): Promise<void> {
+    const {media} = services;
+    const {messageId, mediaType} = lifetimeGuard.run((handle) => ({
+        mediaType: handle.view().mediaType,
+        messageId: handle.view().id,
+    }));
+
+    const receiverStore = conversation.getReceiver();
+    const receiverLookup: DbReceiverLookup = {
+        type: receiverStore.type,
+        uid: receiverStore.ctx,
+    } as DbReceiverLookup;
+
+    if (messageType === MessageType.TEXT) {
+        return;
+    }
+
+    // Whenever we download an image blob, we try to regenerate the thumbnail in the background
+    const newThumbnail = await media.generateThumbnail(data, MessageType.IMAGE, mediaType);
+    if (newThumbnail !== undefined) {
+        await overwriteThumbnail(
+            data,
+            messageType,
+            dbMessageUid,
+            conversation,
+            services,
+            lifetimeGuard,
+            log,
+        );
+        // Make the new thumbnail visible to the frontend
+        await media.overwriteThumbnailCache(messageId, receiverLookup);
+    }
 }

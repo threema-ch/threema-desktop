@@ -14,6 +14,7 @@ import {
     downloadBlob,
     getFileMessageDataState,
     NO_SENDER,
+    regenerateThumbnail,
     uploadBlobs,
 } from '~/common/model/message/common';
 import type {ServicesForModel} from '~/common/model/types/common';
@@ -124,7 +125,7 @@ export class InboundImageMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<ReadonlyUint8Array> {
-        return await downloadBlob(
+        const blob = await downloadBlob(
             'main',
             this._type,
             MessageDirection.INBOUND,
@@ -135,6 +136,17 @@ export class InboundImageMessageModelController
             this.meta,
             this._log,
         );
+
+        void regenerateThumbnail(
+            blob,
+            this._uid,
+            this._conversation,
+            this.meta,
+            this._type,
+            this._services,
+            this._log,
+        );
+        return blob;
     }
 
     /** @inheritdoc */
@@ -165,7 +177,7 @@ export class OutboundImageMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<ReadonlyUint8Array> {
-        return await downloadBlob(
+        const blob = await downloadBlob(
             'main',
             this._type,
             MessageDirection.OUTBOUND,
@@ -176,6 +188,17 @@ export class OutboundImageMessageModelController
             this.meta,
             this._log,
         );
+
+        void regenerateThumbnail(
+            blob,
+            this._uid,
+            this._conversation,
+            this.meta,
+            this._type,
+            this._services,
+            this._log,
+        );
+        return blob;
     }
 
     /** @inheritdoc */
@@ -195,7 +218,35 @@ export class OutboundImageMessageModelController
 
     /** @inheritdoc */
     public async uploadBlobs(): Promise<void> {
-        await uploadBlobs(this._type, this._uid, this._conversation.uid, this._services, this.meta);
+        const fileHandle = await uploadBlobs(
+            this._type,
+            this._uid,
+            this._conversation.uid,
+            this._services,
+            this.meta,
+        );
+        if (fileHandle === undefined) {
+            return;
+        }
+
+        // We load the file here again for simplicity reasons
+        // This can be further optimized by passing the bytes should performance problems occur
+        void this._services.file
+            .load(fileHandle)
+            .then(async (data) => {
+                await regenerateThumbnail(
+                    data,
+                    this._uid,
+                    this._conversation,
+                    this.meta,
+                    this._type,
+                    this._services,
+                    this._log,
+                );
+            })
+            .catch((error) => {
+                this._log.error(`Failed to access thumbnail: ${error}`);
+            });
     }
 }
 

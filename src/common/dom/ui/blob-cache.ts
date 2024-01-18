@@ -47,6 +47,17 @@ export class BlobCacheService {
         });
     }
 
+    public setMessageThumbnail(messageId: MessageId, receiverLookup: DbReceiverLookup): void {
+        const key = cacheKeyForMessageThumbnail(messageId, receiverLookup);
+        const store = new WritableStore<IQueryableStoreValue<BlobStore>>('loading');
+        this._getMessageThumbnailBytes(messageId, receiverLookup)
+            .then((bytes) => {
+                store.set(bytes === undefined ? undefined : new Blob([bytes]));
+                this._cache.set(key, store);
+            })
+            .catch((error) => this._log.warn(`Failed to fetch message thumbnail bytes: ${error}`));
+    }
+
     private async _getMessageThumbnailBytes(
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,

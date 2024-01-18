@@ -16,6 +16,7 @@
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
   import type {MessageProps} from '~/app/ui/components/molecules/message/props';
+  import {MAX_IMAGE_MESSAGE_SIZE} from '~/common/dom/ui/media';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {durationToString} from '~/common/utils/date';
@@ -190,8 +191,8 @@
                   size: 16384,
                 },
                 max: {
-                  width: 384,
-                  height: 384,
+                  width: MAX_IMAGE_MESSAGE_SIZE,
+                  height: MAX_IMAGE_MESSAGE_SIZE,
                   size: 65536,
                 },
               }}

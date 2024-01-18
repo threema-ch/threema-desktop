@@ -53,6 +53,7 @@ export type ServicesForTasks = Pick<
     | 'nonces'
     | 'notification'
     | 'systemDialog'
+    | 'media'
     | 'timer'
 >;
 

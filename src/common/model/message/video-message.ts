@@ -14,6 +14,7 @@ import {
     downloadBlob,
     getFileMessageDataState,
     NO_SENDER,
+    regenerateThumbnail,
     uploadBlobs,
 } from '~/common/model/message/common';
 import type {ServicesForModel} from '~/common/model/types/common';
@@ -123,7 +124,7 @@ export class InboundVideoMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<ReadonlyUint8Array> {
-        return await downloadBlob(
+        const blob = await downloadBlob(
             'main',
             this._type,
             MessageDirection.INBOUND,
@@ -134,6 +135,18 @@ export class InboundVideoMessageModelController
             this.meta,
             this._log,
         );
+
+        void regenerateThumbnail(
+            blob,
+            this._uid,
+            this._conversation,
+            this.meta,
+            this._type,
+            this._services,
+            this._log,
+        );
+
+        return blob;
     }
 
     /** @inheritdoc */

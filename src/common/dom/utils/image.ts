@@ -39,7 +39,7 @@ export async function getImageDimensions(image: Blob): Promise<Dimensions | unde
  * @throws {@link Error} If file media type does not start with `image/`
  */
 export async function downsizeImage(
-    file: File,
+    file: File | Blob,
     outputMediaType: string,
     maxSize: u53,
     quality: f64,
@@ -65,11 +65,6 @@ export async function downsizeImage(
     const originalDimensions = {width: bitmap.width, height: bitmap.height};
 
     // Downscale image to desired size
-    //
-    // Note: The OffscreenCanvas type has a Promise based API, in contrast to the callback-based
-    //       Canvas API. Thus the `transferControlToOffscreen` call.
-    const canvas = document.createElement('canvas').transferControlToOffscreen();
-    const ctx = unwrap(canvas.getContext('2d'), 'Canvas 2D context is undefined');
     const scaleFactor = Math.min(
         maxSize / Math.max(originalDimensions.width, originalDimensions.height),
         1.0,
@@ -78,6 +73,9 @@ export async function downsizeImage(
         width: Math.round(originalDimensions.width * scaleFactor),
         height: Math.round(originalDimensions.height * scaleFactor),
     };
+    const canvas = new OffscreenCanvas(resizedDimensions.width, resizedDimensions.height);
+    const ctx = unwrap(canvas.getContext('2d'), 'Canvas 2D context is undefined');
+
     debugAssert(
         resizedDimensions.width <= maxSize,
         `Resized image width ${canvas.width} is larger than max size of ${maxSize}`,

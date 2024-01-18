@@ -53,6 +53,7 @@ import {
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
+import {MediaService, type ThumbnailGenerator} from '~/common/media';
 import type {
     Contact,
     ContactInit,
@@ -151,7 +152,7 @@ import {
     NotificationService,
 } from '~/common/notification';
 import type {SystemDialog, SystemDialogHandle, SystemDialogService} from '~/common/system-dialog';
-import type {u8, u53} from '~/common/types';
+import type {u8, u53, ReadonlyUint8Array} from '~/common/types';
 import {assert, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import type {Delayed} from '~/common/utils/delayed';
@@ -546,6 +547,35 @@ export class TestNotificationService extends NotificationService {
     }
 }
 
+export class TestMediaService extends MediaService {
+    public constructor(log: Logger) {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        async function generateImageThumbnail(
+            _data: ReadonlyUint8Array,
+            _fileType: string,
+            _log?: Logger,
+        ): Promise<ReadonlyUint8Array> {
+            return new Uint8Array() as ReadonlyUint8Array;
+        }
+        // eslint-disable-next-line @typescript-eslint/require-await
+        async function generateVideoThumbnail(
+            _data: ReadonlyUint8Array,
+            _log?: Logger,
+        ): Promise<ReadonlyUint8Array> {
+            return new Uint8Array() as ReadonlyUint8Array;
+        }
+        function setCacheForMessage(
+            _messageId: MessageId,
+            _receiverLookup: DbReceiverLookup,
+        ): void {}
+        super(log, {
+            generateImageThumbnail,
+            generateVideoThumbnail,
+            setCacheForMessage,
+        } as RemoteProxy<ThumbnailGenerator>);
+    }
+}
+
 const open = (async (dialog: SystemDialog) =>
     await Promise.resolve({
         closed: new ResolvablePromise(),
@@ -626,6 +656,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         },
     };
     const notification = new TestNotificationService(logging.logger('notifications'));
+    const media = new TestMediaService(logging.logger('media'));
     const file = new InMemoryFileStorage(crypto);
     const taskManager = new TaskManager({logging});
     const endpointCache = {
@@ -642,6 +673,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
         directory: new TestDirectoryBackend(),
         keyStorage,
         logging,
+        media,
         nonces,
         notification,
         compressor: new ZlibCompressor(),

@@ -58,6 +58,7 @@ import {
     type ServicesForKeyStorageFactory,
 } from '~/common/key-storage';
 import {createLoggerStyle, type Logger, type LoggerFactory} from '~/common/logging';
+import {MediaService, type ThumbnailGenerator} from '~/common/media';
 import type {Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
 import type {CloseInfo} from '~/common/network';
@@ -175,6 +176,7 @@ export interface BackendInit {
     readonly notificationEndpoint: EndpointFor<NotificationCreator>;
     readonly systemDialogEndpoint: EndpointFor<SystemDialogService>;
     readonly systemInfo: SystemInfo;
+    readonly thumbnailGeneratorEndpoint: EndpointFor<ThumbnailGenerator>;
 }
 
 /**
@@ -184,6 +186,7 @@ export interface BackendInitAfterTransfer {
     readonly notificationEndpoint: TransferredToRemote<EndpointFor<NotificationCreator>>;
     readonly systemDialogEndpoint: TransferredToRemote<EndpointFor<SystemDialogService>>;
     readonly systemInfo: SystemInfo;
+    readonly thumbnailGeneratorEndpoint: TransferredFromRemote<EndpointFor<ThumbnailGenerator>>;
 }
 
 /**
@@ -354,6 +357,18 @@ function createNotificationService(
     );
 }
 
+function createMediaService(
+    endpoint: EndpointService,
+    thumbnailCreator: EndpointFor<ThumbnailGenerator>,
+    logging: LoggerFactory,
+): MediaService {
+    const thumbnailGeneratorEndpoint = endpoint.wrap<ThumbnailGenerator>(
+        thumbnailCreator,
+        logging.logger('com.thumbnail-generator'),
+    );
+    return new MediaService(logging.logger('bw.backend.media'), thumbnailGeneratorEndpoint);
+}
+
 /**
  * Initialize the backend services that don't require an active identity for being intialized.
  */
@@ -363,6 +378,7 @@ function initBackendServicesWithoutIdentity(
     notificationEndpoint: EndpointFor<NotificationCreator>,
     systemDialogEndpoint: EndpointFor<SystemDialogService>,
     systemInfo: SystemInfo,
+    thumbnailGeneratorEndpoint: EndpointFor<ThumbnailGenerator>,
 ): Omit<ServicesForBackend, ServicesThatRequireIdentity> {
     const crypto = new TweetNaClBackend(randomBytes);
 
@@ -371,6 +387,7 @@ function initBackendServicesWithoutIdentity(
     const directory = new FetchDirectoryBackend({config, logging});
     const timer = new GlobalTimer();
     const notification = createNotificationService(endpoint, notificationEndpoint, logging);
+    const media = createMediaService(endpoint, thumbnailGeneratorEndpoint, logging);
     const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
         systemDialogEndpoint,
         logging.logger('com.system-dialog'),
@@ -387,6 +404,7 @@ function initBackendServicesWithoutIdentity(
         file,
         keyStorage,
         logging,
+        media,
         notification,
         systemDialog,
         systemInfo,
@@ -416,6 +434,7 @@ function initBackendServices(
         endpoint,
         file,
         logging,
+        media,
         notification,
         taskManager,
         systemDialog,
@@ -442,6 +461,7 @@ function initBackendServices(
         endpoint,
         file,
         logging,
+        media,
         nonces,
         notification,
         taskManager,
@@ -575,7 +595,12 @@ export class Backend implements ProxyMarked {
      *   backend worker.
      */
     public static async createFromKeyStorage(
-        {notificationEndpoint, systemDialogEndpoint, systemInfo}: BackendInit,
+        {
+            notificationEndpoint,
+            systemDialogEndpoint,
+            systemInfo,
+            thumbnailGeneratorEndpoint,
+        }: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         keyStoragePassword: string,
@@ -590,6 +615,7 @@ export class Backend implements ProxyMarked {
             notificationEndpoint,
             systemDialogEndpoint,
             systemInfo,
+            thumbnailGeneratorEndpoint,
         );
 
         // Try to read the credentials from the key storage.
@@ -727,7 +753,12 @@ export class Backend implements ProxyMarked {
      *   backend worker.
      */
     public static async createFromDeviceJoin(
-        {notificationEndpoint, systemDialogEndpoint, systemInfo}: BackendInit,
+        {
+            notificationEndpoint,
+            systemDialogEndpoint,
+            systemInfo,
+            thumbnailGeneratorEndpoint,
+        }: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
@@ -742,6 +773,7 @@ export class Backend implements ProxyMarked {
             notificationEndpoint,
             systemDialogEndpoint,
             systemInfo,
+            thumbnailGeneratorEndpoint,
         );
 
         // Get access to linking setup information

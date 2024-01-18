@@ -241,6 +241,11 @@ export interface CommonBaseFileMessageView extends CommonBaseMessageView {
 }
 
 /**
+ * Update type for file based message updates
+ */
+export type UpdateFileBasedMessage = Partial<CommonBaseFileMessageView>;
+
+/**
  * View shared among all inbound file-based messages.
  */
 export type InboundBaseFileMessageView = InboundBaseMessageView & CommonBaseFileMessageView;

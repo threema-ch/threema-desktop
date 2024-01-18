@@ -19,6 +19,7 @@ export type ServicesForModel = Pick<
     | 'endpoint'
     | 'file'
     | 'logging'
+    | 'media'
     | 'model'
     | 'nonces'
     | 'notification'
