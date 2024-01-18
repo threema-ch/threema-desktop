@@ -32,6 +32,8 @@ const ELECTRON_SETTINGS_SCHEMA = v
                     .chain(chainAdapter(ensureU53))
                     .optional()
                     .default(DEFAULT_WINDOW_HEIGHT),
+                offsetX: v.number().chain(chainAdapter(ensureU53)).optional(),
+                offsetY: v.number().chain(chainAdapter(ensureU53)).optional(),
             })
             .rest(v.unknown()),
         logging: v

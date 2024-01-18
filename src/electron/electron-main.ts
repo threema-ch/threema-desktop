@@ -720,6 +720,8 @@ function main(
                         window: {
                             width: window?.getSize()[0] ?? DEFAULT_ELECTRON_SETTINGS.window.width,
                             height: window?.getSize()[1] ?? DEFAULT_ELECTRON_SETTINGS.window.height,
+                            offsetX: window?.getPosition()[0],
+                            offsetY: window?.getPosition()[1],
                         },
                         logging: {enabled},
                     },
@@ -763,12 +765,14 @@ function main(
         session.setCertificateVerifyProc(
             createTlsCertificateVerifier(import.meta.env.TLS_CERTIFICATE_PINS, log),
         );
-
+        const isMacOrWindows = process.platform === 'win32' || process.platform === 'darwin';
         window = new electron.BrowserWindow({
             title: import.meta.env.APP_NAME,
             icon: process.platform === 'linux' ? ABOUT_PANEL_OPTIONS.iconPath : undefined,
             width: electronSettings.window.width,
             height: electronSettings.window.height,
+            x: isMacOrWindows ? electronSettings.window.offsetX : undefined,
+            y: isMacOrWindows ? electronSettings.window.offsetY : undefined,
             webPreferences: {
                 // # SECURITY
                 //
@@ -813,6 +817,8 @@ function main(
                         width: currentWindow.getSize()[0] ?? DEFAULT_ELECTRON_SETTINGS.window.width,
                         height:
                             currentWindow.getSize()[1] ?? DEFAULT_ELECTRON_SETTINGS.window.height,
+                        offsetX: window?.getPosition()[0],
+                        offsetY: window?.getPosition()[1],
                     },
                 },
                 appPath,
