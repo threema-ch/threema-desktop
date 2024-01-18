@@ -3,12 +3,12 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
+  import ClearConversationModal from '~/app/ui/components/partials/modals/clear-conversation-modal/ClearConversationModal.svelte';
   import ReceiverCard from '~/app/ui/components/partials/receiver-card/ReceiverCard.svelte';
   import {
     getReceiverCardBottomLeftItemOptions,
     getReceiverCardTopLeftItemOptions,
   } from '~/app/ui/components/partials/views/conversation/internal/top-bar/helpers';
-  import ClearConversationModal from '~/app/ui/components/partials/views/conversation/internal/top-bar/internal/clear-conversation-modal/ClearConversationModal.svelte';
   import type {TopBarProps} from '~/app/ui/components/partials/views/conversation/internal/top-bar/props';
   import type {ModalState} from '~/app/ui/components/partials/views/conversation/internal/top-bar/types';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';

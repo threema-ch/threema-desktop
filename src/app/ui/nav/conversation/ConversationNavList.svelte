@@ -2,16 +2,30 @@
   import {onMount} from 'svelte';
 
   import type {AppServices} from '~/app/types';
+  import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
+  import ClearConversationModal from '~/app/ui/components/partials/modals/clear-conversation-modal/ClearConversationModal.svelte';
+  import type {ClearConversationModalProps} from '~/app/ui/components/partials/modals/clear-conversation-modal/props';
+  import {contextMenuAction} from '~/app/ui/generic/context-menu';
+  import type Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import type {VirtualRect} from '~/app/ui/generic/popover/types';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import {i18n} from '~/app/ui/i18n';
   import {conversationListEvent, conversationPreviewListFilter} from '~/app/ui/nav/conversation';
   import ConversationNavElement from '~/app/ui/nav/conversation/ConversationNavElement.svelte';
   import type {DbReceiverLookup} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationVisibility} from '~/common/enum';
+  import type {Conversation, RemoteModelFor} from '~/common/model';
+  import type {u53} from '~/common/types';
   import {unreachable, unwrap} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
+  import type {SetValue} from '~/common/utils/set';
+  import type {IQueryableStoreValue} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
-  import type {ConversationPreviewSetStore} from '~/common/viewmodel/conversation-preview';
+  import type {
+    ConversationPreviewItem,
+    ConversationPreviewSetStore,
+  } from '~/common/viewmodel/conversation-preview';
   import type {SvelteAction} from '~/common/viewmodel/types';
 
   /**
@@ -20,13 +34,130 @@
   export let conversationPreviews: Remote<ConversationPreviewSetStore>;
   export let services: AppServices;
 
-  const {router} = services;
+  const {backend, router} = services;
+
+  type ModalState = NoneModalState | ClearConversationModalState;
+
+  interface NoneModalState {
+    readonly type: 'none';
+  }
+
+  interface ClearConversationModalState {
+    readonly type: 'clear-conversation';
+    readonly props: ClearConversationModalProps;
+  }
 
   const group = new SwipeAreaGroup();
 
   let conversationPreviewList: HTMLDivElement;
+
+  // Context menu
+  let contextMenuPopover: Popover | null;
+  let contextMenuPosition: VirtualRect | undefined;
+  let currentPreview: SetValue<IQueryableStoreValue<typeof conversationPreviews>> | undefined;
+  $: currentPreviewViewModelStore = currentPreview?.viewModel;
+  let currentPreviewConversationModel: RemoteModelFor<Conversation> | undefined;
+  $: void updateCurrentPreviewConversationModel($currentPreviewViewModelStore);
+  let currentPreviewTotalMessageCount: u53 = 0;
+  $: void updateCurrentPreviewTotalMessageCount(currentPreviewConversationModel);
+
+  let modalState: ModalState = {type: 'none'};
+
   // Determine whether scroll snapping anchor is active.
   let anchorActive = true;
+
+  function handleClickItem(): void {
+    contextMenuPopover?.close();
+  }
+
+  function handleCloseModal(): void {
+    modalState = {
+      type: 'none',
+    };
+  }
+
+  async function updateCurrentPreviewConversationModel(
+    currentPreviewItem?: Remote<ConversationPreviewItem>,
+  ): Promise<void> {
+    const currentReceiverLookup = currentPreviewItem?.receiverLookup;
+    if (currentReceiverLookup === undefined) {
+      currentPreviewConversationModel = undefined;
+      return;
+    }
+
+    const conversationModelStore =
+      await backend.model.conversations.getForReceiver(currentReceiverLookup);
+    if (conversationModelStore === undefined) {
+      currentPreviewConversationModel = undefined;
+      return;
+    }
+
+    currentPreviewConversationModel = conversationModelStore.get();
+  }
+
+  async function updateCurrentPreviewTotalMessageCount(
+    previewConversationModel: typeof currentPreviewConversationModel,
+  ): Promise<void> {
+    currentPreviewTotalMessageCount =
+      (await previewConversationModel?.controller.getMessageCount()) ?? 0;
+  }
+
+  function handleClickEmptyChatOption(): void {
+    if ($currentPreviewViewModelStore === undefined) {
+      return;
+    }
+    if (currentPreviewConversationModel === undefined) {
+      return;
+    }
+
+    modalState = {
+      type: 'clear-conversation',
+      props: {
+        conversation: {
+          clear: async () => {
+            await currentPreviewConversationModel?.controller.removeAllMessages.fromLocal();
+          },
+          totalMessagesCount: currentPreviewTotalMessageCount,
+        },
+        receiver: {
+          type: $currentPreviewViewModelStore.receiver.type,
+          name: $currentPreviewViewModelStore.receiver.displayName,
+        },
+      },
+    };
+  }
+
+  async function handleClickPinOrUnpinOption(): Promise<void> {
+    if (currentPreviewConversationModel === undefined) {
+      return;
+    }
+
+    if (currentPreviewConversationModel.view.visibility === ConversationVisibility.PINNED) {
+      await currentPreviewConversationModel.controller.updateVisibility.fromLocal(
+        ConversationVisibility.SHOW,
+      );
+    } else {
+      await currentPreviewConversationModel.controller.updateVisibility.fromLocal(
+        ConversationVisibility.PINNED,
+      );
+    }
+  }
+
+  async function handleClickArchiveOrUnarchiveOption(): Promise<void> {
+    if (currentPreviewConversationModel === undefined) {
+      return;
+    }
+
+    if (currentPreviewConversationModel.view.visibility === ConversationVisibility.ARCHIVED) {
+      await currentPreviewConversationModel.controller.updateVisibility.fromLocal(
+        ConversationVisibility.SHOW,
+      );
+    } else {
+      await currentPreviewConversationModel.controller.updateVisibility.fromLocal(
+        ConversationVisibility.ARCHIVED,
+      );
+    }
+  }
 
   /**
    * Detect and switch if the scroll snapping anchor should be active based on element visibility.
@@ -170,16 +301,92 @@
 
 <div class="conversation-preview-list" bind:this={conversationPreviewList}>
   <div class="anchor" use:scrollSnap />
+
   {#each $conversationPreviewListStore as conversationPreview (conversationPreview.conversationStore.id)}
     <div
       class="conversation-preview"
       class:snap={anchorActive}
       use:rememberNodeForReceiver={conversationPreview.viewModel.get().receiverLookup}
+      use:contextMenuAction={(event) => {
+        event.preventDefault();
+        currentPreview = conversationPreview;
+        contextMenuPosition = {
+          left: event.clientX,
+          right: 0,
+          top: event.clientY,
+          bottom: 0,
+          width: 0,
+          height: 0,
+        };
+        contextMenuPopover?.open(event);
+      }}
     >
-      <ConversationNavElement active={false} {conversationPreview} {group} {services} />
+      <ContextMenuProvider
+        bind:popover={contextMenuPopover}
+        container={conversationPreviewList}
+        reference={contextMenuPosition}
+        anchorPoints={{
+          reference: {
+            horizontal: 'left',
+            vertical: 'bottom',
+          },
+          popover: {
+            horizontal: 'left',
+            vertical: 'top',
+          },
+        }}
+        triggerBehavior="none"
+        items={[
+          {
+            disabled: $currentPreviewViewModelStore?.lastMessage === undefined,
+            handler: handleClickEmptyChatOption,
+            label: $i18n.t('messaging.action--empty-conversation'),
+            icon: {
+              name: 'delete_sweep',
+            },
+          },
+          {
+            handler: handleClickPinOrUnpinOption,
+            label:
+              currentPreviewConversationModel?.view.visibility === ConversationVisibility.PINNED
+                ? $i18n.t('messaging.action--conversation-option-unpin')
+                : $i18n.t('messaging.action--conversation-option-pin'),
+            icon: {
+              name: 'push_pin',
+            },
+          },
+          {
+            handler: handleClickArchiveOrUnarchiveOption,
+            label:
+              currentPreviewConversationModel?.view.visibility === ConversationVisibility.ARCHIVED
+                ? $i18n.t('messaging.action--conversation-option-unarchive')
+                : $i18n.t('messaging.action--conversation-option-archive'),
+            icon: {
+              name:
+                currentPreviewConversationModel?.view.visibility === ConversationVisibility.ARCHIVED
+                  ? 'unarchive'
+                  : 'archive',
+            },
+          },
+        ]}
+        on:clickitem={handleClickItem}
+        on:clickoutside={() => {
+          currentPreview = undefined;
+        }}
+      >
+        <ConversationNavElement active={false} {conversationPreview} {group} {services} />
+      </ContextMenuProvider>
     </div>
   {/each}
 </div>
+
+{#if modalState.type === 'none'}
+  <!-- No modal is displayed in this state. -->
+{:else if modalState.type === 'clear-conversation'}
+  <ClearConversationModal {...modalState.props} on:close={handleCloseModal} />
+{:else}
+  {unreachable(modalState)}
+{/if}
 
 <style lang="scss">
   @use 'component' as *;

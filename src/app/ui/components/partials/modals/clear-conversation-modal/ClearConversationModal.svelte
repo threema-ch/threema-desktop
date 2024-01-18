@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
-  import type {ClearConversationModalProps} from '~/app/ui/components/partials/views/conversation/internal/top-bar/internal/clear-conversation-modal/props';
+  import type {ClearConversationModalProps} from '~/app/ui/components/partials/modals/clear-conversation-modal/props';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {unreachable} from '~/common/utils/assert';

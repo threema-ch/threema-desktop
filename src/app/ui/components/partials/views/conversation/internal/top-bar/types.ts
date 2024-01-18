@@ -1,4 +1,4 @@
-import type {ClearConversationModalProps} from '~/app/ui/components/partials/views/conversation/internal/top-bar/internal/clear-conversation-modal/props';
+import type {ClearConversationModalProps} from '~/app/ui/components/partials/modals/clear-conversation-modal/props';
 
 export type ModalState = NoneModalState | ClearConversationModalState;
 
