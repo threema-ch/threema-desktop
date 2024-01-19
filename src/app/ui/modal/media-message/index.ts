@@ -1,7 +1,7 @@
 import {downsizeImage, getImageDimensions} from '~/common/dom/utils/image';
 import {ImageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import {THUMBNAIL_MAX_SIZE} from '~/common/network/protocol/constants';
+import {CSP_THUMBNAIL_MAX_SIZE, CSP_THUMBAIL_QUALITY} from '~/common/network/protocol/constants';
 import type {Dimensions} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {FilenameDetails} from '~/common/utils/file';
@@ -161,10 +161,10 @@ export async function generateThumbnail(file: File, log?: Logger): Promise<Blob 
         default:
             unreachable(imageType);
     }
-    const thumbnailSize = imageType === ImageType.PNG ? THUMBNAIL_MAX_SIZE / 2 : THUMBNAIL_MAX_SIZE;
+    const thumbnailSize = CSP_THUMBNAIL_MAX_SIZE;
 
     // Resize and return
-    const quality = 0.8;
+    const quality = CSP_THUMBAIL_QUALITY;
     const result = await downsizeImage(file, thumbnailMediaType, thumbnailSize, quality, log);
     return result?.resized;
 }
