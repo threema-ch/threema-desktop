@@ -20,7 +20,7 @@ cd "$ROOT"
 # Protocol layer
 OUTFILE=src/common/network/protobuf/js/index.js
 node_modules/.bin/pbjs \
-    threema-protocols/*.proto \
+    threema-protocols/src/*.proto \
     -o $OUTFILE \
     -t static-module \
     -w es6 \

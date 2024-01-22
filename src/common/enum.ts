@@ -1917,61 +1917,123 @@ export namespace UnknownContactPolicyUtils {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
     }
 }
-export namespace CallPolicy {
+export namespace O2oCallPolicy {
     export const ALLOW_CALL = 0;
     export type ALLOW_CALL = typeof ALLOW_CALL;
     export const DENY_CALL = 1;
     export type DENY_CALL = typeof DENY_CALL;
 }
 /** @generate convert */
-export type CallPolicy = (typeof CallPolicy)[keyof typeof CallPolicy];
-export namespace CallPolicyUtils {
-    export const ALL: ReadonlySet<CallPolicy> = new Set([
-        CallPolicy.ALLOW_CALL,
-        CallPolicy.DENY_CALL,
+export type O2oCallPolicy = (typeof O2oCallPolicy)[keyof typeof O2oCallPolicy];
+export namespace O2oCallPolicyUtils {
+    export const ALL: ReadonlySet<O2oCallPolicy> = new Set([
+        O2oCallPolicy.ALLOW_CALL,
+        O2oCallPolicy.DENY_CALL,
     ] as const);
-    export function fromNumber(value: u53, fallback?: CallPolicy): CallPolicy {
+    export function fromNumber(value: u53, fallback?: O2oCallPolicy): O2oCallPolicy {
         if ((ALL as ReadonlySet<u53>).has(value)) {
-            return value as CallPolicy;
+            return value as O2oCallPolicy;
         }
         if (fallback !== undefined) {
             return fallback;
         }
-        throw new Error(`${value} is not a valid CallPolicy`);
+        throw new Error(`${value} is not a valid O2oCallPolicy`);
     }
-    export function containsNumber(value: u53): value is CallPolicy {
+    export function containsNumber(value: u53): value is O2oCallPolicy {
         return (ALL as ReadonlySet<u53>).has(value);
     }
-    export function contains(value: unknown): value is CallPolicy {
+    export function contains(value: unknown): value is O2oCallPolicy {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
     }
 }
-export namespace CallConnectionPolicy {
+export namespace O2oCallConnectionPolicy {
     export const ALLOW_DIRECT = 0;
     export type ALLOW_DIRECT = typeof ALLOW_DIRECT;
     export const REQUIRE_RELAY = 1;
     export type REQUIRE_RELAY = typeof REQUIRE_RELAY;
 }
 /** @generate convert */
-export type CallConnectionPolicy = (typeof CallConnectionPolicy)[keyof typeof CallConnectionPolicy];
-export namespace CallConnectionPolicyUtils {
-    export const ALL: ReadonlySet<CallConnectionPolicy> = new Set([
-        CallConnectionPolicy.ALLOW_DIRECT,
-        CallConnectionPolicy.REQUIRE_RELAY,
+export type O2oCallConnectionPolicy =
+    (typeof O2oCallConnectionPolicy)[keyof typeof O2oCallConnectionPolicy];
+export namespace O2oCallConnectionPolicyUtils {
+    export const ALL: ReadonlySet<O2oCallConnectionPolicy> = new Set([
+        O2oCallConnectionPolicy.ALLOW_DIRECT,
+        O2oCallConnectionPolicy.REQUIRE_RELAY,
     ] as const);
-    export function fromNumber(value: u53, fallback?: CallConnectionPolicy): CallConnectionPolicy {
+    export function fromNumber(
+        value: u53,
+        fallback?: O2oCallConnectionPolicy,
+    ): O2oCallConnectionPolicy {
         if ((ALL as ReadonlySet<u53>).has(value)) {
-            return value as CallConnectionPolicy;
+            return value as O2oCallConnectionPolicy;
         }
         if (fallback !== undefined) {
             return fallback;
         }
-        throw new Error(`${value} is not a valid CallConnectionPolicy`);
+        throw new Error(`${value} is not a valid O2oCallConnectionPolicy`);
     }
-    export function containsNumber(value: u53): value is CallConnectionPolicy {
+    export function containsNumber(value: u53): value is O2oCallConnectionPolicy {
         return (ALL as ReadonlySet<u53>).has(value);
     }
-    export function contains(value: unknown): value is CallConnectionPolicy {
+    export function contains(value: unknown): value is O2oCallConnectionPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace O2oCallVideoPolicy {
+    export const ALLOW_VIDEO = 0;
+    export type ALLOW_VIDEO = typeof ALLOW_VIDEO;
+    export const DENY_VIDEO = 1;
+    export type DENY_VIDEO = typeof DENY_VIDEO;
+}
+/** @generate convert */
+export type O2oCallVideoPolicy = (typeof O2oCallVideoPolicy)[keyof typeof O2oCallVideoPolicy];
+export namespace O2oCallVideoPolicyUtils {
+    export const ALL: ReadonlySet<O2oCallVideoPolicy> = new Set([
+        O2oCallVideoPolicy.ALLOW_VIDEO,
+        O2oCallVideoPolicy.DENY_VIDEO,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: O2oCallVideoPolicy): O2oCallVideoPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as O2oCallVideoPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid O2oCallVideoPolicy`);
+    }
+    export function containsNumber(value: u53): value is O2oCallVideoPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is O2oCallVideoPolicy {
+        return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
+    }
+}
+export namespace GroupCallPolicy {
+    export const ALLOW_GROUP_CALL = 0;
+    export type ALLOW_GROUP_CALL = typeof ALLOW_GROUP_CALL;
+    export const DENY_GROUP_CALL = 1;
+    export type DENY_GROUP_CALL = typeof DENY_GROUP_CALL;
+}
+/** @generate convert */
+export type GroupCallPolicy = (typeof GroupCallPolicy)[keyof typeof GroupCallPolicy];
+export namespace GroupCallPolicyUtils {
+    export const ALL: ReadonlySet<GroupCallPolicy> = new Set([
+        GroupCallPolicy.ALLOW_GROUP_CALL,
+        GroupCallPolicy.DENY_GROUP_CALL,
+    ] as const);
+    export function fromNumber(value: u53, fallback?: GroupCallPolicy): GroupCallPolicy {
+        if ((ALL as ReadonlySet<u53>).has(value)) {
+            return value as GroupCallPolicy;
+        }
+        if (fallback !== undefined) {
+            return fallback;
+        }
+        throw new Error(`${value} is not a valid GroupCallPolicy`);
+    }
+    export function containsNumber(value: u53): value is GroupCallPolicy {
+        return (ALL as ReadonlySet<u53>).has(value);
+    }
+    export function contains(value: unknown): value is GroupCallPolicy {
         return typeof value === 'number' && (ALL as ReadonlySet<u53>).has(value);
     }
 }

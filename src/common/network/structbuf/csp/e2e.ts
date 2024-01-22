@@ -13,6 +13,26 @@ import * as utils from '../utils.js';
  * [`message-with-metadata-box`](ref:payload.message-with-metadata-box)
  * struct.
  *
+ * ### Special Contacts
+ *
+ * The following contacts are preprovisioned special contacts with its
+ * respective public key¹ in hex:
+ *
+ * - `*3MAPUSH`:
+ *   `fd711e1a0db0e2f03fcaab6c43da2575b9513664a62a12bd0728d87f7125cc24`
+ *   (live/sandbox)
+ *
+ * Even though these contacts should not normally appear in the contact list,
+ * to keep it simple, they are handled like normal contacts. This means that
+ * they may appear in the contact list when the user explicitly sends a message
+ * to it. They could also technically be added to a group. Once they appear,
+ * they may be synchronised as part of the D2D protocol and even land in the
+ * Threema Safe Backup. This is considered acceptable.
+ *
+ * **However, 1:1 conversations with these contacts must be hidden.**
+ *
+ * ¹: OnPrem provisions these public keys in the associated OPPF file.
+ *
  * ### Mitigating Replay
  *
  * To prevent replay attacks, a client must permanently store used nonces for
@@ -909,6 +929,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * A text message.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -921,9 +942,11 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -936,6 +959,7 @@ export class GroupMemberContainer extends base.Struct implements GroupMemberCont
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
@@ -1075,6 +1099,7 @@ export class Text extends base.Struct implements TextLike {
  *       rendering type `0x01` (media).
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1087,6 +1112,7 @@ export class Text extends base.Struct implements TextLike {
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - When rejected: N/A (deprecated message is not being sent)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * The image must be in JPEG format, is uploaded to the blob server and
@@ -1279,6 +1305,7 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  *       rendering type `0x01` (media).
  *
  * **Properties**:
+ * - Kind: Group
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1291,6 +1318,7 @@ export class DeprecatedImage extends base.Struct implements DeprecatedImageLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - When rejected: N/A (deprecated message is not being sent)
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The image must be in JPEG format, is uploaded to the blob server and
@@ -1479,6 +1507,7 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * A location message.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1491,9 +1520,11 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1506,6 +1537,7 @@ export class DeprecatedGroupImage extends base.Struct implements DeprecatedGroup
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a group message (wrapped by
@@ -1679,6 +1711,7 @@ export class Location extends base.Struct implements LocationLike {
  *       rendering type `0x01` (media).
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1691,9 +1724,11 @@ export class Location extends base.Struct implements LocationLike {
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - When rejected: N/A (deprecated message is not being sent)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1706,6 +1741,7 @@ export class Location extends base.Struct implements LocationLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - When rejected: N/A (deprecated message is not being sent)
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The audio is uploaded to the blob server and encrypted by:
@@ -1926,6 +1962,7 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  *       rendering type `0x01` (media).
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1938,9 +1975,11 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - When rejected: N/A (deprecated message is not being sent)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -1953,6 +1992,7 @@ export class DeprecatedAudio extends base.Struct implements DeprecatedAudioLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - When rejected: N/A (deprecated message is not being sent)
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The video is uploaded to the blob server and encrypted by:
@@ -2221,6 +2261,7 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * A file or media message.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -2233,9 +2274,11 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -2248,6 +2291,7 @@ export class DeprecatedVideo extends base.Struct implements DeprecatedVideoLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * The file is uploaded to the blob server and encrypted by:
@@ -2453,6 +2497,7 @@ export class File extends base.Struct implements FileLike {
  * Once to create the poll, and once to close it.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -2465,9 +2510,11 @@ export class File extends base.Struct implements FileLike {
  * - Delivery receipts:
  *   - Automatic: Yes
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: Yes
@@ -2480,6 +2527,7 @@ export class File extends base.Struct implements FileLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: Yes
+ * - When rejected: Re-send after confirmation
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
@@ -2493,7 +2541,7 @@ export class File extends base.Struct implements FileLike {
  *    message has been discarded, abort these steps.
  * 2. Run the _Common Poll Setup Receive Steps_.
  *
- * The following steps are defined as the _Common Poll Setup Receive Steps_.
+ * The following steps are defined as the _Common Poll Setup Receive Steps_:
  *
  * 1. Let `state` be the _State_ field of the message. Let `participants` be
  *    the _Participants_ field of the message.
@@ -2714,6 +2762,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  * Cast a vote on a poll.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags: None
  * - User profile distribution: Yes
  * - Exempt from blocking: No
@@ -2725,9 +2774,11 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: Yes
  * - Exempt from blocking: Yes
@@ -2739,6 +2790,7 @@ export class PollSetup extends base.Struct implements PollSetupLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * When receiving this message as a 1:1 conversation message:
@@ -2943,6 +2995,7 @@ export class PollVote extends base.Struct implements PollVoteLike {
  * Initiates a call.
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
@@ -2956,6 +3009,7 @@ export class PollVote extends base.Struct implements PollVoteLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: Abort call
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3097,6 +3151,7 @@ export class CallOffer extends base.Struct implements CallOfferLike {
  * Answer or reject a call.
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
@@ -3110,6 +3165,7 @@ export class CallOffer extends base.Struct implements CallOfferLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: Abort call
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3263,6 +3319,7 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
  * An ICE candidate for an ongoing call.
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
@@ -3276,6 +3333,7 @@ export class CallAnswer extends base.Struct implements CallAnswerLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: This message does not trigger any kind of reaction and adding ICE
@@ -3425,6 +3483,7 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
  * Hang up a call.
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  * - User profile distribution: No
@@ -3437,6 +3496,7 @@ export class CallIceCandidate extends base.Struct implements CallIceCandidateLik
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3571,6 +3631,7 @@ export class CallHangup extends base.Struct implements CallHangupLike {
  * Sent by the callee to indicate that the call is ringing.
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x01`: Send push notification.
  *   - `0x20`: Short-lived server queuing.
@@ -3584,6 +3645,7 @@ export class CallHangup extends base.Struct implements CallHangupLike {
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: Abort call
  * - Send to Threema Gateway ID group creator: N/A
  *
  * [//]: # "When sending: TODO(SE-102)"
@@ -3718,6 +3780,7 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  * Confirms reception or delivers detailed status updates of a message.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags: None
  * - User profile distribution: Only for reactions
  * - Exempt from blocking: No
@@ -3725,14 +3788,18 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  * - Protect against replay: Only for reactions¹
  * - Reflect:
  *   - Incoming: Yes
- *   - Outgoing: Yes¹
+ *   - Outgoing: Yes²
  * - Delivery receipts: No, that would be silly!
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
- * ¹: When the message is being _read_ and _read_ receipts are disabled, an
+ * ¹: Repeating a status of type _received_ or _read_ has no ill-effects.
+ *
+ * ²: When the message is being _read_ and _read_ receipts are disabled, an
  * `IncomingMessageUpdate` will be reflected instead.
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: Only for reactions
  * - Exempt from blocking: No
@@ -3744,6 +3811,7 @@ export class CallRinging extends base.Struct implements CallRingingLike {
  *     are disabled, reflect an `IncomingMessageUpdate` (since no
  *     `delivery-receipt` is sent in this case).
  * - Delivery receipts: No, that would be silly!
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: If capture is enabled
  *
  * ¹: Repeating a status of type _received_ or _read_ has no ill-effects.
@@ -3934,6 +4002,7 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  * Indicates whether a contact is currently typing.
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x02`: No server queuing.
  *   - `0x04`: No server acknowledgement.
@@ -3947,6 +4016,7 @@ export class DeliveryReceipt extends base.Struct implements DeliveryReceiptLike 
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * ¹: It is deemed acceptable if the _typing_ indicator in the UI is replayed
@@ -4095,6 +4165,7 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * Set the profile picture of a contact or a group.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags: None
  * - User profile distribution: No (obviously)
  * - Exempt from blocking: No
@@ -4106,9 +4177,11 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: No (obviously)
  * - Exempt from blocking: Yes
@@ -4120,7 +4193,12 @@ export class TypingIndicator extends base.Struct implements TypingIndicatorLike 
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - When rejected: N/A¹
  * - Send to Threema Gateway ID group creator: N/A
+ *
+ * ¹: For the group creator it will be handled as if `group-sync-request` was
+ * received, re-sending the group profile picture state, implicitly triggered
+ * by FS `Reject` receive steps.
  *
  * The profile picture must be in JPEG format, is uploaded to the blob
  * server and encrypted by:
@@ -4320,6 +4398,7 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  * Delete the profile picture of a contact.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags: None
  * - User profile distribution: No (obviously)
  * - Exempt from blocking: No
@@ -4331,9 +4410,11 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * **Properties (Group)**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: No (obviously)
  * - Exempt from blocking: Yes
@@ -4345,7 +4426,12 @@ export class SetProfilePicture extends base.Struct implements SetProfilePictureL
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - When rejected: N/A¹
  * - Send to Threema Gateway ID group creator: N/A
+ *
+ * ¹: For the group creator it will be handled as if `group-sync-request` was
+ * received, re-sending the group profile picture state, implicitly triggered
+ * by FS `Reject` receive steps.
  *
  * When receiving this message as a contact control message:
  *
@@ -4460,6 +4546,7 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  * user is eligible for receiving the profile picture).
  *
  * **Properties**:
+ * - Kind: 1:1
  * - Flags: None
  * - User profile distribution: No
  * - Exempt from blocking: No
@@ -4471,6 +4558,7 @@ export class DeleteProfilePicture extends base.Struct implements DeleteProfilePi
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (ignored)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * Send this when restoring a contact from a backup.
@@ -4594,6 +4682,7 @@ export class ContactRequestProfilePicture
  * empty members list and thereby disbanding the group.
  *
  * **Properties**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: Yes
  * - Exempt from blocking: Yes
@@ -4605,7 +4694,12 @@ export class ContactRequestProfilePicture
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - When rejected: N/A¹
  * - Send to Threema Gateway ID group creator: N/A
+ *
+ * ¹: For the group creator it will be handled as if `group-sync-request` was
+ * received, re-sending the group state, implicitly triggered by FS `Reject`
+ * receive steps.
  *
  * When sending this message as a response to a single receiver, see the
  * handling logic that triggered this message for details. No further
@@ -4820,6 +4914,7 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  * [`group-sync-request`](ref:e2e.group-sync-request) message.
  *
  * **Properties**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: No
  * - Exempt from blocking: Yes
@@ -4831,7 +4926,12 @@ export class GroupSetup extends base.Struct implements GroupSetupLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - When rejected: N/A¹
  * - Send to Threema Gateway ID group creator: N/A
+ *
+ * ¹: For the group creator it will be handled as if `group-sync-request` was
+ * received, re-sending the group name, implicitly triggered by FS `Reject`
+ * receive steps.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -4971,6 +5071,7 @@ export class GroupName extends base.Struct implements GroupNameLike {
  * Note: The group creator is not allowed to leave the group.
  *
  * **Properties**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: No
  * - Exempt from blocking: Yes
@@ -4982,7 +5083,11 @@ export class GroupName extends base.Struct implements GroupNameLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - When rejected: N/A¹
  * - Send to Threema Gateway ID group creator: Yes
+ *
+ * ¹: Re-send of `group-leave` implicitly triggered by FS `Reject` receive
+ * steps due to _Common Group Receive Steps_ invocation.
  *
  * When sending this message:
  *
@@ -5109,6 +5214,7 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * the group creator.
  *
  * **Properties**:
+ * - Kind: Group
  * - Flags: None
  * - User profile distribution: No
  * - Exempt from blocking: Yes
@@ -5120,7 +5226,10 @@ export class GroupLeave extends base.Struct implements GroupLeaveLike {
  * - Delivery receipts:
  *   - Automatic: N/A
  *   - Manual: No
+ * - When rejected: N/A¹
  * - Send to Threema Gateway ID group creator: Yes
+ *
+ * ¹: Implicitly ignored by FS `Reject` receive steps.
  *
  * When receiving this message as a group control message (wrapped by
  * [`group-creator-container`](ref:e2e.group-creator-container)):
@@ -5241,11 +5350,12 @@ export class GroupSyncRequest extends base.Struct implements GroupSyncRequestLik
  * A control message from Threema Web, requesting a session to be resumed.
  *
  * **Properties (1:1)**:
+ * - Kind: 1:1
  * - Flags:
  *   - `0x20`: Short-lived server queuing.
  * - User profile distribution: N/A (not sent by apps)
  * - Exempt from blocking: Yes
- * - Implicit _direct_ contact creation: No
+ * - Implicit _direct_ contact creation: N/A (blocking is circumvented)
  * - Protect against replay: Yes
  * - Reflect:
  *   - Incoming: No
@@ -5253,6 +5363,7 @@ export class GroupSyncRequest extends base.Struct implements GroupSyncRequestLik
  * - Delivery receipts:
  *   - Automatic: No
  *   - Manual: No
+ * - When rejected: N/A (not sent by clients)
  * - Send to Threema Gateway ID group creator: N/A
  *
  * When receiving this message:

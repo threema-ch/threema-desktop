@@ -1044,12 +1044,14 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
      * @property {number} UNSPECIFIED=0 UNSPECIFIED value
      * @property {number} V1_0=256 V1_0 value
      * @property {number} V1_1=257 V1_1 value
+     * @property {number} V1_2=258 V1_2 value
      */
     csp_e2e_fs.Version = (function() {
         const valuesById = {}, values = Object.create(valuesById);
         values[valuesById[0] = "UNSPECIFIED"] = 0;
         values[valuesById[256] = "V1_0"] = 256;
         values[valuesById[257] = "V1_1"] = 257;
+        values[valuesById[258] = "V1_2"] = 258;
         return values;
     })();
 
@@ -1521,7 +1523,8 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
          * Properties of a Reject.
          * @memberof csp_e2e_fs
          * @interface IReject
-         * @property {Long|null} [rejectedEncapsulatedMessageId] Reject rejectedEncapsulatedMessageId
+         * @property {Long|null} [messageId] Reject messageId
+         * @property {common.GroupIdentity|null} [groupIdentity] Reject groupIdentity
          * @property {csp_e2e_fs.Reject.Cause|null} [cause] Reject cause
          */
 
@@ -1541,12 +1544,20 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
         }
 
         /**
-         * Reject rejectedEncapsulatedMessageId.
-         * @member {Long} rejectedEncapsulatedMessageId
+         * Reject messageId.
+         * @member {Long} messageId
          * @memberof csp_e2e_fs.Reject
          * @instance
          */
-        Reject.prototype.rejectedEncapsulatedMessageId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+        Reject.prototype.messageId = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+        /**
+         * Reject groupIdentity.
+         * @member {common.GroupIdentity|null|undefined} groupIdentity
+         * @memberof csp_e2e_fs.Reject
+         * @instance
+         */
+        Reject.prototype.groupIdentity = null;
 
         /**
          * Reject cause.
@@ -1568,10 +1579,12 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
         Reject.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.rejectedEncapsulatedMessageId != null && Object.hasOwnProperty.call(message, "rejectedEncapsulatedMessageId"))
-                writer.uint32(/* id 1, wireType 1 =*/9).fixed64(message.rejectedEncapsulatedMessageId);
+            if (message.messageId != null && Object.hasOwnProperty.call(message, "messageId"))
+                writer.uint32(/* id 1, wireType 1 =*/9).fixed64(message.messageId);
             if (message.cause != null && Object.hasOwnProperty.call(message, "cause"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.cause);
+            if (message.groupIdentity != null && Object.hasOwnProperty.call(message, "groupIdentity"))
+                $root.common.GroupIdentity.encode(message.groupIdentity, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
             return writer;
         };
 
@@ -1594,7 +1607,11 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1: {
-                        message.rejectedEncapsulatedMessageId = reader.fixed64();
+                        message.messageId = reader.fixed64();
+                        break;
+                    }
+                case 3: {
+                        message.groupIdentity = $root.common.GroupIdentity.decode(reader, reader.uint32());
                         break;
                     }
                 case 2: {
@@ -1738,6 +1755,7 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
          * @property {Long|null} [counter] Encapsulated counter
          * @property {number|null} [offeredVersion] Encapsulated offeredVersion
          * @property {number|null} [appliedVersion] Encapsulated appliedVersion
+         * @property {common.GroupIdentity|null} [groupIdentity] Encapsulated groupIdentity
          * @property {Uint8Array|null} [encryptedInner] Encapsulated encryptedInner
          */
 
@@ -1789,6 +1807,14 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
         Encapsulated.prototype.appliedVersion = 0;
 
         /**
+         * Encapsulated groupIdentity.
+         * @member {common.GroupIdentity|null|undefined} groupIdentity
+         * @memberof csp_e2e_fs.Encapsulated
+         * @instance
+         */
+        Encapsulated.prototype.groupIdentity = null;
+
+        /**
          * Encapsulated encryptedInner.
          * @member {Uint8Array} encryptedInner
          * @memberof csp_e2e_fs.Encapsulated
@@ -1818,6 +1844,8 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                 writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.offeredVersion);
             if (message.appliedVersion != null && Object.hasOwnProperty.call(message, "appliedVersion"))
                 writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.appliedVersion);
+            if (message.groupIdentity != null && Object.hasOwnProperty.call(message, "groupIdentity"))
+                $root.common.GroupIdentity.encode(message.groupIdentity, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
             return writer;
         };
 
@@ -1853,6 +1881,10 @@ export const csp_e2e_fs = $root.csp_e2e_fs = (() => {
                     }
                 case 5: {
                         message.appliedVersion = reader.uint32();
+                        break;
+                    }
+                case 6: {
+                        message.groupIdentity = $root.common.GroupIdentity.decode(reader, reader.uint32());
                         break;
                     }
                 case 3: {
@@ -1903,9 +1935,9 @@ export const csp_e2e = $root.csp_e2e = (() => {
          * @memberof csp_e2e
          * @interface IMessageMetadata
          * @property {Uint8Array|null} [padding] MessageMetadata padding
-         * @property {string|null} [nickname] MessageMetadata nickname
          * @property {Long|null} [messageId] MessageMetadata messageId
          * @property {Long|null} [createdAt] MessageMetadata createdAt
+         * @property {string|null} [nickname] MessageMetadata nickname
          */
 
         /**
@@ -1932,14 +1964,6 @@ export const csp_e2e = $root.csp_e2e = (() => {
         MessageMetadata.prototype.padding = $util.newBuffer([]);
 
         /**
-         * MessageMetadata nickname.
-         * @member {string} nickname
-         * @memberof csp_e2e.MessageMetadata
-         * @instance
-         */
-        MessageMetadata.prototype.nickname = "";
-
-        /**
          * MessageMetadata messageId.
          * @member {Long} messageId
          * @memberof csp_e2e.MessageMetadata
@@ -1954,6 +1978,28 @@ export const csp_e2e = $root.csp_e2e = (() => {
          * @instance
          */
         MessageMetadata.prototype.createdAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+        /**
+         * MessageMetadata nickname.
+         * @member {string|null|undefined} nickname
+         * @memberof csp_e2e.MessageMetadata
+         * @instance
+         */
+        MessageMetadata.prototype.nickname = null;
+
+        // OneOf field names bound to virtual getters and setters
+        let $oneOfFields;
+
+        /**
+         * MessageMetadata _nickname.
+         * @member {"nickname"|undefined} _nickname
+         * @memberof csp_e2e.MessageMetadata
+         * @instance
+         */
+        Object.defineProperty(MessageMetadata.prototype, "_nickname", {
+            get: $util.oneOfGetter($oneOfFields = ["nickname"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
 
         /**
          * Encodes the specified MessageMetadata message. Does not implicitly {@link csp_e2e.MessageMetadata.verify|verify} messages.
@@ -2000,16 +2046,16 @@ export const csp_e2e = $root.csp_e2e = (() => {
                         message.padding = reader.bytes();
                         break;
                     }
-                case 2: {
-                        message.nickname = reader.string();
-                        break;
-                    }
                 case 3: {
                         message.messageId = reader.fixed64();
                         break;
                     }
                 case 4: {
                         message.createdAt = reader.uint64();
+                        break;
+                    }
+                case 2: {
+                        message.nickname = reader.string();
                         break;
                     }
                 default:
@@ -12515,6 +12561,7 @@ export const sync = $root.sync = (() => {
              * @memberof sync.MdmParameters
              * @interface IParameter
              * @property {string|null} [stringValue] Parameter stringValue
+             * @property {Long|null} [integerValue] Parameter integerValue
              * @property {boolean|null} [booleanValue] Parameter booleanValue
              */
 
@@ -12542,6 +12589,14 @@ export const sync = $root.sync = (() => {
             Parameter.prototype.stringValue = null;
 
             /**
+             * Parameter integerValue.
+             * @member {Long|null|undefined} integerValue
+             * @memberof sync.MdmParameters.Parameter
+             * @instance
+             */
+            Parameter.prototype.integerValue = null;
+
+            /**
              * Parameter booleanValue.
              * @member {boolean|null|undefined} booleanValue
              * @memberof sync.MdmParameters.Parameter
@@ -12554,12 +12609,12 @@ export const sync = $root.sync = (() => {
 
             /**
              * Parameter value.
-             * @member {"stringValue"|"booleanValue"|undefined} value
+             * @member {"stringValue"|"integerValue"|"booleanValue"|undefined} value
              * @memberof sync.MdmParameters.Parameter
              * @instance
              */
             Object.defineProperty(Parameter.prototype, "value", {
-                get: $util.oneOfGetter($oneOfFields = ["stringValue", "booleanValue"]),
+                get: $util.oneOfGetter($oneOfFields = ["stringValue", "integerValue", "booleanValue"]),
                 set: $util.oneOfSetter($oneOfFields)
             });
 
@@ -12579,6 +12634,8 @@ export const sync = $root.sync = (() => {
                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.stringValue);
                 if (message.booleanValue != null && Object.hasOwnProperty.call(message, "booleanValue"))
                     writer.uint32(/* id 2, wireType 0 =*/16).bool(message.booleanValue);
+                if (message.integerValue != null && Object.hasOwnProperty.call(message, "integerValue"))
+                    writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.integerValue);
                 return writer;
             };
 
@@ -12602,6 +12659,10 @@ export const sync = $root.sync = (() => {
                     switch (tag >>> 3) {
                     case 1: {
                             message.stringValue = reader.string();
+                            break;
+                        }
+                    case 3: {
+                            message.integerValue = reader.uint64();
                             break;
                         }
                     case 2: {
@@ -15260,8 +15321,10 @@ export const sync = $root.sync = (() => {
          * @property {sync.Settings.UnknownContactPolicy|null} [unknownContactPolicy] Settings unknownContactPolicy
          * @property {sync.ReadReceiptPolicy|null} [readReceiptPolicy] Settings readReceiptPolicy
          * @property {sync.TypingIndicatorPolicy|null} [typingIndicatorPolicy] Settings typingIndicatorPolicy
-         * @property {sync.Settings.CallPolicy|null} [callPolicy] Settings callPolicy
-         * @property {sync.Settings.CallConnectionPolicy|null} [callConnectionPolicy] Settings callConnectionPolicy
+         * @property {sync.Settings.O2oCallPolicy|null} [o2oCallPolicy] Settings o2oCallPolicy
+         * @property {sync.Settings.O2oCallConnectionPolicy|null} [o2oCallConnectionPolicy] Settings o2oCallConnectionPolicy
+         * @property {sync.Settings.O2oCallVideoPolicy|null} [o2oCallVideoPolicy] Settings o2oCallVideoPolicy
+         * @property {sync.Settings.GroupCallPolicy|null} [groupCallPolicy] Settings groupCallPolicy
          * @property {sync.Settings.ScreenshotPolicy|null} [screenshotPolicy] Settings screenshotPolicy
          * @property {sync.Settings.KeyboardDataCollectionPolicy|null} [keyboardDataCollectionPolicy] Settings keyboardDataCollectionPolicy
          * @property {common.Identities|null} [blockedIdentities] Settings blockedIdentities
@@ -15316,20 +15379,36 @@ export const sync = $root.sync = (() => {
         Settings.prototype.typingIndicatorPolicy = null;
 
         /**
-         * Settings callPolicy.
-         * @member {sync.Settings.CallPolicy|null|undefined} callPolicy
+         * Settings o2oCallPolicy.
+         * @member {sync.Settings.O2oCallPolicy|null|undefined} o2oCallPolicy
          * @memberof sync.Settings
          * @instance
          */
-        Settings.prototype.callPolicy = null;
+        Settings.prototype.o2oCallPolicy = null;
 
         /**
-         * Settings callConnectionPolicy.
-         * @member {sync.Settings.CallConnectionPolicy|null|undefined} callConnectionPolicy
+         * Settings o2oCallConnectionPolicy.
+         * @member {sync.Settings.O2oCallConnectionPolicy|null|undefined} o2oCallConnectionPolicy
          * @memberof sync.Settings
          * @instance
          */
-        Settings.prototype.callConnectionPolicy = null;
+        Settings.prototype.o2oCallConnectionPolicy = null;
+
+        /**
+         * Settings o2oCallVideoPolicy.
+         * @member {sync.Settings.O2oCallVideoPolicy|null|undefined} o2oCallVideoPolicy
+         * @memberof sync.Settings
+         * @instance
+         */
+        Settings.prototype.o2oCallVideoPolicy = null;
+
+        /**
+         * Settings groupCallPolicy.
+         * @member {sync.Settings.GroupCallPolicy|null|undefined} groupCallPolicy
+         * @memberof sync.Settings
+         * @instance
+         */
+        Settings.prototype.groupCallPolicy = null;
 
         /**
          * Settings screenshotPolicy.
@@ -15411,24 +15490,46 @@ export const sync = $root.sync = (() => {
         });
 
         /**
-         * Settings _callPolicy.
-         * @member {"callPolicy"|undefined} _callPolicy
+         * Settings _o2oCallPolicy.
+         * @member {"o2oCallPolicy"|undefined} _o2oCallPolicy
          * @memberof sync.Settings
          * @instance
          */
-        Object.defineProperty(Settings.prototype, "_callPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["callPolicy"]),
+        Object.defineProperty(Settings.prototype, "_o2oCallPolicy", {
+            get: $util.oneOfGetter($oneOfFields = ["o2oCallPolicy"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
         /**
-         * Settings _callConnectionPolicy.
-         * @member {"callConnectionPolicy"|undefined} _callConnectionPolicy
+         * Settings _o2oCallConnectionPolicy.
+         * @member {"o2oCallConnectionPolicy"|undefined} _o2oCallConnectionPolicy
          * @memberof sync.Settings
          * @instance
          */
-        Object.defineProperty(Settings.prototype, "_callConnectionPolicy", {
-            get: $util.oneOfGetter($oneOfFields = ["callConnectionPolicy"]),
+        Object.defineProperty(Settings.prototype, "_o2oCallConnectionPolicy", {
+            get: $util.oneOfGetter($oneOfFields = ["o2oCallConnectionPolicy"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Settings _o2oCallVideoPolicy.
+         * @member {"o2oCallVideoPolicy"|undefined} _o2oCallVideoPolicy
+         * @memberof sync.Settings
+         * @instance
+         */
+        Object.defineProperty(Settings.prototype, "_o2oCallVideoPolicy", {
+            get: $util.oneOfGetter($oneOfFields = ["o2oCallVideoPolicy"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Settings _groupCallPolicy.
+         * @member {"groupCallPolicy"|undefined} _groupCallPolicy
+         * @memberof sync.Settings
+         * @instance
+         */
+        Object.defineProperty(Settings.prototype, "_groupCallPolicy", {
+            get: $util.oneOfGetter($oneOfFields = ["groupCallPolicy"]),
             set: $util.oneOfSetter($oneOfFields)
         });
 
@@ -15474,10 +15575,10 @@ export const sync = $root.sync = (() => {
                 writer.uint32(/* id 3, wireType 0 =*/24).int32(message.readReceiptPolicy);
             if (message.typingIndicatorPolicy != null && Object.hasOwnProperty.call(message, "typingIndicatorPolicy"))
                 writer.uint32(/* id 4, wireType 0 =*/32).int32(message.typingIndicatorPolicy);
-            if (message.callPolicy != null && Object.hasOwnProperty.call(message, "callPolicy"))
-                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.callPolicy);
-            if (message.callConnectionPolicy != null && Object.hasOwnProperty.call(message, "callConnectionPolicy"))
-                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.callConnectionPolicy);
+            if (message.o2oCallPolicy != null && Object.hasOwnProperty.call(message, "o2oCallPolicy"))
+                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.o2oCallPolicy);
+            if (message.o2oCallConnectionPolicy != null && Object.hasOwnProperty.call(message, "o2oCallConnectionPolicy"))
+                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.o2oCallConnectionPolicy);
             if (message.screenshotPolicy != null && Object.hasOwnProperty.call(message, "screenshotPolicy"))
                 writer.uint32(/* id 7, wireType 0 =*/56).int32(message.screenshotPolicy);
             if (message.keyboardDataCollectionPolicy != null && Object.hasOwnProperty.call(message, "keyboardDataCollectionPolicy"))
@@ -15486,6 +15587,10 @@ export const sync = $root.sync = (() => {
                 $root.common.Identities.encode(message.blockedIdentities, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
             if (message.excludeFromSyncIdentities != null && Object.hasOwnProperty.call(message, "excludeFromSyncIdentities"))
                 $root.common.Identities.encode(message.excludeFromSyncIdentities, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
+            if (message.groupCallPolicy != null && Object.hasOwnProperty.call(message, "groupCallPolicy"))
+                writer.uint32(/* id 11, wireType 0 =*/88).int32(message.groupCallPolicy);
+            if (message.o2oCallVideoPolicy != null && Object.hasOwnProperty.call(message, "o2oCallVideoPolicy"))
+                writer.uint32(/* id 12, wireType 0 =*/96).int32(message.o2oCallVideoPolicy);
             return writer;
         };
 
@@ -15524,11 +15629,19 @@ export const sync = $root.sync = (() => {
                         break;
                     }
                 case 5: {
-                        message.callPolicy = reader.int32();
+                        message.o2oCallPolicy = reader.int32();
                         break;
                     }
                 case 6: {
-                        message.callConnectionPolicy = reader.int32();
+                        message.o2oCallConnectionPolicy = reader.int32();
+                        break;
+                    }
+                case 12: {
+                        message.o2oCallVideoPolicy = reader.int32();
+                        break;
+                    }
+                case 11: {
+                        message.groupCallPolicy = reader.int32();
                         break;
                     }
                 case 7: {
@@ -15584,30 +15697,58 @@ export const sync = $root.sync = (() => {
         })();
 
         /**
-         * CallPolicy enum.
-         * @name sync.Settings.CallPolicy
+         * O2oCallPolicy enum.
+         * @name sync.Settings.O2oCallPolicy
          * @enum {number}
-         * @property {number} ALLOW_CALL=0 ALLOW_CALL value
-         * @property {number} DENY_CALL=1 DENY_CALL value
+         * @property {number} ALLOW_O2O_CALL=0 ALLOW_O2O_CALL value
+         * @property {number} DENY_O2O_CALL=1 DENY_O2O_CALL value
          */
-        Settings.CallPolicy = (function() {
+        Settings.O2oCallPolicy = (function() {
             const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_CALL"] = 0;
-            values[valuesById[1] = "DENY_CALL"] = 1;
+            values[valuesById[0] = "ALLOW_O2O_CALL"] = 0;
+            values[valuesById[1] = "DENY_O2O_CALL"] = 1;
             return values;
         })();
 
         /**
-         * CallConnectionPolicy enum.
-         * @name sync.Settings.CallConnectionPolicy
+         * O2oCallConnectionPolicy enum.
+         * @name sync.Settings.O2oCallConnectionPolicy
          * @enum {number}
-         * @property {number} ALLOW_DIRECT=0 ALLOW_DIRECT value
-         * @property {number} REQUIRE_RELAY=1 REQUIRE_RELAY value
+         * @property {number} ALLOW_DIRECT_CONNECTION=0 ALLOW_DIRECT_CONNECTION value
+         * @property {number} REQUIRE_RELAYED_CONNECTION=1 REQUIRE_RELAYED_CONNECTION value
          */
-        Settings.CallConnectionPolicy = (function() {
+        Settings.O2oCallConnectionPolicy = (function() {
             const valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "ALLOW_DIRECT"] = 0;
-            values[valuesById[1] = "REQUIRE_RELAY"] = 1;
+            values[valuesById[0] = "ALLOW_DIRECT_CONNECTION"] = 0;
+            values[valuesById[1] = "REQUIRE_RELAYED_CONNECTION"] = 1;
+            return values;
+        })();
+
+        /**
+         * O2oCallVideoPolicy enum.
+         * @name sync.Settings.O2oCallVideoPolicy
+         * @enum {number}
+         * @property {number} ALLOW_VIDEO=0 ALLOW_VIDEO value
+         * @property {number} DENY_VIDEO=1 DENY_VIDEO value
+         */
+        Settings.O2oCallVideoPolicy = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "ALLOW_VIDEO"] = 0;
+            values[valuesById[1] = "DENY_VIDEO"] = 1;
+            return values;
+        })();
+
+        /**
+         * GroupCallPolicy enum.
+         * @name sync.Settings.GroupCallPolicy
+         * @enum {number}
+         * @property {number} ALLOW_GROUP_CALL=0 ALLOW_GROUP_CALL value
+         * @property {number} DENY_GROUP_CALL=1 DENY_GROUP_CALL value
+         */
+        Settings.GroupCallPolicy = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "ALLOW_GROUP_CALL"] = 0;
+            values[valuesById[1] = "DENY_GROUP_CALL"] = 1;
             return values;
         })();
 
@@ -18726,7 +18867,8 @@ export const d2m = $root.d2m = (() => {
              * @memberof d2m.DevicesInfo
              * @interface IAugmentedDeviceInfo
              * @property {Uint8Array|null} [encryptedDeviceInfo] AugmentedDeviceInfo encryptedDeviceInfo
-             * @property {Long|null} [lastLoginAt] AugmentedDeviceInfo lastLoginAt
+             * @property {Long|null} [connectedSince] AugmentedDeviceInfo connectedSince
+             * @property {Long|null} [lastDisconnectAt] AugmentedDeviceInfo lastDisconnectAt
              * @property {d2m.DeviceSlotExpirationPolicy|null} [deviceSlotExpirationPolicy] AugmentedDeviceInfo deviceSlotExpirationPolicy
              */
 
@@ -18754,12 +18896,20 @@ export const d2m = $root.d2m = (() => {
             AugmentedDeviceInfo.prototype.encryptedDeviceInfo = $util.newBuffer([]);
 
             /**
-             * AugmentedDeviceInfo lastLoginAt.
-             * @member {Long} lastLoginAt
+             * AugmentedDeviceInfo connectedSince.
+             * @member {Long|null|undefined} connectedSince
              * @memberof d2m.DevicesInfo.AugmentedDeviceInfo
              * @instance
              */
-            AugmentedDeviceInfo.prototype.lastLoginAt = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+            AugmentedDeviceInfo.prototype.connectedSince = null;
+
+            /**
+             * AugmentedDeviceInfo lastDisconnectAt.
+             * @member {Long|null|undefined} lastDisconnectAt
+             * @memberof d2m.DevicesInfo.AugmentedDeviceInfo
+             * @instance
+             */
+            AugmentedDeviceInfo.prototype.lastDisconnectAt = null;
 
             /**
              * AugmentedDeviceInfo deviceSlotExpirationPolicy.
@@ -18768,6 +18918,20 @@ export const d2m = $root.d2m = (() => {
              * @instance
              */
             AugmentedDeviceInfo.prototype.deviceSlotExpirationPolicy = 0;
+
+            // OneOf field names bound to virtual getters and setters
+            let $oneOfFields;
+
+            /**
+             * AugmentedDeviceInfo connectionState.
+             * @member {"connectedSince"|"lastDisconnectAt"|undefined} connectionState
+             * @memberof d2m.DevicesInfo.AugmentedDeviceInfo
+             * @instance
+             */
+            Object.defineProperty(AugmentedDeviceInfo.prototype, "connectionState", {
+                get: $util.oneOfGetter($oneOfFields = ["connectedSince", "lastDisconnectAt"]),
+                set: $util.oneOfSetter($oneOfFields)
+            });
 
             /**
              * Encodes the specified AugmentedDeviceInfo message. Does not implicitly {@link d2m.DevicesInfo.AugmentedDeviceInfo.verify|verify} messages.
@@ -18783,10 +18947,12 @@ export const d2m = $root.d2m = (() => {
                     writer = $Writer.create();
                 if (message.encryptedDeviceInfo != null && Object.hasOwnProperty.call(message, "encryptedDeviceInfo"))
                     writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.encryptedDeviceInfo);
-                if (message.lastLoginAt != null && Object.hasOwnProperty.call(message, "lastLoginAt"))
-                    writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.lastLoginAt);
+                if (message.connectedSince != null && Object.hasOwnProperty.call(message, "connectedSince"))
+                    writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.connectedSince);
                 if (message.deviceSlotExpirationPolicy != null && Object.hasOwnProperty.call(message, "deviceSlotExpirationPolicy"))
                     writer.uint32(/* id 3, wireType 0 =*/24).int32(message.deviceSlotExpirationPolicy);
+                if (message.lastDisconnectAt != null && Object.hasOwnProperty.call(message, "lastDisconnectAt"))
+                    writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.lastDisconnectAt);
                 return writer;
             };
 
@@ -18813,7 +18979,11 @@ export const d2m = $root.d2m = (() => {
                             break;
                         }
                     case 2: {
-                            message.lastLoginAt = reader.uint64();
+                            message.connectedSince = reader.uint64();
+                            break;
+                        }
+                    case 4: {
+                            message.lastDisconnectAt = reader.uint64();
                             break;
                         }
                     case 3: {

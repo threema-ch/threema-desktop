@@ -1,8 +1,8 @@
 // Profile Settings
 
 import type {
-    CallConnectionPolicy,
-    CallPolicy,
+    O2oCallConnectionPolicy,
+    O2oCallPolicy,
     ContactSyncPolicy,
     GlobalPropertyKey,
     InactiveContactsPolicy,
@@ -72,8 +72,8 @@ export type PrivacySettings = LocalModel<PrivacySettingsView, PrivacySettingsCon
 
 // Note: Type must be compatible with common.settings.CallsSettings
 export interface CallsSettingsView {
-    readonly callPolicy?: CallPolicy;
-    readonly callConnectionPolicy?: CallConnectionPolicy;
+    readonly o2oCallPolicy?: O2oCallPolicy;
+    readonly o2oCallConnectionPolicy?: O2oCallConnectionPolicy;
 }
 export type CallsSettingsUpdate = Partial<CallsSettingsView>;
 export type CallsSettingsController = {

@@ -617,14 +617,24 @@ export enum UnknownContactPolicy {
     BLOCK_UNKNOWN = 1,
 }
 /** @generate convert */
-export enum CallPolicy {
+export enum O2oCallPolicy {
     ALLOW_CALL = 0,
     DENY_CALL = 1,
 }
 /** @generate convert */
-export enum CallConnectionPolicy {
+export enum O2oCallConnectionPolicy {
     ALLOW_DIRECT = 0,
     REQUIRE_RELAY = 1,
+}
+/** @generate convert */
+export enum O2oCallVideoPolicy {
+    ALLOW_VIDEO = 0,
+    DENY_VIDEO = 1,
+}
+/** @generate convert */
+export enum GroupCallPolicy {
+    ALLOW_GROUP_CALL = 0,
+    DENY_GROUP_CALL = 1,
 }
 /** @generate convert */
 export enum ScreenshotPolicy {

@@ -137,8 +137,8 @@ export const enum PrivacySettings_KeyboardDataCollectionPolicy {
 
 /** Calls settings */
 export interface CallsSettings {
-    callPolicy?: CallsSettings_CallPolicy | undefined;
-    callConnectionPolicy?: CallsSettings_CallConnectionPolicy | undefined;
+    o2oCallPolicy?: CallsSettings_O2oCallPolicy | undefined;
+    o2oCallConnectionPolicy?: CallsSettings_O2oCallConnectionPolicy | undefined;
 }
 
 /**
@@ -146,7 +146,7 @@ export interface CallsSettings {
  *
  * Required towards a new device. Optional otherwise.
  */
-export const enum CallsSettings_CallPolicy {
+export const enum CallsSettings_O2oCallPolicy {
     /** ALLOW_CALL - Allow creating/receiving Threema Calls */
     ALLOW_CALL = 0,
     /** DENY_CALL - Denied from creating/receiving any Threema Calls */
@@ -159,7 +159,7 @@ export const enum CallsSettings_CallPolicy {
  *
  * Required towards a new device. Optional otherwise.
  */
-export const enum CallsSettings_CallConnectionPolicy {
+export const enum CallsSettings_O2oCallConnectionPolicy {
     /** ALLOW_DIRECT - Allow direct (peer-to-peer) connections for Threema Calls */
     ALLOW_DIRECT = 0,
     /** REQUIRE_RELAY - Require relayed connections for Threema Calls */
@@ -523,16 +523,16 @@ export const PrivacySettings = {
 };
 
 function createBaseCallsSettings(): CallsSettings {
-    return {callPolicy: undefined, callConnectionPolicy: undefined};
+    return {o2oCallPolicy: undefined, o2oCallConnectionPolicy: undefined};
 }
 
 export const CallsSettings = {
     encode(message: CallsSettings, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-        if (message.callPolicy !== undefined) {
-            writer.uint32(8).int32(message.callPolicy);
+        if (message.o2oCallPolicy !== undefined) {
+            writer.uint32(8).int32(message.o2oCallPolicy);
         }
-        if (message.callConnectionPolicy !== undefined) {
-            writer.uint32(16).int32(message.callConnectionPolicy);
+        if (message.o2oCallConnectionPolicy !== undefined) {
+            writer.uint32(16).int32(message.o2oCallConnectionPolicy);
         }
         return writer;
     },
@@ -549,14 +549,14 @@ export const CallsSettings = {
                         break;
                     }
 
-                    message.callPolicy = reader.int32() as any;
+                    message.o2oCallPolicy = reader.int32() as any;
                     continue;
                 case 2:
                     if (tag !== 16) {
                         break;
                     }
 
-                    message.callConnectionPolicy = reader.int32() as any;
+                    message.o2oCallConnectionPolicy = reader.int32() as any;
                     continue;
             }
             if ((tag & 7) === 4 || tag === 0) {

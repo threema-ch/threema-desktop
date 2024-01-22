@@ -411,7 +411,8 @@ export namespace csp_e2e_fs {
     enum Version {
         UNSPECIFIED = 0,
         V1_0 = 256,
-        V1_1 = 257
+        V1_1 = 257,
+        V1_2 = 258
     }
     /** Properties of a VersionRange. */
     interface IVersionRange {
@@ -585,8 +586,10 @@ export namespace csp_e2e_fs {
     }
     /** Properties of a Reject. */
     interface IReject {
-        /** Reject rejectedEncapsulatedMessageId */
-        rejectedEncapsulatedMessageId?: (Long | null);
+        /** Reject messageId */
+        messageId?: (Long | null);
+        /** Reject groupIdentity */
+        groupIdentity?: (common.GroupIdentity | null);
         /** Reject cause */
         cause?: (csp_e2e_fs.Reject.Cause | null);
     }
@@ -600,8 +603,10 @@ export namespace csp_e2e_fs {
          * @param [properties] Properties to set
          */
         constructor(properties?: csp_e2e_fs.IReject);
-        /** Reject rejectedEncapsulatedMessageId. */
-        public rejectedEncapsulatedMessageId: Long;
+        /** Reject messageId. */
+        public messageId: Long;
+        /** Reject groupIdentity. */
+        public groupIdentity?: (common.GroupIdentity | null);
         /** Reject cause. */
         public cause: csp_e2e_fs.Reject.Cause;
         /**
@@ -682,6 +687,8 @@ export namespace csp_e2e_fs {
         offeredVersion?: (number | null);
         /** Encapsulated appliedVersion */
         appliedVersion?: (number | null);
+        /** Encapsulated groupIdentity */
+        groupIdentity?: (common.GroupIdentity | null);
         /** Encapsulated encryptedInner */
         encryptedInner?: (Uint8Array | null);
     }
@@ -703,6 +710,8 @@ export namespace csp_e2e_fs {
         public offeredVersion: number;
         /** Encapsulated appliedVersion. */
         public appliedVersion: number;
+        /** Encapsulated groupIdentity. */
+        public groupIdentity?: (common.GroupIdentity | null);
         /** Encapsulated encryptedInner. */
         public encryptedInner: Uint8Array;
         /**
@@ -736,12 +745,12 @@ export namespace csp_e2e {
     interface IMessageMetadata {
         /** MessageMetadata padding */
         padding?: (Uint8Array | null);
-        /** MessageMetadata nickname */
-        nickname?: (string | null);
         /** MessageMetadata messageId */
         messageId?: (Long | null);
         /** MessageMetadata createdAt */
         createdAt?: (Long | null);
+        /** MessageMetadata nickname */
+        nickname?: (string | null);
     }
     type MessageMetadataEncodable = types.WeakOpaque<IMessageMetadata, {
         readonly MessageMetadataEncodable: unique symbol;
@@ -755,12 +764,14 @@ export namespace csp_e2e {
         constructor(properties?: csp_e2e.IMessageMetadata);
         /** MessageMetadata padding. */
         public padding: Uint8Array;
-        /** MessageMetadata nickname. */
-        public nickname: string;
         /** MessageMetadata messageId. */
         public messageId: Long;
         /** MessageMetadata createdAt. */
         public createdAt: Long;
+        /** MessageMetadata nickname. */
+        public nickname?: (string | null);
+        /** MessageMetadata _nickname. */
+        public _nickname?: "nickname";
         /**
          * Encodes the specified MessageMetadata message. Does not implicitly {@link csp_e2e.MessageMetadata.verify|verify} messages.
          * @param message MessageMetadata message or plain object to encode
@@ -4768,6 +4779,8 @@ export namespace sync {
         interface IParameter {
             /** Parameter stringValue */
             stringValue?: (string | null);
+            /** Parameter integerValue */
+            integerValue?: (Long | null);
             /** Parameter booleanValue */
             booleanValue?: (boolean | null);
         }
@@ -4783,10 +4796,12 @@ export namespace sync {
             constructor(properties?: sync.MdmParameters.IParameter);
             /** Parameter stringValue. */
             public stringValue?: (string | null);
+            /** Parameter integerValue. */
+            public integerValue?: (Long | null);
             /** Parameter booleanValue. */
             public booleanValue?: (boolean | null);
             /** Parameter value. */
-            public value?: ("stringValue" | "booleanValue");
+            public value?: ("stringValue" | "integerValue" | "booleanValue");
             /**
              * Encodes the specified Parameter message. Does not implicitly {@link sync.MdmParameters.Parameter.verify|verify} messages.
              * @param message Parameter message or plain object to encode
@@ -5696,10 +5711,14 @@ export namespace sync {
         readReceiptPolicy?: (sync.ReadReceiptPolicy | null);
         /** Settings typingIndicatorPolicy */
         typingIndicatorPolicy?: (sync.TypingIndicatorPolicy | null);
-        /** Settings callPolicy */
-        callPolicy?: (sync.Settings.CallPolicy | null);
-        /** Settings callConnectionPolicy */
-        callConnectionPolicy?: (sync.Settings.CallConnectionPolicy | null);
+        /** Settings o2oCallPolicy */
+        o2oCallPolicy?: (sync.Settings.O2oCallPolicy | null);
+        /** Settings o2oCallConnectionPolicy */
+        o2oCallConnectionPolicy?: (sync.Settings.O2oCallConnectionPolicy | null);
+        /** Settings o2oCallVideoPolicy */
+        o2oCallVideoPolicy?: (sync.Settings.O2oCallVideoPolicy | null);
+        /** Settings groupCallPolicy */
+        groupCallPolicy?: (sync.Settings.GroupCallPolicy | null);
         /** Settings screenshotPolicy */
         screenshotPolicy?: (sync.Settings.ScreenshotPolicy | null);
         /** Settings keyboardDataCollectionPolicy */
@@ -5727,10 +5746,14 @@ export namespace sync {
         public readReceiptPolicy?: (sync.ReadReceiptPolicy | null);
         /** Settings typingIndicatorPolicy. */
         public typingIndicatorPolicy?: (sync.TypingIndicatorPolicy | null);
-        /** Settings callPolicy. */
-        public callPolicy?: (sync.Settings.CallPolicy | null);
-        /** Settings callConnectionPolicy. */
-        public callConnectionPolicy?: (sync.Settings.CallConnectionPolicy | null);
+        /** Settings o2oCallPolicy. */
+        public o2oCallPolicy?: (sync.Settings.O2oCallPolicy | null);
+        /** Settings o2oCallConnectionPolicy. */
+        public o2oCallConnectionPolicy?: (sync.Settings.O2oCallConnectionPolicy | null);
+        /** Settings o2oCallVideoPolicy. */
+        public o2oCallVideoPolicy?: (sync.Settings.O2oCallVideoPolicy | null);
+        /** Settings groupCallPolicy. */
+        public groupCallPolicy?: (sync.Settings.GroupCallPolicy | null);
         /** Settings screenshotPolicy. */
         public screenshotPolicy?: (sync.Settings.ScreenshotPolicy | null);
         /** Settings keyboardDataCollectionPolicy. */
@@ -5747,10 +5770,14 @@ export namespace sync {
         public _readReceiptPolicy?: "readReceiptPolicy";
         /** Settings _typingIndicatorPolicy. */
         public _typingIndicatorPolicy?: "typingIndicatorPolicy";
-        /** Settings _callPolicy. */
-        public _callPolicy?: "callPolicy";
-        /** Settings _callConnectionPolicy. */
-        public _callConnectionPolicy?: "callConnectionPolicy";
+        /** Settings _o2oCallPolicy. */
+        public _o2oCallPolicy?: "o2oCallPolicy";
+        /** Settings _o2oCallConnectionPolicy. */
+        public _o2oCallConnectionPolicy?: "o2oCallConnectionPolicy";
+        /** Settings _o2oCallVideoPolicy. */
+        public _o2oCallVideoPolicy?: "o2oCallVideoPolicy";
+        /** Settings _groupCallPolicy. */
+        public _groupCallPolicy?: "groupCallPolicy";
         /** Settings _screenshotPolicy. */
         public _screenshotPolicy?: "screenshotPolicy";
         /** Settings _keyboardDataCollectionPolicy. */
@@ -5783,15 +5810,25 @@ export namespace sync {
             ALLOW_UNKNOWN = 0,
             BLOCK_UNKNOWN = 1
         }
-        /** CallPolicy enum. */
-        enum CallPolicy {
-            ALLOW_CALL = 0,
-            DENY_CALL = 1
+        /** O2oCallPolicy enum. */
+        enum O2oCallPolicy {
+            ALLOW_O2O_CALL = 0,
+            DENY_O2O_CALL = 1
         }
-        /** CallConnectionPolicy enum. */
-        enum CallConnectionPolicy {
-            ALLOW_DIRECT = 0,
-            REQUIRE_RELAY = 1
+        /** O2oCallConnectionPolicy enum. */
+        enum O2oCallConnectionPolicy {
+            ALLOW_DIRECT_CONNECTION = 0,
+            REQUIRE_RELAYED_CONNECTION = 1
+        }
+        /** O2oCallVideoPolicy enum. */
+        enum O2oCallVideoPolicy {
+            ALLOW_VIDEO = 0,
+            DENY_VIDEO = 1
+        }
+        /** GroupCallPolicy enum. */
+        enum GroupCallPolicy {
+            ALLOW_GROUP_CALL = 0,
+            DENY_GROUP_CALL = 1
         }
         /** ScreenshotPolicy enum. */
         enum ScreenshotPolicy {
@@ -6989,8 +7026,10 @@ export namespace d2m {
         interface IAugmentedDeviceInfo {
             /** AugmentedDeviceInfo encryptedDeviceInfo */
             encryptedDeviceInfo?: (Uint8Array | null);
-            /** AugmentedDeviceInfo lastLoginAt */
-            lastLoginAt?: (Long | null);
+            /** AugmentedDeviceInfo connectedSince */
+            connectedSince?: (Long | null);
+            /** AugmentedDeviceInfo lastDisconnectAt */
+            lastDisconnectAt?: (Long | null);
             /** AugmentedDeviceInfo deviceSlotExpirationPolicy */
             deviceSlotExpirationPolicy?: (d2m.DeviceSlotExpirationPolicy | null);
         }
@@ -7006,10 +7045,14 @@ export namespace d2m {
             constructor(properties?: d2m.DevicesInfo.IAugmentedDeviceInfo);
             /** AugmentedDeviceInfo encryptedDeviceInfo. */
             public encryptedDeviceInfo: Uint8Array;
-            /** AugmentedDeviceInfo lastLoginAt. */
-            public lastLoginAt: Long;
+            /** AugmentedDeviceInfo connectedSince. */
+            public connectedSince?: (Long | null);
+            /** AugmentedDeviceInfo lastDisconnectAt. */
+            public lastDisconnectAt?: (Long | null);
             /** AugmentedDeviceInfo deviceSlotExpirationPolicy. */
             public deviceSlotExpirationPolicy: d2m.DeviceSlotExpirationPolicy;
+            /** AugmentedDeviceInfo connectionState. */
+            public connectionState?: ("connectedSince" | "lastDisconnectAt");
             /**
              * Encodes the specified AugmentedDeviceInfo message. Does not implicitly {@link d2m.DevicesInfo.AugmentedDeviceInfo.verify|verify} messages.
              * @param message AugmentedDeviceInfo message or plain object to encode

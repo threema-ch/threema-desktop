@@ -82,11 +82,11 @@ export class ReflectedSettingsSyncTask implements PassiveTask<void> {
     private async _processCallsSettings(
         settingsUpdate: validate.sync.Settings.Type,
     ): Promise<void> {
-        const {callPolicy, callConnectionPolicy} = settingsUpdate;
+        const {o2oCallPolicy, o2oCallConnectionPolicy} = settingsUpdate;
         await this._services.model.user.callsSettings.get().controller.update(
             filterUndefinedProperties({
-                callPolicy,
-                callConnectionPolicy,
+                o2oCallPolicy,
+                o2oCallConnectionPolicy,
             }),
         );
     }

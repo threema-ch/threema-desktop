@@ -128,25 +128,24 @@ message CallsSettings {
     // Threema Call policy
     //
     // Required towards a new device. Optional otherwise.
-    enum CallPolicy {
+    enum O2oCallPolicy {
       // Allow creating/receiving Threema Calls
       ALLOW_CALL = 0;
       // Denied from creating/receiving any Threema Calls
       DENY_CALL = 1;
     }
-    optional CallPolicy call_policy = 1;
+    optional O2oCallPolicy o2o_call_policy = 1;
 
     // Threema Call connection policy
     //
     // Required towards a new device. Optional otherwise.
-    enum CallConnectionPolicy {
+    enum O2oCallConnectionPolicy {
       // Allow direct (peer-to-peer) connections for Threema Calls
       ALLOW_DIRECT = 0;
       // Require relayed connections for Threema Calls
       REQUIRE_RELAY = 1;
     }
-    optional CallConnectionPolicy call_connection_policy = 2;
-
+    optional O2oCallConnectionPolicy o2o_call_connection_policy = 2;
   }
 
 // Devices Settings

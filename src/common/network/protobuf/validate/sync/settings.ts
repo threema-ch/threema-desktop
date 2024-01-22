@@ -1,10 +1,12 @@
 import * as v from '@badrap/valita';
 
 import {
-    CallConnectionPolicyUtils,
-    CallPolicyUtils,
     ContactSyncPolicyUtils,
+    GroupCallPolicyUtils,
     KeyboardDataCollectionPolicyUtils,
+    O2oCallConnectionPolicyUtils,
+    O2oCallPolicyUtils,
+    O2oCallVideoPolicyUtils,
     ReadReceiptPolicyUtils,
     ScreenshotPolicyUtils,
     TypingIndicatorPolicyUtils,
@@ -23,8 +25,10 @@ export const SCHEMA = validator(
             unknownContactPolicy: optionalEnum(UnknownContactPolicyUtils),
             readReceiptPolicy: optionalEnum(ReadReceiptPolicyUtils),
             typingIndicatorPolicy: optionalEnum(TypingIndicatorPolicyUtils),
-            callPolicy: optionalEnum(CallPolicyUtils),
-            callConnectionPolicy: optionalEnum(CallConnectionPolicyUtils),
+            o2oCallPolicy: optionalEnum(O2oCallPolicyUtils),
+            o2oCallConnectionPolicy: optionalEnum(O2oCallConnectionPolicyUtils),
+            o2oCallVideoPolicy: optionalEnum(O2oCallVideoPolicyUtils),
+            groupCallPolicy: optionalEnum(GroupCallPolicyUtils),
             screenshotPolicy: optionalEnum(ScreenshotPolicyUtils),
             keyboardDataCollectionPolicy: optionalEnum(KeyboardDataCollectionPolicyUtils),
             blockedIdentities: nullOptional(Identities.SCHEMA),

@@ -76,7 +76,8 @@ export class IncomingForwardSecurityEnvelopeTask
             init: undefined,
             accept: undefined,
             reject: protobuf.utils.creator(protobuf.csp_e2e_fs.Reject, {
-                rejectedEncapsulatedMessageId: intoUnsignedLong(this._messageId),
+                messageId: intoUnsignedLong(this._messageId),
+                groupIdentity: undefined,
                 cause: protobuf.csp_e2e_fs.Reject.Cause.DISABLED_BY_LOCAL,
             }),
             terminate: undefined,

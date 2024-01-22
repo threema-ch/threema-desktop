@@ -201,6 +201,7 @@ export interface ContainerLike {
      * - `0x24`: high-priority token for notifications that require
      *   immediate delivery (e.g. for calls) using the same struct as
      *   [`set-push-notification-token`](ref:payload.set-push-notification-token)
+     * - `0x25`: [`delete-push-notification-token`](ref:payload.delete-push-notification-token)
      * - `0x30`: [`set-connection-idle-timeout`](ref:payload.set-connection-idle-timeout)
      * - `0x31`: (obsolete, formerly used to ensure that a push message is
      *    sent for all messages, regardless of the flag)
@@ -1068,8 +1069,9 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  *    warning, _Acknowledge_ and discard the message and abort these steps.
  * 4. If `sender-identity` equals the user's Threema ID, log a warning,
  *    _Acknowledge_ and discard the message and abort these steps.
- * 5. Lookup the contact associated to `sender-identity` and let
- *    `contact-or-init` be the result.
+ * 5. If `sender-identity` is a _Special Contact_, let `contact-or-init` be
+ *    that special contact. Otherwise, lookup the contact associated to
+ *    `sender-identity` and let `contact-or-init` be the result.
  * 6. If no contact could be found, lookup the Threema ID on the Directory
  *    Server:
  *    1. If the server could not be reached or the status code is not `200`
@@ -1118,8 +1120,15 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  * 18. If `sender-identity` is blocked¹ and `inner-type` is not exempted
  *     from blocking, _Acknowledge_ and  discard the message and abort these
  *     steps.
- * 19. If `inner-type` is not `0xa0` (and thereby `inner-message` contains a
- *     message):
+ * 19. If `sender-identity` equals `*3MAPUSH`:
+ *     1. If `inner-type` is not any of `0xa0` or `0xfe`, log a warning,
+ *        _Acknowledge_ and discard the message and abort these steps:
+ *     2. Run the receive steps associated to `inner-type` with
+ *        `inner-message`. If this fails, exceptionally abort these steps and
+ *        the connection. If the message has been discarded, _Acknowledge_
+ *        the message and abort these steps.
+ * 20. If `sender-identity` is not a _Special Contact_ and `inner-type` is
+ *     not `0xa0`:
  *     1. Let `nickname` be the value of `inner-metadata.nickname`. If
  *       `nickname` is empty, fall back to decoding the plaintext
  *       `legacy-sender-nickname` and assign it to `nickname`.
@@ -1150,12 +1159,12 @@ export class LegacyMessage extends base.Struct implements LegacyMessageLike {
  *        `inner-message`. If this fails, exceptionally abort these steps and
  *        the connection. If the message has been discarded, _Acknowledge_
  *        the message and abort these steps.
- * 20. (MD) If the properties associated to `inner-type` require
+ * 21. (MD) If the properties associated to `inner-type` require
  *     reflecting incoming messages, reflect `outer-type` and `outer-message`
  *     to other devices and wait for reflection acknowledgement.³ If this
  *     fails, exceptionally abort these steps and the connection.
- * 21. _Acknowledge_ the message.
- * 22. If the properties associated to `type` require sending
+ * 22. _Acknowledge_ the message.
+ * 23. If the properties associated to `type` require sending
  *     automatic delivery receipts and `flags` does not contain the _no
  *     automatic delivery receipts_ (`0x80`) flag, enqueue a persistent task
  *     that runs the following steps:
@@ -2026,6 +2035,148 @@ export class SetPushNotificationToken extends base.Struct implements SetPushNoti
         const array = new Uint8Array(this._array.byteLength);
         array.set(this._array);
         return new SetPushNotificationToken(array);
+    }
+}
+
+/**
+ * Deletes push tokens for a Threema ID. Can be used when self-removing or
+ * removing another device from a device group.
+ *
+ * Direction: Client --> Server
+ *
+ * When receiving this payload:
+ *
+ * 1. If `csp-device-ids` is empty, delete all tokens for all devices except
+ *    the device sending the payload and abort these steps.
+ * 2. Delete all tokens for the devices specified in `csp-device-ids`.
+ */
+export interface DeletePushNotificationTokenLike {
+    /**
+     * Delete tokens belonging to a
+     * [`csp-device-id`](ref:handshake.csp-device-id) in the same device
+     * group.
+     */
+    readonly cspDeviceIds: Iterable<types.u64>;
+}
+
+/**
+ * Encodable of {@link DeletePushNotificationTokenLike}.
+ */
+interface DeletePushNotificationTokenEncodable_ {
+    /**
+     * 'csp-device-ids' field value or encoder. See {@link DeletePushNotificationTokenLike#cspDeviceIds} for
+     * the field's description.
+     */
+    readonly cspDeviceIds: types.BoundedIterable<types.u64>;
+}
+
+/**
+ * New-type for DeletePushNotificationTokenEncodable.
+ */
+export type DeletePushNotificationTokenEncodable = types.WeakOpaque<
+    DeletePushNotificationTokenEncodable_,
+    {readonly DeletePushNotificationTokenEncodable: unique symbol}
+>;
+
+/** @inheritdoc */
+export class DeletePushNotificationToken
+    extends base.Struct
+    implements DeletePushNotificationTokenLike
+{
+    private readonly _array: Uint8Array;
+    private readonly _view: DataView;
+
+    /**
+     * Create a DeletePushNotificationToken from an array for accessing properties.
+     *
+     * Note: When accessing, attributes will be decoded on-the-fly which may be expensive.
+     */
+    private constructor(array: Uint8Array) {
+        super();
+        this._array = array;
+        this._view = new DataView(array.buffer, array.byteOffset, array.byteLength);
+    }
+
+    /**
+     * Decode a delete-push-notification-token struct from an array.
+     *
+     * @param array Array to decode from.
+     * @returns DeletePushNotificationToken instance.
+     */
+    public static decode(array: Uint8Array): DeletePushNotificationToken {
+        return new DeletePushNotificationToken(array);
+    }
+
+    /**
+     * Encode a delete-push-notification-token struct into an array.
+     *
+     * @param struct DeletePushNotificationTokenEncodable to encode.
+     * @param array Array to encode into.
+     * @returns A subarray of array containing the encoded struct.
+     */
+    public static encode(
+        struct: types.EncoderPick<DeletePushNotificationTokenEncodable, 'encode'>,
+        array: Uint8Array,
+    ): Uint8Array {
+        const view = new DataView(array.buffer, array.byteOffset, array.byteLength);
+        let offset = 0;
+
+        // Encode `csp-device-ids`
+        offset += utils.encodeIterable(struct.cspDeviceIds, offset, 8, (o, v) => {
+            view.setBigUint64(o, v, true);
+        });
+
+        return array.subarray(0, offset);
+    }
+
+    /**
+     * Get the amount of bytes that would be written when encoding a delete-push-notification-token struct into an
+     * array.
+     *
+     * @param struct DeletePushNotificationTokenEncodable to encode.
+     * @returns The amount of bytes that would be required to encode the struct.
+     */
+    public static byteLength(
+        struct: types.EncoderPick<DeletePushNotificationTokenEncodable, 'byteLength'>,
+    ): types.u53 {
+        let offset = 0;
+        offset += struct.cspDeviceIds.length * 8;
+        return offset;
+    }
+
+    /**
+     * 'csp-device-ids' field accessor. See {@link DeletePushNotificationTokenLike#cspDeviceIds} for the
+     * field's description.
+     */
+    public get cspDeviceIds(): Iterable<types.u64> {
+        return utils.decodeIterable(this._view, 0, 8, (o) => this._view.getBigUint64(o, true));
+    }
+
+    /**
+     * Create a snapshot of DeletePushNotificationTokenLike.
+     *
+     * Note: This is **not** a deep-copy, so byte arrays will still be views of the underlying
+     *       buffer.
+     *
+     * @returns DeletePushNotificationTokenLike snapshot.
+     */
+    public snapshot(): DeletePushNotificationTokenLike {
+        return {
+            cspDeviceIds: this.cspDeviceIds,
+        };
+    }
+
+    /**
+     * Create a clone of DeletePushNotificationTokenLike.
+     *
+     * Note: This is a deep-copy that will copy the underlying buffer.
+     *
+     * @returns DeletePushNotificationTokenLike clone.
+     */
+    public clone(): DeletePushNotificationToken {
+        const array = new Uint8Array(this._array.byteLength);
+        array.set(this._array);
+        return new DeletePushNotificationToken(array);
     }
 }
 
