@@ -75,6 +75,7 @@ import {
 } from '~/common/network/protocol/task/message-processing-helpers';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
+import type {MessageWithMetadataBoxLike} from '~/common/network/structbuf/csp/payload';
 import {
     type ContactConversationId,
     ensureIdentityString,
@@ -83,9 +84,8 @@ import {
     type IdentityString,
     isNickname,
     type MessageId,
-    type Nickname,
 } from '~/common/network/types';
-import type {ReadonlyUint8Array, u53} from '~/common/types';
+import type {ReadonlyUint8Array, u53, u8} from '~/common/types';
 import {assert, ensureError, exhausted, unreachable} from '~/common/utils/assert';
 import {byteWithoutPkcs7, byteWithoutZeroPadding} from '~/common/utils/byte';
 import {UTF8} from '~/common/utils/codec';
@@ -558,7 +558,11 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
             this._log.info(`Discarding ${messageTypeDebug} message with invalid padding: ${error}`);
             return await this._discard(handle);
         }
-        let senderContactOrInit = this._getContactOrInit(senderContactOrInitFragment, metadata);
+        let senderContactOrInit = this._getContactOrInit(
+            type,
+            senderContactOrInitFragment,
+            metadata,
+        );
         let instructions;
         try {
             instructions = this._getInstructionsForMessage(
@@ -597,13 +601,22 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         // if necessary.
         if (senderContactOrInit instanceof LocalModelStore) {
             // Contact exists. Update the nickname if necessary.
-            // TODO(SE-288) Determine what to do with the nickname in other messages.
-            if (instructions.messageCategory === 'conversation-message') {
+            const nicknameFromMessage = this._getSenderNickname(type, this._message, metadata);
+            if (nicknameFromMessage !== undefined) {
+                // 4. If `nickname` is present and `contact-or-init` contains an existing contact:
                 const contactModel = senderContactOrInit.get();
-                const nicknameFromMessage = this._decodeSenderNickname(metadata);
-                if (contactModel.view.nickname !== nicknameFromMessage) {
+                if (
+                    isNickname(nicknameFromMessage) &&
+                    contactModel.view.nickname !== nicknameFromMessage
+                ) {
+                    // Update the contact's nickname with `nickname`.
                     await contactModel.controller.update.fromRemote(handle, {
                         nickname: nicknameFromMessage,
+                    });
+                } else if (nicknameFromMessage.length === 0) {
+                    // Remove the contact's nickname if `nickname` is empty.
+                    await contactModel.controller.update.fromRemote(handle, {
+                        nickname: undefined,
                     });
                 }
             }
@@ -1025,6 +1038,7 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
     }
 
     private _getContactOrInit(
+        messageType: u8,
         senderContactOrInitFragment: ContactOrInitFragment,
         metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
     ): ContactOrInit {
@@ -1033,32 +1047,54 @@ export class IncomingMessageTask implements ActiveTask<void, 'volatile'> {
         }
 
         // Finalize the fragment
+        const nickname = this._getSenderNickname(messageType, this._message, metadata);
         return {
             ...senderContactOrInitFragment,
-            nickname: this._decodeSenderNickname(metadata),
+            nickname: isNickname(nickname) ? nickname : undefined,
         };
     }
 
-    private _decodeSenderNickname(
+    /**
+     * Decode the sender nickname from the message. Prefer the nickname from the encrypted metadata,
+     * if present.
+     *
+     * The return value is:
+     *
+     * - A non-empty string if a valid nickname was set
+     * - An empty string if the nickname should be cleared
+     * - The value `undefined` if no valid nickname was transmitted as part of the message
+     */
+    private _getSenderNickname(
+        messageType: u8,
+        message: MessageWithMetadataBoxLike,
         metadata: protobuf.validate.csp_e2e.MessageMetadata.Type | undefined,
-    ): Nickname | undefined {
-        let nickname;
-        // Prefer the nickname from the metadata else fall back to the legacy unencrypted nickname.
-        if (metadata !== undefined && metadata.nickname.length > 0) {
+    ): string | undefined {
+        let nickname: string | undefined;
+        if (metadata?.nickname !== undefined) {
+            // 1. If `inner-metadata.nickname` is defined, let `nickname` be the value of
+            //    `inner-metadata.nickname`.²
             nickname = metadata.nickname;
-        } else if (this._message.legacySenderNickname.byteLength === 0) {
-            return undefined;
-        } else {
-            // Ignore the zero-padding, then decode as UTF-8
+        } else if (
+            message.legacySenderNickname.byteLength !== 0 &&
+            isCspE2eType(messageType) &&
+            MESSAGE_TYPE_PROPERTIES[messageType].userProfileDistribution === true
+        ) {
+            // 2. If `inner-metadata` is not defined and _User Profile Distribution_ was expected
+            //    for `inner-type`, let `nickname` be the result of decoding the plaintext
+            //    `legacy-sender-nickname`.²
             try {
-                nickname = UTF8.decode(byteWithoutZeroPadding(this._message.legacySenderNickname));
+                nickname = UTF8.decode(byteWithoutZeroPadding(message.legacySenderNickname));
             } catch (error) {
                 this._log.warn(`Ignoring invalid nickname: ${error}`);
                 return undefined;
             }
+        } else {
+            return undefined;
         }
 
-        return isNickname(nickname) ? nickname : undefined;
+        // 3. If `nickname` is present, trim any excess whitespaces from the beginning and the end
+        //    of `nickname`.
+        return nickname.trim();
     }
 
     private _getInstructionsForMessage(

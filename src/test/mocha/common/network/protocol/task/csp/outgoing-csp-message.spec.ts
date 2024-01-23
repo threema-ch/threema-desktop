@@ -235,7 +235,7 @@ export function run(): void {
                         device.csp.ck.public,
                         receiver.ck,
                     );
-                    expect(message.senderIdentity).to.eql(UTF8.encode(me));
+                    expect(message.senderIdentity).to.deep.equal(UTF8.encode(me));
                     const legacySenderNickname = UTF8.decode(
                         byteWithoutZeroPadding(message.legacySenderNickname),
                     );
@@ -246,7 +246,7 @@ export function run(): void {
                     ) {
                         expect(metadata?.nickname).to.equal(ownNickname);
                     } else {
-                        expect(metadata?.nickname).to.equal('');
+                        expect(metadata?.nickname).to.be.undefined;
                     }
                     if (expectNickname === 'encrypted-and-legacy') {
                         expect(legacySenderNickname).to.equal(ownNickname);

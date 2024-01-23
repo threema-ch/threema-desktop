@@ -334,6 +334,13 @@ export type ReflectedE2eType = CspE2eType;
  */
 export interface MessageTypeProperties<TReceiverType extends ReceiverType> {
     /**
+     * Should the user profile distribution be triggered by an outgoing message of this type?
+     *
+     * If set to 'it-depends', then custom logic is needed depending on the message contents.
+     */
+    readonly userProfileDistribution: boolean | 'it-depends';
+
+    /**
      * Should this message be sent or processed even if the sender or receiver is blocked?
      */
     readonly exemptFromBlocking: boolean;
@@ -364,6 +371,7 @@ type MessageTypePropertiesMap = {
 export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
     // Contact conversation messages
     [CspE2eConversationType.TEXT]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -372,6 +380,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.DEPRECATED_IMAGE]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -380,6 +389,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.LOCATION]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -388,6 +398,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.DEPRECATED_AUDIO]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -396,6 +407,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.DEPRECATED_VIDEO]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -404,6 +416,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.FILE]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -412,6 +425,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.POLL_SETUP]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -420,6 +434,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.POLL_VOTE]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -428,6 +443,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_OFFER]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -436,6 +452,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_ANSWER]: {
+        userProfileDistribution: 'it-depends', // TODO(DESK-234): This should be true when accepting
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -444,6 +461,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_ICE_CANDIDATE]: {
+        userProfileDistribution: false,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -452,6 +470,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_HANGUP]: {
+        userProfileDistribution: false,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -460,6 +479,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eConversationType.CALL_RINGING]: {
+        userProfileDistribution: false,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -470,6 +490,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
 
     // Contact status updates
     [CspE2eStatusUpdateType.DELIVERY_RECEIPT]: {
+        userProfileDistribution: 'it-depends',
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -478,6 +499,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eStatusUpdateType.TYPING_INDICATOR]: {
+        userProfileDistribution: false,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -488,6 +510,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
 
     // Contact control messages
     [CspE2eContactControlType.CONTACT_SET_PROFILE_PICTURE]: {
+        userProfileDistribution: false,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -496,6 +519,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eContactControlType.CONTACT_DELETE_PROFILE_PICTURE]: {
+        userProfileDistribution: false,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -504,6 +528,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eContactControlType.CONTACT_REQUEST_PROFILE_PICTURE]: {
+        userProfileDistribution: false,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -514,6 +539,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
 
     // Group conversation messages
     [CspE2eGroupConversationType.GROUP_TEXT]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -522,6 +548,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_LOCATION]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -530,6 +557,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.DEPRECATED_GROUP_IMAGE]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -538,6 +566,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_AUDIO]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -546,6 +575,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_VIDEO]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -554,6 +584,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_FILE]: {
+        userProfileDistribution: true,
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -562,6 +593,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_POLL_SETUP]: {
+        userProfileDistribution: true,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -570,6 +602,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'if-captured',
     },
     [CspE2eGroupConversationType.GROUP_POLL_VOTE]: {
+        userProfileDistribution: true,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -580,6 +613,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
 
     // Group status updates
     [CspE2eGroupStatusUpdateType.GROUP_DELIVERY_RECEIPT]: {
+        userProfileDistribution: 'it-depends',
         exemptFromBlocking: false,
         reflect: {
             incoming: true,
@@ -590,6 +624,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
 
     // Group control messages
     [CspE2eGroupControlType.GROUP_SETUP]: {
+        userProfileDistribution: true,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -598,6 +633,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_NAME]: {
+        userProfileDistribution: false,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -606,6 +642,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_LEAVE]: {
+        userProfileDistribution: false,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -614,6 +651,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'always',
     },
     [CspE2eGroupControlType.GROUP_SET_PROFILE_PICTURE]: {
+        userProfileDistribution: false,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -622,6 +660,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_DELETE_PROFILE_PICTURE]: {
+        userProfileDistribution: false,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -630,6 +669,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'not-applicable',
     },
     [CspE2eGroupControlType.GROUP_SYNC_REQUEST]: {
+        userProfileDistribution: false,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -638,6 +678,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
         sendToGatewayGroupCreator: 'always',
     },
     [CspE2eGroupControlType.GROUP_CALL_START]: {
+        userProfileDistribution: true,
         exemptFromBlocking: true,
         reflect: {
             incoming: true,
@@ -652,6 +693,7 @@ export const MESSAGE_TYPE_PROPERTIES: MessageTypePropertiesMap = {
     //       Set sensible defaults. Might need to be updated if the protocol changes (probably once
     //       SE-358 is implemented).
     [CspE2eForwardSecurityType.FORWARD_SECURITY_ENVELOPE]: {
+        userProfileDistribution: 'it-depends',
         exemptFromBlocking: false,
         reflect: {
             incoming: false,

@@ -288,7 +288,7 @@ export function run(): void {
                     nickname: Nickname,
                     expectContactReflection: boolean,
                 ): Promise<void> {
-                    // Create incoming text message with unchanged nickname
+                    // Create incoming text message with unchanged legacy nickname
                     const textMessage = createMessage(
                         services,
                         {
