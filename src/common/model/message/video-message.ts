@@ -9,6 +9,7 @@ import {MessageDirection, MessageType} from '~/common/enum';
 import {
     InboundBaseMessageModelController,
     OutboundBaseMessageModelController,
+    editMessageByMessageUid,
 } from '~/common/model/message';
 import {
     loadOrDownloadBlob,
@@ -17,7 +18,7 @@ import {
     uploadBlobs,
     type UploadedBlobBytes,
 } from '~/common/model/message/common';
-import type {ServicesForModel} from '~/common/model/types/common';
+import type {GuardedStoreHandle, ServicesForModel} from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {
@@ -25,6 +26,7 @@ import type {
     BaseMessageView,
     CommonBaseMessageView,
     DirectedMessageFor,
+    UnifiedEditMessage,
 } from '~/common/model/types/message';
 import type {
     CommonVideoMessageView,
@@ -165,6 +167,21 @@ export class InboundVideoMessageModelController
         );
         return blob?.data;
     }
+
+    /** @inheritdoc */
+    protected override _editMessage(
+        message: GuardedStoreHandle<InboundVideoMessage['view']>,
+        editedMessage: UnifiedEditMessage,
+    ): void {
+        const change = {
+            lastEditedAt: editedMessage.lastEditedAt,
+            caption: editedMessage.text,
+        };
+        message.update((view) => {
+            editMessageByMessageUid(this._services, this.uid, this._type, change);
+            return change;
+        });
+    }
 }
 
 /**
@@ -218,6 +235,21 @@ export class OutboundVideoMessageModelController
             this._services,
             this.meta,
         );
+    }
+
+    /** @inheritdoc */
+    protected override _editMessage(
+        message: GuardedStoreHandle<OutboundVideoMessage['view']>,
+        editedMessage: UnifiedEditMessage,
+    ): void {
+        const change = {
+            lastEditedAt: editedMessage.lastEditedAt,
+            caption: editedMessage.text,
+        };
+        message.update((view) => {
+            editMessageByMessageUid(this._services, this.uid, this._type, change);
+            return change;
+        });
     }
 }
 

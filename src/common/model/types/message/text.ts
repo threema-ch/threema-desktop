@@ -15,7 +15,6 @@ import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {MessageId} from '~/common/network/types';
 
 // View
-
 export interface CommonTextMessageView extends CommonBaseMessageView {
     readonly text: string;
     readonly quotedMessageId?: MessageId;
@@ -24,17 +23,12 @@ export type InboundTextMessageView = InboundBaseMessageView & CommonTextMessageV
 export type OutboundTextMessageView = OutboundBaseMessageView & CommonTextMessageView;
 
 // Init
-
-/**
- * Fields needed to create a new image message.
- */
 type CommonTextMessageInit = CommonBaseMessageInit<MessageType.TEXT> &
     Pick<CommonTextMessageView, 'text' | 'quotedMessageId'>;
 type InboundTextMessageInit = CommonTextMessageInit & InboundBaseMessageInit<MessageType.TEXT>;
 type OutboundTextMessageInit = CommonTextMessageInit & OutboundBaseMessageInit<MessageType.TEXT>;
 
 // Controller
-
 type CommonTextMessageController<TView extends CommonTextMessageView> =
     CommonBaseMessageController<TView>;
 

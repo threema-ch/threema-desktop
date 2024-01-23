@@ -1,12 +1,17 @@
+import {ReceiverType} from '~/common/enum';
 import type {Conversation} from '~/common/model';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {AnyMessageModelStore} from '~/common/model/types/message';
 import {getDebugTagForReceiver} from '~/common/model/utils/debug-tags';
+import {FEATURE_MASK_FLAG, type FeatureMask} from '~/common/network/types';
 import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived-store';
 import {LocalSetBasedSetStore, LocalDerivedSetStore} from '~/common/utils/store/set-store';
 import type {IViewModelRepository, ServicesForViewModel} from '~/common/viewmodel';
 import type {IConversationViewModelController} from '~/common/viewmodel/conversation/main/controller';
-import type {ConversationViewModel} from '~/common/viewmodel/conversation/main/store/types';
+import type {
+    ConversationViewModel,
+    FeatureMaskMap,
+} from '~/common/viewmodel/conversation/main/store/types';
 
 /**
  * Returns the {@link ConversationMessageSetStore} for the conversation that the
@@ -121,4 +126,76 @@ export function getLastMessage(
         direction: lastMessage.view.direction,
         id: lastMessage.view.id,
     };
+}
+
+function checkFeatureMaskSupportsEdit(fM: FeatureMask): boolean {
+    // eslint-disable-next-line no-bitwise
+    return (fM & FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT) !== 0x00n;
+}
+
+/**
+ * We implicitly assume here that model.getbyIdentity returns undefined iff it is the user
+ * since all recipients of a conversation have to be in the database (except for the user).
+ */
+function supportsEditMessage(
+    conversation: Conversation,
+    services: Pick<ServicesForViewModel, 'model'>,
+): {supported: 'none' | 'all'} | {supported: 'partial'; notSupportedNames: string[]} {
+    const receiver = conversation.controller.receiver();
+    const notSupportedNames: string[] = [];
+    if (receiver.type === ReceiverType.CONTACT) {
+        const fM = receiver.get().view.featureMask;
+        return {supported: checkFeatureMaskSupportsEdit(fM) ? 'all' : 'none'};
+    } else if (receiver.type === ReceiverType.GROUP) {
+        const contact = services.model.contacts
+            .getByIdentity(receiver.get().view.creatorIdentity)
+            ?.get();
+
+        if (contact !== undefined) {
+            const fM = contact.view.featureMask;
+
+            if (!checkFeatureMaskSupportsEdit(fM)) {
+                notSupportedNames.push(contact.view.displayName);
+            }
+        }
+
+        const members = receiver.get().view.members;
+        for (const m of members) {
+            const member = services.model.contacts.getByIdentity(m)?.get();
+            if (member === undefined) {
+                continue;
+            }
+            const fM = member.view.featureMask;
+            if (!checkFeatureMaskSupportsEdit(fM)) {
+                notSupportedNames.push(member.view.displayName);
+            }
+        }
+        // No member supports edit so we don't allow it at all
+        if (notSupportedNames.length === members.length) {
+            return {supported: 'none'};
+        }
+        // Some members support it so we
+        if (notSupportedNames.length > 0) {
+            return {supported: 'partial', notSupportedNames};
+        }
+    }
+    // TODO(DESK-771) Distribution lists
+    return {supported: 'all'};
+}
+
+export function getSupportedFeatures(
+    conversation: Conversation,
+    services: Pick<ServicesForViewModel, 'model'>,
+): FeatureMaskMap {
+    const featureSet: FeatureMaskMap = new Map();
+    const editSupport = supportsEditMessage(conversation, services);
+    if (editSupport.supported === 'all') {
+        featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {notSupported: []});
+    } else if (editSupport.supported === 'partial') {
+        featureSet.set(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT, {
+            notSupported: editSupport.notSupportedNames,
+        });
+    }
+
+    return featureSet;
 }

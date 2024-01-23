@@ -405,6 +405,8 @@ export const FEATURE_MASK_FLAG = {
     FORWARD_SECURITY_SUPPORT: 0x40n,
     // Can handle group calls.
     GROUP_CALL_SUPPORT: 0x80n,
+    // Can handle edited messages
+    EDIT_MESSAGE_SUPPORT: 0x100n,
 } as const;
 
 /**

@@ -14,6 +14,7 @@ import type {
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
 import type {Conversation} from '~/common/model/types/conversation';
+import type {UnifiedEditMessage} from '~/common/model/types/message';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {BlobId} from '~/common/network/protocol/blob';
@@ -25,6 +26,10 @@ import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 export const OWN_IDENTITY_ALIAS = 'me';
 export type IdentityStringOrMe = IdentityString | typeof OWN_IDENTITY_ALIAS;
+
+export type MediaBasedMessageType = Exclude<MessageType, MessageType.TEXT>;
+
+export type TextBasedMessageType = Exclude<MessageType, MediaBasedMessageType>;
 
 export interface MessageReactionView {
     readonly reactionAt: Date;
@@ -66,6 +71,8 @@ export interface CommonBaseMessageView {
      * Reactions to a message.
      */
     readonly reactions: MessageReactionView[];
+
+    readonly lastEditedAt?: Date;
 
     /**
      * Ordinal for message ordering. Note: Higher `ordinal` means the message is newer.
@@ -175,6 +182,11 @@ export type InboundBaseMessageController<TView extends InboundBaseMessageView> =
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe], // FromSync
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
         >;
+
+        readonly editMessage: Omit<
+            ControllerUpdateFromSource<[editedMessage: UnifiedEditMessage]>,
+            'fromLocal'
+        >;
     };
 
 /**
@@ -206,6 +218,11 @@ export type OutboundBaseMessageController<TView extends OutboundBaseMessageView>
             [type: MessageReaction, reactedAt: Date], // From Local
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityStringOrMe], // FromSync
             [type: MessageReaction, reactedAt: Date, reactionSender: IdentityString] // FromRemote
+        >;
+
+        readonly editMessage: Omit<
+            ControllerUpdateFromSource<[editedMessage: UnifiedEditMessage]>,
+            'fromRemote'
         >;
     };
 

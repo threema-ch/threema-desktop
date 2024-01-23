@@ -11,6 +11,7 @@ import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conver
 import {
     getLastMessage,
     getMessageSetStore,
+    getSupportedFeatures,
 } from '~/common/viewmodel/conversation/main/store/helpers';
 import type {ConversationViewModel} from '~/common/viewmodel/conversation/main/store/types';
 import {getReceiverData} from '~/common/viewmodel/utils/receiver';
@@ -65,6 +66,7 @@ export function getConversationViewModelStore(
                 receiver: getReceiverData(services, conversationModel, getAndSubscribe),
                 totalMessagesCount: conversationModel.controller.getMessageCount(),
                 unreadMessagesCount: conversationModel.view.unreadMessageCount,
+                supportedFeatures: getSupportedFeatures(conversationModel, services),
             }),
     );
 }

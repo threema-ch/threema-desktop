@@ -1,4 +1,4 @@
-import {MessageReaction, MessageType} from '~/common/enum';
+import {MessageDirection, MessageReaction, MessageType} from '~/common/enum';
 import type {AnyMessageModelStore} from '~/common/model';
 import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -13,6 +13,10 @@ export interface IConversationMessageViewModelController extends ProxyMarked {
      * React to a message using the "decline" reaction.
      */
     readonly decline: () => Promise<void>;
+    /**
+     * Edit the message text/caption content.
+     */
+    readonly edit: (newText: string, editedAt: Date) => Promise<void>;
     /**
      * Fetches and returns the full blob data of a file or media message, triggering a download if
      * necessary.
@@ -49,6 +53,22 @@ export class ConversationMessageViewModelController
             default:
                 return unreachable(this._message);
         }
+    }
+
+    public async edit(newText: string, editedAt: Date): Promise<void> {
+        return await this._applyEdit(newText, editedAt);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    private async _applyEdit(newText: string, editedAt: Date): Promise<void> {
+        const messageModel = this._message.get();
+        if (messageModel.ctx !== MessageDirection.OUTBOUND) {
+            return;
+        }
+        await messageModel.controller.editMessage.fromLocal({
+            text: newText,
+            lastEditedAt: editedAt,
+        });
     }
 
     private async _applyReaction(reaction: MessageReaction): Promise<void> {

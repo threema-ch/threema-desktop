@@ -1,6 +1,6 @@
 import type {DbConversationUid} from '~/common/db';
 import type {ConversationCategory, MessageDirection} from '~/common/enum';
-import type {MessageId} from '~/common/network/types';
+import type {FEATURE_MASK_FLAG, MessageId} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
@@ -30,4 +30,14 @@ export interface ConversationViewModel {
     readonly receiver: AnyReceiverData;
     readonly totalMessagesCount: u53;
     readonly unreadMessagesCount: u53;
+    readonly supportedFeatures: FeatureMaskMap;
 }
+
+/**
+ * A map from supported feature masks to names that do not support them
+ * so that they can be displayed accordingly in the frontend.
+ */
+export type FeatureMaskMap = Map<
+    (typeof FEATURE_MASK_FLAG)[keyof typeof FEATURE_MASK_FLAG],
+    {notSupported: string[]}
+>;

@@ -68,5 +68,6 @@ function getConversationMessageViewModel(
         status: getMessageStatus(messageModel),
         sender: getMessageSender(services, messageModel, getAndSubscribe),
         text: getMessageText(services, messageModel),
+        lastEditedAt: messageModel.view.lastEditedAt,
     };
 }

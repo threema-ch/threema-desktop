@@ -4,6 +4,7 @@ import type {
     DbMessageCommon,
     DbMessageFor,
     DbMessageUid,
+    DbMessageEditFor,
     UidOf,
 } from '~/common/db';
 import {
@@ -39,6 +40,7 @@ import {
     type IdentityStringOrMe,
     OWN_IDENTITY_ALIAS,
     type MessageRepository,
+    type UnifiedEditMessage,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -51,6 +53,8 @@ import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {LazyMap} from '~/common/utils/map';
 import {LocalSetStore} from '~/common/utils/store/set-store';
+
+import {OutgoingMessageUpdateTask} from '~/common/network/protocol/task/csp/outgoing-conversation-message-update';
 
 /**
  * Factory for creating stores and database entries for concrete message types.
@@ -122,6 +126,7 @@ function getCommonView<TDirection extends MessageDirection>(
         readAt: message.readAt,
         ordinal: message.ordinal,
         reactions: message.reactions,
+        lastEditedAt: message.lastEditedAt,
     };
 
     switch (direction) {
@@ -191,13 +196,13 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
     conversationUid: UidOf<DbConversation>,
     init: DirectedMessageFor<TDirection, TType, 'init'>,
 ): [
-    common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal'>,
+    common: Omit<DbMessageCommon<TType>, 'uid' | 'type' | 'ordinal' | 'lastEditedAt'>,
     store: LocalModelStore<Contact> | undefined,
 ] {
     // Gather common message data
     const common: Omit<
         DbMessageCommon<TType>,
-        'uid' | 'type' | 'processedAt' | 'ordinal' | 'reactions'
+        'uid' | 'type' | 'processedAt' | 'ordinal' | 'reactions' | 'lastEditedAt'
     > = {
         id: init.id,
         conversationUid,
@@ -330,6 +335,16 @@ export function getFirstUnreadMessageId(
 
     // Lookup the message
     return db.getFirstUnreadMessage(conversation.uid)?.id;
+}
+
+export function editMessageByMessageUid(
+    services: ServicesForModel,
+    messageUid: DbMessageUid,
+    type: MessageType,
+    change: DbMessageEditFor<MessageType>,
+): void {
+    const {db} = services;
+    db.editMessage(messageUid, type, change);
 }
 
 /**
@@ -544,6 +559,11 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
             return change as Partial<TView>;
         });
     }
+
+    protected abstract _editMessage(
+        message: GuardedStoreHandle<TView>,
+        editedMessage: UnifiedEditMessage,
+    ): void;
 }
 
 /** @inheritdoc */
@@ -573,6 +593,23 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
             reactionSender: IdentityString,
             // eslint-disable-next-line @typescript-eslint/require-await
         ) => this._handleReaction(TriggerSource.REMOTE, type, reactedAt, reactionSender),
+    };
+
+    /** @inheritdoc */
+    public readonly editMessage: InboundBaseMessageController<TView>['editMessage'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        fromRemote: async (
+            taskHandle: ActiveTaskCodecHandle<'volatile'>,
+            editedMessage: UnifiedEditMessage,
+            // eslint-disable-next-line @typescript-eslint/require-await
+        ) => {
+            this.meta.run((handle) => this._editMessage(handle, editedMessage));
+        },
+        fromSync: (editedMessage: UnifiedEditMessage) => {
+            this.meta.run((handle) => {
+                this._editMessage(handle, editedMessage);
+            });
+        },
     };
 
     public constructor(
@@ -713,6 +750,24 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
             this._handleRead(readAt),
     };
 
+    /** @inheritdoc */
+    public readonly editMessage: OutboundBaseMessageController<TView>['editMessage'] = {
+        [TRANSFER_HANDLER]: PROXY_HANDLER,
+        // eslint-disable-next-line @typescript-eslint/require-await
+        fromLocal: async (editedMessage: UnifiedEditMessage) => {
+            this.meta.run((handle) => {
+                this._editMessage(handle, editedMessage);
+                this._handleEditFromLocal(handle, editedMessage.lastEditedAt);
+            });
+        },
+
+        fromSync: (editedMessage: UnifiedEditMessage) => {
+            this.meta.run((handle) => {
+                this._editMessage(handle, editedMessage);
+            });
+        },
+    };
+
     public constructor(
         services: ServicesForModel,
         uid: UidOf<DbMessageCommon<MessageType>>,
@@ -842,6 +897,20 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                     // Ignore (task should persist)
                 });
             }
+        });
+    }
+
+    private _handleEditFromLocal(storeHandle: GuardedStoreHandle<TView>, lastEditedAt: Date): void {
+        const task = new OutgoingMessageUpdateTask(
+            this._services,
+            this._conversation.getReceiver().get(),
+            this._conversation.getReceiver().get().controller.conversation(),
+            storeHandle.view().id,
+            lastEditedAt,
+        );
+
+        void this._services.taskManager.schedule(task).catch(() => {
+            // Ignore (task should persist)
         });
     }
 }

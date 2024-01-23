@@ -45,3 +45,5 @@ export const CSP_THUMBNAIL_MAX_SIZE = 512;
  * JPEG quality level for media message thumbnails.
  */
 export const CSP_THUMBAIL_QUALITY = 0.8;
+
+export const EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES = 360;

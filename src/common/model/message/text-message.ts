@@ -4,14 +4,17 @@ import type {Contact, ServicesForModel} from '~/common/model';
 import {
     InboundBaseMessageModelController,
     OutboundBaseMessageModelController,
+    editMessageByMessageUid,
 } from '~/common/model/message';
 import {NO_SENDER} from '~/common/model/message/common';
+import type {GuardedStoreHandle} from '~/common/model/types/common';
 import type {ConversationControllerHandle} from '~/common/model/types/conversation';
 import type {
     AnyTextMessageModelStore,
     BaseMessageView,
     CommonBaseMessageView,
     DirectedMessageFor,
+    UnifiedEditMessage,
 } from '~/common/model/types/message';
 import type {
     CommonTextMessageView,
@@ -87,11 +90,53 @@ export function getTextMessageModelStore<TModelStore extends AnyTextMessageModel
 
 export class InboundTextMessageModelController
     extends InboundBaseMessageModelController<InboundTextMessage['view']>
-    implements InboundTextMessageController {}
+    implements InboundTextMessageController
+{
+    /** @inheritdoc */
+    protected override _editMessage(
+        message: GuardedStoreHandle<InboundTextMessage['view']>,
+        editedMessage: UnifiedEditMessage,
+    ): void {
+        if (editedMessage.text.trim() === '') {
+            this._log.warn(
+                'Not applying edit on inbound message because the new text is empty. This is not allowed for text messages',
+            );
+            return;
+        }
+        message.update((view) => {
+            editMessageByMessageUid(this._services, this.uid, this._type, {
+                lastEditedAt: editedMessage.lastEditedAt,
+                text: editedMessage.text,
+            });
+            return editedMessage;
+        });
+    }
+}
 
 export class OutboundTextMessageModelController
     extends OutboundBaseMessageModelController<OutboundTextMessage['view']>
-    implements OutboundTextMessageController {}
+    implements OutboundTextMessageController
+{
+    /** @inheritdoc */
+    protected override _editMessage(
+        message: GuardedStoreHandle<OutboundTextMessage['view']>,
+        editedMessage: UnifiedEditMessage,
+    ): void {
+        if (editedMessage.text.trim() === '') {
+            this._log.warn(
+                'Not applying edit on outbound message because the new text is empty. This is not allowed for text messages',
+            );
+            return;
+        }
+        message.update((view) => {
+            editMessageByMessageUid(this._services, this.uid, this._type, {
+                lastEditedAt: editedMessage.lastEditedAt,
+                text: editedMessage.text,
+            });
+            return editedMessage;
+        });
+    }
+}
 
 export class InboundTextMessageModelStore
     extends LocalModelStore<InboundTextMessageModel>

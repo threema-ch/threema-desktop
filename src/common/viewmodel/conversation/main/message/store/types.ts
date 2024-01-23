@@ -47,6 +47,7 @@ export interface ConversationMessageViewModel {
      * Ordinal for message ordering in the conversation list.
      */
     readonly ordinal: u53;
+    readonly lastEditedAt: Date | undefined;
     readonly quote?: ConversationMessageViewModelBundle | 'not-found' | undefined;
     readonly reactions: ReactionData[];
     readonly sender?: AnyMessageSender;

@@ -5,6 +5,7 @@ import type {
     IOutboundAudioMessageModelStore,
     OutboundAudioMessage,
 } from '~/common/model/types/message/audio';
+import type {CommonBaseMessageView} from '~/common/model/types/message/common';
 import type {
     IInboundFileMessageModelStore,
     InboundFileMessage,
@@ -105,6 +106,13 @@ export type AnyMessage<TVariant extends BundleProperty> = MessageFor<
     MessageType,
     TVariant
 >;
+
+/**
+ * A unified type that can be used to update a message model without knowing its exact type.
+ */
+export type UnifiedEditMessage = Required<Pick<CommonBaseMessageView, 'lastEditedAt'>> & {
+    text: string;
+};
 
 export type AnyMessageModel = AnyInboundMessageModel | AnyOutboundMessageModel;
 export type AnyFileBasedMessageModel =
