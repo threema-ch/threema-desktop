@@ -44,6 +44,7 @@
   const dispatch = createEventDispatcher<{
     clickquote: MessagePropsFromBackend;
     clickdelete: MessagePropsFromBackend;
+    clickedit: MessagePropsFromBackend;
   }>();
 
   let element: HTMLElement;
@@ -175,6 +176,7 @@
         direction: message.direction,
         file: message.file,
         id: message.id,
+        lastEdited: message.lastEdited,
         reactions: message.reactions,
         services,
         status: message.status,
@@ -451,6 +453,7 @@
           file={item.file}
           highlighted={item.id === highlightedMessageId}
           id={item.id}
+          lastEdited={item.lastEdited}
           quote={item.quote}
           reactions={item.reactions}
           sender={item.sender}
@@ -458,6 +461,7 @@
           status={item.status}
           text={item.text}
           on:clickquoteoption={() => dispatch('clickquote', item)}
+          on:clickeditmessageoption={() => dispatch('clickedit', item)}
           on:clickforwardoption={() => handleClickForwardOption(item)}
           on:clickopendetailsoption={() => handleClickOpenDetailsOption(item)}
           on:clickdeleteoption={() => dispatch('clickdelete', item)}

@@ -62,6 +62,7 @@
   const dispatch = createEventDispatcher<{
     clickcopyimageoption: undefined;
     clickcopymessageoption: undefined;
+    clickeditmessageoption: undefined;
     clicksaveasfileoption: undefined;
     clickacknowledgeoption: undefined;
     clickdeclineoption: undefined;
@@ -179,6 +180,11 @@
     dispatch('clickdeleteoption');
   }
 
+  function handleClickEdit(): void {
+    popover?.close();
+    dispatch('clickeditmessageoption');
+  }
+
   function handleClickTrigger(): void {
     virtualTrigger = undefined;
   }
@@ -210,6 +216,7 @@
         : undefined,
     copyImage: enabledOptions.copyImage ? handleClickCopyImage : undefined,
     copy: enabledOptions.copy ? handleClickCopy : undefined,
+    edit: enabledOptions.edit ? handleClickEdit : undefined,
     saveAsFile: enabledOptions.saveAsFile ? handleClickSaveAsFile : undefined,
     acknowledge:
       enabledOptions.acknowledge === false

@@ -15,6 +15,7 @@ export interface MessageProps {
     readonly actions: {
         readonly acknowledge: () => Promise<void>;
         readonly decline: () => Promise<void>;
+        readonly edit: (newText: string) => Promise<void>;
     };
     readonly boundary?: MessageContextMenuProviderProps['boundary'];
     readonly conversation: {
@@ -43,6 +44,7 @@ export interface MessageProps {
      */
     readonly highlighted?: BasicMessageProps['highlighted'];
     readonly id: MessageId;
+    readonly lastEdited: BasicMessageProps['lastEdited'];
     readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
     readonly reactions: BasicMessageProps['reactions'] & MessageDetailsModalProps['reactions'];
     readonly sender?: NonNullable<BasicMessageProps['sender']> &

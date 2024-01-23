@@ -52,6 +52,7 @@ export function getContextMenuItems({
     copyImage,
     copySelection,
     copy,
+    edit,
     saveAsFile,
     acknowledge,
     decline,
@@ -65,6 +66,7 @@ export function getContextMenuItems({
     copyImage?: ContextMenuItemHandler;
     copySelection?: ContextMenuItemHandler;
     copy?: ContextMenuItemHandler;
+    edit?: ContextMenuItemHandler;
     saveAsFile?: ContextMenuItemHandler;
     acknowledge?: {
         filled?: boolean;
@@ -114,6 +116,15 @@ export function getContextMenuItems({
                       handler: copy,
                       icon: {name: 'content_copy'},
                       label: t('messaging.action--message-option-copy', 'Copy Message'),
+                  },
+              ]
+            : []),
+        ...(edit !== undefined
+            ? [
+                  {
+                      handler: edit,
+                      icon: {name: 'edit'},
+                      label: t('messaging.action--message-option-edit', 'Edit Message'),
                   },
               ]
             : []),

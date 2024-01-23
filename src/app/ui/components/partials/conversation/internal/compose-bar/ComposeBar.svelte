@@ -21,10 +21,12 @@
   type $$Props = ComposeBarProps;
 
   export let options: NonNullable<$$Props['options']> = {};
+  export let mode: NonNullable<$$Props>['mode'] = 'insert';
 
   const dispatch = createEventDispatcher<{
     attachfiles: FileResult;
     clicksend: string;
+    clickedit: string;
   }>();
 
   let emojiButtonElement: SvelteNullableBinding<HTMLDivElement> = null;
@@ -80,7 +82,11 @@
 
     const textAreaTextContent = textAreaComponent?.getText();
     if (textAreaTextContent !== undefined) {
-      dispatch('clicksend', textAreaTextContent);
+      if (mode === 'insert') {
+        dispatch('clicksend', textAreaTextContent);
+      } else {
+        dispatch('clickedit', textAreaTextContent);
+      }
     }
 
     // Close the emoji picker and wait for DOM changes to be applied.
@@ -105,7 +111,7 @@
     isEmojiPickerVisible = !isEmojiPickerVisible;
   }
 
-  $: ({showAttachFilesButton = true} = options);
+  $: showAttachFilesButton = options.showAttachFilesButton;
   $: isTextByteLengthVisible = textAreaByteLength >= import.meta.env.MAX_TEXT_MESSAGE_BYTES - 200;
   $: isMaxTextByteLengthExceeded = textAreaByteLength > import.meta.env.MAX_TEXT_MESSAGE_BYTES;
 
@@ -161,7 +167,7 @@
         on:click={handleClickSendButton}
         disabled={isMaxTextByteLengthExceeded}
       >
-        <MdIcon theme="Filled">arrow_upward</MdIcon>
+        <MdIcon theme="Filled">{mode === 'insert' ? 'arrow_upward' : 'check'}</MdIcon>
       </IconButton>
     {/if}
 

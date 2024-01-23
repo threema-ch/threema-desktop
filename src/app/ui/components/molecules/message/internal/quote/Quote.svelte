@@ -9,6 +9,7 @@
   import FileInfo from '~/app/ui/components/molecules/message/internal/file-info/FileInfo.svelte';
   import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
+  import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unreachable} from '~/common/utils/assert';
 
@@ -20,19 +21,24 @@
   export let file: $$Props['file'] = undefined;
   export let onError: $$Props['onError'];
   export let sender: $$Props['sender'] = undefined;
+  export let mode: NonNullable<$$Props['mode']> = 'quote';
 </script>
 
 <button
-  class={`quote ${sender?.color ?? 'default'} ${
-    file === undefined ? '' : `${file.type}-container`
-  }`}
+  class={mode === 'quote'
+    ? `quote ${sender?.color ?? 'default'} ${file === undefined ? '' : `${file.type}-container`}`
+    : `edit ${file === undefined ? '' : `${file.type}-container`}`}
   class:captioned={content !== undefined}
   disabled={!clickable}
   on:click
 >
-  {#if sender !== undefined}
+  {#if sender !== undefined && mode === 'quote'}
     <span class="sender">
       <Sender name={sender.name} color={sender.color} />
+    </span>
+  {:else if mode === 'edit'}
+    <span class="sender">
+      <Sender name={$i18n.t('messaging.prose--edit-message', 'Edit Message')} color={'none'} />
     </span>
   {/if}
 
@@ -150,6 +156,104 @@
       background-color: var(--mc-message-quote-text-color);
     }
 
+    .sender {
+      grid-area: sender;
+      line-height: 1em;
+    }
+
+    .thumbnail {
+      position: relative;
+      grid-area: preview;
+      width: min-content;
+      height: min-content;
+      border-radius: rem(8px);
+      overflow: hidden;
+
+      .play-icon {
+        @include clicktarget-button-circle;
+        pointer-events: none;
+        display: flex;
+        position: absolute;
+        justify-content: center;
+        align-items: center;
+        color: var(--mc-message-overlay-button-color);
+        background-color: var(--mc-message-overlay-button-background-color);
+        width: rem(22px);
+        height: rem(22px);
+        left: calc(50% - rem(11px));
+        top: calc(50% - rem(11px));
+        font-size: rem(12px);
+
+        --c-icon-button-naked-outer-background-color--hover: var(
+          --mc-message-overlay-button-background-color--hover
+        );
+        --c-icon-button-naked-outer-background-color--focus: var(
+          --mc-message-overlay-button-background-color--focus
+        );
+        --c-icon-button-naked-outer-background-color--active: var(
+          --mc-message-overlay-button-background-color--active
+        );
+      }
+    }
+
+    .audio {
+      grid-area: preview;
+    }
+
+    &:not(.captioned) {
+      .thumbnail,
+      .audio {
+        margin: rem(4px) 0;
+      }
+    }
+
+    &:not(:disabled),
+    &:global(:not(:disabled) *) {
+      cursor: pointer;
+    }
+  }
+
+  .edit {
+    @extend %neutral-input;
+    text-align: start;
+
+    position: relative;
+    display: grid;
+    grid-template:
+      'sender' min-content
+      'preview' 1fr
+      / auto;
+    align-items: center;
+    column-gap: rem(24px);
+    row-gap: 0;
+    min-height: rem(40px);
+    padding-left: rem(10px);
+    width: 100%;
+
+    &.captioned {
+      grid-template:
+        'sender preview' min-content
+        'text preview' 1fr
+        / auto min-content;
+
+      &.audio-container,
+      &.file-container {
+        grid-template:
+          'sender' min-content
+          'preview' 1fr
+          'text' min-content
+          / auto;
+        row-gap: rem(4px);
+      }
+
+      .text {
+        grid-area: text;
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        color: var(--mc-message-quote-text-color);
+      }
+    }
     .sender {
       grid-area: sender;
       line-height: 1em;

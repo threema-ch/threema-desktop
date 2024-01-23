@@ -19,6 +19,7 @@
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'];
+  export let lastEdited: $$Props['lastEdited'] = undefined;
   export let reactions: $$Props['reactions'];
   export let services: $$Props['services'];
   export let status: $$Props['status'];
@@ -118,6 +119,16 @@
           <KeyValueList.Item key={$i18n.t('dialog--message-details.label--read-date', 'Read')}>
             <Text
               text={formatDateLocalized(status.read.at, $i18n, 'extended', use24hTime)}
+              selectable
+            />
+          </KeyValueList.Item>
+        {/if}
+        {#if lastEdited !== undefined}
+          <KeyValueList.Item
+            key={$i18n.t('dialog--message-details.label--last-edited-date', 'Last Edited')}
+          >
+            <Text
+              text={formatDateLocalized(lastEdited.at, $i18n, 'extended', use24hTime)}
               selectable
             />
           </KeyValueList.Item>

@@ -56,6 +56,12 @@ export interface MessageProps {
      * animation is completed.
      */
     readonly highlighted?: BubbleProps['highlighted'];
+    /** When the message was last edited. Undefined if it was never edited */
+    readonly lastEdited:
+        | {
+              at: Date;
+          }
+        | undefined;
     readonly onError: (error: Error) => void;
     readonly options?: {
         readonly hideSender?: boolean;

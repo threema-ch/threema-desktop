@@ -158,6 +158,7 @@ function transformMessageProps(
         file: transformMessageFileProps(viewModelController, viewModel),
         id: viewModel.id,
         reactions: transformMessageReactionsProps(viewModel, i18n),
+        lastEdited: viewModel.lastEditedAt === undefined ? undefined : {at: viewModel.lastEditedAt},
         sender: viewModel.sender,
         status: viewModel.status,
         text: viewModel.text,

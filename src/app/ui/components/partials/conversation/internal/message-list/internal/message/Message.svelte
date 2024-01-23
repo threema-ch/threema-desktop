@@ -27,6 +27,7 @@
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
+  import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
 
@@ -41,6 +42,7 @@
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let id: $$Props['id'];
+  export let lastEdited: $$Props['lastEdited'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
   export let quote: $$Props['quote'] = undefined;
   export let reactions: $$Props['reactions'];
@@ -304,6 +306,14 @@
     }
   }
 
+  let supportsEdit: boolean = false;
+  $: supportsEdit =
+    direction === 'outbound' &&
+    status.sent !== undefined &&
+    Date.now() - status.sent.at.getTime() < EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000 &&
+    // For audios we dont support edit yet
+    !(file !== undefined && file.type === 'audio');
+
   $: timestamp = reactive(
     () => ({
       fluent: formatDateLocalized(status.created.at, $i18n, 'auto', $appearance.view.use24hTime),
@@ -341,6 +351,7 @@
       copySelection: true,
       copyImage: file !== undefined && file.type === 'image',
       copy: text !== undefined,
+      edit: supportsEdit,
       saveAsFile: file !== undefined,
       acknowledge: supportsReactions
         ? {
@@ -370,6 +381,7 @@
     on:clickacknowledgeoption={handleClickAcknowledgeOption}
     on:clickdeclineoption={handleClickDeclineOption}
     on:clickquoteoption
+    on:clickeditmessageoption
     on:clickforwardoption
     on:clickopendetailsoption
     on:clickdeleteoption
@@ -415,6 +427,7 @@
             {direction}
             file={transformMessageFileProps(file, id, conversation.receiver.lookup, services)}
             {highlighted}
+            {lastEdited}
             onError={(error) =>
               log.error(
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

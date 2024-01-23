@@ -15,6 +15,7 @@
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
   import type {MessageProps} from '~/app/ui/components/molecules/message/props';
+  import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {MAX_CONVERSATION_THUMBNAIL_SIZE} from '~/common/dom/ui/media';
   import type {u53} from '~/common/types';
@@ -30,6 +31,7 @@
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
+  export let lastEdited: $$Props['lastEdited'] = undefined;
   export let onError: $$Props['onError'];
   export let options: NonNullable<$$Props['options']> = {};
   export let quote: $$Props['quote'] = undefined;
@@ -222,6 +224,9 @@
     {#if messageInfoPlacement === 'footer'}
       <div class="footer">
         <span class="status">
+          {#if lastEdited !== undefined}
+            <Text text={$i18n.t('messaging.prose--message-edited', 'Edited')} wrap={false}></Text>
+          {/if}
           <Text text={timestamp.fluent} wrap={false} />
           <Indicator {direction} options={options.indicatorOptions} {reactions} {status} />
         </span>

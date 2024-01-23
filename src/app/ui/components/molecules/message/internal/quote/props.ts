@@ -18,4 +18,6 @@ export interface QuoteProps {
     readonly onError: (error: Error) => void;
     /** Details about the message sender. */
     readonly sender?: MessageProps['sender'];
+    /** The mode of this component. Defaults to quote. */
+    readonly mode?: 'quote' | 'edit';
 }

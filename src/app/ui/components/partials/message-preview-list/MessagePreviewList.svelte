@@ -93,6 +93,7 @@
                 alt={$i18n.t('messaging.hint--media-thumbnail')}
                 clickable={true}
                 direction={message.direction}
+                lastEdited={message.lastEdited}
                 reactions={message.reactions}
                 status={message.status}
                 timestamp={{

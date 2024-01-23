@@ -53,10 +53,14 @@ function getMessageProps(
             decline: async () => {
                 await viewModelController.decline();
             },
+            edit: async (newText: string) => {
+                await viewModelController.edit(newText, new Date());
+            },
         },
         direction: viewModel.direction,
         file: getMessageFileProps(viewModelController, viewModel),
         id: viewModel.id,
+        lastEdited: viewModel.lastEditedAt === undefined ? undefined : {at: viewModel.lastEditedAt},
         reactions: getMessageReactionsProps(viewModel, i18n),
         sender: viewModel.sender,
         status: viewModel.status,

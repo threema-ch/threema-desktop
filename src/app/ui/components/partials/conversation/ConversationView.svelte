@@ -12,6 +12,7 @@
   } from '~/app/ui/components/partials/conversation/drafts';
   import {prepareFilesForMediaComposeModal} from '~/app/ui/components/partials/conversation/helpers';
   import ComposeBar from '~/app/ui/components/partials/conversation/internal/compose-bar/ComposeBar.svelte';
+  import type {ComposeBarProps} from '~/app/ui/components/partials/conversation/internal/compose-bar/props';
   import MessageList from '~/app/ui/components/partials/conversation/internal/message-list/MessageList.svelte';
   import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
@@ -37,6 +38,7 @@
   import {ConversationCategory} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import type {MessageId} from '~/common/network/types';
+  import {FEATURE_MASK_FLAG} from '~/common/network/types';
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
@@ -78,10 +80,16 @@
       }
     | undefined = undefined;
 
+  let editedMessage: Pick<MessagePropsFromBackend, 'actions' | 'id'> | undefined = undefined;
+
   let messageListComponent: SvelteNullableBinding<MessageList> = null;
   let composeBarComponent: SvelteNullableBinding<ComposeBar> = null;
 
+  let composeBarMode: ComposeBarProps['mode'] = 'insert';
+
   let modalState: ModalState = {type: 'none'};
+
+  let receiverSupportsEditedMessages: {supports: false} | {supports: true; excludedNames: string[]};
 
   function handleClickDeleteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
     viewModelController?.deleteMessage(event.detail.id).catch((error) => {
@@ -92,7 +100,7 @@
     });
   }
 
-  function handleClickQuoteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+  function setQuote(event: CustomEvent<MessagePropsFromBackend>): void {
     const quotedMessage = event.detail;
     const conversationReceiverLookup = viewModelStore.get()?.receiver.lookup;
 
@@ -123,6 +131,7 @@
           conversationReceiverLookup,
           services,
         ),
+        mode: editedMessage !== undefined ? 'edit' : 'quote',
         onError: (error) =>
           log.error(
             `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
@@ -134,8 +143,59 @@
     composeBarComponent?.focus();
   }
 
+  function handleClickQuoteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+    if (editedMessage !== undefined) {
+      composeBarComponent?.clear();
+    }
+    editedMessage = undefined;
+    composeBarMode = 'insert';
+    setQuote(event);
+  }
+
+  function handleClickEditMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+    if (!receiverSupportsEditedMessages.supports) {
+      toast.addSimpleFailure(
+        $i18n.t(
+          'messaging.prose--edit-not-support',
+          'Cannot edit the message because the receiver does not support this functionality.',
+        ),
+      );
+      return;
+    } else if (receiverSupportsEditedMessages.excludedNames.length > 0) {
+      toast.addSimpleWarning(
+        $i18n.t(
+          'messaging.prose--edit-not-support-partial',
+          'The following group members will not see your edits: {names}. To see edits, they must install the latest Threema version.',
+
+          {
+            names: receiverSupportsEditedMessages.excludedNames.join(', '),
+          },
+        ),
+      );
+    }
+    composeBarMode = 'edit';
+    const textToEdit = event.detail;
+
+    composeBarComponent?.clear();
+    // If we have an empty message, we simply put the empty string into the compose bar
+    composeBarComponent?.insertText(textToEdit.text?.raw ?? '');
+    editedMessage = {
+      id: event.detail.id,
+      actions: event.detail.actions,
+    };
+    setQuote(event);
+  }
+
   function handleClickCloseQuote(): void {
     quote = undefined;
+    editedMessage = undefined;
+  }
+
+  function handleClickEditClose(): void {
+    composeBarMode = 'insert';
+    quote = undefined;
+    editedMessage = undefined;
+    composeBarComponent?.clear();
   }
 
   function handleAddFiles(
@@ -203,6 +263,13 @@
         // Replace `viewModelBundle`.
         viewModelStore = viewModelBundle.viewModelStore;
         viewModelController = viewModelBundle.viewModelController;
+        const editFeature = viewModelStore
+          .get()
+          ?.supportedFeatures.get(FEATURE_MASK_FLAG.EDIT_MESSAGE_SUPPORT);
+        receiverSupportsEditedMessages =
+          editFeature !== undefined
+            ? {supports: true, excludedNames: editFeature.notSupported}
+            : {supports: false};
 
         // Set an `initiallyVisibleMessageId` if provided by the current route.
         initiallyVisibleMessageId = routeParams?.initialMessage?.messageId;
@@ -235,6 +302,19 @@
         // Navigate back to the welcome page.
         router.replaceMain(ROUTE_DEFINITIONS.main.welcome.withoutParams());
       });
+  }
+
+  async function handleClickEdit(event: CustomEvent<string>): Promise<void> {
+    await editedMessage?.actions.edit(event.detail).catch((error) => {
+      log.error('Failed to update message with error:', error);
+    });
+    composeBarMode = 'insert';
+
+    // Clear quote, draft and compose area.
+    // eslint-disable-next-line require-atomic-updates
+    quote = undefined;
+    draftStore.set(undefined);
+    composeBarComponent?.clear();
   }
 
   function handleClickSend(event: CustomEvent<string | SendMessageEventDetail>): void {
@@ -324,6 +404,17 @@
   async function openMediaComposeModal(
     initialFiles?: File[] | FileLoadResult | FileResult,
   ): Promise<void> {
+    // In edit mode, we dont allow pasting files.
+    if (composeBarMode === 'edit') {
+      toast.addSimpleFailure(
+        $i18n.t(
+          'messaging.prose--paste-image-in-edit',
+          'When editing a message, files cannot be pasted.',
+        ),
+      );
+      return;
+    }
+
     const files: File[] = (await prepareFilesForMediaComposeModal(i18n, log, initialFiles)) ?? [];
     const mediaFiles: MediaFile[] = files.map((file, index) => ({
       type: 'local',
@@ -473,6 +564,7 @@
             {services}
             on:clickdelete={handleClickDeleteMessage}
             on:clickquote={handleClickQuoteMessage}
+            on:clickedit={handleClickEditMessage}
           />
         </div>
 
@@ -506,7 +598,12 @@
                     <Quote {...quote.props} />
                   </div>
 
-                  <IconButton flavor="naked" on:click={handleClickCloseQuote}>
+                  <IconButton
+                    flavor="naked"
+                    on:click={composeBarMode === 'edit'
+                      ? handleClickEditClose
+                      : handleClickCloseQuote}
+                  >
                     <MdIcon theme="Filled">close</MdIcon>
                   </IconButton>
                 {/key}
@@ -515,12 +612,14 @@
 
             <ComposeBar
               bind:this={composeBarComponent}
+              mode={composeBarMode}
               options={{
                 showAttachFilesButton: quote === undefined,
               }}
               on:attachfiles={handleAddFiles}
               on:clicksend={handleClickSend}
               on:pastefiles={handleAddFiles}
+              on:clickedit={handleClickEdit}
             />
           {/if}
         </div>

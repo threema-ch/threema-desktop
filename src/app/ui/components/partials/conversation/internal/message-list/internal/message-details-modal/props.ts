@@ -9,6 +9,7 @@ export interface MessageDetailsModalProps {
     readonly direction: MessageProps['direction'];
     readonly file?: MessageProps['file'];
     readonly id: MessageProps['id'];
+    readonly lastEdited: MessageProps['lastEdited'];
     readonly reactions: Readonly<Reaction[]>;
     readonly services: AppServices;
     readonly status: MessageProps['status'];
