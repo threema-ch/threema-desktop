@@ -25,7 +25,11 @@ import type {
     WorkVerificationLevel,
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
-import type {IdentityStringOrMe} from '~/common/model/types/message';
+import type {
+    IdentityStringOrMe,
+    MediaBasedMessageType,
+    TextBasedMessageType,
+} from '~/common/model/types/message';
 import type {BlobId} from '~/common/network/protocol/blob';
 import type {
     FeatureMask,
@@ -357,6 +361,9 @@ export interface DbMessageCommon<T extends MessageType> {
      */
     readonly deliveredAt?: Date;
 
+    /** Optional timestamp for when a message was edited. Defaults to null if a message was never edited.*/
+    readonly lastEditedAt?: Date;
+
     /**
      * Optional timestamp for when the 'read' delivery receipt message...
      *
@@ -494,6 +501,24 @@ export type DbAnyMessage =
     | DbImageMessage
     | DbVideoMessage
     | DbAudioMessage;
+
+/**
+ * Any database media message
+ */
+export type DbAnyMediaMessage = DbFileMessage | DbImageMessage | DbVideoMessage | DbAudioMessage;
+
+/**
+ * The editable parts of a message in the database.
+ *
+ * This includes the text (for text messages) or caption (for media messages) along with the
+ * `lastEditedAt` timestamp.
+ */
+export type DbMessageEditFor<TMessageType extends MessageType> =
+    TMessageType extends TextBasedMessageType
+        ? Required<Pick<DbUpdate<DbTextMessage>, 'text' | 'lastEditedAt'>>
+        : TMessageType extends MediaBasedMessageType
+          ? Required<Pick<DbUpdate<DbAnyMediaMessage>, 'caption' | 'lastEditedAt'>>
+          : never;
 
 /**
  * Map from message type to a specific database message type.
@@ -751,6 +776,16 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
      * Create or update the reaction to a specified message.
      */
     readonly createOrUpdateMessageReaction: (reaction: DbCreate<DbMessageReaction>) => void;
+
+    /**
+     * Edit the text of an existing message of any type.
+     * Updates the main message table's `lastEditedAt` field of the corresponding message.
+     */
+    readonly editMessage: <TMessageType extends MessageType>(
+        messageUid: DbMessageUid,
+        type: TMessageType,
+        messageUpdate: DbMessageEditFor<TMessageType>,
+    ) => void;
 
     /**
      * Return all reactions for the message with the specified {@link uid}.

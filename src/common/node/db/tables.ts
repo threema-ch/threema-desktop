@@ -564,6 +564,9 @@ export const tMessage = new (class TMessage extends Table<DBConnection, 'TMessag
      */
     public readAt = this.optionalColumn('readAt', 'localDateTime');
 
+    /** Optional timestamp for when message was edited.*/
+    public lastEditedAt = this.optionalColumn('lastEditedAt', 'localDateTime');
+
     /**
      * Unparsed raw body. Only provided for inbound messages.
      */

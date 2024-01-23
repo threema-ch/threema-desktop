@@ -46,6 +46,7 @@ import type {
     RawDatabaseKey,
     DbCreateMessage,
     DbMessageReaction,
+    DbMessageEditFor,
 } from '~/common/db';
 import {
     type GlobalPropertyKey,
@@ -57,6 +58,7 @@ import {
 } from '~/common/enum';
 import type {FileId} from '~/common/file-storage';
 import type {Logger} from '~/common/logging';
+import type {MediaBasedMessageType, TextBasedMessageType} from '~/common/model/types/message';
 import type {GroupId, IdentityString, MessageId} from '~/common/network/types';
 import {type Settings, SETTINGS_CODEC} from '~/common/settings';
 import type {u53} from '~/common/types';
@@ -106,6 +108,15 @@ type UpdateSetWithThumbnail =
     | UpdateSetsForDbMessage<DbFileMessage>
     | UpdateSetsForDbMessage<DbImageMessage>
     | UpdateSetsForDbMessage<DbVideoMessage>;
+
+/**
+ * Union of all media message data table types.
+ */
+type AnyMediaMessageDataTable =
+    | typeof tMessageImageData
+    | typeof tMessageFileData
+    | typeof tMessageAudioData
+    | typeof tMessageVideoData;
 
 /**
  * Database backend backed by SQLite (with SQLCipher), using the BetterSqlCipher driver.
@@ -1265,6 +1276,7 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 raw: tMessage.raw,
                 type: tMessage.messageType,
                 threadId: tMessage.threadId,
+                lastEditedAt: tMessage.lastEditedAt,
                 // TODO(DESK-296): Deprecate ordinal in favor of a thread-based solution
                 ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
                 reactions: this._db
@@ -1664,6 +1676,89 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
                 .executeSelectMany(),
         );
         return result;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    private _getTableForFileType(type: MediaBasedMessageType): AnyMediaMessageDataTable {
+        switch (type) {
+            case 'file':
+                return tMessageFileData;
+            case 'image':
+                return tMessageImageData;
+            case 'video':
+                return tMessageVideoData;
+            case 'audio':
+                return tMessageAudioData;
+            default:
+                return unreachable(type);
+        }
+    }
+
+    private _editMessageTextInDb(
+        table: typeof tMessageTextData,
+        messageUpdate: Pick<DbMessageEditFor<TextBasedMessageType>, 'text'>,
+        messageUid: DbMessageUid,
+    ): void {
+        sync(
+            this._db
+                .update(table)
+                .set({
+                    ...messageUpdate,
+                })
+                .where(table.messageUid.equalsIfValue(messageUid))
+                .executeUpdate(),
+        );
+    }
+    private _editMediaCaptionInDb(
+        table: AnyMediaMessageDataTable,
+        messageUpdate: Pick<DbMessageEditFor<MediaBasedMessageType>, 'caption'>,
+        messageUid: DbMessageUid,
+    ): void {
+        sync(
+            this._db
+                .update(table)
+                .set({
+                    ...messageUpdate,
+                })
+                .where(table.messageUid.equalsIfValue(messageUid))
+                .executeUpdate(),
+        );
+    }
+
+    /** @inheritdoc */
+    public editMessage<TMessageType extends MessageType>(
+        messageUid: DbMessageUid,
+        type: TMessageType,
+        messageUpdate: DbMessageEditFor<TMessageType>,
+    ): void {
+        const lastEditedAt = pick<DbMessageEditFor<TMessageType>>(messageUpdate, ['lastEditedAt']);
+        // Sqlite does not allow updating two tables in a single join transaction.
+        // Therefore, we need to do this sequentially
+        this._db.syncTransaction(() => {
+            sync(
+                this._db
+                    .update(tMessage)
+                    .set({
+                        ...lastEditedAt,
+                    })
+                    .where(tMessage.uid.equals(messageUid))
+                    .executeUpdate(),
+            );
+            if (type === MessageType.TEXT) {
+                this._editMessageTextInDb(
+                    tMessageTextData,
+                    messageUpdate as DbMessageEditFor<TextBasedMessageType>,
+                    messageUid,
+                );
+            } else {
+                const table = this._getTableForFileType(type);
+                this._editMediaCaptionInDb(
+                    table,
+                    messageUpdate as DbMessageEditFor<MediaBasedMessageType>,
+                    messageUid,
+                );
+            }
+        }, this._log);
     }
 
     /** @inheritdoc */
