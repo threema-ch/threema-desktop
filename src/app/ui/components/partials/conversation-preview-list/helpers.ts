@@ -1,4 +1,5 @@
 import type {Status} from '~/app/ui/components/molecules/message/internal/indicator/props';
+import type {Draft} from '~/app/ui/components/partials/conversation/drafts';
 import type {ConversationPreviewProps} from '~/app/ui/components/partials/conversation-preview-list/internal/conversation-preview/props';
 import type {AnyContentItemOptions} from '~/app/ui/components/partials/receiver-card/internal/content-item/types';
 import type {I18nType} from '~/app/ui/i18n-types';
@@ -7,7 +8,7 @@ import {unreachable} from '~/common/utils/assert';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 export function getReceiverCardBottomLeftItemOptions(
-    draft: string | undefined,
+    draft: Draft | undefined,
     i18n: I18nType,
     isArchived: boolean,
     isPrivate: boolean,
@@ -32,7 +33,7 @@ export function getReceiverCardBottomLeftItemOptions(
             {
                 type: 'text',
                 text: {
-                    html: `<span class="draft">${i18n.t('messaging.label--prefix-draft', 'Draft:')}</span> ${draft}` as SanitizedHtml,
+                    html: `<span class="draft">${i18n.t('messaging.label--prefix-draft', 'Draft:')}</span> ${draft.text}` as SanitizedHtml,
                 },
             },
         ];

@@ -1,18 +1,17 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
+  import {onDestroy, onMount} from 'svelte';
 
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
-  import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
   import {
     type ConversationDraftStore,
     conversationDrafts,
+    type Draft,
   } from '~/app/ui/components/partials/conversation/drafts';
   import {prepareFilesForMediaComposeModal} from '~/app/ui/components/partials/conversation/helpers';
   import ComposeBar from '~/app/ui/components/partials/conversation/internal/compose-bar/ComposeBar.svelte';
-  import type {ComposeBarProps} from '~/app/ui/components/partials/conversation/internal/compose-bar/props';
   import MessageList from '~/app/ui/components/partials/conversation/internal/message-list/MessageList.svelte';
   import {getTextContent} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
@@ -20,8 +19,11 @@
   import TopBar from '~/app/ui/components/partials/conversation/internal/top-bar/TopBar.svelte';
   import type {ConversationViewProps} from '~/app/ui/components/partials/conversation/props';
   import type {
+    ComposeBarState,
     ConversationRouteParams,
+    EditedMessage,
     ModalState,
+    QuotedMessage,
     RemoteConversationViewModelStoreValue,
   } from '~/app/ui/components/partials/conversation/types';
   import {conversationListEvent} from '~/app/ui/components/partials/conversation-nav/helpers';
@@ -35,10 +37,10 @@
   import type {FileLoadResult} from '~/app/ui/utils/file';
   import {type SvelteNullableBinding, reactive} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';
-  import {ConversationCategory} from '~/common/enum';
+  import {ConversationCategory, MessageDirection} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
-  import type {MessageId} from '~/common/network/types';
-  import {FEATURE_MASK_FLAG} from '~/common/network/types';
+  import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
+  import {FEATURE_MASK_FLAG, type MessageId} from '~/common/network/types';
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
@@ -72,20 +74,14 @@
   // receiver of the current conversation is known.
   let draftStore: ConversationDraftStore = conversationDrafts.getOrCreateStore(undefined);
 
-  // Props of the quoted message, if any.
-  let quote:
-    | {
-        readonly id: MessageId;
-        readonly props: QuoteProps;
-      }
-    | undefined = undefined;
-
-  let editedMessage: Pick<MessagePropsFromBackend, 'actions' | 'id'> | undefined = undefined;
-
   let messageListComponent: SvelteNullableBinding<MessageList> = null;
   let composeBarComponent: SvelteNullableBinding<ComposeBar> = null;
 
-  let composeBarMode: ComposeBarProps['mode'] = 'insert';
+  let composeBarState: ComposeBarState = {
+    type: 'insert',
+    quotedMessage: undefined,
+    editedMessage: undefined,
+  };
 
   let modalState: ModalState = {type: 'none'};
 
@@ -100,22 +96,25 @@
     });
   }
 
-  function setQuote(event: CustomEvent<MessagePropsFromBackend>): void {
-    const quotedMessage = event.detail;
+  function getComposebarQuoteComponent(
+    quotedMessageProps: MessagePropsFromBackend,
+  ): QuotedMessage | undefined {
     const conversationReceiverLookup = viewModelStore.get()?.receiver.lookup;
 
     if (conversationReceiverLookup === undefined) {
-      return;
+      return undefined;
     }
 
     const sanitizedHtml = getTextContent(
-      quotedMessage.text?.raw,
-      quotedMessage.text?.mentions,
+      quotedMessageProps.text?.raw,
+      quotedMessageProps.text?.mentions,
       $i18n.t,
     );
 
-    quote = {
-      id: quotedMessage.id,
+    composeBarComponent?.focus();
+
+    return {
+      id: quotedMessageProps.id,
       props: {
         alt: $i18n.t('messaging.hint--media-thumbnail'),
         content:
@@ -126,33 +125,33 @@
               },
         clickable: false,
         file: transformMessageFileProps(
-          quotedMessage.file,
-          quotedMessage.id,
+          quotedMessageProps.file,
+          quotedMessageProps.id,
           conversationReceiverLookup,
           services,
         ),
-        mode: editedMessage !== undefined ? 'edit' : 'quote',
         onError: (error) =>
           log.error(
             `An error occurred in a child component: ${extractErrorMessage(error, 'short')}`,
           ),
-        sender: quotedMessage.sender,
+        sender: quotedMessageProps.sender,
       },
     };
-
-    composeBarComponent?.focus();
   }
 
   function handleClickQuoteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
-    if (editedMessage !== undefined) {
+    if (composeBarState.type === 'edit') {
       composeBarComponent?.clear();
     }
-    editedMessage = undefined;
-    composeBarMode = 'insert';
-    setQuote(event);
+    const quotedMessage = getComposebarQuoteComponent(event.detail);
+    if (quotedMessage === undefined) {
+      composeBarState = {type: 'insert', quotedMessage: undefined, editedMessage: undefined};
+      return;
+    }
+    composeBarState = {type: 'insert', quotedMessage, editedMessage: undefined};
   }
 
-  function handleClickEditMessage(event: CustomEvent<MessagePropsFromBackend>): void {
+  function handleClickEditMessage(messageProperties: MessagePropsFromBackend): void {
     if (!receiverSupportsEditedMessages.supports) {
       toast.addSimpleFailure(
         $i18n.t(
@@ -173,29 +172,31 @@
         ),
       );
     }
-    composeBarMode = 'edit';
-    const textToEdit = event.detail;
 
     composeBarComponent?.clear();
     // If we have an empty message, we simply put the empty string into the compose bar
-    composeBarComponent?.insertText(textToEdit.text?.raw ?? '');
-    editedMessage = {
-      id: event.detail.id,
-      actions: event.detail.actions,
+    composeBarComponent?.insertText(messageProperties.text?.raw ?? '');
+    const editedMessage: EditedMessage = {
+      id: messageProperties.id,
+      actions: messageProperties.actions,
+      text: messageProperties.text,
     };
-    setQuote(event);
+    const quotedMessage = getComposebarQuoteComponent(messageProperties);
+    if (quotedMessage === undefined) {
+      composeBarState = {type: 'insert', quotedMessage: undefined, editedMessage: undefined};
+      return;
+    }
+    composeBarState = {type: 'edit', editedMessage, quotedMessage};
   }
 
   function handleClickCloseQuote(): void {
-    quote = undefined;
-    editedMessage = undefined;
+    composeBarState = {type: 'insert', editedMessage: undefined, quotedMessage: undefined};
+    draftStore.set(undefined);
   }
 
   function handleClickEditClose(): void {
-    composeBarMode = 'insert';
-    quote = undefined;
-    editedMessage = undefined;
-    composeBarComponent?.clear();
+    resetComposeBar();
+    draftStore.set(undefined);
   }
 
   function handleAddFiles(
@@ -244,8 +245,8 @@
     // Before the new `viewModelBundle` is loaded, check if another conversation is already loaded
     // and clear quote and save draft if necessary.
     if ($viewModelStore !== undefined) {
-      quote = undefined;
       saveDraftAndClearComposeBar($viewModelStore.receiver.lookup);
+      composeBarState = {type: 'insert', editedMessage: undefined, quotedMessage: undefined};
     }
 
     await backend.viewModel
@@ -283,7 +284,26 @@
 
         // Load initial data. Note: If there is both a draft and a forwarded message, the forwarded
         // message text has priority.
-        composeBarComponent?.insertText(forwardedMessageText ?? draft ?? '');
+        if (forwardedMessageText !== undefined) {
+          composeBarState = {
+            type: 'insert',
+            editedMessage: undefined,
+            quotedMessage: undefined,
+          };
+        } else if (draft?.extended?.type === 'edit') {
+          composeBarState = {
+            type: 'edit',
+            editedMessage: draft.extended.edit,
+            quotedMessage: draft.extended.quote,
+          };
+        } else if (draft?.extended?.type === 'quote') {
+          composeBarState = {
+            type: 'insert',
+            quotedMessage: draft.extended.quote,
+            editedMessage: undefined,
+          };
+        }
+        composeBarComponent?.insertText(forwardedMessageText ?? draft?.text ?? '');
         composeBarComponent?.focus();
 
         if (preloadedFiles !== undefined) {
@@ -304,17 +324,36 @@
       });
   }
 
-  async function handleClickEdit(event: CustomEvent<string>): Promise<void> {
-    await editedMessage?.actions.edit(event.detail).catch((error) => {
+  function resetComposeBar(): void {
+    composeBarState = {type: 'insert', editedMessage: undefined, quotedMessage: undefined};
+    composeBarComponent?.clear();
+  }
+
+  async function handleClickApplyEdit(event: CustomEvent<string>): Promise<void> {
+    if (composeBarState.editedMessage === undefined) {
+      log.warn('Cannot edit message because no message to edit is set.');
+      return;
+    }
+    if (event.detail === composeBarState.editedMessage.text?.raw) {
+      resetComposeBar();
+      draftStore.set(undefined);
+      return;
+    }
+
+    // TODO(DESK-1314)
+    // For file messages, we allow empty captions
+    if (event.detail.trim() === '' && composeBarState.quotedMessage?.props.file === undefined) {
+      log.warn('Cannot change message to empty message');
+      resetComposeBar();
+      draftStore.set(undefined);
+      return;
+    }
+
+    await composeBarState.editedMessage.actions.edit(event.detail).catch((error) => {
       log.error('Failed to update message with error:', error);
     });
-    composeBarMode = 'insert';
-
-    // Clear quote, draft and compose area.
-    // eslint-disable-next-line require-atomic-updates
-    quote = undefined;
+    resetComposeBar();
     draftStore.set(undefined);
-    composeBarComponent?.clear();
   }
 
   function handleClickSend(event: CustomEvent<string | SendMessageEventDetail>): void {
@@ -335,7 +374,7 @@
           ?.sendMessage({
             type: 'text',
             text,
-            quotedMessageId: quote?.id,
+            quotedMessageId: composeBarState.quotedMessage?.id,
           })
           .catch(assertUnreachable);
         break;
@@ -345,11 +384,7 @@
         break;
     }
 
-    // Clear quote, draft and compose area.
-    // eslint-disable-next-line require-atomic-updates
-    quote = undefined;
-    draftStore.set(undefined);
-    composeBarComponent?.clear();
+    resetComposeBar();
 
     // Set Nav to Conversation Preview List.
     if ($router.nav.id !== 'conversationList') {
@@ -405,7 +440,7 @@
     initialFiles?: File[] | FileLoadResult | FileResult,
   ): Promise<void> {
     // In edit mode, we dont allow pasting files.
-    if (composeBarMode === 'edit') {
+    if (composeBarState.type === 'edit') {
       toast.addSimpleFailure(
         $i18n.t(
           'messaging.prose--paste-image-in-edit',
@@ -450,12 +485,71 @@
    */
   function saveDraftAndClearComposeBar(currentReceiverLookup?: DbReceiverLookup): void {
     draftStore = conversationDrafts.getOrCreateStore(currentReceiverLookup);
+    const currentText = composeBarComponent?.getText();
+
+    if (currentText === undefined || currentText.trim() === '') {
+      draftStore.set(undefined);
+      return;
+    }
+
+    let extended: Draft['extended'] = undefined;
+
+    // We allow saving an edit of a quote to the draft.
+    // If so, the edit mode as well as well as the quoted message remain.
+    if (composeBarState.type === 'edit') {
+      extended = {
+        type: 'edit',
+        edit: composeBarState.editedMessage,
+        quote: composeBarState.quotedMessage,
+      };
+
+      // Store only the quote to the draft.
+    } else if (composeBarState.quotedMessage !== undefined) {
+      extended = {
+        type: 'quote',
+        quote: composeBarState.quotedMessage,
+      };
+    }
 
     // Save current message draft.
-    const currentText = composeBarComponent?.getText();
-    draftStore.set(currentText?.trim() === '' ? undefined : currentText);
+    draftStore.set({
+      text: currentText,
+      extended,
+    });
 
-    composeBarComponent?.clear();
+    resetComposeBar();
+  }
+
+  function handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      if (composeBarState.type === 'insert') {
+        handleClickCloseQuote();
+      } else {
+        handleClickEditClose();
+      }
+      return;
+    }
+
+    if (
+      event.key === 'ArrowUp' &&
+      $viewModelStore?.lastMessage?.direction === MessageDirection.OUTBOUND &&
+      composeBarState.quotedMessage === undefined &&
+      (composeBarComponent?.getText() === undefined || composeBarComponent.getText() === '')
+    ) {
+      const messageToEdit = messageListComponent?.getPropsFromBackend(
+        $viewModelStore.lastMessage.id,
+      );
+
+      if (
+        messageToEdit?.status.sent !== undefined &&
+        Date.now() - messageToEdit.status.sent.at.getTime() <
+          EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES * 60000
+      ) {
+        event.preventDefault();
+        handleClickEditMessage(messageToEdit);
+        composeBarComponent?.focus();
+      }
+    }
   }
 
   $: reactive(handleChangeRouterState, [$router]);
@@ -472,8 +566,13 @@
     ($viewModelStore?.receiver.type === 'contact' && $viewModelStore.receiver.isBlocked) ||
     ($viewModelStore?.receiver.type === 'group' && $viewModelStore.receiver.isLeft);
 
+  onMount(() => {
+    window.addEventListener('keydown', handleKeyDown);
+  });
+
   onDestroy(() => {
     saveDraftAndClearComposeBar($viewModelStore?.receiver.lookup);
+    window.removeEventListener('keydown', handleKeyDown);
   });
 </script>
 
@@ -564,7 +663,7 @@
             {services}
             on:clickdelete={handleClickDeleteMessage}
             on:clickquote={handleClickQuoteMessage}
-            on:clickedit={handleClickEditMessage}
+            on:clickedit={(event) => handleClickEditMessage(event.detail)}
           />
         </div>
 
@@ -591,16 +690,19 @@
               )}
             </div>
           {:else}
-            {#if quote !== undefined}
+            {#if composeBarState.quotedMessage !== undefined}
               <div class="quote">
-                {#key quote.id}
+                {#key composeBarState.quotedMessage.id}
                   <div class="body">
-                    <Quote {...quote.props} />
+                    <Quote
+                      {...composeBarState.quotedMessage.props}
+                      mode={composeBarState.type === 'edit' ? 'edit' : 'quote'}
+                    />
                   </div>
 
                   <IconButton
                     flavor="naked"
-                    on:click={composeBarMode === 'edit'
+                    on:click={composeBarState.type === 'edit'
                       ? handleClickEditClose
                       : handleClickCloseQuote}
                   >
@@ -612,14 +714,17 @@
 
             <ComposeBar
               bind:this={composeBarComponent}
-              mode={composeBarMode}
+              mode={composeBarState.type}
               options={{
-                showAttachFilesButton: quote === undefined,
+                showAttachFilesButton: composeBarState.quotedMessage === undefined,
+                allowEmptyMessages:
+                  composeBarState.type === 'edit' &&
+                  composeBarState.quotedMessage.props.file !== undefined,
               }}
               on:attachfiles={handleAddFiles}
               on:clicksend={handleClickSend}
               on:pastefiles={handleAddFiles}
-              on:clickedit={handleClickEdit}
+              on:clickapplyedit={handleClickApplyEdit}
             />
           {/if}
         </div>

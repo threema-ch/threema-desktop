@@ -9,5 +9,7 @@ export interface ComposeBarProps {
     readonly options?: {
         /** Whether to show a button to attach files. Defaults to `true`. */
         readonly showAttachFilesButton?: boolean;
+        /** Whether to allow empty messages */
+        readonly allowEmptyMessages?: boolean;
     };
 }

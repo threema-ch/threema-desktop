@@ -26,7 +26,7 @@
   const dispatch = createEventDispatcher<{
     attachfiles: FileResult;
     clicksend: string;
-    clickedit: string;
+    clickapplyedit: string;
   }>();
 
   let emojiButtonElement: SvelteNullableBinding<HTMLDivElement> = null;
@@ -85,7 +85,7 @@
       if (mode === 'insert') {
         dispatch('clicksend', textAreaTextContent);
       } else {
-        dispatch('clickedit', textAreaTextContent);
+        dispatch('clickapplyedit', textAreaTextContent);
       }
     }
 
@@ -161,7 +161,7 @@
       </IconButton>
     </div>
 
-    {#if !$isTextAreaEmpty}
+    {#if !$isTextAreaEmpty || options.allowEmptyMessages === true}
       <IconButton
         flavor="filled"
         on:click={handleClickSendButton}

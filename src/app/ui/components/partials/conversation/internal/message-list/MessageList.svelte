@@ -151,6 +151,14 @@
     }
   }
 
+  /**
+   * Given a `MessageId`, finds the corresponding props in the message props store.
+   * Returns undefined if no such message was found.
+   */
+  export function getPropsFromBackend(messageId: MessageId): MessagePropsFromBackend | undefined {
+    return $messagePropsStore.find((prop) => prop.id === messageId);
+  }
+
   function handleClickScrollToBottom(): void {
     scrollToLast({
       behavior: 'smooth',

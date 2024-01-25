@@ -11,6 +11,7 @@
   import {
     conversationDrafts,
     type ConversationDraftStore,
+    type Draft,
   } from '~/app/ui/components/partials/conversation/drafts';
   import {
     getReceiverCardBottomLeftItemOptions,
@@ -52,7 +53,7 @@
   let isContextMenuOpen: boolean = false;
 
   // TODO(DESK-306): Properly implement drafts.
-  let draftStore: ConversationDraftStore = new WritableStore<string | undefined>(undefined);
+  let draftStore: ConversationDraftStore = new WritableStore<Draft | undefined>(undefined);
 
   function handleClick(event: MouseEvent): void {
     if (isContextMenuOpen) {
@@ -97,7 +98,7 @@
 
     if (routerState.main.id === 'conversation') {
       draftStore = active
-        ? new WritableStore<string | undefined>(undefined)
+        ? new WritableStore<Draft | undefined>(undefined)
         : conversationDrafts.getOrCreateStore(receiver.lookup);
     } else if (routerState.nav.id === 'conversationList') {
       // Small window size.
