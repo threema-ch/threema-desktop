@@ -11,6 +11,7 @@ export interface MessageDetailsModalProps {
     readonly id: MessageProps['id'];
     readonly lastEdited: MessageProps['lastEdited'];
     readonly reactions: Readonly<Reaction[]>;
+    readonly history: Readonly<HistoryEntry[]>;
     readonly services: AppServices;
     readonly status: MessageProps['status'];
 }
@@ -22,4 +23,9 @@ interface Reaction {
         readonly name: string;
     };
     readonly type: 'acknowledged' | 'declined';
+}
+
+interface HistoryEntry {
+    readonly at: Date;
+    readonly text: string;
 }

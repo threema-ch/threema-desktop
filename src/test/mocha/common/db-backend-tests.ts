@@ -223,6 +223,7 @@ function getCommonMessage<T extends MessageType>(
         raw: init.raw,
         threadId: init.threadId ?? 1n, // TODO(DESK-296)
         reactions: [],
+        history: [],
     };
 }
 

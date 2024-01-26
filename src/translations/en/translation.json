@@ -290,6 +290,7 @@
     "label--delivered-date": "Delivered",
     "label--file-name": "File Name",
     "label--file-size": "File Size",
+    "label--history": "Edit History",
     "label--last-edited-date": "Last Edited",
     "label--media-type": "Media Type",
     "label--message-id": "Message ID",

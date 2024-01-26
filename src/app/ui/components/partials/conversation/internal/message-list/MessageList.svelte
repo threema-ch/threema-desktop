@@ -189,6 +189,7 @@
         services,
         status: message.status,
         conversation,
+        history: message.history,
       },
     };
   }
@@ -460,6 +461,7 @@
           direction={item.direction}
           file={item.file}
           highlighted={item.id === highlightedMessageId}
+          history={item.history}
           id={item.id}
           lastEdited={item.lastEdited}
           quote={item.quote}

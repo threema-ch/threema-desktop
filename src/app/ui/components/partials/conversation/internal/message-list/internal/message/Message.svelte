@@ -30,6 +30,7 @@
   import {EDIT_MESSAGE_GRACE_PERIOD_IN_MINUTES} from '~/common/network/protocol/constants';
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
+  import {unusedProp} from '~/common/utils/svelte-helpers';
 
   const {uiLogging, systemTime} = globals.unwrap();
   const log = uiLogging.logger('ui.component.message');
@@ -44,6 +45,8 @@
   export let id: $$Props['id'];
   export let lastEdited: $$Props['lastEdited'] = undefined;
   export let highlighted: $$Props['highlighted'] = undefined;
+  export let history: $$Props['history'] = [];
+  unusedProp(history);
   export let quote: $$Props['quote'] = undefined;
   export let reactions: $$Props['reactions'];
   export let sender: $$Props['sender'] = undefined;

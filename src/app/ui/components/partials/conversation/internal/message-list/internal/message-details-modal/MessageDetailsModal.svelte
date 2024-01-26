@@ -21,6 +21,7 @@
   export let id: $$Props['id'];
   export let lastEdited: $$Props['lastEdited'] = undefined;
   export let reactions: $$Props['reactions'];
+  export let history: $$Props['history'];
   export let services: $$Props['services'];
   export let status: $$Props['status'];
   export let conversation: $$Props['conversation'];
@@ -60,6 +61,9 @@
     acknowledgeReactions = acknowledgeReactions;
     declineReactions = declineReactions;
   }
+
+  let sortedHistory: $$Props['history'] = [];
+  $: sortedHistory = [...history].sort((a, b) => (a.at < b.at ? 1 : -1));
 
   $: use24hTime = $appearance.view.use24hTime;
   $: handleUpdateReactions(reactions);
@@ -204,6 +208,43 @@
         </KeyValueList.Item>
       </KeyValueList.Section>
 
+      {#if sortedHistory.length > 0 && import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
+        <KeyValueList.Section
+          title={$i18n.t('dialog--message-details.label--history', 'Edit History')}
+          options={{
+            disableItemInset: true,
+          }}
+        >
+          <div class="history">
+            {#each sortedHistory as historyEntry, index}
+              <div class="version">
+                <div class="badge">
+                  <Text
+                    color="mono-high"
+                    text={`v${sortedHistory.length - index}`}
+                    size="meta"
+                    wrap={false}
+                  />
+                </div>
+
+                <div class="detail">
+                  <KeyValueList.Item
+                    key={formatDateLocalized(historyEntry.at, $i18n, 'extended', use24hTime)}
+                  >
+                    <Text
+                      color={historyEntry.text !== '' ? 'inherit' : 'mono-low'}
+                      text={historyEntry.text === ''
+                        ? $i18n.t('dialog--message-details.prose--empty-caption', 'No caption')
+                        : historyEntry.text}
+                    />
+                  </KeyValueList.Item>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </KeyValueList.Section>
+      {/if}
+
       {#if import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox'}
         <KeyValueList.Section title="Debug 🐞" options={{disableItemInset: true}}>
           <KeyValueList.Item key="Direction">
@@ -274,6 +315,65 @@
         }
         &.declined {
           color: var(--mc-message-status-declined-color);
+        }
+      }
+    }
+
+    .history {
+      display: grid;
+      grid-template-columns: [badge] min-content [detail] 1fr;
+
+      padding: 0 0 0 rem(16px);
+
+      .version {
+        grid-column: span 2;
+
+        display: grid;
+        // Use CSS Subgrid to ensure all cells of the first column grow equally.
+        grid-template-columns: subgrid;
+        align-items: center;
+        position: relative;
+
+        &:not(:first-child) .badge::before {
+          display: block;
+          height: calc(50% - rem(12px));
+          top: 0;
+        }
+
+        &:not(:last-child) .badge::after {
+          display: block;
+          height: calc(50% - rem(12px));
+          bottom: 0;
+        }
+
+        .badge {
+          grid-area: badge;
+          justify-self: center;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          min-width: rem(24px);
+          height: rem(24px);
+          border-radius: rem(12px);
+          background-color: var(--cc-conversation-preview-background-color--active);
+          white-space: nowrap;
+
+          &::before,
+          &::after {
+            display: none;
+
+            content: '';
+            position: absolute;
+            width: rem(1px);
+
+            background-color: var(--ic-divider-background-color);
+          }
+        }
+
+        .detail {
+          grid-area: detail;
         }
       }
     }

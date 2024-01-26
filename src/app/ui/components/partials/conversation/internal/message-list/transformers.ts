@@ -65,6 +65,10 @@ function getMessageProps(
         sender: viewModel.sender,
         status: viewModel.status,
         text: viewModel.text,
+        history: viewModel.history.map((val) => ({
+            at: val.editedAt,
+            text: val.text,
+        })),
     };
 }
 

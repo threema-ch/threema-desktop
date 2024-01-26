@@ -43,6 +43,7 @@ export interface MessageProps {
      * animation is completed.
      */
     readonly highlighted?: BasicMessageProps['highlighted'];
+    readonly history: MessageDetailsModalProps['history'];
     readonly id: MessageId;
     readonly lastEdited: BasicMessageProps['lastEdited'];
     readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
