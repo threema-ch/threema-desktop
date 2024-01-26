@@ -198,6 +198,13 @@ export function getMessageText(
     }
 }
 
+export function getMessageHistory(
+    services: Pick<ServicesForViewModel, 'model'>,
+    messageModel: AnyMessageModel,
+): ConversationMessageViewModel['history'] {
+    return [...messageModel.view.history];
+}
+
 /**
  * Returns file data related to a message for the {@link ConversationMessageViewModel}.
  */

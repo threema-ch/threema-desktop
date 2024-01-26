@@ -8,6 +8,7 @@ import {type GetAndSubscribeFunction, derive} from '~/common/utils/store/derived
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {
     getMessageFile,
+    getMessageHistory,
     getMessageQuote,
     getMessageReactions,
     getMessageSender,
@@ -59,6 +60,7 @@ function getConversationMessageViewModel(
         direction:
             messageModel.view.direction === MessageDirection.INBOUND ? 'inbound' : 'outbound',
         file: getMessageFile(messageModel),
+        history: getMessageHistory(services, messageModel),
         id: messageModel.view.id,
         lastEditedAt: messageModel.view.lastEditedAt,
         ordinal: messageModel.view.ordinal,

@@ -27,6 +27,7 @@ import type {
     BaseMessageView,
     CommonBaseMessageView,
     DirectedMessageFor,
+    MessageHistoryViewEntry,
     UnifiedEditMessage,
 } from '~/common/model/types/message';
 import type {
@@ -181,8 +182,19 @@ export class InboundImageMessageModelController
             caption: editedMessage.newText,
         };
         message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, change);
-            return change;
+            editMessageByMessageUid(this._services, this.uid, this._type, {
+                lastEditedAt: editedMessage.lastEditedAt,
+                caption: editedMessage.newText,
+            });
+            const newHistory: MessageHistoryViewEntry[] =
+                view.history.length === 0
+                    ? [{text: view.caption ?? '', editedAt: view.createdAt}]
+                    : [...view.history];
+            newHistory.push({
+                editedAt: editedMessage.lastEditedAt,
+                text: editedMessage.newText,
+            });
+            return {...change, history: newHistory};
         });
 
         return true;
@@ -257,8 +269,19 @@ export class OutboundImageMessageModelController
             caption: editedMessage.newText,
         };
         message.update((view) => {
-            editMessageByMessageUid(this._services, this.uid, this._type, change);
-            return change;
+            editMessageByMessageUid(this._services, this.uid, this._type, {
+                lastEditedAt: editedMessage.lastEditedAt,
+                caption: editedMessage.newText,
+            });
+            const newHistory: MessageHistoryViewEntry[] =
+                view.history.length === 0
+                    ? [{text: view.caption ?? '', editedAt: view.createdAt}]
+                    : [...view.history];
+            newHistory.push({
+                editedAt: editedMessage.lastEditedAt,
+                text: editedMessage.newText,
+            });
+            return {...change, history: newHistory};
         });
 
         return true;

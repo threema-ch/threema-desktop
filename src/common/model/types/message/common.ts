@@ -37,6 +37,11 @@ export interface MessageReactionView {
     readonly senderIdentity: IdentityStringOrMe;
 }
 
+export interface MessageHistoryViewEntry {
+    readonly editedAt: Date;
+    readonly text: string;
+}
+
 /**
  * Base view for all message types and directions.
  */
@@ -71,6 +76,8 @@ export interface CommonBaseMessageView {
      * Reactions to a message.
      */
     readonly reactions: MessageReactionView[];
+
+    readonly history: MessageHistoryViewEntry[];
 
     readonly lastEditedAt?: Date;
 
@@ -129,7 +136,7 @@ export type CommonBaseMessageInit<TType extends MessageType> = {
      * Message type (e.g. text, file, etc).
      */
     readonly type: TType;
-} & Omit<CommonBaseMessageView, 'ordinal' | 'reactions'>;
+} & Omit<CommonBaseMessageView, 'ordinal' | 'reactions' | 'history'>;
 export type InboundBaseMessageInit<TType extends MessageType> = CommonBaseMessageInit<TType> &
     Pick<InboundBaseMessageView, 'receivedAt' | 'raw'> & {
         readonly sender: UidOf<DbContact>;

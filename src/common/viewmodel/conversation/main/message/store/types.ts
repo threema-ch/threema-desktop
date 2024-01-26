@@ -57,6 +57,11 @@ export interface ConversationMessageViewModel {
         /** Raw, unparsed, text. */
         readonly raw: string;
     };
+
+    history: {
+        readonly editedAt: Date;
+        readonly text: string;
+    }[];
 }
 
 /**

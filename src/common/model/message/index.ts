@@ -42,6 +42,7 @@ import {
     OWN_IDENTITY_ALIAS,
     type MessageRepository,
     type UnifiedEditMessage,
+    type MessageHistoryViewEntry,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -127,6 +128,12 @@ function getCommonView<TDirection extends MessageDirection>(
         ordinal: message.ordinal,
         reactions: message.reactions,
         lastEditedAt: message.lastEditedAt,
+        history: message.history.map(
+            (val): MessageHistoryViewEntry => ({
+                editedAt: val.editedAt,
+                text: val.text ?? '',
+            }),
+        ),
     };
 
     switch (direction) {
@@ -209,6 +216,7 @@ function getCommonDbMessageData<TDirection extends MessageDirection, TType exten
         createdAt: init.createdAt,
         readAt: init.readAt,
         threadId: 1337n, // TODO(DESK-296): Set this properly
+        history: [],
     };
     switch (init.direction) {
         case MessageDirection.INBOUND: {
