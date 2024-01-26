@@ -19,6 +19,7 @@ import {
     type DbGroupUid,
     type DbMessageUid,
     type DbNonceUid,
+    type DbMessageHistoryUid,
 } from '~/common/db';
 import {
     AcquaintanceLevelUtils,
@@ -75,6 +76,7 @@ export const CUSTOM_TYPES = {
     GROUP_UID: 'DbGroupUid',
     MESSAGE_REACTION_UID: 'DbMessageReactionUid',
     MESSAGE_UID: 'DbMessageUid',
+    MESSAGE_HISTORY_UID: 'DbMessageHistoryUid',
     GROUP_MEMBER_UID: 'DbGroupMemberUid',
     FILE_DATA_UID: 'DbFileDataUid',
     GLOBAL_PROPERTY_UID: 'DbGlobalPropertyUid',
@@ -262,6 +264,8 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
                 return typeof value === 'bigint' ? (value as DbGlobalPropertyUid) : fail();
             case CUSTOM_TYPES.NONCE_UID:
                 return typeof value === 'bigint' ? (value as DbNonceUid) : fail();
+            case CUSTOM_TYPES.MESSAGE_HISTORY_UID:
+                return typeof value === 'bigint' ? (value as DbMessageHistoryUid) : fail();
 
             // Enums (value constraints)
             case CUSTOM_TYPES.ACQUAINTANCE_LEVEL:
@@ -415,6 +419,7 @@ export class DBConnection extends SqliteConnection<'DBConnection'> {
             case CUSTOM_TYPES.MESSAGE_UID:
             case CUSTOM_TYPES.GLOBAL_PROPERTY_UID:
             case CUSTOM_TYPES.NONCE_UID:
+            case CUSTOM_TYPES.MESSAGE_HISTORY_UID:
                 // No transformation
                 return value;
 

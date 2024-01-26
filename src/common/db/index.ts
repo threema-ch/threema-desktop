@@ -284,6 +284,11 @@ export type DbCreateConversationMixin = DbCreate<
 export type DbMessageUid = WeakOpaque<DbUid, {readonly DbMessageUid: unique symbol}>;
 
 /**
+ * A database history message Uid.
+ */
+export type DbMessageHistoryUid = WeakOpaque<DbUid, {readonly DbMessageHistoryUid: unique symbol}>;
+
+/**
  * Attributes very close to the columns in the DB.
  */
 export interface DbMessageCommon<T extends MessageType> {
@@ -373,10 +378,16 @@ export interface DbMessageCommon<T extends MessageType> {
     readonly readAt?: Date;
 
     /**
-     * An array of reactions to the corresponding message
-     * Is empty when no value is present
+     * An array of reactions to the corresponding message.
+     * Is empty when the message was never reacted to.
      */
     readonly reactions: Pick<DbMessageReaction, 'reaction' | 'reactionAt' | 'senderIdentity'>[];
+
+    /**
+     * An array of versions of this message.
+     * Is empty if the message has no version history (i.e has never been edited).
+     */
+    readonly history: Pick<DbMessageHistory, 'editedAt' | 'text'>[];
 }
 
 /**
@@ -404,6 +415,27 @@ export interface DbMessageReaction {
      */
     readonly senderIdentity: IdentityStringOrMe;
 
+    readonly messageUid: DbMessageUid;
+}
+
+/**
+ * A table for message histories
+ * Each entry describes a version of a message, referring to its text.
+ */
+export interface DbMessageHistory {
+    readonly uid: DbMessageHistoryUid;
+    /**
+     * The timestamp of this particular edit.
+     */
+    readonly editedAt: Date;
+    /**
+     * The text that this edit has resulted in. It can be empty for non-text messages (i.e captions).
+     * It is the responsibility of the backend/frontend to make sure that text messages are not edited to be empty.
+     */
+    readonly text?: string;
+    /**
+     * The messageUid of the message that this version belongs to.
+     */
     readonly messageUid: DbMessageUid;
 }
 
