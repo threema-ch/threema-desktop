@@ -461,7 +461,7 @@ export function all(
     });
 }
 
-abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageView> {
+abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageView> {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly meta = new ModelLifetimeGuard<TView>();
 
@@ -557,7 +557,7 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
 
 /** @inheritdoc */
 export abstract class InboundBaseMessageModelController<TView extends InboundBaseMessageView>
-    extends CommonBaseMesageModelController<TView>
+    extends CommonBaseMessageModelController<TView>
     implements InboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -679,7 +679,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
 
 /** @inheritdoc */
 export abstract class OutboundBaseMessageModelController<TView extends OutboundBaseMessageView>
-    extends CommonBaseMesageModelController<TView>
+    extends CommonBaseMessageModelController<TView>
     implements OutboundBaseMessageController<TView>
 {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
