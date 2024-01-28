@@ -13,7 +13,7 @@ import type {
 import type {GroupId, IdentityString} from '~/common/network/types';
 import {unreachable} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
-import {hasProperty} from '~/common/utils/object';
+import {hasPropertyStrict} from '~/common/utils/object';
 
 const DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE = protobuf.utils.creator(
     protobuf.sync.Group.NotificationTriggerPolicyOverride,
@@ -38,7 +38,7 @@ function getD2dGroupSyncUpdate(
 ): protobuf.d2d.GroupSync {
     // Prepare notification trigger policy override
     let notificationTriggerPolicyOverride;
-    if (hasProperty(groupUpdate, 'notificationTriggerPolicyOverride')) {
+    if (hasPropertyStrict(groupUpdate, 'notificationTriggerPolicyOverride')) {
         if (groupUpdate.notificationTriggerPolicyOverride === undefined) {
             // Reset to undefined -> Default
             notificationTriggerPolicyOverride = DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE;
@@ -68,7 +68,7 @@ function getD2dGroupSyncUpdate(
 
     // Prepare notification sound policy override
     let notificationSoundPolicyOverride;
-    if (hasProperty(groupUpdate, 'notificationSoundPolicyOverride')) {
+    if (hasPropertyStrict(groupUpdate, 'notificationSoundPolicyOverride')) {
         if (groupUpdate.notificationSoundPolicyOverride === undefined) {
             // Reset to undefined -> Default
             notificationSoundPolicyOverride = DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE;

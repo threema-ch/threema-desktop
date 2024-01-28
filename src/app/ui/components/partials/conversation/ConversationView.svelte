@@ -64,6 +64,9 @@
   let viewModelController: Remote<ConversationViewModelBundle>['viewModelController'] | undefined =
     undefined;
 
+  // The message to bring into view initially.
+  let initiallyVisibleMessageId: MessageId | undefined = undefined;
+
   // Initialize an empty draft store, which will be replaced with the actual store as soon as the
   // receiver of the current conversation is known.
   let draftStore: ConversationDraftStore = conversationDrafts.getOrCreateStore(undefined);
@@ -162,11 +165,21 @@
       viewModelController = undefined;
       return;
     }
+
     // If the receiver is the same, it's not necessary to reload the `viewModelBundle`.
     if (
       receiver.type === $viewModelStore?.receiver.lookup.type &&
       receiver.uid === $viewModelStore.receiver.lookup.uid
     ) {
+      // Scroll to `initialMessage` if it has changed.
+      if (routeParams?.initialMessage !== undefined) {
+        await messageListComponent?.scrollToMessage(routeParams.initialMessage.messageId, {
+          behavior: 'smooth',
+          block: 'start',
+          highlightOnScrollEnd: true,
+        });
+      }
+
       return;
     }
 
@@ -192,6 +205,9 @@
         // Replace `viewModelBundle`.
         viewModelStore = viewModelBundle.viewModelStore;
         viewModelController = viewModelBundle.viewModelController;
+
+        // Set an `initiallyVisibleMessageId` if provided by the current route.
+        initiallyVisibleMessageId = routeParams?.initialMessage?.messageId;
 
         // Get initial data belonging to the new conversation from the current route.
         const draft = draftStore.get();
@@ -350,7 +366,10 @@
   }
 
   $: reactive(handleChangeRouterState, [$router]);
-  $: void reactive(handleChangeConversation, [routeParams?.receiverLookup]);
+  $: void reactive(handleChangeConversation, [
+    routeParams?.receiverLookup,
+    routeParams?.initialMessage,
+  ]);
 
   /**
    * Whether the current receiver is able to be contacted.
@@ -435,6 +454,7 @@
             conversation={{
               firstUnreadMessageId: $viewModelStore.firstUnreadMessageId,
               id: $viewModelStore.id,
+              initiallyVisibleMessageId,
               lastMessage: $viewModelStore.lastMessage,
               markAllMessagesAsRead: async () => {
                 await viewModelController

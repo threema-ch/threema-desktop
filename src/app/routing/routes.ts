@@ -47,6 +47,11 @@ const PARAM_RECEIVER_LOOKUP_SCHEMA = v.object({
             }),
         )
         .optional(),
+    initialMessage: v
+        .object({
+            messageId: v.number().map(ensureMessageId),
+        })
+        .optional(),
 });
 
 const PARAM_SETTINGS_SCHEMA = v.object({
@@ -483,5 +488,10 @@ export type ForwardedMessageLookup = Exclude<
 
 export type PreloadedFiles = Exclude<
     v.Infer<typeof PARAM_RECEIVER_LOOKUP_SCHEMA>['preloadedFiles'],
+    undefined
+>;
+
+export type InitialMessage = Exclude<
+    v.Infer<typeof PARAM_RECEIVER_LOOKUP_SCHEMA>['initialMessage'],
     undefined
 >;

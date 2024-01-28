@@ -16,7 +16,7 @@ import type {RawBlobKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {dateToUnixTimestampMs, intoUnsignedLong} from '~/common/utils/number';
-import {hasProperty} from '~/common/utils/object';
+import {hasPropertyStrict} from '~/common/utils/object';
 
 const DEFAULT_POLICY_OVERRIDE = {
     default: protobuf.UNIT_MESSAGE,
@@ -104,7 +104,7 @@ function getD2dContactSyncUpdateData(
 ): protobuf.d2d.ContactSync {
     // Prepare read receipt policy override
     let readReceiptPolicyOverride;
-    if (hasProperty(update, 'readReceiptPolicyOverride')) {
+    if (hasPropertyStrict(update, 'readReceiptPolicyOverride')) {
         if (update.readReceiptPolicyOverride === undefined) {
             // Reset to undefined -> Default
             readReceiptPolicyOverride = DEFAULT_READ_RECEIPT_POLICY_OVERRIDE;
@@ -121,7 +121,7 @@ function getD2dContactSyncUpdateData(
 
     // Prepare typing indicator policy override
     let typingIndicatorPolicyOverride;
-    if (hasProperty(update, 'typingIndicatorPolicyOverride')) {
+    if (hasPropertyStrict(update, 'typingIndicatorPolicyOverride')) {
         if (update.typingIndicatorPolicyOverride === undefined) {
             // Reset to undefined -> Default
             typingIndicatorPolicyOverride = DEFAULT_TYPING_INDICATOR_POLICY_OVERRIDE;
@@ -138,7 +138,7 @@ function getD2dContactSyncUpdateData(
 
     // Prepare notification trigger policy override
     let notificationTriggerPolicyOverride;
-    if (hasProperty(update, 'notificationTriggerPolicyOverride')) {
+    if (hasPropertyStrict(update, 'notificationTriggerPolicyOverride')) {
         if (update.notificationTriggerPolicyOverride === undefined) {
             // Reset to undefined -> Default
             notificationTriggerPolicyOverride = DEFAULT_NOTIFICATION_TRIGGER_POLICY_OVERRIDE;
@@ -168,7 +168,7 @@ function getD2dContactSyncUpdateData(
 
     // Prepare notification sound policy override
     let notificationSoundPolicyOverride;
-    if (hasProperty(update, 'notificationSoundPolicyOverride')) {
+    if (hasPropertyStrict(update, 'notificationSoundPolicyOverride')) {
         if (update.notificationSoundPolicyOverride === undefined) {
             // Reset to undefined -> Default
             notificationSoundPolicyOverride = DEFAULT_NOTIFICATION_SOUND_POLICY_OVERRIDE;
@@ -185,7 +185,7 @@ function getD2dContactSyncUpdateData(
 
     // Prepare nickname
     let nickname: string | undefined = undefined;
-    if (hasProperty(update, 'nickname')) {
+    if (hasPropertyStrict(update, 'nickname')) {
         if (update.nickname === undefined) {
             // To unset the nickname, an empty string must be sent
             nickname = '';

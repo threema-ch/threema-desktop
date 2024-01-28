@@ -1,4 +1,5 @@
 import type {AvatarProps} from '~/app/ui/components/atoms/avatar/props';
+import type {Constraints} from '~/app/ui/components/atoms/lazy-image/types';
 import type {ProseProps} from '~/app/ui/components/atoms/prose/props';
 import type {BubbleProps} from '~/app/ui/components/molecules/message/internal/bubble/props';
 import type {FileInfoProps} from '~/app/ui/components/molecules/message/internal/file-info/props';
@@ -15,6 +16,10 @@ import type {FileBytesAndMediaType} from '~/common/utils/file';
 export interface MessageProps {
     /** Alt text for media previews, if needed. */
     readonly alt: string;
+    /**
+     * Whether clicking on the message should be enabled. Defaults to `false`.
+     */
+    readonly clickable?: boolean;
     /** Optional text content or caption of the message. */
     readonly content?: ProseProps['content'];
     readonly direction: 'inbound' | 'outbound';
@@ -29,6 +34,11 @@ export interface MessageProps {
         readonly sizeInBytes: FileInfoProps['sizeInBytes'];
         /** Optional thumbnail of the file, if it is previewable. */
         readonly thumbnail?: {
+            /**
+             * Optional override of thumbnail size constraints. If not provided, sane defaults will
+             * be used.
+             */
+            readonly constraints?: Constraints;
             /**
              * Expected dimensions of the thumbnail image in its full size, used to render a
              * placeholder.
@@ -49,8 +59,8 @@ export interface MessageProps {
     readonly onError: (error: Error) => void;
     readonly options?: {
         readonly hideSender?: boolean;
-        readonly indicatorOptions?: IndicatorProps['options'];
         readonly hideVideoPlayButton?: boolean;
+        readonly indicatorOptions?: IndicatorProps['options'];
     };
     /** Data of the quoted message. */
     readonly quote?: DefaultQuoteProps | NotFoundQuoteProps;

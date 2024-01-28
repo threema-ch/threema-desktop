@@ -250,7 +250,12 @@
         ),
       };
     } else {
-      const sanitizedHtml = getTextContent(rawQuote.text?.raw, rawQuote.text?.mentions, $i18n.t);
+      const sanitizedHtml = getTextContent(
+        rawQuote.text?.raw,
+        rawQuote.text?.mentions,
+        $i18n.t,
+        250,
+      );
 
       quoteProps = {
         type: 'default',

@@ -10,6 +10,7 @@
 
   type $$Props = BubbleProps;
 
+  export let clickable: NonNullable<$$Props['clickable']> = false;
   export let direction: $$Props['direction'];
   export let highlighted: NonNullable<$$Props['highlighted']> = false;
   export let padding: NonNullable<$$Props['padding']> = 'normal';
@@ -36,15 +37,25 @@
   $: handleChangeHighlight(highlighted);
 </script>
 
-<div bind:this={element} class={`bubble ${direction} ${padding}`} class:highlighted>
+<button
+  bind:this={element}
+  class={`bubble ${direction} ${padding}`}
+  class:highlighted
+  disabled={!clickable}
+  on:click
+>
   <slot />
-</div>
+</button>
 
 <style lang="scss">
   @use 'component' as *;
 
   .bubble {
+    @extend %neutral-input;
+    position: relative;
     border-radius: rem(10px);
+    text-align: left;
+    overflow: hidden;
 
     &.inbound {
       background-color: var(--mc-message-background-color-incoming);
@@ -62,21 +73,37 @@
       padding: rem(2px);
     }
 
+    &::after {
+      content: '';
+      position: absolute;
+      pointer-events: none;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+    }
+
     &.highlighted {
       &::after {
-        content: '';
-        position: absolute;
-        pointer-events: none;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-
         animation-name: pulse-brightness;
         animation-duration: 0.5s;
         animation-timing-function: ease-in-out;
         animation-delay: 0s;
         animation-iteration-count: 2;
+      }
+    }
+
+    &:not(:disabled) {
+      &::after {
+        transition: backdrop-filter 0.15s;
+      }
+
+      &:hover {
+        cursor: pointer;
+
+        &::after {
+          backdrop-filter: var(--mc-message-highlight-backdrop-filter);
+        }
       }
     }
   }

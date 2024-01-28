@@ -30,7 +30,7 @@ import {assert, unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {idColorIndexToString} from '~/common/utils/id-color';
 import {AsyncLock} from '~/common/utils/lock';
-import {hasProperty} from '~/common/utils/object';
+import {hasPropertyStrict} from '~/common/utils/object';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 
 /**
@@ -77,13 +77,13 @@ function updateContactProfilePicture(
     const dbChange: DbUpdate<DbContact> = {
         uid: contactUid,
     };
-    if (hasProperty(change, 'profilePictureContactDefined')) {
+    if (hasPropertyStrict(change, 'profilePictureContactDefined')) {
         dbChange.profilePictureContactDefined = change.profilePictureContactDefined;
     }
-    if (hasProperty(change, 'profilePictureGatewayDefined')) {
+    if (hasPropertyStrict(change, 'profilePictureGatewayDefined')) {
         dbChange.profilePictureGatewayDefined = change.profilePictureGatewayDefined;
     }
-    if (hasProperty(change, 'profilePictureUserDefined')) {
+    if (hasPropertyStrict(change, 'profilePictureUserDefined')) {
         dbChange.profilePictureUserDefined = change.profilePictureUserDefined;
     }
     db.updateContact(dbChange);

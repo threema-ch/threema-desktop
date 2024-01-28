@@ -8,6 +8,7 @@
   type $$Props = TextProps;
 
   export let color: NonNullable<$$Props['color']> = 'inherit';
+  export let decoration: NonNullable<$$Props['decoration']> = 'inherit';
   export let family: NonNullable<$$Props['family']> = 'inherit';
   export let selectable: NonNullable<$$Props['selectable']> = false;
   export let size: NonNullable<$$Props['size']> = 'inherit';
@@ -15,7 +16,7 @@
   export let wrap: NonNullable<$$Props['wrap']> = true;
 </script>
 
-<span class={`text c-${color} f-${family} s-${size}`} class:selectable class:wrap>
+<span class={`text c-${color} d-${decoration} f-${family} s-${size}`} class:selectable class:wrap>
   {text}
 </span>
 
@@ -37,6 +38,14 @@
 
     &.c-mono-disabled {
       color: var(--t-text-e3-color);
+    }
+
+    &.d-strikethrough {
+      text-decoration: line-through;
+    }
+
+    &.d-underline {
+      text-decoration: underline;
     }
 
     // Font family variants

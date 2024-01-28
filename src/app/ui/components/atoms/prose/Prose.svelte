@@ -4,12 +4,36 @@
 -->
 <script lang="ts">
   import type {ProseProps} from '~/app/ui/components/atoms/prose/props';
+  import {truncate} from '~/common/utils/string';
 
   type $$Props = ProseProps;
 
   export let content: $$Props['content'];
+  export let options: NonNullable<$$Props['options']> = {};
   export let selectable: NonNullable<$$Props['selectable']> = false;
   export let wrap: NonNullable<$$Props['wrap']> = true;
+
+  function getTruncatedText(currentText: string): string {
+    if (options.truncate === undefined) {
+      return currentText;
+    }
+
+    if (options.truncate.type !== 'around') {
+      return truncate(currentText, options.truncate.max, options.truncate.type);
+    }
+
+    if (options.truncate.focuses !== undefined) {
+      return truncate(
+        currentText,
+        options.truncate.max,
+        options.truncate.type,
+        options.truncate.focuses,
+        'both',
+      );
+    }
+
+    return truncate(currentText, options.truncate.max, 'both');
+  }
 </script>
 
 <span class="prose" class:wrap class:selectable>
@@ -18,7 +42,8 @@
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html content.sanitizedHtml}
   {:else}
-    {content.text}
+    <!-- eslint-disable-next-line @typescript-eslint/no-unsafe-argument -->
+    {getTruncatedText(content.text)}
   {/if}
 </span>
 

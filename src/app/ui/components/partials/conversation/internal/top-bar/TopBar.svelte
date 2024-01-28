@@ -3,10 +3,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
-  import {
-    getReceiverCardBottomLeftItemOptions,
-    getReceiverCardTopLeftItemOptions,
-  } from '~/app/ui/components/partials/conversation/internal/top-bar/helpers';
+  import {getReceiverCardBottomLeftItemOptions} from '~/app/ui/components/partials/conversation/internal/top-bar/helpers';
   import type {TopBarProps} from '~/app/ui/components/partials/conversation/internal/top-bar/props';
   import type {ModalState} from '~/app/ui/components/partials/conversation/internal/top-bar/types';
   import ClearConversationModal from '~/app/ui/components/partials/modals/clear-conversation-modal/ClearConversationModal.svelte';
@@ -109,7 +106,12 @@
   <div class="center">
     <ReceiverCard
       content={{
-        topLeft: getReceiverCardTopLeftItemOptions(receiver),
+        topLeft: [
+          {
+            type: 'receiver-name',
+            receiver,
+          },
+        ],
         bottomLeft: getReceiverCardBottomLeftItemOptions(receiver),
       }}
       options={{

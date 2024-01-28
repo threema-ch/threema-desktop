@@ -24,6 +24,7 @@
   type $$Props = MessageProps;
 
   export let alt: $$Props['alt'];
+  export let clickable: NonNullable<$$Props['clickable']> = false;
   export let content: $$Props['content'] = undefined;
   export let direction: $$Props['direction'];
   export let file: $$Props['file'] = undefined;
@@ -80,11 +81,13 @@
 
 <Bubble
   {direction}
+  {clickable}
   {highlighted}
   padding={file?.thumbnail === undefined ? 'normal' : 'thin'}
+  on:click
   on:completehighlightanimation
 >
-  <div class="body">
+  <div class={`body ${direction}`} class:clickable>
     {#if options.hideSender !== false && sender !== undefined && direction !== 'outbound'}
       <span class="sender">
         <Sender name={sender.name} color={sender.color} />
@@ -183,7 +186,7 @@
           {#if file.thumbnail !== undefined}
             <LazyImage
               byteStore={file.thumbnail.blobStore}
-              constraints={{
+              constraints={file.thumbnail.constraints ?? {
                 min: {
                   // Dynamically increase the min width for longer text.
                   width: Math.min(125 + contentLength, 180),
@@ -199,6 +202,7 @@
               description={alt}
               dimensions={file.thumbnail.expectedDimensions}
               disabled={false}
+              responsive={true}
               on:click={handleClickThumbnail}
             />
           {/if}
@@ -265,37 +269,39 @@
       min-width: 100%;
     }
 
-    .quote {
-      position: relative;
-
-      &::before {
-        opacity: 0;
-        transition: opacity 0.1s ease-out;
-
-        content: '';
-        display: block;
-        position: absolute;
-        top: rem(-4px);
-        left: rem(-4px);
-        bottom: rem(-4px);
-        right: rem(-4px);
-        background-color: var(--mc-message-quote-background-color--hover);
-        border-radius: rem(10px);
-      }
-
-      &:hover {
-        cursor: pointer;
+    &:not(.clickable) {
+      .quote {
+        position: relative;
 
         &::before {
-          opacity: 1;
+          opacity: 0;
+          transition: opacity 0.1s ease-out;
+
+          content: '';
+          display: block;
+          position: absolute;
+          top: rem(-4px);
+          left: rem(-4px);
+          bottom: rem(-4px);
+          right: rem(-4px);
+          background-color: var(--mc-message-quote-background-color--hover);
+          border-radius: rem(10px);
+        }
+
+        &:hover {
+          cursor: pointer;
+
+          &::before {
+            opacity: 1;
+          }
         }
       }
-    }
 
-    .quote:first-child {
-      &::before {
-        left: rem(-6px);
-        right: rem(-6px);
+      .quote:first-child {
+        &::before {
+          left: rem(-6px);
+          right: rem(-6px);
+        }
       }
     }
 

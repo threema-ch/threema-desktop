@@ -95,13 +95,14 @@
 <button
   class={`image ${image.state}`}
   class:clickable={!disabled}
+  class:responsive
   style={`--c-t-image-aspect-ratio: ${preferredAspectRatio};
           --c-t-image-min-width: ${constraints.min.width}px;
           --c-t-image-min-height: ${constraints.min.height}px;
           --c-t-image-width: ${preferredDisplay.values.width}px;
           --c-t-image-height: ${preferredDisplay.values.height}px;
-          --c-t-image-max-width: ${responsive ? `100%` : `${constraints.max.width}px`};
-          --c-t-image-max-height: ${responsive ? `100%` : `${constraints.max.height}px`};`}
+          --c-t-image-max-width: ${constraints.max.width}px;
+          --c-t-image-max-height: ${constraints.max.height}px`}
   {disabled}
   on:click
 >
@@ -139,6 +140,9 @@
   .image {
     @extend %neutral-input;
     display: inline-flex;
+    margin: 0;
+    padding: 0;
+    width: auto;
 
     // Reset bottom gap.
     vertical-align: middle;
@@ -152,9 +156,12 @@
     &.loading :global(> :first-child),
     &.failed :global(> :first-child) {
       flex: 1;
+      vertical-align: middle;
 
-      width: min(var($-temp-vars, --c-t-image-width), var($-temp-vars, --c-t-image-max-width));
-      height: min(var($-temp-vars, --c-t-image-height), var($-temp-vars, --c-t-image-max-height));
+      aspect-ratio: var($-temp-vars, --c-t-image-aspect-ratio);
+
+      width: var($-temp-vars, --c-t-image-width);
+      height: auto;
       max-width: var($-temp-vars, --c-t-image-max-width);
       max-height: var($-temp-vars, --c-t-image-max-height);
 
@@ -175,6 +182,16 @@
       align-items: center;
       justify-content: center;
       font-size: rem(24px);
+    }
+
+    &.responsive {
+      img,
+      .placeholder,
+      &.loading :global(> :first-child),
+      &.failed :global(> :first-child) {
+        max-width: min(var($-temp-vars, --c-t-image-max-width), 100%);
+        max-height: min(var($-temp-vars, --c-t-image-max-height), 100%);
+      }
     }
   }
 </style>

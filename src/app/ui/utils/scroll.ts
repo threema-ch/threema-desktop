@@ -80,7 +80,13 @@ async function scrollIntoViewAsync({
         }
         container.addEventListener('scrollend', handleScrollEnd);
 
-        element.scrollIntoView(options);
+        // `scrollIntoView` currently has various issues in chromium, which seems to improve when
+        // first waiting for the next tick before scrolling.
+        //
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=1121151
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=1043933
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=833617
+        window.requestAnimationFrame(() => element.scrollIntoView(options));
 
         timeoutId = setTimeout(() => {
             container.removeEventListener('scrollend', handleScrollEnd);

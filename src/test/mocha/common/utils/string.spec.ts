@@ -44,15 +44,15 @@ export function run(): void {
 
         describe('truncate', function () {
             it('does not truncate strings shorter than or equal to the specified length', function () {
-                expect(truncate('hi🤷‍♀️', 4)).to.equal('hi🤷‍♀️');
-                expect(truncate('hi🤷‍♀️', 3)).to.equal('hi🤷‍♀️');
+                expect(truncate('hi🤷‍♀️', 4, 'end')).to.equal('hi🤷‍♀️');
+                expect(truncate('hi🤷‍♀️', 3, 'end')).to.equal('hi🤷‍♀️');
             });
 
             it('truncates correctly at grapheme cluster boundaries, not bytes', function () {
-                expect(truncate('hi 🤷‍♀️ there', 6)).to.equal('hi 🤷‍♀️ …');
-                expect(truncate('hi 🤷‍♀️ there', 5)).to.equal('hi 🤷‍♀️…');
-                expect(truncate('hi 🤷‍♀️ there', 4)).to.equal('hi …');
-                expect(truncate('hi 🤷‍♀️ there', 3)).to.equal('hi…');
+                expect(truncate('hi 🤷‍♀️ there', 6, 'end')).to.equal('hi 🤷‍♀️ …');
+                expect(truncate('hi 🤷‍♀️ there', 5, 'end')).to.equal('hi 🤷‍♀️…');
+                expect(truncate('hi 🤷‍♀️ there', 4, 'end')).to.equal('hi …');
+                expect(truncate('hi 🤷‍♀️ there', 3, 'end')).to.equal('hi…');
             });
         });
 

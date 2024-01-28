@@ -3,7 +3,7 @@
   Renders a conversation as a chat view.
 -->
 <script lang="ts">
-  import {createEventDispatcher, tick} from 'svelte';
+  import {createEventDispatcher} from 'svelte';
 
   import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
@@ -51,7 +51,7 @@
   let viewport = new Viewport(
     log,
     conversation.setCurrentViewportMessages,
-    conversation.firstUnreadMessageId,
+    conversation.initiallyVisibleMessageId ?? conversation.firstUnreadMessageId,
   );
 
   /**
@@ -66,13 +66,14 @@
   let modalState: ModalState = {type: 'none'};
 
   // Message that the chat view should be anchored to when it's (re-)initialized.
-  let anchoredMessageId: MessageId | undefined = conversation.firstUnreadMessageId;
-
-  // `MessageId` of the quote that was last clicked.
-  let lastClickedQuoteId: MessageId | undefined = undefined;
+  let anchoredMessageId: MessageId | undefined =
+    conversation.initiallyVisibleMessageId ?? conversation.firstUnreadMessageId;
 
   // `MessageId` of the message that should be highlighted with an animation as soon as it becomes
-  // visible.
+  // visible (i.e., as soon as it was anchored).
+  let messageToHighlightMessageId: MessageId | undefined;
+
+  // `MessageId` of the message that should be highlighted.
   let highlightedMessageId: MessageId | undefined = undefined;
 
   let isScrollToBottomButtonVisible = false;
@@ -112,10 +113,17 @@
    */
   export async function scrollToMessage(
     id: MessagePropsFromBackend['id'],
-    options?: ScrollIntoViewOptions,
+    options?: ScrollIntoViewOptions & {
+      /** Whether to play an animation after scrolling to highlight the target element. */
+      readonly highlightOnScrollEnd?: boolean;
+    },
   ): Promise<void> {
     if (lazyListComponent === null) {
       return;
+    }
+
+    if (options?.highlightOnScrollEnd === true) {
+      messageToHighlightMessageId = id;
     }
 
     // If the message is already loaded, scroll to it directly.
@@ -124,9 +132,9 @@
       return;
     }
 
-    // If the message is not yet loaded, reinitialize the message list with the respective message
-    // `id` as the initially visible message.
-    await reinitialize(id);
+    // Else (i.e., if the message is not yet loaded), reinitialize the message list with the
+    // respective message `id` as the initially visible message.
+    reinitialize(id);
   }
 
   /**
@@ -219,17 +227,16 @@
         return;
 
       default:
-        lastClickedQuoteId = message.quote.id;
-
         void scrollToMessage(message.quote.id, {
           behavior: 'smooth',
           block: 'start',
+          highlightOnScrollEnd: true,
         });
     }
   }
 
   function handleCompleteHighlightAnimation(): void {
-    lastClickedQuoteId = undefined;
+    messageToHighlightMessageId = undefined;
     highlightedMessageId = undefined;
   }
 
@@ -241,7 +248,7 @@
   }
 
   function handleChangeConversation(): void {
-    void reinitialize(conversation.firstUnreadMessageId);
+    reinitialize(conversation.initiallyVisibleMessageId ?? conversation.firstUnreadMessageId);
     refreshUnreadState();
     markConversationAsRead();
   }
@@ -252,7 +259,12 @@
     }
   }
 
-  function handleChangeLastMessage(): void {
+  /**
+   * Should run when the conversation or the last message changes (or both). Note: As
+   * `currentLastMessage` always changes as well if the conversation changes (because each
+   * conversation has a different last message), this can't be separated.
+   */
+  function handleChangeConversationOrLastMessage(): void {
     if (currentLastMessage === undefined) {
       return;
     }
@@ -284,8 +296,9 @@
       refreshUnreadState();
     }
 
-    // If the added message is outbound, bring it into view.
-    if (isOutbound) {
+    // If the added message is outbound, bring it into view. However, if another message was already
+    // explicitly marked to be anchored, don't override it.
+    if (isOutbound && anchoredMessageId === undefined) {
       anchoredMessageId = currentLastMessage.id;
     }
   }
@@ -299,8 +312,16 @@
   ): void {
     const messageId: MessageId = event.detail.id;
 
-    if (messageId === lastClickedQuoteId) {
-      highlightedMessageId = messageId;
+    // If the `messageId` that was just anchored was marked for highlighting after animation, mark
+    // it as highlighted.
+    if (messageId === messageToHighlightMessageId) {
+      highlightedMessageId = messageToHighlightMessageId;
+    }
+
+    // If the `messageId` that was just anchored was the `initiallyVisibleMessageId`, mark it as
+    // highlighted.
+    if (messageId === conversation.initiallyVisibleMessageId) {
+      highlightedMessageId = conversation.initiallyVisibleMessageId;
     }
 
     // Reset `anchoredMessageId` so that the same message can be repeatedly anchored.
@@ -330,11 +351,10 @@
   /**
    * Trigger a full refresh of the message list.
    */
-  async function reinitialize(initiallyVisibleMessageId?: MessageId): Promise<void> {
+  function reinitialize(initiallyVisibleMessageId?: MessageId): void {
     if (initiallyVisibleMessageId !== undefined) {
       anchoredMessageId = initiallyVisibleMessageId;
     }
-    await tick();
 
     // Reinitializing `viewport` will result in the backend sending a new list of messages.
     viewport = new Viewport(
@@ -364,7 +384,7 @@
 
   $: reactive(handleChangeConversation, [currentConversationId]);
   $: reactive(handleChangeApplicationFocus, [$appVisibility]);
-  $: reactive(handleChangeLastMessage, [currentLastMessage]);
+  $: reactive(handleChangeConversationOrLastMessage, [currentConversationId, currentLastMessage]);
 </script>
 
 <div bind:this={element} class="chat">

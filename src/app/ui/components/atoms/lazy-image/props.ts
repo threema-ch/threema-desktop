@@ -29,8 +29,8 @@ export interface LazyImageProps {
      */
     readonly disabled?: boolean;
     /**
-     * Whether the image should be responsive, i.e. its `max-width` and `max-height` should be set
-     * to `100%`. Defaults to `false`.
+     * Whether the image should be responsive, i.e. it should not exceed 100% of the parent's width
+     * or height. Defaults to `false`.
      */
     readonly responsive?: boolean;
 }

@@ -63,7 +63,7 @@
   $: updateProfilePictureStore(receiver.lookup);
 </script>
 
-<button class="receiver-card" disabled={!isClickable} on:click>
+<button class={`container ${size}`} disabled={!isClickable} on:click>
   <span class="avatar">
     <Avatar
       byteStore={profilePictureStore}
@@ -112,7 +112,7 @@
     {#if topLeft.length > 0 || topRight.length > 0}
       <div class="top">
         {#if topLeft.length > 0}
-          <div class={`left items ${size}`}>
+          <div class={`left items`}>
             {#each topLeft as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -120,7 +120,7 @@
         {/if}
 
         {#if topRight.length > 0}
-          <div class={`right items ${size}`}>
+          <div class={`right items`}>
             {#each topRight as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -132,7 +132,7 @@
     {#if bottomLeft.length > 0 || bottomRight.length > 0}
       <div class="bottom">
         {#if bottomLeft.length > 0}
-          <div class={`left items ${size}`}>
+          <div class={`left items`}>
             {#each bottomLeft as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -140,7 +140,7 @@
         {/if}
 
         {#if bottomRight.length > 0}
-          <div class={`right items ${size}`}>
+          <div class={`right items`}>
             {#each bottomRight as itemOptions}
               <ContentItem options={itemOptions} />
             {/each}
@@ -154,7 +154,7 @@
 <style lang="scss">
   @use 'component' as *;
 
-  .receiver-card {
+  .container {
     @extend %neutral-input;
 
     display: flex;
@@ -185,18 +185,25 @@
     }
 
     .content {
-      display: inline-flex;
+      flex: 1 1 auto;
+      display: flex;
       flex-direction: column;
-      align-items: start;
+      align-items: stretch;
       justify-content: center;
-      flex: 1 1 0;
       min-width: 0;
-      gap: rem(2px);
+      max-width: 100%;
+      gap: rem(4px);
 
       @include def-var(--c-verification-dots-size, rem(6px));
 
-      .items {
-        min-width: 0;
+      .top,
+      .bottom {
+        gap: rem(8px);
+
+        .items {
+          min-width: 0;
+          gap: rem(4px);
+        }
       }
 
       .top {
@@ -207,24 +214,20 @@
         max-width: 100%;
 
         .left {
+          flex: 1 1 auto;
+
           display: flex;
           align-items: center;
           justify-content: left;
+          min-width: 0;
+          max-width: 100%;
 
           color: var(--t-text-e1-color);
-
-          &.md {
-            font-size: rem(14px);
-            line-height: rem(14px);
-          }
-
-          &.sm {
-            font-size: rem(16px);
-            line-height: rem(16px);
-          }
         }
 
         .right {
+          flex: 1 0 auto;
+
           display: flex;
           align-items: center;
           justify-content: right;
@@ -248,16 +251,49 @@
         line-height: rem(14px);
 
         .left {
+          flex: 1 1 auto;
+
           display: flex;
           align-items: center;
           justify-content: left;
+          min-width: 0;
+          max-width: 100%;
         }
 
         .right {
+          flex: 1 0 auto;
+
           display: flex;
           align-items: center;
           justify-content: right;
           justify-self: end;
+
+          font-size: rem(12px);
+          line-height: rem(12px);
+        }
+      }
+    }
+
+    &.md {
+      .content {
+        gap: rem(2px);
+
+        .top {
+          .left {
+            font-size: rem(14px);
+            line-height: rem(20px);
+          }
+        }
+      }
+    }
+
+    &.sm {
+      .content {
+        .top {
+          .left {
+            font-size: rem(16px);
+            line-height: rem(16px);
+          }
         }
       }
     }

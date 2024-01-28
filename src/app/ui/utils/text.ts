@@ -2,9 +2,10 @@ import {markify, TokenType} from '@threema/threema-markup';
 import autolinker from 'autolinker';
 
 import type {I18nType} from '~/app/ui/i18n-types';
-import type {WeakOpaque} from '~/common/types';
+import type {u53, WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {escapeRegExp} from '~/common/utils/regex';
+import {truncate} from '~/common/utils/string';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 
 export type SanitizedHtml = WeakOpaque<string, {readonly SanitizedHtml: unique symbol}>;
@@ -20,6 +21,11 @@ export interface SanitizeAndParseTextToHtmlOptions {
     readonly shouldParseMarkup?: boolean;
     /** If links should be detected and replaced. */
     readonly shouldParseLinks?: boolean;
+    /**
+     * Truncates the text to the desired length, if given. Note: If `highlights` are given, the
+     * truncation will adjust to try to keep them visible.
+     */
+    readonly truncate?: u53;
 }
 
 /**
@@ -42,6 +48,7 @@ export function sanitizeAndParseTextToHtml(
         shouldLinkMentions = true,
         shouldParseMarkup = false,
         shouldParseLinks = false,
+        truncate: truncateMax,
     }: SanitizeAndParseTextToHtmlOptions,
 ): SanitizedHtml {
     if (text === undefined || text === '') {
@@ -49,6 +56,20 @@ export function sanitizeAndParseTextToHtml(
     }
 
     let sanitizedText = escapeHtmlUnsafeChars(text);
+
+    if (truncateMax !== undefined) {
+        if (highlights !== undefined) {
+            sanitizedText = truncate(
+                sanitizedText,
+                truncateMax,
+                'around',
+                highlights instanceof Array ? highlights : [highlights],
+                'end',
+            ) as SanitizedHtml;
+        } else {
+            sanitizedText = truncate(sanitizedText, truncateMax, 'end') as SanitizedHtml;
+        }
+    }
 
     if (shouldParseMarkup) {
         sanitizedText = parseMarkup(sanitizedText);

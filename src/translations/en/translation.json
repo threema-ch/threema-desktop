@@ -373,6 +373,16 @@
     "success--copy-message-link": "Link copied to clipboard",
     "success--copy-message-selection": "Selected text copied to clipboard"
   },
+  "search": {
+    "action--search-more": "Find more",
+    "label--no-results-conversations": "No conversations found for term \"{term}\".",
+    "label--no-results-messages": "No messages found for term \"{term}\".",
+    "label--no-results-receivers": "No contacts or groups found for term \"{term}\".",
+    "label--search-input-placeholder": "Search...",
+    "label--title-conversations": "Chats",
+    "label--title-messages": "Messages",
+    "label--title-receivers": "Contacts & Groups"
+  },
   "settings": {
     "action--control-message-default-send": "Default (Send)",
     "action--control-message-do-not-send": "Don’t Send",

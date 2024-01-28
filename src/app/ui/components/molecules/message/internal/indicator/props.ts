@@ -29,7 +29,7 @@ interface Reaction {
     readonly name: string;
 }
 
-interface Status {
+export interface Status {
     readonly created: Milestone;
     readonly received?: Milestone;
     readonly sent?: Milestone;

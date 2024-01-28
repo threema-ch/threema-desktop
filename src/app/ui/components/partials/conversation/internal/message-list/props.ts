@@ -20,6 +20,11 @@ export interface MessageListProps {
          */
         readonly firstUnreadMessageId: MessageId | undefined;
         readonly id: DbConversationUid;
+        /**
+         * The `MessageId` to bring into view when initially loading the conversation. Note: If not
+         * defined, the `firstUnreadMessageId` will be used instead, or the `lastMessage`.
+         */
+        readonly initiallyVisibleMessageId?: MessageId;
         readonly lastMessage:
             | {
                   readonly id: MessageProps['id'];

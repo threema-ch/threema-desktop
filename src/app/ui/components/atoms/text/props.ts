@@ -4,6 +4,8 @@
 export interface TextProps {
     /** Color variant to use. Defaults to `"inherit"`. */
     readonly color?: 'mono-high' | 'mono-low' | 'mono-disabled' | 'inherit';
+    /** Optional text decorations. Defaults to `"inherit"`. */
+    readonly decoration?: 'strikethrough' | 'underline' | 'inherit';
     /** Font family variant to use. Defaults to `"inherit"`. */
     readonly family?: 'primary' | 'secondary' | 'inherit';
     /** Whether text is selectable. Defaults to `false`. */

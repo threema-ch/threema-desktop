@@ -61,8 +61,10 @@
 
       // General message container
       message-hover-background-color: rgba(#000000, 12%),
-      message-background-color-incoming: rgba(theme.$light-background, 0.12),
-      message-background-color-outgoing: rgba(theme.$light-background, 0.06),
+      message-background-color-incoming: mix(theme.$light-background, theme.$dark-background, 12%),
+      message-background-color-incoming-nav: mix(theme.$light-background, theme.$dark-background, 12%),
+      message-background-color-outgoing: mix(theme.$light-background, theme.$dark-background, 6%),
+      message-background-color-outgoing-nav: mix(theme.$light-background, theme.$dark-background, 6%),
       message-highlight-backdrop-filter: brightness(150%),
       message-badge-color: rgba(#ffffff, 88%),
       message-badge-background-color: rgba(#000000, 72%),

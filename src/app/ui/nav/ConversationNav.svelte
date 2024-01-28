@@ -5,6 +5,7 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import MainNavBar from '~/app/ui/components/partials/main-nav-bar/MainNavBar.svelte';
+  import SearchResultList from '~/app/ui/components/partials/search-result-list/SearchResultList.svelte';
   import SearchInput from '~/app/ui/generic/search/SearchInput.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {conversationPreviewListFilter} from '~/app/ui/nav/conversation';
@@ -106,11 +107,17 @@
         on:reset={scrollToActiveConversation}
       />
     </div>
-    <div class="conversation-preview-list">
-      {#await viewModel.conversationPreviews(translationsForBackend) then conversationPreviews}
-        <ConversationNavList bind:this={conversationList} {conversationPreviews} {services} />
-      {/await}
+    <div class="results">
+      <SearchResultList searchTerm={$conversationPreviewListFilter} {services} />
     </div>
+
+    {#await viewModel.conversationPreviews(translationsForBackend) then conversationPreviews}
+      {#if $conversationPreviewListFilter === ''}
+        <div class="conversation-preview-list">
+          <ConversationNavList bind:this={conversationList} {conversationPreviews} {services} />
+        </div>
+      {/if}
+    {/await}
   </div>
 </template>
 
@@ -123,9 +130,9 @@
     padding: rem(12px) 0 0;
     background-color: var(--t-nav-background-color);
     grid-template:
-      'bar                      ' rem(40px)
-      'search                   ' rem(44px)
-      'conversation-preview-list' minmax(0, 1fr)
+      'bar    ' rem(40px)
+      'search ' min-content
+      'content' minmax(0, 1fr)
       / 100%;
     gap: rem(8px);
 
@@ -139,7 +146,18 @@
       display: grid;
     }
 
+    .results {
+      grid-area: content;
+
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: start;
+    }
+
     .conversation-preview-list {
+      grid-area: content;
+
       display: grid;
     }
   }

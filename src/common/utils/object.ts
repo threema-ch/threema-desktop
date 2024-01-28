@@ -6,12 +6,22 @@ import type {u53} from '~/common/types';
 export type UnknownRecord = Record<PropertyKey, unknown>;
 
 /**
+ * Typed variant of {@link Object.hasOwn}.
+ */
+export function hasProperty<TKey extends PropertyKey>(
+    record: Readonly<UnknownRecord>,
+    key: TKey,
+): record is Readonly<UnknownRecord> & {[key in TKey]: unknown} {
+    return Object.hasOwn(record, key);
+}
+
+/**
  * Check whether an object has a specific property.
  *
  * Note: The functionality of this function is equivalent to {@link Object.hasOwn} with the
  *       difference that the `key` parameter needs to exist in the provided object.
  */
-export function hasProperty<
+export function hasPropertyStrict<
     TObject extends Record<string | u53 | symbol, unknown>,
     TKey extends keyof TObject,
 >(object: TObject, key: TKey): boolean {

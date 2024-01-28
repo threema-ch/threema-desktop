@@ -1,6 +1,7 @@
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
 import type {I18nType} from '~/app/ui/i18n-types';
 import {type SanitizedHtml, sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
+import type {u53} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {AnyMention} from '~/common/viewmodel/utils/mentions';
 
@@ -11,6 +12,7 @@ export function getTextContent(
     raw: string | undefined,
     mentions: AnyMention | AnyMention[] | undefined,
     t: I18nType['t'],
+    truncate?: u53,
 ): SanitizedHtml | undefined {
     const html = sanitizeAndParseTextToHtml(raw, t, {
         highlights: [],
@@ -18,6 +20,7 @@ export function getTextContent(
         shouldLinkMentions: true,
         shouldParseLinks: true,
         shouldParseMarkup: true,
+        truncate,
     });
 
     return html === '' ? undefined : html;
