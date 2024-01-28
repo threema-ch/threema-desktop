@@ -2,6 +2,7 @@ import type {CharmsProps} from '~/app/ui/components/partials/receiver-card/inter
 import type {IndicatorProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/indicator/props';
 import type {TagsProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/tags/props';
 import type {TimestampProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/timestamp/props';
+import type {SanitizedHtml} from '~/app/ui/utils/text';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -23,6 +24,10 @@ export interface CharmsContentItemOptions extends CharmsProps {
 export interface ReceiverNameContentItemOptions {
     readonly type: 'receiver-name';
     readonly receiver: AnyReceiverData;
+    /**
+     * Substrings to highlight.
+     */
+    readonly highlights?: string | string[];
 }
 
 export interface StatusContentItemOptions extends IndicatorProps {
@@ -35,7 +40,13 @@ export interface TagsContentItemProps extends TagsProps {
 
 export interface TextContentItemOptions {
     readonly type: 'text';
-    readonly text: string;
+    readonly text:
+        | {
+              readonly raw: string;
+          }
+        | {
+              readonly html: SanitizedHtml;
+          };
     readonly decoration?: 'strikethrough' | 'semi-transparent';
 }
 

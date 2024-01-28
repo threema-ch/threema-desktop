@@ -29,6 +29,7 @@
   {:else if options.type === 'receiver-name'}
     {@const textContentItemOptions = getTextContentItemOptionsFromReceiverNameContentItemOptions(
       options.receiver,
+      options.highlights,
     )}
 
     <span
@@ -90,5 +91,18 @@
     max-width: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
+
+    .nowrap {
+      overflow-wrap: normal;
+      white-space: nowrap;
+    }
+
+    .semitransparent {
+      color: var(--t-text-e2-color);
+    }
+
+    .strikethrough {
+      text-decoration: line-through;
+    }
   }
 </style>

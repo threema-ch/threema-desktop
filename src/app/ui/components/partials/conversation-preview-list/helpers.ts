@@ -2,6 +2,7 @@ import type {Status} from '~/app/ui/components/molecules/message/internal/indica
 import type {ConversationPreviewListItemProps} from '~/app/ui/components/partials/conversation-preview-list/props';
 import type {AnyContentItemOptions} from '~/app/ui/components/partials/receiver-card/internal/content-item/types';
 import type {I18nType} from '~/app/ui/i18n-types';
+import {type SanitizedHtml, sanitizeAndParseTextToHtml} from '~/app/ui/utils/text';
 import {unreachable} from '~/common/utils/assert';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
@@ -10,6 +11,7 @@ export function getReceiverCardBottomLeftItemOptions(
     isArchived: boolean,
     lastMessage: ConversationPreviewListItemProps['lastMessage'],
     receiver: AnyReceiverData,
+    highlights?: string | string[],
 ): AnyContentItemOptions[] | undefined {
     const lastMessageItem =
         lastMessage === undefined
@@ -17,7 +19,9 @@ export function getReceiverCardBottomLeftItemOptions(
             : [
                   {
                       type: 'text',
-                      text: getLastMessagePreviewText(i18n, receiver, lastMessage),
+                      text: {
+                          html: getLastMessagePreviewText(i18n, receiver, lastMessage, highlights),
+                      },
                   } as const,
               ];
 
@@ -78,26 +82,46 @@ function getLastMessagePreviewText(
         NonNullable<ConversationPreviewListItemProps['lastMessage']>,
         'file' | 'sender' | 'text'
     >,
-): string {
-    let text: string | undefined = undefined;
+    highlights?: string | string[],
+): SanitizedHtml {
+    let text: SanitizedHtml | undefined = undefined;
     if (lastMessage.text !== undefined) {
-        text = lastMessage.text.raw;
+        text = sanitizeAndParseTextToHtml(lastMessage.text.raw, i18n.t, {
+            highlights,
+            mentions: undefined,
+            shouldLinkMentions: false,
+            shouldParseLinks: false,
+            shouldParseMarkup: true,
+            truncate: 60,
+        });
     } else if (lastMessage.file !== undefined) {
         switch (lastMessage.file.type) {
             case 'audio':
-                text = i18n.t('messaging.label--default-audio-message-preview', 'Voice Message');
+                text = i18n.t(
+                    'messaging.label--default-audio-message-preview',
+                    'Voice Message',
+                ) as SanitizedHtml;
                 break;
 
             case 'file':
-                text = i18n.t('messaging.label--default-file-message-preview', 'File');
+                text = i18n.t(
+                    'messaging.label--default-file-message-preview',
+                    'File',
+                ) as SanitizedHtml;
                 break;
 
             case 'image':
-                text = i18n.t('messaging.label--default-image-message-preview', 'Image');
+                text = i18n.t(
+                    'messaging.label--default-image-message-preview',
+                    'Image',
+                ) as SanitizedHtml;
                 break;
 
             case 'video':
-                text = i18n.t('messaging.label--default-video-message-preview', 'Video');
+                text = i18n.t(
+                    'messaging.label--default-video-message-preview',
+                    'Video',
+                ) as SanitizedHtml;
                 break;
 
             default:
@@ -110,10 +134,10 @@ function getLastMessagePreviewText(
             case 'self':
                 return i18n.t('messaging.label--default-sender-self', 'Me: {text}', {
                     text,
-                });
+                }) as SanitizedHtml;
 
             case 'contact':
-                return `${lastMessage.sender.name}: ${text}`;
+                return `${lastMessage.sender.name}: ${text}` as SanitizedHtml;
 
             case undefined:
                 break;
@@ -123,7 +147,7 @@ function getLastMessagePreviewText(
         }
     }
 
-    return text ?? '';
+    return text ?? ('' as SanitizedHtml);
 }
 
 /**

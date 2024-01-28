@@ -97,7 +97,7 @@ export function sanitizeAndParseTextToHtml(
  * @param text string | undefined
  * @returns escaped string
  */
-function escapeHtmlUnsafeChars(text: string | undefined): SanitizedHtml {
+export function escapeHtmlUnsafeChars(text: string | undefined): SanitizedHtml {
     if (text === undefined || text === '') {
         return '' as SanitizedHtml;
     }

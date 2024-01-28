@@ -18,6 +18,7 @@
 
   type $$Props = ReceiverPreviewListProps;
 
+  export let highlights: $$Props['highlights'] = undefined;
   export let items: $$Props['items'] = [];
   export let services: $$Props['services'];
 
@@ -76,6 +77,7 @@
               {
                 type: 'receiver-name',
                 receiver: item.receiver,
+                highlights,
               },
             ],
             topRight: getReceiverCardTopRightItemOptions(receiver, $i18n),
@@ -85,7 +87,9 @@
                 ? [
                     {
                       type: 'text',
-                      text: receiver.identity,
+                      text: {
+                        raw: receiver.identity,
+                      },
                     },
                   ]
                 : undefined,

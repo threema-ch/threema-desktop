@@ -2,33 +2,27 @@ import type {
     ReceiverNameContentItemOptions,
     TextContentItemOptions,
 } from '~/app/ui/components/partials/receiver-card/internal/content-item/types';
+import {escapeHtmlUnsafeChars, parseHighlights} from '~/app/ui/utils/text';
 import {unreachable} from '~/common/utils/assert';
 
 export function getTextContentItemOptionsFromReceiverNameContentItemOptions(
     receiver: ReceiverNameContentItemOptions['receiver'],
+    highlights?: string | string[],
 ): TextContentItemOptions {
+    let decoration: TextContentItemOptions['decoration'];
     switch (receiver.type) {
         case 'contact': {
-            let decoration: TextContentItemOptions['decoration'];
             if (receiver.isDisabled) {
                 decoration = 'strikethrough';
             } else if (receiver.isInactive) {
                 decoration = 'semi-transparent';
             }
-
-            return {
-                type: 'text',
-                text: receiver.name,
-                decoration,
-            };
+            break;
         }
 
         case 'group':
-            return {
-                type: 'text',
-                text: receiver.name,
-                decoration: receiver.isDisabled ? 'strikethrough' : undefined,
-            };
+            decoration = receiver.isDisabled ? 'strikethrough' : undefined;
+            break;
 
         // TODO(DESK-236): Implement distribution lists.
         case 'distribution-list':
@@ -37,4 +31,13 @@ export function getTextContentItemOptionsFromReceiverNameContentItemOptions(
         default:
             return unreachable(receiver);
     }
+
+    return {
+        type: 'text',
+        text:
+            highlights === undefined
+                ? {raw: receiver.name}
+                : {html: parseHighlights(escapeHtmlUnsafeChars(receiver.name), highlights)},
+        decoration,
+    };
 }

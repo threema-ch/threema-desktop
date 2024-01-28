@@ -157,7 +157,11 @@
         {$i18n.t('search.label--title-conversations', 'Chats')}
       </p>
 
-      <ConversationPreviewList {...$conversationPreviewListProps} {services} />
+      <ConversationPreviewList
+        {...$conversationPreviewListProps}
+        highlights={searchParams.term}
+        {services}
+      />
 
       {#if $conversationPreviewListProps.items.length >= (searchParams.limits.conversations ?? DEFAULT_SEARCH_PARAMS.limits.conversations)}
         <button class="expand" on:click={handleClickSearchMoreConversationsButton}>
@@ -180,6 +184,7 @@
       <div class="list">
         <MessagePreviewList
           {...$messagePreviewListProps}
+          highlights={searchParams.term}
           {services}
           user={$profileViewModelStore === undefined
             ? undefined
@@ -209,7 +214,11 @@
         {$i18n.t('search.label--title-receivers', 'Contacts & Groups')}
       </p>
 
-      <ReceiverPreviewList {...$receiverPreviewListProps} {services} />
+      <ReceiverPreviewList
+        {...$receiverPreviewListProps}
+        highlights={searchParams.term}
+        {services}
+      />
 
       {#if $receiverPreviewListProps.items.length >= (searchParams.limits.receivers ?? DEFAULT_SEARCH_PARAMS.limits.receivers)}
         <button class="expand" on:click={handleClickSearchMoreReceiversButton}>

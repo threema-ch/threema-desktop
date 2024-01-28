@@ -8,7 +8,7 @@ import type {AnyMention} from '~/common/viewmodel/utils/mentions';
  */
 export function getTextContent(
     raw: string | undefined,
-    highlights: string[] | undefined,
+    highlights: string | string[] | undefined,
     mentions: AnyMention | AnyMention[] | undefined,
     t: I18nType['t'],
     truncate?: u53,

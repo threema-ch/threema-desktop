@@ -20,12 +20,14 @@ export function getReceiverCardTopRightItemOptions(
             return [
                 {
                     type: 'text',
-                    text: i18n.t(
-                        'contacts.label--group-members-count-short',
-                        '{n, plural, =1 {1 Member} other {# Members}}',
-                        // Add `1` to include the creator.
-                        {n: String(receiver.members.length + 1)},
-                    ),
+                    text: {
+                        raw: i18n.t(
+                            'contacts.label--group-members-count-short',
+                            '{n, plural, =1 {1 Member} other {# Members}}',
+                            // Add `1` to include the creator.
+                            {n: String(receiver.members.length + 1)},
+                        ),
+                    },
                 },
             ];
 
@@ -64,7 +66,9 @@ export function getReceiverCardBottomLeftItemOptions(
                     : [
                           {
                               type: 'text',
-                              text: nickname,
+                              text: {
+                                  raw: nickname,
+                              },
                           } as const,
                       ]),
             ];
@@ -81,7 +85,9 @@ export function getReceiverCardBottomLeftItemOptions(
                 : [
                       {
                           type: 'text',
-                          text: memberNames,
+                          text: {
+                              raw: memberNames,
+                          },
                       },
                   ];
         }

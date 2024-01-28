@@ -11,6 +11,10 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  * Props accepted by the `MessagePreviewList` component.
  */
 export interface MessagePreviewListProps {
+    /**
+     * Optional substring(s) to highlight in message preview text.
+     */
+    readonly highlights?: string | string[];
     readonly items: MessagePreviewListItemProps[];
     readonly services: Pick<AppServices, 'blobCache' | 'profilePicture' | 'router' | 'settings'>;
     readonly user?: {

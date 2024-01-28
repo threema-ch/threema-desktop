@@ -8,6 +8,10 @@ import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
  * Props accepted by the `ConversationPreviewList` component.
  */
 export interface ConversationPreviewListProps {
+    /**
+     * Optional substring(s) to highlight in conversation preview text fields.
+     */
+    readonly highlights?: string | string[];
     readonly items: ConversationPreviewListItemProps[];
     readonly services: AppServices;
 }

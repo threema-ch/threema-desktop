@@ -28,6 +28,7 @@
 
   type $$Props = MessagePreviewListProps;
 
+  export let highlights: $$Props['highlights'] = undefined;
   export let items: $$Props['items'] = [];
   export let services: $$Props['services'];
   export let user: $$Props['user'] = undefined;
@@ -63,7 +64,7 @@
         {#each item.messages as message (message.id)}
           {@const htmlContent = getTextContent(
             message.text?.raw,
-            undefined,
+            highlights,
             message.text?.mentions,
             $i18n.t,
             200,

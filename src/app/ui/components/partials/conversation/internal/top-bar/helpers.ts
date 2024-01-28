@@ -25,7 +25,7 @@ export function getReceiverCardBottomLeftItemOptions(
                 : [
                       {
                           type: 'text',
-                          text: memberNames,
+                          text: {raw: memberNames},
                       },
                   ];
         }

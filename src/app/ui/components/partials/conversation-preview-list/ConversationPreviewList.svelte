@@ -18,6 +18,7 @@
 
   type $$Props = ConversationPreviewListProps;
 
+  export let highlights: $$Props['highlights'] = undefined;
   export let items: $$Props['items'] = [];
   export let services: $$Props['services'];
 
@@ -76,6 +77,7 @@
               {
                 type: 'receiver-name',
                 receiver: item.receiver,
+                highlights,
               },
             ],
             topRight: [
@@ -92,6 +94,7 @@
               item.isArchived,
               lastMessage,
               item.receiver,
+              highlights,
             ),
             bottomRight:
               lastMessage === undefined
