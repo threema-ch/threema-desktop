@@ -76,3 +76,4 @@ export {type Repositories} from '~/common/model/repositories';
 export {type ContactRepository} from '~/common/model/types/contact';
 export {type ConversationRepository} from '~/common/model/types/conversation';
 export {type GroupRepository} from '~/common/model/types/group';
+export {type MessageRepository} from '~/common/model/types/message';

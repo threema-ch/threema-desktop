@@ -31,7 +31,13 @@ import type {
 } from '~/common/model/types/message/video';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
-import type {IDerivableSetStore, RemoteSetStore} from '~/common/utils/store/set-store';
+import type {u53} from '~/common/types';
+import type {ProxyMarked} from '~/common/utils/endpoint';
+import type {
+    IDerivableSetStore,
+    LocalSetStore,
+    RemoteSetStore,
+} from '~/common/utils/store/set-store';
 
 export * from './common';
 
@@ -200,3 +206,14 @@ export type AnyFileBasedOutboundMessageModelLifetimeGuard =
 export type AnyFileBasedMessageModelLifetimeGuard =
     | AnyFileBasedInboundMessageModelLifetimeGuard
     | AnyFileBasedOutboundMessageModelLifetimeGuard;
+
+/**
+ * Messages Storage.
+ */
+export type MessageRepository = {
+    /**
+     * Find all messages which contain the given text (case-insensitive). Note: Will not match
+     * quotes contained in a message.
+     */
+    readonly findAllByText: (text: string, limit?: u53) => LocalSetStore<AnyMessageModelStore>;
+} & ProxyMarked;

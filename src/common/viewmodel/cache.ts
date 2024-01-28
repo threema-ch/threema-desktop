@@ -9,19 +9,21 @@ import type {ConversationPreviewSetStore} from '~/common/viewmodel/conversation-
 import type {DebugPanelViewModel} from '~/common/viewmodel/debug-panel';
 import type {GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
 import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
+import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
 
 export class ViewModelCache {
-    public readonly conversationPreview = new LazyWeakRef<ConversationPreviewSetStore>();
     public readonly contactListItem = new LazyWeakRef<ContactListItemSetStore>();
-    public readonly groupListItem = new LazyWeakRef<GroupListItemSetStore>();
-    public readonly profile = new LazyWeakRef<ProfileViewModelStore>();
-    public readonly debugPanel = new LazyWeakRef<DebugPanelViewModel>();
-    public readonly conversations = new WeakValueMap<
-        LocalModelStore<Conversation>,
-        ConversationViewModelBundle
-    >();
     public readonly conversationMessage = new WeakValueMap<
         LocalModelStore<Conversation>,
         WeakValueMap<AnyMessageModelStore, ConversationMessageViewModelBundle>
     >();
+    public readonly conversationPreview = new LazyWeakRef<ConversationPreviewSetStore>();
+    public readonly conversations = new WeakValueMap<
+        LocalModelStore<Conversation>,
+        ConversationViewModelBundle
+    >();
+    public readonly debugPanel = new LazyWeakRef<DebugPanelViewModel>();
+    public readonly groupListItem = new LazyWeakRef<GroupListItemSetStore>();
+    public readonly profile = new LazyWeakRef<ProfileViewModelStore>();
+    public readonly search = new LazyWeakRef<SearchViewModelBundle>();
 }

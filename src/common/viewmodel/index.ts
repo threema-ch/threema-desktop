@@ -31,6 +31,7 @@ import {
     type GroupListItemSetStore,
 } from '~/common/viewmodel/group-list-item';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
+import {getSearchViewModelBundle, type SearchViewModelBundle} from '~/common/viewmodel/search/nav';
 
 /**
  * Services required by the viewmodel backend.
@@ -60,6 +61,7 @@ export interface IViewModelRepository extends ProxyMarked {
     ) => LocalStore<ContactListItemSetEntry> | undefined;
     readonly groupListItems: () => GroupListItemSetStore;
     readonly profile: () => ProfileViewModelStore;
+    readonly search: () => SearchViewModelBundle;
 }
 
 export class ViewModelRepository implements IViewModelRepository {
@@ -132,5 +134,9 @@ export class ViewModelRepository implements IViewModelRepository {
 
     public debugPanel(): DebugPanelViewModel {
         return this._cache.debugPanel.derefOrCreate(() => getDebugPanelViewModel(this._services));
+    }
+
+    public search(): SearchViewModelBundle {
+        return this._cache.search.derefOrCreate(() => getSearchViewModelBundle(this._services));
     }
 }

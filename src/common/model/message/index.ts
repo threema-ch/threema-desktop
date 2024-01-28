@@ -26,7 +26,7 @@ import type {
 import * as contact from '~/common/model/contact';
 import {NO_SENDER} from '~/common/model/message/common';
 import type {GuardedStoreHandle} from '~/common/model/types/common';
-import type {ConversationControllerHandle} from '~/common/model/types/conversation';
+import type {Conversation, ConversationControllerHandle} from '~/common/model/types/conversation';
 import {
     type BaseMessageView,
     type CommonBaseMessageView,
@@ -38,6 +38,7 @@ import {
     type MessageReactionView,
     type IdentityStringOrMe,
     OWN_IDENTITY_ALIAS,
+    type MessageRepository,
 } from '~/common/model/types/message';
 import {LocalModelStoreCache} from '~/common/model/utils/model-cache';
 import {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
@@ -476,6 +477,22 @@ abstract class CommonBaseMesageModelController<TView extends CommonBaseMessageVi
     }
 
     /**
+     * Get the store of the {@link Conversation}, which this message is part of.
+     */
+    public getConversationModelStore(): LocalModelStore<Conversation> {
+        const conversationModelStore = this._services.model.conversations.getForReceiver(
+            this._conversation.receiverLookup,
+        );
+
+        assert(
+            conversationModelStore !== undefined,
+            'Conversation is expected to exist, as it was looked up using its own handle',
+        );
+
+        return conversationModelStore;
+    }
+
+    /**
      * Remove the message.
      */
     public remove(): void {
@@ -830,6 +847,57 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                 );
                 void this._services.taskManager.schedule(task);
             }
+        });
+    }
+}
+
+/** @inheritdoc */
+export class MessageModelRepository implements MessageRepository {
+    public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
+
+    private readonly _tag = 'model.message-repository';
+    private readonly _log: Logger;
+
+    public constructor(private readonly _services: ServicesForModel) {
+        this._log = _services.logging.logger(this._tag);
+    }
+
+    /** @inheritdoc */
+    public findAllByText(text: string, limit?: u53): LocalSetStore<AnyMessageModelStore> {
+        const {db, model} = this._services;
+
+        const stores: AnyMessageModelStore[] = db
+            .getMessageIdentifiersByText(text, limit)
+            .map((message) => {
+                // Look up the conversation.
+                const conversationModelStore = model.conversations.getByUid(
+                    message.conversationUid,
+                );
+                // Existence of the `conversationModelStore` should be guaranteed, as the message we
+                // used to fetch it with wouldn't exist without it.
+                assert(
+                    conversationModelStore !== undefined,
+                    `Expected conversation with UID ${message.conversationUid} to exist`,
+                );
+
+                const messageModelStore = conversationModelStore
+                    .get()
+                    .controller.getMessage(message.id);
+                // Existence of the `messageModelStore` should be guaranteed, as the id we use to fetch
+                // it came from the db itself.
+                assert(
+                    messageModelStore !== undefined,
+                    `Expected MessageModelStore for message with UID ${message.uid} to exist`,
+                );
+
+                return messageModelStore;
+            });
+
+        return new LocalSetStore(new Set(stores), {
+            debug: {
+                log: this._log,
+                tag: `${this._tag}.message[]`,
+            },
         });
     }
 }

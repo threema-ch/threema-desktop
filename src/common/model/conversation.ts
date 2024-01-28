@@ -156,6 +156,28 @@ export function getByReceiver(
     });
 }
 
+/**
+ * Fetch a conversation model by its `uid`.
+ */
+export function getByUid(
+    services: ServicesForModel,
+    uid: DbConversationUid,
+    existence: Existence,
+    tag?: string,
+): LocalModelStore<Conversation> | undefined {
+    const {db} = services;
+
+    const conversation = db.getConversationByUid(uid);
+    const receiver = conversation?.receiver;
+    if (existence === Existence.ENSURED) {
+        assert(receiver !== undefined, `Expected conversation ${uid} to exist`);
+    } else if (receiver === undefined) {
+        return undefined;
+    }
+
+    return getByReceiver(services, receiver, existence, tag);
+}
+
 function update(
     services: ServicesForModel,
     receiver: DbReceiverLookup,
@@ -876,13 +898,18 @@ export class ConversationModelRepository implements ConversationRepository {
     }
 
     /** @inheritdoc */
-    public getForReceiver(receiver: DbReceiverLookup): LocalModelStore<Conversation> | undefined {
-        const tag = getDebugTagForReceiver(receiver);
-        return getByReceiver(this._services, receiver, Existence.UNKNOWN, tag);
+    public getAll(): LocalSetStore<LocalModelStore<Conversation>> {
+        return all(this._services);
     }
 
     /** @inheritdoc */
-    public getAll(): LocalSetStore<LocalModelStore<Conversation>> {
-        return all(this._services);
+    public getByUid(uid: DbConversationUid): LocalModelStore<Conversation> | undefined {
+        return getByUid(this._services, uid, Existence.UNKNOWN);
+    }
+
+    /** @inheritdoc */
+    public getForReceiver(receiver: DbReceiverLookup): LocalModelStore<Conversation> | undefined {
+        const tag = getDebugTagForReceiver(receiver);
+        return getByReceiver(this._services, receiver, Existence.UNKNOWN, tag);
     }
 }

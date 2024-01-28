@@ -2,6 +2,7 @@ import {ContactModelRepository} from '~/common/model/contact';
 import {ConversationModelRepository} from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
+import {MessageModelRepository} from '~/common/model/message';
 import {
     ProfilePictureModelRepository,
     type ProfilePictureRepository,
@@ -10,6 +11,7 @@ import type {ServicesForModel} from '~/common/model/types/common';
 import type {ContactRepository} from '~/common/model/types/contact';
 import type {ConversationRepository} from '~/common/model/types/conversation';
 import type {GroupRepository} from '~/common/model/types/group';
+import type {MessageRepository} from '~/common/model/types/message';
 import type {IGlobalPropertyRepository} from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import {UserModel} from '~/common/model/user';
@@ -20,6 +22,7 @@ export type Repositories = {
     readonly contacts: ContactRepository;
     readonly groups: GroupRepository;
     readonly conversations: ConversationRepository;
+    readonly messages: MessageRepository;
     readonly profilePictures: ProfilePictureRepository;
     readonly globalProperties: IGlobalPropertyRepository;
 } & ProxyMarked;
@@ -30,6 +33,7 @@ export class ModelRepositories implements Repositories {
     public readonly contacts: ContactModelRepository;
     public readonly groups: GroupModelRepository;
     public readonly conversations: ConversationModelRepository;
+    public readonly messages: MessageModelRepository;
     public readonly profilePictures: ProfilePictureRepository;
     public readonly globalProperties: GlobalPropertyRepository;
 
@@ -45,6 +49,7 @@ export class ModelRepositories implements Repositories {
         this.contacts = new ContactModelRepository(services_);
         this.groups = new GroupModelRepository(services_);
         this.conversations = new ConversationModelRepository(services_);
+        this.messages = new MessageModelRepository(services_);
         this.globalProperties = new GlobalPropertyRepository(services_);
     }
 }

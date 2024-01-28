@@ -12,6 +12,7 @@ import type {
     ControllerUpdateFromSync,
 } from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
+import type {Conversation} from '~/common/model/types/conversation';
 import type {ModelLifetimeGuard} from '~/common/model/utils/model-lifetime-guard';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
 import type {BlobId} from '~/common/network/protocol/blob';
@@ -134,6 +135,10 @@ export type OutboundBaseMessageInit<TType extends MessageType> = CommonBaseMessa
 export type CommonBaseMessageController<TView extends CommonBaseMessageView> = {
     readonly meta: ModelLifetimeGuard<TView>;
 
+    /**
+     * Get the store of the {@link Conversation}, which this message is part of.
+     */
+    readonly getConversationModelStore: () => LocalModelStore<Conversation>;
     /**
      * Remove the message.
      */

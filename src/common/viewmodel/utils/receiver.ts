@@ -2,10 +2,14 @@ import type {
     DbContactReceiverLookup,
     DbDistributionListReceiverLookup,
     DbGroupReceiverLookup,
+    DbReceiverLookup,
 } from '~/common/db';
 import {
     ActivityState,
+    ContactNotificationTriggerPolicy,
+    GroupNotificationTriggerPolicy,
     GroupUserState,
+    NotificationSoundPolicy,
     ReceiverType,
     VerificationLevel,
     WorkVerificationLevel,
@@ -57,6 +61,46 @@ export function getReceiverData(
 }
 
 /**
+ * Extracts and returns common data related to a conversation's receiver from the specified
+ * {@link conversationModel}.
+ */
+export function getCommonReceiverData(receiverModel: AnyReceiver): CommonReceiverData {
+    switch (receiverModel.type) {
+        case ReceiverType.CONTACT:
+            return {
+                color: receiverModel.view.color,
+                initials: receiverModel.view.initials,
+                isDisabled: isReceiverDisabled(receiverModel),
+                lookup: {
+                    type: receiverModel.type,
+                    uid: receiverModel.ctx,
+                },
+                name: receiverModel.view.displayName,
+                notificationPolicy: getContactNotificationPolicy(receiverModel),
+            };
+
+        case ReceiverType.GROUP:
+            return {
+                color: receiverModel.view.color,
+                initials: getGroupInitials(receiverModel.view),
+                isDisabled: isReceiverDisabled(receiverModel),
+                lookup: {
+                    type: receiverModel.type,
+                    uid: receiverModel.ctx,
+                },
+                name: receiverModel.view.displayName,
+                notificationPolicy: getGroupNotificationPolicy(receiverModel),
+            };
+
+        case ReceiverType.DISTRIBUTION_LIST:
+            throw new Error('TODO(DESK-771): Support distribution lists');
+
+        default:
+            return unreachable(receiverModel);
+    }
+}
+
+/**
  * Returns the collected {@link SelfReceiverData} object for the user themself.
  */
 function getSelfReceiverData(
@@ -91,19 +135,16 @@ function getContactReceiverData(
 ): ContactReceiverData {
     return {
         type: 'contact',
-        color: contactModel.view.color,
+        ...getCommonReceiverData(contactModel),
         badge: getContactBadge(contactModel.view),
         identity: contactModel.view.identity,
-        initials: contactModel.view.initials,
         isBlocked: isContactReceiverBlocked(services, contactModel, getAndSubscribe),
-        isDisabled: isReceiverDisabled(contactModel),
         isInactive: isContactReceiverInactive(contactModel),
         isInvalid: isContactReceiverInvalid(contactModel),
         lookup: {
             type: contactModel.type,
             uid: contactModel.ctx,
         },
-        name: contactModel.view.displayName,
         nickname: contactModel.view.nickname,
         verification: getContactVerificationData(contactModel),
     };
@@ -122,15 +163,13 @@ function getGroupReceiverData(
 
     return {
         type: 'group',
-        color: groupModel.view.color,
+        ...getCommonReceiverData(groupModel),
         creator: groupCreatorData,
         initials: getGroupInitials(groupModel.view),
-        isDisabled: isReceiverDisabled(groupModel),
         lookup: {
             type: groupModel.type,
             uid: groupModel.ctx,
         },
-        name: groupModel.view.displayName,
         members: groupModel.view.members
             .map((identity) => getGroupMemberData(services, identity, getAndSubscribe))
             .filter(
@@ -206,6 +245,22 @@ function isContactReceiverInactive(receiverModel: Contact): boolean {
  */
 function isContactReceiverInvalid(receiverModel: Contact): boolean {
     return receiverModel.view.activityState === ActivityState.INVALID;
+}
+
+export function getContactNotificationPolicy(receiverModel: Contact): NotificationPolicy {
+    let notifications: NotificationPolicy = 'default';
+    if (
+        receiverModel.view.notificationTriggerPolicyOverride?.policy ===
+        ContactNotificationTriggerPolicy.NEVER
+    ) {
+        notifications = 'never';
+    } else if (
+        receiverModel.view.notificationSoundPolicyOverride === NotificationSoundPolicy.MUTED
+    ) {
+        notifications = 'muted';
+    }
+
+    return notifications;
 }
 
 /**
@@ -311,6 +366,20 @@ function getGroupMemberData(
     return getContactReceiverData(services, receiverModel, getAndSubscribe);
 }
 
+export function getGroupNotificationPolicy(groupModel: Group): NotificationPolicy {
+    let notifications: NotificationPolicy = 'default';
+    if (
+        groupModel.view.notificationTriggerPolicyOverride?.policy ===
+        GroupNotificationTriggerPolicy.NEVER
+    ) {
+        notifications = 'never';
+    } else if (groupModel.view.notificationSoundPolicyOverride === NotificationSoundPolicy.MUTED) {
+        notifications = 'muted';
+    }
+
+    return notifications;
+}
+
 /**
  * Returns whether the receiver belonging to the given {@link receiverModel} is blocked according to
  * the user's privacy settings.
@@ -322,11 +391,15 @@ interface CommonReceiverData {
     readonly initials: string;
     /** Whether to display this receiver as disabled (strikethrough). */
     readonly isDisabled: boolean;
+    /** Necessary data to lookup the receiver from db. */
+    readonly lookup: DbReceiverLookup;
     /** Full display name of the receiver. */
     readonly name: string;
+    /** How the user wants to be notified of updates from this receiver. */
+    readonly notificationPolicy: NotificationPolicy;
 }
 
-interface SelfReceiverData extends CommonReceiverData {
+interface SelfReceiverData extends Omit<CommonReceiverData, 'lookup' | 'notificationPolicy'> {
     readonly type: 'self';
     readonly nickname?: string;
     readonly identity: IdentityString;
@@ -365,3 +438,5 @@ interface VerificationData {
     readonly type: 'default' | 'shared-work-subscription';
     readonly level: 'unverified' | 'server-verified' | 'fully-verified';
 }
+
+type NotificationPolicy = 'default' | 'muted' | 'mentioned' | 'never';

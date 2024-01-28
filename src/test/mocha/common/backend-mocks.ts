@@ -69,6 +69,7 @@ import {
 } from '~/common/model/conversation';
 import {GlobalPropertyRepository} from '~/common/model/global-property';
 import {GroupModelRepository} from '~/common/model/group';
+import {MessageModelRepository} from '~/common/model/message';
 import {
     ProfilePictureModelRepository,
     type ProfilePictureRepository,
@@ -82,7 +83,7 @@ import {ProfileSettingsModelStore} from '~/common/model/settings/profile';
 import type {ContactRepository} from '~/common/model/types/contact';
 import type {ConversationRepository} from '~/common/model/types/conversation';
 import type {GroupRepository} from '~/common/model/types/group';
-import type {AnyMessageModelStore} from '~/common/model/types/message';
+import type {AnyMessageModelStore, MessageRepository} from '~/common/model/types/message';
 import type {
     DevicesSettings,
     IGlobalPropertyRepository,
@@ -196,6 +197,7 @@ import {
     type GroupListItemSetStore,
 } from '~/common/viewmodel/group-list-item';
 import {getProfileViewModelStore, type ProfileViewModelStore} from '~/common/viewmodel/profile';
+import {type SearchViewModelBundle, getSearchViewModelBundle} from '~/common/viewmodel/search/nav';
 
 import {assertCspPayloadType, assertD2mPayloadType} from './assertions';
 
@@ -430,6 +432,7 @@ export class TestModelRepositories implements Repositories {
     public contacts: ContactRepository;
     public groups: GroupRepository;
     public conversations: ConversationRepository;
+    public messages: MessageRepository;
     public profilePictures: ProfilePictureRepository;
     public globalProperties: IGlobalPropertyRepository;
     public db: DatabaseBackend;
@@ -444,6 +447,7 @@ export class TestModelRepositories implements Repositories {
         this.contacts = new ContactModelRepository(servicesForModel);
         this.groups = new GroupModelRepository(servicesForModel);
         this.conversations = new ConversationModelRepository(servicesForModel);
+        this.messages = new MessageModelRepository(servicesForModel);
         this.profilePictures = new ProfilePictureModelRepository(servicesForModel);
         this.globalProperties = new GlobalPropertyRepository(servicesForModel);
     }
@@ -505,6 +509,10 @@ export class TestViewModel implements IViewModelRepository {
 
     public debugPanel(): DebugPanelViewModel {
         return getDebugPanelViewModel(this._services);
+    }
+
+    public search(): SearchViewModelBundle {
+        return getSearchViewModelBundle(this._services);
     }
 }
 

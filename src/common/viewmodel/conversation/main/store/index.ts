@@ -1,4 +1,4 @@
-import {ConversationVisibility} from '~/common/enum';
+import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import type {ConversationModelStore} from '~/common/model/conversation';
 import type {SetOfAnyLocalMessageModelStore} from '~/common/model/types/message';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
@@ -57,6 +57,7 @@ export function getConversationViewModelStore(
             id: conversationModel.ctx,
             isArchived: conversationModel.view.visibility === ConversationVisibility.ARCHIVED,
             isPinned: conversationModel.view.visibility === ConversationVisibility.PINNED,
+            isPrivate: conversationModel.view.category === ConversationCategory.PROTECTED,
             lastMessage: getLastMessage(conversationModel, getAndSubscribe),
             messageSetStore,
             receiver: getReceiverData(services, conversationModel, getAndSubscribe),

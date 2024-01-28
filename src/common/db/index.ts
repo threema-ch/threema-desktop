@@ -710,6 +710,15 @@ export interface DatabaseBackend extends NonceDatabaseBackend {
     ) => DbHas<DbAnyMessage>;
 
     /**
+     * Return identifiers (`conversationUid`, `id`, and `uid`) of all matching messages that contain
+     * the given text (case-insensitive). Note: Quoted content will not be searched.
+     */
+    readonly getMessageIdentifiersByText: (
+        text: string,
+        limit?: u53,
+    ) => DbList<Pick<DbAnyMessage, 'conversationUid' | 'id' | 'uid'>>;
+
+    /**
      * Get the message with the specified UID.
      */
     readonly getMessageByUid: (uid: DbMessageUid) => DbGet<DbAnyMessage>;

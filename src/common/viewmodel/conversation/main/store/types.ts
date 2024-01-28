@@ -19,6 +19,7 @@ export interface ConversationViewModel {
     readonly id: DbConversationUid;
     readonly isArchived: boolean;
     readonly isPinned: boolean;
+    readonly isPrivate: boolean;
     readonly lastMessage:
         | {
               readonly id: MessageId;

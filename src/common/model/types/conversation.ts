@@ -1,4 +1,4 @@
-import type {DbConversation, DbReceiverLookup, UidOf} from '~/common/db';
+import type {DbConversation, DbConversationUid, DbReceiverLookup, UidOf} from '~/common/db';
 import type {
     ConversationCategory,
     ConversationVisibility,
@@ -138,7 +138,6 @@ export type ConversationController = {
         messageIds: ReadonlySet<MessageId>,
         contextSize: u53,
     ) => Set<AnyMessageModelStore>;
-
     /**
      *
      * @returns The number of messages in this conversation
@@ -194,6 +193,7 @@ export type ConversationListController = {
 
 export type ConversationRepository = {
     readonly totalUnreadMessageCount: LocalStore<u53>;
-    getForReceiver: (receiver: DbReceiverLookup) => LocalModelStore<Conversation> | undefined;
     getAll: () => LocalSetStore<LocalModelStore<Conversation>>;
+    getByUid: (uid: DbConversationUid) => LocalModelStore<Conversation> | undefined;
+    getForReceiver: (receiver: DbReceiverLookup) => LocalModelStore<Conversation> | undefined;
 } & ProxyMarked;

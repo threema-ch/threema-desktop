@@ -1521,6 +1521,68 @@ export class SqliteDatabaseBackend implements DatabaseBackend {
     }
 
     /** @inheritdoc */
+    public getMessageIdentifiersByText(
+        text: string,
+        limit?: u53,
+    ): DbList<Pick<DbAnyMessage, 'conversationUid' | 'id' | 'uid'>> {
+        // TODO(DESK-1333): The following queries could potentially be improved by not utilizing
+        // subqueries.
+        return sync(
+            this._db
+                .selectFrom(tMessage)
+                .select({
+                    conversationUid: tMessage.conversationUid,
+                    id: tMessage.messageId,
+                    ordinal: tMessage.processedAt.valueWhenNull(tMessage.createdAt).getTime(),
+                    uid: tMessage.uid,
+                })
+                .where(
+                    tMessage.uid.in(
+                        this._db
+                            .selectFrom(tMessageTextData)
+                            .where(tMessageTextData.text.containsInsensitive(text))
+                            .selectOneColumn(tMessageTextData.messageUid),
+                    ),
+                )
+                .or(
+                    tMessage.uid.in(
+                        this._db
+                            .selectFrom(tMessageAudioData)
+                            .where(tMessageAudioData.caption.containsInsensitive(text))
+                            .selectOneColumn(tMessageAudioData.messageUid),
+                    ),
+                )
+                .or(
+                    tMessage.uid.in(
+                        this._db
+                            .selectFrom(tMessageFileData)
+                            .where(tMessageFileData.caption.containsInsensitive(text))
+                            .selectOneColumn(tMessageFileData.messageUid),
+                    ),
+                )
+                .or(
+                    tMessage.uid.in(
+                        this._db
+                            .selectFrom(tMessageImageData)
+                            .where(tMessageImageData.caption.containsInsensitive(text))
+                            .selectOneColumn(tMessageImageData.messageUid),
+                    ),
+                )
+                .or(
+                    tMessage.uid.in(
+                        this._db
+                            .selectFrom(tMessageVideoData)
+                            .where(tMessageVideoData.caption.containsInsensitive(text))
+                            .selectOneColumn(tMessageVideoData.messageUid),
+                    ),
+                )
+                .orderBy('ordinal', 'desc')
+                .limitIfValue(limit)
+                .executeSelectMany(),
+        );
+    }
+
+    /** @inheritdoc */
     public getMessageByUid(uid: DbMessageUid): DbGet<DbAnyMessage> {
         const common = sync(
             this._getCommonMessageSelector()
