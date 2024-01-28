@@ -102,7 +102,7 @@
     <div class="search">
       <SearchInput
         bind:this={searchInput}
-        placeholder={$i18n.t('messaging.label--search-conversation', 'Find Chat')}
+        placeholder={$i18n.t('search.label--search-input-placeholder', 'Search...')}
         bind:value={$conversationPreviewListFilter}
         on:reset={scrollToActiveConversation}
       />

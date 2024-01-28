@@ -152,82 +152,120 @@
 
 <div class="container">
   {#if $conversationPreviewListProps !== undefined}
+    {@const isEmpty = $conversationPreviewListProps.items.length === 0}
+
     <div class="section conversations">
       <p class="heading">
         {$i18n.t('search.label--title-conversations', 'Chats')}
       </p>
 
-      <ConversationPreviewList
-        {...$conversationPreviewListProps}
-        highlights={searchParams.term}
-        {services}
-      />
+      {#if isEmpty}
+        <p class="empty">
+          {$i18n.t(
+            'search.label--no-results-conversations',
+            'No conversations found for term "{term}".',
+            {
+              term: searchParams.term,
+            },
+          )}
+        </p>
+      {:else}
+        <ConversationPreviewList
+          {...$conversationPreviewListProps}
+          highlights={searchParams.term}
+          {services}
+        />
 
-      {#if $conversationPreviewListProps.items.length >= (searchParams.limits.conversations ?? DEFAULT_SEARCH_PARAMS.limits.conversations)}
-        <button class="expand" on:click={handleClickSearchMoreConversationsButton}>
-          {$i18n.t('search.action--search-more', 'Find more')}
+        {#if $conversationPreviewListProps.items.length >= (searchParams.limits.conversations ?? DEFAULT_SEARCH_PARAMS.limits.conversations)}
+          <button class="expand" on:click={handleClickSearchMoreConversationsButton}>
+            {$i18n.t('search.action--search-more', 'Find more')}
 
-          <span class="icon">
-            <MdIcon theme="Outlined">expand_more</MdIcon>
-          </span>
-        </button>
+            <span class="icon">
+              <MdIcon theme="Outlined">expand_more</MdIcon>
+            </span>
+          </button>
+        {/if}
       {/if}
     </div>
   {/if}
 
   {#if $messagePreviewListProps !== undefined}
+    {@const isEmpty = $messagePreviewListProps.items.length === 0}
+
     <div class="section messages">
       <p class="heading">
         {$i18n.t('search.label--title-messages', 'Messages')}
       </p>
 
-      <div class="list">
-        <MessagePreviewList
-          {...$messagePreviewListProps}
-          highlights={searchParams.term}
-          {services}
-          user={$profileViewModelStore === undefined
-            ? undefined
-            : {
-                color: $profileViewModelStore.profilePicture.color,
-                initials: $profileViewModelStore.initials,
-                picture: $profileViewModelStore.profilePicture.picture,
-              }}
-        />
-      </div>
+      {#if isEmpty}
+        <p class="empty">
+          {$i18n.t('search.label--no-results-messages', 'No messages found for term "{term}".', {
+            term: searchParams.term,
+          })}
+        </p>
+      {:else}
+        <div class="list">
+          <MessagePreviewList
+            {...$messagePreviewListProps}
+            highlights={searchParams.term}
+            {services}
+            user={$profileViewModelStore === undefined
+              ? undefined
+              : {
+                  color: $profileViewModelStore.profilePicture.color,
+                  initials: $profileViewModelStore.initials,
+                  picture: $profileViewModelStore.profilePicture.picture,
+                }}
+          />
+        </div>
 
-      {#if $messagePreviewListProps.items.reduce((acc, conversation) => acc + conversation.messages.length, 0) >= (searchParams.limits.messages ?? DEFAULT_SEARCH_PARAMS.limits.messages)}
-        <button class="expand" on:click={handleClickSearchMoreMessagesButton}>
-          {$i18n.t('search.action--search-more')}
+        {#if $messagePreviewListProps.items.reduce((acc, conversation) => acc + conversation.messages.length, 0) >= (searchParams.limits.messages ?? DEFAULT_SEARCH_PARAMS.limits.messages)}
+          <button class="expand" on:click={handleClickSearchMoreMessagesButton}>
+            {$i18n.t('search.action--search-more')}
 
-          <span class="icon">
-            <MdIcon theme="Outlined">expand_more</MdIcon>
-          </span>
-        </button>
+            <span class="icon">
+              <MdIcon theme="Outlined">expand_more</MdIcon>
+            </span>
+          </button>
+        {/if}
       {/if}
     </div>
   {/if}
 
   {#if $receiverPreviewListProps !== undefined}
+    {@const isEmpty = $receiverPreviewListProps.items.length === 0}
+
     <div class="section receivers">
       <p class="heading">
         {$i18n.t('search.label--title-receivers', 'Contacts & Groups')}
       </p>
 
-      <ReceiverPreviewList
-        {...$receiverPreviewListProps}
-        highlights={searchParams.term}
-        {services}
-      />
+      {#if isEmpty}
+        <p class="empty">
+          {$i18n.t(
+            'search.label--no-results-receivers',
+            'No contacts or groups found for term "{term}".',
+            {
+              term: searchParams.term,
+            },
+          )}
+        </p>
+      {:else}
+        <ReceiverPreviewList
+          {...$receiverPreviewListProps}
+          highlights={searchParams.term}
+          {services}
+        />
 
-      {#if $receiverPreviewListProps.items.length >= (searchParams.limits.receivers ?? DEFAULT_SEARCH_PARAMS.limits.receivers)}
-        <button class="expand" on:click={handleClickSearchMoreReceiversButton}>
-          {$i18n.t('search.action--search-more')}
+        {#if $receiverPreviewListProps.items.length >= (searchParams.limits.receivers ?? DEFAULT_SEARCH_PARAMS.limits.receivers)}
+          <button class="expand" on:click={handleClickSearchMoreReceiversButton}>
+            {$i18n.t('search.action--search-more')}
 
-          <span class="icon">
-            <MdIcon theme="Outlined">expand_more</MdIcon>
-          </span>
-        </button>
+            <span class="icon">
+              <MdIcon theme="Outlined">expand_more</MdIcon>
+            </span>
+          </button>
+        {/if}
       {/if}
     </div>
   {/if}
@@ -260,6 +298,12 @@
         font-weight: 400;
         margin: 0;
         padding: 0 rem(4px) rem(16px) rem(16px);
+      }
+
+      .empty {
+        color: var(--t-text-e2-color);
+        margin: rem(8px) 0 0 0;
+        padding: rem(12px) rem(6px) rem(12px) rem(16px);
       }
 
       .expand {

@@ -364,7 +364,6 @@
     "label--mention-me": "Ich",
     "label--prefix-draft": "Entwurf:",
     "label--protected-conversation": "Privat",
-    "label--search-conversation": "Chat suchen",
     "label--timestamp-yesterday": "Gestern, {time}",
     "label--unread-messages": "Neue Nachrichten",
     "markup--chat-empty-state": "Dieser Chat ist mit Ihrem Mobilgerät verknüpft. <1/>Alle künftigen Nachrichten werden hier erscheinen.",

@@ -364,7 +364,6 @@
     "label--mention-me": "Me",
     "label--prefix-draft": "Draft:",
     "label--protected-conversation": "Private",
-    "label--search-conversation": "Find Chat",
     "label--timestamp-yesterday": "Yesterday {time}",
     "label--unread-messages": "New Messages",
     "markup--chat-empty-state": "This chat is linked with your mobile device. <1/>All future messages will appear here.",
