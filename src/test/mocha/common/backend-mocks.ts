@@ -467,7 +467,12 @@ export class TestViewModel implements IViewModelRepository {
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
     ): ConversationMessageViewModelBundle {
-        return getConversationMessageViewModelBundle(this._services, messageStore, conversation);
+        return getConversationMessageViewModelBundle(
+            this._services,
+            messageStore,
+            conversation,
+            true,
+        );
     }
 
     public conversationMessageById(

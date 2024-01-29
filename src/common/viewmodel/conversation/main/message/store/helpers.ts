@@ -26,7 +26,6 @@ export function getMessageQuote(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
-    getAndSubscribe: GetAndSubscribeFunction,
 ): ConversationMessageViewModel['quote'] {
     if (messageModel.type !== MessageType.TEXT) {
         // Quotes are only permitted in text messages.
@@ -54,6 +53,7 @@ export function getMessageQuote(
         services,
         quotedMessageModelStore,
         conversationModelStore,
+        false,
     );
 }
 

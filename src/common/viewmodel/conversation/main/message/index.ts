@@ -20,6 +20,7 @@ export function getConversationMessageViewModelBundle(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     messageModelStore: AnyMessageModelStore,
     conversationModelStore: ConversationModelStore,
+    resolveQuote: boolean,
 ): ConversationMessageViewModelBundle {
     const {endpoint, logging} = services;
     const log = logging.logger('viewmodel.conversation.message');
@@ -30,6 +31,7 @@ export function getConversationMessageViewModelBundle(
         services,
         messageModelStore,
         conversationModelStore,
+        resolveQuote,
     );
 
     return endpoint.exposeProperties({

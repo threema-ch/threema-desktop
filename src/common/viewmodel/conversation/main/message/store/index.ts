@@ -25,6 +25,7 @@ export function getConversationMessageViewModelStore(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     messageModelStore: AnyMessageModelStore,
     conversationModelStore: ConversationModelStore,
+    resolveQuote: boolean,
 ): ConversationMessageViewModelStore {
     const {endpoint} = services;
 
@@ -37,6 +38,7 @@ export function getConversationMessageViewModelStore(
                 messageModel,
                 conversationModelStore,
                 getAndSubscribe,
+                resolveQuote,
             );
 
         return endpoint.exposeProperties({
@@ -51,6 +53,7 @@ function getConversationMessageViewModel(
     messageModel: AnyMessageModel,
     conversationModelStore: ConversationModelStore,
     getAndSubscribe: GetAndSubscribeFunction,
+    resolveQuote: boolean,
 ): ConversationMessageViewModel {
     return {
         direction:
@@ -58,13 +61,9 @@ function getConversationMessageViewModel(
         file: getMessageFile(messageModel),
         id: messageModel.view.id,
         ordinal: messageModel.view.ordinal,
-        quote: getMessageQuote(
-            log,
-            services,
-            messageModel,
-            conversationModelStore,
-            getAndSubscribe,
-        ),
+        quote: resolveQuote
+            ? getMessageQuote(log, services, messageModel, conversationModelStore)
+            : undefined,
         reactions: getMessageReactions(services, messageModel),
         status: getMessageStatus(messageModel),
         sender: getMessageSender(services, messageModel, getAndSubscribe),

@@ -44,6 +44,11 @@ export interface IViewModelRepository extends ProxyMarked {
         translations: ConversationPreviewTranslationsStore,
     ) => ConversationPreviewSetStore;
     readonly conversation: (receiver: DbReceiverLookup) => ConversationViewModelBundle | undefined;
+    /**
+     * Returns the {@link ConversationMessageViewModelBundle} that belongs to the given
+     * {@link messageStore} in the given {@link conversation}. Note: If the message contains a
+     * quote, it will always be resolved.
+     */
     readonly conversationMessage: (
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
@@ -84,6 +89,7 @@ export class ViewModelRepository implements IViewModelRepository {
         );
     }
 
+    /** @inheritdoc */
     public conversationMessage(
         conversation: ConversationModelStore,
         messageStore: AnyMessageModelStore,
@@ -94,7 +100,13 @@ export class ViewModelRepository implements IViewModelRepository {
                 () => new WeakValueMap<AnyMessageModelStore, ConversationMessageViewModelBundle>(),
             )
             .getOrCreate(messageStore, () =>
-                getConversationMessageViewModelBundle(this._services, messageStore, conversation),
+                getConversationMessageViewModelBundle(
+                    this._services,
+                    messageStore,
+                    conversation,
+                    // Always resolve contained quotes.
+                    true,
+                ),
             );
     }
 
