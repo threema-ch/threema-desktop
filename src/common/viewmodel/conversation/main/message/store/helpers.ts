@@ -37,9 +37,9 @@ export function getMessageQuote(
         return undefined;
     }
 
-    const quotedMessageModelStore = getAndSubscribe(conversationModelStore).controller.getMessage(
-        messageModel.view.quotedMessageId,
-    );
+    const quotedMessageModelStore = conversationModelStore
+        .get()
+        .controller.getMessage(messageModel.view.quotedMessageId);
     if (quotedMessageModelStore === undefined) {
         log.info(
             `Quoted message id ${u64ToHexLe(
