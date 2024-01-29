@@ -100,7 +100,10 @@
    * `conversation` object.
    */
   let currentConversationReceiver: $$Props['conversation']['receiver'] = conversation.receiver;
-  $: if (currentConversationReceiver !== conversation.receiver) {
+  $: if (
+    currentConversationReceiver.lookup.uid !== conversation.receiver.lookup.uid ||
+    currentConversationReceiver.lookup.type !== conversation.receiver.lookup.type
+  ) {
     currentConversationReceiver = conversation.receiver;
   }
 

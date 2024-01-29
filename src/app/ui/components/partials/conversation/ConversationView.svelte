@@ -163,7 +163,10 @@
       return;
     }
     // If the receiver is the same, it's not necessary to reload the `viewModelBundle`.
-    if (receiver === $viewModelStore?.receiver.lookup) {
+    if (
+      receiver.type === $viewModelStore?.receiver.lookup.type &&
+      receiver.uid === $viewModelStore.receiver.lookup.uid
+    ) {
       return;
     }
 
