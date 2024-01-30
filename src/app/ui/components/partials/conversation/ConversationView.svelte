@@ -168,8 +168,9 @@
     }
 
     // Before the new `viewModelBundle` is loaded, check if another conversation is already loaded
-    // and save draft if necessary.
+    // and clear quote and save draft if necessary.
     if ($viewModelStore !== undefined) {
+      quote = undefined;
       saveDraftAndClearComposeBar($viewModelStore.receiver.lookup);
     }
 
