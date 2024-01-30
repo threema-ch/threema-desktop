@@ -223,12 +223,10 @@
       });
   }
 
-  async function handleClickSend(
-    event: CustomEvent<string | SendMessageEventDetail>,
-  ): Promise<void> {
+  function handleClickSend(event: CustomEvent<string | SendMessageEventDetail>): void {
     switch (typeof event.detail) {
       case 'object':
-        await viewModelController?.sendMessage(event.detail);
+        void viewModelController?.sendMessage(event.detail);
         break;
 
       case 'string': {
@@ -239,7 +237,7 @@
           return;
         }
 
-        await viewModelController?.sendMessage({
+        void viewModelController?.sendMessage({
           type: 'text',
           text,
           quotedMessageId: quote?.id,
