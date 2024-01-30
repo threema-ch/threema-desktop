@@ -82,7 +82,7 @@
   let modalState: ModalState = {type: 'none'};
 
   function handleClickDeleteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
-    void viewModelController?.deleteMessage(event.detail.id)?.catch((error) => {
+    void viewModelController?.deleteMessage(event.detail.id).catch((error) => {
       log.error(`Could not delete message with id ${event.detail.id}`, error);
       toast.addSimpleFailure(
         $i18n.t('messaging.error--delete-message', 'Could not delete message'),

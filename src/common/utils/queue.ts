@@ -89,6 +89,7 @@ export class Queue<V, E extends Error = Error> {
         if (this._error.done) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         this._error.reject(reason);
     }
 }
@@ -206,6 +207,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
             return;
         }
         this._error = reason;
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         this._waiters.error.reject(reason);
     }
 }

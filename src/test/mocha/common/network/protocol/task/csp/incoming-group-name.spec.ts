@@ -55,7 +55,7 @@ export function run(): void {
             });
 
             // Ensure that group name is AAA
-            expect(model.groups.getByUid(group.ctx)?.get()?.view.name).to.equal('AAA');
+            expect(model.groups.getByUid(group.ctx)?.get().view.name).to.equal('AAA');
 
             // Prepare payload
             const container = {
@@ -80,7 +80,7 @@ export function run(): void {
             handle.finish();
 
             // Ensure that group name was updated
-            expect(model.groups.getByUid(group.ctx)?.get()?.view.name).to.equal('BBB');
+            expect(model.groups.getByUid(group.ctx)?.get().view.name).to.equal('BBB');
         });
     });
 }

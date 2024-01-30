@@ -63,10 +63,10 @@ export function hash(
 
     // Ensure that 'personal' and 'salt' only use the first 8 bytes (i.e. the remaining bytes must
     // be zero-padding).
-    if (encoded.personal?.subarray(8)?.some((byte) => byte !== 0) ?? false) {
+    if (encoded.personal?.subarray(8).some((byte) => byte !== 0) ?? false) {
         throw new Error("Blake2b 'personal' too long");
     }
-    if (encoded.salt?.subarray(8)?.some((byte) => byte !== 0) ?? false) {
+    if (encoded.salt?.subarray(8).some((byte) => byte !== 0) ?? false) {
         throw new Error("Blake2b 'salt' too long");
     }
 
