@@ -624,14 +624,18 @@ package:linux-binary-buildonly:
         release) buildTarget=dmgSigned ;;
         *) echo "Invalid build type: $BUILD_TYPE"; exit 1
       esac
-      npm run package $buildTarget consumer-live,work-sandbox,work-live
+      npm run package $buildTarget "$FLAVORS"
     # Rename and upload DMGs
     - mkdir -p build/dmg/
     - |
-      for flavor in 'consumer-live' 'work-sandbox' 'work-live'; do
-
+      IFS=',' read -ra flavors <<< "$FLAVORS"
+      for flavor in "${flavors[@]}"; do
         # Determine filename
         case "$flavor" in
+          consumer-sandbox)
+            FILENAME="threema-sandbox-desktop"
+            DMG="ThreemaSandbox.dmg"
+            ;;
           consumer-live)
             FILENAME="threema-desktop"
             DMG="Threema.dmg"
@@ -725,6 +729,7 @@ package:macos-buildonly:
   allow_failure: true # Job is optional
   variables:
     PUBLISH: 'false'
+    FLAVORS: consumer-sandbox,consumer-live,work-sandbox,work-live
 
 # Build and publish macOS packages
 package:macos-publish:
@@ -734,6 +739,7 @@ package:macos-publish:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   variables:
     PUBLISH: 'true'
+    FLAVORS: consumer-live,work-sandbox,work-live
     FTP_HOST: $FTP_RELEASE_HOST
     FTP_PROTO: $FTP_RELEASE_PROTO
     FTP_PATH: /
