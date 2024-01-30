@@ -51,7 +51,9 @@
   let viewport = new Viewport(
     log,
     conversation.setCurrentViewportMessages,
-    conversation.initiallyVisibleMessageId ?? conversation.firstUnreadMessageId,
+    conversation.initiallyVisibleMessageId ??
+      conversation.firstUnreadMessageId ??
+      conversation.lastMessage?.id,
   );
 
   /**
@@ -67,7 +69,9 @@
 
   // Message that the chat view should be anchored to when it's (re-)initialized.
   let anchoredMessageId: MessageId | undefined =
-    conversation.initiallyVisibleMessageId ?? conversation.firstUnreadMessageId;
+    conversation.initiallyVisibleMessageId ??
+    conversation.firstUnreadMessageId ??
+    conversation.lastMessage?.id;
 
   // `MessageId` of the message that should be highlighted with an animation as soon as it becomes
   // visible (i.e., as soon as it was anchored).
@@ -248,7 +252,11 @@
   }
 
   function handleChangeConversation(): void {
-    reinitialize(conversation.initiallyVisibleMessageId ?? conversation.firstUnreadMessageId);
+    reinitialize(
+      conversation.initiallyVisibleMessageId ??
+        conversation.firstUnreadMessageId ??
+        conversation.lastMessage?.id,
+    );
     refreshUnreadState();
     markConversationAsRead();
   }
