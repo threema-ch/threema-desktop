@@ -172,10 +172,9 @@ type RouteDefinition<TRoute extends RawRouteDefinition & Partial<RoutePathDefini
 /**
  * Map parameter schemas to their resulting type (if any).
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RouteInstanceParams<TParams> = TParams extends v.ObjectType<any>
-    ? v.Infer<TParams>
-    : undefined;
+type RouteInstanceParams<TParams> =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TParams extends v.ObjectType<any> ? v.Infer<TParams> : undefined;
 
 /**
  * A route whose parameters have been validated using the corresponding schema.

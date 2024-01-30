@@ -22,6 +22,9 @@ overrides:
   - files: '*.{css,html,json,md,scss,svelte,yml}'
     options:
       tabWidth: 2
+  - files: '*.json'
+    options:
+      trailingComma: 'none'
   - files: '*.metainfo.xml'
     options:
       # Note: Only enable this for files that are whitespace-insensitive.

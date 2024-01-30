@@ -116,39 +116,32 @@ export interface RemoteModel<
 /**
  * Helper type to infer type parameters for a local model.
  */
-export type LocalModelFor<T> = T extends LocalModel<
-    infer TView,
-    infer TController,
-    infer TCtx,
-    infer TType
->
-    ? LocalModel<TView, TController, TCtx, TType>
-    : never;
+export type LocalModelFor<T> =
+    T extends LocalModel<infer TView, infer TController, infer TCtx, infer TType>
+        ? LocalModel<TView, TController, TCtx, TType>
+        : never;
 
 /**
  * Map a local model type to its remote model type.
  */
-export type RemoteModelFor<T> = T extends LocalModel<
-    infer TView,
-    infer TLocalController,
-    infer TCtx,
-    infer TType
->
-    ? RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>
-    : never;
+export type RemoteModelFor<T> =
+    T extends LocalModel<infer TView, infer TLocalController, infer TCtx, infer TType>
+        ? RemoteModel<TView, RemoteModelController<TLocalController>, TCtx, TType>
+        : never;
 
 /**
  * Map a local model store type to its remote model store type.
  */
-export type RemoteModelStoreFor<T> = T extends LocalModelStore<
-    infer TModel,
-    infer TView,
-    infer TLocalController,
-    infer TCtx,
-    infer TType
->
-    ? RemoteModelStore<TModel, TView, TLocalController, TCtx, TType>
-    : never;
+export type RemoteModelStoreFor<T> =
+    T extends LocalModelStore<
+        infer TModel,
+        infer TView,
+        infer TLocalController,
+        infer TCtx,
+        infer TType
+    >
+        ? RemoteModelStore<TModel, TView, TLocalController, TCtx, TType>
+        : never;
 
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 export type ControllerUpdateFromSource<

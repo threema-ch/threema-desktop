@@ -298,9 +298,10 @@ export type RemoteProxy<T> = RemoteProxyFunction<T> &
  *
  * @param TRemote The Remote Type.
  */
-export type Local<TRemote> = TRemote extends CustomTransferredRemoteMarker<unknown>
-    ? CustomTransferableLocal<TRemote>
-    : StructuredCloneOf<TRemote>;
+export type Local<TRemote> =
+    TRemote extends CustomTransferredRemoteMarker<unknown>
+        ? CustomTransferableLocal<TRemote>
+        : StructuredCloneOf<TRemote>;
 
 /**
  * Maps our custom remote transfer marked types to the matching local counterpart type.
@@ -405,28 +406,23 @@ type MustExtend<TType, T extends TType> = T;
  * IMPORTANT: Only types that are **uniquely** tagged with symbols or unique key/value types may be
  *            used here, otherwise false positives are possible.
  */
-type CustomTransferableRemote<T extends CustomTransferable> = T extends LocalModelStore<
-    infer TModel,
-    infer TView,
-    infer TController,
-    infer TCtx,
-    infer TType
->
-    ? RemoteModelStore<TModel, TView, TController, TCtx, TType>
-    : T extends IDerivableSetStore<infer TValue>
-      ? // TValue must extends CustomTransferrable. We cannot enforce this since the remote mapping
-        // of a CustomTransferrable is a plain object.
-        RemoteSetStore<MustExtend<object, Remote<TValue>>>
-      : T extends LocalStore<
-              infer TValue,
-              RegisteredTransferHandler<any, any, any, any, TransferTag>
-          >
-        ? RemoteStore<Remote<TValue>>
-        : T extends PropertiesMarked
-          ? PropertiesMarkedRemote<T>
-          : T extends ProxyMarked
-            ? RemoteProxy<T>
-            : never;
+type CustomTransferableRemote<T extends CustomTransferable> =
+    T extends LocalModelStore<infer TModel, infer TView, infer TController, infer TCtx, infer TType>
+        ? RemoteModelStore<TModel, TView, TController, TCtx, TType>
+        : T extends IDerivableSetStore<infer TValue>
+          ? // TValue must extends CustomTransferrable. We cannot enforce this since the remote mapping
+            // of a CustomTransferrable is a plain object.
+            RemoteSetStore<MustExtend<object, Remote<TValue>>>
+          : T extends LocalStore<
+                  infer TValue,
+                  RegisteredTransferHandler<any, any, any, any, TransferTag>
+              >
+            ? RemoteStore<Remote<TValue>>
+            : T extends PropertiesMarked
+              ? PropertiesMarkedRemote<T>
+              : T extends ProxyMarked
+                ? RemoteProxy<T>
+                : never;
 
 /**
  * Approximation of Structured Clone Algorithm result type. See
