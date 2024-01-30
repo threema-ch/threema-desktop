@@ -552,6 +552,31 @@ package:flatpak-public-publish:
     FTP_USER: flatpak-internal
     # Set FTP_PASS variable in CI!
 
+# An optional, manually-triggered, build-but-not-publish Linux binary job
+package:linux-binary-buildonly:
+  stage: package
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'develop'
+      when: never
+    - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
+      when: never
+    - when: manual
+  allow_failure: true # Job is optional
+  parallel:
+    matrix:
+      - FLAVOR: [consumer-sandbox, consumer-live, work-sandbox, work-live]
+  script:
+    # Install dependencies
+    - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
+
+    # Build EXE binary
+    - npm run package binary $FLAVOR
+  artifacts:
+    paths:
+      - build/out/
+    expire_in: 2d
+
 .macos: &macos
   stage: package
   parallel:

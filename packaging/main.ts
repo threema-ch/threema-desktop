@@ -253,7 +253,9 @@ function printUsage(errormsg?: string): void {
     console.info(`  msixSigned: [FLAVORS]`);
     console.info(`  binary: [FLAVORS]`);
     console.info(`  binarySigned: [FLAVORS]`);
-    console.info(`\nAvailable build flavors: consumer-live,work-sandbox,work-live`);
+    console.info(
+        `\nAvailable build flavors: consumer-live,work-live,consumer-sandbox,work-sandbox`,
+    );
     console.info(`The FLAVORS arg can contain multiple flavors, separated by comma.`);
 }
 
