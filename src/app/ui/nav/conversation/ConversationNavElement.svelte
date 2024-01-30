@@ -5,7 +5,10 @@
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
   import DateTime from '~/app/ui/components/atoms/datetime/DateTime.svelte';
-  import {conversationDrafts} from '~/app/ui/components/partials/conversation/drafts';
+  import {
+    type ConversationDraftStore,
+    conversationDrafts,
+  } from '~/app/ui/components/partials/conversation/drafts';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';
@@ -134,7 +137,7 @@
   }
 
   // Temporary draft mechanism. TODO(DESK-306) full implementation.
-  let conversationDraft: string | undefined;
+  let conversationDraftStore: ConversationDraftStore | undefined;
 
   $: {
     if ($router.main.id === 'conversation') {
@@ -142,8 +145,9 @@
       active =
         routeReceiverLookup.type === receiver$.lookup.type &&
         routeReceiverLookup.uid === receiver$.lookup.uid;
-      const conversationDraftStore = conversationDrafts.getOrCreateStore(receiver$.lookup);
-      conversationDraft = active ? undefined : conversationDraftStore.get();
+      conversationDraftStore = active
+        ? undefined
+        : conversationDrafts.getOrCreateStore(receiver$.lookup);
     } else {
       active = false;
     }
@@ -159,8 +163,8 @@
     }
 
     // Use draft as preview if there is any.
-    if (conversationDraft !== undefined) {
-      previewText = conversationDraft;
+    if ($conversationDraftStore !== undefined && !active) {
+      previewText = $conversationDraftStore;
       break $;
     }
 
@@ -223,7 +227,7 @@
             isInvalid: isInvalidContact($receiver),
             isArchived: conversation$.visibility === ConversationVisibility.ARCHIVED,
             // Note: "$message?.draft" will be set once DESK-306 is implemented. So far, it does nothing.
-            isDraft: conversationDraft !== undefined,
+            isDraft: $conversationDraftStore !== undefined && !active,
           }}
           filter={$conversationPreviewListFilter}
         >
