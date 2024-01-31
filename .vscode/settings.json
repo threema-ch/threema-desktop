@@ -15,5 +15,6 @@
   "eslint.validate": ["html", "svelte", "typescript", "javascript"],
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
   "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
   "rewrap.wrappingColumn": 100
 }
