@@ -84,7 +84,7 @@
     "ts-events": "3.4.1",
     "ts-sql-query": "1.58.0",
     "tweetnacl": "1.0.3",
-    "web-streams-polyfill": "~3.2.1"
+    "web-streams-polyfill": "~3.3.2"
   },
   "electron": {
     "external": [
