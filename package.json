@@ -129,7 +129,7 @@
     "@typescript-eslint/parser": "~6.20.0",
     "@typescript-eslint/types": "~6.20.0",
     "@typescript-eslint/utils": "~6.20.0",
-    "chai": "~4.3.10",
+    "chai": "~4.4.1",
     "debug": "~4.3.3",
     "electron": "28.2.0",
     "electron-installer-dmg": "~4.0.0",
