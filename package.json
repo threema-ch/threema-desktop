@@ -118,7 +118,7 @@
     "@sveltejs/vite-plugin-svelte": "2.4.6",
     "@types/chai": "~4.3.0",
     "@types/debug": "~4.1.7",
-    "@types/electron-installer-dmg": "~3.0.1",
+    "@types/electron-installer-dmg": "~4.0.3",
     "@types/estree": "~1.0.0",
     "@types/fs-extra": "~11.0.4",
     "@types/mocha": "~10.0.0",
