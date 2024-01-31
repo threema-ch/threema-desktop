@@ -167,7 +167,7 @@
     "svelte2tsx": "~0.6.21",
     "threema-svelte-components": "file:libs/threema-svelte-components",
     "ts-proto": "~1.165.1",
-    "typescript": "~5.2.2",
+    "typescript": "~5.3.3",
     "typescript-eslint-parser-for-extra-files": "~0.6.0",
     "vite": "4.5.2",
     "vite-tsconfig-paths": "4.2.1"
