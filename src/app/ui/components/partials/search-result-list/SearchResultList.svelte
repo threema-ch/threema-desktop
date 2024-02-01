@@ -17,7 +17,6 @@
   import {i18n} from '~/app/ui/i18n';
   import type {Remote} from '~/common/utils/endpoint';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
-  import type {ProfileViewModelStore} from '~/common/viewmodel/profile';
   import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
   import type {SearchParams} from '~/common/viewmodel/search/nav/controller';
 
@@ -48,7 +47,6 @@
   let viewModelStore: IQueryableStore<
     ReturnType<Remote<SearchViewModelBundle>['viewModelStore']['get']> | undefined
   > = new ReadableStore(undefined);
-  let profileViewModelStore: Remote<ProfileViewModelStore> | undefined;
 
   let searchParams: SearchParams = DEFAULT_SEARCH_PARAMS;
 
@@ -60,15 +58,6 @@
     })
     .catch((error) => {
       log.error('Loading search view model bundle failed', error);
-    });
-
-  viewModel
-    .profile()
-    .then((loadedProfileViewModelStore) => {
-      profileViewModelStore = loadedProfileViewModelStore;
-    })
-    .catch((error) => {
-      log.error('Loading profile view model failed', error);
     });
 
   function handleClickSearchMoreConversationsButton(): void {
@@ -209,13 +198,6 @@
             {...$messagePreviewListProps}
             highlights={searchParams.term}
             {services}
-            user={$profileViewModelStore === undefined
-              ? undefined
-              : {
-                  color: $profileViewModelStore.profilePicture.color,
-                  initials: $profileViewModelStore.initials,
-                  picture: $profileViewModelStore.profilePicture.picture,
-                }}
           />
         </div>
 

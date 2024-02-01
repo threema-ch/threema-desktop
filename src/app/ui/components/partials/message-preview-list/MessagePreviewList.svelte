@@ -31,7 +31,6 @@
   export let highlights: $$Props['highlights'] = undefined;
   export let items: $$Props['items'] = [];
   export let services: $$Props['services'];
-  export let user: $$Props['user'] = undefined;
 
   const {
     profilePicture,
@@ -84,16 +83,8 @@
                     size={24}
                   />
                 {/await}
-              {:else if user === undefined || message.sender === undefined}
-                <!-- If `user` is `undefined`, don't show an avatar at all. -->
               {:else}
-                <Avatar
-                  byteStore={new ReadableStore(user?.picture)}
-                  color={user.color}
-                  description={$i18n.t('contacts.hint--own-profile-picture')}
-                  initials={user.initials}
-                  size={24}
-                />
+                <!-- Don't show a profile picture, as the sender is either `undefined` or the user themself. -->
               {/if}
             </span>
 

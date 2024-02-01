@@ -3,8 +3,6 @@ import type {MessageProps} from '~/app/ui/components/molecules/message/props';
 import type {SanitizeAndParseTextToHtmlOptions} from '~/app/ui/utils/text';
 import type {DbContactUid} from '~/common/db';
 import type {MessageId} from '~/common/network/types';
-import type {ReadonlyUint8Array} from '~/common/types';
-import type {IdColor} from '~/common/utils/id-color';
 import type {AnyReceiverData} from '~/common/viewmodel/utils/receiver';
 
 /**
@@ -17,11 +15,6 @@ export interface MessagePreviewListProps {
     readonly highlights?: string | string[];
     readonly items: MessagePreviewListItemProps[];
     readonly services: Pick<AppServices, 'blobCache' | 'profilePicture' | 'router' | 'settings'>;
-    readonly user?: {
-        readonly color: IdColor;
-        readonly initials: string;
-        readonly picture?: ReadonlyUint8Array;
-    };
 }
 
 interface MessagePreviewListItemProps {
