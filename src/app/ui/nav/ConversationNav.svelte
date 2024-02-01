@@ -39,6 +39,7 @@
 
   let searchInput: SearchInput | null | undefined;
   let conversationList: ConversationNavList | null | undefined;
+  let searchResultList: SearchResultList | null | undefined;
 
   function handleHotkeyControlF(): void {
     searchInput?.select();
@@ -102,13 +103,20 @@
     <div class="search">
       <SearchInput
         bind:this={searchInput}
-        placeholder={$i18n.t('search.label--search-input-placeholder', 'Search...')}
         bind:value={$conversationPreviewListFilter}
+        placeholder={$i18n.t('search.label--search-input-placeholder', 'Search...')}
+        refresh={() => {
+          searchResultList?.refresh();
+        }}
         on:reset={scrollToActiveConversation}
       />
     </div>
     <div class="results">
-      <SearchResultList searchTerm={$conversationPreviewListFilter} {services} />
+      <SearchResultList
+        bind:this={searchResultList}
+        searchTerm={$conversationPreviewListFilter}
+        {services}
+      />
     </div>
 
     {#await viewModel.conversationPreviews(translationsForBackend) then conversationPreviews}

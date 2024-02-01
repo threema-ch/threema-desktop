@@ -7,10 +7,16 @@
    * Placeholder text.
    */
   export let placeholder: string;
+
   /**
    * Input box value.
    */
   export let value = '';
+
+  /**
+   * Function to call to request a refresh of search results.
+   */
+  export let refresh: (() => void) | undefined = undefined;
 
   // Input element
   let input: HTMLInputElement;
@@ -32,10 +38,13 @@
     dispatch('reset');
   }
 
-  // Reset the value when the ESC key is pressed
-  function handleEsc(event: KeyboardEvent): void {
+  // Reset the value when the `esc` key is pressed, refresh on `enter`.
+  function handleKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       reset();
+    }
+    if (event.key === 'Enter') {
+      refresh?.();
     }
   }
 
@@ -67,7 +76,7 @@
       bind:this={input}
       spellcheck="false"
       bind:value
-      on:keydown={handleEsc}
+      on:keydown={handleKeydown}
       {...$$restProps}
     />
     {#if value.length > 0}

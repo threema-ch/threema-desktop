@@ -3,6 +3,10 @@ import {PROXY_HANDLER, TRANSFER_HANDLER, type ProxyMarked} from '~/common/utils/
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 
 export interface ISearchViewModelController extends ProxyMarked {
+    /**
+     * Triggers a refresh of the search results, even if the search params haven't changed.
+     */
+    readonly refresh: () => void;
     readonly setSearchParams: (params: SearchParams) => void;
     get searchParams(): IQueryableStore<SearchParams | undefined>;
 }
@@ -37,6 +41,13 @@ export class SearchViewModelController implements ISearchViewModelController {
 
     public get searchParams(): IQueryableStore<SearchParams | undefined> {
         return this._currentSearchParamsStore;
+    }
+
+    /** @inheritdoc */
+    public refresh(): void {
+        this._currentSearchParamsStore.update((currentValue) =>
+            currentValue === undefined ? undefined : {...currentValue},
+        );
     }
 
     public setSearchParams(params: SearchParams): void {

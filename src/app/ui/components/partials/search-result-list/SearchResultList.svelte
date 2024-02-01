@@ -60,6 +60,13 @@
       log.error('Loading search view model bundle failed', error);
     });
 
+  /**
+   * Refresh search results.
+   */
+  export function refresh(): void {
+    void viewModelController?.refresh();
+  }
+
   function handleClickSearchMoreConversationsButton(): void {
     searchParams = {
       ...searchParams,
