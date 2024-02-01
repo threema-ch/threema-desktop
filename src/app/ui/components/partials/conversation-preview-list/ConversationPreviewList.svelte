@@ -94,7 +94,6 @@
               item.isArchived,
               lastMessage,
               item.receiver,
-              highlights,
             ),
             bottomRight:
               lastMessage === undefined

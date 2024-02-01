@@ -11,7 +11,6 @@ export function getReceiverCardBottomLeftItemOptions(
     isArchived: boolean,
     lastMessage: ConversationPreviewListItemProps['lastMessage'],
     receiver: AnyReceiverData,
-    highlights?: string | string[],
 ): AnyContentItemOptions[] | undefined {
     const lastMessageItem =
         lastMessage === undefined
@@ -20,7 +19,7 @@ export function getReceiverCardBottomLeftItemOptions(
                   {
                       type: 'text',
                       text: {
-                          html: getLastMessagePreviewText(i18n, receiver, lastMessage, highlights),
+                          html: getLastMessagePreviewText(i18n, receiver, lastMessage),
                       },
                   } as const,
               ];
@@ -82,12 +81,10 @@ function getLastMessagePreviewText(
         NonNullable<ConversationPreviewListItemProps['lastMessage']>,
         'file' | 'sender' | 'text'
     >,
-    highlights?: string | string[],
 ): SanitizedHtml {
     let text: SanitizedHtml | undefined = undefined;
     if (lastMessage.text !== undefined) {
         text = sanitizeAndParseTextToHtml(lastMessage.text.raw, i18n.t, {
-            highlights,
             mentions: undefined,
             shouldLinkMentions: false,
             shouldParseLinks: false,

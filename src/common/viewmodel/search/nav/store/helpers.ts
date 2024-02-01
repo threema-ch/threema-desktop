@@ -4,7 +4,6 @@ import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
 import {getConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
-import {getMessageText} from '~/common/viewmodel/conversation/main/message/store/helpers';
 import type {SearchParams} from '~/common/viewmodel/search/nav/controller';
 import type {
     ConversationSearchResult,
@@ -45,26 +44,6 @@ export function getConversationSearchResults(
                 } else if (filteredConversations.length < searchParams.limits.conversations) {
                     continue;
                 } else {
-                    break;
-                }
-            }
-
-            const lastMessage = conversationController.lastMessageStore().get()?.get();
-            const lastMessageText =
-                lastMessage === undefined ? undefined : getMessageText(services, lastMessage);
-
-            if (
-                lastMessageText?.raw.toLowerCase().includes(searchParams.term.toLowerCase()) ===
-                true
-            ) {
-                filteredConversations.push(
-                    getConversationSearchResult(services, conversationModelStore, getAndSubscribe),
-                );
-
-                if (
-                    searchParams.limits.conversations !== undefined &&
-                    filteredConversations.length >= searchParams.limits.conversations
-                ) {
                     break;
                 }
             }
