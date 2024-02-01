@@ -1,6 +1,8 @@
 import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
 import type {MessagePreviewListProps} from '~/app/ui/components/partials/message-preview-list/props';
 import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
+import {ConversationCategory, ConversationVisibility} from '~/common/enum';
+import {conversationCompareFn} from '~/common/model/utils/conversation';
 import type {u53} from '~/common/types';
 import {chunkBy} from '~/common/utils/array';
 import type {Remote} from '~/common/utils/endpoint';
@@ -29,30 +31,33 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
     return derive(
         conversationSearchResultSetStore,
         (conversationSearchResultSet, getAndSubscribe) => ({
-            items: [...conversationSearchResultSet].slice(0, limit).map((result) => {
-                const lastMessageViewModelStore = result.lastMessage?.viewModelStore;
-                const lastMessageViewModel =
-                    lastMessageViewModelStore === undefined
-                        ? undefined
-                        : getAndSubscribe(lastMessageViewModelStore);
-
-                return {
-                    isArchived: result.isArchived,
-                    isPinned: result.isPinned,
-                    isPrivate: result.isPrivate,
-                    lastMessage:
-                        lastMessageViewModel === undefined
+            items: [...conversationSearchResultSet]
+                .slice(0, limit)
+                .sort(conversationCompareFn)
+                .map((result) => {
+                    const lastMessageViewModelStore = result.lastMessage?.viewModelStore;
+                    const lastMessageViewModel =
+                        lastMessageViewModelStore === undefined
                             ? undefined
-                            : {
-                                  file: lastMessageViewModel.file,
-                                  reactions: lastMessageViewModel.reactions,
-                                  sender: lastMessageViewModel.sender,
-                                  status: lastMessageViewModel.status,
-                                  text: lastMessageViewModel.text,
-                              },
-                    receiver: result.receiver,
-                };
-            }),
+                            : getAndSubscribe(lastMessageViewModelStore);
+
+                    return {
+                        isArchived: result.visibility === ConversationVisibility.ARCHIVED,
+                        isPinned: result.visibility === ConversationVisibility.PINNED,
+                        isPrivate: result.category === ConversationCategory.PROTECTED,
+                        lastMessage:
+                            lastMessageViewModel === undefined
+                                ? undefined
+                                : {
+                                      file: lastMessageViewModel.file,
+                                      reactions: lastMessageViewModel.reactions,
+                                      sender: lastMessageViewModel.sender,
+                                      status: lastMessageViewModel.status,
+                                      text: lastMessageViewModel.text,
+                                  },
+                        receiver: result.receiver,
+                    };
+                }),
         }),
     );
 }

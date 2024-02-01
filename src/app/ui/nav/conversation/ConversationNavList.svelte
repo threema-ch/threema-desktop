@@ -16,6 +16,7 @@
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
   import {ConversationVisibility} from '~/common/enum';
   import type {Conversation, RemoteModelFor} from '~/common/model';
+  import {conversationCompareFn} from '~/common/model/utils/conversation';
   import type {u53} from '~/common/types';
   import {unreachable, unwrap} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
@@ -211,36 +212,9 @@
             text.toLowerCase().includes(filterText),
           );
         })
-        .sort((a, b) => {
-          // Unwrap is okay as we filter out entries without lastUpdate
-          const aViewModel = getAndSubscribe(a.viewModel);
-          const bViewModel = getAndSubscribe(b.viewModel);
-
-          // Move pinned conversation to top
-          const aIsPinned = aViewModel.visibility === ConversationVisibility.PINNED;
-          const bIsPinned = bViewModel.visibility === ConversationVisibility.PINNED;
-          if (aIsPinned && !bIsPinned) {
-            return -1;
-          }
-          if (!aIsPinned && bIsPinned) {
-            return 1;
-          }
-
-          // Move archived conversation to bottom
-          const aIsArchived = aViewModel.visibility === ConversationVisibility.ARCHIVED;
-          const bIsArchived = bViewModel.visibility === ConversationVisibility.ARCHIVED;
-          if (aIsArchived && !bIsArchived) {
-            return 1;
-          }
-          if (!aIsArchived && bIsArchived) {
-            return -1;
-          }
-
-          // Sort by lastUpdate
-          const aTime = unwrap(aViewModel.lastUpdate).getTime();
-          const bTime = unwrap(bViewModel.lastUpdate).getTime();
-          return bTime - aTime;
-        });
+        .sort((a, b) =>
+          conversationCompareFn(getAndSubscribe(a.viewModel), getAndSubscribe(b.viewModel)),
+        );
 
       return sortedConversations;
     },

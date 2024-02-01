@@ -1,5 +1,5 @@
-import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import type {ConversationModelStore} from '~/common/model/conversation';
+import {conversationCompareFn} from '~/common/model/utils/conversation';
 import type {GetAndSubscribeFunction} from '~/common/utils/store/derived-store';
 import {LocalSetStore} from '~/common/utils/store/set-store';
 import type {ServicesForViewModel} from '~/common/viewmodel';
@@ -27,7 +27,11 @@ export function getConversationSearchResults(
 ): SearchViewModel['conversationSearchResults'] {
     const filteredConversations: ConversationSearchResult[] = [];
     if (searchParams.term !== undefined) {
-        for (const conversationModelStore of services.model.conversations.getAll().get()) {
+        const sortedConversations = [
+            ...getAndSubscribe(services.model.conversations.getAll()),
+        ].sort((a, b) => conversationCompareFn(getAndSubscribe(a).view, getAndSubscribe(b).view));
+
+        for (const conversationModelStore of sortedConversations) {
             const conversationController = conversationModelStore.get().controller;
             const commonData = getCommonReceiverData(conversationController.receiver().get());
 
@@ -90,9 +94,7 @@ export function getConversationSearchResult(
     const lastMessageModelStore = conversationModel.controller.lastMessageStore().get();
 
     return endpoint.exposeProperties({
-        isArchived: conversationModel.view.visibility === ConversationVisibility.ARCHIVED,
-        isPinned: conversationModel.view.visibility === ConversationVisibility.PINNED,
-        isPrivate: conversationModel.view.category === ConversationCategory.PROTECTED,
+        category: conversationModel.view.category,
         lastMessage:
             lastMessageModelStore === undefined
                 ? undefined
@@ -102,7 +104,9 @@ export function getConversationSearchResult(
                       conversationModelStore,
                       false,
                   ),
+        lastUpdate: conversationModel.view.lastUpdate,
         receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+        visibility: conversationModel.view.visibility,
     });
 }
 

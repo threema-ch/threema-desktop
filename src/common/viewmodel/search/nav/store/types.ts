@@ -1,3 +1,4 @@
+import type {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import type {PropertiesMarked} from '~/common/utils/endpoint';
 import type {LocalSetStore} from '~/common/utils/store/set-store';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
@@ -18,11 +19,11 @@ export interface SearchViewModel {
  * Data of a single conversation search result.
  */
 export interface ConversationSearchResult extends PropertiesMarked {
-    readonly isArchived: boolean;
-    readonly isPinned: boolean;
-    readonly isPrivate: boolean;
+    readonly category: ConversationCategory;
     readonly lastMessage: ConversationMessageViewModelBundle | undefined;
+    readonly lastUpdate: Date | undefined;
     readonly receiver: AnyReceiverData;
+    readonly visibility: ConversationVisibility;
 }
 
 /**
