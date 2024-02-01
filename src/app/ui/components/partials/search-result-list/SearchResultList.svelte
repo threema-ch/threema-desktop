@@ -35,9 +35,9 @@
   const DEFAULT_SEARCH_PARAMS = {
     term: undefined,
     limits: {
-      conversations: 4,
-      messages: 4,
-      receivers: 4,
+      conversations: 5,
+      messages: 5,
+      receivers: 5,
     },
   };
 
@@ -128,19 +128,30 @@
       ? undefined
       : conversationSearchResultSetStoreToConversationPreviewListPropsStore(
           conversationSearchResults,
+          searchParams.limits.conversations === undefined
+            ? undefined
+            : searchParams.limits.conversations - 1,
         );
 
   $: messageSearchResults = $viewModelStore?.messageSearchResults;
   $: messagePreviewListProps =
     messageSearchResults === undefined
       ? undefined
-      : messageSearchResultSetStoreToMessagePreviewListPropsStore(messageSearchResults);
+      : messageSearchResultSetStoreToMessagePreviewListPropsStore(
+          messageSearchResults,
+          searchParams.limits.messages === undefined ? undefined : searchParams.limits.messages - 1,
+        );
 
   $: receiverSearchResults = $viewModelStore?.receiverSearchResults;
   $: receiverPreviewListProps =
     receiverSearchResults === undefined
       ? undefined
-      : receiverSearchResultSetStoreToReceiverPreviewListPropsStore(receiverSearchResults);
+      : receiverSearchResultSetStoreToReceiverPreviewListPropsStore(
+          receiverSearchResults,
+          searchParams.limits.receivers === undefined
+            ? undefined
+            : searchParams.limits.receivers - 1,
+        );
 
   $: handleChangeSearchTerm(searchTerm);
   $: void handleChangeSearchParams(searchParams);
@@ -172,7 +183,7 @@
           {services}
         />
 
-        {#if $conversationPreviewListProps.items.length >= (searchParams.limits.conversations ?? DEFAULT_SEARCH_PARAMS.limits.conversations)}
+        {#if ($conversationSearchResults?.size ?? 0) >= (searchParams.limits.conversations ?? DEFAULT_SEARCH_PARAMS.limits.conversations)}
           <button class="expand" on:click={handleClickSearchMoreConversationsButton}>
             {$i18n.t('search.action--search-more', 'Find more')}
 
@@ -208,7 +219,7 @@
           />
         </div>
 
-        {#if $messagePreviewListProps.items.reduce((acc, conversation) => acc + conversation.messages.length, 0) >= (searchParams.limits.messages ?? DEFAULT_SEARCH_PARAMS.limits.messages)}
+        {#if ($messageSearchResults?.size ?? 0) >= (searchParams.limits.messages ?? DEFAULT_SEARCH_PARAMS.limits.messages)}
           <button class="expand" on:click={handleClickSearchMoreMessagesButton}>
             {$i18n.t('search.action--search-more')}
 
@@ -246,7 +257,7 @@
           {services}
         />
 
-        {#if $receiverPreviewListProps.items.length >= (searchParams.limits.receivers ?? DEFAULT_SEARCH_PARAMS.limits.receivers)}
+        {#if ($receiverSearchResults?.size ?? 0) >= (searchParams.limits.receivers ?? DEFAULT_SEARCH_PARAMS.limits.receivers)}
           <button class="expand" on:click={handleClickSearchMoreReceiversButton}>
             {$i18n.t('search.action--search-more')}
 

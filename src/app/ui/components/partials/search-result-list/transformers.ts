@@ -20,11 +20,16 @@ import type {
  */
 export function conversationSearchResultSetStoreToConversationPreviewListPropsStore(
     conversationSearchResultSetStore: RemoteSetStore<Remote<ConversationSearchResult>>,
+    /**
+     * Max count of items to include. If not defined, the count of items in the source store will be
+     * used.
+     */
+    limit?: u53,
 ): IQueryableStore<Omit<ConversationPreviewListProps, 'services'>> {
     return derive(
         conversationSearchResultSetStore,
         (conversationSearchResultSet, getAndSubscribe) => ({
-            items: [...conversationSearchResultSet].map((result) => {
+            items: [...conversationSearchResultSet].slice(0, limit).map((result) => {
                 const lastMessageViewModelStore = result.lastMessage?.viewModelStore;
                 const lastMessageViewModel =
                     lastMessageViewModelStore === undefined
@@ -58,10 +63,15 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
  */
 export function messageSearchResultSetStoreToMessagePreviewListPropsStore(
     messageSearchResultSetStore: RemoteSetStore<Remote<MessageSearchResult>>,
+    /**
+     * Max count of items to include. If not defined, the count of items in the source store will be
+     * used.
+     */
+    limit?: u53,
 ): IQueryableStore<Omit<MessagePreviewListProps, 'services'>> {
     return derive(messageSearchResultSetStore, (messageSearchResultSet, getAndSubscribe) => ({
         items: chunkBy(
-            [...messageSearchResultSet],
+            [...messageSearchResultSet].slice(0, limit),
             (result) => result.conversation.receiver.lookup.uid,
         ).map((groupedResults) => ({
             // As the results were only chunked, it is certain that each chunk has at least one
@@ -99,9 +109,14 @@ export function messageSearchResultSetStoreToMessagePreviewListPropsStore(
  */
 export function receiverSearchResultSetStoreToReceiverPreviewListPropsStore(
     receiverSearchResultSetStore: RemoteSetStore<Remote<ReceiverSearchResult>>,
+    /**
+     * Max count of items to include. If not defined, the count of items in the source store will be
+     * used.
+     */
+    limit?: u53,
 ): IQueryableStore<Omit<ReceiverPreviewListProps, 'services'>> {
     return derive(receiverSearchResultSetStore, (receiverSearchResultSet) => ({
-        items: [...receiverSearchResultSet].map((result) => ({
+        items: [...receiverSearchResultSet].slice(0, limit).map((result) => ({
             receiver: result.receiver,
         })),
     }));
