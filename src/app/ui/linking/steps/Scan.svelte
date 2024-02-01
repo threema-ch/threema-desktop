@@ -1,8 +1,8 @@
 <script lang="ts">
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import QrCode from '#3sc/components/generic/QrCode/QrCode.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import QrCode from '~/app/ui/svelte-components/generic/QrCode/QrCode.svelte';
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';

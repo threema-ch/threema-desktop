@@ -5,7 +5,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {ItemProps} from '~/app/ui/components/molecules/key-value-list/internal/item/props';
 
   type $$Props = ItemProps;

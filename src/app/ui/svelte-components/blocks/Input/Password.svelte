@@ -3,7 +3,7 @@
 
   import {tick} from 'svelte';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
 
   /**
    * The user input.

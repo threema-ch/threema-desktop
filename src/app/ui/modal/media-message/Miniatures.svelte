@@ -1,8 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import FileTrigger from '~/app/ui/svelte-components/blocks/FileTrigger/FileTrigger.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {MediaFile, ValidationResult} from '~/app/ui/modal/media-message';
   import Miniature from '~/app/ui/modal/media-message/Miniature.svelte';
   import type {u53} from '~/common/types';

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Button from '#3sc/components/blocks/Button/Button.svelte';
-  import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
-  import type {Modal} from '#3sc/components/blocks/ModalDialog';
-  import {unreachable} from '#3sc/utils/assert';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
+  import type {Modal} from '~/app/ui/svelte-components/blocks/ModalDialog';
+  import {unreachable} from '~/app/ui/svelte-components/utils/assert';
 
   interface ConfirmOnlyProps {
     cancelText?: undefined;

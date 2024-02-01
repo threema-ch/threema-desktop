@@ -7,8 +7,8 @@
 </script>
 
 <script lang="ts">
-  import Button from '#3sc/components/blocks/Button/Button.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardStateError} from '~/app/ui/linking';

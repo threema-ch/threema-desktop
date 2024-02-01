@@ -5,10 +5,10 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
-  import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
-  import MenuItemDivider from '#3sc/components/generic/Menu/MenuItemDivider.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
+  import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
+  import MenuItemDivider from '~/app/ui/svelte-components/generic/Menu/MenuItemDivider.svelte';
   import type {ContextMenuProviderProps} from '~/app/ui/components/hocs/context-menu-provider/props';
   import type {
     ContextMenuItem,

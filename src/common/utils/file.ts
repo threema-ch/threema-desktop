@@ -1,4 +1,4 @@
-import {mediaTypeToExtensions} from '#3sc/utils/mediatype';
+import {mediaTypeToExtensions} from '~/app/ui/svelte-components/utils/mediatype';
 import type {ReadonlyUint8Array} from '~/common/types';
 
 /**

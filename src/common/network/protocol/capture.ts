@@ -1,4 +1,7 @@
-import type {Packet as DisplayPacket, PacketDirection} from '#3sc/components/generic/PacketFlow';
+import type {
+    Packet as DisplayPacket,
+    PacketDirection,
+} from '~/app/ui/svelte-components/generic/PacketFlow';
 import {type D2mPayloadType, D2mPayloadTypeUtils} from '~/common/enum';
 import type {ProtocolError, ProtocolErrorType} from '~/common/error';
 import {Struct} from '~/common/network/structbuf/base';

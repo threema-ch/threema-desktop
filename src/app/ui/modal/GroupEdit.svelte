@@ -1,10 +1,10 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import TextInput from '#3sc/components/blocks/Input/Text.svelte';
-  import CancelAndConfirm from '#3sc/components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
-  import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
-  import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import TextInput from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
+  import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
+  import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
+  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import {assertRoute} from '~/app/routing';
   import type {AppServices} from '~/app/types';
   import {getProfilePictureAndMemberStores} from '~/app/ui/aside/group-details';

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let visible: boolean;

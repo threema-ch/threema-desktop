@@ -5,7 +5,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import LazyList from '~/app/ui/components/hocs/lazy-list/LazyList.svelte';

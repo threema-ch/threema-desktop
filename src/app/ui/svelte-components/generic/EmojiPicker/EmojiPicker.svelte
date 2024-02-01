@@ -3,7 +3,7 @@
 
   import emoji from './emoji.html?raw';
 
-  import {unwrap} from '#3sc/utils/assert';
+  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
 
   let wrapper: HTMLElement | null = null;
 

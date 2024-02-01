@@ -9,8 +9,8 @@
     type TreeItemType,
   } from '.';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {limited, type LimitedArray} from '#3sc/utils/array';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import {limited, type LimitedArray} from '~/app/ui/svelte-components/utils/array';
 
   /**
    * Key of the associated object. Used in case the object is a child of

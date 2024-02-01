@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import Button from '#3sc/components/blocks/Button/Button.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';

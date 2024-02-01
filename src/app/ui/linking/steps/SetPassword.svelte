@@ -1,8 +1,8 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import Button from '#3sc/components/blocks/Button/Button.svelte';
-  import Password from '#3sc/components/blocks/Input/Password.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
   import {APP_CONFIG} from '~/app/config';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardStateSetPassword} from '~/app/ui/linking';

@@ -3,7 +3,6 @@
   Renders search results (conversations, messages, and receivers) for a given search term.
 -->
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import ConversationPreviewList from '~/app/ui/components/partials/conversation-preview-list/ConversationPreviewList.svelte';
   import MessagePreviewList from '~/app/ui/components/partials/message-preview-list/MessagePreviewList.svelte';
@@ -15,6 +14,7 @@
     receiverSearchResultSetStoreToReceiverPreviewListPropsStore,
   } from '~/app/ui/components/partials/search-result-list/transformers';
   import {i18n} from '~/app/ui/i18n';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {Remote} from '~/common/utils/endpoint';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
   import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';

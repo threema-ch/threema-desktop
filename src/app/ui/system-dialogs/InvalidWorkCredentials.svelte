@@ -1,14 +1,14 @@
 <script lang="ts">
   import {tick} from 'svelte';
 
-  import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
-  import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
-  import Button from 'threema-svelte-components/src/components/blocks/Button/Button.svelte';
-  import CircularProgress from 'threema-svelte-components/src/components/blocks/CircularProgress/CircularProgress.svelte';
-  import MdIcon from 'threema-svelte-components/src/components/blocks/Icon/MdIcon.svelte';
-  import Password from 'threema-svelte-components/src/components/blocks/Input/Password.svelte';
-  import TextInput from 'threema-svelte-components/src/components/blocks/Input/Text.svelte';
-  import type {Modal} from 'threema-svelte-components/src/components/blocks/ModalDialog';
+  import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
+  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
+  import TextInput from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
+  import type {Modal} from '~/app/ui/svelte-components/blocks/ModalDialog';
   import type {AppServices} from '~/app/types';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';

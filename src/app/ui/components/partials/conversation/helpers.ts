@@ -1,4 +1,4 @@
-import type {FileResult} from '#3sc/utils/filelist';
+import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
 import type {i18n as i18nStore} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
 import {type FileLoadResult, validateFiles} from '~/app/ui/utils/file';

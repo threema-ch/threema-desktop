@@ -5,9 +5,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import {
     provideContextMenuEntries,

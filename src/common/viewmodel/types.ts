@@ -1,7 +1,7 @@
 import type {
     VerificationLevel,
     VerificationLevelColors,
-} from '#3sc/components/threema/VerificationDots';
+} from '~/app/ui/svelte-components/threema/VerificationDots';
 import type {DbContactUid} from '~/common/db';
 
 /**

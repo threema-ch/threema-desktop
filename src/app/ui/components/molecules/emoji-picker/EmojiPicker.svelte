@@ -1,8 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import EmojiGroups from '#3sc/components/generic/EmojiPicker/EmojiGroups.svelte';
-  import EmojiPicker from '#3sc/components/generic/EmojiPicker/EmojiPicker.svelte';
+  import EmojiGroups from '~/app/ui/svelte-components/generic/EmojiPicker/EmojiGroups.svelte';
+  import EmojiPicker from '~/app/ui/svelte-components/generic/EmojiPicker/EmojiPicker.svelte';
   import type {u53} from '~/common/types';
 
   const dispatch = createEventDispatcher<{

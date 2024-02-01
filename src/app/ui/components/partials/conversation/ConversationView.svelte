@@ -1,9 +1,9 @@
 <script lang="ts">
   import {onDestroy} from 'svelte/internal';
 
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import type {FileResult} from '#3sc/utils/filelist';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';

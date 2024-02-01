@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {GlobalPropertyKey} from '~/common/enum';
   import type {IGlobalPropertyModel} from '~/common/model/types/settings';

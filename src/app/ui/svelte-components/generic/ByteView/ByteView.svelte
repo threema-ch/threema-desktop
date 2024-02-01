@@ -1,8 +1,8 @@
 <script lang="ts">
   import {parse, type ParsedBytes} from '.';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import {limited, type LimitedArray} from '#3sc/utils/array';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import {limited, type LimitedArray} from '~/app/ui/svelte-components/utils/array';
 
   /**
    * Bytes to be displayed.

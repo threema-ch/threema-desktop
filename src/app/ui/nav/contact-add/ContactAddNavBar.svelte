@@ -1,9 +1,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import Button from '#3sc/components/blocks/Button/Button.svelte';
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
 
   const dispatch = createEventDispatcher();

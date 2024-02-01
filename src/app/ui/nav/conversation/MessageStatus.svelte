@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {MessageDirection, ReceiverType} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
   import type {MessageStatus} from '~/common/viewmodel/types';

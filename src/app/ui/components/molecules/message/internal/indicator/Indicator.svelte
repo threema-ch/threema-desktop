@@ -3,7 +3,7 @@
   Renders status indicator icons of a message.
 -->
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import {getIndicatorElements} from '~/app/ui/components/molecules/message/internal/indicator/helpers';
   import type {IndicatorProps} from '~/app/ui/components/molecules/message/internal/indicator/props';

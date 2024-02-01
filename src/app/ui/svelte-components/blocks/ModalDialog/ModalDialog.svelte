@@ -1,8 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy} from 'svelte';
 
-  import GlobalOverlay from '#3sc/components/blocks/GlobalOverlay/GlobalOverlay.svelte';
-  import type {EventName, Modal} from '#3sc/components/blocks/ModalDialog';
+  import GlobalOverlay from '~/app/ui/svelte-components/blocks/GlobalOverlay/GlobalOverlay.svelte';
+  import type {EventName, Modal} from '~/app/ui/svelte-components/blocks/ModalDialog';
 
   /**
    * Determinate if the modal is visible.

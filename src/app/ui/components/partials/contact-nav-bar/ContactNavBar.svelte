@@ -1,8 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import {provideContextMenuEntries} from '~/app/ui/components/partials/contact-nav-bar/helpers';
   import type {ContactNavBarProps} from '~/app/ui/components/partials/contact-nav-bar/props';

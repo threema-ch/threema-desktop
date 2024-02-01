@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type {CircularProgressVariant} from '#3sc/components/blocks/CircularProgress';
-  import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
+  import type {CircularProgressVariant} from '~/app/ui/svelte-components/blocks/CircularProgress';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
 
   /**
    * The variant of the progress indicator to show.

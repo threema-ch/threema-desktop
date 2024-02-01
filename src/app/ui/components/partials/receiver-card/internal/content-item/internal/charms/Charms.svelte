@@ -3,10 +3,10 @@
   Renders icons to display the current preferences of a conversation.
 -->
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
   import type {CharmsProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/charms/props';
   import {i18n} from '~/app/ui/i18n';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import {unreachable} from '~/common/utils/assert';
 
   type $$Props = CharmsProps;

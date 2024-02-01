@@ -5,10 +5,10 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
 
-  import CircularProgress from '#3sc/components/blocks/CircularProgress/CircularProgress.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import MenuContainer from '#3sc/components/generic/Menu/MenuContainer.svelte';
-  import MenuItem from '#3sc/components/generic/Menu/MenuItem.svelte';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
+  import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
   import {globals} from '~/app/globals';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import ImagePreview from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/internal/image-preview/ImagePreview.svelte';

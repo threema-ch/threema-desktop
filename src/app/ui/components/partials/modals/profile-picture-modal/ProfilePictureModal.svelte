@@ -5,7 +5,7 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
 
-  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import ProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import type {ProfilePictureModalProps} from '~/app/ui/components/partials/modals/profile-picture-modal/props';
   import {nodeIsOrContainsTarget} from '~/app/ui/utils/node';

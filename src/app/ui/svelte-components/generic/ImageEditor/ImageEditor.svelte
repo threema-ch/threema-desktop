@@ -4,8 +4,8 @@
 
   import Croppie from 'croppie';
 
-  import {unwrap} from '#3sc/utils/assert';
-  import {UrlSource} from '#3sc/utils/url';
+  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+  import {UrlSource} from '~/app/ui/svelte-components/utils/url';
 
   /**
    * The address or URL of an image resource. May also be a promise.

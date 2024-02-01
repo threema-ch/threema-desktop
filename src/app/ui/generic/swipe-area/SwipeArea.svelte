@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
 
-  import {ElementResizeObserver} from '#3sc/utils/observer';
+  import {ElementResizeObserver} from '~/app/ui/svelte-components/utils/observer';
   import type {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
 
   /**

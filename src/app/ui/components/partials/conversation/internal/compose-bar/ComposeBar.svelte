@@ -2,10 +2,10 @@
   import {createEventDispatcher, onDestroy, onMount, tick} from 'svelte';
   import type {Readable} from 'svelte/store';
 
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import FileTrigger from '#3sc/components/blocks/FileTrigger/FileTrigger.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import type {FileResult} from '#3sc/utils/filelist';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import FileTrigger from '~/app/ui/svelte-components/blocks/FileTrigger/FileTrigger.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
   import {globals} from '~/app/globals';
   import TextArea from '~/app/ui/components/atoms/textarea/TextArea.svelte';
   import EmojiPicker from '~/app/ui/components/molecules/emoji-picker/EmojiPicker.svelte';

@@ -4,7 +4,7 @@
   receiver.
 -->
 <script lang="ts">
-  import ThreemaIcon from 'threema-svelte-components/src/components/blocks/Icon/ThreemaIcon.svelte';
+  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import {globals} from '~/app/globals';
   import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';
   import ContentItem from '~/app/ui/components/partials/receiver-card/internal/content-item/ContentItem.svelte';

@@ -1,9 +1,9 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import WizardButton from '#3sc/components/blocks/Button/WizardButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import Text from '#3sc/components/blocks/Input/Text.svelte';
+  import WizardButton from '~/app/ui/svelte-components/blocks/Button/WizardButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import Text from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
   import {globals} from '~/app/globals';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';

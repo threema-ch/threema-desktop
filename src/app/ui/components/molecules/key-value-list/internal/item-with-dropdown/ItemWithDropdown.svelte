@@ -5,7 +5,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte/internal';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import type {ItemWithDropdownProps} from '~/app/ui/components/molecules/key-value-list/internal/item-with-dropdown/props';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';

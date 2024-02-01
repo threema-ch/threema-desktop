@@ -5,7 +5,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import Switch from '~/app/ui/components/atoms/switch/Switch.svelte';
   import type {ItemWithSwitchProps} from '~/app/ui/components/molecules/key-value-list/internal/item-with-switch/props';
 

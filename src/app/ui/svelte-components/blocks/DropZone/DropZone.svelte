@@ -1,8 +1,8 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte/internal';
 
-  import {dragEvents} from '#3sc/utils/dragdrop';
-  import {type FileResult, validateFileList} from '#3sc/utils/filelist';
+  import {dragEvents} from '~/app/ui/svelte-components/utils/dragdrop';
+  import {type FileResult, validateFileList} from '~/app/ui/svelte-components/utils/filelist';
 
   export let zoneHover = false;
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import type {Modal} from '#3sc/components/blocks/ModalDialog';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {Modal} from '~/app/ui/svelte-components/blocks/ModalDialog';
 
   export let modal: Modal;
   export let title: string;

@@ -18,7 +18,7 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
 
-  import {UrlSource} from '#3sc/utils/url';
+  import {UrlSource} from '~/app/ui/svelte-components/utils/url';
 
   /**
    * The address or URL of an image resource. May also be a promise.

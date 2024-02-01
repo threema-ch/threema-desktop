@@ -1,10 +1,10 @@
 <script lang="ts">
   import {fly} from 'svelte/transition';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
-  import ToastComponent from '#3sc/components/generic/Snackbar/Toast.svelte';
   import {snackbarStore, toast} from '~/app/ui/snackbar';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
+  import ToastComponent from '~/app/ui/svelte-components/generic/Snackbar/Toast.svelte';
 </script>
 
 <template>

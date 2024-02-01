@@ -3,7 +3,7 @@
   Renders a message quote.
 -->
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import LazyImage from '~/app/ui/components/atoms/lazy-image/LazyImage.svelte';
   import Prose from '~/app/ui/components/atoms/prose/Prose.svelte';
   import AudioPlayer from '~/app/ui/components/molecules/audio-player/AudioPlayer.svelte';

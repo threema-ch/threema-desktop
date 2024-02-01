@@ -1,5 +1,5 @@
-import {asyncFilter} from '#3sc/utils/array';
-import {isBlobAccessible} from '#3sc/utils/blob';
+import {asyncFilter} from '~/app/ui/svelte-components/utils/array';
+import {isBlobAccessible} from '~/app/ui/svelte-components/utils/blob';
 
 export type FileResult =
     | {readonly status: 'ok'; readonly files: File[]}

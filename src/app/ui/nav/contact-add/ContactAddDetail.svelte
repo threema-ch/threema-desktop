@@ -1,8 +1,8 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import WizardButton from '#3sc/components/blocks/Button/WizardButton.svelte';
-  import Text from '#3sc/components/blocks/Input/Text.svelte';
+  import WizardButton from '~/app/ui/svelte-components/blocks/Button/WizardButton.svelte';
+  import Text from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';

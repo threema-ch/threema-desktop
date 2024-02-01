@@ -1,13 +1,13 @@
 <script lang="ts">
   import type {Readable} from 'svelte/store';
 
-  import Button from '#3sc/components/blocks/Button/Button.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ByteView from '#3sc/components/generic/ByteView/ByteView.svelte';
-  import type {TreeExpandEvent, TreeItem} from '#3sc/components/generic/ObjectTree';
-  import ObjectTree from '#3sc/components/generic/ObjectTree/ObjectTree.svelte';
-  import type {Packet} from '#3sc/components/generic/PacketFlow/';
-  import PacketFlow from '#3sc/components/generic/PacketFlow/PacketFlow.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ByteView from '~/app/ui/svelte-components/generic/ByteView/ByteView.svelte';
+  import type {TreeExpandEvent, TreeItem} from '~/app/ui/svelte-components/generic/ObjectTree';
+  import ObjectTree from '~/app/ui/svelte-components/generic/ObjectTree/ObjectTree.svelte';
+  import type {Packet} from '~/app/ui/svelte-components/generic/PacketFlow/';
+  import PacketFlow from '~/app/ui/svelte-components/generic/PacketFlow/PacketFlow.svelte';
   import type {AppServices} from '~/app/types';
   import {LAYERS} from '~/common/network/protocol/capture';
   import {assert} from '~/common/utils/assert';

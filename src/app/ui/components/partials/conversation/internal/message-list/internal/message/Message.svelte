@@ -3,8 +3,8 @@
   Renders a message that can be used as part of a conversation.
 -->
 <script lang="ts">
-  import IconButtonProgressBarOverlay from '#3sc/components/blocks/Button/IconButtonProgressBarOverlay.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import IconButtonProgressBarOverlay from '~/app/ui/svelte-components/blocks/Button/IconButtonProgressBarOverlay.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';

@@ -1,4 +1,4 @@
-import type {AnyToastAction, ToastAction} from '#3sc/components/generic/Snackbar';
+import type {AnyToastAction, ToastAction} from '~/app/ui/svelte-components/generic/Snackbar';
 import type {IconSet} from '~/common/types';
 import {WritableStore} from '~/common/utils/store';
 

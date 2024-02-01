@@ -1,4 +1,4 @@
-import {byteToHex, byteToPrintableAscii} from '#3sc/utils/bytes';
+import {byteToHex, byteToPrintableAscii} from '~/app/ui/svelte-components/utils/bytes';
 
 /**
  * A tuple representing the offset, followed by an array tuple representing

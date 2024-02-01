@@ -1,7 +1,7 @@
 <script lang="ts">
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import ProfilePicture from '#3sc/components/threema/ProfilePicture/ProfilePicture.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import type {ProfilePicture as ProfilePictureModel} from '~/common/model';

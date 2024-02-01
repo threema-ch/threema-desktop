@@ -5,11 +5,11 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import {constrain} from '~/app/ui/components/atoms/lazy-image/constrain';
   import type {LazyImageProps} from '~/app/ui/components/atoms/lazy-image/props';
   import type {LazyImageContent} from '~/app/ui/components/atoms/lazy-image/types';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unreachable} from '~/common/utils/assert';
   import {isSupportedImageType} from '~/common/utils/image';
 

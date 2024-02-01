@@ -1,7 +1,7 @@
 <script lang="ts">
-  import IconButton from '#3sc/components/blocks/Button/IconButton.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import {globals} from '~/app/globals';
   import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';

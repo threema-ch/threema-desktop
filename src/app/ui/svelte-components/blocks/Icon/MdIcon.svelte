@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '#3sc/components/blocks/Icon/Icon.svelte';
+  import Icon from '~/app/ui/svelte-components/blocks/Icon/Icon.svelte';
 
   /**
    * Let the icon appear disabled.

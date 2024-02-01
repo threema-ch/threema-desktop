@@ -1,4 +1,4 @@
-import type {ProfilePictureColor} from '#3sc/components/threema/ProfilePicture';
+import type {ProfilePictureColor} from '~/app/ui/svelte-components/threema/ProfilePicture';
 
 /**
  * Props accepted by the `Sender` component.

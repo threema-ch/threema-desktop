@@ -7,7 +7,7 @@
     type StyleDirection,
   } from '.';
 
-  import {unwrap} from '#3sc/utils/assert';
+  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
 
   /**
    * Minimum value.

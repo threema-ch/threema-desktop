@@ -3,13 +3,13 @@
   Renders content as part of a `ReceiverCard` content.
 -->
 <script lang="ts">
-  import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
   import {getTextContentItemOptionsFromReceiverNameContentItemOptions} from '~/app/ui/components/partials/receiver-card/internal/content-item/helpers';
   import Charms from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/charms/Charms.svelte';
   import Indicator from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/indicator/Indicator.svelte';
   import Tags from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/tags/Tags.svelte';
   import Timestamp from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/timestamp/Timestamp.svelte';
   import type {ContentItemProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/props';
+  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import {unreachable} from '~/common/utils/assert';
   import {hasProperty} from '~/common/utils/object';
 

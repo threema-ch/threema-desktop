@@ -1,5 +1,5 @@
 <script lang="ts">
-  import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
+  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import type {ForwardRecipientProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-forward-modal/internal/forward-recipient/props';
   import {isDisabledReceiver, isInactiveContact, isInvalidContact} from '~/app/ui/generic/receiver';
   import DeprecatedReceiver from '~/app/ui/generic/receiver/DeprecatedReceiver.svelte';

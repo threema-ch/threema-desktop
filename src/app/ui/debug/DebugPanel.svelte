@@ -1,7 +1,7 @@
 <script lang="ts">
   import type {SvelteComponentDev} from 'svelte/internal';
 
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {AppServices} from '~/app/types';
   import DebugBackend from '~/app/ui/debug/DebugBackend.svelte';
   import DebugNetwork from '~/app/ui/debug/DebugNetwork.svelte';

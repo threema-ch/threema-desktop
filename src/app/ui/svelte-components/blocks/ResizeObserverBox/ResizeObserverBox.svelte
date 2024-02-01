@@ -1,9 +1,9 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
 
-  import type {Dimensions} from '#3sc/types';
-  import {unwrap} from '#3sc/utils/assert';
-  import {ElementResizeObserver} from '#3sc/utils/observer';
+  import type {Dimensions} from '~/app/ui/svelte-components/types';
+  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+  import {ElementResizeObserver} from '~/app/ui/svelte-components/utils/observer';
 
   /**
    * The dimensions of the box which will be updated on resize events.

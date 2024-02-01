@@ -1,9 +1,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
-  import Image from '#3sc/components/blocks/Image/Image.svelte';
+  import Checkbox from '~/app/ui/svelte-components/blocks/Checkbox/Checkbox.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import Image from '~/app/ui/svelte-components/blocks/Image/Image.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {MediaFile, ValidationResult} from '~/app/ui/modal/media-message';
   import FileType from '~/app/ui/modal/media-message/FileType.svelte';

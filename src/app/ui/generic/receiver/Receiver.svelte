@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Checkbox from '#3sc/components/blocks/Checkbox/Checkbox.svelte';
-  import VerificationDots from '#3sc/components/threema/VerificationDots/VerificationDots.svelte';
+  import Checkbox from '~/app/ui/svelte-components/blocks/Checkbox/Checkbox.svelte';
+  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import type {Receiver} from '~/app/ui/generic/receiver';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';

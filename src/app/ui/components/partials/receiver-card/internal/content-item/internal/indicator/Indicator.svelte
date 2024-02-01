@@ -4,9 +4,9 @@
   corresponding conversation).
 -->
 <script lang="ts">
-  import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import {getIndicatorElement} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/indicator/helpers';
   import type {IndicatorProps} from '~/app/ui/components/partials/receiver-card/internal/content-item/internal/indicator/props';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
 
   type $$Props = IndicatorProps;
 
