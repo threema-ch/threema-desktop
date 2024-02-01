@@ -121,9 +121,12 @@ export function receiverSearchResultSetStoreToReceiverPreviewListPropsStore(
     limit?: u53,
 ): IQueryableStore<Omit<ReceiverPreviewListProps, 'services'>> {
     return derive(receiverSearchResultSetStore, (receiverSearchResultSet) => ({
-        items: [...receiverSearchResultSet].slice(0, limit).map((result) => ({
-            receiver: result.receiver,
-        })),
+        items: [...receiverSearchResultSet]
+            .slice(0, limit)
+            .sort((a, b) => a.receiver.name.localeCompare(b.receiver.name))
+            .map((result) => ({
+                receiver: result.receiver,
+            })),
     }));
 }
 

@@ -148,10 +148,12 @@ export function getReceiverSearchResults(
 
     const receiverResults: ReceiverSearchResult[] = [];
     if (searchParams.term !== undefined) {
-        const contactSet = services.model.contacts.getAll().get();
-        const groupSet = services.model.groups.getAll().get();
+        const contactSet = getAndSubscribe(services.model.contacts.getAll());
+        const groupSet = getAndSubscribe(services.model.groups.getAll());
 
-        for (const contactOrGroupModelStore of [...contactSet, ...groupSet]) {
+        for (const contactOrGroupModelStore of [...contactSet, ...groupSet].sort((a, b) =>
+            a.get().view.displayName.localeCompare(b.get().view.displayName),
+        )) {
             const commonData = getCommonReceiverData(contactOrGroupModelStore.get());
 
             if (commonData.name.toLowerCase().includes(searchParams.term.toLowerCase())) {
