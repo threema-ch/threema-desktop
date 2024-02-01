@@ -374,13 +374,11 @@
   },
   "search": {
     "action--search-more": "Find more",
-    "label--no-results-conversations": "No conversations found for term \"{term}\".",
-    "label--no-results-messages": "No messages found for term \"{term}\".",
-    "label--no-results-receivers": "No contacts or groups found for term \"{term}\".",
     "label--search-input-placeholder": "Search...",
     "label--title-conversations": "Chats",
     "label--title-messages": "Messages",
-    "label--title-receivers": "Contacts & Groups"
+    "label--title-receivers": "Contacts & Groups",
+    "prose--no-results": "No results found."
   },
   "settings": {
     "action--control-message-default-send": "Default (Send)",

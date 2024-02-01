@@ -153,30 +153,27 @@
             : searchParams.limits.receivers - 1,
         );
 
+  $: isEmpty =
+    $conversationPreviewListProps?.items.length === 0 &&
+    $messagePreviewListProps?.items.length === 0 &&
+    $receiverPreviewListProps?.items.length === 0;
+
   $: handleChangeSearchTerm(searchTerm);
   $: void handleChangeSearchParams(searchParams);
 </script>
 
 <div class="container">
-  {#if $conversationPreviewListProps !== undefined}
-    {@const isEmpty = $conversationPreviewListProps.items.length === 0}
-
-    <div class="section conversations">
-      <p class="heading">
-        {$i18n.t('search.label--title-conversations', 'Chats')}
-      </p>
-
-      {#if isEmpty}
-        <p class="empty">
-          {$i18n.t(
-            'search.label--no-results-conversations',
-            'No conversations found for term "{term}".',
-            {
-              term: searchParams.term,
-            },
-          )}
+  {#if isEmpty}
+    <p class="empty">
+      {$i18n.t('search.prose--no-results', 'No results found.')}
+    </p>
+  {:else}
+    {#if $conversationPreviewListProps !== undefined && $conversationPreviewListProps.items.length > 0}
+      <div class="section conversations">
+        <p class="heading">
+          {$i18n.t('search.label--title-conversations', 'Chats')}
         </p>
-      {:else}
+
         <ConversationPreviewList
           {...$conversationPreviewListProps}
           highlights={searchParams.term}
@@ -192,25 +189,15 @@
             </span>
           </button>
         {/if}
-      {/if}
-    </div>
-  {/if}
+      </div>
+    {/if}
 
-  {#if $messagePreviewListProps !== undefined}
-    {@const isEmpty = $messagePreviewListProps.items.length === 0}
-
-    <div class="section messages">
-      <p class="heading">
-        {$i18n.t('search.label--title-messages', 'Messages')}
-      </p>
-
-      {#if isEmpty}
-        <p class="empty">
-          {$i18n.t('search.label--no-results-messages', 'No messages found for term "{term}".', {
-            term: searchParams.term,
-          })}
+    {#if $messagePreviewListProps !== undefined && $messagePreviewListProps.items.length > 0}
+      <div class="section messages">
+        <p class="heading">
+          {$i18n.t('search.label--title-messages', 'Messages')}
         </p>
-      {:else}
+
         <div class="list">
           <MessagePreviewList
             {...$messagePreviewListProps}
@@ -228,29 +215,15 @@
             </span>
           </button>
         {/if}
-      {/if}
-    </div>
-  {/if}
+      </div>
+    {/if}
 
-  {#if $receiverPreviewListProps !== undefined}
-    {@const isEmpty = $receiverPreviewListProps.items.length === 0}
-
-    <div class="section receivers">
-      <p class="heading">
-        {$i18n.t('search.label--title-receivers', 'Contacts & Groups')}
-      </p>
-
-      {#if isEmpty}
-        <p class="empty">
-          {$i18n.t(
-            'search.label--no-results-receivers',
-            'No contacts or groups found for term "{term}".',
-            {
-              term: searchParams.term,
-            },
-          )}
+    {#if $receiverPreviewListProps !== undefined && $receiverPreviewListProps.items.length > 0}
+      <div class="section receivers">
+        <p class="heading">
+          {$i18n.t('search.label--title-receivers', 'Contacts & Groups')}
         </p>
-      {:else}
+
         <ReceiverPreviewList
           {...$receiverPreviewListProps}
           highlights={searchParams.term}
@@ -266,8 +239,8 @@
             </span>
           </button>
         {/if}
-      {/if}
-    </div>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -286,6 +259,12 @@
     overflow-x: hidden;
     overflow-y: scroll;
 
+    .empty {
+      color: var(--t-text-e2-color);
+      margin: rem(8px) 0 0 0;
+      padding: rem(12px) rem(6px) rem(12px) rem(16px);
+    }
+
     .section {
       display: flex;
       flex-direction: column;
@@ -298,12 +277,6 @@
         font-weight: 400;
         margin: 0;
         padding: 0 rem(4px) rem(16px) rem(16px);
-      }
-
-      .empty {
-        color: var(--t-text-e2-color);
-        margin: rem(8px) 0 0 0;
-        padding: rem(12px) rem(6px) rem(12px) rem(16px);
       }
 
       .expand {
