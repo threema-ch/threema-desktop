@@ -1,6 +1,7 @@
 import type {AppServices} from '~/app/types';
 import type {MessageProps as BasicMessageProps} from '~/app/ui/components/molecules/message/props';
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {I18n} from '~/app/ui/i18n';
 import type {DbReceiverLookup} from '~/common/db';
 import type {MessageId} from '~/common/network/types';
 
@@ -29,5 +30,23 @@ export function transformMessageFileProps(
             ...fileProps.thumbnail,
             blobStore: services.blobCache.getMessageThumbnail(messageId, receiverLookup),
         },
+    });
+}
+
+/**
+ * Transforms and simplifies reactions.
+ */
+export function transformMessageReactionsProps(
+    reactions: MessageProps['reactions'],
+    i18n: I18n,
+): BasicMessageProps['reactions'] {
+    return reactions.map((reaction) => {
+        const {direction, type} = reaction;
+        const name =
+            reaction.sender.name ??
+            (reaction.sender.identity === 'me'
+                ? i18n.t('contacts.label--own-name')
+                : reaction.sender.identity);
+        return {direction, type, name};
     });
 }

@@ -1,5 +1,5 @@
 <!--
-  @component 
+  @component
   Renders status indicator icons of a message.
 -->
 <script lang="ts">
@@ -23,8 +23,9 @@
     <span class="elements">
       {#each elements as element}
         <span class={`element ${element.color ?? 'default'}`}>
-          <MdIcon theme={element.filled === true ? 'Filled' : 'Outlined'}>{element.icon}</MdIcon>
-
+          <MdIcon title={element.title} theme={element.filled === true ? 'Filled' : 'Outlined'}>
+            {element.icon}
+          </MdIcon>
           {#if element.count !== undefined && (element.count > 1 || options.alwaysShowNumber === true)}
             <Text text={element.count.toString()} />
           {/if}

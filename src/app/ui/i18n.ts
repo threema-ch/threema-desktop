@@ -210,14 +210,12 @@ export async function initialize(config: LocaleConfig): Promise<void> {
 // Returning an object is a way to force triggering an update.
 //
 // TODO(DESK-1081): `i18n` should not be a global, but exposed through `globals`.
-export const i18n: IQueryableStore<Pick<I18nextType, 't'> & Omit<I18nType, 't'>> = derive(
-    i18nStore,
-    (updatedI18nStore) => {
-        const locale = ensureLocale(updatedI18nStore.i18n.resolvedLanguage);
+export type I18n = Pick<I18nextType, 't'> & Omit<I18nType, 't'>;
+export const i18n: IQueryableStore<I18n> = derive(i18nStore, (updatedI18nStore) => {
+    const locale = ensureLocale(updatedI18nStore.i18n.resolvedLanguage);
 
-        return {
-            t: updatedI18nStore.i18n.t,
-            locale: locale === 'cimode' ? 'en' : locale,
-        };
-    },
-);
+    return {
+        t: updatedI18nStore.i18n.t,
+        locale: locale === 'cimode' ? 'en' : locale,
+    };
+});

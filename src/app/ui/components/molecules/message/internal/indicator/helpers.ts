@@ -7,6 +7,7 @@ interface IndicatorElement {
     color?: 'acknowledged' | 'declined' | 'error';
     count?: u53;
     filled?: boolean;
+    title?: string;
 }
 
 /**
@@ -40,24 +41,26 @@ export function getIndicatorElements(
 
 function getIndicatorElementsForReactions(
     reactions: IndicatorProps['reactions'] = [],
-    options: Pick<NonNullable<IndicatorProps['options']>, 'fillReactions'> = {fillReactions: false},
+    options: Pick<NonNullable<IndicatorProps['options']>, 'fillReactions' | 'alwaysShowNumber'> = {
+        fillReactions: false,
+    },
 ): IndicatorElement[] {
     const elements: IndicatorElement[] = [];
 
     let hasOutboundAcknowledge = false;
     let hasOutboundDecline = false;
-    let acknowledgeCount = 0;
-    let declineCount = 0;
+    const acknowledgedBy = [];
+    const declinedBy = [];
     for (const reaction of reactions) {
         switch (reaction.direction) {
             case 'inbound':
                 switch (reaction.type) {
                     case 'acknowledged':
-                        acknowledgeCount += 1;
+                        acknowledgedBy.push(reaction.name);
                         break;
 
                     case 'declined':
-                        declineCount += 1;
+                        declinedBy.push(reaction.name);
                         break;
 
                     default:
@@ -69,12 +72,12 @@ function getIndicatorElementsForReactions(
                 switch (reaction.type) {
                     case 'acknowledged':
                         hasOutboundAcknowledge = true;
-                        acknowledgeCount += 1;
+                        acknowledgedBy.push(reaction.name);
                         break;
 
                     case 'declined':
                         hasOutboundDecline = true;
-                        declineCount += 1;
+                        declinedBy.push(reaction.name);
                         break;
 
                     default:
@@ -87,21 +90,28 @@ function getIndicatorElementsForReactions(
         }
     }
 
-    if (hasOutboundAcknowledge || acknowledgeCount > 0) {
+    acknowledgedBy.sort();
+    declinedBy.sort();
+
+    if (hasOutboundAcknowledge || acknowledgedBy.length > 0) {
+        const showTitle = acknowledgedBy.length > 1 || options.alwaysShowNumber === true;
         elements.push({
             icon: 'thumb_up',
             color: 'acknowledged',
-            count: acknowledgeCount > 0 ? acknowledgeCount : undefined,
+            count: acknowledgedBy.length > 0 ? acknowledgedBy.length : undefined,
             filled: hasOutboundAcknowledge || options.fillReactions,
+            title: showTitle ? acknowledgedBy.sort().join(', ') : undefined,
         });
     }
 
-    if (hasOutboundDecline || declineCount > 0) {
+    if (hasOutboundDecline || declinedBy.length > 0) {
+        const showTitle = declinedBy.length > 1 || options.alwaysShowNumber === true;
         elements.push({
             icon: 'thumb_down',
             color: 'declined',
-            count: declineCount > 0 ? declineCount : undefined,
+            count: declinedBy.length > 0 ? declinedBy.length : undefined,
             filled: hasOutboundDecline || options.fillReactions,
+            title: showTitle ? declinedBy.sort().join(', ') : undefined,
         });
     }
 

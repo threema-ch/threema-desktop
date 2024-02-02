@@ -26,6 +26,7 @@ export interface IndicatorProps {
 interface Reaction {
     readonly direction: 'inbound' | 'outbound';
     readonly type: 'acknowledged' | 'declined';
+    readonly name: string;
 }
 
 interface Status {
