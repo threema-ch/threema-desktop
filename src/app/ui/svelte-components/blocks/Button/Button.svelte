@@ -18,6 +18,9 @@
 
   let button: HTMLElement | null = null;
 
+  /**
+   * Change focus to this button.
+   */
   export function focus(): void {
     if (!disabled) {
       button?.focus();

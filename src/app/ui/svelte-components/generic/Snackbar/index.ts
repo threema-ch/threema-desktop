@@ -1,3 +1,5 @@
+import type {u53} from '~/common/types';
+
 /**
  * Possible Toast action types.
  */
@@ -26,6 +28,6 @@ export type AnyToastAction = ToastAction<'dismissible'> | ToastAction<'action'>;
  */
 export interface ToastMessage {
     readonly message: string;
-    readonly lifetime: number;
+    readonly lifetime: u53;
     readonly action: AnyToastAction;
 }

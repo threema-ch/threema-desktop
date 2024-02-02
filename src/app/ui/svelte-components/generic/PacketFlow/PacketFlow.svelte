@@ -1,8 +1,8 @@
 <script lang="ts">
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {u53} from '~/common/types';
 
   import type {Packet, PacketFilter} from '.';
-
 
   /**
    * Packet layers packets may pass through.
@@ -20,7 +20,7 @@
    * Start timestamp for displaying relative packet timestamps to.
    * Defaults to the timestamp of the first packet.
    */
-  export let startMs: number | undefined = undefined;
+  export let startMs: u53 | undefined = undefined;
   /**
    * The currently selected packet.
    */

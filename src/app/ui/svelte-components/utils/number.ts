@@ -1,3 +1,5 @@
+import type {u53} from '~/common/types';
+
 const BYTE_UNITS = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
 
 /**
@@ -6,7 +8,7 @@ const BYTE_UNITS = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
  * @param size number of bytes to convert into human readable string
  * @returns human readable size as a string.
  */
-export function byteSizeToHumanReadable(size: number): string {
+export function byteSizeToHumanReadable(size: u53): string {
     let exponent = 0;
     if (size > 0) {
         exponent = Math.floor(Math.log(size) / Math.log(1024));
@@ -22,7 +24,7 @@ export function byteSizeToHumanReadable(size: number): string {
  * @param seconds Amount of seconds to convert.
  * @returns human readable time format in the form of `H:MM:SS`.
  */
-export function secondsToHumanReadable(seconds: number): string {
+export function secondsToHumanReadable(seconds: u53): string {
     const hours = Math.floor(seconds / 3600);
     const str = {
         hours: hours > 0 ? `${hours}:` : undefined,

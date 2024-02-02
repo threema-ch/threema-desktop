@@ -2,15 +2,16 @@
   import {createEventDispatcher} from 'svelte';
 
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {u53} from '~/common/types';
 
-  const dispatch = createEventDispatcher<{groupClicked: number}>();
+  const dispatch = createEventDispatcher<{groupClicked: u53}>();
 
   let activeGroup = 0;
 
   /**
    * Update the active group.
    */
-  export function setActiveGroup(groupId: number): void {
+  export function setActiveGroup(groupId: u53): void {
     activeGroup = groupId;
   }
 

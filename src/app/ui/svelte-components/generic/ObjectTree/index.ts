@@ -1,3 +1,5 @@
+import type {u53} from '~/common/types';
+
 /**
  * An item that we can display in an ObjectTree component.
  */
@@ -6,9 +8,9 @@ export type TreeItem =
     // eslint-disable-next-line @typescript-eslint/ban-types
     | null
     | boolean
-    | number
+    | u53
     | string
-    | Record<string | number | symbol, unknown>
+    | Record<string | u53 | symbol, unknown>
     | TreeItem[]
     | Uint8Array;
 
@@ -34,7 +36,7 @@ export interface TreeItemInfo {
         readonly type: boolean;
         readonly value?: string;
     };
-    readonly length?: number;
+    readonly length?: u53;
     readonly children?: readonly [key: string, item: TreeItem][];
 }
 
@@ -74,7 +76,7 @@ export function parse(item: TreeItem): TreeItemInfo {
     }
     if (item.constructor === Object) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const object = {...(item as Record<string | number | symbol, any>)};
+        const object = {...(item as Record<string | u53 | symbol, any>)};
         const type = (object.__name__ as TreeItemType | undefined) ?? 'Object';
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete object.__name__;

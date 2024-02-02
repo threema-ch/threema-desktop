@@ -1,3 +1,5 @@
+import type {u53} from '~/common/types';
+
 /**
  * An array who may or may not have been truncated.
  *
@@ -17,7 +19,7 @@ export interface LimitedArray<T> {
  * @param limit The upper limit amount of items.
  * @returns A limited array interface.
  */
-export function limited<T>(array: readonly T[], limit: number): LimitedArray<T> {
+export function limited<T>(array: readonly T[], limit: u53): LimitedArray<T> {
     if (array.length > limit) {
         return {
             items: array.slice(0, limit),
@@ -40,7 +42,7 @@ export function limited<T>(array: readonly T[], limit: number): LimitedArray<T> 
  *   function.
  */
 export async function asyncFilter<T>(
-    predicate: (value: T, index: number, array: T[]) => Promise<boolean>,
+    predicate: (value: T, index: u53, array: T[]) => Promise<boolean>,
     array: T[],
 ): Promise<T[]> {
     const results = (await Promise.allSettled(array.map(predicate))).map((result) =>

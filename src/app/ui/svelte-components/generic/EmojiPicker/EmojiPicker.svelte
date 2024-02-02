@@ -2,21 +2,21 @@
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
   import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+  import type {u53} from '~/common/types';
 
   import emoji from './emoji.html?raw';
-
 
   let wrapper: HTMLElement | null = null;
 
   const dispatch = createEventDispatcher<{
     insertEmoji: string;
-    activeGroupChange: number;
+    activeGroupChange: u53;
   }>();
 
   /**
    * Scroll to the specified emoji group.
    */
-  export function scrollToGroup(groupId: number): void {
+  export function scrollToGroup(groupId: u53): void {
     const title = unwrap(wrapper).querySelector(`.group-title[data-group="${groupId}"]`);
     if (title !== null) {
       title.scrollIntoView({behavior: 'smooth'});
@@ -49,7 +49,7 @@
    */
   function observeActiveGroup(root: HTMLElement): IntersectionObserver {
     // Mapping from group ID to visible height (in px)
-    const groupVisibility = new Map<number, number>();
+    const groupVisibility = new Map<u53, u53>();
 
     function onObserverEvent(entries: IntersectionObserverEntry[]): void {
       // Update all entries

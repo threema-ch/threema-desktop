@@ -1,5 +1,6 @@
 <script lang="ts">
   import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+  import type {u53} from '~/common/types';
 
   import {
     calculateValueByCoords,
@@ -9,16 +10,15 @@
     type StyleDirection,
   } from '.';
 
-
   /**
    * Minimum value.
    */
-  export let min: number;
+  export let min: u53;
 
   /**
    * Maximum value.
    */
-  export let max: number;
+  export let max: u53;
 
   /**
    * Value steps to add/subtract in the range from min to max.
@@ -28,7 +28,7 @@
   /**
    * Current slider value.
    */
-  export let value: number;
+  export let value: u53;
 
   /**
    * Slider orientation.
@@ -132,7 +132,7 @@
     event.preventDefault();
   }
 
-  function getElementSize(element: HTMLDivElement): number {
+  function getElementSize(element: HTMLDivElement): u53 {
     switch (orientation) {
       case 'horizontal':
         return element.getBoundingClientRect().width;
@@ -144,11 +144,11 @@
   }
 
   // Percentage of tracker (0 - 100)
-  let percentage: number;
+  let percentage: u53;
   $: percentage = getProgressPercentage(value, min, max);
 
   // Thumb position, calculated by percentage of given value
-  let position: number | undefined = undefined;
+  let position: u53 | undefined = undefined;
   $: if (thumb !== null && track !== null) {
     position = percentage - (percentage * getElementSize(thumb)) / getElementSize(track);
   }

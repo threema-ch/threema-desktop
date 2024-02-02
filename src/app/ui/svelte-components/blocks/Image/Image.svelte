@@ -19,6 +19,7 @@
   import {onDestroy} from 'svelte';
 
   import {UrlSource} from '~/app/ui/svelte-components/utils/url';
+  import {ensureError} from '~/common/utils/assert';
 
   /**
    * The address or URL of an image resource. May also be a promise.
@@ -33,7 +34,7 @@
    */
   export let complete = false;
 
-  // The image source transformed into a URL source
+  // The image source transformed into a URL source.
   const urlSource = new UrlSource(onDestroy);
 </script>
 
@@ -49,15 +50,15 @@
       on:error
       on:load={() => (complete = true)}
       on:error={(error) => {
-        // Force falling back to the error/default slot
-        src = Promise.reject(error);
+        // Force falling back to the error/default slot.
+        src = Promise.reject(ensureError(error));
         complete = true;
       }}
       {...$$restProps}
       class:complete
     />
   {:catch}
-    <!-- Fall back the error slot, then to the default slot -->
+    <!-- Fall back the error slot, then to the default slot. -->
     <slot name="error">
       <slot />
     </slot>

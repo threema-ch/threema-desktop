@@ -14,7 +14,6 @@
 
   import type {ProfilePictureColor, ProfilePictureShape} from '.';
 
-
   /**
    * The address or URL of an image resource. May also be a promise.
    */

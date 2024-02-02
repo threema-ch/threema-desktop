@@ -1,3 +1,5 @@
+import type {u53} from '~/common/types';
+
 /**
  * The direction of the packet.
  */
@@ -6,12 +8,12 @@ export type PacketDirection = 'inbound' | 'outbound';
 /**
  * The packet's content.
  */
-export type PacketData = Record<string | number | symbol, unknown> | Uint8Array;
+export type PacketData = Record<string | u53 | symbol, unknown> | Uint8Array;
 
 /**
  * Allows to filter packets to be displayed.
  */
-export type PacketFilter = (packet: Packet, index: number, array: readonly Packet[]) => boolean;
+export type PacketFilter = (packet: Packet, index: u53, array: readonly Packet[]) => boolean;
 
 /**
  * A packet which may be a plain JS object or bytes (Uint8Array) and its
@@ -31,7 +33,7 @@ export interface Packet {
     /**
      * Time when the packet has been received/sent.
      */
-    timestamp: number;
+    timestamp: u53;
 
     /**
      * An arbitrary name for the packet (e.g. its type).

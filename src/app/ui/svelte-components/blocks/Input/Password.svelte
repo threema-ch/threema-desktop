@@ -1,9 +1,10 @@
 <script lang="ts">
-  // TODO(DESK-719): Unify the underlying input element in the Text and Password components
+  // TODO(DESK-719): Unify the underlying input element in the Text and Password components.
 
   import {tick} from 'svelte';
 
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {u53} from '~/common/types';
 
   /**
    * The user input.
@@ -24,7 +25,7 @@
   /**
    * Define the max char length of the input (defaults to 128).
    */
-  export let maxlength: number | undefined = 128;
+  export let maxlength: u53 | undefined = 128;
   /**
    * Determinate if input can be changed by the user.
    */
@@ -37,6 +38,9 @@
   let showInput: boolean;
   $: showInput = value !== '' || document.activeElement === input || label === undefined;
 
+  /**
+   * Change focus to this input.
+   */
   export function focus(): void {
     if (!disabled) {
       showInput = true;
@@ -44,6 +48,9 @@
     }
   }
 
+  /**
+   * Change focus to this input and select all contents.
+   */
   export function focusAndSelect(): void {
     if (!disabled) {
       showInput = true;

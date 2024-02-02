@@ -1,3 +1,5 @@
+import type {u53} from '~/common/types';
+
 import {unwrap} from './assert';
 
 // prettier-ignore
@@ -12,7 +14,7 @@ const HEX_LOOKUP_TABLE = [
  * @param byte 8 bit integer to convert
  * @returns hex string representation
  */
-export function byteToHex(byte: number): string {
+export function byteToHex(byte: u53): string {
     /* eslint-disable no-bitwise */
     return unwrap(HEX_LOOKUP_TABLE[byte >>> 4]) + unwrap(HEX_LOOKUP_TABLE[byte & 0x0f]);
     /* eslint-enable no-bitwise */
@@ -25,7 +27,7 @@ export function byteToHex(byte: number): string {
  * @param byte 8 bit integer to convert
  * @returns printable ASCII representation
  */
-export function byteToPrintableAscii(byte: number): string {
+export function byteToPrintableAscii(byte: u53): string {
     if (byte >= 32 && byte <= 126) {
         return String.fromCharCode(byte);
     }

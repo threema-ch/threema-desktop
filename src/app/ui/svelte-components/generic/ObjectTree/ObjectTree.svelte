@@ -1,9 +1,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {limited, type LimitedArray} from '~/app/ui/svelte-components/utils/array';
+  import type {u53} from '~/common/types';
 
   import {
     parse,
@@ -42,7 +42,7 @@
 
   const dispatch = createEventDispatcher();
   let info: TreeItemInfo;
-  let limiter: number = limit;
+  let limiter: u53 = limit;
   let children: LimitedArray<[key: string, object: TreeItem]>;
 
   function expand(): void {
@@ -79,7 +79,7 @@
       <div class="key">{key}</div>
       <div class="separator">:</div>
     {/if}
-    <div class="value" type={info.type}>
+    <div class="value" data-type={info.type}>
       {#if info.display.type}
         <span class="type">{info.type}</span>{#if info.length !== undefined}
           <span class="length">({info.length})</span>
@@ -150,17 +150,17 @@
 
     .value {
       color: var(--c-object-tree-key-color, default);
-      &[type='undefined'],
-      &[type='null'] {
+      &[data-type='undefined'],
+      &[data-type='null'] {
         color: var(--c-object-tree-null-color, default);
       }
-      &[type='Boolean'] {
+      &[data-type='Boolean'] {
         color: var(--c-object-tree-bool-color, default);
       }
-      &[type='Number'] {
+      &[data-type='Number'] {
         color: var(--c-object-tree-number-color, default);
       }
-      &[type='String'] {
+      &[data-type='String'] {
         color: var(--c-object-tree-string-color, default);
       }
       .length {

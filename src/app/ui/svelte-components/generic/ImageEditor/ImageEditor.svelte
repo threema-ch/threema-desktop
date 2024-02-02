@@ -3,7 +3,6 @@
   import {onDestroy, onMount} from 'svelte';
   import {fade} from 'svelte/transition';
 
-
   import {unwrap} from '~/app/ui/svelte-components/utils/assert';
   import {UrlSource} from '~/app/ui/svelte-components/utils/url';
 
@@ -47,7 +46,9 @@
    * Load and bind the image source to the editor.
    */
   async function load(item: {src: string | Blob | Promise<string | Blob>}): Promise<void> {
-    await unwrap(editor).bind(await url.load(item.src));
+    await unwrap(editor).bind({
+      url: await url.load(item.src),
+    });
   }
 
   // Update input image source on the editor

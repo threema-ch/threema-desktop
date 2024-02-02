@@ -1,6 +1,8 @@
 <script lang="ts">
   import {tick} from 'svelte';
 
+  import type {u53} from '~/common/types';
+
   /**
    * The user input.
    */
@@ -20,7 +22,7 @@
   /**
    * Define the max char length of the input
    */
-  export let maxlength: number | undefined = undefined;
+  export let maxlength: u53 | undefined = undefined;
   /**
    * Determinate if input can be changed by the user.
    */
@@ -37,6 +39,9 @@
   let showInput: boolean;
   $: showInput = value !== '' || document.activeElement === input || label === undefined;
 
+  /**
+   * Change focus to this text input.
+   */
   export function focus(): void {
     if (!disabled) {
       showInput = true;

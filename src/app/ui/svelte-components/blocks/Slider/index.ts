@@ -1,3 +1,5 @@
+import type {u53} from '~/common/types';
+
 /**
  * Display orientation.
  */
@@ -16,7 +18,7 @@ export type StyleDirection = 'width' | 'height';
 /**
  * Calculate the value of given percentage in min and max range.
  */
-export function getProgressPercentage(value: number, min: number, max: number): number {
+export function getProgressPercentage(value: u53, min: u53, max: u53): u53 {
     if (value >= min && value <= max) {
         const percent = (value - min) / (max - min);
         return !isNaN(percent) ? percent : 0;
@@ -28,19 +30,14 @@ export function getProgressPercentage(value: number, min: number, max: number): 
 /**
  * Calculate the percentage of given value in min and max range.
  */
-export function getValueOfPercentage(percentage: number, min: number, max: number): number {
+export function getValueOfPercentage(percentage: u53, min: u53, max: u53): u53 {
     return min + (max - min) * percentage;
 }
 
 /**
  * Calculate the step rounded value of percentage.
  */
-export function getRoundedValueOfPercentage(
-    percentage: number,
-    min: number,
-    max: number,
-    step: number,
-): number {
+export function getRoundedValueOfPercentage(percentage: u53, min: u53, max: u53, step: u53): u53 {
     return step * Math.round((percentage * (max - min)) / step) + min;
 }
 
@@ -51,12 +48,12 @@ export function calculateValueByCoords(
     track: HTMLElement,
     orientation: Orientation,
     direction: StyleDirection,
-    min: number,
-    max: number,
-    step: number,
-    x: number,
-    y: number,
-): number {
+    min: u53,
+    max: u53,
+    step: u53,
+    x: u53,
+    y: u53,
+): u53 {
     // Get bounding rectangle
     const rectangle = track.getBoundingClientRect();
 

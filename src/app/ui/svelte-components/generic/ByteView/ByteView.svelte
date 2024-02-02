@@ -1,7 +1,7 @@
 <script lang="ts">
-
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {limited, type LimitedArray} from '~/app/ui/svelte-components/utils/array';
+  import type {u53} from '~/common/types';
 
   import {parse, type ParsedBytes} from '.';
 
@@ -17,7 +17,7 @@
   export let limit = Number.POSITIVE_INFINITY;
 
   let parsed: readonly ParsedBytes[];
-  let limiter: number = limit;
+  let limiter: u53 = limit;
   let rows: LimitedArray<ParsedBytes>;
 
   // Parse the bytes into rows of 16 bytes
