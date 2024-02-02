@@ -91,7 +91,7 @@
 
       clearTimeout(versionClickedTimeoutHandler);
 
-      versionClickedTimeoutHandler = setTimeout(() => {
+      versionClickedTimeoutHandler = window.setTimeout(() => {
         versionClickedCount = 0;
       }, 2000);
 

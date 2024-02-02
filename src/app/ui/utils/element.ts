@@ -94,7 +94,7 @@ export async function waitForPresenceOfElement({
             subtree,
         });
 
-        timeoutId = setTimeout(() => {
+        timeoutId = window.setTimeout(() => {
             observer.disconnect();
             reject(
                 new Error(

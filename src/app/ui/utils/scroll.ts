@@ -88,7 +88,7 @@ async function scrollIntoViewAsync({
         // https://bugs.chromium.org/p/chromium/issues/detail?id=833617
         window.requestAnimationFrame(() => element.scrollIntoView(options));
 
-        timeoutId = setTimeout(() => {
+        timeoutId = window.setTimeout(() => {
             container.removeEventListener('scrollend', handleScrollEnd);
             reject(
                 new Error('scrollIntoViewAsync: Maximum wait time for scrollend event exceeded'),
