@@ -5,10 +5,9 @@
   import Password from '#3sc/components/blocks/Input/Password.svelte';
   import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
+  import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-
-  import SubstitutableText from './SubstitutableText.svelte';
 
   /**
    * A promise that can be awaited. It will resolve once the password been entered by the user.

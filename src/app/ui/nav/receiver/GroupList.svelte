@@ -2,6 +2,7 @@
   import type {AppServices} from '~/app/types';
   import {matchesGroupSearchFilter} from '~/app/ui/aside/group-details';
   import {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import {contactListFilter} from '~/app/ui/nav/receiver';
   import GroupListItem from '~/app/ui/nav/receiver/GroupListItem.svelte';
   import type {DbGroupUid} from '~/common/db';
   import {scrollToCenterOfView} from '~/common/dom/utils/element';
@@ -12,8 +13,6 @@
   import {derive} from '~/common/utils/store/derived-store';
   import {localeSort} from '~/common/utils/string';
   import type {GroupListItemSetStore} from '~/common/viewmodel/group-list-item';
-
-  import {contactListFilter} from '.';
 
   /**
    * App Services.

@@ -7,6 +7,7 @@
   import SwipeArea from '~/app/ui/generic/swipe-area/SwipeArea.svelte';
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import {contactListFilter} from '~/app/ui/nav/receiver';
   import type {DbGroupUid} from '~/common/db';
   import {GroupUserState, ReceiverType} from '~/common/enum';
   import type {ProfilePicture} from '~/common/model';
@@ -16,8 +17,6 @@
     GroupListItemViewModel,
     GroupListItemViewModelStore,
   } from '~/common/viewmodel/group-list-item';
-
-  import {contactListFilter} from '.';
 
   /**
    * Contact list item view model store.

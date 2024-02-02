@@ -4,8 +4,7 @@
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '#3sc/components/blocks/Icon/ThreemaIcon.svelte';
   import ToastComponent from '#3sc/components/generic/Snackbar/Toast.svelte';
-
-  import {snackbarStore, toast} from '.';
+  import {snackbarStore, toast} from '~/app/ui/snackbar';
 </script>
 
 <template>
