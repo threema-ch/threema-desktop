@@ -25,6 +25,21 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta27" date="2024-02-05">
+            <description>
+                <p>New Features:</p>
+                <ul>
+                    <li>Agree/disagree feature for group chats</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>Improved resolution and quality of media thumbnails</li>
+                    <li>Persistent window position across restarts on macOS and Windows</li>
+                    <li>Improved performance in chat view</li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta26" date="2024-01-15">
             <description>
                 <p>Improvements:</p>
