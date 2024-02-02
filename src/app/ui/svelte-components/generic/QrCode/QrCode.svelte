@@ -1,7 +1,7 @@
 <script lang="ts">
   import type * as qr from 'qrcode';
 
-  import {drawToCanvas} from '.';
+  import {drawToCanvas} from '~/app/ui/svelte-components/generic/QrCode';
 
   /**
    * Data to be encoded.

@@ -1,8 +1,7 @@
 <script lang="ts">
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {Packet, PacketFilter} from '~/app/ui/svelte-components/generic/PacketFlow';
   import type {u53} from '~/common/types';
-
-  import type {Packet, PacketFilter} from '.';
 
   /**
    * Packet layers packets may pass through.

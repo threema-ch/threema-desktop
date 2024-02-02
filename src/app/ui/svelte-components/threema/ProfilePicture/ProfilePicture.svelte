@@ -11,8 +11,10 @@
 -->
 <script lang="ts">
   import Image from '~/app/ui/svelte-components/blocks/Image/Image.svelte';
-
-  import type {ProfilePictureColor, ProfilePictureShape} from '.';
+  import type {
+    ProfilePictureColor,
+    ProfilePictureShape,
+  } from '~/app/ui/svelte-components/threema/ProfilePicture';
 
   /**
    * The address or URL of an image resource. May also be a promise.

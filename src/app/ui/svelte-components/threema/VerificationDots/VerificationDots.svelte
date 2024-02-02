@@ -1,5 +1,8 @@
 <script lang="ts">
-  import type {VerificationLevel, VerificationLevelColors} from '.';
+  import type {
+    VerificationLevel,
+    VerificationLevelColors,
+  } from '~/app/ui/svelte-components/threema/VerificationDots';
 
   /**
    * Verification level colors for the dots.

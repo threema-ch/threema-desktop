@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type {CircularProgressVariant} from '.';
+  import type {CircularProgressVariant} from '~/app/ui/svelte-components/blocks/CircularProgress';
 
   /**
    * The variant of the progress indicator to show.

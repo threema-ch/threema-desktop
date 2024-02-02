@@ -1,14 +1,13 @@
 <script lang="ts">
-  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
-  import type {u53} from '~/common/types';
-
   import {
     calculateValueByCoords,
     getProgressPercentage,
     type Orientation,
     type StyleAnchor,
     type StyleDirection,
-  } from '.';
+  } from '~/app/ui/svelte-components/blocks/Slider';
+  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+  import type {u53} from '~/common/types';
 
   /**
    * Minimum value.

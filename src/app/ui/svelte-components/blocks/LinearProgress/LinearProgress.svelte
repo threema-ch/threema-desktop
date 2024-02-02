@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type {LinearProgressVariant} from '.';
+  import type {LinearProgressVariant} from '~/app/ui/svelte-components/blocks/LinearProgress';
 
   /**
    * The variant of the progress indicator to show.

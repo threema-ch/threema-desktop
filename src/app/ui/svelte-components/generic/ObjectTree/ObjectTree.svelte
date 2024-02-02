@@ -2,16 +2,15 @@
   import {createEventDispatcher} from 'svelte';
 
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import {limited, type LimitedArray} from '~/app/ui/svelte-components/utils/array';
-  import type {u53} from '~/common/types';
-
   import {
     parse,
     type TreeExpandEvent,
     type TreeItem,
     type TreeItemInfo,
     type TreeItemType,
-  } from '.';
+  } from '~/app/ui/svelte-components/generic/ObjectTree';
+  import {limited, type LimitedArray} from '~/app/ui/svelte-components/utils/array';
+  import type {u53} from '~/common/types';
 
   /**
    * Key of the associated object. Used in case the object is a child of
