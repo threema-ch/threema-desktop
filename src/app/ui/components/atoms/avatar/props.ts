@@ -1,5 +1,5 @@
-import type {ProfilePictureColor} from '~/app/ui/svelte-components/threema/ProfilePicture';
 import type {LazyImageProps} from '~/app/ui/components/atoms/lazy-image/props';
+import type {ProfilePictureColor} from '~/app/ui/svelte-components/threema/ProfilePicture';
 import type {u53} from '~/common/types';
 
 /**

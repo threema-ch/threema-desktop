@@ -1,10 +1,10 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
+  import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
   import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
-  import {i18n} from '~/app/ui/i18n';
 
   const dispatchEvent = createEventDispatcher();
 </script>

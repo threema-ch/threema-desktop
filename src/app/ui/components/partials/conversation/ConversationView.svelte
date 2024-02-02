@@ -1,9 +1,6 @@
 <script lang="ts">
   import {onDestroy} from 'svelte/internal';
 
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import DropZoneProvider from '~/app/ui/components/hocs/drop-zone-provider/DropZoneProvider.svelte';
@@ -32,6 +29,9 @@
   import {type MediaFile, generateThumbnail} from '~/app/ui/modal/media-message';
   import {conversationListEvent} from '~/app/ui/nav/conversation';
   import {toast} from '~/app/ui/snackbar';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
   import type {FileLoadResult} from '~/app/ui/utils/file';
   import {type SvelteNullableBinding, reactive} from '~/app/ui/utils/svelte';
   import type {DbReceiverLookup} from '~/common/db';

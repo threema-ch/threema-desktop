@@ -1,12 +1,12 @@
 <script lang="ts">
-  import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
-  import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
-  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import type {Logger} from 'libthreema';
   import type {AppServices} from '~/app/types';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
+  import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
+  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import type {Config} from '~/common/config';
   import type {AppUpdateDialog} from '~/common/system-dialog';
   import type {Delayed} from '~/common/utils/delayed';

@@ -1,7 +1,6 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
 
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
@@ -15,6 +14,7 @@
   import ContactList from '~/app/ui/nav/receiver/ContactList.svelte';
   import GroupList from '~/app/ui/nav/receiver/GroupList.svelte';
   import ReceiverTabSwitcher from '~/app/ui/nav/receiver/ReceiverTabSwitcher.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {WorkVerificationLevel} from '~/common/enum';
   import {unreachable} from '~/common/utils/assert';
 

@@ -5,9 +5,9 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import UserProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
   import type {ProfileInfoProps} from '~/app/ui/components/partials/settings/internal/profile-settings/internal/profile-info/props';
   import {i18n} from '~/app/ui/i18n';
+  import UserProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
 
   type $$Props = ProfileInfoProps;

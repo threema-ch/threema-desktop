@@ -1,8 +1,8 @@
 <script lang="ts">
+  import {i18n} from '~/app/ui/i18n';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
-  import {i18n} from '~/app/ui/i18n';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import type {ProfilePicture as ProfilePictureModel} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';

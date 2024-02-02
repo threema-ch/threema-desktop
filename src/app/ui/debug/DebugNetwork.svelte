@@ -1,6 +1,7 @@
 <script lang="ts">
   import type {Readable} from 'svelte/store';
 
+  import type {AppServices} from '~/app/types';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ByteView from '~/app/ui/svelte-components/generic/ByteView/ByteView.svelte';
@@ -8,7 +9,6 @@
   import ObjectTree from '~/app/ui/svelte-components/generic/ObjectTree/ObjectTree.svelte';
   import type {Packet} from '~/app/ui/svelte-components/generic/PacketFlow/';
   import PacketFlow from '~/app/ui/svelte-components/generic/PacketFlow/PacketFlow.svelte';
-  import type {AppServices} from '~/app/types';
   import {LAYERS} from '~/common/network/protocol/capture';
   import {assert} from '~/common/utils/assert';
 

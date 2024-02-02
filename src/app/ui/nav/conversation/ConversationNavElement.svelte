@@ -1,6 +1,4 @@
 <script lang="ts">
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import {getFragmentForRoute} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
@@ -23,6 +21,8 @@
     transformReceiver,
   } from '~/app/ui/nav/conversation';
   import MessageStatusComponent from '~/app/ui/nav/conversation/MessageStatus.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import {
     ConversationCategory,
     ConversationVisibility,

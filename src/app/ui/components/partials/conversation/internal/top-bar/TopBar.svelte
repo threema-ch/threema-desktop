@@ -1,6 +1,4 @@
 <script lang="ts">
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import {getReceiverCardBottomLeftItemOptions} from '~/app/ui/components/partials/conversation/internal/top-bar/helpers';
@@ -11,6 +9,8 @@
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {AnchorPoint, Offset} from '~/app/ui/generic/popover/types';
   import {i18n} from '~/app/ui/i18n';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {display} from '~/common/dom/ui/state';
   import {ReceiverType} from '~/common/enum';

@@ -1,8 +1,8 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
 
-  import {ElementResizeObserver} from '~/app/ui/svelte-components/utils/observer';
   import type {SwipeAreaGroup} from '~/app/ui/generic/swipe-area';
+  import {ElementResizeObserver} from '~/app/ui/svelte-components/utils/observer';
 
   /**
    * Optional swipe area group. Grouped swipe areas will reset each other on

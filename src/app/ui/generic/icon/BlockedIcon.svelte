@@ -1,6 +1,6 @@
 <script lang="ts">
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
 </script>
 
 <template>

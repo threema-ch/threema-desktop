@@ -5,11 +5,11 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte/internal';
 
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import type {ItemWithDropdownProps} from '~/app/ui/components/molecules/key-value-list/internal/item-with-dropdown/props';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import type {AnchorPoint, Offset} from '~/app/ui/generic/popover/types';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
   type $$Props = ItemWithDropdownProps;

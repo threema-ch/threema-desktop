@@ -1,9 +1,10 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
+  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+
   import emoji from './emoji.html?raw';
 
-  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
 
   let wrapper: HTMLElement | null = null;
 
@@ -53,7 +54,7 @@
     function onObserverEvent(entries: IntersectionObserverEntry[]): void {
       // Update all entries
       for (const entry of entries) {
-        const groupId = (entry.target as HTMLElement).dataset['group'];
+        const groupId = (entry.target as HTMLElement).dataset.group;
         if (groupId === undefined) {
           throw new Error('Observed element without group ID');
         }

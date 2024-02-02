@@ -3,12 +3,12 @@
   Renders a modal with details about a message.
 -->
 <script lang="ts">
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
   import {i18n} from '~/app/ui/i18n';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';

@@ -13,6 +13,7 @@ export class ElementResizeObserver {
 
     /**
      * Create an element resize observer.
+     *
      * @param onDestroy A registration function for code to be executed on
      *   destruction of an associated component. This observer will stop
      *   watching for resize events on destruction.
@@ -27,6 +28,7 @@ export class ElementResizeObserver {
 
     /**
      * Remove or replace the currently watched element.
+     *
      * @param element The element to watch or `undefined` to stop watching.
      */
     public set(element?: Element): void {

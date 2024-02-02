@@ -1,12 +1,12 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
-  import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
   import {APP_CONFIG} from '~/app/config';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardStateSetPassword} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
 
   export let linkingWizardState: LinkingWizardStateSetPassword;
 

@@ -10,9 +10,10 @@
   never resolves (for example with `Promise.race([])`).
 -->
 <script lang="ts">
+  import Image from '~/app/ui/svelte-components/blocks/Image/Image.svelte';
+
   import type {ProfilePictureColor, ProfilePictureShape} from '.';
 
-  import Image from '~/app/ui/svelte-components/blocks/Image/Image.svelte';
 
   /**
    * The address or URL of an image resource. May also be a promise.

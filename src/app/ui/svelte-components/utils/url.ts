@@ -6,6 +6,7 @@ export class UrlSource {
 
     /**
      * Create a url resource container.
+     *
      * @param onDestroy A registration function for code to be executed on
      *   destruction of an associated component. This container will register
      *   unloading resources on destruction to prevent memory leaks.
@@ -16,6 +17,7 @@ export class UrlSource {
 
     /**
      * Load a resource and create an object URL from it, if needed.
+     *
      * @param data Resource data in form of a normal URL or a Blob.
      * @returns The loaded resource.
      */
@@ -23,6 +25,7 @@ export class UrlSource {
 
     /**
      * Load a promised resource and create an object URL from it, if needed.
+     *
      * @param data Promised resource data in form of a normal URL or a Blob.
      * @returns A promise for the loaded resource.
      */
@@ -30,6 +33,7 @@ export class UrlSource {
 
     /**
      * Load a resource and create an object URL from it, if needed.
+     *
      * @param data Resource data in form of a normal URL or a Blob, or a
      *   promise of either.
      * @returns The loaded resource or a promise for the loaded resource.

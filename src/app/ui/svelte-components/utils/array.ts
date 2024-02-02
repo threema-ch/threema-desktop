@@ -1,5 +1,6 @@
 /**
  * An array who may or may not have been truncated.
+ *
  * @property items Contains the (possibly truncated) items.
  * @property limited Determines whether the items of the array have been
  *   truncated.
@@ -11,6 +12,7 @@ export interface LimitedArray<T> {
 
 /**
  * Truncates the amount of items in an array to an upper limit.
+ *
  * @param array An array of items that may be truncated.
  * @param limit The upper limit amount of items.
  * @returns A limited array interface.

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {Router} from '~/app/routing/router';
   import {sortGroupMembers} from '~/app/ui/aside/group-details';
   import GroupMember from '~/app/ui/aside/group-details/GroupMember.svelte';
@@ -7,6 +6,7 @@
   import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
   import {i18n} from '~/app/ui/i18n';
   import LinkElement from '~/app/ui/nav/receiver/detail/LinkElement.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {DbContactUid} from '~/common/db';
   import type {BackendController} from '~/common/dom/backend/controller';
   import {ReceiverType} from '~/common/enum';

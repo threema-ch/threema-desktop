@@ -1,5 +1,4 @@
 <script lang="ts">
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {Router} from '~/app/routing/router';
   import type {ContactReceiver} from '~/app/ui/generic/receiver';
   import Receiver from '~/app/ui/generic/receiver/Receiver.svelte';
@@ -8,6 +7,7 @@
   import SwipeAreaButton from '~/app/ui/generic/swipe-area/SwipeAreaButton.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {contactListFilter, showFullNameAndNickname} from '~/app/ui/nav/receiver';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {DbContactUid} from '~/common/db';
   import {ActivityState, ReceiverType} from '~/common/enum';
   import type {ProfilePicture} from '~/common/model';

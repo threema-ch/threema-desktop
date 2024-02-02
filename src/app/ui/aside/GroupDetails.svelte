@@ -1,7 +1,4 @@
 <script lang="ts">
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import ProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
   import {globals} from '~/app/globals';
   import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -17,6 +14,9 @@
   import {i18n} from '~/app/ui/i18n';
   import DeleteDialog from '~/app/ui/modal/ContactDelete.svelte';
   import {toast} from '~/app/ui/snackbar';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import ProfilePicture from '~/app/ui/svelte-components/threema/ProfilePicture/ProfilePicture.svelte';
   import {transformProfilePicture} from '~/common/dom/ui/profile-picture';
   import {display} from '~/common/dom/ui/state';
   import {ReceiverType} from '~/common/enum';

@@ -1,8 +1,8 @@
 <script lang="ts">
+  import Croppie from 'croppie';
   import {onDestroy, onMount} from 'svelte';
   import {fade} from 'svelte/transition';
 
-  import Croppie from 'croppie';
 
   import {unwrap} from '~/app/ui/svelte-components/utils/assert';
   import {UrlSource} from '~/app/ui/svelte-components/utils/url';

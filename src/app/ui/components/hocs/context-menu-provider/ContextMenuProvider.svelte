@@ -5,16 +5,16 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
-  import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
-  import MenuItemDivider from '~/app/ui/svelte-components/generic/Menu/MenuItemDivider.svelte';
   import type {ContextMenuProviderProps} from '~/app/ui/components/hocs/context-menu-provider/props';
   import type {
     ContextMenuItem,
     ContextMenuOption,
   } from '~/app/ui/components/hocs/context-menu-provider/types';
   import Popover from '~/app/ui/generic/popover/Popover.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
+  import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
+  import MenuItemDivider from '~/app/ui/svelte-components/generic/Menu/MenuItemDivider.svelte';
 
   type $$Props = ContextMenuProviderProps;
 

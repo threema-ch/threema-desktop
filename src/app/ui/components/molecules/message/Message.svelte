@@ -5,7 +5,6 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import LazyImage from '~/app/ui/components/atoms/lazy-image/LazyImage.svelte';
   import Prose from '~/app/ui/components/atoms/prose/Prose.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
@@ -16,6 +15,7 @@
   import Quote from '~/app/ui/components/molecules/message/internal/quote/Quote.svelte';
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
   import type {MessageProps} from '~/app/ui/components/molecules/message/props';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {MAX_IMAGE_MESSAGE_SIZE} from '~/common/dom/ui/media';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';

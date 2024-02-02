@@ -2,6 +2,7 @@ const BYTE_UNITS = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
 
 /**
  * Convert an byte amount to human readable Byte, KiB, MiB, GiB or TiB.
+ *
  * @param size number of bytes to convert into human readable string
  * @returns human readable size as a string.
  */
@@ -17,6 +18,7 @@ export function byteSizeToHumanReadable(size: number): string {
 
 /**
  * Convert an amount of seconds to human readable time format.
+ *
  * @param seconds Amount of seconds to convert.
  * @returns human readable time format in the form of `H:MM:SS`.
  */

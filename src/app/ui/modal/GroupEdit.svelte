@@ -1,10 +1,6 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import TextInput from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
-  import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
-  import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
-  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import {assertRoute} from '~/app/routing';
   import type {AppServices} from '~/app/types';
   import {getProfilePictureAndMemberStores} from '~/app/ui/aside/group-details';
@@ -12,6 +8,10 @@
   import ProfilePictureEdit from '~/app/ui/generic/profile-picture/ProfilePictureEdit.svelte';
   import {i18n} from '~/app/ui/i18n';
   import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
+  import TextInput from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
+  import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
+  import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
+  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import type {Group, ProfilePicture} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
 

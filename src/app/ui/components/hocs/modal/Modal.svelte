@@ -6,13 +6,13 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy, onMount} from 'svelte';
 
-  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {globals} from '~/app/globals';
   import type {ModalProps} from '~/app/ui/components/hocs/modal/props';
   import type {ButtonState} from '~/app/ui/components/hocs/modal/types';
   import Portal from '~/app/ui/components/hocs/portal/Portal.svelte';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
 

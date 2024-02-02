@@ -1,13 +1,13 @@
 <script lang="ts">
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import QrCode from '~/app/ui/svelte-components/generic/QrCode/QrCode.svelte';
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardStateScan} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import QrCode from '~/app/ui/svelte-components/generic/QrCode/QrCode.svelte';
   import {GlobalTimer} from '~/common/utils/timer';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking.scan`);

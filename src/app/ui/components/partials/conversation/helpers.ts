@@ -1,6 +1,6 @@
-import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
 import type {i18n as i18nStore} from '~/app/ui/i18n';
 import {toast} from '~/app/ui/snackbar';
+import type {FileResult} from '~/app/ui/svelte-components/utils/filelist';
 import {type FileLoadResult, validateFiles} from '~/app/ui/utils/file';
 import type {Logger} from '~/common/logging';
 import {unreachable} from '~/common/utils/assert';

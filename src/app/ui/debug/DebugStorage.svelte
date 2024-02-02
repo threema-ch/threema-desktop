@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {AppServices} from '~/app/types';
   import {i18n, type Locale, LOCALES} from '~/app/ui/i18n';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {type Theme, THEMES} from '~/common/dom/ui/theme';
   import {ReceiverType} from '~/common/enum';
   import type {

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
   import {i18n} from '~/app/ui/i18n';
   import type {LinkingWizardStateSyncing} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
   import {unreachable} from '~/common/utils/assert';
 
   export let linkingWizardState: LinkingWizardStateSyncing;

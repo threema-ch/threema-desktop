@@ -5,8 +5,6 @@
 <script lang="ts">
   import type {SvelteComponentDev} from 'svelte/internal';
 
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import About from '~/app/ui/components/partials/settings/internal/about/About.svelte';
@@ -17,6 +15,8 @@
   import SecuritySettings from '~/app/ui/components/partials/settings/internal/security-settings/SecuritySettings.svelte';
   import type {SettingsProps} from '~/app/ui/components/partials/settings/props';
   import {i18n} from '~/app/ui/i18n';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {reactive} from '~/app/ui/utils/svelte';
   import {display} from '~/common/dom/ui/state';
   import type {SettingsCategory} from '~/common/settings';

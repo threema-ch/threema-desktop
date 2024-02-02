@@ -3,13 +3,13 @@
   Renders the settings navigation sidebar.
 -->
 <script lang="ts">
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import SettingsNavList from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/SettingsNavList.svelte';
   import type {SettingsNavProps} from '~/app/ui/components/partials/settings-nav/props';
   import {i18n} from '~/app/ui/i18n';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
 
   type $$Props = SettingsNavProps;
 

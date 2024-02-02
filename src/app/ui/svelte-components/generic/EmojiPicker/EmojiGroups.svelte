@@ -23,7 +23,7 @@
     if (target === null) {
       return;
     }
-    const groupId = (target as HTMLElement).dataset['group'];
+    const groupId = (target as HTMLElement).dataset.group;
     if (groupId !== undefined) {
       dispatch('groupClicked', parseInt(groupId, 10));
     }

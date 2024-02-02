@@ -1,11 +1,11 @@
-import type {
-    VerificationLevel,
-    VerificationLevelColors,
-} from '~/app/ui/svelte-components/threema/VerificationDots';
 import {
     type ReceiverNotificationPolicy,
     transformNotificationPolicyFromContact,
 } from '~/app/ui/generic/receiver';
+import type {
+    VerificationLevel,
+    VerificationLevelColors,
+} from '~/app/ui/svelte-components/threema/VerificationDots';
 import type {PublicKey} from '~/common/crypto';
 import type {DbReceiverLookup} from '~/common/db';
 import type {BackendController} from '~/common/dom/backend/controller';

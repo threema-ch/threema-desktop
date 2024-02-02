@@ -1,12 +1,12 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import Button from '#3sc/components/blocks/Button/Button.svelte';
-  import Password from '#3sc/components/blocks/Input/Password.svelte';
-  import Title from '#3sc/components/blocks/ModalDialog/Header/Title.svelte';
-  import ModalDialog from '#3sc/components/blocks/ModalDialog/ModalDialog.svelte';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
+  import Password from '~/app/ui/svelte-components/blocks/Input/Password.svelte';
+  import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
+  import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
   /**

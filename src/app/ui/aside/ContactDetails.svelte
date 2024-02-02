@@ -1,7 +1,4 @@
 <script lang="ts">
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import {globals} from '~/app/globals';
   import type {RouterState} from '~/app/routing/router';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
@@ -18,6 +15,9 @@
   import ListElement from '~/app/ui/nav/receiver/detail/ListElement.svelte';
   import Subheader from '~/app/ui/nav/receiver/detail/Subheader.svelte';
   import {toast} from '~/app/ui/snackbar';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {display} from '~/common/dom/ui/state';
   import {

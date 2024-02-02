@@ -1,10 +1,10 @@
 <script lang="ts">
+  import {i18n} from '~/app/ui/i18n';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import TitleAndClose from '~/app/ui/svelte-components/blocks/ModalDialog/Header/TitleAndClose.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import type {VerificationLevelColors} from '~/app/ui/svelte-components/threema/VerificationDots';
   import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
-  import {i18n} from '~/app/ui/i18n';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let visible: boolean;
 

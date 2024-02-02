@@ -1,9 +1,9 @@
 <script lang="ts">
+  import {i18n} from '~/app/ui/i18n';
+  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
   import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
-  import {i18n} from '~/app/ui/i18n';
-  import ModalWrapper from '~/app/ui/modal/ModalWrapper.svelte';
 
   export let displayName: string;
 

@@ -5,10 +5,6 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
 
-  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
-  import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
   import {globals} from '~/app/globals';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import ImagePreview from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-media-viewer-modal/internal/image-preview/ImagePreview.svelte';
@@ -20,6 +16,10 @@
   import {i18n} from '~/app/ui/i18n';
   import type {I18nType} from '~/app/ui/i18n-types';
   import {toast} from '~/app/ui/snackbar';
+  import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import MenuContainer from '~/app/ui/svelte-components/generic/Menu/MenuContainer.svelte';
+  import MenuItem from '~/app/ui/svelte-components/generic/Menu/MenuItem.svelte';
   import {handleCopyImage, handleSaveAsFile} from '~/app/ui/utils/file-sync/handlers';
   import {syncAndGetPayload} from '~/app/ui/utils/file-sync/helpers';
   import {nodeIsOrContainsTarget} from '~/app/ui/utils/node';

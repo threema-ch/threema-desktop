@@ -3,9 +3,9 @@
   Renders a single list item in the settings navigation sidebar.
 -->
 <script lang="ts">
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import type {SettingsNavItemProps} from '~/app/ui/components/partials/settings-nav/internal/settings-nav-list/internal/settings-nav-item/props';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
 
   type $$Props = SettingsNavItemProps;
 

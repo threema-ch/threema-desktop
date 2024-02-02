@@ -5,12 +5,12 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import type {ToggleLoggerModalProps} from '~/app/ui/components/partials/settings/internal/about/internal/toggle-logger-modal/props';
   import {i18n} from '~/app/ui/i18n';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
 
   type $$Props = ToggleLoggerModalProps;

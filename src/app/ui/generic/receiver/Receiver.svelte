@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Checkbox from '~/app/ui/svelte-components/blocks/Checkbox/Checkbox.svelte';
-  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
   import BlockedIcon from '~/app/ui/generic/icon/BlockedIcon.svelte';
   import type {Receiver} from '~/app/ui/generic/receiver';
   import ProcessedText from '~/app/ui/generic/receiver/ProcessedText.svelte';
   import RecipientProfilePicture from '~/app/ui/generic/receiver/ProfilePicture.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import Checkbox from '~/app/ui/svelte-components/blocks/Checkbox/Checkbox.svelte';
+  import VerificationDots from '~/app/ui/svelte-components/threema/VerificationDots/VerificationDots.svelte';
 
   /**
    * Determine whether the receiver is clickable.

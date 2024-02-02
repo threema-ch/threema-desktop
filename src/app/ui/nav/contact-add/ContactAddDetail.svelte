@@ -1,8 +1,6 @@
 <script lang="ts">
   import {onMount} from 'svelte';
 
-  import WizardButton from '~/app/ui/svelte-components/blocks/Button/WizardButton.svelte';
-  import Text from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
   import {assertRoute} from '~/app/routing';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import type {AppServices} from '~/app/types';
@@ -11,6 +9,8 @@
   import {i18n} from '~/app/ui/i18n';
   import {checkContactCreationAllowed} from '~/app/ui/nav/contact-add';
   import ContactAddNavBar from '~/app/ui/nav/contact-add/ContactAddNavBar.svelte';
+  import WizardButton from '~/app/ui/svelte-components/blocks/Button/WizardButton.svelte';
+  import Text from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
   import {
     AcquaintanceLevel,
     ConversationCategory,

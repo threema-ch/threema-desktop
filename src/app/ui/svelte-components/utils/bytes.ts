@@ -8,6 +8,7 @@ const HEX_LOOKUP_TABLE = [
 
 /**
  * Convert an unsigned 8 bit integer to its hex string representation.
+ *
  * @param byte 8 bit integer to convert
  * @returns hex string representation
  */
@@ -20,6 +21,7 @@ export function byteToHex(byte: number): string {
 /**
  * Convert an unsigned 8 bit integer to a printable ASCII representation.
  * If it is not a printable character, the placeholder · will be returned.
+ *
  * @param byte 8 bit integer to convert
  * @returns printable ASCII representation
  */

@@ -3,13 +3,13 @@
   Renders a message quote.
 -->
 <script lang="ts">
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import LazyImage from '~/app/ui/components/atoms/lazy-image/LazyImage.svelte';
   import Prose from '~/app/ui/components/atoms/prose/Prose.svelte';
   import AudioPlayer from '~/app/ui/components/molecules/audio-player/AudioPlayer.svelte';
   import FileInfo from '~/app/ui/components/molecules/message/internal/file-info/FileInfo.svelte';
   import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unreachable} from '~/common/utils/assert';
 
   type $$Props = QuoteProps;

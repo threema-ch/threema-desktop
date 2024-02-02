@@ -4,12 +4,12 @@
   receiver.
 -->
 <script lang="ts">
-  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import {globals} from '~/app/globals';
   import Avatar from '~/app/ui/components/atoms/avatar/Avatar.svelte';
   import ContentItem from '~/app/ui/components/partials/receiver-card/internal/content-item/ContentItem.svelte';
   import type {ReceiverCardProps} from '~/app/ui/components/partials/receiver-card/props';
   import {i18n} from '~/app/ui/i18n';
+  import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import type {DbReceiverLookup} from '~/common/db';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';

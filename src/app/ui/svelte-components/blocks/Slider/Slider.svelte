@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
+
   import {
     calculateValueByCoords,
     getProgressPercentage,
@@ -7,7 +9,6 @@
     type StyleDirection,
   } from '.';
 
-  import {unwrap} from '~/app/ui/svelte-components/utils/assert';
 
   /**
    * Minimum value.

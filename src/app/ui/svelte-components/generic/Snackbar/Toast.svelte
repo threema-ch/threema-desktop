@@ -1,11 +1,12 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import type {AnyToastAction} from '.';
 
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+
+  import type {AnyToastAction} from '.';
 
   export let text: string;
 

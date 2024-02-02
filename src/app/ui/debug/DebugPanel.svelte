@@ -1,13 +1,13 @@
 <script lang="ts">
   import type {SvelteComponentDev} from 'svelte/internal';
 
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {AppServices} from '~/app/types';
   import DebugBackend from '~/app/ui/debug/DebugBackend.svelte';
   import DebugNetwork from '~/app/ui/debug/DebugNetwork.svelte';
   import DebugRedis from '~/app/ui/debug/DebugRedis.svelte';
   import DebugStorage from '~/app/ui/debug/DebugStorage.svelte';
   import Threema from '~/app/ui/debug/Threema.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {MouseEventButtons} from '~/common/enum';
 
   /* eslint-disable @typescript-eslint/naming-convention */

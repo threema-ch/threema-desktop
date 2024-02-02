@@ -1,13 +1,13 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
 
-  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
-  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import {provideContextMenuEntries} from '~/app/ui/components/partials/contact-nav-bar/helpers';
   import type {ContactNavBarProps} from '~/app/ui/components/partials/contact-nav-bar/props';
   import type Popover from '~/app/ui/generic/popover/Popover.svelte';
   import {i18n} from '~/app/ui/i18n';
+  import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
+  import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {display} from '~/common/dom/ui/state';
 
