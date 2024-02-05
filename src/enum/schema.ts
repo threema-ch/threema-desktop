@@ -685,6 +685,7 @@ export enum ElectronIpcCommand {
     DELETE_PROFILE_AND_RESTART = 'deleteProfileAndRestart',
     CLOSE_APP = 'closeApp',
     UPDATE_APP_BADGE = 'updateAppBadge',
+    UPDATE_PUBLIC_KEY_PINS = 'updatePublicKeyPins',
 }
 
 /**

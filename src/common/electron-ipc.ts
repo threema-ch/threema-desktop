@@ -1,5 +1,5 @@
 import type {LogInfo} from '~/common/node/file-storage/log-info';
-import type {ReadonlyUint8Array, u53} from '~/common/types';
+import type {DomainCertificatePin, ReadonlyUint8Array, u53} from '~/common/types';
 
 export interface ErrorDetails {
     readonly message: string;
@@ -76,6 +76,12 @@ export interface ElectronIpc {
      * Close the application.
      */
     readonly closeApp: () => void;
+
+    /**
+     * Update the public key pins after the start of the app,
+     * e.g. after loading the pins from the .oppf file.
+     */
+    readonly updatePublicKeyPins: (publicKeyPins: DomainCertificatePin[]) => void;
 
     /**
      * Update app badge with the total unread messages count.

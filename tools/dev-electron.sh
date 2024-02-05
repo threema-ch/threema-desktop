@@ -2,7 +2,7 @@
 set -euo pipefail
 
 function print_usage() {
-    echo "Usage: $0 (consumer|work) (sandbox|live) [args..]"
+    echo "Usage: $0 (consumer|work) (sandbox|live|onprem) [args..]"
     echo ""
     echo "If [args..] are passed in, they are forwarded to the Threema application."
 }

@@ -131,12 +131,12 @@ export function determineMobileAppName(flavor: BuildFlavor): string {
 }
 
 export interface BuildConfig {
-    readonly CHAT_SERVER_KEY: readonly u8[];
-    readonly MEDIATOR_SERVER_URL: string;
-    readonly DIRECTORY_SERVER_URL: string;
-    readonly BLOB_SERVER_URL: string;
-    readonly RENDEZVOUS_SERVER_URL: string;
-    readonly WORK_API_SERVER_URL: string;
+    readonly CHAT_SERVER_KEY: readonly u8[] | undefined;
+    readonly MEDIATOR_SERVER_URL: string | undefined;
+    readonly DIRECTORY_SERVER_URL: string | undefined;
+    readonly BLOB_SERVER_URL: string | undefined;
+    readonly RENDEZVOUS_SERVER_URL: string | undefined;
+    readonly WORK_API_SERVER_URL: string | undefined;
     readonly UPDATE_SERVER_URL: string;
     readonly SENTRY_DSN: string | undefined;
     readonly MINIDUMP_ENDPOINT: string | undefined;

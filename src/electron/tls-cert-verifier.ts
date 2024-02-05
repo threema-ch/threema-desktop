@@ -30,6 +30,10 @@ type CertificateVerifier = NonNullable<Parameters<Electron.Session['setCertifica
  * Creates a `CertificateVerifier` function that only accepts certificates which match the
  * fingerprints specified in the `certificatePins`.
  *
+ * In the case of an OnPrem build, the certificates pin must be passed from the main process after processing the .oppf file.
+ * This is done using the {@link electronIpcCommand.UPDATE_PUBLIC_KEY_PINS} signal.
+ * (TODO(DESK-1298): This doesn't yet work properly due to caching.)
+ *
  * Ther returned function can be passed to {@link Electron.session.setCertificateVerifyProc}.
  *
  * @param certificatePins The list of pinned SPKI fingerprints (SHA-256-hashed and Base64-encoded
@@ -37,24 +41,26 @@ type CertificateVerifier = NonNullable<Parameters<Electron.Session['setCertifica
  * @param log A logger instance.
  */
 export function createTlsCertificateVerifier(
-    certificatePins: DomainCertificatePin[],
+    certificatePins: DomainCertificatePin[] | undefined,
     log: Logger,
 ): CertificateVerifier {
     // Sanity-checking of certificate pins
-    for (const pin of certificatePins) {
-        for (const fingerprint of pin.fingerprints) {
-            let fingerprintBytes;
-            try {
-                fingerprintBytes = base64ToU8a(fingerprint);
-            } catch (error) {
-                throw new Error(
-                    `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint}" could not be base64-decoded: ${error}`,
-                );
-            }
-            if (fingerprintBytes.byteLength !== 32) {
-                throw new Error(
-                    `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint}" is not 32 bytes`,
-                );
+    if (certificatePins !== undefined) {
+        for (const pin of certificatePins) {
+            for (const fingerprint of pin.spkis) {
+                let fingerprintBytes;
+                try {
+                    fingerprintBytes = base64ToU8a(fingerprint.value);
+                } catch (error) {
+                    throw new Error(
+                        `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint.value}" could not be base64-decoded: ${error}`,
+                    );
+                }
+                if (fingerprintBytes.byteLength !== 32) {
+                    throw new Error(
+                        `Invalid certificate pinning config for "${pin.domain}": Fingerprint "${fingerprint.value}" is not 32 bytes`,
+                    );
+                }
             }
         }
     }
@@ -87,6 +93,17 @@ export function createTlsCertificateVerifier(
             return invalid(`Verification result is ${request.verificationResult}`);
         }
 
+        // This is a special case for the connection before the .oppf file is parsed.
+        if (import.meta.env.BUILD_ENVIRONMENT === 'onprem' && certificatePins === undefined) {
+            return valid();
+        }
+
+        if (certificatePins === undefined) {
+            return invalid(
+                `No certificate pins were specified. This is illegal in non-OnPrem builds`,
+            );
+        }
+
         for (const pin of certificatePins) {
             // Skip if the hostname of the request doesn't match the specified domain.
             const domainRegex = new RegExp(
@@ -98,10 +115,11 @@ export function createTlsCertificateVerifier(
             }
 
             // Calculate the SPKI fingerprint for this certificate
+            // Note: Here we only allow sha256 but this could change in the future
             const fingerprint = spkiFingerprint(request.certificate.data, 'sha256');
 
             // Validate fingerprint against configured pins
-            if (pin.fingerprints.includes(fingerprint)) {
+            if (pin.spkis.map((f) => f.value).includes(fingerprint)) {
                 return valid();
             }
             return invalid(

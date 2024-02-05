@@ -12,7 +12,7 @@ import {contextBridge, ipcRenderer} from 'electron';
 import type {ElectronIpc, ErrorDetails} from '~/common/electron-ipc';
 import {ElectronIpcCommand} from '~/common/enum';
 import {CONSOLE_LOGGER} from '~/common/logging';
-import type {u53} from '~/common/types';
+import type {DomainCertificatePin, u53} from '~/common/types';
 
 const log = CONSOLE_LOGGER;
 
@@ -38,6 +38,8 @@ const appApi: ElectronIpc = {
     closeApp: () => ipcRenderer.send(ElectronIpcCommand.CLOSE_APP),
     updateAppBadge: (totalUnreadMessageCount: u53) =>
         ipcRenderer.send(ElectronIpcCommand.UPDATE_APP_BADGE, totalUnreadMessageCount),
+    updatePublicKeyPins: (publicKeyPins: DomainCertificatePin[]) =>
+        ipcRenderer.send(ElectronIpcCommand.UPDATE_PUBLIC_KEY_PINS, publicKeyPins),
 };
 /* eslint-enable @typescript-eslint/promise-function-async */
 contextBridge.exposeInMainWorld('app', appApi);

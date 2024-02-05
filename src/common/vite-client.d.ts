@@ -352,7 +352,7 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly ARGON2_MIN_MEMORY_BYTES: import('./types').u53;
 
     // Public-key pins (HPKP)
-    readonly TLS_CERTIFICATE_PINS: import('./types').DomainCertificatePin[];
+    readonly TLS_CERTIFICATE_PINS: import('./types').DomainCertificatePin[] | undefined;
 
     // Crash reporting (only used for internal test builds on sandbox)
     readonly SENTRY_DSN: string | undefined;

@@ -2206,6 +2206,8 @@ export namespace ElectronIpcCommand {
     export type CLOSE_APP = typeof CLOSE_APP;
     export const UPDATE_APP_BADGE = 'updateAppBadge';
     export type UPDATE_APP_BADGE = typeof UPDATE_APP_BADGE;
+    export const UPDATE_PUBLIC_KEY_PINS = 'updatePublicKeyPins';
+    export type UPDATE_PUBLIC_KEY_PINS = typeof UPDATE_PUBLIC_KEY_PINS;
 }
 /**
  * ELECTRON

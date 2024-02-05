@@ -125,25 +125,20 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 SENTRY_DSN: process.env.SENTRY_DSN,
                 MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
             };
+
+        // These will be loaded from an .oppf file while initializing the backend
         case 'onprem':
             return {
-                // prettier-ignore
-                CHAT_SERVER_KEY: [
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                ],
-                MEDIATOR_SERVER_URL: 'wss://example.com',
-                DIRECTORY_SERVER_URL: 'https://example.com',
-                BLOB_SERVER_URL: 'https://example.com',
-                RENDEZVOUS_SERVER_URL: 'wss://example.com',
-                WORK_API_SERVER_URL: 'https://example.com',
-                UPDATE_SERVER_URL: 'https://example.com',
-
-                // We don't do any automatic crash reporting for onprem builds
-                SENTRY_DSN: undefined,
-                MINIDUMP_ENDPOINT: undefined,
+                CHAT_SERVER_KEY: undefined,
+                MEDIATOR_SERVER_URL: undefined,
+                DIRECTORY_SERVER_URL: undefined,
+                BLOB_SERVER_URL: undefined,
+                RENDEZVOUS_SERVER_URL: undefined,
+                WORK_API_SERVER_URL: undefined,
+                UPDATE_SERVER_URL: 'https://releases.threema.ch/desktop/',
+                // Only enabled for internal test builds on sandbox, if set through env variable
+                SENTRY_DSN: process.env.SENTRY_DSN,
+                MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
             };
         default:
             return unreachable(environment);
@@ -236,36 +231,78 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         ARGON2_MIN_MEMORY_BYTES: env.entry === 'mocha-tests' ? 100 * KiB : 128 * MiB,
 
         // Public-key pins (HPKP)
-        TLS_CERTIFICATE_PINS: [
-            {
-                domain: '*.threema.ch',
-                fingerprints: [
-                    '8kTK9HP1KHIP0sn6T2AFH3Bq+qq3wn2i/OJSMjewpFw=',
-                    'KKBJHJn1PQSdNTmoAfhxqWTO61r8O8bPi/JeGtP/6gg=',
-                    'h2gHawxPZyMCiZSkJN0dQ4RsDxowVuTmuiNQyjeU+Sk=',
-                    'HXqz8rMr6nBDdUX3CdyIwln8ym3qFUBwv4QGyMN2uEg=',
-                    '2Vpy8qUQCqc2+Lg6BgRO8G6e6vh7NmvVHTljfwP/Pfk=',
-                    'vGQZ8hm2h+km+q7rnJ7kF9S17BwSY0rbhwjz6nIupf0=',
-                    'jsQHAHKQ2oOf3rvMn9GJVIKslkhLpODGOMPSxgLeIyo=',
-                ],
-            },
-            {
-                domain: '*.test.threema.ch',
-                fingerprints: [
-                    'Dvvb0s1E8Y2tG67GoyzIkmJNAebvOqQjz4TnPMq3yhI=',
-                    'bmsGGaIGEs1HWAUIE082NSPYTURvChScDmE7PjL+5RQ=',
-                ],
-            },
-            {
-                domain: '*.sfu.threema.ch',
-                fingerprints: [
-                    'useMPV2qPBEgxVucMPuqexG27L64zFAksHh9BehZpY0=',
-                    '88JttF0tDWrGT6g8H9uEZ0T8xosvZtZwWlsZuD4NvHA=',
-                    'F82gDLif130AsVx454ZsMxPGl9EpzB5LqY39CzVKWDQ=',
-                    'Jo4Re5X+mksn/Ankgrnov07caZwkkT8NezJMQf1i8cI=',
-                ],
-            },
-        ],
+        TLS_CERTIFICATE_PINS:
+            env.environment !== 'onprem'
+                ? [
+                      {
+                          domain: '*.threema.ch',
+                          spkis: [
+                              {
+                                  algorithm: 'sha256',
+                                  value: '8kTK9HP1KHIP0sn6T2AFH3Bq+qq3wn2i/OJSMjewpFw=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'KKBJHJn1PQSdNTmoAfhxqWTO61r8O8bPi/JeGtP/6gg=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'h2gHawxPZyMCiZSkJN0dQ4RsDxowVuTmuiNQyjeU+Sk=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'HXqz8rMr6nBDdUX3CdyIwln8ym3qFUBwv4QGyMN2uEg=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: '2Vpy8qUQCqc2+Lg6BgRO8G6e6vh7NmvVHTljfwP/Pfk=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'vGQZ8hm2h+km+q7rnJ7kF9S17BwSY0rbhwjz6nIupf0=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'jsQHAHKQ2oOf3rvMn9GJVIKslkhLpODGOMPSxgLeIyo=',
+                              },
+                          ],
+                      },
+                      {
+                          domain: '*.test.threema.ch',
+                          spkis: [
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'Dvvb0s1E8Y2tG67GoyzIkmJNAebvOqQjz4TnPMq3yhI=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'bmsGGaIGEs1HWAUIE082NSPYTURvChScDmE7PjL+5RQ=',
+                              },
+                          ],
+                      },
+                      {
+                          domain: '*.sfu.threema.ch',
+                          spkis: [
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'useMPV2qPBEgxVucMPuqexG27L64zFAksHh9BehZpY0=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: '88JttF0tDWrGT6g8H9uEZ0T8xosvZtZwWlsZuD4NvHA=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'F82gDLif130AsVx454ZsMxPGl9EpzB5LqY39CzVKWDQ=',
+                              },
+                              {
+                                  algorithm: 'sha256',
+                                  value: 'Jo4Re5X+mksn/Ankgrnov07caZwkkT8NezJMQf1i8cI=',
+                              },
+                          ],
+                      },
+                  ]
+                : undefined,
 
         // Verbose debug logging
         VERBOSE_LOGGING: {

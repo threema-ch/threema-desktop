@@ -29,8 +29,8 @@ import {
 import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
-import type {ReadonlyUint8Array, u53} from '~/common/types';
-import {assertUnreachable, ensureError, unreachable, unwrap} from '~/common/utils/assert';
+import type {DomainCertificatePin, ReadonlyUint8Array, u53} from '~/common/types';
+import {assert, assertUnreachable, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
@@ -758,6 +758,16 @@ function main(
             }
         });
 
+        electron.ipcMain.on(
+            ElectronIpcCommand.UPDATE_PUBLIC_KEY_PINS,
+            (event, publicKeyPins: DomainCertificatePin[]) => {
+                validateSenderFrame(event.senderFrame);
+                // Sanity check because we do not want non-onprem builds to tamper with the pins.
+                assert(import.meta.env.BUILD_ENVIRONMENT === 'onprem');
+                session.setCertificateVerifyProc(createTlsCertificateVerifier(publicKeyPins, log));
+            },
+        );
+
         const session = parameters['persist-profile']
             ? electron.session.defaultSession
             : electron.session.fromPartition(`volatile-${parameters.profile}`);
@@ -930,6 +940,12 @@ function main(
                 // Leave `devtools://` headers as-is
                 return callback({responseHeaders: details.responseHeaders});
             }
+            // Note: For OnPrem builds, we don't know the valid domain patterns in advance
+            // TODO(DESK-1324): Can we find a workaround?
+            const securityRule =
+                import.meta.env.BUILD_ENVIRONMENT === 'onprem'
+                    ? 'connect-src *'
+                    : "connect-src 'self' https://*.threema.ch wss://*.threema.ch";
             return callback({
                 responseHeaders: {
                     ...details.responseHeaders,
@@ -937,7 +953,7 @@ function main(
                         // Fetch directives
                         "default-src 'self'",
                         "child-src 'none'",
-                        "connect-src 'self' https://*.threema.ch wss://*.threema.ch",
+                        securityRule,
                         "font-src 'self' https://static.threema.ch",
                         "frame-src 'none'",
                         "img-src 'self' data: blob:",

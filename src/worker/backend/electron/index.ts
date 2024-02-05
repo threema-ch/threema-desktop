@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import initLibthreema, * as libthreema from 'libthreema';
-import {CONFIG} from '~/common/config';
+import {STATIC_CONFIG} from '~/common/config';
 import type {RawDatabaseKey, ServicesForDatabaseFactory} from '~/common/db';
 import type {ServicesForFileStorageFactory} from '~/common/file-storage';
 import type {ServicesForKeyStorageFactory} from '~/common/key-storage';
@@ -84,11 +84,10 @@ export async function run(): Promise<void> {
     );
 
     // Start backend worker for Electron
-    main(CONFIG, {
+    main(STATIC_CONFIG, {
         logging: loggerFactory,
         keyStorage: (services: ServicesForKeyStorageFactory, log: Logger) => {
-            const {config} = services;
-            const keyStoragePath = path.join(appPath, ...config.KEY_STORAGE_PATH);
+            const keyStoragePath = path.join(appPath, ...STATIC_CONFIG.KEY_STORAGE_PATH);
             fs.mkdirSync(path.dirname(keyStoragePath), {
                 recursive: true,
                 ...directoryModeInternalObjectIfPosix(),
@@ -97,8 +96,7 @@ export async function run(): Promise<void> {
         },
 
         fileStorage: (services: ServicesForFileStorageFactory, log: Logger) => {
-            const {config} = services;
-            const fileStoragePath = path.join(appPath, ...config.FILE_STORAGE_PATH);
+            const fileStoragePath = path.join(appPath, ...STATIC_CONFIG.FILE_STORAGE_PATH);
             fs.mkdirSync(fileStoragePath, {
                 recursive: true,
                 ...directoryModeInternalObjectIfPosix(),

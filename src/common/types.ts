@@ -42,6 +42,24 @@ export function ensureU8(val: unknown): u8 {
 }
 
 /**
+ * Type guard for {@link u16}.
+ */
+export function isU16(val: unknown): val is u16 {
+    return typeof val === 'number' && Number.isInteger(val) && val >= 0 && val <= 2 ** 16 - 1;
+}
+
+/**
+ * Ensure value is a valid number in the {@link u16} range.
+ */
+// eslint-disable-next-line no-restricted-syntax
+export function ensureU16(val: unknown): u16 {
+    if (!isU16(val)) {
+        throw new Error(`Value ${val} is not a valid unsigned byte (type is ${typeof val})`);
+    }
+    return val;
+}
+
+/**
  * Type guard for {@link u53}.
  */
 export function isU53(val: unknown): val is u53 {
@@ -370,7 +388,10 @@ export interface DomainCertificatePin {
      * The SPKI fingerprints (SHA-256-hashed and Base64-encoded public keys) of the certificates
      * that are whitelisted for the specified `domain`.
      */
-    readonly fingerprints: string[];
+    readonly spkis: {
+        algorithm: 'sha256';
+        value: string;
+    }[];
 }
 
 /**
