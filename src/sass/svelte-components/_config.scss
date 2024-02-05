@@ -1,0 +1,302 @@
+// Important: The config may not include sources that transitively import the
+//            config!
+@use './utils' as *;
+
+$-profile-picture-colors: (
+  'yellow',
+  'amber',
+  'orange',
+  'deep-orange',
+  'red',
+  'pink',
+  'purple',
+  'deep-purple',
+  'indigo',
+  'blue',
+  'light-blue',
+  'cyan',
+  'teal',
+  'green',
+  'light-green',
+  'olive'
+);
+$-button-flavors: ('filled', 'naked');
+$-button-sizes: ('normal', 'small');
+
+$-icon-button-flavors: ('filled', 'outlined', 'naked', 'overlay');
+$-icon-button-sizes:
+  48 7px 20px,
+  56 11px 20px,
+  64 15px 20px;
+
+// Exported configuration.
+//
+// prettier-ignore
+$config: (
+  // Base font size used for scaling
+  font-size: 14px,
+
+  // Available font weights for typography
+  font-weights: (400, 700),
+
+  // Available elevations for panels/context menus
+  elevations: (
+    '005'  0.5px  1px  0px  1px 1px -1px  0.5px 3px   0px,
+    '010'  1px    1px  0px  2px 1px -1px  1px   3px   0px,
+    '020'  2px    2px  0px  3px 1px -2px  1px   5px   0px,
+    '030'  3px    4px  0px  3px 3px -2px  1px   8px   0px,
+    '040'  4px    5px  0px  1px 10px 0px  4px   4px   -1px,
+    '060'  6px    10px 0px  1px 18px 0px  3px   5px   -1px,
+    '080'  8px    10px 1px  3px 14px 2px  5px   5px   -3px,
+    '090'  9px    12px 1px  3px 16px 2px  5px   6px   -3px,
+    '120'  12px   17px 2px  5px 22px 4px  7px   8px   -4px,
+    '160'  16px   24px 2px  6px 30px 5px  8px   10px  -5px,
+    '240'  24px   38px 3px  9px 46px 8px  11px  15px  -7px,
+  ),
+
+  // Available profile picture colors
+  profile-picture-colors: $-profile-picture-colors,
+
+  // Available button flavors
+  button-flavors: $-button-flavors,
+
+  // AVailable button sizes
+  button-sizes: $-button-sizes,
+
+  // Available icon button flavors & sizes
+  icon-button-flavors: $-icon-button-flavors,
+  icon-button-sizes: $-icon-button-sizes,
+
+  // Valid CSS variables
+  css-vars: (
+    blocks: flatten((
+      // Button
+      --c-button-font-size,
+      format-each(
+        (
+          text-color,
+          background-color,
+          background-color--hover,
+          background-color--active,
+          border-color,
+          border-color--hover,
+          border-color--focus,
+          border-color--active,
+          opacity--disabled
+        ),
+        $prefix: format-each($-button-flavors, $prefix: --c-button-, $postfix: '-')
+      ),
+      format-each(
+        (
+          font-size,
+          padding
+        ),
+        $prefix: format-each($-button-sizes, $prefix: --c-button-, $postfix: '-')
+      ),
+
+      // Icon button
+      --c-icon-button-outer-padding,
+      --c-icon-button-padding,
+      --c-icon-button-icon-size,
+      format-each(
+        (
+          background-color,
+          border-color,
+          icon-color,
+          outer-background-color--hover,
+          outer-background-color--focus,
+          outer-background-color--active,
+          outer-border-color--focus,
+          opacity--disabled,
+        ),
+        $prefix: format-each($-icon-button-flavors, $prefix: --c-icon-button-, $postfix: '-')
+      ),
+
+      // Icon button progress bar overlay
+      --c-icon-button-progress-bar-overlay-color,
+
+      // Wizard button
+      --c-wizard-button-font-size,
+      --c-wizard-button-border-color,
+      --c-wizard-button-background-color,
+      --c-wizard-button-text-color,
+      --c-wizard-button-border-color--hover,
+      --c-wizard-button-background-color--hover,
+      --c-wizard-button-border-color--focus,
+      --c-wizard-button-background-color--focus,
+      --c-wizard-button-border-color--active,
+      --c-wizard-button-background-color--active,
+      --c-wizard-button-opacity--disabled,
+
+      // Checkbox
+      --c-checkbox-padding,
+      --c-checkbox-color,
+      --c-checkbox-outer-background-color--hover,
+      --c-checkbox-outer-background-color--focus,
+      --c-checkbox-outer-background-color--active,
+      --c-checkbox-outer-border-color--focus,
+      --c-checkbox-opacity--disabled,
+
+      // Click outside
+      --c-global-overlay-background,
+      --c-global-overlay-z-index,
+
+      // Modal Dialog
+      --c-modal-dialog-background-color,
+      --c-modal-dialog-padding,
+
+      // Circular progress
+      --c-circular-progress-thickness,
+      --c-circular-progress-stroke-color,
+      --c-circular-progress-fill-color,
+
+      // Icon
+      --c-icon-font-size,
+      --c-icon-opacity,
+      --c-icon-opacity--disabled,
+
+      // Image
+      --c-image-width,
+      --c-image-height,
+      --c-image-object-fit,
+
+      // Linear progress
+      --c-linear-progress-background-color,
+      --c-linear-progress-color,
+      --c-linear-progress-transition,
+
+      // Slider
+      --c-slider-track-height,
+      --c-slider-track-color,
+      --c-slider-track-progress-color,
+      --c-slider-thumb-size,
+      --c-slider-thumb-color,
+
+      // Switch
+      --c-switch-thumb-color,
+      --c-switch-thumb-color--disabled,
+      --c-switch-thumb-color-off,
+      --c-switch-thumb-color-off--disabled,
+      --c-switch-track-color,
+      --c-switch-track-color--disabled,
+      --c-switch-track-color-off,
+      --c-switch-track-color-off--disabled,
+      --c-switch-thumb-glow-color,
+      --c-switch-thumb-glow-color--active,
+      --c-switch-thumb-glow-border-color,
+
+      // Input type text
+      --c-input-text-border-radius,
+      --c-input-text-background-color,
+      --c-input-text-background-color--hover,
+      --c-input-text-background-color--active,
+      --c-input-text-background-color--disabled,
+      --c-input-text-input-color,
+      --c-input-text-input-text-align,
+      --c-input-text-input-letter-spacing,
+      --c-input-text-label-color,
+      --c-input-text-label-color--disabled,
+      --c-input-text-input-color--disabled,
+      --c-input-text-help-color,
+      --c-input-text-error-color
+    )),
+
+    generic: (
+      // Byte view
+      --c-byte-view-font-family,
+      --c-byte-view-gap,
+      --c-byte-view-offset-background-color,
+
+      // Emoji picker
+      --c-emoji-picker-emoji-groups-icon-color,
+      --c-emoji-picker-emoji-groups-icon-color--active,
+
+      // Menu container
+      --c-menu-container-background-color,
+      --c-menu-container-min-width,
+      --c-menu-container-width,
+      --c-menu-container-max-width,
+      --c-menu-container-small-item-padding,
+      --c-menu-container-small-item-gap,
+      --c-menu-container-small-item-icon-size,
+      --c-menu-container-large-item-padding,
+      --c-menu-container-large-item-gap,
+      --c-menu-container-large-item-icon-size,
+
+      // Menu item
+      --c-menu-item-padding,
+      --c-menu-item-gap,
+      --c-menu-item-text-color,
+      --c-menu-item-icon-color,
+      --c-menu-item-background-color--hover,
+      --c-menu-item-background-color--focus,
+      --c-menu-item-background-color--active,
+      --c-menu-item-border-color--focus,
+      --c-menu-item-opacity--disabled,
+
+      // Menu item divider
+      --c-menu-item-divider-color,
+
+      // Object tree
+      --c-object-tree-font-family,
+      --c-object-tree-background-color--hover,
+      --c-object-tree-border-color,
+      --c-object-tree-key-color,
+      --c-object-tree-null-color,
+      --c-object-tree-bool-color,
+      --c-object-tree-number-color,
+      --c-object-tree-string-color,
+      --c-object-tree-length-color,
+
+      // Packet flow
+      --c-packet-flow-gap,
+      --c-packet-flow-border-color,
+      --c-packet-flow-background-color--hover,
+      --c-packet-flow-background-color--active,
+      --c-packet-flow-background-color--error,
+
+      // Snackbar toast
+      --c-snackbar-toast-color,
+      --c-snackbar-toast-background-color,
+      --c-snackbar-toast-border-radius,
+      --c-snackbar-toast-box-shadow,
+      --c-snackbar-toast-icon-font-size,
+      --c-snackbar-toast-action-color,
+    ),
+
+    threema: flatten((
+      // Profile picture
+      --c-profile-picture-size,
+      format-each($-profile-picture-colors, $prefix: --c-profile-picture-background-),
+      format-each($-profile-picture-colors, $prefix: --c-profile-picture-initials-),
+
+      // Verification dots
+      --c-verification-dots-gap,
+      --c-verification-dots-size,
+      --c-verification-dots-empty-color,
+      --c-verification-dots-unverified-color,
+      --c-verification-dots-server-verified-consumer-color,
+      --c-verification-dots-server-verified-work-color,
+      --c-verification-dots-fully-verified-consumer-color,
+      --c-verification-dots-fully-verified-work-color,
+    )),
+  ),
+
+  // Material Icon sources.
+  //
+  // For each variant, either provide a list of sources or `null` to disable
+  // inclusion.
+  material-icons: (
+    src-filled: null,
+    src-outlined: null
+  ),
+
+  // Threema Icon sources.
+  //
+  // For each variant, either provide a list of sources or `null` to disable
+  // inclusion.
+  threema-icons: (
+    src-filled: null,
+    src-outlined: null
+  )
+);

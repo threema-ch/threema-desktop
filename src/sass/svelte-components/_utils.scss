@@ -1,0 +1,83 @@
+@use 'sass:map';
+
+@function -list-merge($first, $lists...) {
+  $result: $first;
+  @each $list in $lists {
+    $result: join($result, $list, $separator: comma);
+  }
+  @return $result;
+}
+
+/// Merge two configurations. The latter config takes precedence over the
+/// former (arguments order).
+@function config-merge($left, $right) {
+  @if $left == null {
+    @return $right;
+  }
+  @each $k, $rv in $right {
+    $lv: map.get($left, $k);
+    @if not map.has-key($left, $k) {
+      $left: map.set($left, $k, $rv);
+    } @else if type-of($rv) == map {
+      $left: map.set($left, $k, config-merge($lv, $rv));
+    } @else if type-of($rv) == list {
+      $left: map.set($left, $k, join($lv, $rv));
+    } @else {
+      $left: map.set($left, $k, $rv);
+    }
+  }
+  @return $left;
+}
+
+/// Get the value for the given keys in a map.
+///
+/// Equivalent to `map-get` but errors in case the keys are not present.
+@function map-get-req($map, $key, $keys...) {
+  @if not map.has-key($map, $key, $keys...) {
+    @error 'Could not find #{join($key, $keys, $separator: comma)} in given map';
+  }
+  @return map.get($map, $key, $keys...);
+}
+
+/// Flatten a list of lists or a map of maps on the top level.
+@function flatten($items) {
+  // Map
+  @if type-of($items) == map {
+    $map: $items;
+    @each $key, $value in $items {
+      @if type-of($value) == map {
+        $map: map.remove($map, $key);
+        $map: map.merge($map, $value);
+      }
+    }
+    @return $map;
+  }
+
+  // List
+  $list: ();
+  @each $item in $items {
+    $list: join($list, $item, $separator: comma);
+  }
+  @return $list;
+}
+
+/// Format each item of a list with a prefix and postfix.
+@function format-each($list, $prefix: null, $postfix: null) {
+  $result: ();
+  @each $item in $list {
+    $prefixes: $prefix;
+    @each $prefix in $prefixes {
+      $result: append($result, #{$prefix}#{$item}#{$postfix});
+    }
+  }
+  @return $result;
+}
+
+/// Ensure that a color fulfills certain property requirements, e.g. that it
+/// does not have an alpha channel.
+@function color-conforms($color, $alpha: true) {
+  @if not $alpha and alpha($color) != 1 {
+    @error 'Unexpected alpha channel for color #{$color}';
+  }
+  @return $color;
+}

@@ -1,0 +1,37 @@
+@use './utils' as *;
+@use './conversion' as *;
+$-config: null !default;
+$-elevations: map-get-req($-config, elevations);
+
+@mixin -elevation(
+  $dp-identifier,
+  // Identifier
+  $first-offset-y,
+  // First offset Y
+  $first-blur-radius,
+  // First blur radius
+  $first-spread-radius,
+  // First spread radius
+  $second-offset-y,
+  // Second offset Y
+  $second-blur-radius,
+  // Second blur radius
+  $second-spread-radius,
+  // Second spread radius
+  $third-offset-y,
+  // Third offset Y
+  $third-blur-radius,
+  // Third blur radius
+  $third-spread-radius // Third spread radius
+) {
+  %elevation-#{$dp-identifier} {
+    box-shadow:
+      0 em($first-offset-y) em($first-blur-radius) em($first-spread-radius) rgba(#000000, 14%),
+      0 em($second-offset-y) em($second-blur-radius) em($second-spread-radius) rgba(#000000, 12%),
+      0 em($third-offset-y) em($third-blur-radius) em($third-spread-radius) rgba(#000000, 2%);
+  }
+}
+
+@each $elevation in $-elevations {
+  @include -elevation($elevation...);
+}

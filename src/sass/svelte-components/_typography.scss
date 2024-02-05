@@ -1,0 +1,30 @@
+@use './utils' as *;
+$-config: null !default;
+@use './conversion' as *;
+
+$-weights: map-get-req($-config, font-weights);
+
+@mixin -typography($name, $weights, $size-px, $line-height-px) {
+  %-#{$name} {
+    font-size: rem($size-px);
+    line-height: rem($line-height-px);
+  }
+
+  @each $weight in $weights {
+    %font-#{$name}-#{$weight} {
+      @extend %-#{$name};
+      font-weight: $weight;
+    }
+  }
+}
+
+@include -typography('h1', $-weights, 48px, 48px);
+@include -typography('h2', $-weights, 40px, 40px);
+@include -typography('h3', $-weights, 32px, 32px);
+@include -typography('h4', $-weights, 24px, 24px);
+@include -typography('h5', $-weights, 20px, 20px);
+@include -typography('h6', $-weights, 18px, 18px);
+@include -typography('meta', $-weights, 10px, 16px);
+@include -typography('small', $-weights, 12px, 18px);
+@include -typography('normal', $-weights, 14px, 20px);
+@include -typography('large', $-weights, 16px, 24px);

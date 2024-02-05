@@ -1,9 +1,10 @@
 @use 'sass:color';
 @use 'sass:map';
-@use 'threema-svelte-components/src/sass/css-var' as *;
-@use 'threema-svelte-components/src/sass/utils' as *;
-@use 'threema-svelte-components/src/sass/theme';
-@use 'threema-svelte-components/src/sass/conversion' as *;
+
+@use '../svelte-components/css-var' as *;
+@use '../svelte-components/utils' as *;
+@use '../svelte-components/theme';
+@use '../svelte-components/conversion' as *;
 
 $consumer: (
   primary-color-50: theme.$consumer-green-50,

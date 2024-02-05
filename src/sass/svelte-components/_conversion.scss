@@ -1,0 +1,14 @@
+@use 'sass:math';
+
+@use './utils' as *;
+$-config: null !default;
+
+/// Convert pixel values to em.
+@function em($pixels, $base: map-get-req($-config, font-size)) {
+  @return math.div($pixels, $base) * 1em;
+}
+
+/// Convert pixel values to rem.
+@function rem($pixels, $base: map-get-req($-config, font-size)) {
+  @return math.div($pixels, $base) * 1rem;
+}

@@ -1,0 +1,36 @@
+@use 'sass:map';
+
+$-config: null !default;
+
+@mixin -icons($family, $src) {
+  @font-face {
+    font-family: $family;
+    font-weight: 400;
+    font-style: normal;
+    src: $src;
+  }
+}
+
+@mixin material-icons() {
+  $src-filled: map.get($-config, material-icons, src-filled);
+  $src-outlined: map.get($-config, material-icons, src-outlined);
+
+  @if $src-filled != null {
+    @include -icons('Material Icons Filled', $src-filled);
+  }
+  @if $src-outlined != null {
+    @include -icons('Material Icons Outlined', $src-outlined);
+  }
+}
+
+@mixin threema-icons() {
+  $src-filled: map.get($-config, threema-icons, src-filled);
+  $src-outlined: map.get($-config, threema-icons, src-outlined);
+
+  @if $src-filled != null {
+    @include -icons('Threema Icons Filled', $src-filled);
+  }
+  @if $src-outlined != null {
+    @include -icons('Threema Icons Outlined', $src-outlined);
+  }
+}

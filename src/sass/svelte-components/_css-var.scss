@@ -1,0 +1,180 @@
+@use 'sass:map';
+
+@use './utils' as *;
+$-config: null !default;
+@use './theme';
+
+$-css-vars: flatten(map.values(map-get-req($-config, css-vars)));
+
+@function -var($list, $name, $fallback-value: ()) {
+  @if index($list, $name) == null {
+    @error 'Unknown CSS var #{$name}';
+  }
+  @if $fallback-value == default {
+    $fallback-value: map-get-req(theme.$default-theme, $name);
+  } @else if type-of($fallback-value) == map {
+    $fallback-value: map-get-req($fallback-value, $name);
+  }
+  @return 'var(#{join($name, $fallback-value, $separator: comma)})';
+}
+
+/// Reference a CSS variable.
+///
+/// Examples:
+///
+///     color: var(--foo-color);
+///     color: var(--foo-color, #123456);
+///     color: var(--foo-color, default);
+///     color: var(--foo-color, (--foo-color: #234567));
+///     color: var($-allowed-vars, --foo-color);
+///     color: var($-allowed-vars, --foo-color, #123456);
+///     color: var($-allowed-vars, --foo-color, default);
+///     color: var($-allowed-vars, --foo-color, (--foo-color: #234567));
+///
+/// This function wraps the normal CSS var accessor and ensures that the
+/// variable name exists.
+@function var($args...) {
+  $length: length($args);
+  @if $length > 1 {
+    // Ensure the following use cases work:
+    //
+    // var((--foo, --bar), --bar);
+    // The first argument is a list but no fallback value is present
+    //
+    // var((--foo), --foo, ...);
+    //
+    // The first argument is a string instead of a list, even though it
+    // looks like a list.
+    $first: nth($args, 1);
+    $second: nth($args, 2);
+    @if $length > 2 or type-of($first) == list or $first == $second {
+      // See: https://github.com/prettier/prettier/issues/15369
+      // prettier-ignore
+      @return #{-var($args...)};
+    }
+  }
+  // See: https://github.com/prettier/prettier/issues/15369
+  // prettier-ignore
+  @return #{-var($-css-vars, $args...)};
+}
+
+@mixin -def-var($list, $name, $value...) {
+  @if index($list, $name) == null {
+    @error 'Unknown CSS var #{$name}';
+  }
+  @if length($value) == 0 {
+    @error 'CSS var #{$name} value cannot be empty';
+  }
+  #{$name}: #{$value};
+}
+
+/// Define CSS variables in the current scope.
+///
+/// Examples:
+///
+///     @include def-var(--foo-color, #123456);
+///     @include def-var($-allowed-vars, --foo-color, #123456);
+///     @include def-var((
+///       --foo-color: #123456,
+///       --bar-color: #654321,
+///     )...);
+///     @include def-var(
+///       $-allowed-vars,
+///       (
+///         --foo-color: #123456,
+///         --bar-color: #654321,
+///       )...
+///     );
+///
+/// This function mimics the normal CSS var definition with mixin syntax and
+/// ensures that the variable name exists.
+@mixin def-var($args...) {
+  $list: $-css-vars;
+  $length: length($args);
+  @if $length == 1 {
+    // Use case: def-var((--foo, --bar), <map>);
+    $list: nth($args, 1);
+  } @else if $length == 2 {
+    // Use case: def-var(--foo, #123456);
+    @include -def-var($list, $args...);
+  } @else if $length > 2 {
+    // Use case: def-var((--foo, --bar), --foo, #123456);
+    $list: nth($args, 1);
+    @include -def-var($args...);
+  }
+  @each $name, $value in keywords($args) {
+    @include def-var($list, $name, $value);
+  }
+}
+
+/// Define mapped CSS variables for one or more flavors. Use this to easily
+/// create flavors for a component.
+///
+/// Example:
+///
+///     @include def-mapped-flavor-vars(
+///       $-temp-vars,
+///       (filled, naked),
+///       (border-color, background-color),
+///       $set-prefix: --c-t-,
+///       $get-prefix: --c-button-
+///     );
+///
+/// Will define the following CSS rules:
+///
+///     [data-flavor='filled'] {
+///       --c-t-border-color: var(--c-button-filled-border-color, default);
+///       --c-t-background-color: var(--c-button-filled-background-color, default);
+///     }
+///     [data-flavor='naked'] {
+///       --c-t-border-color: var(--c-button-naked-border-color, default);
+///       --c-t-background-color: var(--c-button-naked-background-color, default);
+///     }
+@mixin def-mapped-flavor-vars($list, $flavors, $vars, $set-prefix, $get-prefix) {
+  $-temp-vars: format-each($vars, $prefix: $set-prefix);
+
+  @each $flavor in $flavors {
+    [data-flavor='#{$flavor}'] {
+      $-flavor-vars: format-each($vars, $prefix: #{$get-prefix}#{$flavor}-);
+      @each $t-var, $f-var in zip($-temp-vars, $-flavor-vars) {
+        @include def-var($list, $t-var, var($f-var, default));
+      }
+    }
+  }
+}
+
+/// Define mapped CSS variables for one or more sizes. Use this to easily
+/// create sizes for a component.
+///
+/// Example:
+///
+///     @include def-mapped-size-vars(
+///       $-temp-vars,
+///       (normal, small),
+///       (padding, font-size),
+///       $set-prefix: --c-t-,
+///       $get-prefix: --c-button-
+///     );
+///
+/// Will define the following CSS rules:
+///
+///     [data-size='normal'] {
+///       --c-t-padding: var(--c-button-normal-padding, default);
+///       --c-t-font-size: var(--c-button-normal-font-size, default);
+///     }
+///     [data-size='small'] {
+///       --c-t-padding: var(--c-button-small-padding, default);
+///       --c-t-font-size: var(--c-button-small-font-size, default);
+///     }
+@mixin def-mapped-size-vars($list, $sizes, $vars, $set-prefix, $get-prefix) {
+  $-temp-vars: format-each($vars, $prefix: $set-prefix);
+
+  @each $size in $sizes {
+    [data-size='#{$size}'] {
+      $-size-vars: format-each($vars, $prefix: #{$get-prefix}#{$size}-);
+      @each $t-var, $f-var in zip($-temp-vars, $-size-vars) {
+        @include def-var($list, $t-var, var($f-var, default));
+      }
+    }
+  }
+}

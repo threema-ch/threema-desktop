@@ -1,5 +1,5 @@
-@use 'threema-svelte-components/src/sass/config' as components;
-@use 'threema-svelte-components/src/sass/utils' as *;
+@use './svelte-components/config' as components;
+@use './svelte-components/utils' as *;
 
 // Exported configuration, merged with the base configuration.
 //

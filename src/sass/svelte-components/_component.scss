@@ -1,0 +1,22 @@
+// Declare extendable default configuration
+@use './config';
+$config: config.$config !default;
+
+// Forward functions, mixins, etc. used in Svelte components
+@forward './conversion' with (
+  $-config: $config
+);
+@forward './typography' with (
+  $-config: $config
+);
+@forward './elevation' with (
+  $-config: $config
+);
+@forward './css-var' with (
+  $-config: $config
+);
+@forward './mixins' with (
+  $-config: $config
+);
+@forward './theme';
+@forward './utils';

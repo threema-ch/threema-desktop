@@ -1,0 +1,114 @@
+@use 'sass:map';
+
+@use './utils' as *;
+$-config: null !default;
+@use './conversion' as *;
+@use './css-var' as *;
+
+%neutral-input {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  text-transform: none;
+}
+
+%neutral-a {
+  color: inherit;
+  text-decoration: none;
+}
+
+%text-overflow-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+$-icon-button-sizes: map-get-req($-config, icon-button-sizes);
+
+@each $name, $padding, $icon-size in $-icon-button-sizes {
+  %icon-button-#{$name} {
+    @include def-var(
+      (--c-icon-button-padding: em($padding), --c-icon-button-icon-size: em($icon-size))...
+    );
+  }
+}
+
+$-button-default-size: (
+  width: default,
+  height: default,
+);
+@mixin -clicktarget-button($size) {
+  @extend %neutral-input;
+  display: grid;
+  place-items: center;
+  user-select: none;
+  width: map-get-req($size, width);
+  height: map-get-req($size, height);
+  position: relative;
+
+  &:not(:disabled) {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--c-icon-button-naked-outer-background-color--hover);
+    }
+
+    &:focus-visible {
+      background-color: var(--c-icon-button-naked-outer-background-color--focus);
+
+      // Workaround to prevent the border from increasing the size. Unfortunately, `border-box` does
+      // not work here.
+      &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        border-radius: inherit;
+        border: solid em(1px) var(--c-icon-button-naked-outer-border-color--focus);
+      }
+    }
+
+    &:active {
+      background-color: var(--c-icon-button-naked-outer-background-color--active);
+    }
+  }
+
+  // Disabled state
+  &:disabled {
+    opacity: var(--c-icon-button-naked-opacity--disabled);
+  }
+}
+
+@mixin clicktarget-button-rect($size: $-button-default-size) {
+  @include -clicktarget-button($size);
+}
+
+@mixin clicktarget-button-circle($size: $-button-default-size) {
+  @include -clicktarget-button($size);
+  border-radius: 50%;
+}
+
+@mixin -clicktarget-link() {
+  text-decoration: inherit;
+  color: inherit;
+
+  &:focus-visible {
+    border-radius: inherit;
+    border: solid em(1px) var(--c-icon-button-naked-outer-border-color--focus);
+  }
+}
+
+@mixin clicktarget-link-rect() {
+  @include -clicktarget-link();
+}
+
+@mixin clicktarget-link-circle() {
+  @include -clicktarget-link();
+  border-radius: 50%;
+}

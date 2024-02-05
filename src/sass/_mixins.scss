@@ -1,5 +1,5 @@
 $-config: null !default;
-@use 'threema-svelte-components/src/sass/conversion' as *;
+@use './svelte-components/conversion' as *;
 
 %markup-bold {
   font-weight: bold;

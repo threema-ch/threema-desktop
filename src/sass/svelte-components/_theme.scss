@@ -1,0 +1,684 @@
+@use 'sass:color';
+@use 'sass:map';
+
+@use './utils' as *;
+@use './conversion' as *;
+
+// General
+$alert-red: #ff0000;
+$warning-orange: #ff8a00;
+$pin-yellow: #ffbf00;
+
+// Z-indexes
+$z-index-minus: -1;
+$z-index-zero: 0;
+$z-index-plus: 1;
+$z-index-global-overlay: 10;
+$z-index-context-menu: 50;
+$z-index-modal: 100;
+$z-index-alert: 200;
+$z-index-loader-overlay: 500;
+
+// Consumer
+$consumer-green-50: #e6f6e9;
+$consumer-green-100: #c2e8c8;
+$consumer-green-200: #9adaa6;
+$consumer-green-300: #6fcc81;
+$consumer-green-400: #4ac165;
+$consumer-green-500: #16b549;
+$consumer-green-600: #05a63f;
+$consumer-green-700: #009434;
+$consumer-green-800: #008329;
+$consumer-green-900: #006413;
+
+// Work
+$work-blue-50: #e3f2ff;
+$work-blue-100: #badeff;
+$work-blue-200: #8dcaff;
+$work-blue-300: #5eb5ff;
+$work-blue-400: #36a4ff;
+$work-blue-500: #0096ff;
+$work-blue-600: #0a87f0;
+$work-blue-700: #0c74dd;
+$work-blue-800: #0e63cb;
+$work-blue-900: #0d44ac;
+
+// Grey
+$grey-50: #fafafa;
+$grey-100: #f5f5f5;
+$grey-200: #eeeeee;
+$grey-300: #e0e0e0;
+$grey-400: #bdbdbd;
+$grey-500: #9e9e9e;
+$grey-600: #757575;
+$grey-700: #616161;
+$grey-800: #424242;
+$grey-900: #212121;
+
+// Base colors
+$light-background: #ffffff;
+$light-text-e1: mix(#000000, $light-background, 88%);
+$light-text-e2: mix(#000000, $light-background, 54%);
+$light-text-e3: mix(#000000, $light-background, 26%);
+
+$dark-background: #2a2a2a;
+$dark-text-e1: mix(#ffffff, $dark-background, 88%);
+$dark-text-e2: mix(#ffffff, $dark-background, 54%);
+$dark-text-e3: mix(#ffffff, $dark-background, 26%);
+
+$primary-text-e1: #ffffff;
+$primary-text-e2: rgba(#ffffff, 74%);
+$primary-text-e3: rgba(#ffffff, 38%);
+
+// prettier-ignore
+$themes: (
+  /* LIGHT THEME VARIABLES */
+  light: (
+    components: flatten((
+      blocks: (
+        // Button
+        button-filled-background-lightness--hover: -4%,
+        button-filled-background-lightness--active: -8%,
+        button-filled-border-color--focus: #000000,
+        button-filled-opacity--disabled: 26%,
+        button-naked-background-color--hover: rgba(#000000, 4%),
+        button-naked-background-color--active: rgba(#000000, 8%),
+        button-naked-border-color--focus: #000000,
+        button-naked-opacity--disabled: 26%,
+
+        // Icon button
+        icon-button-outer-background-color--hover: rgba(#000000, 4%),
+        icon-button-outer-background-color--focus: rgba(#000000, 4%),
+        icon-button-outer-background-color--active: rgba(#000000, 8%),
+        icon-button-outer-border-color--focus: #000000,
+        icon-button-opacity--disabled: 26%,
+        icon-button-naked-icon-color: #000000,
+
+        // Wizard button
+        wizard-button-font-size: em(16px),
+        wizard-button-border-color: transparent,
+        wizard-button-background-color: transparent,
+        wizard-button-text-color: $primary-text-e1,
+        wizard-button-border-color--hover: transparent,
+        wizard-button-background-color--hover: rgba(#000000, 6%),
+        wizard-button-border-color--focus: $primary-text-e1,
+        wizard-button-background-color--focus: rgba(#000000, 6%),
+        wizard-button-border-color--active: $primary-text-e1,
+        wizard-button-background-color--active:rgba(#000000, 10%),
+        wizard-button-opacity--disabled: 26%,
+
+        // Checkbox
+        checkbox-outer-background-color--hover: rgba(#000000, 4%),
+        checkbox-outer-background-color--focus: rgba(#000000, 4%),
+        checkbox-outer-background-color--active: rgba(#000000, 8%),
+        checkbox-outer-border-color--focus: #000000,
+        checkbox-opacity--disabled: 26%,
+
+        // Linear progress
+        linear-progress-background-color: rgba(#000000, 8%),
+
+        // Modal Dialog
+        modal-dialog-background-color: $light-background,
+
+        // Slider
+        slider-track-color: rgba(#000000, 8%),
+
+        // Switch
+        switch-thumb-color: $consumer-green-600,
+        switch-thumb-color--disabled: color.mix($consumer-green-600, $light-background, 26%),
+        switch-thumb-color-off: color.mix(#000000, $light-background, 54%),
+        switch-thumb-color-off--disabled: color.mix(#000000, $light-background, 26%),
+        switch-track-color: $consumer-green-300,
+        switch-track-color--disabled: rgba($consumer-green-600, 16%),
+        switch-track-color-off: rgba(#000000, 26%),
+        switch-track-color-off--disabled: color.mix(#000000, $light-background, 12%),
+        switch-thumb-glow-color: rgba(#000000, 4%),
+        switch-thumb-glow-color--active: rgba(#000000, 8%),
+        switch-thumb-glow-border-color: #000000,
+
+        // Input type text
+        input-text-border-radius: em(8px),
+        input-text-background-color: rgba(#000000, 2%),
+        input-text-background-color--hover: rgba(#000000, 4%),
+        input-text-background-color--active: rgba(#000000, 8%),
+        input-text-background-color--disabled: rgba(#000000, 2%),
+        input-text-input-color: $light-text-e1,
+        input-text-input-text-align: initial,
+        input-text-input-letter-spacing: initial,
+        input-text-label-color: $light-text-e2,
+        input-text-label-color--disabled: $light-text-e3,
+        input-text-input-color--disabled: $light-text-e2,
+        input-text-help-color: $light-text-e2,
+        input-text-error-color: $alert-red,
+      ),
+
+      generic: (
+        // Byte view
+        byte-view-offset-background-color: rgba(#000000, 4%),
+
+        // Emoji picker
+        emoji-picker-emoji-groups-icon-color: $grey-600,
+        emoji-picker-emoji-groups-icon-color--active: $consumer-green-600,
+
+        // Menu container
+        menu-container-background-color: #ffffff,
+
+        // Menu item
+        menu-item-text-color: rgba(#000000, 88%),
+        menu-item-background-color--hover: rgba(#000000, 4%),
+        menu-item-background-color--focus: rgba(#000000, 4%),
+        menu-item-background-color--active: rgba(#000000, 8%),
+        menu-item-border-color--focus: #000000,
+
+        // Menu item divider
+        menu-item-divider-color: rgba(#000000, 12%),
+
+        // Object tree
+        object-tree-background-color--hover: rgba(#000000, 4%),
+        object-tree-border-color: rgba(#000000, 12%),
+        object-tree-key-color: inherit,
+        object-tree-null-color: #811f3f,
+        object-tree-bool-color: #0000ff,
+        object-tree-number-color: #098658,
+        object-tree-string-color: #a31515,
+        object-tree-length-color: #811f3f,
+
+        // Packet flow
+        packet-flow-border-color: rgba(#000000, 12%),
+        packet-flow-background-color--hover: rgba(#000000, 4%),
+        packet-flow-background-color--active: rgba(#000000, 8%),
+
+        // Snackbar toast
+        snackbar-toast-color: $dark-text-e1,
+        snackbar-toast-background-color: $grey-900,
+        snackbar-toast-border-radius: em(8px),
+        snackbar-toast-box-shadow: '0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12), 0 1px 3px 0 rgba(0,0,0,0.2)',
+        snackbar-toast-icon-font-size: em(24px),
+        snackbar-toast-action-color: $consumer-green-600,
+      ),
+
+      threema: (
+        // Profile picture
+        profile-picture-initials-opacity: 100%,
+        profile-picture-background-opacity: 15%,
+        profile-picture-colors: (
+          yellow: #f9a800,
+          amber: #ff8f00,
+          orange: #ef6c00,
+          deep-orange: #d84315,
+          red: #c62828,
+          pink: #ad1457,
+          purple: #ac24AA,
+          deep-purple: #7b3ab7,
+          indigo: #283593,
+          blue: #1565c0,
+          light-blue: #0288d1,
+          cyan: #0097a7,
+          teal: #00796b,
+          green: #2e7d32,
+          light-green: #7cb342,
+          olive: #9e9d24,
+        ),
+
+        // Verification dots
+        verification-dots-empty-color: rgba(#000000, 12%),
+      ),
+    )),
+  ),
+
+  /* DARK THEME VARIABLES */
+  dark: (
+    components: flatten((
+      blocks: (
+        // Button
+        button-filled-background-lightness--hover: -12%,
+        button-filled-background-lightness--active: -38%,
+        button-filled-border-color--focus: #ffffff,
+        button-filled-opacity--disabled: 38%,
+        button-naked-background-color--hover: rgba(#000000, 12%),
+        button-naked-background-color--active: rgba(#000000, 38%),
+        button-naked-border-color--focus: #ffffff,
+        button-naked-opacity--disabled: 38%,
+
+        // Icon button
+        icon-button-outer-background-color--hover: rgba(#000000, 12%),
+        icon-button-outer-background-color--focus: rgba(#000000, 12%),
+        icon-button-outer-background-color--active: rgba(#000000, 38%),
+        icon-button-outer-border-color--focus: #ffffff,
+        icon-button-opacity--disabled: 38%,
+        icon-button-naked-icon-color: #ffffff,
+
+        // Wizard button
+        wizard-button-font-size: em(16px),
+        wizard-button-border-color: transparent,
+        wizard-button-background-color: transparent,
+        wizard-button-text-color: $primary-text-e1,
+        wizard-button-border-color--hover: transparent,
+        wizard-button-background-color--hover: rgba(#000000, 6%),
+        wizard-button-border-color--focus: $primary-text-e1,
+        wizard-button-background-color--focus: rgba(#000000, 6%),
+        wizard-button-border-color--active: $primary-text-e1,
+        wizard-button-background-color--active:rgba(#000000, 10%),
+        wizard-button-opacity--disabled: 26%,
+
+        // Checkbox
+        checkbox-outer-background-color--hover: rgba(#000000, 12%),
+        checkbox-outer-background-color--focus: rgba(#000000, 12%),
+        checkbox-outer-background-color--active: rgba(#000000, 38%),
+        checkbox-outer-border-color--focus: #ffffff,
+        checkbox-opacity--disabled: 38%,
+
+        // Linear progress
+        linear-progress-background-color: rgba(#000000, 38%),
+
+        // Modal Dialog
+        modal-dialog-background-color: $dark-background,
+
+        // Slider
+        slider-track-color: rgba(#000000, 38%),
+
+        // Switch
+        switch-thumb-color: $consumer-green-600,
+        switch-thumb-color--disabled: color.mix($consumer-green-600, $dark-background, 38%),
+        switch-thumb-color-off: color.mix(#ffffff, $dark-background, 54%),
+        switch-thumb-color-off--disabled: color.mix(#ffffff, $dark-background, 26%),
+        switch-track-color: $consumer-green-300,
+        switch-track-color--disabled: rgba($consumer-green-600, 20%),
+        switch-track-color-off: rgba(#ffffff, 26%),
+        switch-track-color-off--disabled: rgba(#ffffff, 12%),
+        switch-thumb-glow-color: rgba(#000000, 12%),
+        switch-thumb-glow-color--active: rgba(#000000, 38%),
+        switch-thumb-glow-border-color: #ffffff,
+
+        // Input type text
+        input-text-border-radius: em(8px),
+        input-text-background-color: rgba(#ffffff, 4%),
+        input-text-background-color--hover: rgba(#000000, 12%),
+        input-text-background-color--active: rgba(#000000, 38%),
+        input-text-background-color--disabled: rgba(#ffffff, 4%),
+        input-text-input-color: $dark-text-e1,
+        input-text-input-text-align: initial,
+        input-text-input-letter-spacing: initial,
+        input-text-label-color: $dark-text-e2,
+        input-text-label-color--disabled: $dark-text-e3,
+        input-text-input-color--disabled: $dark-text-e2,
+        input-text-help-color: $dark-text-e2,
+        input-text-error-color: $alert-red,
+      ),
+
+      generic: (
+        // Byte view
+        byte-view-offset-background-color: rgba(#000000, 12%),
+
+        // Emoji picker
+        emoji-picker-emoji-groups-icon-color: $grey-600,
+        emoji-picker-emoji-groups-icon-color--active: $consumer-green-600,
+
+        // Menu container
+        menu-container-background-color: #2e2e2e,
+
+        // Menu item
+        menu-item-text-color: rgba(#ffffff, 88%),
+        menu-item-background-color--hover: rgba(#000000, 12%),
+        menu-item-background-color--focus: rgba(#000000, 12%),
+        menu-item-background-color--active: rgba(#000000, 38%),
+        menu-item-border-color--focus: #ffffff,
+
+        // Menu item divider
+        menu-item-divider-color: rgba(#000000, 38%),
+
+        // Object tree
+        object-tree-background-color--hover: rgba(#000000, 12%),
+        object-tree-border-color: rgba(#ffffff, 4%),
+        object-tree-key-color: inherit,
+        object-tree-null-color: #646695,
+        object-tree-bool-color: #569cd6,
+        object-tree-number-color: #b5cea8,
+        object-tree-string-color: #ce9178,
+        object-tree-length-color: #646695,
+
+        // Packet flow
+        packet-flow-border-color: rgba(#ffffff, 4%),
+        packet-flow-background-color--hover: rgba(#000000, 12%),
+        packet-flow-background-color--active: rgba(#000000, 38%),
+
+        // Snackbar toast
+        snackbar-toast-color: $light-text-e1,
+        snackbar-toast-background-color: #ffffff,
+        snackbar-toast-border-radius: em(8px),
+        snackbar-toast-box-shadow: '0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12), 0 1px 3px 0 rgba(0,0,0,0.2)',
+        snackbar-toast-icon-font-size: em(24px),
+        snackbar-toast-action-color: $consumer-green-600,
+      ),
+
+      threema: (
+        // Profile picture
+        profile-picture-initials-opacity: 100%,
+        profile-picture-background-opacity: 15%,
+        profile-picture-colors: (
+          yellow: #fff176,
+          amber: #ffca28,
+          orange: #ffa726,
+          deep-orange: #ff7043,
+          red: #ef5350,
+          pink: #ec407a,
+          purple: #ab47bc,
+          deep-purple: #7e57d6,
+          indigo: #6371ff,
+          blue: #42a5f5,
+          light-blue: #4fc3f7,
+          cyan: #26c6da,
+          teal: #26a69a,
+          green: #66bb6a,
+          light-green: #8bc34a,
+          olive: #9e9d24,
+        ),
+
+        // Verification dots
+        verification-dots-empty-color: rgba(#ffffff, 12%),
+      ),
+    )),
+  ),
+);
+
+$brandings: (
+  consumer: (
+    primary-background: $consumer-green-600,
+    primary-background--hover: color.scale($consumer-green-600, $lightness: -6%),
+    primary-background--active: color.scale($consumer-green-600, $lightness: -10%),
+    primary-outline--focus: #ffffff,
+    primary-text-e1: $primary-text-e1,
+    primary-text-e2: $primary-text-e2,
+    primary-text-e3: $primary-text-e3,
+  ),
+  work: (
+    primary-background: $work-blue-700,
+    primary-background--hover: color.scale($work-blue-700, $lightness: -6%),
+    primary-background--active: color.scale($work-blue-700, $lightness: -10%),
+    primary-outline--focus: #ffffff,
+    primary-text-e1: $primary-text-e1,
+    primary-text-e2: $primary-text-e2,
+    primary-text-e3: $primary-text-e3,
+  ),
+);
+
+@function -g($map, $key, $keys...) {
+  @return map-get-req($map, $key, $keys...);
+}
+
+@function -profile-picture-colors($colors, $initials-opacity, $background-opacity) {
+  $css-vars: ();
+  @each $name, $color in $colors {
+    $css-vars: map.set(
+      $css-vars,
+      --c-profile-picture-background-#{$name},
+      rgba(color-conforms($color, $alpha: false), $background-opacity)
+    );
+    $css-vars: map.set(
+      $css-vars,
+      --c-profile-picture-initials-#{$name},
+      rgba(color-conforms($color, $alpha: false), $initials-opacity)
+    );
+  }
+  @return $css-vars;
+}
+
+@function components-theme($theme, $branding) {
+  $b: $branding;
+  $c: -g($theme, components);
+
+  // prettier-ignore
+  @return flatten((
+    blocks: (
+      // Button
+      --c-button-font-size: em(16px),
+      --c-button-filled-text-color: -g($b, primary-text-e1),
+      --c-button-filled-background-color: -g($b, primary-background),
+      --c-button-filled-background-color--hover:
+        color.scale(
+          color-conforms(-g($b, primary-background), $alpha: false),
+          $lightness: -g($c, button-filled-background-lightness--hover),
+        ),
+      --c-button-filled-background-color--active:
+        color.scale(
+          color-conforms(-g($b, primary-background), $alpha: false),
+          $lightness: -g($c, button-filled-background-lightness--active),
+        ),
+      --c-button-filled-border-color: -g($b, primary-background),
+      --c-button-filled-border-color--hover:
+        color.scale(
+          color-conforms(-g($b, primary-background), $alpha: false),
+          $lightness: -g($c, button-filled-background-lightness--hover),
+        ),
+      --c-button-filled-border-color--focus: -g($c, button-filled-border-color--focus),
+      --c-button-filled-border-color--active:
+        color.scale(
+          color-conforms(-g($b, primary-background), $alpha: false),
+          $lightness: -g($c, button-filled-background-lightness--active),
+        ),
+      --c-button-filled-opacity--disabled: -g($c, button-filled-opacity--disabled),
+      --c-button-naked-text-color: -g($b, primary-background),
+      --c-button-naked-background-color: transparent,
+      --c-button-naked-background-color--hover: -g($c, button-naked-background-color--hover),
+      --c-button-naked-background-color--active: -g($c, button-naked-background-color--active),
+      --c-button-naked-border-color: transparent,
+      --c-button-naked-border-color--hover: -g($c, button-naked-background-color--hover),
+      --c-button-naked-border-color--focus: -g($c, button-naked-border-color--focus),
+      --c-button-naked-border-color--active: -g($c, button-naked-background-color--active),
+      --c-button-naked-opacity--disabled: -g($c, button-naked-opacity--disabled),
+      --c-button-normal-font-size: em(16px),
+      --c-button-normal-padding: em(8px) em(24px),
+      --c-button-small-font-size: em(14px),
+      --c-button-small-padding: em(8px) em(8px),
+
+      // Icon button
+      --c-icon-button-outer-padding: em(4px),
+      --c-icon-button-padding: em(1px),
+      --c-icon-button-icon-size: em(24px),
+      --c-icon-button-filled-background-color: -g($b, primary-background),
+      --c-icon-button-filled-border-color: -g($b, primary-background),
+      --c-icon-button-filled-icon-color: #ffffff,
+      --c-icon-button-filled-outer-background-color--hover: -g($c, icon-button-outer-background-color--hover),
+      --c-icon-button-filled-outer-background-color--focus: -g($c, icon-button-outer-background-color--focus),
+      --c-icon-button-filled-outer-background-color--active: -g($c, icon-button-outer-background-color--active),
+      --c-icon-button-filled-outer-border-color--focus: -g($c, icon-button-outer-border-color--focus),
+      --c-icon-button-filled-opacity--disabled: -g($c, icon-button-opacity--disabled),
+      --c-icon-button-outlined-background-color: transparent,
+      --c-icon-button-outlined-border-color: -g($b, primary-background),
+      --c-icon-button-outlined-icon-color: -g($b, primary-background),
+      --c-icon-button-outlined-outer-background-color--hover: -g($c, icon-button-outer-background-color--hover),
+      --c-icon-button-outlined-outer-background-color--focus: -g($c, icon-button-outer-background-color--focus),
+      --c-icon-button-outlined-outer-background-color--active: -g($c, icon-button-outer-background-color--active),
+      --c-icon-button-outlined-outer-border-color--focus: -g($c, icon-button-outer-border-color--focus),
+      --c-icon-button-outlined-opacity--disabled: -g($c, icon-button-opacity--disabled),
+      --c-icon-button-naked-background-color: transparent,
+      --c-icon-button-naked-border-color: transparent,
+      --c-icon-button-naked-icon-color: -g($c, icon-button-naked-icon-color),
+      --c-icon-button-naked-outer-background-color--hover: -g($c, icon-button-outer-background-color--hover),
+      --c-icon-button-naked-outer-background-color--focus: -g($c, icon-button-outer-background-color--focus),
+      --c-icon-button-naked-outer-background-color--active: -g($c, icon-button-outer-background-color--active),
+      --c-icon-button-naked-outer-border-color--focus: -g($c, icon-button-outer-border-color--focus),
+      --c-icon-button-naked-opacity--disabled: -g($c, icon-button-opacity--disabled),
+      --c-icon-button-overlay-background-color: $dark-text-e2,
+      --c-icon-button-overlay-border-color: transparent,
+      --c-icon-button-overlay-icon-color: $light-text-e2,
+      --c-icon-button-overlay-outer-background-color--hover: -g($c, icon-button-outer-background-color--hover),
+      --c-icon-button-overlay-outer-background-color--focus: -g($c, icon-button-outer-background-color--focus),
+      --c-icon-button-overlay-outer-background-color--active: -g($c, icon-button-outer-background-color--active),
+      --c-icon-button-overlay-outer-border-color--focus: -g($c, icon-button-outer-border-color--focus),
+      --c-icon-button-overlay-opacity--disabled: -g($c, icon-button-opacity--disabled),
+
+      // Icon button progress bar overlay
+      --c-icon-button-progress-bar-overlay-color: rgba(#000000, 54%),
+
+      // Wizard button
+      --c-wizard-button-font-size: -g($c, wizard-button-font-size),
+      --c-wizard-button-border-color: -g($c, wizard-button-border-color),
+      --c-wizard-button-background-color: -g($c, wizard-button-background-color),
+      --c-wizard-button-text-color: -g($c, wizard-button-text-color),
+      --c-wizard-button-border-color--hover: -g($c, wizard-button-border-color--hover),
+      --c-wizard-button-background-color--hover: -g($c, wizard-button-background-color--hover),
+      --c-wizard-button-border-color--focus: -g($c, wizard-button-border-color--focus),
+      --c-wizard-button-background-color--focus: -g($c, wizard-button-background-color--focus),
+      --c-wizard-button-border-color--active: -g($c, wizard-button-border-color--active),
+      --c-wizard-button-background-color--active: -g($c, wizard-button-background-color--active),
+      --c-wizard-button-opacity--disabled: -g($c, wizard-button-opacity--disabled),
+
+      // Checkbox
+      --c-checkbox-padding: em(7px),
+      --c-checkbox-color: -g($b, primary-background),
+      --c-checkbox-outer-background-color--hover: -g($c, checkbox-outer-background-color--hover),
+      --c-checkbox-outer-background-color--focus: -g($c, checkbox-outer-background-color--focus),
+      --c-checkbox-outer-background-color--active: -g($c, checkbox-outer-background-color--active),
+      --c-checkbox-outer-border-color--focus: -g($c, checkbox-outer-border-color--focus),
+      --c-checkbox-opacity--disabled: -g($c, checkbox-opacity--disabled),
+
+      // Click outside
+      --c-global-overlay-background: transparent,
+      --c-global-overlay-z-index: $z-index-global-overlay,
+
+      // Modal Dialog
+      --c-modal-dialog-background-color: -g($c, modal-dialog-background-color),
+      --c-modal-dialog-padding: em(20px),
+
+      // Circular progress
+      --c-circular-progress-thickness: 18%,
+      --c-circular-progress-stroke-color: -g($b, primary-background),
+      --c-circular-progress-fill-color: none,
+
+      // Icon
+      --c-icon-font-size: unset,
+      --c-icon-opacity: 100%,
+      --c-icon-opacity--disabled: 26%,
+
+      // Image
+      --c-image-width: auto,
+      --c-image-height: auto,
+      --c-image-object-fit: contain,
+
+      // Linear progress
+      --c-linear-progress-color: -g($b, primary-background),
+      --c-linear-progress-background-color: -g($c, linear-progress-background-color),
+      --c-linear-progress-transition: transform 0.4s linear,
+
+      // Slider
+      --c-slider-track-height: em(8px),
+      --c-slider-track-color: -g($c, slider-track-color),
+      --c-slider-track-progress-color: -g($b, primary-background),
+      --c-slider-thumb-size: em(14px),
+      --c-slider-thumb-color: purple,
+
+      // Switch
+      --c-switch-thumb-color: -g($c, switch-thumb-color),
+      --c-switch-thumb-color--disabled: -g($c, switch-thumb-color--disabled),
+      --c-switch-thumb-color-off: -g($c, switch-thumb-color-off),
+      --c-switch-thumb-color-off--disabled: -g($c, switch-thumb-color-off--disabled),
+      --c-switch-track-color: -g($c, switch-track-color),
+      --c-switch-track-color--disabled: -g($c, switch-track-color--disabled),
+      --c-switch-track-color-off: -g($c, switch-track-color-off),
+      --c-switch-track-color-off--disabled: -g($c, switch-track-color-off--disabled),
+      --c-switch-thumb-glow-color: -g($c, switch-thumb-glow-color),
+      --c-switch-thumb-glow-color--active: -g($c, switch-thumb-glow-color--active),
+      --c-switch-thumb-glow-border-color: -g($c, switch-thumb-glow-border-color),
+
+      // Input type text
+      --c-input-text-border-radius: -g($c, input-text-border-radius),
+      --c-input-text-background-color: -g($c, input-text-background-color),
+      --c-input-text-background-color--hover: -g($c, input-text-background-color--hover),
+      --c-input-text-background-color--active: -g($c, input-text-background-color--active),
+      --c-input-text-background-color--disabled: -g($c, input-text-background-color--disabled),
+      --c-input-text-input-color: -g($c, input-text-input-color),
+      --c-input-text-input-text-align: -g($c, input-text-input-text-align),
+      --c-input-text-input-letter-spacing: -g($c, input-text-input-letter-spacing),
+      --c-input-text-label-color: -g($c, input-text-label-color),
+      --c-input-text-label-color--disabled: -g($c, input-text-label-color--disabled),
+      --c-input-text-input-color--disabled: -g($c, input-text-input-color--disabled),
+      --c-input-text-help-color: -g($c, input-text-help-color),
+      --c-input-text-error-color: -g($c, input-text-error-color),
+
+    ),
+
+    generic: (
+      // Byte view
+      --c-byte-view-font-family: monospace,
+      --c-byte-view-gap: 0 em(4px),
+      --c-byte-view-offset-background-color: -g($c, byte-view-offset-background-color),
+
+      // Emoji picker
+      --c-emoji-picker-emoji-groups-icon-color: -g($c, emoji-picker-emoji-groups-icon-color),
+      --c-emoji-picker-emoji-groups-icon-color--active: -g($b, primary-background),
+
+      // Menu container
+      --c-menu-container-background-color: -g($c, menu-container-background-color),
+      --c-menu-container-small-item-padding: em(6px) em(16px),
+      --c-menu-container-small-item-gap: em(8px),
+      --c-menu-container-small-item-icon-size: em(18px),
+      --c-menu-container-large-item-padding: em(11px) em(16px),
+      --c-menu-container-large-item-gap: em(12px),
+      --c-menu-container-large-item-icon-size: em(24px),
+
+      // Menu item
+      --c-menu-item-padding: em(6px) em(16px),
+      --c-menu-item-gap: em(8px),
+      --c-menu-item-text-color: -g($c, menu-item-text-color),
+      --c-menu-item-icon-color: -g($b, primary-background),
+      --c-menu-item-background-color--hover: -g($c, menu-item-background-color--hover),
+      --c-menu-item-background-color--focus: -g($c, menu-item-background-color--focus),
+      --c-menu-item-background-color--active: -g($c, menu-item-background-color--active),
+      --c-menu-item-border-color--focus: -g($c, menu-item-border-color--focus),
+      --c-menu-item-opacity--disabled: 26%,
+
+      // Menu item divider
+      --c-menu-item-divider-color: -g($c, menu-item-divider-color),
+
+      // Object tree
+      --c-object-tree-font-family: monospace,
+      --c-object-tree-background-color--hover: -g($c, object-tree-background-color--hover),
+      --c-object-tree-border-color: -g($c, object-tree-border-color),
+      --c-object-tree-key-color: -g($c, object-tree-key-color),
+      --c-object-tree-null-color: -g($c, object-tree-null-color),
+      --c-object-tree-bool-color: -g($c, object-tree-bool-color),
+      --c-object-tree-number-color: -g($c, object-tree-number-color),
+      --c-object-tree-string-color: -g($c, object-tree-string-color),
+      --c-object-tree-length-color: -g($c, object-tree-length-color),
+
+      // Packet flow
+      --c-packet-flow-gap: em(1px),
+      --c-packet-flow-border-color: -g($c, packet-flow-border-color),
+      --c-packet-flow-background-color--hover: -g($c, packet-flow-background-color--hover),
+      --c-packet-flow-background-color--active: -g($c, packet-flow-background-color--active),
+      --c-packet-flow-background-color--error: $alert-red,
+
+      // Snackbar toast
+      --c-snackbar-toast-color: -g($c, snackbar-toast-color),
+      --c-snackbar-toast-background-color: -g($c, snackbar-toast-background-color),
+      --c-snackbar-toast-border-radius: -g($c, snackbar-toast-border-radius),
+      --c-snackbar-toast-box-shadow: -g($c, snackbar-toast-box-shadow),
+      --c-snackbar-toast-icon-font-size: -g($c, snackbar-toast-icon-font-size),
+      --c-snackbar-toast-action-color: -g($c, snackbar-toast-action-color),
+    ),
+
+    threema: flatten((
+      // Profile picture
+      --c-profile-picture-size: 100%,
+      --profile-picture: -profile-picture-colors(
+        -g($c, profile-picture-colors),
+        -g($c, profile-picture-initials-opacity),
+        -g($c, profile-picture-background-opacity)),
+
+      // Verification dots
+      --c-verification-dots-gap: em(4px),
+      --c-verification-dots-size: em(10px),
+      --c-verification-dots-empty-color: -g($c, verification-dots-empty-color),
+      --c-verification-dots-unverified-color: $alert-red,
+      --c-verification-dots-server-verified-consumer-color: $warning-orange,
+      --c-verification-dots-server-verified-work-color: $work-blue-700,
+      --c-verification-dots-fully-verified-consumer-color: $consumer-green-600,
+      --c-verification-dots-fully-verified-work-color: $work-blue-700
+    )),
+  ));
+}
+
+// See: https://github.com/prettier/prettier/issues/15369
+// prettier-ignore
+$default-theme: components-theme(-g($themes, light), -g($brandings, consumer));

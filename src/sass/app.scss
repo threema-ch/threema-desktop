@@ -1,17 +1,17 @@
 @use './config' as *;
-@use 'threema-svelte-components/src/sass/conversion' as * with (
+@use './svelte-components/conversion' as * with (
   $-config: $config
 );
-@use 'threema-svelte-components/src/sass/css-var' as * with (
+@use './svelte-components/css-var' as * with (
   $-config: $config
 );
-@use 'threema-svelte-components/src/sass/icons' with (
+@use './svelte-components/icons' with (
   $-config: $config
 );
-@use 'threema-svelte-components/src/sass/typography' with (
+@use './svelte-components/typography' with (
   $-config: $config
 );
-@use 'threema-svelte-components/src/sass/utils' as *;
+@use './svelte-components/utils' as *;
 @use './theme';
 
 // Include fonts
