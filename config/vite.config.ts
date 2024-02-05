@@ -338,9 +338,6 @@ export default function defineConfig(viteEnv: ViteConfigEnv): UserConfig {
         }),
         tsconfigPaths: tsconfigPaths({
             projects: [
-                // Libs
-                fs.realpathSync('./node_modules/threema-svelte-components/src/tsconfig.lib.json'),
-
                 // Sources
                 './app/tsconfig.json',
                 './cli/tsconfig.json',
