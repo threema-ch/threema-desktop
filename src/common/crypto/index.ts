@@ -25,12 +25,16 @@ export const NACL_CONSTANTS = {
      * Message authentication code length in bytes.
      */
     MAC_LENGTH: 16,
+
+    SIGNATURE_LENGTH: 64,
 } as const;
 
 /**
  * Valid secret key lengths.
  */
 export type SecretKeyLength = 32 | 64;
+
+export type SignatureLength = 64;
 
 /**
  * A secret key.
@@ -181,6 +185,12 @@ export function isReadonlyRawKey<TLength extends SecretKeyLength>(
 export type PublicKey = WeakOpaque<ReadonlyUint8Array, {readonly PublicKey: unique symbol}>;
 
 /**
+ * This can be used where we call the typed NaCL interface directly and where performance does not matter that much.
+ * An example are signature verifications.
+ */
+export type NonReadonlyPublicKey = WeakOpaque<Uint8Array, {readonly PublicKey: unique symbol}>;
+
+/**
  * Type guard for {@link PublicKey}.
  */
 export function isPublicKey(raw: unknown): raw is PublicKey {
@@ -247,6 +257,11 @@ export type RawEncryptedData = WeakOpaque<Uint8Array, {readonly RawEncryptedData
  * Encrypted data view (without any headroom upfront).
  */
 export type EncryptedData = WeakOpaque<Uint8Array, {readonly EncryptedData: unique symbol}>;
+
+/**
+ * Data signed with ED25519.
+ */
+export type SignedDataEd25519 = WeakOpaque<Uint8Array, {readonly SignedData: unique symbol}>;
 
 /**
  * Concatenation of the nonce, followed by the encrypted data view.
@@ -347,6 +362,15 @@ export interface CryptoBackend {
      * @returns the filled buffer for convenience.
      */
     readonly randomBytes: <T extends ArrayBufferView>(buffer: T) => T;
+
+    /**
+     *
+     * Apply ED25519 signature verification
+     */
+    readonly verifyEd25519Signature: (
+        message: SignedDataEd25519,
+        pk: NonReadonlyPublicKey,
+    ) => ReadonlyUint8Array | undefined;
 
     /**
      * Derive a public key from a secret key.

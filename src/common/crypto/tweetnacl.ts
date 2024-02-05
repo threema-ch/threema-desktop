@@ -13,6 +13,8 @@ import {
     type RawPlainData,
     type ReadonlyRawKey,
     wrapRawKey,
+    type SignedDataEd25519,
+    type NonReadonlyPublicKey,
 } from '~/common/crypto';
 import {CryptoBox} from '~/common/crypto/box';
 import type {INonceService} from '~/common/crypto/nonce';
@@ -183,6 +185,14 @@ export class TweetNaClBackend implements CryptoBackend {
         ) as ReadonlyUint8Array as PublicKey;
         nacl.crypto_scalarmult_base(publicKey, secretKey.unwrap());
         return publicKey;
+    }
+
+    /** @inheritdoc */
+    public verifyEd25519Signature(
+        message: SignedDataEd25519,
+        pk: NonReadonlyPublicKey,
+    ): ReadonlyUint8Array | undefined {
+        return tweetnacl.sign.open(message, pk) as ReadonlyUint8Array;
     }
 
     /** @inheritdoc */
