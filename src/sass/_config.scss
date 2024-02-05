@@ -217,17 +217,17 @@ $config: config-merge(components.$config, (
   ),
 
   // Emoji sources
-  emoji: url('./res/3sc/font/Twemoji.woff2') format('woff2'),
+  emoji: url('./res/fonts/twemoji/Twemoji.woff2') format('woff2'),
 
   // Material Icon sources
   material-icons: (
-    src-filled: url('./res/3sc/font/MaterialIcons-Filled.woff2') format('woff2'),
-    src-outlined: url('./res/3sc/font/MaterialIcons-Outlined.woff2') format('woff2')
+    src-filled: url('./res/fonts/material-icons/MaterialIcons-Filled.woff2') format('woff2'),
+    src-outlined: url('./res/fonts/material-icons/MaterialIcons-Outlined.woff2') format('woff2')
   ),
 
   // Threema Icon sources
   threema-icons: (
-    src-filled: url('./res/3sc/font/ThreemaIcons-Filled.woff2') format('woff2'),
-    src-outlined: url('./res/3sc/font/ThreemaIcons-Outlined.woff2') format('woff2')
+    src-filled: url('./res/fonts/threema-icons/ThreemaIcons-Filled.woff2') format('woff2'),
+    src-outlined: url('./res/fonts/threema-icons/ThreemaIcons-Outlined.woff2') format('woff2')
   ),
 ));

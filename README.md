@@ -69,10 +69,6 @@ Afterwards clone the repository as usual. (Alternatively, clone with
 `git clone -c core.symlinks=true --recursive ...` if you don't want to enable
 this option globally.)
 
-To ensure that the config option is working as intended, try to navigate into
-the symlinked `src\public\res\3sc\` directory. If you can open it like a
-regular directory, then it worked!
-
 [win-symlinks]: https://blogs.windows.com/windowsdeveloper/2016/12/02/symlinks-windows-10/
 [win-devmode]: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development
 [win-git-symlinks]: https://github.com/git-for-windows/git/wiki/Symbolic-Links
