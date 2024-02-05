@@ -8,9 +8,6 @@
 [submodule "libs/structbuf-typescript"]
 	path = libs/structbuf-typescript
 	url = ../../structbuf/structbuf-typescript.git
-[submodule "libs/threema-svelte-components"]
-	path = libs/threema-svelte-components
-	url = ../svelte-components.git
 [submodule "libs/node-argon2"]
 	path = libs/node-argon2
 	url = ../node-argon2.git
