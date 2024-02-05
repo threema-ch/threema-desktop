@@ -11,6 +11,7 @@ import {NOOP_LOGGER} from '~/common/logging';
 import type {u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {makeResponse} from '~/test/karma/common/dom/dom-test-helpers';
+import {TEST_CONFIG} from '~/test/karma/common/dom/network/protocol/config-mock';
 
 const {expect} = chai.use(sinonChai);
 
@@ -50,14 +51,24 @@ export function run(): void {
         it('valid license', async function () {
             mockFetchResponse('POST', 200, {success: true} as const);
 
-            const result = await workLicenseCheck(credentials, systemInfo, NOOP_LOGGER);
+            const result = await workLicenseCheck(
+                TEST_CONFIG.WORK_API_SERVER_URL,
+                credentials,
+                systemInfo,
+                NOOP_LOGGER,
+            );
             expect(result.valid).to.be.true;
         });
 
         it('invalid license', async function () {
             mockFetchResponse('POST', 200, {success: false, error: 'Expired license'} as const);
 
-            const result = await workLicenseCheck(credentials, systemInfo, NOOP_LOGGER);
+            const result = await workLicenseCheck(
+                TEST_CONFIG.WORK_API_SERVER_URL,
+                credentials,
+                systemInfo,
+                NOOP_LOGGER,
+            );
             expect(result.valid).to.be.false;
             assert(!result.valid);
             expect(result.message).to.equal('Expired license');
@@ -68,7 +79,12 @@ export function run(): void {
 
             let errorThrown;
             try {
-                await workLicenseCheck(credentials, systemInfo, NOOP_LOGGER);
+                await workLicenseCheck(
+                    TEST_CONFIG.WORK_API_SERVER_URL,
+                    credentials,
+                    systemInfo,
+                    NOOP_LOGGER,
+                );
                 errorThrown = false;
             } catch (error) {
                 errorThrown = true;
@@ -87,7 +103,12 @@ export function run(): void {
 
             let errorThrown;
             try {
-                await workLicenseCheck(credentials, systemInfo, NOOP_LOGGER);
+                await workLicenseCheck(
+                    TEST_CONFIG.WORK_API_SERVER_URL,
+                    credentials,
+                    systemInfo,
+                    NOOP_LOGGER,
+                );
                 errorThrown = false;
             } catch (error) {
                 errorThrown = true;

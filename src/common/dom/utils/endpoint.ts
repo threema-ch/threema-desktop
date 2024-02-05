@@ -1,4 +1,5 @@
 import type {ServicesForBackend} from '~/common/backend';
+import type {StaticConfig} from '~/common/config';
 import type {u53} from '~/common/types';
 import {
     type CustomTransferable,
@@ -26,7 +27,8 @@ function createChannel<TTarget>(): EndpointPairFor<TTarget, MessagePort & Endpoi
  * using.
  */
 export function createEndpointService(
-    services: Pick<ServicesForBackend, 'config' | 'logging'>,
+    services: Pick<ServicesForBackend, 'logging'>,
+    staticConfig: StaticConfig,
 ): EndpointService {
     let counter: DebugObjectCacheCounter | undefined;
     if (import.meta.env.DEBUG) {
@@ -57,5 +59,5 @@ export function createEndpointService(
         counter,
     };
 
-    return new EndpointService(services, createChannel, cache);
+    return new EndpointService(services, staticConfig, createChannel, cache);
 }

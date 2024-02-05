@@ -1,5 +1,6 @@
 import * as v from '@badrap/valita';
 
+import type {ServicesForBackend} from '~/common/backend';
 import {ensurePublicKey} from '~/common/crypto';
 import type {ThreemaWorkCredentials} from '~/common/device';
 import type {Logger} from '~/common/logging';
@@ -70,10 +71,11 @@ export const WORK_DATA_SYNC_RESPONSE_SCHEMA = v
  * @throws TODO(DESK-1211)
  */
 export async function workDataSync(
+    services: Pick<ServicesForBackend, 'config'>,
     credentials: ThreemaWorkCredentials,
     log: Logger,
 ): Promise<void> {
-    const base = import.meta.env.WORK_API_SERVER_URL;
+    const base = services.config.WORK_API_SERVER_URL;
     const url = `${new URL('/fetch2', base)}`;
 
     let response;

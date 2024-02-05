@@ -83,6 +83,12 @@ export interface ThreemaWorkCredentials {
     password: string;
 }
 
+export interface OnPremConfig {
+    oppfUrl: string;
+    lastUpdated: Long;
+    oppfCachedConfig: string;
+}
+
 export interface DecryptedKeyStorage {
     /** The key storage schema version. Used for being able to migrate the storage format. */
     schemaVersion: number;
@@ -96,6 +102,8 @@ export interface DecryptedKeyStorage {
     deviceIds: DeviceIds | undefined;
     /** Threema Work Credentials (if any) */
     workCredentials: ThreemaWorkCredentials | undefined;
+    /** Threema OnPrem Config (if any) */
+    onPremConfig: OnPremConfig | undefined;
 }
 
 function createBaseEncryptedKeyStorage(): EncryptedKeyStorage {
@@ -405,6 +413,62 @@ export const ThreemaWorkCredentials = {
     },
 };
 
+function createBaseOnPremConfig(): OnPremConfig {
+    return {oppfUrl: '', lastUpdated: Long.UZERO, oppfCachedConfig: ''};
+}
+
+export const OnPremConfig = {
+    encode(message: OnPremConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+        if (message.oppfUrl !== '') {
+            writer.uint32(10).string(message.oppfUrl);
+        }
+        if (!message.lastUpdated.isZero()) {
+            writer.uint32(16).uint64(message.lastUpdated);
+        }
+        if (message.oppfCachedConfig !== '') {
+            writer.uint32(26).string(message.oppfCachedConfig);
+        }
+        return writer;
+    },
+
+    decode(input: _m0.Reader | Uint8Array, length?: number): OnPremConfig {
+        const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+        let end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseOnPremConfig();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1:
+                    if (tag !== 10) {
+                        break;
+                    }
+
+                    message.oppfUrl = reader.string();
+                    continue;
+                case 2:
+                    if (tag !== 16) {
+                        break;
+                    }
+
+                    message.lastUpdated = reader.uint64() as Long;
+                    continue;
+                case 3:
+                    if (tag !== 26) {
+                        break;
+                    }
+
+                    message.oppfCachedConfig = reader.string();
+                    continue;
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skipType(tag & 7);
+        }
+        return message;
+    },
+};
+
 function createBaseDecryptedKeyStorage(): DecryptedKeyStorage {
     return {
         schemaVersion: 0,
@@ -413,6 +477,7 @@ function createBaseDecryptedKeyStorage(): DecryptedKeyStorage {
         databaseKey: new Uint8Array(0),
         deviceIds: undefined,
         workCredentials: undefined,
+        onPremConfig: undefined,
     };
 }
 
@@ -438,6 +503,9 @@ export const DecryptedKeyStorage = {
                 message.workCredentials,
                 writer.uint32(50).fork(),
             ).ldelim();
+        }
+        if (message.onPremConfig !== undefined) {
+            OnPremConfig.encode(message.onPremConfig, writer.uint32(58).fork()).ldelim();
         }
         return writer;
     },
@@ -493,6 +561,13 @@ export const DecryptedKeyStorage = {
                         reader,
                         reader.uint32(),
                     );
+                    continue;
+                case 7:
+                    if (tag !== 58) {
+                        break;
+                    }
+
+                    message.onPremConfig = OnPremConfig.decode(reader, reader.uint32());
                     continue;
             }
             if ((tag & 7) === 4 || tag === 0) {

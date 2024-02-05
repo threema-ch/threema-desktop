@@ -41,13 +41,14 @@ export const WORK_LICENSE_CHECK_RESPONSE_SCHEMA = v
  * @returns The validated response data
  * @throws WorkLicenseCheckError
  */
+
 export async function workLicenseCheck(
+    directoryServerUrl: string,
     credentials: ThreemaWorkCredentials,
     systemInfo: SystemInfo,
     log: Logger,
 ): Promise<WorkLicenseCheckResult> {
-    const base = import.meta.env.DIRECTORY_SERVER_URL;
-    const url = `${new URL('/check_license', base)}`;
+    const url = new URL(`${directoryServerUrl}/check_license`);
 
     const browserInfo = getBrowserInfo(self.navigator.userAgent);
     const cspClientInfo = makeCspClientInfo(browserInfo, systemInfo);

@@ -12,7 +12,12 @@ export function workLicenseCheckJob(
     const {systemDialog, systemInfo} = services;
 
     log.debug('Checking Threema work license');
-    workLicenseCheck(workData.workCredentials, systemInfo, log)
+    workLicenseCheck(
+        services.config.DIRECTORY_SERVER_URL,
+        workData.workCredentials,
+        systemInfo,
+        log,
+    )
         .then((result) => {
             if (result.valid) {
                 log.debug('Threema Work license is valid');

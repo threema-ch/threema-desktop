@@ -14,21 +14,16 @@
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import type {Config} from '~/common/config';
   import {workLicenseCheck} from '~/common/dom/network/protocol/work-license-check';
   import type {Logger} from '~/common/logging';
   import type {InvalidWorkCredentialsDialog} from '~/common/system-dialog';
   import {assertUnreachable} from '~/common/utils/assert';
   import type {Delayed} from '~/common/utils/delayed';
-  import {unusedProp} from '~/common/utils/svelte-helpers';
 
   export let log: Logger;
-  export let config: Config;
   export let visible: boolean;
   export let appServices: Delayed<AppServices>;
   export let context: InvalidWorkCredentialsDialog['context'];
-
-  unusedProp(config);
 
   const {backend, systemInfo} = appServices.unwrap();
 
@@ -63,39 +58,42 @@
 
   function onCredentialsKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
-      checkCredentials();
+      checkCredentials().catch(assertUnreachable);
     }
   }
 
-  function checkCredentials(): void {
+  async function checkCredentials(): Promise<void> {
     log.info('Checking Threema work license');
     clearCredentialsError();
     checkingCredentials = true;
-    workLicenseCheck(
-      {
-        username,
-        password: getPassword(),
-      },
-      systemInfo,
-      log,
-    )
-      .then((result) => {
-        checkingCredentials = false;
-        credentialsValidity = result.valid ? true : result.message;
-        tick()
-          .then(() => keyStoragePasswordInput?.focusAndSelect())
-          .catch(assertUnreachable);
-      })
-      .catch((error) => {
-        log.error(`Work license check failed: ${error}`);
-        checkingCredentials = false;
-        credentialsValidity = `
+    await appServices.unwrap().backend.config.DIRECTORY_SERVER_URL.then((url) => {
+      workLicenseCheck(
+        url,
+        {
+          username,
+          password: getPassword(),
+        },
+        systemInfo,
+        log,
+      )
+        .then((result) => {
+          checkingCredentials = false;
+          credentialsValidity = result.valid ? true : result.message;
+          tick()
+            .then(() => keyStoragePasswordInput?.focusAndSelect())
+            .catch(assertUnreachable);
+        })
+        .catch((error) => {
+          log.error(`Work license check failed: ${error}`);
+          checkingCredentials = false;
+          credentialsValidity = `
           ${$i18n.t(
             'dialog--invalid-work-credentials.error--validation-failed',
             'Validation of Threema Work credentials failed.',
           )} ${$i18n.t('system.error--check-internet-and-retry')}
           `;
-      });
+        });
+    });
   }
 
   function storeCredentials(modal: Modal): void {

@@ -219,6 +219,18 @@
     "prose--message-wrong-app-variant-consumer-error": "It is not possible to link your Threema ID with this app. If you use Threema Work on your mobile device, download the desktop app from <1 />.",
     "prose--message-wrong-app-variant-work-error": "It is not possible to link your Threema ID with this app. If you use the consumer version of Threema on your mobile device, download the desktop app from <1 />."
   },
+  "dialog--linking-oppf": {
+    "action--confirm": "Next",
+    "label--oppf-file": "Threema OnPrem",
+    "label--password": "Password",
+    "label--url": "URL",
+    "label--username": "Username",
+    "prose--enter-config": "Threema OnPrem is the self-hosted messenger for companies. Please enter the credentials provided by your company",
+    "prose--fetch-error": "The provided URL is invalid. Please check that the combination of URL and work credentials is correct or contact your administrator.",
+    "prose--fetch-error-connection": "The provided URL is not accessible. Please check your network connection or contact your administrator.",
+    "prose--forget-credentials": "Forgot your credentials? Please contact your Threema OnPrem administrator.",
+    "prose--private-user": "If you are a private user, please visit <1 /> to download Threema."
+  },
   "dialog--linking-scan": {
     "action--need-help": "Need help?",
     "label--connecting": "Connecting",

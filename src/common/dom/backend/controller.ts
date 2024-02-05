@@ -1,12 +1,15 @@
 import type {ServicesForBackendController} from '~/common/backend';
+import {STATIC_CONFIG, type Config} from '~/common/config';
 import type {DeviceIds} from '~/common/device';
 import {
     BackendCreationError,
+    type OppfFetchConfig,
     type BackendCreator,
     type BackendHandle,
     type BackendInitAfterTransfer,
     type DeviceLinkingSetup,
     type LinkingState,
+    type PinForwarder,
 } from '~/common/dom/backend';
 import type {DebugBackend} from '~/common/dom/debug';
 import type {SafeCredentials} from '~/common/dom/safe';
@@ -33,6 +36,7 @@ import {
     type RemoteProxy,
     TRANSFER_HANDLER,
     type TransferredToRemote,
+    type ProxyMarked,
 } from '~/common/utils/endpoint';
 import {eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -79,6 +83,7 @@ export class BackendController {
     public readonly model: Remote<Repositories>;
     public readonly keyStorage: Remote<KeyStorage>;
     public readonly viewModel: Remote<IViewModelRepository>;
+    public readonly config: Remote<Config & ProxyMarked>;
     public capturing?: {
         readonly packets: IQueryableStore<readonly DisplayPacket[]>;
         readonly stop: () => void;
@@ -101,6 +106,7 @@ export class BackendController {
         this.model = _remote.model;
         this.keyStorage = _remote.keyStorage;
         this.viewModel = _remote.viewModel;
+        this.config = _remote.config;
     }
 
     public static async create(
@@ -115,8 +121,10 @@ export class BackendController {
         showLinkingWizard: (
             linkingState: ReadableStore<LinkingState>,
             userPassword: ResolvablePromise<string>,
+            oppfConfig: ResolvablePromise<OppfFetchConfig>,
         ) => Promise<void>,
         requestUserPassword: (previouslyAttemptedPassword?: string) => Promise<string>,
+        forwardPins: PinForwarder['forward'],
     ): Promise<[controller: BackendController, isNewIdentity: boolean]> {
         const {endpoint, logging} = services;
         const log = logging.logger('backend-controller');
@@ -169,6 +177,7 @@ export class BackendController {
         function assembleDeviceLinkingSetup(
             linkingStateStore: WritableStore<LinkingState>,
             userPassword: Promise<string>,
+            oppfConfig: Promise<OppfFetchConfig>,
         ): TransferredToRemote<EndpointFor<DeviceLinkingSetup>> {
             const {local, remote} = endpoint.createEndpointPair<DeviceLinkingSetup>();
 
@@ -182,6 +191,7 @@ export class BackendController {
                     [TRANSFER_HANDLER]: PROXY_HANDLER,
                 },
                 userPassword,
+                oppfConfig,
                 [TRANSFER_HANDLER]: PROXY_HANDLER,
             };
 
@@ -192,7 +202,20 @@ export class BackendController {
             return endpoint.transfer(remote, [remote]);
         }
 
-        // Create backend from existing key storage (if present)
+        function assembleForwardPinCommunication(
+            forwardPin: PinForwarder['forward'],
+        ): TransferredToRemote<EndpointFor<PinForwarder>> {
+            const {local, remote} = endpoint.createEndpointPair<PinForwarder>();
+            const forwardPinSetup: PinForwarder = {
+                [TRANSFER_HANDLER]: PROXY_HANDLER,
+                forward: forwardPin,
+            };
+
+            endpoint.exposeProxy(forwardPinSetup, local, logging.logger('com.forward-pins'));
+            return endpoint.transfer(remote, [remote]);
+        }
+
+        // Create backend from existing key storage (if present).
         log.debug('Waiting for remote backend to be created');
         const isNewIdentity = !(await creator.hasIdentity());
         let backendEndpoint;
@@ -205,6 +228,7 @@ export class BackendController {
                     backendEndpoint = await creator.fromKeyStorage(
                         assembleBackendInit(),
                         passwordForExistingKeyStorage,
+                        assembleForwardPinCommunication(forwardPins),
                     );
                 } catch (error) {
                     assertError(
@@ -214,6 +238,12 @@ export class BackendController {
                     );
                     const errorMessage = extractErrorMessage(ensureError(error), 'short');
                     switch (error.type) {
+                        case 'onprem-configuration-error':
+                            // Backend cannot be created because the OnPrem configuration was not correct.
+                            // This includes lacking work credentials in the storage or a wrong signature.
+                            // This will probably lead to relinking.
+                            // TODO(DESK-1325)
+                            throw new Error('OnPrem configuration error', {cause: error});
                         case 'no-identity':
                             // Backend cannot be created because no identity was found.
                             // Carry on, the device linking logic will happen below.
@@ -241,7 +271,6 @@ export class BackendController {
                 break;
             }
         }
-
         // If backend could not be created, that means that no identity was found. Initiate device
         // linking flow.
         if (backendEndpoint === undefined) {
@@ -252,15 +281,18 @@ export class BackendController {
                 state: 'initializing',
             });
 
+            const oppfConfig = new ResolvablePromise<OppfFetchConfig>({uncaught: 'default'});
+
             // Show linking screen with QR code
             const userPassword = new ResolvablePromise<string>({uncaught: 'default'});
-            await showLinkingWizard(linkingStateStore, userPassword);
+            await showLinkingWizard(linkingStateStore, userPassword, oppfConfig);
 
             // Create backend through device join
             try {
                 backendEndpoint = await creator.fromDeviceJoin(
                     assembleBackendInit(),
-                    assembleDeviceLinkingSetup(linkingStateStore, userPassword),
+                    assembleDeviceLinkingSetup(linkingStateStore, userPassword, oppfConfig),
+                    assembleForwardPinCommunication(forwardPins),
                 );
             } catch (error) {
                 assertError(
@@ -269,6 +301,7 @@ export class BackendController {
                     'Backend creator threw an unexpected error',
                 );
                 switch (error.type) {
+                    case 'onprem-configuration-error':
                     case 'handled-linking-error':
                         log.warn(
                             'Encountered a linking error that is handled by the UI. Waiting for application restart.',
@@ -318,10 +351,9 @@ export class BackendController {
                 remote.model.user.profilePicture,
                 remote.model.user.displayName,
             ]);
-
         // Done
         log.debug('Creating backend controller');
-        const backend = new BackendController(services, log, remote, deviceIds, {
+        const backend = new BackendController({...services}, log, remote, deviceIds, {
             connectionState,
             leaderState,
             user: {identity, profilePicture, displayName},
@@ -342,6 +374,8 @@ export class BackendController {
             return;
         }
 
+        const debugHistoryLenggth = STATIC_CONFIG.DEBUG_PACKET_CAPTURE_HISTORY_LENGTH;
+
         // Push sequential packets into a bounded array.
         //
         // TODO(DESK-688): We should not use a plain array for the store as the comparison on each
@@ -352,7 +386,7 @@ export class BackendController {
                 return packets;
             }
             packets.push(packet);
-            if (packets.length > this._services.config.DEBUG_PACKET_CAPTURE_HISTORY_LENGTH) {
+            if (packets.length > debugHistoryLenggth) {
                 packets.shift();
             }
             // Note: We need to clone the `packets` array, so the diffing

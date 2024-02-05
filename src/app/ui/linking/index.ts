@@ -3,6 +3,12 @@ import type {ReadonlyUint8Array} from '~/common/types';
 import type {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
 
+export interface OppfConfig {
+    oppfUrl: string;
+    username: string;
+    password: string;
+}
+
 export interface LinkingParams {
     /**
      * Linking-related state from the backend.
@@ -18,6 +24,15 @@ export interface LinkingParams {
      * A promise that should be fulfilled when the user clicks the button in the success screen.
      */
     readonly identityReady: ResolvablePromise<void>;
+
+    /**
+     * A promise that should be fulfilled when the user has entered OnPrem credentials and URL.
+     */
+    readonly oppfConfig: ResolvablePromise<OppfConfig>;
+}
+
+export interface LinkingWizardOppfProps {
+    readonly oppfConfig: ResolvablePromise<OppfConfig>;
 }
 
 export interface LinkingWizardScanProps {

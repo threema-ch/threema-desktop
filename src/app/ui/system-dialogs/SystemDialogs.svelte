@@ -7,14 +7,11 @@
   import InvalidWorkCredentials from '~/app/ui/system-dialogs/InvalidWorkCredentials.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import UnrecoverableState from '~/app/ui/system-dialogs/UnrecoverableState.svelte';
-  import type {Config} from '~/common/config';
   import {display, layout} from '~/common/dom/ui/state';
   import {systemDialogStore} from '~/common/dom/ui/system-dialog';
   import type {Logger} from '~/common/logging';
   import type {DialogAction, SystemDialog} from '~/common/system-dialog';
   import type {Delayed} from '~/common/utils/delayed';
-
-  export let config: Config;
 
   export let log: Logger;
 
@@ -26,7 +23,6 @@
   const dialogComponents: {
     readonly [Property in SystemDialog['type']]: typeof SvelteComponent<{
       appServices: Delayed<AppServices>;
-      config: Config;
       context: unknown;
       log: Logger;
       visible: boolean;
@@ -62,7 +58,6 @@
           on:clickoutside={(ev) => ev.preventDefault()}
           visible={true}
           {log}
-          {config}
           {appServices}
           context={systemDialog.dialog.context}
         />

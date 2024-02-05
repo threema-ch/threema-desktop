@@ -6,6 +6,7 @@
     LinkingParams,
     LinkingWizardConfirmEmojiProps,
     LinkingWizardErrorProps,
+    LinkingWizardOppfProps,
     LinkingWizardScanProps,
     LinkingWizardSetPasswordProps,
     LinkingWizardSuccessProps,
@@ -20,6 +21,8 @@
   import type {LinkingState} from '~/common/dom/backend';
   import {unreachable} from '~/common/utils/assert';
 
+  import OnPremConfigurationModal from '~/app/ui/components/partials/onprem-configuration-modal/OnPremConfigurationModal.svelte';
+
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking-wizard`);
 
   /**
@@ -31,6 +34,10 @@
    * A mapping of linking wizard components to their respective component prop types.
    */
   type LinkingWizardState =
+    | {
+        component: 'oppf';
+        props: LinkingWizardOppfProps;
+      }
     | {
         component: 'scan';
         props: LinkingWizardScanProps;
@@ -73,6 +80,12 @@
       switch (state.state) {
         case 'initializing':
           // Initial state
+          break;
+        case 'oppf':
+          linkingWizardState = {
+            component: 'oppf',
+            props: {oppfConfig: params.oppfConfig},
+          };
           break;
         case 'waiting-for-handshake':
           linkingWizardState = {
@@ -131,7 +144,9 @@
 </script>
 
 <template>
-  {#if linkingWizardState.component === 'scan'}
+  {#if linkingWizardState.component === 'oppf'}
+    <OnPremConfigurationModal {...linkingWizardState.props}></OnPremConfigurationModal>
+  {:else if linkingWizardState.component === 'scan'}
     <Scan {...linkingWizardState.props} />
   {:else if linkingWizardState.component === 'confirmEmoji'}
     <ConfirmEmoji {...linkingWizardState.props} />

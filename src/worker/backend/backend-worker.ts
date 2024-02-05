@@ -1,10 +1,11 @@
-import type {Config} from '~/common/config';
+import {STATIC_CONFIG, type StaticConfig} from '~/common/config';
 import {
     Backend,
     type BackendCreator,
     type BackendInit,
     type DeviceLinkingSetup,
     type FactoriesForBackend,
+    type PinForwarder,
 } from '~/common/dom/backend';
 import {createEndpointService} from '~/common/dom/utils/endpoint';
 import {
@@ -21,7 +22,7 @@ declare const self: DedicatedWorkerGlobalScope;
  * This is the common entrypoint for the backend worker, invoked by the app
  * via the specific 'electron' loader entrypoint.
  */
-export function main(config: Config, factories: FactoriesForBackend): void {
+export function main(staticConfig: StaticConfig, factories: FactoriesForBackend): void {
     const logging = factories.logging('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);
     const log = logging.logger('main');
 
@@ -30,34 +31,41 @@ export function main(config: Config, factories: FactoriesForBackend): void {
 
     // The worker exposes backend creation functions that run in the context of the worker, but
     // which can be called from the main thread (through the backend controller).
-    const endpoint = createEndpointService({config, logging});
+    const endpoint = createEndpointService({logging}, STATIC_CONFIG);
     const services = {
-        config,
         logging,
         endpoint,
     };
 
     const creator: BackendCreator & ProxyMarked = {
         hasIdentity: () => Backend.hasIdentity(factories, services),
-        fromKeyStorage: async (init: BackendInit, keyStoragePassword: string) => {
+        fromKeyStorage: async (
+            init: BackendInit,
+            keyStoragePassword: string,
+            pinForwarder: EndpointFor<PinForwarder>,
+        ) => {
             log.info('Creating backend from key storage');
             return await Backend.createFromKeyStorage(
                 init,
                 factories,
                 services,
                 keyStoragePassword,
+                pinForwarder,
             );
         },
         fromDeviceJoin: async (
             init: BackendInit,
             deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
+            pinForwarder: EndpointFor<PinForwarder>,
         ) => {
             log.info('Creating backend from device join');
             return await Backend.createFromDeviceJoin(
                 init,
                 factories,
                 services,
+                staticConfig,
                 deviceLinkingSetup,
+                pinForwarder,
             );
         },
         [TRANSFER_HANDLER]: PROXY_HANDLER,

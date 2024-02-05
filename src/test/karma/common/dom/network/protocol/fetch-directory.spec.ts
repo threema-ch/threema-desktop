@@ -1,7 +1,6 @@
 import * as sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 
-import {CONFIG} from '~/common/config';
 import {ensureNonce, NACL_CONSTANTS, type Nonce, type NonceHash, wrapRawKey} from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import type {INonceGuard, INonceService} from '~/common/crypto/nonce';
@@ -18,6 +17,7 @@ import {assert, assertError} from '~/common/utils/assert';
 import {u8aToBase64} from '~/common/utils/base64';
 import {ValueObject} from '~/common/utils/object';
 import {makeResponse} from '~/test/karma/common/dom/dom-test-helpers';
+import {TEST_CONFIG} from '~/test/karma/common/dom/network/protocol/config-mock';
 
 const {expect} = chai.use(sinonChai);
 
@@ -123,7 +123,7 @@ class TestNonceService implements INonceService {
 export function run(): void {
     describe('FetchDirectoryBackend', function () {
         const backend = new FetchDirectoryBackend({
-            config: CONFIG,
+            config: TEST_CONFIG,
             logging: new NoopLoggerFactory(),
         });
         const crypto = new TweetNaClBackend(randomBytes);

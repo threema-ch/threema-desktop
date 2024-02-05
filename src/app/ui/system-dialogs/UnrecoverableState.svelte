@@ -5,18 +5,16 @@
   import CancelAndConfirm from '~/app/ui/svelte-components/blocks/ModalDialog/Footer/CancelAndConfirm.svelte';
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
-  import type {Config} from '~/common/config';
   import type {Logger} from '~/common/logging';
   import type {UnrecoverableStateDialog} from '~/common/system-dialog';
   import type {Delayed} from '~/common/utils/delayed';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
   export let log: Logger;
-  export let config: Config;
   export let visible: boolean;
   export let appServices: Delayed<AppServices>;
   export let context: UnrecoverableStateDialog['context'];
-  unusedProp(log, config, appServices, context);
+  unusedProp(log, appServices, context);
 
   function deleteProfileAndRestartApp(): void {
     const ipc = window.app;

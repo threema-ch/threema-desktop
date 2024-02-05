@@ -1,6 +1,17 @@
-import type {ServicesForBackend, ServicesThatRequireIdentity} from '~/common/backend';
+import type {
+    EarlyServicesThatDontRequireConfig,
+    ServicesForBackend,
+} from '~/common/backend';
 import {BackgroundJobScheduler} from '~/common/background-job-scheduler';
 import type {Compressor} from '~/common/compressor';
+import {
+    type Config,
+    type StaticConfig,
+    createConfigFromOppf,
+    createDefaultConfig,
+    STATIC_CONFIG,
+} from '~/common/config';
+import type {NonReadonlyPublicKey, SignedDataEd25519} from '~/common/crypto';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {NonceService} from '~/common/crypto/nonce';
 import {TweetNaClBackend} from '~/common/crypto/tweetnacl';
@@ -14,6 +25,8 @@ import {
 import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device';
 import {workLicenseCheckJob} from '~/common/dom/backend/background-jobs';
 import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/join';
+import * as oppf from '~/common/dom/backend/onprem/oppf';
+import {OPPF_VALIDATION_SCHEMA} from '~/common/dom/backend/onprem/oppf';
 import {randomBytes} from '~/common/dom/crypto/random';
 import {DebugBackend} from '~/common/dom/debug';
 import {ConnectionManager} from '~/common/dom/network/protocol/connection';
@@ -34,6 +47,7 @@ import {
     extractErrorTraceback,
     type RendezvousCloseCause,
     RendezvousCloseError,
+    extractErrorMessage,
 } from '~/common/error';
 import type {FileStorage, ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
@@ -41,6 +55,7 @@ import {
     type KeyStorageContents,
     KeyStorageError,
     type ServicesForKeyStorageFactory,
+    type KeyStorageOppfConfig,
 } from '~/common/key-storage';
 import type {Logger, LoggerFactory} from '~/common/logging';
 import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
@@ -67,9 +82,17 @@ import {
 import type {ThreemaWorkCredentials} from '~/common/node/key-storage/key-storage-file';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
-import type {ReadonlyUint8Array} from '~/common/types';
-import {assertError, assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
+import type {DomainCertificatePin, ReadonlyUint8Array} from '~/common/types';
+import {
+    assertError,
+    assertUnreachable,
+    ensureError,
+    unreachable,
+    unwrap,
+} from '~/common/utils/assert';
+import {u8aToBase64} from '~/common/utils/base64';
 import {bytesToHex} from '~/common/utils/byte';
+import {UTF8} from '~/common/utils/codec';
 import {
     type EndpointFor,
     type EndpointService,
@@ -101,7 +124,8 @@ export type BackendCreationErrorType =
     | 'no-identity'
     | 'handled-linking-error'
     | 'key-storage-error'
-    | 'key-storage-error-wrong-password';
+    | 'key-storage-error-wrong-password'
+    | 'onprem-configuration-error';
 
 const BACKEND_CREATION_ERROR_TRANSFER_HANDLER = registerErrorTransferHandler<
     BackendCreationError,
@@ -162,12 +186,14 @@ export interface BackendCreator {
     readonly fromKeyStorage: (
         init: Remote<BackendInitAfterTransfer>,
         userPassword: string,
+        pinForwarder: TransferredFromRemote<EndpointFor<PinForwarder>>,
     ) => Promise<TransferredToRemote<EndpointFor<BackendHandle>>>;
 
     /** Instantiate backend through the device join protocol. */
     readonly fromDeviceJoin: (
         init: Remote<BackendInitAfterTransfer>,
         deviceLinkingSetup: TransferredFromRemote<EndpointFor<DeviceLinkingSetup>>,
+        pinForwarder: TransferredFromRemote<EndpointFor<PinForwarder>>,
     ) => Promise<TransferredToRemote<EndpointFor<BackendHandle>>>;
 }
 
@@ -185,6 +211,7 @@ export type BackendHandle = Pick<
     | 'keyStorage'
     | 'viewModel'
     | 'selfKickFromMediator'
+    | 'config'
 >;
 
 /**
@@ -228,11 +255,12 @@ export interface SafeCredentialsAndDeviceIds {
  * - join-error: The device join protocol did not succeed.
  * - restore-error: Restoring essential data did not succeed.
  * - identity-transfer-prohibited: Restoring failed because user tried to link a Threema Work ID
- *   with the consumer build variant, or vice versa
- * - invalid-identity: Restoring failed because user identity is unknown or revoked
- * - invalid-work-credentials: Restoring failed because user's Threema Work credentials are invalid or expired
+ *   with the consumer build variant, or vice versa.
+ * - invalid-identity: Restoring failed because user identity is unknown or revoked.
+ * - invalid-work-credentials: Restoring failed because user's Threema Work credentials are invalid or expired.
  * - registration-error: Initial registration at Mediator server failed.
  * - generic-error: Some other error during linking.
+ * - onprem-configuration-error: An error when parsing or verifying the onprem configuration file.
  */
 export type LinkingStateErrorType =
     | {readonly kind: 'connection-error'; readonly cause: RendezvousCloseCause}
@@ -243,9 +271,19 @@ export type LinkingStateErrorType =
     | {readonly kind: 'invalid-identity'}
     | {readonly kind: 'invalid-work-credentials'}
     | {readonly kind: 'registration-error'}
-    | {readonly kind: 'generic-error'};
+    | {readonly kind: 'generic-error'}
+    | {readonly kind: 'onprem-configuration-error'};
 
 export type SyncingPhase = 'receiving' | 'restoring' | 'encrypting';
+
+/**
+ * Matches the interface in `ui/linking/index.ts`
+ */
+export interface OppfFetchConfig {
+    password: string;
+    username: string;
+    oppfUrl: string;
+}
 
 /**
  * The backend's linking state.
@@ -255,6 +293,10 @@ export type LinkingState =
      * Initial state.
      */
     | {readonly state: 'initializing'}
+    /**
+     * An OnPrem build is waiting for OPPF URL and credentials to be entered, and for the OPPF contents to be fetched and validated.
+     */
+    | {readonly state: 'oppf'}
     /**
      * Rendezvous WebSocket connection is established.
      */
@@ -298,6 +340,15 @@ export interface DeviceLinkingSetup extends ProxyMarked {
      * A promise that will be fulfilled by the frontend when the user has chosen a password.
      */
     readonly userPassword: Promise<string>;
+
+    /**
+     * A promise that will be fulfilled by the frontend when the user has entered a oppf url
+     */
+    readonly oppfConfig: Promise<OppfFetchConfig>;
+}
+
+export interface PinForwarder extends ProxyMarked {
+    forward: (pins: DomainCertificatePin[] | undefined) => void;
 }
 
 /**
@@ -337,39 +388,27 @@ function createMediaService(
     );
 }
 
-/**
- * Initialize the backend services that don't require an active identity for being intialized.
- */
-function initBackendServicesWithoutIdentity(
+function initBackendServicesWithoutConfig(
     factories: FactoriesForBackend,
-    {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
+    {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
     backendInit: BackendInit,
-): Omit<ServicesForBackend, ServicesThatRequireIdentity> {
+): EarlyServicesThatDontRequireConfig {
     const crypto = new TweetNaClBackend(randomBytes);
-
-    const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
+    const {frontendMediaServiceEndpoint, notificationEndpoint} = backendInit;
     const compressor = factories.compressor();
-    const directory = new FetchDirectoryBackend({config, logging});
-    const notification = createNotificationService(
-        endpoint,
-        backendInit.notificationEndpoint,
-        logging,
-    );
-    const media = createMediaService(endpoint, backendInit.frontendMediaServiceEndpoint, logging);
+    const notification = createNotificationService(endpoint, notificationEndpoint, logging);
+    const media = createMediaService(endpoint, frontendMediaServiceEndpoint, logging);
     const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
         backendInit.systemDialogEndpoint,
         logging.logger('com.system-dialog'),
     );
     const taskManager = new TaskManager({logging});
-    const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
+    const keyStorage = factories.keyStorage({crypto}, logging.logger('key-storage'));
 
     return {
         compressor,
-        config,
         crypto,
-        directory,
         endpoint,
-        file,
         keyStorage,
         logging,
         media,
@@ -377,6 +416,22 @@ function initBackendServicesWithoutIdentity(
         systemDialog,
         systemInfo: backendInit.systemInfo,
         taskManager,
+    };
+}
+
+/**
+ * Initialize the backend services that don't require an active identity for being intialized.
+ */
+function initBackendServicesWithoutIdentityWithConfig(
+    factories: FactoriesForBackend,
+    {config, crypto, logging}: Pick<ServicesForBackend, 'crypto' | 'config' | 'logging'>,
+): Pick<ServicesForBackend, 'directory' | 'file'> {
+    const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
+    const directory = new FetchDirectoryBackend({config, logging});
+
+    return {
+        directory,
+        file,
     };
 }
 
@@ -459,6 +514,7 @@ async function writeKeyStorage(
     dgk: RawDeviceGroupKey,
     databaseKey: RawDatabaseKey,
     workCredentials?: ThreemaWorkCredentials,
+    onPremConfig?: KeyStorageOppfConfig,
 ): Promise<void> {
     try {
         await keyStorage.write(password, {
@@ -472,6 +528,12 @@ async function writeKeyStorage(
             databaseKey,
             deviceIds: {...deviceIds},
             workCredentials: workCredentials === undefined ? undefined : {...workCredentials},
+            onPremConfig:
+                onPremConfig === undefined
+                    ? undefined
+                    : {
+                          ...onPremConfig,
+                      },
         });
     } catch (error) {
         throw new BackendCreationError(
@@ -498,6 +560,7 @@ export class Backend implements ProxyMarked {
     public readonly keyStorage: KeyStorage;
     public readonly model: Repositories;
     public readonly viewModel: IViewModelRepository;
+    public readonly config: Config;
 
     private readonly _log: Logger;
     private readonly _backgroundJobScheduler: BackgroundJobScheduler;
@@ -516,6 +579,7 @@ export class Backend implements ProxyMarked {
         this.model = _services.model;
         this.keyStorage = _services.keyStorage;
         this.viewModel = _services.viewModel;
+        this.config = _services.config;
 
         // Log IDs
         {
@@ -533,12 +597,12 @@ export class Backend implements ProxyMarked {
      */
     public static hasIdentity(
         factories: FactoriesForBackend,
-        {config, logging}: Pick<ServicesForBackend, 'config' | 'logging'>,
+        {logging}: Pick<ServicesForBackend, 'logging'>,
     ): boolean {
         const log = logging.logger('backend.create');
 
         const crypto = new TweetNaClBackend(randomBytes);
-        const keyStorage = factories.keyStorage({config, crypto}, logging.logger('key-storage'));
+        const keyStorage = factories.keyStorage({crypto}, logging.logger('key-storage'));
         if (keyStorage.isPresent()) {
             log.info('Identity found');
             return true;
@@ -562,17 +626,23 @@ export class Backend implements ProxyMarked {
     public static async createFromKeyStorage(
         backendInit: BackendInit,
         factories: FactoriesForBackend,
-        {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
+        {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
         keyStoragePassword: string,
+        pinForwarder: EndpointFor<PinForwarder>,
     ): Promise<TransferredToRemote<EndpointFor<BackendHandle>>> {
         const log = logging.logger('backend.create.from-keystorage');
         log.info('Creating backend from existing key storage');
 
         // Initialize services that are needed early
-        const services = initBackendServicesWithoutIdentity(
+        const earlyServices = initBackendServicesWithoutConfig(
             factories,
-            {config, endpoint, logging},
+            {endpoint, logging},
             backendInit,
+        );
+
+        const wrappedPinForwarder = endpoint.wrap<PinForwarder>(
+            pinForwarder,
+            logging.logger('com.pin-forwarding'),
         );
 
         // Try to read the credentials from the key storage.
@@ -581,7 +651,7 @@ export class Backend implements ProxyMarked {
         //                 before the backend is actually attempted to be created.
         let keyStorageContents: KeyStorageContents;
         try {
-            keyStorageContents = await services.keyStorage.read(keyStoragePassword);
+            keyStorageContents = await earlyServices.keyStorage.read(keyStoragePassword);
         } catch (error) {
             assertError(error, KeyStorageError);
             switch (error.type) {
@@ -628,6 +698,83 @@ export class Backend implements ProxyMarked {
                     unreachable(error.type);
             }
         }
+
+        let config: Config;
+        if (
+            import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
+            keyStorageContents.onPremConfig !== undefined
+        ) {
+            try {
+                const workCredentials = unwrap(
+                    keyStorageContents.workCredentials,
+                    'Missing work credentials in OnPrem build',
+                );
+
+                // Download and verify OPPF from OnPrem server
+                let parsedOppfResponse: oppf.Type;
+                const responseObject = await this._fetchAndVerifyOppfFile(earlyServices, {
+                    password: workCredentials.password,
+                    username: workCredentials.username,
+                    oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
+                });
+                if (responseObject.parsedOppfResponse !== undefined) {
+                    // Valid OPPF found! Use it, and cache it in the key storage.
+                    parsedOppfResponse = responseObject.parsedOppfResponse;
+                    const newOnPremConfig: KeyStorageOppfConfig = {
+                        oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
+                        lastUpdated: BigInt(new Date().getUTCMilliseconds()),
+                        oppfCachedConfig: responseObject.rawResponse,
+                    };
+
+                    if (
+                        responseObject.rawResponse ===
+                        keyStorageContents.onPremConfig.oppfCachedConfig
+                    ) {
+                        log.info(
+                            'Not writing the fetched OnPrem configuration to key storage because its content did not change',
+                        );
+                    } else {
+                        log.info(
+                            'Writing the fetched OnPrem configuration to key storage because its content changed',
+                        );
+                        earlyServices.keyStorage
+                            .changeCachedOnPremConfig(keyStoragePassword, newOnPremConfig)
+                            .catch((error) =>
+                                log.error(
+                                    `Failed to cache OnPrem config: ${extractErrorMessage(ensureError(error), 'short')}`,
+                                ),
+                            );
+                    }
+                } else {
+                    // OPPF could not be fetched or is not valid. Use cached version instead.
+                    parsedOppfResponse = OPPF_VALIDATION_SCHEMA.parse(
+                        JSON.parse(keyStorageContents.onPremConfig.oppfCachedConfig),
+                    );
+                }
+                await wrappedPinForwarder.forward(parsedOppfResponse.publicKeyPinning);
+                config = createConfigFromOppf(parsedOppfResponse);
+            } catch (error) {
+                throw new BackendCreationError(
+                    'onprem-configuration-error',
+                    'The creation of the backend failed because the fetched and the cached OnPrem Configuration were not valid',
+                    {from: error},
+                );
+            }
+        } else {
+            config = createDefaultConfig();
+        }
+
+        const lateInitServices = initBackendServicesWithoutIdentityWithConfig(factories, {
+            ...earlyServices,
+            config,
+        });
+
+        //
+        const services = {
+            ...lateInitServices,
+            ...earlyServices,
+            config,
+        };
 
         // Open database
         const db = factories.db(
@@ -714,16 +861,18 @@ export class Backend implements ProxyMarked {
     public static async createFromDeviceJoin(
         backendInit: BackendInit,
         factories: FactoriesForBackend,
-        {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
+        {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
+        staticConfig: StaticConfig,
         deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
+        pinForwarder: EndpointFor<PinForwarder>,
     ): Promise<TransferredToRemote<EndpointFor<BackendHandle>>> {
         const log = logging.logger('backend.create.from-join');
         log.info('Creating backend through device linking flow');
 
         // Initialize services that are needed early
-        const services = initBackendServicesWithoutIdentity(
+        const earlyServices = initBackendServicesWithoutConfig(
             factories,
-            {config, endpoint, logging},
+            {endpoint, logging},
             backendInit,
         );
 
@@ -732,7 +881,13 @@ export class Backend implements ProxyMarked {
             deviceLinkingSetup,
             logging.logger('com.device-linking'),
         );
+
         const {linkingState} = wrappedDeviceLinkingSetup;
+
+        const wrappedPinForwarder = endpoint.wrap<PinForwarder>(
+            pinForwarder,
+            logging.logger('com.pin-forwarding'),
+        );
 
         // Helper function for error handling
         // eslint-disable-next-line no-inner-declarations
@@ -748,6 +903,49 @@ export class Backend implements ProxyMarked {
             log.error(message);
             throw new BackendCreationError('handled-linking-error', message, {from: error});
         }
+        let config: Config;
+        let oppfConfig: OppfFetchConfig | undefined = undefined;
+        let rawResponse: string | undefined;
+        let workCredentials: ThreemaWorkCredentials | undefined;
+        // Handle on prem dialog if necesary
+        if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
+            try {
+                oppfConfig = await wrappedDeviceLinkingSetup.oppfConfig;
+                const responseObject = await this._fetchAndVerifyOppfFile(
+                    earlyServices,
+                    oppfConfig,
+                );
+                workCredentials = {
+                    username: oppfConfig.username,
+                    password: oppfConfig.password,
+                };
+                const parsedOppfResponse = responseObject.parsedOppfResponse;
+                if (parsedOppfResponse === undefined) {
+                    log.warn('Verifying the signed OPPF failed');
+                    return await throwLinkingError('Verifying the OPPF file failed', {
+                        kind: 'onprem-configuration-error',
+                    });
+                }
+                rawResponse = responseObject.rawResponse;
+                await wrappedPinForwarder.forward(parsedOppfResponse.publicKeyPinning);
+                config = createConfigFromOppf(parsedOppfResponse);
+            } catch (error) {
+                log.error('Failed to fetch OPPF file with reason:', error);
+                return await throwLinkingError(
+                    'Fetching the OPPF file failed',
+                    {kind: 'onprem-configuration-error'},
+                    ensureError(error),
+                );
+            }
+        } else {
+            config = createDefaultConfig();
+        }
+
+        const services = {
+            ...earlyServices,
+            ...initBackendServicesWithoutIdentityWithConfig(factories, {...earlyServices, config}),
+            config,
+        };
 
         // Generate rendezvous setup with all information needed to show the QR code
         let setup: RendezvousProtocolSetup;
@@ -953,6 +1151,7 @@ export class Backend implements ProxyMarked {
                 let licenseCheckResult;
                 try {
                     licenseCheckResult = await workLicenseCheck(
+                        services.config.DIRECTORY_SERVER_URL,
                         joinResult.workCredentials,
                         backendInit.systemInfo,
                         log,
@@ -1041,6 +1240,20 @@ export class Backend implements ProxyMarked {
             joinResult.rawCk.purge();
         }
 
+        let onPremConfig: KeyStorageOppfConfig | undefined = undefined;
+
+        if (
+            import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
+            oppfConfig !== undefined &&
+            rawResponse !== undefined
+        ) {
+            onPremConfig = {
+                oppfUrl: oppfConfig.oppfUrl,
+                oppfCachedConfig: rawResponse,
+                lastUpdated: BigInt(new Date().getUTCMilliseconds()),
+            };
+        }
+
         // Now that essential data is processed, we can connect to the Mediator server and register
         // ourselves
         const initialConnectionResult = await backend.connectionManager.start();
@@ -1055,6 +1268,7 @@ export class Backend implements ProxyMarked {
                 dgkForKeyStorage,
                 databaseKeyForKeyStorage,
                 joinResult.workCredentials,
+                onPremConfig,
             );
             purgeSensitiveData();
 
@@ -1083,6 +1297,45 @@ export class Backend implements ProxyMarked {
         const transferredRemote: TransferredToRemote<EndpointFor<BackendHandle>> =
             endpoint.transfer(remote, [remote]);
         return transferredRemote;
+    }
+
+    private static async _fetchAndVerifyOppfFile(
+        earlyServices: EarlyServicesThatDontRequireConfig,
+        oppfConfig: OppfFetchConfig,
+    ): Promise<
+        {parsedOppfResponse: oppf.Type; rawResponse: string} | {parsedOppfResponse: undefined}
+    > {
+        let response: Response;
+        try {
+            response = await fetch(oppfConfig.oppfUrl, {
+                method: 'GET',
+                headers: new Headers({
+                    'authorization': `Basic ${u8aToBase64(UTF8.encode(`${oppfConfig.username}:${oppfConfig.password}`))}}`,
+                    'accept': 'application/json',
+                    'user-agent': STATIC_CONFIG.USER_AGENT,
+                }),
+            });
+        } catch (error) {
+            throw new Error('Failed to fetch the config file');
+        }
+        const binary = await response.arrayBuffer();
+        const signedBuffer = new Uint8Array(binary);
+        const rawResponse = oppf.trimSignature(signedBuffer);
+        const parsedOppfResponse = OPPF_VALIDATION_SCHEMA.parse(JSON.parse(rawResponse));
+
+        // At the moment, we return the verified file instead of just checking it which `tweetnacl` also supports.
+        // This leads to simplified parsing and typing.
+        // Should the need arise to change this, we can always switch to verification only.
+        if (
+            earlyServices.crypto.verifyEd25519Signature(
+                signedBuffer as SignedDataEd25519,
+                parsedOppfResponse.signatureKey as NonReadonlyPublicKey,
+            ) !== undefined
+        ) {
+            return {parsedOppfResponse, rawResponse};
+        }
+
+        return {parsedOppfResponse: undefined};
     }
 
     /**

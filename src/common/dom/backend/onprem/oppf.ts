@@ -2,7 +2,40 @@ import * as v from '@badrap/valita';
 
 import {ensurePublicKey} from '~/common/crypto';
 import {ensureU16, ensureU53} from '~/common/types';
+import {assert} from '~/common/utils/assert';
 import {base64ToU8a} from '~/common/utils/base64';
+import {UTF8} from '~/common/utils/codec';
+
+const BASE64_SIGNATURE_LENGTH = 88;
+
+/**
+ * Strips trailing space and new line characters and a 64-byte base64 encoded signature from an arraybuffer.
+ *
+ * @returns A raw string without signature.
+ *
+ *   Note: A 64-byte base64 encoded binary has 86 characters and 2 trailing `==`.
+ */
+export function trimSignature(signedBuffer: Uint8Array): string {
+    let endOfSignedData = signedBuffer.byteLength - 1;
+    if (endOfSignedData < 0) {
+        return '';
+    }
+    for (let i = signedBuffer.byteLength - 1; i >= 0; i -= 1) {
+        // Trim if its new line or space character
+        if (signedBuffer[i] === 10 || signedBuffer[i] === 32) {
+            endOfSignedData -= 1;
+        } else {
+            break;
+        }
+    }
+
+    assert(
+        endOfSignedData > BASE64_SIGNATURE_LENGTH,
+        'Message is not a valid signed message because the expected length of the signature is longer than the signed message',
+    );
+
+    return UTF8.decode(signedBuffer.subarray(0, endOfSignedData - BASE64_SIGNATURE_LENGTH));
+}
 
 export const OPPF_VALIDATION_SCHEMA = v
     .object({

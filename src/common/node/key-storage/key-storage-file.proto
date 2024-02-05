@@ -86,6 +86,12 @@ message ThreemaWorkCredentials {
     string password = 2;
 }
 
+message OnPremConfig {
+    string oppf_url = 1;
+    uint64 last_updated = 2;
+    string oppf_cached_config = 3;
+}
+
 message DecryptedKeyStorage {
     // The key storage schema version. Used for being able to migrate the storage format.
     uint32 schema_version = 5;
@@ -104,4 +110,7 @@ message DecryptedKeyStorage {
 
     // Threema Work Credentials (if any)
     ThreemaWorkCredentials work_credentials = 6;
+
+    // Threema OnPrem Config (if any)
+    OnPremConfig on_prem_config = 7;
 }

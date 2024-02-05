@@ -143,6 +143,16 @@
         // In these cases, the default generic error message is good enough for now.
         break;
 
+      case 'onprem-configuration-error':
+        title = t(
+          'dialog--linking-error.label--title-configuration-failed',
+          'OnPrem Configuration Error',
+        );
+        message = t(
+          'dialog--linking-error.prose--configuration-failed',
+          'The setup of the OnPrem instance failed because of a configuration error. Please retry the setup process or contact your administrator.',
+        );
+        break;
       default:
         unreachable(state.errorType);
     }

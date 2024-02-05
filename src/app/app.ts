@@ -10,11 +10,11 @@ import App from '~/app/ui/App.svelte';
 import PasswordInput from '~/app/ui/PasswordInput.svelte';
 import {GlobalHotkeyManager} from '~/app/ui/hotkey';
 import * as i18n from '~/app/ui/i18n';
-import type {LinkingParams} from '~/app/ui/linking';
+import type {LinkingParams, OppfConfig} from '~/app/ui/linking';
 import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {SystemTimeStore} from '~/app/ui/time';
-import {CONFIG} from '~/common/config';
+import {STATIC_CONFIG, type StaticConfig} from '~/common/config';
 import type {LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
@@ -34,7 +34,7 @@ import type {ElectronIpc, SystemInfo} from '~/common/electron-ipc';
 import {extractErrorTraceback} from '~/common/error';
 import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {SettingsService} from '~/common/model/types/settings';
-import type {u53} from '~/common/types';
+import type {DomainCertificatePin, u53} from '~/common/types';
 import {assertUnreachable, unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -61,7 +61,7 @@ export interface Elements {
 }
 
 /**
- * Show linking wizard.
+ * Attach linking wizard.
  */
 function attachLinkingWizard(elements: Elements, params: LinkingParams): LinkingWizard {
     elements.container.innerHTML = '';
@@ -117,15 +117,16 @@ function attachApp(services: AppServices, elements: Elements): App {
  * Check for updates. If an update is available, show a dialog to the user.
  */
 async function updateCheck(
-    services: Pick<AppServices, 'config' | 'logging' | 'systemDialog'>,
+    services: Pick<AppServices, 'logging' | 'systemDialog'>,
+    staticConfig: StaticConfig,
     systemInfo: SystemInfo,
 ): Promise<void> {
-    const {config, logging} = services;
+    const {logging} = services;
     const log = logging.logger('update-check');
     log.info('Checking for updates...');
 
     // Check for updates. If update is found, notify user after a short delay.
-    const updateInfo = await checkForUpdate(config, log, systemInfo);
+    const updateInfo = await checkForUpdate(staticConfig, log, systemInfo);
     if (updateInfo !== undefined) {
         await TIMER.sleep(3000);
         log.info(`Update available: ${updateInfo.version}`);
@@ -277,6 +278,7 @@ async function main(): Promise<() => void> {
     // Send app path to backend worker and wait for it to be ready.
     // Note: Comlink is not yet active at this point!
     const appPath = window.app.getAppPath();
+
     await new Promise((resolve) => {
         function readyListener(): void {
             worker.removeEventListener('message', readyListener);
@@ -303,6 +305,7 @@ async function main(): Promise<() => void> {
     async function showLinkingWizard(
         linkingState: ReadableStore<LinkingState>,
         userPassword: ResolvablePromise<string>,
+        oppfConfig: ResolvablePromise<OppfConfig>,
     ): Promise<void> {
         await domContentLoaded;
         log.debug('Showing linking wizard');
@@ -311,6 +314,7 @@ async function main(): Promise<() => void> {
             linkingState,
             userPassword,
             identityReady,
+            oppfConfig,
         });
     }
 
@@ -330,20 +334,26 @@ async function main(): Promise<() => void> {
         () => new Error('App services for system dialogs not available'),
         () => new Error('App services for system dialogs already set'),
     );
-    attachSystemDialogs(CONFIG, logging, elements.systemDialogs, systemDialogsAppServices);
+    attachSystemDialogs(logging, elements.systemDialogs, systemDialogsAppServices);
 
     // Instantiate early services
-    const config = CONFIG;
     const frontendMediaService = new FrontendMediaService();
     const notification = new FrontendNotificationCreator();
     const systemDialog = new FrontendSystemDialogService();
-    const endpoint = createEndpointService({config, logging});
+    const endpoint = createEndpointService({logging}, STATIC_CONFIG);
 
-    // Check for updates in the background, if this is an Electron release build
+    // Check for updates in the background, if this is an Electron release build.
+    // Note: For now, we don't support custom update links provisioned by .oppf files.
     if (!import.meta.env.DEBUG) {
-        updateCheck({config, logging, systemDialog}, systemInfo).catch(assertUnreachable);
+        updateCheck({logging, systemDialog}, STATIC_CONFIG, systemInfo).catch(assertUnreachable);
     }
-
+    // Function to send new public key pins to the electron process
+    function forwardPins(newPins: DomainCertificatePin[] | undefined): void {
+        if (newPins !== undefined) {
+            window.app.updatePublicKeyPins(newPins);
+        }
+    }
+    log.info('Instantiating Backend');
     // Instantiate backend
     const [backend, isNewIdentity] = await BackendController.create(
         {
@@ -353,7 +363,6 @@ async function main(): Promise<() => void> {
         },
         systemInfo,
         {
-            config,
             crypto: {randomBytes},
             endpoint,
             logging,
@@ -361,8 +370,8 @@ async function main(): Promise<() => void> {
         endpoint.wrap(worker, logging.logger('com.backend-creator')),
         showLinkingWizard,
         requestUserPassword,
+        forwardPins,
     );
-
     const [
         profileSettings,
         appearanceSettings,
@@ -387,10 +396,8 @@ async function main(): Promise<() => void> {
         calls: callsSettings,
         media: mediaSettings,
     };
-
     // Create app services
     const services: AppServices = {
-        config: CONFIG,
         crypto: {randomBytes},
         logging,
         blobCache: new BlobCacheService(backend, logging.logger('blob-cache')),

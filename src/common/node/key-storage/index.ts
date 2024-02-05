@@ -76,6 +76,7 @@ import {
     type KeyStorageContents,
     KeyStorageError,
     type ServicesForKeyStorage,
+    type KeyStorageOppfConfig,
 } from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
@@ -213,6 +214,19 @@ export class FileSystemKeyStorage implements KeyStorage {
     ): Promise<void> {
         const oldContent = await this.read(password);
         const newContent = {...oldContent, workCredentials: {...workCredentials}};
+        await this.write(password, newContent);
+    }
+
+    /** @inheritdoc */
+    public async changeCachedOnPremConfig(
+        password: string,
+        newConfig: KeyStorageOppfConfig,
+    ): Promise<void> {
+        const oldContent = await this.read(password);
+        const newContent: KeyStorageContents = {
+            ...oldContent,
+            onPremConfig: {...newConfig},
+        };
         await this.write(password, newContent);
     }
 
@@ -531,6 +545,18 @@ export class FileSystemKeyStorage implements KeyStorage {
                         cspDeviceId: intoUnsignedLong(decryptedKeyStorage.deviceIds.cspDeviceId),
                     },
                     workCredentials: decryptedKeyStorage.workCredentials,
+                    onPremConfig:
+                        import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
+                        decryptedKeyStorage.onPremConfig !== undefined
+                            ? {
+                                  oppfUrl: decryptedKeyStorage.onPremConfig.oppfUrl,
+                                  lastUpdated: intoUnsignedLong(
+                                      decryptedKeyStorage.onPremConfig.lastUpdated,
+                                  ),
+                                  oppfCachedConfig:
+                                      decryptedKeyStorage.onPremConfig.oppfCachedConfig,
+                              }
+                            : undefined,
                 }).finish() as PlainData,
             )
             .encryptWithRandomNonceAhead(undefined);

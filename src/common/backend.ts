@@ -47,10 +47,14 @@ export interface ServicesForBackend {
  */
 export type ServicesThatRequireIdentity = 'device' | 'blob' | 'model' | 'nonces' | 'viewModel';
 
+export type EarlyServicesThatDontRequireConfig = Omit<
+    Omit<ServicesForBackend, ServicesThatRequireIdentity>,
+    'file' | 'directory' | 'config'
+>;
+
 /**
  * Services available in the backend controller.
  */
-export type ServicesForBackendController = Pick<
-    ServicesForBackend,
-    'config' | 'endpoint' | 'logging'
-> & {crypto: Pick<CryptoBackend, 'randomBytes'>};
+export type ServicesForBackendController = Pick<ServicesForBackend, 'endpoint' | 'logging'> & {
+    crypto: Pick<CryptoBackend, 'randomBytes'>;
+};

@@ -221,6 +221,17 @@ export type EncryptedKeyStorageFileContents = Readonly<
 >;
 
 /**
+ * Validated key storage config for OnPrem
+ */
+const KEY_STORAGE_OPPF_CONFIG = v
+    .object({
+        oppfUrl: v.string(),
+        oppfCachedConfig: v.string(),
+        lastUpdated: unsignedLongAsU64(),
+    })
+    .rest(v.unknown());
+
+/**
  * Validation schema for the decrypted key storage contents.
  *
  * Note: It's important that all objects are annotated with `.rest(v.unknown())` to ensure forwards
@@ -253,6 +264,7 @@ export const KEY_STORAGE_CONTENTS_SCHEMA = v
             .object({username: v.string(), password: v.string()})
             .rest(v.unknown())
             .optional(),
+        onPremConfig: KEY_STORAGE_OPPF_CONFIG.optional(),
     })
     .rest(v.unknown());
 
@@ -261,8 +273,13 @@ export const KEY_STORAGE_CONTENTS_SCHEMA = v
  */
 export type KeyStorageContents = Readonly<v.Infer<typeof KEY_STORAGE_CONTENTS_SCHEMA>>;
 
+/**
+ * Validate key storage oppf config contents.
+ */
+export type KeyStorageOppfConfig = v.Infer<typeof KEY_STORAGE_OPPF_CONFIG>;
+
 /** Services required by the key storage factory. */
-export type ServicesForKeyStorageFactory = Pick<ServicesForBackend, 'config' | 'crypto'>;
+export type ServicesForKeyStorageFactory = Pick<ServicesForBackend, 'crypto'>;
 
 /** Services required by the key storage. */
 export type ServicesForKeyStorage = Pick<ServicesForBackend, 'crypto'>;
@@ -311,6 +328,17 @@ export interface KeyStorage extends ProxyMarked {
     readonly changeWorkCredentials: (
         password: string,
         workCredentials: ThreemaWorkCredentials,
+    ) => Promise<void>;
+
+    /**
+     *
+     *Change the cached information of the Oppf file
+     *
+     * @throws {KeyStorageError} In case encrypting or writing the key storage fails
+     */
+    readonly changeCachedOnPremConfig: (
+        password: string,
+        newConfig: KeyStorageOppfConfig,
     ) => Promise<void>;
 }
 
