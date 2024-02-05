@@ -148,6 +148,10 @@
       conversationDraftStore = active
         ? undefined
         : conversationDrafts.getOrCreateStore(receiver$.lookup);
+      // Small window size
+    } else if ($router.nav.id === 'conversationList') {
+      active = false;
+      conversationDraftStore = conversationDrafts.getOrCreateStore(receiver$.lookup);
     } else {
       active = false;
     }
