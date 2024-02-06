@@ -16,6 +16,7 @@ import {
     RAW_VIDEO_METADATA_SCHEMA,
 } from '~/common/network/structbuf/validate/csp/e2e/file';
 import {unreachable} from '~/common/utils/assert';
+import {isSupportedImageType} from '~/common/utils/image';
 
 /**
  * Determines the extra properties from a file message.
@@ -30,7 +31,7 @@ export function getFileBasedMessageTypeAndExtraProperties(
     | Pick<CommonAudioMessageInit, 'type' | 'duration'> {
     const isMediaOrSticker =
         fileData.renderingType === 'media' || fileData.renderingType === 'sticker';
-    if (fileData.file.mediaType.startsWith('image/') && isMediaOrSticker) {
+    if (isSupportedImageType(fileData.file.mediaType) && isMediaOrSticker) {
         let imageRenderingType: ImageRenderingType;
         switch (fileData.renderingType) {
             case 'media':
