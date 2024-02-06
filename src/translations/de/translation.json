@@ -205,6 +205,7 @@
     "label--message-rendezvous-error-timeout": "Aufgrund Inaktivität wurde der Verknüpfungsvorgang abgebrochen. Bitte starten Sie den Vorgang erneut.",
     "label--message-restore-error": "Bei der Wiederherstellung der übertragenen Daten ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "label--technical-details": "Technische Details anzeigen",
+    "label--title-configuration-failed": "OnPrem Konfigurationsfehler",
     "label--title-connection-error-generic": "Verbindungsfehler",
     "label--title-connection-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-generic": "Verknüpfung nicht erfolgreich",
@@ -212,6 +213,7 @@
     "label--title-invalid-work-credentials": "Ungültige Threema Work-Zugangsdaten",
     "label--title-rendezvous-error-timeout": "Verknüpfungsvorgang abgelaufen",
     "label--title-restore-error": "Datenwiederherstellung fehlgeschlagen",
+    "prose--configuration-failed": "Das Aufsetzen der OnPrem Instanz ist wegen einem Konfigurationsfehler fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie Ihren Administrator.",
     "prose--message-connection-error-generic": "Die Verbindung zum Server wurde unterbrochen, bevor die Verknüpfung abgeschlossen werden konnte. Bitte prüfen Sie Ihre Internetverbindung, und versuchen Sie es erneut.",
     "prose--message-generic": "Während der Verknüpfung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "prose--message-invalid-identity": "Die Threema-ID, die beim Verknüpfen verwendet wurde, ist ungültig oder wurde widerrufen.",
@@ -221,15 +223,16 @@
   },
   "dialog--linking-oppf": {
     "action--confirm": "Weiter",
-    "label--oppf-file": "OnPrem Bereitstellungsdatei",
+    "error--credentials-error": "Die angegebenen Zugangsdaten können nich verifiziert werden. Bitte stellen Sie sicher, dass die eingegebenen Zugangsdaten korrekt sind, oder kontaktieren Sie Ihren Administrator.",
+    "error--fetch-error": "Die angegebene URL ist ungültig. Bitte stellen Sie sicher, dass URL und Zugangsdaten übereinstimmen, oder kontaktieren Sie Ihren Administrator.",
+    "error--fetch-error-connection": "Die angegebene URL ist nicht erreichbar. Bitte prüfen Sie Ihre Netzwerkverbindung, oder kontaktieren Sie Ihren Administrator.",
+    "label--oppf-file": "Threema OnPrem",
     "label--password": "Passwort",
     "label--url": "URL",
     "label--username": "Benutzername",
-    "prose--enter-config": "Threema OnPrem is the self-hosted messenger for companies. Please enter the credentials provided by your company",
-    "prose--fetch-error": "Die Konfiguration konnte nicht heruntergeladen werden. Bitte prüfen Sie, dass die URL und die Zugangsdaten korrekt sind oder kontaktieren Sie Ihren Administrator.",
-    "prose--fetch-error-connection": "The provided URL cannot be accessed, are you connected to the network? Please check that the combination of URL and work credentials is correct or contact your administrator.",
-    "prose--forget-credentials": "Haben Sie Ihre Zugangsdaten vergessen? Bitte kontaktieren Sie Ihren Administrator.",
-    "prose--private-user": "Wenn Sie die App privat nutzen möchten, laden Sie Threema bitte <1 /> herunter."
+    "prose--enter-config": "Threema OnPrem ist der selbstgehostete sichere Messenger für Unternehmen. Bitte geben Sie die Zugangsdaten ein, die Sie von Ihrem Unternehmen erhalten haben.",
+    "prose--forget-credentials": "Zugangsdaten vergessen? Bitte kontaktieren Sie Ihren Threema OnPrem-Administrator.",
+    "prose--private-user": "Falls Sie Privatanwender sind, laden Sie Threema von <1 /> herunter."
   },
   "dialog--linking-scan": {
     "action--need-help": "Brauchen Sie Hilfe?",
