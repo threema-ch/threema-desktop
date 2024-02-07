@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import type {ProseProps} from '~/app/ui/components/atoms/prose/props';
+  import {hasProperty} from '~/common/utils/object';
   import {truncate} from '~/common/utils/string';
 
   type $$Props = ProseProps;
@@ -37,7 +38,7 @@
 </script>
 
 <span class="prose" class:wrap class:selectable>
-  {#if 'sanitizedHtml' in content}
+  {#if hasProperty(content, 'sanitizedHtml')}
     <!-- As text is expected to be escaped, `no-at-html-tags` can be ignored. -->
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     {@html content.sanitizedHtml}

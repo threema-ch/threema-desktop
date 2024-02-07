@@ -20,6 +20,7 @@
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {durationToString} from '~/common/utils/date';
+  import {hasProperty} from '~/common/utils/object';
 
   type $$Props = MessageProps;
 
@@ -59,7 +60,7 @@
     if (value === undefined) {
       return 0;
     }
-    if ('sanitizedHtml' in value) {
+    if (hasProperty(value, 'sanitizedHtml')) {
       return value.sanitizedHtml.length;
     }
 

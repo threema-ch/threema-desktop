@@ -839,6 +839,7 @@ export class ConnectedTaskManager {
             // 3: Look up items in the decoder queue
             this._decoder.queue.get(),
         ]);
+        // eslint-disable-next-line no-restricted-syntax
         if ('SYMBOL' in event.value) {
             // A task has been scheduled. Return it to the task runner.
             assert(event.value.SYMBOL === TASK_SYMBOL, 'Expected task symbol');

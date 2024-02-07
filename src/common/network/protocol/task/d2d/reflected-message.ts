@@ -23,6 +23,7 @@ import * as structbuf from '~/common/network/structbuf';
 import type {D2mDeviceId} from '~/common/network/types';
 import {exhausted} from '~/common/utils/assert';
 import {intoU64, u64ToHexLe} from '~/common/utils/number';
+import {hasProperty} from '~/common/utils/object';
 
 function unhandled(
     params:
@@ -43,7 +44,7 @@ function unhandled(
         return undefined;
     }
 
-    if ('body' in params) {
+    if (hasProperty(params, 'body')) {
         return {
             type: CspE2eGroupConversationType.GROUP_TEXT,
             message: {

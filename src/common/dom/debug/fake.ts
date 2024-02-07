@@ -53,6 +53,7 @@ import {wrapRawBlobKey} from '~/common/network/types/keys';
 import type {u53} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {idColorIndex} from '~/common/utils/id-color';
+import {hasProperty} from '~/common/utils/object';
 
 const CONSONANTS = Array.from('bcdfghjklmnpqrstvwxyz');
 const VOCALS = Array.from('aeiou');
@@ -432,7 +433,7 @@ export async function generateScreenshotData(
     if (import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
         const jsonFiles = import.meta.glob('./screenshot-data-*.json', {eager: true});
         const filename = `./screenshot-data-${import.meta.env.BUILD_VARIANT}.json`;
-        if (filename in jsonFiles) {
+        if (hasProperty(jsonFiles, filename)) {
             const json = jsonFiles[filename];
             data = SCREENSHOT_DATA_JSON_SCHEMA.parse(json);
         }

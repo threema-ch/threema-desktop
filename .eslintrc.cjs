@@ -216,6 +216,16 @@ function getTypeScriptConfigMixin(extension, override) {
         'threema/ban-typed-array-length': 'error',
         'threema/ban-typed-array-equality-comparison': 'error',
         'threema/no-todo-comments-without-issue': 'error',
+
+        // Custom syntax rules
+        'no-restricted-syntax': [
+            'error',
+            {
+                selector: "BinaryExpression[operator='in']",
+                message:
+                    "Avoid the 'in' operator. Use 'Object.hasOwn(...)' or our 'hasProperty(...)' helper.",
+            },
+        ],
     };
 
     return {

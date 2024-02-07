@@ -58,7 +58,7 @@ export function filterUndefinedProperties<const R extends Record<string | u53 | 
  */
 export function pick<T, K extends keyof T = keyof T>(object: Readonly<T>, props: K[]): Pick<T, K> {
     return Object.fromEntries(
-        props.filter((key) => key in object).map((key) => [key, object[key]]),
+        props.filter((key) => hasProperty(object, key)).map((key) => [key, object[key]]),
     ) as Pick<T, K>;
 }
 
@@ -77,7 +77,8 @@ export function omit<T, K extends keyof T = keyof T>(object: Readonly<T>, props:
  * Return whether an object is iterable.
  */
 export function isIterable(object: unknown): object is Iterable<unknown> {
-    return object !== null && Symbol.iterator in Object(object);
+    // eslint-disable-next-line no-restricted-syntax
+    return object !== null && object !== undefined && Symbol.iterator in Object(object);
 }
 
 /**

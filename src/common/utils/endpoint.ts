@@ -846,6 +846,7 @@ export class EndpointService {
     ): readonly [value: unknown, transfers: readonly DomTransferable[]] {
         if (
             ((typeof value === 'object' && value !== null) || typeof value === 'function') &&
+            // eslint-disable-next-line no-restricted-syntax
             TRANSFER_HANDLER in value
         ) {
             return this._toWireValueViaHandler(
@@ -1072,6 +1073,7 @@ export class EndpointService {
     ): readonly [value: WireValue, transfers: readonly DomTransferable[]] {
         if (
             ((typeof value === 'object' && value !== null) || typeof value === 'function') &&
+            // eslint-disable-next-line no-restricted-syntax
             TRANSFER_HANDLER in value
         ) {
             return this._toWireValueViaHandler(

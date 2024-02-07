@@ -27,7 +27,7 @@ export function localeSort(a: string, b: string): u53 {
 // TODO(DESK-1334): Use the system language instead of "en".
 export function getGraphemeClusters(text: string, count = 1): string[] {
     const clusters = [];
-    if ('Segmenter' in Intl) {
+    if (Object.hasOwn(Intl, 'Segmenter')) {
         const segmenter = new Intl.Segmenter('en', {granularity: 'grapheme'});
         const segments = segmenter.segment(text);
         const iterator = segments[Symbol.iterator]();
