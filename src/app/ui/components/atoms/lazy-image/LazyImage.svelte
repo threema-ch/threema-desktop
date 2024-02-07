@@ -6,11 +6,14 @@
   import {onDestroy} from 'svelte';
 
   import MdIcon from '#3sc/components/blocks/Icon/MdIcon.svelte';
+  import {globals} from '~/app/globals';
   import {constrain} from '~/app/ui/components/atoms/lazy-image/constrain';
   import type {LazyImageProps} from '~/app/ui/components/atoms/lazy-image/props';
   import type {LazyImageContent} from '~/app/ui/components/atoms/lazy-image/types';
-  import type {ReadonlyUint8Array} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
+  import {isSupportedImageType} from '~/common/utils/image';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.lazy-image');
 
   type $$Props = LazyImageProps;
 
@@ -25,9 +28,7 @@
     state: 'loading',
   };
 
-  async function updateContent(
-    value: 'loading' | Blob | ReadonlyUint8Array | undefined,
-  ): Promise<void> {
+  async function updateContent(value: 'loading' | Blob | undefined): Promise<void> {
     revokeCurrentImageUrl(image);
 
     if (value === 'loading') {
@@ -40,24 +41,36 @@
       return;
     }
 
-    let blob: Blob;
-    if (value instanceof Blob) {
-      blob = value;
-    } else {
-      blob = new Blob([value]);
+    // At this point it's certain that `value` is a `Blob`.
+    const blob: Blob = value;
+
+    // If the blob is an unsupported image type (e.g., an SVG), don't render it at all.
+    if (!isSupportedImageType(blob.type)) {
+      image = {state: 'failed'};
+      return;
     }
 
-    const imageBitmap = await createImageBitmap(blob);
-    revokeCurrentImageUrl(image);
-    image = {
-      state: 'loaded',
-      url: URL.createObjectURL(blob),
-      dimensions: {
-        width: imageBitmap.width,
-        height: imageBitmap.height,
-      },
-    };
-    imageBitmap.close();
+    try {
+      const imageBitmap = await createImageBitmap(blob);
+
+      revokeCurrentImageUrl(image);
+      image = {
+        state: 'loaded',
+        url: URL.createObjectURL(blob),
+        dimensions: {
+          width: imageBitmap.width,
+          height: imageBitmap.height,
+        },
+      };
+      imageBitmap.close();
+    } catch (error) {
+      // Creating bitmap from blob failed, e.g., if the blob's media type didn't match its actual
+      // content.
+      log.warn(
+        `Creating bitmap of type ${blob.type} from ${blob.size}-byte blob failed. Wrong media type or corrupted bytes?`,
+      );
+      image = {state: 'failed'};
+    }
   }
 
   function revokeCurrentImageUrl(currentImage: LazyImageContent): void {

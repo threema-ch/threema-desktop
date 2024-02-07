@@ -296,7 +296,7 @@
     }
 
     return routeParams.preloadedFiles.map(
-      ({bytes, fileName}) => new File([new Blob([bytes])], fileName),
+      ({bytes, fileName, mediaType}) => new File([new Blob([bytes], {type: mediaType})], fileName),
     );
   }
 

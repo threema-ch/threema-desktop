@@ -97,7 +97,7 @@ export class ProfilePictureService {
                     )} with UID ${uid}`,
                 );
                 const bytes = profilePicture.view.picture;
-                return bytes === undefined ? undefined : new Blob([bytes]);
+                return bytes === undefined ? undefined : new Blob([bytes], {type: 'image/jpeg'});
             });
             this._cache.set(cacheKeyFor(receiverLookup), blobStore);
             return blobStore;

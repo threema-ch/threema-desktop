@@ -1,9 +1,8 @@
-import {type AnyRouteInstance, ROUTE_DEFINITIONS} from '~/app/routing/routes';
+import {type AnyRouteInstance, ROUTE_DEFINITIONS, type PreloadedFiles} from '~/app/routing/routes';
 import type {DbReceiverLookup} from '~/common/db';
 import {display} from '~/common/dom/ui/state';
 import {ReceiverType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, assertUnreachable} from '~/common/utils/assert';
 import {WritableStore} from '~/common/utils/store';
 import {splitAtLeast} from '~/common/utils/string';
@@ -314,7 +313,7 @@ export class Router extends WritableStore<RouterState> {
      */
     public openConversationAndFileDialogForReceiver(
         receiverLookup: DbReceiverLookup,
-        fileInformation: {bytes: ReadonlyUint8Array; fileName: string}[],
+        preloadedFiles: PreloadedFiles,
         options?: {readonly keepAsidePanelOpen?: boolean},
     ): void {
         assert(
@@ -327,7 +326,7 @@ export class Router extends WritableStore<RouterState> {
             ROUTE_DEFINITIONS.nav.conversationList.withoutParams(),
             ROUTE_DEFINITIONS.main.conversation.withTypedParams({
                 receiverLookup,
-                preloadedFiles: fileInformation,
+                preloadedFiles,
             }),
             aside,
             undefined,

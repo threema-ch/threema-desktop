@@ -21,12 +21,14 @@ export async function collectLogsAndComposeMessageToSupport(
             },
             [
                 {
-                    fileName: 'desktop-log-app.txt.gz',
                     bytes: logFiles.app,
+                    fileName: 'desktop-log-app.txt.gz',
+                    mediaType: 'application/gzip',
                 },
                 {
-                    fileName: 'desktop-log-bw.txt.gz',
                     bytes: logFiles.bw,
+                    fileName: 'desktop-log-bw.txt.gz',
+                    mediaType: 'application/gzip',
                 },
             ],
         );

@@ -43,6 +43,7 @@ const PARAM_RECEIVER_LOOKUP_SCHEMA = v.object({
             v.object({
                 bytes: instanceOf<ReadonlyUint8Array>(Uint8Array),
                 fileName: v.string(),
+                mediaType: v.string(),
             }),
         )
         .optional(),
