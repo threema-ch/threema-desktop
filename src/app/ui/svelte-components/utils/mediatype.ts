@@ -1,7 +1,7 @@
-type MediaTypeToExtMapping = Record<string, string[]>;
+type MediaTypeToExtRecord = Record<string, string[]>;
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const standard: MediaTypeToExtMapping = {
+const standard: MediaTypeToExtRecord = {
     'application/andrew-inset': ['ez'],
     'application/applixware': ['aw'],
     'application/atom+xml': ['atom'],
@@ -326,7 +326,7 @@ const standard: MediaTypeToExtMapping = {
     'video/webm': ['webm'],
 };
 
-const other: MediaTypeToExtMapping = {
+const other: MediaTypeToExtRecord = {
     'application/prs.cww': ['cww'],
     'application/vnd.1000minds.decision-model+xml': ['1km'],
     'application/vnd.3gpp.pic-bw-large': ['plb'],
@@ -980,7 +980,7 @@ const other: MediaTypeToExtMapping = {
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 
-const types: MediaTypeToExtMapping = {...standard, ...other};
+const types = new Map(Object.entries({...standard, ...other}));
 
 /**
  * Get the most appropriate Material Design Icon name for a media type.
@@ -1076,8 +1076,8 @@ export function mediaTypeToIconName(mediaType: string): string {
  * Get all valid file extensions by media type.
  */
 export function mediaTypeToExtensions(mediaType: string): string[] | undefined {
-    if (mediaType in types) {
-        return types[mediaType];
+    if (types.has(mediaType)) {
+        return types.get(mediaType);
     }
     return undefined;
 }
