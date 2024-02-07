@@ -34,8 +34,8 @@ import type {
     OutboundImageMessageController,
 } from '~/common/model/types/message/image';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
 
 /**
@@ -124,7 +124,7 @@ export class InboundImageMessageModelController
     protected readonly _thumbnailBlobLock = new AsyncLock();
 
     /** @inheritdoc */
-    public async blob(): Promise<ReadonlyUint8Array> {
+    public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await downloadBlob(
             'main',
             this._type,
@@ -138,7 +138,7 @@ export class InboundImageMessageModelController
         );
 
         void regenerateThumbnail(
-            blob,
+            blob.bytes,
             this._uid,
             this._conversation,
             this.meta,
@@ -150,7 +150,7 @@ export class InboundImageMessageModelController
     }
 
     /** @inheritdoc */
-    public async thumbnailBlob(): Promise<ReadonlyUint8Array | undefined> {
+    public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         return await downloadBlob(
             'thumbnail',
             this._type,
@@ -176,7 +176,7 @@ export class OutboundImageMessageModelController
     protected readonly _thumbnailBlobLock = new AsyncLock();
 
     /** @inheritdoc */
-    public async blob(): Promise<ReadonlyUint8Array> {
+    public async blob(): Promise<FileBytesAndMediaType> {
         const blob = await downloadBlob(
             'main',
             this._type,
@@ -190,7 +190,7 @@ export class OutboundImageMessageModelController
         );
 
         void regenerateThumbnail(
-            blob,
+            blob.bytes,
             this._uid,
             this._conversation,
             this.meta,
@@ -202,7 +202,7 @@ export class OutboundImageMessageModelController
     }
 
     /** @inheritdoc */
-    public async thumbnailBlob(): Promise<ReadonlyUint8Array | undefined> {
+    public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         return await downloadBlob(
             'thumbnail',
             this._type,
@@ -233,9 +233,9 @@ export class OutboundImageMessageModelController
         // This can be further optimized by passing the bytes should performance problems occur
         void this._services.file
             .load(fileHandle)
-            .then(async (data) => {
+            .then(async (bytes) => {
                 await regenerateThumbnail(
-                    data,
+                    bytes,
                     this._uid,
                     this._conversation,
                     this.meta,

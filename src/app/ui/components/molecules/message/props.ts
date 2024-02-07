@@ -6,7 +6,8 @@ import type {IndicatorProps} from '~/app/ui/components/molecules/message/interna
 import type {QuoteProps} from '~/app/ui/components/molecules/message/internal/quote/props';
 import type {SenderProps} from '~/app/ui/components/molecules/message/internal/sender/props';
 import type {BlobStore} from '~/common/dom/ui/blob-cache';
-import type {Dimensions, ReadonlyUint8Array, f64} from '~/common/types';
+import type {Dimensions, f64} from '~/common/types';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 /**
  * Props accepted by the `Message` component.
@@ -21,7 +22,7 @@ export interface MessageProps {
     readonly file?: {
         readonly duration?: f64;
         /** Function to use for obtaining the file bytes. */
-        readonly fetchFileBytes: () => Promise<ReadonlyUint8Array | undefined>;
+        readonly fetchFileBytes: () => Promise<FileBytesAndMediaType | undefined>;
         readonly imageRenderingType?: 'regular' | 'sticker';
         readonly mediaType: FileInfoProps['mediaType'];
         readonly name: FileInfoProps['name'];

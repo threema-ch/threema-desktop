@@ -4,12 +4,13 @@ import {convertImage} from '~/common/dom/utils/image';
 import {BlobFetchError} from '~/common/error';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 /**
  * Fetch file or thumbnail bytes of a message using the provided `fetch` function and wrap it in a
  * {@link SyncResult}.
  */
-export async function syncAndGetPayload<TPayload extends ReadonlyUint8Array>(
+export async function syncAndGetPayload<TPayload extends FileBytesAndMediaType>(
     fetch: () => Promise<TPayload | undefined>,
     t: I18nType['t'],
 ): Promise<SyncResult<TPayload>> {
@@ -42,12 +43,11 @@ export async function syncAndGetPayload<TPayload extends ReadonlyUint8Array>(
  */
 export async function syncAndSavePayloadAsFile(
     fileName: string,
-    mediaType: string,
-    ...args: Parameters<typeof syncAndGetPayload<ReadonlyUint8Array>>
-): Promise<SyncResult<ReadonlyUint8Array>> {
+    ...args: Parameters<typeof syncAndGetPayload<FileBytesAndMediaType>>
+): Promise<SyncResult<FileBytesAndMediaType>> {
     const result = await syncAndGetPayload(...args);
     if (result.status === 'ok') {
-        saveBytesAsFile(result.data, fileName, mediaType);
+        saveBytesAsFile(result.data.bytes, fileName, result.data.mediaType);
     }
 
     return result;
@@ -59,11 +59,11 @@ export async function syncAndSavePayloadAsFile(
  */
 export async function syncAndCopyImagePayloadToClipboard(
     mediaType: string,
-    ...args: Parameters<typeof syncAndGetPayload<ReadonlyUint8Array>>
+    ...args: Parameters<typeof syncAndGetPayload<FileBytesAndMediaType>>
 ): Promise<SyncResult<undefined>> {
     const result = await syncAndGetPayload(...args);
     if (result.status === 'ok') {
-        return await copyImageBytesToClipboard(result.data, mediaType, args[1]);
+        return await copyImageBytesToClipboard(result.data.bytes, result.data.mediaType, args[1]);
     }
 
     return result;

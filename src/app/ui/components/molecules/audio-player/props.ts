@@ -1,4 +1,5 @@
-import type {ReadonlyUint8Array, f64} from '~/common/types';
+import type {f64} from '~/common/types';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 /**
  * Props accepted by the `AudioPlayer` component.
@@ -11,6 +12,6 @@ export interface AudioPlayerProps {
     /**
      * Function to fetch the audio data with.
      */
-    readonly fetchAudio: () => Promise<ReadonlyUint8Array | undefined>;
+    readonly fetchAudio: () => Promise<FileBytesAndMediaType | undefined>;
     readonly onError: (error: Error) => void;
 }

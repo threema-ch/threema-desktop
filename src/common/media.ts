@@ -1,22 +1,24 @@
 import type {DbReceiverLookup} from '~/common/db';
 import type {Logger} from '~/common/logging';
-import type {AnyMessageModelStore, AnyTextMessageModelStore} from '~/common/model/types/message';
+import type {AnyFileBasedMessageModel} from '~/common/model/types/message';
 import type {MessageId} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {isSupportedImageType} from '~/common/utils/image';
 
 export interface ThumbnailGenerator extends ProxyMarked {
     readonly generateImageThumbnail: (
-        data: ReadonlyUint8Array,
-        fileType: string,
+        bytes: ReadonlyUint8Array,
+        mediaType: string,
         log?: Logger,
-    ) => Promise<ReadonlyUint8Array>;
+    ) => Promise<FileBytesAndMediaType>;
     readonly generateVideoThumbnail: (
-        data: ReadonlyUint8Array,
+        bytes: ReadonlyUint8Array,
+        mediaType: string,
         log?: Logger,
-    ) => Promise<ReadonlyUint8Array>;
+    ) => Promise<FileBytesAndMediaType>;
     readonly setCacheForMessage: (messageId: MessageId, receiverLookup: DbReceiverLookup) => void;
 }
 
@@ -27,20 +29,23 @@ export class MediaService {
     ) {}
 
     public async generateThumbnail(
-        data: ReadonlyUint8Array,
-        mediaType: Exclude<AnyMessageModelStore['type'], AnyTextMessageModelStore['type']>,
-        fileType: string,
-    ): Promise<ReadonlyUint8Array | undefined> {
-        let thumbnailData: ReadonlyUint8Array;
-        switch (mediaType) {
+        bytes: ReadonlyUint8Array,
+        messageType: AnyFileBasedMessageModel['type'],
+        mediaType: string,
+    ): Promise<FileBytesAndMediaType | undefined> {
+        let thumbnailData: FileBytesAndMediaType;
+        switch (messageType) {
             case 'video':
-                thumbnailData = await this._thumbnailGenerator.generateVideoThumbnail(data);
+                thumbnailData = await this._thumbnailGenerator.generateVideoThumbnail(
+                    bytes,
+                    mediaType,
+                );
                 break;
             case 'image':
-                if (isSupportedImageType(fileType)) {
+                if (isSupportedImageType(mediaType)) {
                     thumbnailData = await this._thumbnailGenerator.generateImageThumbnail(
-                        data,
-                        fileType,
+                        bytes,
+                        mediaType,
                     );
                     break;
                 }
@@ -51,7 +56,7 @@ export class MediaService {
                 this._log.warn('Cannot generate thumbnail because file type has no thumbnail');
                 return undefined;
             default:
-                unreachable(mediaType);
+                unreachable(messageType);
         }
         return thumbnailData;
     }

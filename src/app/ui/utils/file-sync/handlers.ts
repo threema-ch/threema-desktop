@@ -88,28 +88,25 @@ export async function handleSaveAsFile(
         return;
     }
 
-    await syncAndSavePayloadAsFile(
-        file.name.raw ?? file.name.default,
-        file.mediaType,
-        file.fetchFileBytes,
-        t,
-    ).then((result) => {
-        switch (result.status) {
-            case 'ok':
-                // Do nothing, as the system file dialog will open and provide the user with visual
-                // feedback that the operation was successful.
-                break;
+    await syncAndSavePayloadAsFile(file.name.raw ?? file.name.default, file.fetchFileBytes, t).then(
+        (result) => {
+            switch (result.status) {
+                case 'ok':
+                    // Do nothing, as the system file dialog will open and provide the user with visual
+                    // feedback that the operation was successful.
+                    break;
 
-            case 'error':
-                log.error(
-                    `File payload sync failed: ${extractErrorMessage(result.error, 'short')}`,
-                );
+                case 'error':
+                    log.error(
+                        `File payload sync failed: ${extractErrorMessage(result.error, 'short')}`,
+                    );
 
-                onFailure?.(result.message);
-                break;
+                    onFailure?.(result.message);
+                    break;
 
-            default:
-                unreachable(result);
-        }
-    });
+                default:
+                    unreachable(result);
+            }
+        },
+    );
 }

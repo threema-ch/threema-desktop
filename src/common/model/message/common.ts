@@ -38,6 +38,7 @@ import type {RawBlobKey} from '~/common/network/types/keys';
 import type {Mutable, ReadonlyUint8Array} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 import type {AsyncLock} from '~/common/utils/lock';
 
 export const NO_SENDER = Symbol('no-sender');
@@ -141,7 +142,7 @@ export async function downloadBlob(
     lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
-): Promise<ReadonlyUint8Array>;
+): Promise<FileBytesAndMediaType>;
 export async function downloadBlob(
     type: 'thumbnail',
     messageType: MessageType,
@@ -152,7 +153,7 @@ export async function downloadBlob(
     lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
-): Promise<ReadonlyUint8Array | undefined>;
+): Promise<FileBytesAndMediaType | undefined>;
 /**
  * Download blob of the specified type.
  *
@@ -171,7 +172,7 @@ export async function downloadBlob(
     lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
-): Promise<ReadonlyUint8Array | undefined> {
+): Promise<FileBytesAndMediaType | undefined> {
     const {blob, crypto, file} = services;
 
     /**
@@ -216,19 +217,25 @@ export async function downloadBlob(
     // avoid races where the same blob is downloaded multiple times.
     return await lock.with(async () => {
         // If blob is already downloaded (i.e. a fileId is set), return it
-        const existingFileData: FileData | undefined = lifetimeGuard.run((handle) => {
+        const [existingFileData, existingMediaType]: [
+            existingFileData: FileData | undefined,
+            existingMediaType: string,
+        ] = lifetimeGuard.run((handle) => {
             switch (type) {
                 case 'main':
-                    return handle.view().fileData;
+                    return [handle.view().fileData, handle.view().mediaType];
                 case 'thumbnail':
-                    return handle.view().thumbnailFileData;
+                    return [handle.view().thumbnailFileData, handle.view().mediaType];
                 default:
                     return unreachable(type);
             }
         });
         if (existingFileData !== undefined) {
             try {
-                return await file.load(existingFileData);
+                return {
+                    bytes: await file.load(existingFileData),
+                    mediaType: existingMediaType,
+                };
             } catch (error) {
                 const message = `Could not fetch bytes from file system: ${error}`;
                 if (error instanceof FileStorageError) {
@@ -267,13 +274,17 @@ export async function downloadBlob(
             }
         }
 
-        // Get matching blob ID and nonce
-        const [blobId, nonce] = lifetimeGuard.run((handle) => {
+        // Get matching blob ID, mediaType, and nonce
+        const [blobId, mediaType, nonce] = lifetimeGuard.run((handle) => {
             switch (type) {
                 case 'main':
-                    return [handle.view().blobId, BLOB_FILE_NONCE];
+                    return [handle.view().blobId, handle.view().mediaType, BLOB_FILE_NONCE];
                 case 'thumbnail':
-                    return [handle.view().thumbnailBlobId, BLOB_THUMBNAIL_NONCE];
+                    return [
+                        handle.view().thumbnailBlobId,
+                        handle.view().mediaType,
+                        BLOB_THUMBNAIL_NONCE,
+                    ];
                 default:
                     return unreachable(type);
             }
@@ -409,7 +420,10 @@ export async function downloadBlob(
         log.info(`Downloaded ${type} blob`);
 
         // Return data
-        return decryptedBytes;
+        return {
+            bytes: decryptedBytes,
+            mediaType,
+        };
     });
 }
 
@@ -524,7 +538,7 @@ export async function uploadBlobs(
 }
 
 export async function overwriteThumbnail(
-    data: ReadonlyUint8Array,
+    bytes: ReadonlyUint8Array,
     messageType: MessageType,
     messageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
@@ -535,7 +549,7 @@ export async function overwriteThumbnail(
     const {file} = services;
     let storedFile;
     try {
-        storedFile = await file.store(data);
+        storedFile = await file.store(bytes);
     } catch (error) {
         const message = `Could not write bytes to file system: ${error}`;
         if (error instanceof FileStorageError) {
@@ -546,7 +560,7 @@ export async function overwriteThumbnail(
     const storedFileData = {
         fileId: storedFile.fileId,
         encryptionKey: storedFile.encryptionKey,
-        unencryptedByteCount: data.byteLength,
+        unencryptedByteCount: bytes.byteLength,
         storageFormatVersion: storedFile.storageFormatVersion,
     };
 
@@ -560,7 +574,7 @@ export async function overwriteThumbnail(
 }
 
 export async function regenerateThumbnail(
-    data: ReadonlyUint8Array,
+    bytes: ReadonlyUint8Array,
     dbMessageUid: DbMessageUid,
     conversation: ConversationControllerHandle,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
@@ -585,10 +599,10 @@ export async function regenerateThumbnail(
     }
 
     // Whenever we download an image blob, we try to regenerate the thumbnail in the background
-    const newThumbnail = await media.generateThumbnail(data, MessageType.IMAGE, mediaType);
+    const newThumbnail = await media.generateThumbnail(bytes, MessageType.IMAGE, mediaType);
     if (newThumbnail !== undefined) {
         await overwriteThumbnail(
-            data,
+            bytes,
             messageType,
             dbMessageUid,
             conversation,

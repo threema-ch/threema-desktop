@@ -91,19 +91,18 @@
     }
   }
 
-  function updateMediaState(mediaFile: typeof file, t: I18nType['t']): void {
+  function updateMediaState(currentFile: typeof file, t: I18nType['t']): void {
     // `syncAndGetPayload` doesn't need to be caught, as it will never reject and simply return a
     // `SyncFailure` result instead.
-    void syncAndGetPayload(mediaFile.fetchFileBytes, t).then((result) => {
+    void syncAndGetPayload(currentFile.fetchFileBytes, t).then((result) => {
       revokeLoadedMediaUrl();
 
       switch (result.status) {
         case 'ok':
           mediaState = {
-            originalImageBytes: result.data,
             status: 'loaded',
-            type: mediaFile.type,
-            url: URL.createObjectURL(new Blob([result.data], {type: mediaFile.mediaType})),
+            type: currentFile.type,
+            url: URL.createObjectURL(new Blob([result.data.bytes], {type: result.data.mediaType})),
           };
           break;
 

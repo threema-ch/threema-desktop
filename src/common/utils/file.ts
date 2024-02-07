@@ -1,4 +1,13 @@
 import {mediaTypeToExtensions} from '#3sc/utils/mediatype';
+import type {ReadonlyUint8Array} from '~/common/types';
+
+/**
+ * An object containing the bytes of a file, as well as the corresponding media type.
+ */
+export interface FileBytesAndMediaType {
+    readonly bytes: ReadonlyUint8Array;
+    readonly mediaType: string;
+}
 
 /**
  * Get file basename and extension of the given filename.

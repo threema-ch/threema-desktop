@@ -2,8 +2,9 @@ import type {DbReceiverLookup} from '~/common/db';
 import type {BackendController} from '~/common/dom/backend/controller';
 import type {Logger} from '~/common/logging';
 import type {MessageId} from '~/common/network/types';
-import type {ReadonlyUint8Array, WeakOpaque} from '~/common/types';
+import type {WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {WeakValueMap} from '~/common/utils/map';
 import {WritableStore, type IQueryableStore, type IQueryableStoreValue} from '~/common/utils/store';
 
@@ -37,8 +38,12 @@ export class BlobCacheService {
         return this._cache.getOrCreate(key, () => {
             const store = new WritableStore<IQueryableStoreValue<BlobStore>>('loading');
             this._getMessageThumbnailBytes(messageId, receiverLookup)
-                .then((bytes) => {
-                    store.set(bytes === undefined ? undefined : new Blob([bytes]));
+                .then((result) => {
+                    store.set(
+                        result === undefined
+                            ? undefined
+                            : new Blob([result.bytes], {type: result.mediaType}),
+                    );
                 })
                 .catch((error) =>
                     this._log.warn(`Failed to fetch message thumbnail bytes: ${error}`),
@@ -51,8 +56,12 @@ export class BlobCacheService {
         const key = cacheKeyForMessageThumbnail(messageId, receiverLookup);
         const store = new WritableStore<IQueryableStoreValue<BlobStore>>('loading');
         this._getMessageThumbnailBytes(messageId, receiverLookup)
-            .then((bytes) => {
-                store.set(bytes === undefined ? undefined : new Blob([bytes]));
+            .then((result) => {
+                store.set(
+                    result === undefined
+                        ? undefined
+                        : new Blob([result.bytes], {type: result.mediaType}),
+                );
                 this._cache.set(key, store);
             })
             .catch((error) => this._log.warn(`Failed to fetch message thumbnail bytes: ${error}`));
@@ -61,7 +70,7 @@ export class BlobCacheService {
     private async _getMessageThumbnailBytes(
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,
-    ): Promise<ReadonlyUint8Array | undefined> {
+    ): Promise<FileBytesAndMediaType | undefined> {
         const conversation = await this._backend.model.conversations.getForReceiver(receiverLookup);
         if (conversation === undefined) {
             return undefined;

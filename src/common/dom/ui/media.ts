@@ -5,6 +5,7 @@ import type {ThumbnailGenerator} from '~/common/media';
 import type {MessageId} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 export const MAX_IMAGE_MESSAGE_SIZE = 384;
 // This is double the set max height and max width
@@ -23,12 +24,12 @@ export class FrontendThumbnailGenerator implements ThumbnailGenerator {
     }
 
     public async generateImageThumbnail(
-        data: ReadonlyUint8Array,
-        imageType: string,
-    ): Promise<ReadonlyUint8Array> {
+        bytes: ReadonlyUint8Array,
+        mediaType: string,
+    ): Promise<FileBytesAndMediaType> {
         const downSizedImage = await downsizeImage(
-            new Blob([data], {type: imageType}),
-            imageType,
+            new Blob([bytes], {type: mediaType}),
+            mediaType,
             LOCAL_THUMBNAIL_MAX_SIZE,
             THUMBNAIL_QUALITY,
         );
@@ -36,11 +37,17 @@ export class FrontendThumbnailGenerator implements ThumbnailGenerator {
             throw new Error('Failed to downsize image');
         }
         const arrayBuffer = await downSizedImage.resized.arrayBuffer();
-        return new Uint8Array(arrayBuffer);
+        return {
+            bytes: new Uint8Array(arrayBuffer),
+            mediaType,
+        };
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async generateVideoThumbnail(data: ReadonlyUint8Array): Promise<ReadonlyUint8Array> {
+    public async generateVideoThumbnail(
+        bytes: ReadonlyUint8Array,
+        mediaType: string,
+    ): Promise<FileBytesAndMediaType> {
         // TODO(DESK-1306)
         throw new Error('Generation of video thumbnail not yet implemented');
     }

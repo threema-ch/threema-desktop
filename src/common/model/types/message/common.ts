@@ -19,6 +19,7 @@ import type {IdentityString, MessageId} from '~/common/network/types';
 import type {RawBlobKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
 import type {ProxyMarked} from '~/common/utils/endpoint';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 export const OWN_IDENTITY_ALIAS = 'me';
 export type IdentityStringOrMe = IdentityString | typeof OWN_IDENTITY_ALIAS;
@@ -287,7 +288,7 @@ type CommonBaseFileMessageController<TView extends CommonBaseFileMessageView> =
          * If fetching the blob bytes fails (for any reason), then the promise is rejected with a
          * {@link BlobFetchError}.
          */
-        readonly blob: () => Promise<ReadonlyUint8Array>;
+        readonly blob: () => Promise<FileBytesAndMediaType>;
 
         /**
          * Return the thumbnail blob bytes.
@@ -298,7 +299,7 @@ type CommonBaseFileMessageController<TView extends CommonBaseFileMessageView> =
          * If fetching the thumbnail blob bytes fails (for any reason), then the promise is rejected
          * with a {@link BlobFetchError}.
          */
-        readonly thumbnailBlob: () => Promise<ReadonlyUint8Array | undefined>;
+        readonly thumbnailBlob: () => Promise<FileBytesAndMediaType | undefined>;
     };
 
 /**

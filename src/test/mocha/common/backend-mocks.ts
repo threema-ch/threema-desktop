@@ -165,6 +165,7 @@ import {
     type RemoteProxy,
     TRANSFER_HANDLER,
 } from '~/common/utils/endpoint';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {Identity} from '~/common/utils/identity';
 import {ValueObject} from '~/common/utils/object';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -556,18 +557,19 @@ export class TestMediaService extends MediaService {
     public constructor(log: Logger) {
         // eslint-disable-next-line @typescript-eslint/require-await
         async function generateImageThumbnail(
-            _data: ReadonlyUint8Array,
-            _fileType: string,
+            _bytes: ReadonlyUint8Array,
+            _mediaType: string,
             _log?: Logger,
-        ): Promise<ReadonlyUint8Array> {
-            return new Uint8Array() as ReadonlyUint8Array;
+        ): Promise<FileBytesAndMediaType> {
+            return {bytes: new Uint8Array(), mediaType: _mediaType};
         }
         // eslint-disable-next-line @typescript-eslint/require-await
         async function generateVideoThumbnail(
-            _data: ReadonlyUint8Array,
+            _bytes: ReadonlyUint8Array,
+            _mediaType: string,
             _log?: Logger,
-        ): Promise<ReadonlyUint8Array> {
-            return new Uint8Array() as ReadonlyUint8Array;
+        ): Promise<FileBytesAndMediaType> {
+            return {bytes: new Uint8Array(), mediaType: _mediaType};
         }
         function setCacheForMessage(
             _messageId: MessageId,

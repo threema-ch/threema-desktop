@@ -1,8 +1,8 @@
 import {MessageReaction, MessageType} from '~/common/enum';
 import type {AnyMessageModelStore} from '~/common/model';
-import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 
 export interface IConversationMessageViewModelController extends ProxyMarked {
     /**
@@ -17,7 +17,7 @@ export interface IConversationMessageViewModelController extends ProxyMarked {
      * Fetches and returns the full blob data of a file or media message, triggering a download if
      * necessary.
      */
-    readonly getBlob: () => Promise<ReadonlyUint8Array | undefined>;
+    readonly getBlob: () => Promise<FileBytesAndMediaType | undefined>;
 }
 
 export class ConversationMessageViewModelController
@@ -35,7 +35,7 @@ export class ConversationMessageViewModelController
         return await this._applyReaction(MessageReaction.DECLINE);
     }
 
-    public async getBlob(): Promise<ReadonlyUint8Array | undefined> {
+    public async getBlob(): Promise<FileBytesAndMediaType | undefined> {
         switch (this._message.type) {
             case MessageType.FILE:
             case MessageType.IMAGE:

@@ -1,5 +1,3 @@
-import type {ReadonlyUint8Array} from '~/common/types';
-
 /**
  * States used to describe the progress when loading the media.
  */
@@ -16,7 +14,6 @@ export type MediaState =
  * State describing a loaded image.
  */
 export interface LoadedImageState {
-    readonly originalImageBytes: ReadonlyUint8Array;
     readonly status: 'loaded';
     readonly type: 'image';
     readonly url: string;

@@ -145,14 +145,14 @@
     isLoaded = new ResolvablePromise();
 
     await fetch()
-      .then((bytes) => {
-        if (bytes === undefined) {
+      .then((result) => {
+        if (result === undefined) {
           throw new Error("Didn't receive any audio bytes");
         }
 
         return {
           status: 'loaded',
-          url: URL.createObjectURL(new Blob([bytes])),
+          url: URL.createObjectURL(new Blob([result.bytes], {type: result.mediaType})),
         } as const;
       })
       .then((state) => {

@@ -33,8 +33,8 @@ import type {
     OutboundAudioMessageController,
 } from '~/common/model/types/message/audio';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
+import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
 
 /**
@@ -121,7 +121,7 @@ export class InboundAudioMessageModelController
     protected readonly _thumbnailBlobLock = new AsyncLock();
 
     /** @inheritdoc */
-    public async blob(): Promise<ReadonlyUint8Array> {
+    public async blob(): Promise<FileBytesAndMediaType> {
         return await downloadBlob(
             'main',
             this._type,
@@ -136,7 +136,7 @@ export class InboundAudioMessageModelController
     }
 
     /** @inheritdoc */
-    public async thumbnailBlob(): Promise<ReadonlyUint8Array | undefined> {
+    public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         return await downloadBlob(
             'thumbnail',
             this._type,
@@ -162,7 +162,7 @@ export class OutboundAudioMessageModelController
     protected readonly _thumbnailBlobLock = new AsyncLock();
 
     /** @inheritdoc */
-    public async blob(): Promise<ReadonlyUint8Array> {
+    public async blob(): Promise<FileBytesAndMediaType> {
         return await downloadBlob(
             'main',
             this._type,
@@ -177,7 +177,7 @@ export class OutboundAudioMessageModelController
     }
 
     /** @inheritdoc */
-    public async thumbnailBlob(): Promise<ReadonlyUint8Array | undefined> {
+    public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
         return await downloadBlob(
             'thumbnail',
             this._type,
