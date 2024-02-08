@@ -86,7 +86,7 @@
       unread: 0,
     },
     title: {
-      text: $i18n.t('contacts.label--own-name', 'Me'),
+      text: $i18n.t('contacts.label--own-name'),
     },
     subtitle: {
       badges: {

@@ -1,6 +1,7 @@
 import type {ConversationPreviewListProps} from '~/app/ui/components/partials/conversation-preview-list/props';
 import type {MessagePreviewListProps} from '~/app/ui/components/partials/message-preview-list/props';
 import type {ReceiverPreviewListProps} from '~/app/ui/components/partials/receiver-preview-list/props';
+import type {I18nType} from '~/app/ui/i18n-types';
 import {ConversationCategory, ConversationVisibility} from '~/common/enum';
 import {conversationCompareFn} from '~/common/model/utils/conversation';
 import type {u53} from '~/common/types';
@@ -9,6 +10,7 @@ import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import type {RemoteSetStore} from '~/common/utils/store/set-store';
+import {localeSort} from '~/common/utils/string';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import type {
     ConversationSearchResult,
@@ -22,6 +24,7 @@ import type {
  */
 export function conversationSearchResultSetStoreToConversationPreviewListPropsStore(
     conversationSearchResultSetStore: RemoteSetStore<Remote<ConversationSearchResult>>,
+    i18n: I18nType,
     /**
      * Max count of items to include. If not defined, the count of items in the source store will be
      * used.
@@ -50,7 +53,10 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
                                 ? undefined
                                 : {
                                       file: lastMessageViewModel.file,
-                                      reactions: lastMessageViewModel.reactions,
+                                      reactions: getMessageReactionsProps(
+                                          lastMessageViewModel,
+                                          i18n,
+                                      ),
                                       sender: lastMessageViewModel.sender,
                                       status: lastMessageViewModel.status,
                                       text: lastMessageViewModel.text,
@@ -68,6 +74,7 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
  */
 export function messageSearchResultSetStoreToMessagePreviewListPropsStore(
     messageSearchResultSetStore: RemoteSetStore<Remote<MessageSearchResult>>,
+    i18n: I18nType,
     /**
      * Max count of items to include. If not defined, the count of items in the source store will be
      * used.
@@ -93,11 +100,16 @@ export function messageSearchResultSetStoreToMessagePreviewListPropsStore(
                             ? getMessageProps(
                                   messageViewModel.quote.viewModelController,
                                   getAndSubscribe(messageViewModel.quote.viewModelStore),
+                                  i18n,
                               )
                             : messageViewModel.quote;
 
                     return {
-                        ...getMessageProps(result.message.viewModelController, messageViewModel),
+                        ...getMessageProps(
+                            result.message.viewModelController,
+                            messageViewModel,
+                            i18n,
+                        ),
                         ordinal: messageViewModel.ordinal,
                         quote: quoteProps,
                     };
@@ -133,12 +145,13 @@ export function receiverSearchResultSetStoreToReceiverPreviewListPropsStore(
 function getMessageProps(
     viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
     viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    i18n: I18nType,
 ): Omit<MessagePreviewListProps['items'][u53]['messages'][u53], 'quote'> {
     return {
         direction: viewModel.direction,
         file: getMessageFileProps(viewModelController, viewModel),
         id: viewModel.id,
-        reactions: viewModel.reactions,
+        reactions: getMessageReactionsProps(viewModel, i18n),
         sender: viewModel.sender,
         status: viewModel.status,
         text: viewModel.text,
@@ -157,4 +170,21 @@ function getMessageFileProps(
     }
 
     return undefined;
+}
+
+export function getMessageReactionsProps(
+    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    i18n: I18nType,
+): MessagePreviewListProps['items'][u53]['messages'][u53]['reactions'] {
+    return viewModel.reactions
+        .map((reaction) => ({
+            ...reaction,
+            sender: {
+                name:
+                    reaction.sender.identity === 'me'
+                        ? i18n.t('contacts.label--own-name', 'Me')
+                        : reaction.sender.name ?? reaction.sender.identity,
+            },
+        }))
+        .sort((a, b) => localeSort(a.sender.name, b.sender.name));
 }

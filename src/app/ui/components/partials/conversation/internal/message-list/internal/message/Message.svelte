@@ -17,10 +17,7 @@
     isUnsyncedOrSyncingFile,
   } from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/helpers';
   import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
-  import {
-    transformMessageFileProps,
-    transformMessageReactionsProps,
-  } from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
+  import {transformMessageFileProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/transformers';
   import MessageContextMenuProvider from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-context-menu-provider/MessageContextMenuProvider.svelte';
   import {i18n} from '~/app/ui/i18n';
   import {toast} from '~/app/ui/snackbar';
@@ -431,7 +428,7 @@
               hideVideoPlayButton: isUnsyncedOrSyncingFile(file),
             }}
             quote={quoteProps}
-            reactions={transformMessageReactionsProps(reactions, $i18n)}
+            {reactions}
             {sender}
             {status}
             {timestamp}

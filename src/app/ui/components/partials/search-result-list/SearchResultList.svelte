@@ -128,6 +128,7 @@
       ? undefined
       : conversationSearchResultSetStoreToConversationPreviewListPropsStore(
           conversationSearchResults,
+          $i18n,
           searchParams.limits.conversations === undefined
             ? undefined
             : searchParams.limits.conversations - 1,
@@ -139,6 +140,7 @@
       ? undefined
       : messageSearchResultSetStoreToMessagePreviewListPropsStore(
           messageSearchResults,
+          $i18n,
           searchParams.limits.messages === undefined ? undefined : searchParams.limits.messages - 1,
         );
 

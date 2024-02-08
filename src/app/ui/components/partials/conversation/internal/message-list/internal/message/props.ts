@@ -44,7 +44,7 @@ export interface MessageProps {
     readonly highlighted?: BasicMessageProps['highlighted'];
     readonly id: MessageId;
     readonly quote?: Omit<MessageProps, 'boundary' | 'conversation' | 'services'> | 'not-found';
-    readonly reactions: MessageDetailsModalProps['reactions'];
+    readonly reactions: BasicMessageProps['reactions'] & MessageDetailsModalProps['reactions'];
     readonly sender?: NonNullable<BasicMessageProps['sender']> &
         (
             | {

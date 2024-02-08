@@ -1,17 +1,20 @@
 import type {MessageProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message/props';
+import type {I18nType} from '~/app/ui/i18n-types';
 import type {Remote} from '~/common/utils/endpoint';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
+import {localeSort} from '~/common/utils/string';
 import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
 import type {ConversationMessageSetStore} from '~/common/viewmodel/conversation/main/store';
 
 /**
- * Defined the shape of props as they should be provided from the backend.
+ * Shape of props as they should be provided from the backend.
  */
 export type MessagePropsFromBackend = Omit<MessageProps, 'boundary' | 'conversation' | 'services'>;
 
 export function messageSetStoreToMessagePropsStore(
     messageSetStore: Remote<ConversationMessageSetStore>,
+    i18n: I18nType,
 ): IQueryableStore<MessagePropsFromBackend[]> {
     return derive(messageSetStore, (messageSet, getAndSubscribe) =>
         [...messageSet]
@@ -23,11 +26,12 @@ export function messageSetStoreToMessagePropsStore(
                         ? getMessageProps(
                               viewModel.quote.viewModelController,
                               getAndSubscribe(viewModel.quote.viewModelStore),
+                              i18n,
                           )
                         : viewModel.quote;
 
                 return {
-                    ...getMessageProps(value.viewModelController, viewModel),
+                    ...getMessageProps(value.viewModelController, viewModel, i18n),
                     ordinal: viewModel.ordinal,
                     quote: quoteProps,
                 };
@@ -39,6 +43,7 @@ export function messageSetStoreToMessagePropsStore(
 function getMessageProps(
     viewModelController: Remote<ConversationMessageViewModelBundle>['viewModelController'],
     viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    i18n: I18nType,
 ): Omit<MessagePropsFromBackend, 'quote'> {
     return {
         actions: {
@@ -52,7 +57,7 @@ function getMessageProps(
         direction: viewModel.direction,
         file: getMessageFileProps(viewModelController, viewModel),
         id: viewModel.id,
-        reactions: viewModel.reactions,
+        reactions: getMessageReactionsProps(viewModel, i18n),
         sender: viewModel.sender,
         status: viewModel.status,
         text: viewModel.text,
@@ -71,4 +76,21 @@ function getMessageFileProps(
     }
 
     return undefined;
+}
+
+export function getMessageReactionsProps(
+    viewModel: ReturnType<Remote<ConversationMessageViewModelBundle>['viewModelStore']['get']>,
+    i18n: I18nType,
+): MessagePropsFromBackend['reactions'] {
+    return viewModel.reactions
+        .map((reaction) => ({
+            ...reaction,
+            sender: {
+                name:
+                    reaction.sender.identity === 'me'
+                        ? i18n.t('contacts.label--own-name', 'Me')
+                        : reaction.sender.name ?? reaction.sender.identity,
+            },
+        }))
+        .sort((a, b) => localeSort(a.sender.name, b.sender.name));
 }

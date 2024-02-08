@@ -56,11 +56,11 @@ function getIndicatorElementsForReactions(
             case 'inbound':
                 switch (reaction.type) {
                     case 'acknowledged':
-                        acknowledgedBy.push(reaction.name);
+                        acknowledgedBy.push(reaction.sender.name);
                         break;
 
                     case 'declined':
-                        declinedBy.push(reaction.name);
+                        declinedBy.push(reaction.sender.name);
                         break;
 
                     default:
@@ -72,12 +72,12 @@ function getIndicatorElementsForReactions(
                 switch (reaction.type) {
                     case 'acknowledged':
                         hasOutboundAcknowledge = true;
-                        acknowledgedBy.push(reaction.name);
+                        acknowledgedBy.push(reaction.sender.name);
                         break;
 
                     case 'declined':
                         hasOutboundDecline = true;
-                        declinedBy.push(reaction.name);
+                        declinedBy.push(reaction.sender.name);
                         break;
 
                     default:
@@ -90,9 +90,6 @@ function getIndicatorElementsForReactions(
         }
     }
 
-    acknowledgedBy.sort();
-    declinedBy.sort();
-
     if (hasOutboundAcknowledge || acknowledgedBy.length > 0) {
         const showTitle = acknowledgedBy.length > 1 || options.alwaysShowNumber === true;
         elements.push({
@@ -100,7 +97,7 @@ function getIndicatorElementsForReactions(
             color: 'acknowledged',
             count: acknowledgedBy.length > 0 ? acknowledgedBy.length : undefined,
             filled: hasOutboundAcknowledge || options.fillReactions,
-            title: showTitle ? acknowledgedBy.sort().join(', ') : undefined,
+            title: showTitle ? acknowledgedBy.join(', ') : undefined,
         });
     }
 
@@ -111,7 +108,7 @@ function getIndicatorElementsForReactions(
             color: 'declined',
             count: declinedBy.length > 0 ? declinedBy.length : undefined,
             filled: hasOutboundDecline || options.fillReactions,
-            title: showTitle ? declinedBy.sort().join(', ') : undefined,
+            title: showTitle ? declinedBy.join(', ') : undefined,
         });
     }
 

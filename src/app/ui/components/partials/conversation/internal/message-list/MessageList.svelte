@@ -388,7 +388,7 @@
     conversation.markAllMessagesAsRead();
   }
 
-  $: messagePropsStore = messageSetStoreToMessagePropsStore(messageSetStore);
+  $: messagePropsStore = messageSetStoreToMessagePropsStore(messageSetStore, $i18n);
 
   $: reactive(handleChangeConversation, [currentConversationId]);
   $: reactive(handleChangeApplicationFocus, [$appVisibility]);

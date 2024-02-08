@@ -25,8 +25,10 @@ export interface IndicatorProps {
 
 interface Reaction {
     readonly direction: 'inbound' | 'outbound';
+    readonly sender: {
+        readonly name: string;
+    };
     readonly type: 'acknowledged' | 'declined';
-    readonly name: string;
 }
 
 export interface Status {

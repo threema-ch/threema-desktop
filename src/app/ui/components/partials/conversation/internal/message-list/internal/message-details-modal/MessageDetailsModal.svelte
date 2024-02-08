@@ -8,10 +8,10 @@
   import Modal from '~/app/ui/components/hocs/modal/Modal.svelte';
   import KeyValueList from '~/app/ui/components/molecules/key-value-list';
   import type {MessageDetailsModalProps} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/props';
-  import type {GroupedReactionsList} from '~/app/ui/components/partials/conversation/internal/message-list/internal/message-details-modal/types';
   import {i18n} from '~/app/ui/i18n';
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import type {u53} from '~/common/types';
+  import {unreachable} from '~/common/utils/assert';
   import {u64ToHexLe} from '~/common/utils/number';
 
   type $$Props = MessageDetailsModalProps;
@@ -28,32 +28,40 @@
     settings: {appearance},
   } = services;
 
-  let groupedSortedReactions: GroupedReactionsList = {
-    acknowledged: [],
-    declined: [],
-  };
+  let acknowledgeReactions: string[] = [];
+  let declineReactions: string[] = [];
+  let outboundReaction: $$Props['reactions'][u53]['type'] | undefined = undefined;
 
-  let ownReaction: $$Props['reactions'][u53]['type'] | undefined = undefined;
+  function handleUpdateReactions(currentReactions: $$Props['reactions']): void {
+    acknowledgeReactions.length = 0;
+    declineReactions.length = 0;
 
-  $: if (conversation.receiver.type === 'group') {
-    const tmpSortedReactions: GroupedReactionsList = {
-      acknowledged: [],
-      declined: [],
-    };
-    reactions.forEach((reaction) => {
-      let displayName = reaction.sender.name;
-      if (reaction.sender.identity === 'me') {
-        ownReaction = reaction.type;
-        displayName = $i18n.t('contacts.label--own-name');
+    for (const reaction of currentReactions) {
+      if (reaction.direction === 'outbound') {
+        outboundReaction = reaction.type;
       }
-      tmpSortedReactions[reaction.type].push(displayName ?? reaction.sender.identity);
-    });
-    tmpSortedReactions.acknowledged.sort();
-    tmpSortedReactions.declined.sort();
-    groupedSortedReactions = {...tmpSortedReactions};
+
+      switch (reaction.type) {
+        case 'acknowledged':
+          acknowledgeReactions.push(reaction.sender.name);
+          break;
+
+        case 'declined':
+          declineReactions.push(reaction.sender.name);
+
+          break;
+
+        default:
+          unreachable(reaction.type);
+      }
+    }
+
+    acknowledgeReactions = acknowledgeReactions;
+    declineReactions = declineReactions;
   }
 
   $: use24hTime = $appearance.view.use24hTime;
+  $: handleUpdateReactions(reactions);
 </script>
 
 <Modal
@@ -158,27 +166,27 @@
                 </div>
               </div>
             {/if}
-          {:else if groupedSortedReactions.acknowledged.length !== 0}
+          {:else if acknowledgeReactions.length !== 0}
             <div class="reaction">
               <div class={'thumb acknowledged'}>
-                <MdIcon theme={ownReaction === 'acknowledged' ? 'Filled' : 'Outlined'}
+                <MdIcon theme={outboundReaction === 'acknowledged' ? 'Filled' : 'Outlined'}
                   >{'thumb_up'}</MdIcon
                 >
               </div>
               <div class="date">
-                <Text text={groupedSortedReactions.acknowledged.join(', ')} selectable />
+                <Text text={acknowledgeReactions.join(', ')} selectable />
               </div>
             </div>
           {/if}
-          {#if groupedSortedReactions.declined.length !== 0}
+          {#if declineReactions.length !== 0}
             <div class="reaction">
               <div class={'thumb declined'}>
-                <MdIcon theme={ownReaction === 'declined' ? 'Filled' : 'Outlined'}
+                <MdIcon theme={outboundReaction === 'declined' ? 'Filled' : 'Outlined'}
                   >{'thumb_down'}</MdIcon
                 >
               </div>
               <div class="date">
-                <Text text={groupedSortedReactions.declined.join(', ')} selectable />
+                <Text text={declineReactions.join(', ')} selectable />
               </div>
             </div>
           {/if}
