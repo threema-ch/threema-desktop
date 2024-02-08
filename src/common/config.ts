@@ -128,9 +128,9 @@ export const STATIC_CONFIG: StaticConfig = {
  */
 function createBlobUrls(blobBaseUrl: string): Config['BLOB_SERVER_URLS'] {
     return {
-        uploadUrl: blobBaseUrl.concat('/blob/upload'),
-        downloadUrl: blobBaseUrl.concat('blob/{blobId}'),
-        doneUrl: blobBaseUrl.concat('{blobId}/done'),
+        uploadUrl: blobBaseUrl.concat('/upload'),
+        downloadUrl: blobBaseUrl.concat('/{blobId}'),
+        doneUrl: blobBaseUrl.concat('/{blobId}/done'),
     };
 }
 

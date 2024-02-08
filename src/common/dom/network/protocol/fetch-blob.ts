@@ -1,4 +1,5 @@
 import type {ServicesForBackend} from '~/common/backend';
+import type {Config} from '~/common/config';
 import type {EncryptedData} from '~/common/crypto';
 import {
     type BlobBackend,
@@ -20,16 +21,13 @@ type ServicesForBlobBackend = Pick<ServicesForBackend, 'config' | 'device'>;
  * [Fetch API]: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
  */
 export class FetchBlobBackend implements BlobBackend {
-    private readonly _baseUrl: string;
+    private readonly _baseUrls: Config['BLOB_SERVER_URLS'];
     private readonly _requestInit: RequestInit;
     private readonly _deviceId: string;
     private readonly _deviceGroupId: string;
     public constructor(services: ServicesForBlobBackend) {
         const prefix = byteToHex(unwrap(services.device.d2m.dgpk.public[0]));
-        this._baseUrl = services.config.BLOB_SERVER_URL.replaceAll(
-            '{prefix4}',
-            unwrap(prefix[0]),
-        ).replaceAll('{prefix8}', prefix);
+
         this._requestInit = {
             cache: 'no-store',
             headers: {
@@ -39,6 +37,18 @@ export class FetchBlobBackend implements BlobBackend {
 
         this._deviceId = u64ToHexLe(services.device.d2m.deviceId);
         this._deviceGroupId = bytesToHex(services.device.d2m.dgpk.public);
+
+        this._baseUrls = {
+            uploadUrl: services.config.BLOB_SERVER_URLS.uploadUrl
+                .replaceAll('{prefix4}', unwrap(prefix[0]))
+                .replaceAll('{prefix8}', prefix),
+            downloadUrl: services.config.BLOB_SERVER_URLS.downloadUrl
+                .replaceAll('{prefix4}', unwrap(prefix[0]))
+                .replaceAll('{prefix8}', prefix),
+            doneUrl: services.config.BLOB_SERVER_URLS.doneUrl
+                .replaceAll('{prefix4}', unwrap(prefix[0]))
+                .replaceAll('{prefix8}', prefix),
+        };
     }
 
     /** @inheritdoc */
@@ -49,7 +59,7 @@ export class FetchBlobBackend implements BlobBackend {
 
         let response: Response;
         try {
-            response = await fetch(`${this._getUrlForPath(`upload`, scope)}`, {
+            response = await fetch(`${this._getUrlForPath(this._baseUrls.uploadUrl, scope)}`, {
                 ...this._requestInit,
                 method: 'POST',
                 headers: {
@@ -82,14 +92,20 @@ export class FetchBlobBackend implements BlobBackend {
     public async download(scope: BlobScope, id: BlobId): Promise<BlobDownloadResult> {
         let response: Response;
         try {
-            response = await fetch(`${this._getUrlForPath(bytesToHex(id), scope)}`, {
-                ...this._requestInit,
-                method: 'GET',
-                headers: {
-                    ...this._requestInit.headers,
-                    accept: 'application/octet-stream',
+            response = await fetch(
+                `${this._getUrlForPath(
+                    this._baseUrls.downloadUrl.replace('{blobId}', bytesToHex(id)),
+                    scope,
+                )}`,
+                {
+                    ...this._requestInit,
+                    method: 'GET',
+                    headers: {
+                        ...this._requestInit.headers,
+                        accept: 'application/octet-stream',
+                    },
                 },
-            });
+            );
         } catch (error) {
             throw new BlobBackendError('fetch', 'Fetch download request errored', {from: error});
         }
@@ -129,10 +145,16 @@ export class FetchBlobBackend implements BlobBackend {
     private async _done(id: BlobId, scope: BlobScope): Promise<void> {
         let response: Response;
         try {
-            response = await fetch(`${this._getUrlForPath(`${bytesToHex(id)}/done`, scope)}`, {
-                ...this._requestInit,
-                method: 'POST',
-            });
+            response = await fetch(
+                this._getUrlForPath(
+                    this._baseUrls.doneUrl.replace('{blobId}', bytesToHex(id)),
+                    scope,
+                ),
+                {
+                    ...this._requestInit,
+                    method: 'POST',
+                },
+            );
         } catch (error) {
             throw new BlobBackendError('fetch', 'Fetch done request errored', {from: error});
         }
@@ -145,10 +167,8 @@ export class FetchBlobBackend implements BlobBackend {
     }
 
     private _getUrlForPath(path: string, scope: BlobScope): URL {
-        // Ensure absence of trailing slash (it will be re-added below)
-        const trimmedBaseUrl = this._baseUrl.replace(/\/$/u, '');
         return new URL(
-            `${trimmedBaseUrl}/${path}?deviceId=${this._deviceId}&deviceGroupId=${this._deviceGroupId}&scope=${scope}`,
+            `${path}?deviceId=${this._deviceId}&deviceGroupId=${this._deviceGroupId}&scope=${scope}`,
         );
     }
 }
