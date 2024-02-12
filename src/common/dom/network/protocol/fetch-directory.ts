@@ -4,6 +4,7 @@ import type {ServicesForBackend} from '~/common/backend';
 import {ensurePublicKey} from '~/common/crypto';
 import {hash} from '~/common/crypto/blake2b';
 import {deriveDirectoryChallengeResponseKey} from '~/common/crypto/csp-keys';
+import type {ThreemaWorkCredentials} from '~/common/device';
 import {ActivityState} from '~/common/enum';
 import {
     type DirectoryBackend,
@@ -18,6 +19,7 @@ import type {ClientKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
+import {UTF8} from '~/common/utils/codec';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 
 /**
@@ -78,16 +80,23 @@ export class FetchDirectoryBackend implements DirectoryBackend {
     private readonly _base: string;
     private readonly _requestInit: RequestInit;
 
-    public constructor(services: Pick<ServicesForBackend, 'config' | 'logging'>) {
+    public constructor(
+        services: Pick<ServicesForBackend, 'config' | 'logging'>,
+        workCredentials?: ThreemaWorkCredentials,
+    ) {
         this._base = services.config.DIRECTORY_SERVER_URL;
         this._requestInit = {
             cache: 'no-store',
             credentials: 'omit',
             referrerPolicy: 'no-referrer',
-            headers: {
-                'accept': 'application/json',
-                'user-agent': services.config.USER_AGENT,
-            },
+            headers:
+                workCredentials !== undefined
+                    ? {
+                          'accept': 'application/json',
+                          'user-agent': services.config.USER_AGENT,
+                          'authorization': `Basic ${u8aToBase64(UTF8.encode(`${workCredentials.username}:${workCredentials.password}`))}`,
+                      }
+                    : {'accept': 'application/json', 'user-agent': services.config.USER_AGENT},
         };
     }
 
@@ -263,7 +272,6 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         schema: TSchema,
     ): Promise<v.Infer<TSchema> | undefined> {
         const url = `${new URL(requestPath, this._base)}`;
-
         // Fetch challenge payload
         let challengePayload;
         {

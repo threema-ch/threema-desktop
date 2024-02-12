@@ -421,13 +421,16 @@ function initBackendServicesWithoutConfig(
 
 /**
  * Initialize the backend services that don't require an active identity for being intialized.
+ *
+ * The Threema Work credentials are needed for Basic Authorization for the directory server in OnPrem
  */
 function initBackendServicesWithoutIdentityWithConfig(
     factories: FactoriesForBackend,
     {config, crypto, logging}: Pick<ServicesForBackend, 'crypto' | 'config' | 'logging'>,
+    workCredentials?: ThreemaWorkCredentials,
 ): Pick<ServicesForBackend, 'directory' | 'file'> {
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
-    const directory = new FetchDirectoryBackend({config, logging});
+    const directory = new FetchDirectoryBackend({config, logging}, workCredentials);
 
     return {
         directory,
@@ -700,12 +703,13 @@ export class Backend implements ProxyMarked {
         }
 
         let config: Config;
+        let workCredentials: ThreemaWorkCredentials | undefined = undefined;
         if (
             import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
             keyStorageContents.onPremConfig !== undefined
         ) {
             try {
-                const workCredentials = unwrap(
+                workCredentials = unwrap(
                     keyStorageContents.workCredentials,
                     'Missing work credentials in OnPrem build',
                 );
@@ -764,10 +768,14 @@ export class Backend implements ProxyMarked {
             config = createDefaultConfig();
         }
 
-        const lateInitServices = initBackendServicesWithoutIdentityWithConfig(factories, {
-            ...earlyServices,
-            config,
-        });
+        const lateInitServices = initBackendServicesWithoutIdentityWithConfig(
+            factories,
+            {
+                ...earlyServices,
+                config,
+            },
+            workCredentials,
+        );
 
         //
         const services = {
@@ -943,7 +951,11 @@ export class Backend implements ProxyMarked {
 
         const services = {
             ...earlyServices,
-            ...initBackendServicesWithoutIdentityWithConfig(factories, {...earlyServices, config}),
+            ...initBackendServicesWithoutIdentityWithConfig(
+                factories,
+                {...earlyServices, config},
+                workCredentials,
+            ),
             config,
         };
 
