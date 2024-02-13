@@ -47,7 +47,6 @@ import {
     extractErrorTraceback,
     type RendezvousCloseCause,
     RendezvousCloseError,
-    extractErrorMessage,
 } from '~/common/error';
 import type {FileStorage, ServicesForFileStorageFactory} from '~/common/file-storage';
 import {
@@ -709,48 +708,30 @@ export class Backend implements ProxyMarked {
             keyStorageContents.onPremConfig !== undefined
         ) {
             try {
-                workCredentials = unwrap(
-                    keyStorageContents.workCredentials,
-                    'Missing work credentials in OnPrem build',
-                );
-
-                // Download and verify OPPF from OnPrem server
                 let parsedOppfResponse: oppf.Type;
+                // If Username and Password are not there for some reason, something must have been wrong at another place.
+                // All work users need to have their credentials stored after the first log in.
+                workCredentials = {
+                    password: unwrap(keyStorageContents.workCredentials?.password),
+                    username: unwrap(keyStorageContents.workCredentials?.username),
+                };
                 const responseObject = await this._fetchAndVerifyOppfFile(earlyServices, {
                     password: workCredentials.password,
                     username: workCredentials.username,
                     oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
                 });
                 if (responseObject.parsedOppfResponse !== undefined) {
-                    // Valid OPPF found! Use it, and cache it in the key storage.
-                    parsedOppfResponse = responseObject.parsedOppfResponse;
                     const newOnPremConfig: KeyStorageOppfConfig = {
                         oppfUrl: keyStorageContents.onPremConfig.oppfUrl,
                         lastUpdated: BigInt(new Date().getUTCMilliseconds()),
                         oppfCachedConfig: responseObject.rawResponse,
                     };
+                    parsedOppfResponse = responseObject.parsedOppfResponse;
 
-                    if (
-                        responseObject.rawResponse ===
-                        keyStorageContents.onPremConfig.oppfCachedConfig
-                    ) {
-                        log.info(
-                            'Not writing the fetched OnPrem configuration to key storage because its content did not change',
-                        );
-                    } else {
-                        log.info(
-                            'Writing the fetched OnPrem configuration to key storage because its content changed',
-                        );
-                        earlyServices.keyStorage
-                            .changeCachedOnPremConfig(keyStoragePassword, newOnPremConfig)
-                            .catch((error) =>
-                                log.error(
-                                    `Failed to cache OnPrem config: ${extractErrorMessage(ensureError(error), 'short')}`,
-                                ),
-                            );
-                    }
+                    void earlyServices.keyStorage
+                        .changeCachedOnPremConfig(keyStoragePassword, newOnPremConfig)
+                        .catch(assertUnreachable);
                 } else {
-                    // OPPF could not be fetched or is not valid. Use cached version instead.
                     parsedOppfResponse = OPPF_VALIDATION_SCHEMA.parse(
                         JSON.parse(keyStorageContents.onPremConfig.oppfCachedConfig),
                     );
@@ -913,8 +894,8 @@ export class Backend implements ProxyMarked {
         }
         let config: Config;
         let oppfConfig: OppfFetchConfig | undefined = undefined;
-        let rawResponse: string | undefined;
-        let workCredentials: ThreemaWorkCredentials | undefined;
+        let rawResponse: string | undefined = undefined;
+        let workCredentials: ThreemaWorkCredentials | undefined = undefined;
         // Handle on prem dialog if necesary
         if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
             try {
