@@ -651,7 +651,7 @@ export class ContactModelRepository implements ContactRepository {
                 : AcquaintanceLevel.GROUP,
             featureMask: identityData.featureMask,
             syncState: SyncState.INITIAL,
-            activityState: identityData.state,
+            activityState: identityData.state ?? ActivityState.ACTIVE,
             category: ConversationCategory.DEFAULT,
             visibility: ConversationVisibility.SHOW,
         };

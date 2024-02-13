@@ -20,7 +20,9 @@ import {
 export const VALID_IDENTITY_DATA_SCHEMA = v
     .object({
         identity: v.string().map(ensureIdentityString),
-        state: v.union(v.literal(ActivityState.ACTIVE), v.literal(ActivityState.INACTIVE)),
+        state: v
+            .union(v.literal(ActivityState.ACTIVE), v.literal(ActivityState.INACTIVE))
+            .optional(),
         publicKey: v.string().map(base64ToU8a).map(ensurePublicKey),
         featureMask: v.number().map(BigInt).map(ensureFeatureMask),
         type: v.number().map((type) => IdentityTypeUtils.fromNumber(type, IdentityType.REGULAR)),

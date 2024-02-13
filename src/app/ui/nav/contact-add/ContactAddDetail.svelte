@@ -13,6 +13,7 @@
   import Text from '~/app/ui/svelte-components/blocks/Input/Text.svelte';
   import {
     AcquaintanceLevel,
+    ActivityState,
     ConversationCategory,
     ConversationVisibility,
     ReceiverType,
@@ -96,7 +97,7 @@
       acquaintanceLevel: AcquaintanceLevel.DIRECT,
       featureMask: identityData.featureMask,
       syncState: SyncState.INITIAL,
-      activityState: identityData.state,
+      activityState: identityData.state ?? ActivityState.ACTIVE,
       category: ConversationCategory.DEFAULT,
       visibility: ConversationVisibility.SHOW,
     };

@@ -187,7 +187,7 @@ export async function addGroupContacts(
             acquaintanceLevel: AcquaintanceLevel.GROUP,
             featureMask: fetched.featureMask,
             syncState: SyncState.INITIAL,
-            activityState: fetched.state,
+            activityState: fetched.state ?? ActivityState.ACTIVE,
             category: ConversationCategory.DEFAULT,
             visibility: ConversationVisibility.SHOW,
         });
