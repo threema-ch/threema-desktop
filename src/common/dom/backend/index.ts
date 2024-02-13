@@ -473,7 +473,7 @@ function initBackendServices(
         dgk,
         workData,
     );
-    const blob = new FetchBlobBackend({config, device});
+    const blob = new FetchBlobBackend({config, device, directory});
     const model = new ModelRepositories({
         blob,
         config,

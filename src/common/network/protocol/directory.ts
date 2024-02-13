@@ -20,6 +20,7 @@ import {
 export const VALID_IDENTITY_DATA_SCHEMA = v
     .object({
         identity: v.string().map(ensureIdentityString),
+        // Note: In the case of OnPrem, the state fetched from the directory server will be undefined.
         state: v
             .union(v.literal(ActivityState.ACTIVE), v.literal(ActivityState.INACTIVE))
             .optional(),
@@ -64,6 +65,11 @@ export const IDENTITY_PRIVATE_DATA_SCHEMA = v
     })
     .rest(v.unknown());
 
+export const AUTH_TOKEN_SCHEMA = v
+    .object({
+        authToken: v.string(),
+    })
+    .rest(v.unknown());
 /**
  * Validated identity data returned from the identity directory.
  */
@@ -101,6 +107,16 @@ export type DirectoryBackend = {
      *   See {@link DirectoryErrorType} for a list of possible error types.
      */
     privateData: (identity: IdentityString, ck: ClientKey) => Promise<IdentityPrivateData>;
+
+    /**
+     * Fetch the current authentication token from the directory server.
+     *
+     * This function should only be called in OnPrem builds. This is asserted in the function.
+     *
+     * @throws {DirectoryError} if something is wrong during fetching of the token.
+     * @throws {Error} if the current build environment is not OnPrem.
+     */
+    authToken: () => Promise<string>;
 } & ProxyMarked;
 
 /**

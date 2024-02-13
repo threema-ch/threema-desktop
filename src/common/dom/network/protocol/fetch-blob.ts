@@ -9,11 +9,12 @@ import {
     type BlobScope,
     isBlobId,
 } from '~/common/network/protocol/blob';
+import type {DirectoryBackend} from '~/common/network/protocol/directory';
 import {unwrap} from '~/common/utils/assert';
 import {bytesToHex, byteToHex, hexToBytes} from '~/common/utils/byte';
 import {u64ToHexLe} from '~/common/utils/number';
 
-type ServicesForBlobBackend = Pick<ServicesForBackend, 'config' | 'device'>;
+type ServicesForBlobBackend = Pick<ServicesForBackend, 'config' | 'device' | 'directory'>;
 
 /**
  * Blob API backend implementation based on the [Fetch API].
@@ -25,6 +26,7 @@ export class FetchBlobBackend implements BlobBackend {
     private readonly _requestInit: RequestInit;
     private readonly _deviceId: string;
     private readonly _deviceGroupId: string;
+    private readonly _directoryBackend: DirectoryBackend;
     public constructor(services: ServicesForBlobBackend) {
         const prefix = byteToHex(unwrap(services.device.d2m.dgpk.public[0]));
 
@@ -49,6 +51,8 @@ export class FetchBlobBackend implements BlobBackend {
                 .replaceAll('{prefix4}', unwrap(prefix[0]))
                 .replaceAll('{prefix8}', prefix),
         };
+
+        this._directoryBackend = services.directory;
     }
 
     /** @inheritdoc */
@@ -58,6 +62,8 @@ export class FetchBlobBackend implements BlobBackend {
         formData.append('blob', blob);
 
         let response: Response;
+
+        const auth = await this._fetchAuthToken();
         try {
             response = await fetch(`${this._getUrlForPath(this._baseUrls.uploadUrl, scope)}`, {
                 ...this._requestInit,
@@ -65,6 +71,7 @@ export class FetchBlobBackend implements BlobBackend {
                 headers: {
                     ...this._requestInit.headers,
                     accept: 'text/plain',
+                    ...auth,
                 },
                 body: formData,
             });
@@ -153,6 +160,7 @@ export class FetchBlobBackend implements BlobBackend {
                 {
                     ...this._requestInit,
                     method: 'POST',
+                    headers: {},
                 },
             );
         } catch (error) {
@@ -170,5 +178,17 @@ export class FetchBlobBackend implements BlobBackend {
         return new URL(
             `${path}?deviceId=${this._deviceId}&deviceGroupId=${this._deviceGroupId}&scope=${scope}`,
         );
+    }
+
+    /*
+     * Fetches an authentication token from the directory server if needed.
+     */
+    private async _fetchAuthToken(): Promise<{authorization: string} | Record<string, never>> {
+        if (import.meta.env.BUILD_ENVIRONMENT !== 'onprem') {
+            return {};
+        }
+
+        const token = await this._directoryBackend.authToken();
+        return {authorization: `Token ${token}`};
     }
 }

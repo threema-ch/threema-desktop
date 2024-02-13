@@ -13,11 +13,12 @@ import {
     type IdentityData,
     type IdentityPrivateData,
     VALID_IDENTITY_DATA_SCHEMA,
+    AUTH_TOKEN_SCHEMA,
 } from '~/common/network/protocol/directory';
 import type {IdentityString} from '~/common/network/types';
 import type {ClientKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array} from '~/common/types';
-import {unreachable} from '~/common/utils/assert';
+import {assert, unreachable} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {UTF8} from '~/common/utils/codec';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -147,6 +148,44 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         }
 
         return result;
+    }
+
+    /** @inheritdoc */
+    public async authToken(): Promise<string> {
+        assert(
+            import.meta.env.BUILD_ENVIRONMENT === 'onprem',
+            'The directory server authentication token can only be fetched in OnPrem environments',
+        );
+        const url = new URL('auth_token', this._base);
+        const response = await fetch(url, {...this._requestInit, method: 'GET'});
+        if (response.status !== 200) {
+            throw new DirectoryError(
+                'invalid-response',
+                `Authentication fetch failed with error: ${response.status}`,
+            );
+        }
+        let body: unknown;
+        try {
+            body = await response.json();
+            if (body === null || body === undefined) {
+                throw new Error(`Response body is ${typeof body}`);
+            }
+        } catch (error) {
+            throw new DirectoryError(
+                'invalid-response',
+                `Auth token fetch request did not return a valid response body: ${error}`,
+                {from: error},
+            );
+        }
+        try {
+            return AUTH_TOKEN_SCHEMA.parse(body).authToken;
+        } catch (error) {
+            throw new DirectoryError(
+                'invalid-response',
+                `Auth token fetch request response body validation against schema failed`,
+                {from: error},
+            );
+        }
     }
 
     /** @inheritdoc */
