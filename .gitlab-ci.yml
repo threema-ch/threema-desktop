@@ -1,7 +1,7 @@
 # Clone git repository recursively
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  NODE_VERSION: '18.17.1'
+  NODE_VERSION: '18.18.2'
   PROTOC_VERSION: '23.4'
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
 

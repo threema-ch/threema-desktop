@@ -59,8 +59,8 @@
     "assets:generate:icons": "npm run assets:generate:icons:macos && npm run assets:generate:icons:windows && npm run assets:generate:icons:flatpak && npm run assets:generate:icons:web"
   },
   "engines": {
-    "node": "18.17.1",
-    "npm": "9.6.7"
+    "node": "18.18.2",
+    "npm": "9.8.1"
   },
   "dependencies": {
     "@badrap/valita": "0.3.0",
@@ -125,7 +125,7 @@
     "@types/estree": "~1.0.0",
     "@types/fs-extra": "~11.0.4",
     "@types/mocha": "~10.0.0",
-    "@types/node": "~18.17.19",
+    "@types/node": "~18.18.14",
     "@types/qrcode": "^1.5.5",
     "@types/sinon": "~17.0.2",
     "@types/sinon-chai": "~3.2.9",
