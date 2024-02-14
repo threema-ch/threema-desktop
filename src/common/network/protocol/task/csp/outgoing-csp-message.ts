@@ -42,7 +42,11 @@ import {
 } from '~/common/network/protocol/task';
 import {ReflectOutgoingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import * as structbuf from '~/common/network/structbuf';
-import {conversationIdForReceiver, type MessageId} from '~/common/network/types';
+import {
+    conversationIdForReceiver,
+    type GroupMessageReflectSetting,
+    type MessageId,
+} from '~/common/network/types';
 import type {u53} from '~/common/types';
 import {assert, assertUnreachable, debugAssert, unreachable} from '~/common/utils/assert';
 import {byteEquals} from '~/common/utils/byte';
@@ -162,13 +166,16 @@ export class OutgoingCspMessageTask<
         private readonly _services: ServicesForTasks,
         private readonly _receiver: TReceiver,
         private readonly _messageProperties: MessageProperties<TMessageEncoder, TMessageType>,
+        reflect: GroupMessageReflectSetting = 'default',
     ) {
         // Instantiate logger
         const messageIdHex = u64ToHexLe(_messageProperties.messageId);
         this._log = _services.logging.logger(
             `network.protocol.task.out-csp-message.${messageIdHex}`,
         );
-        this._reflect = MESSAGE_TYPE_PROPERTIES[_messageProperties.type].reflect.outgoing;
+        this._reflect =
+            reflect !== 'never' &&
+            MESSAGE_TYPE_PROPERTIES[_messageProperties.type].reflect.outgoing;
         this._log.debug('Created');
     }
 

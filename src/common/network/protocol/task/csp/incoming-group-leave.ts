@@ -65,7 +65,7 @@ export class IncomingGroupLeaveTask extends GroupLeaveTaskBase<ActiveTaskCodecHa
             creator = unwrap(addedContacts[0]).get();
         }
         this._log.info(`Sending group sync request for group ${this._groupDebugString}`);
-        await sendGroupSyncRequest(groupId, creatorIdentity, creator, handle, this._services);
+        await sendGroupSyncRequest(groupId, creator, handle, this._services);
     }
 
     /** @inheritdoc */

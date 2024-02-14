@@ -24,7 +24,7 @@ import type {
 import {OutgoingCspMessageTask} from '~/common/network/protocol/task/csp/outgoing-csp-message';
 import {randomMessageId} from '~/common/network/protocol/utils';
 import * as structbuf from '~/common/network/structbuf';
-import type {GroupId, IdentityString} from '~/common/network/types';
+import type {GroupId, GroupMessageReflectSetting, IdentityString} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
@@ -80,7 +80,7 @@ export async function commonGroupReceiveSteps<TPersistence extends ActiveTaskPer
             assert(addedContacts.length === 1, 'addedContacts contained more than one contact');
             creator = unwrap(addedContacts[0]).get();
         }
-        await sendGroupSyncRequest(groupId, creatorIdentity, creator, handle, services);
+        await sendGroupSyncRequest(groupId, creator, handle, services);
         return undefined;
     }
 
@@ -201,7 +201,6 @@ export async function addGroupContacts(
  */
 export async function sendGroupSyncRequest<TPersistence extends ActiveTaskPersistence>(
     groupId: GroupId,
-    creatorIdentity: IdentityString,
     receiver: Contact,
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
@@ -228,33 +227,38 @@ export async function sendGroupSetup<TPersistence extends ActiveTaskPersistence>
     members: IdentityString[],
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
+    reflect: GroupMessageReflectSetting = 'default',
 ): Promise<void> {
-    await new OutgoingCspMessageTask(services, receiver, {
-        type: CspE2eGroupControlType.GROUP_SETUP,
-        encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
-            groupId,
-            innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSetup, {
-                members: members.map((identity) => UTF8.encode(identity)),
+    await new OutgoingCspMessageTask(
+        services,
+        receiver,
+        {
+            type: CspE2eGroupControlType.GROUP_SETUP,
+            encoder: structbuf.bridge.encoder(structbuf.csp.e2e.GroupCreatorContainer, {
+                groupId,
+                innerData: structbuf.bridge.encoder(structbuf.csp.e2e.GroupSetup, {
+                    members: members.map((identity) => UTF8.encode(identity)),
+                }),
             }),
-        }),
-        cspMessageFlags: CspMessageFlags.none(),
-        messageId: randomMessageId(services.crypto),
-        createdAt: new Date(),
-        allowUserProfileDistribution: true,
-    }).run(handle);
+            cspMessageFlags: CspMessageFlags.none(),
+            messageId: randomMessageId(services.crypto),
+            createdAt: new Date(),
+            allowUserProfileDistribution: true,
+        },
+        reflect,
+    ).run(handle);
 }
 
 /**
- * Send a CSP group setup message with an empty member list to the specified receiver (a contact or
- * group).
+ * Send a CSP group setup message with an empty member list to the specified receiver (a contact).
  */
 export async function sendEmptyGroupSetup<TPersistence extends ActiveTaskPersistence>(
     groupId: GroupId,
-    receiver: Contact | Group,
+    receiver: Contact,
     handle: ActiveTaskCodecHandle<TPersistence>,
     services: ServicesForTasks,
 ): Promise<void> {
-    await sendGroupSetup(groupId, receiver, [], handle, services);
+    await sendGroupSetup(groupId, receiver, [], handle, services, 'never');
 }
 
 /**

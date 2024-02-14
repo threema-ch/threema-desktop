@@ -396,6 +396,11 @@ export type ConversationId =
     | DistributionListConversationId;
 
 /**
+ * Whether or not to overwrite the default reflection property of a group message with never.
+ */
+export type GroupMessageReflectSetting = 'default' | 'never';
+
+/**
  * Return a {@link ConversationId} for the specified receiver model.
  */
 export function conversationIdForReceiver(receiver: AnyReceiver): ConversationId {

@@ -236,6 +236,56 @@ export function reflectAndSendGroupSetupToUser(
 }
 
 /**
+ * Expect a group-setup message to be sent towards a single user.
+ */
+export function sendGroupSetupToUser(
+    services: ServicesForBackend,
+    recipient: TestUser,
+    expectedMembers: IdentityString[],
+): NetworkExpectation[] {
+    const {device} = services;
+    const messageIdDelayed = Delayed.simple<MessageId>(
+        'Message ID not yet ready',
+        'Message ID already set',
+    );
+    return [
+        // Group setup must be sent
+        NetworkExpectationFactory.write((m) => {
+            // Message must be an outgoing CSP message
+            assertD2mPayloadType(m.type, D2mPayloadType.PROXY);
+            assertCspPayloadType(m.payload.type, CspPayloadType.OUTGOING_MESSAGE);
+
+            // Message must be sent from me to user1
+            const message = decodeMessageEncodable(m.payload.payload);
+            expect(message.senderIdentity).to.eql(device.identity.bytes);
+            expect(message.receiverIdentity).to.eql(recipient.identity.bytes);
+            messageIdDelayed.set(ensureMessageId(message.messageId));
+
+            // Message should contain a group setup
+            const messageContainer = decryptContainer(message, device.csp.ck.public, recipient.ck);
+            expect(messageContainer.type).to.equal(CspE2eGroupControlType.GROUP_SETUP);
+
+            // Validate member list
+            const container = structbuf.validate.csp.e2e.GroupCreatorContainer.SCHEMA.parse(
+                structbuf.csp.e2e.GroupCreatorContainer.decode(
+                    byteWithoutPkcs7(messageContainer.paddedData),
+                ),
+            );
+            const groupSetup = structbuf.validate.csp.e2e.GroupSetup.SCHEMA.parse(
+                structbuf.csp.e2e.GroupSetup.decode(container.innerData),
+            );
+            expect(groupSetup.members).to.have.members(expectedMembers);
+        }),
+
+        // Expect server ack for group setup
+        NetworkExpectationFactory.readIncomingMessageAck(
+            recipient.identity.string,
+            messageIdDelayed,
+        ),
+    ];
+}
+
+/**
  * Expect a group-name message to be reflected and sent towards a single user.
  */
 export function reflectAndSendGroupNameToUser(

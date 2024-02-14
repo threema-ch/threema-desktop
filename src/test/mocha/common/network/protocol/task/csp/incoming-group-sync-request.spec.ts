@@ -27,8 +27,9 @@ import {
 import {
     reflectAndSendGroupNameToUser,
     reflectAndSendGroupProfilePictureToUser,
-    reflectAndSendGroupSetupToUser,
+    sendGroupSetupToUser,
     reflectContactSync,
+    reflectAndSendGroupSetupToUser,
 } from '~/test/mocha/common/network/protocol/task/task-test-helpers';
 
 /**
@@ -97,8 +98,7 @@ export function run(): void {
 
                 // Run task
                 await runTask(services, groupId, me, senderContact, [
-                    // An empty group setup must be reflected and sent
-                    ...reflectAndSendGroupSetupToUser(services, sender, []),
+                    ...sendGroupSetupToUser(services, sender, []),
                 ]);
             });
         });
@@ -135,7 +135,7 @@ export function run(): void {
                     expectations.push(...reflectContactSync(sender, 'create'));
                 }
                 // Then an empty group setup must be reflected and sent
-                expectations.push(...reflectAndSendGroupSetupToUser(services, sender, []));
+                expectations.push(...sendGroupSetupToUser(services, sender, []));
 
                 // Run task
                 await runTask(services, groupId, me, senderContactOrInit, expectations);
