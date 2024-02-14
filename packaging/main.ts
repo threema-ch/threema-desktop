@@ -11,6 +11,8 @@ import * as v from '@badrap/valita';
 import type createDMG from 'electron-installer-dmg';
 import fsExtra from 'fs-extra';
 
+import {type BuildFlavor, isValidBuildFlavor, determineAppName} from '../config/build.js';
+
 // Note: Eslint wants us to do "import {copySync, ensureDirSync} from 'fs-extra'", but when using
 //       that syntax, node complains and suggests to use the default import instead. In the
 //       meantime, fs-extra _should_ support ESM by importing from 'fs-extra/esm', but the types
@@ -53,26 +55,18 @@ const TARGETS: Target[] = [
     'flatpak',
 ];
 
-const FLAVORS = ['consumer-sandbox', 'consumer-live', 'work-sandbox', 'work-live'] as const;
-// eslint-disable-next-line no-restricted-syntax
-type Flavor = (typeof FLAVORS)[number];
-
-function isFlavor(flavor: string): flavor is Flavor {
-    return (FLAVORS as unknown as string[]).includes(flavor);
-}
-
 /**
- * Parse and validate a comma-separated list of flavors
+ * Parse and validate a comma-separated list of build flavors
  */
-function parseFlavors(flavorList: string): Flavor[] {
+function parseBuildFlavors(flavorList: string): BuildFlavor[] {
     const flavors = flavorList.split(',').map((val) => val.trim());
     for (const flavor of flavors) {
-        if (!isFlavor(flavor)) {
+        if (!isValidBuildFlavor(flavor)) {
             printUsage(`Invalid build flavor: ${flavor}`);
             process.exit(1);
         }
     }
-    return flavors as Flavor[];
+    return flavors as BuildFlavor[];
 }
 
 /**
@@ -146,35 +140,9 @@ function requireCommand(command: string): void {
 }
 
 /**
- * Determine the app name used for packaging.
- *
- * Note: Keep in sync with identical function in tools/dist-electron.cjs
- */
-function determineAppName(flavor: Flavor): string {
-    let name = 'Threema';
-    switch (flavor) {
-        case 'consumer-live':
-            break;
-        case 'consumer-sandbox':
-            name += ' Sandbox';
-            break;
-        case 'work-live':
-            name += ' Work';
-            break;
-        case 'work-sandbox':
-            name += ' Red';
-            break;
-        default:
-            unreachable(flavor);
-    }
-    name += ' Beta';
-    return name;
-}
-
-/**
  * Determine the app reverse domain notation used as application ID.
  */
-function determineAppRdn(flavor: Flavor): string {
+function determineAppRdn(flavor: BuildFlavor): string {
     switch (flavor) {
         case 'consumer-live':
             return 'ch.threema.threema-desktop';
@@ -184,6 +152,8 @@ function determineAppRdn(flavor: Flavor): string {
             return 'ch.threema.threema-work-desktop';
         case 'work-sandbox':
             return 'ch.threema.threema-red-desktop';
+        case 'work-onprem':
+            return 'ch.threema.threema-onprem-desktop';
         default:
             return unreachable(flavor);
     }
@@ -192,7 +162,7 @@ function determineAppRdn(flavor: Flavor): string {
 /**
  * Determine the app identifier (used e.g. in filenames).
  */
-function determineAppIdentifier(flavor: Flavor): string {
+function determineAppIdentifier(flavor: BuildFlavor): string {
     switch (flavor) {
         case 'consumer-live':
             return 'threema-desktop';
@@ -202,6 +172,8 @@ function determineAppIdentifier(flavor: Flavor): string {
             return 'threema-work-desktop';
         case 'work-sandbox':
             return 'threema-red-desktop';
+        case 'work-onprem':
+            return 'threema-onprem-desktop';
         default:
             return unreachable(flavor);
     }
@@ -254,7 +226,7 @@ function printUsage(errormsg?: string): void {
     console.info(`  binary: [FLAVORS]`);
     console.info(`  binarySigned: [FLAVORS]`);
     console.info(
-        `\nAvailable build flavors: consumer-live,work-live,consumer-sandbox,work-sandbox`,
+        `\nAvailable build flavors: consumer-live,work-live,consumer-sandbox,work-sandbox,work-onprem`,
     );
     console.info(`The FLAVORS arg can contain multiple flavors, separated by comma.`);
 }
@@ -379,7 +351,7 @@ function buildSource(dirs: Directories, args: string[]): void {
 
 function runElectronDistScript(
     dirs: Directories,
-    flavor: Flavor,
+    flavor: BuildFlavor,
 ): {
     binaryBasename: string;
     binaryDirPath: string;
@@ -416,7 +388,7 @@ function runElectronDistScript(
 /**
  * Sign a Windows Binary (.exe) or Package (.msix).
  */
-function signWindowsBinaryOrPackage(pathToSign: string, flavor: Flavor): void {
+function signWindowsBinaryOrPackage(pathToSign: string, flavor: BuildFlavor): void {
     // For more information on how to determine some of the env variables below, and for
     // documentation on the syntax used, please refer to
     // https://stackoverflow.com/a/54439759/284318
@@ -501,7 +473,7 @@ function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[])
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(unwrap(args[0]));
+    const flavors = parseBuildFlavors(unwrap(args[0]));
 
     // Build all flavors
     for (const flavor of flavors) {
@@ -509,7 +481,7 @@ function buildBinaryArchives(dirs: Directories, signed: boolean, args: string[])
     }
 }
 
-function buildBinaryArchive(dirs: Directories, flavor: Flavor, sign: boolean): void {
+function buildBinaryArchive(dirs: Directories, flavor: BuildFlavor, sign: boolean): void {
     // Build
     const {binaryDirPath: binaryDirPathOld} = runElectronDistScript(dirs, flavor);
 
@@ -598,7 +570,7 @@ async function buildDmgs(dirs: Directories, signed: boolean, args: string[]): Pr
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(unwrap(args[0]));
+    const flavors = parseBuildFlavors(unwrap(args[0]));
 
     // Build all flavors
     for (const flavor of flavors) {
@@ -618,7 +590,7 @@ async function buildDmgs(dirs: Directories, signed: boolean, args: string[]): Pr
  */
 async function buildDmg(
     dirs: Directories,
-    flavor: Flavor,
+    flavor: BuildFlavor,
     sign: boolean,
     notarize: boolean,
 ): Promise<void> {
@@ -655,6 +627,11 @@ async function buildDmg(
             dmgName = 'ThreemaWork';
             installerBackgroundFilename = 'work.png';
             iconFilename = 'work-live.icns';
+            break;
+        case 'work-onprem':
+            dmgName = 'ThreemaOnPrem';
+            installerBackgroundFilename = 'work.png'; // TODO(DESK-1296): OnPrem background
+            iconFilename = 'work-live.icns'; // TODO(DESK-1296): OnPrem icon
             break;
         default:
             unreachable(flavor);
@@ -808,7 +785,7 @@ function buildMsixs(dirs: Directories, signed: boolean, args: string[]): void {
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(unwrap(args[0]));
+    const flavors = parseBuildFlavors(unwrap(args[0]));
 
     // Build all flavors
     for (const flavor of flavors) {
@@ -819,7 +796,7 @@ function buildMsixs(dirs: Directories, signed: boolean, args: string[]): void {
 /**
  * Build a concrete Windows MSIX.
  */
-function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
+function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void {
     log.minor(`Building MSIX: ${flavor}`);
 
     // Look up required env variables
@@ -864,6 +841,9 @@ function buildMsix(dirs: Directories, flavor: Flavor, sign: boolean): void {
             break;
         case 'work-sandbox':
             identityName = 'Threema.Desktop.Red';
+            break;
+        case 'work-onprem':
+            identityName = 'Threema.Desktop.OnPrem';
             break;
         default:
             unreachable(flavor);
@@ -975,7 +955,7 @@ function buildFlatpaks(dirs: Directories, args: string[]): void {
         printUsage();
         process.exit(1);
     }
-    const flavors = parseFlavors(unwrap(args[0]));
+    const flavors = parseBuildFlavors(unwrap(args[0]));
     const appIds = [];
     for (const flavor of flavors) {
         appIds.push(determineAppRdn(flavor));

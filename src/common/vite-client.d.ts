@@ -304,6 +304,7 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
     readonly BUILD_VERSION_CODE: number;
     readonly BUILD_VARIANT: import('../../config/build').BuildVariant;
     readonly BUILD_ENVIRONMENT: import('../../config/build').BuildEnvironment;
+    readonly BUILD_FLAVOR: import('../../config/build').BuildFlavor;
 
     // Names
     /** Name of the desktop app. */

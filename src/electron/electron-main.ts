@@ -72,9 +72,7 @@ const RUN_PARAMETERS_DOCS: {readonly [K in keyof RunParameters]: string} = {
 
 const ABOUT_PANEL_OPTIONS: electron.AboutPanelOptionsOptions = {
     applicationName: import.meta.env.APP_NAME,
-    applicationVersion: `${import.meta.env.BUILD_VERSION} (${import.meta.env.BUILD_VARIANT}, ${
-        import.meta.env.BUILD_ENVIRONMENT
-    })`,
+    applicationVersion: `${import.meta.env.BUILD_VERSION} (${import.meta.env.BUILD_FLAVOR})`,
     version:
         `v${import.meta.env.BUILD_VERSION}` === import.meta.env.GIT_REVISION
             ? ''
@@ -91,7 +89,7 @@ const ABOUT_PANEL_OPTIONS: electron.AboutPanelOptionsOptions = {
               'public',
               'res',
               'icons',
-              `${import.meta.env.BUILD_VARIANT}-${import.meta.env.BUILD_ENVIRONMENT}`,
+              import.meta.env.BUILD_FLAVOR,
               'icon-512.png',
           )
         : path.join(process.resourcesPath, 'icon-512.png'), // See dist-electron.js → extraResource
@@ -412,9 +410,7 @@ async function init(): Promise<MainInit> {
         ...(parameters['persist-profile']
             ? getPersistentAppDataDir()
             : [electron.app.getPath('temp'), electron.app.name]),
-        `${import.meta.env.BUILD_VARIANT}-${import.meta.env.BUILD_ENVIRONMENT}-${
-            parameters.profile
-        }`,
+        `${import.meta.env.BUILD_FLAVOR}-${parameters.profile}`,
     );
     if (!fs.existsSync(appPath)) {
         log.info(`Creating app data directory at ${appPath}`);

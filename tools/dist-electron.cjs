@@ -96,7 +96,7 @@ const LoggingDownloader = {
 /**
  * Determine the app name used for packaging.
  *
- * Note: Keep in sync with identical function in packaging/main.ts
+ * Note: Keep in sync with identical function in config/build.ts
  *
  * @throws Error if invalid flavor is passed in.
  */
@@ -113,6 +113,9 @@ function determineAppName(flavor) {
             break;
         case 'work-sandbox':
             name += ' Red';
+            break;
+        case 'work-onprem':
+            name += ' OnPrem';
             break;
         default:
             throw new Error(`Invalid flavor: ${flavor}`);
@@ -168,6 +171,9 @@ async function packageApp(variant, environment) {
                     break;
                 case 'work-sandbox':
                     appBundleId = 'ch.threema.threema-red-desktop';
+                    break;
+                case 'work-onprem':
+                    appBundleId = 'ch.threema.threema-onprem-desktop';
                     break;
                 default:
                     throw new Error(`Invalid variant or environment: ${variant}-${environment}`);

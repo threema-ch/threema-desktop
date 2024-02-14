@@ -1,7 +1,7 @@
 {
   "private": true,
   "type": "module",
-  "main": "./build/packaging/main.js",
+  "main": "./build/packaging/packaging/main.js",
   "sideEffects": false,
   "scripts": {
     "package": "tsc -p ./tsconfig.json && node ."

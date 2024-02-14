@@ -99,6 +99,7 @@ modules:
           consumer-live) icon_base=consumer-live ;;
           work-sandbox) icon_base=work-sandbox ;;
           work-live) icon_base=work-live ;;
+          work-onprem) icon_base=work-live ;;
           *) echo "Invalid flavor: {{flavor}}"; exit 1 ;;
         esac
         install -Dm644 packaging/assets/icons/flatpak/${icon_base}.svg /app/share/icons/hicolor/scalable/apps/{{app-id}}.svg

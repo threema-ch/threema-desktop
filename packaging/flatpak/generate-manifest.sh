@@ -22,3 +22,6 @@ generate 'ch.threema.threema-red-desktop' 'work-sandbox' 'Threema Red Beta'
 
 # Work live
 generate 'ch.threema.threema-work-desktop' 'work-live' 'Threema Work Beta'
+
+# Work onprem
+generate 'ch.threema.threema-onprem-desktop' 'work-onprem' 'Threema OnPrem Beta'

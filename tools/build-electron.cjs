@@ -11,7 +11,7 @@ const ENTRIES = ['cli', 'electron-main', 'electron-preload', 'app'];
 // Parse arguments
 const [node, script, ...argv] = process.argv;
 if (argv.length !== 2) {
-    console.error(`Usage: ${node} ${script} (consumer|work) (sandbox|live)`);
+    console.error(`Usage: ${node} ${script} (consumer|work) (sandbox|live|onprem)`);
     process.exit(1);
 }
 const variant = argv[0];

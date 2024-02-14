@@ -18,11 +18,15 @@ import {
     BUILD_MODES,
     BUILD_TARGETS,
     BUILD_VARIANTS,
+    type BuildFlavor,
     type BuildEntry,
     type BuildEnvironment,
     type BuildMode,
     type BuildTarget,
     type BuildVariant,
+    determineAppName,
+    determineMobileAppName,
+    isValidBuildFlavor,
 } from './build';
 import cjsExternals from './vite-plugins/cjs-externals';
 import {tsWorkerPlugin} from './vite-plugins/ts-worker';
@@ -60,6 +64,19 @@ const escapeRegexRe = /[/\\^$*+?.()|[\]{}]/gu;
 
 function escapeRegex(value: string): string {
     return value.replace(escapeRegexRe, '\\$&');
+}
+
+/**
+ * Determine the {@link BuildFlavor} based on {@link BuildVariant} and {@link BuildEnvironment}.
+ *
+ * @throws {Error} if an invalid combination is found (e.g. consumer-onprem).
+ */
+function determineBuildFlavor(variant: BuildVariant, environment: BuildEnvironment): BuildFlavor {
+    const flavor = `${variant}-${environment}`;
+    if (isValidBuildFlavor(flavor)) {
+        return flavor;
+    }
+    throw new Error(`Unsupported build flavor: ${flavor}`);
 }
 
 /**
@@ -108,51 +125,29 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
                 SENTRY_DSN: process.env.SENTRY_DSN,
                 MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
             };
+        case 'onprem':
+            return {
+                // prettier-ignore
+                CHAT_SERVER_KEY: [
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                ],
+                MEDIATOR_SERVER_URL: 'wss://example.com',
+                DIRECTORY_SERVER_URL: 'https://example.com',
+                BLOB_SERVER_URL: 'https://example.com',
+                RENDEZVOUS_SERVER_URL: 'wss://example.com',
+                WORK_API_SERVER_URL: 'https://example.com',
+                UPDATE_SERVER_URL: 'https://example.com',
+
+                // We don't do any automatic crash reporting for onprem builds
+                SENTRY_DSN: undefined,
+                MINIDUMP_ENDPOINT: undefined,
+            };
         default:
             return unreachable(environment);
     }
-}
-
-function determineAppName(env: ConfigEnv): string {
-    let name = 'Threema';
-    const combination: `${BuildVariant}-${BuildEnvironment}` = `${env.variant}-${env.environment}`;
-    switch (combination) {
-        case 'consumer-live':
-            break;
-        case 'consumer-sandbox':
-            name += ' Sandbox';
-            break;
-        case 'work-live':
-            name += ' Work';
-            break;
-        case 'work-sandbox':
-            name += ' Red';
-            break;
-        default:
-            unreachable(combination);
-    }
-    return `${name} Beta`;
-}
-
-function determineMobileAppName(env: ConfigEnv): string {
-    let name = 'Threema';
-    const combination: `${BuildVariant}-${BuildEnvironment}` = `${env.variant}-${env.environment}`;
-    switch (combination) {
-        case 'consumer-live':
-            break;
-        case 'consumer-sandbox':
-            name += ' Red';
-            break;
-        case 'work-live':
-            name += ' Work';
-            break;
-        case 'work-sandbox':
-            name += ' Work Red';
-            break;
-        default:
-            unreachable(combination);
-    }
-    return name;
 }
 
 function determineUrls(env: ConfigEnv): ImportMeta['env']['URLS'] {
@@ -187,6 +182,7 @@ function determineUrls(env: ConfigEnv): ImportMeta['env']['URLS'] {
 }
 
 function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], 'BASE_URL'> {
+    const buildFlavor = determineBuildFlavor(env.variant, env.environment);
     return {
         // Dev
         DEV_SERVER_PORT: env.devServerPort,
@@ -201,8 +197,9 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         BUILD_VERSION_CODE: pkg.versionCode,
         BUILD_VARIANT: env.variant,
         BUILD_ENVIRONMENT: env.environment,
-        APP_NAME: determineAppName(env),
-        MOBILE_APP_NAME: determineMobileAppName(env),
+        BUILD_FLAVOR: buildFlavor,
+        APP_NAME: determineAppName(buildFlavor),
+        MOBILE_APP_NAME: determineMobileAppName(buildFlavor),
         URLS: determineUrls(env),
 
         // Defaults

@@ -28,7 +28,7 @@ Keep in mind that the OID shown above is a reserved value, which will result in 
 For more details, see: <https://learn.microsoft.com/en-us/windows/msix/package/unsigned-package>.
 
 Build the MSIX package by running
-`npm run package msix <consumer-live | consumer-sandbox | work-live | work-sandbox>` from the
-project root. When the build process is complete, the application can be installed by executing the
-following command (also from the project root):
-`Add-AppPackage -Path ".\build\out\<name-of-msix>.msix" -AllowUnsigned`.
+`npm run package msix <consumer-live | consumer-sandbox | work-live | work-sandbox | work-onprem>`
+from the project root. When the build process is complete, the application can be installed by
+executing the following command (also from the project root): `Add-AppPackage -Path
+".\build\out\<name-of-msix>.msix" -AllowUnsigned`.
