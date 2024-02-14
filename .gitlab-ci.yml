@@ -450,6 +450,10 @@ package:source:
             APPID="ch.threema.threema-work-desktop"
             TITLE="Threema Work Beta"
             ;;
+          work-onprem)
+            APPID="ch.threema.threema-onprem-desktop"
+            TITLE="Threema OnPrem Beta"
+            ;;
           *)
             echo "Invalid build flavor: $flavor"
             exit 1
@@ -515,7 +519,7 @@ package:flatpak-buildonly:
     REPO: repo
     REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
     REMOTE: threema-internal
-    FLAVORS: consumer-live,work-sandbox,work-live
+    FLAVORS: consumer-live,work-sandbox,work-live,work-onprem
     GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
     PUBLISH: 'false'
 
@@ -528,7 +532,7 @@ package:flatpak-internal-publish:
     REPO: repo
     REPO_BASE_URL: $FLATPAK_INTERNAL_REPO_BASE_URL
     REMOTE: threema-internal
-    FLAVORS: consumer-live,work-sandbox,work-live
+    FLAVORS: consumer-live,work-sandbox,work-live,work-onprem
     GPG_ID: BF7BBB57363D6233178AC7CCE4D4F1B275BB5D72
     PUBLISH: 'true'
     FTP_HOST: $FLATPAK_INTERNAL_FTP_HOST
@@ -565,7 +569,7 @@ package:linux-binary-buildonly:
   allow_failure: true # Job is optional
   parallel:
     matrix:
-      - FLAVOR: [consumer-sandbox, consumer-live, work-sandbox, work-live]
+      - FLAVOR: [consumer-sandbox, consumer-live, work-sandbox, work-live, work-onprem]
   script:
     # Install dependencies
     - bash tools/run-with-retry.sh --retries 3 --delay 15 -- npm ci --cache .npm
@@ -648,6 +652,10 @@ package:linux-binary-buildonly:
             FILENAME="threema-work-desktop"
             DMG="ThreemaWork.dmg"
             ;;
+          work-onprem)
+            FILENAME="threema-onprem-desktop"
+            DMG="ThreemaOnPrem.dmg"
+            ;;
           *)
             echo "Invalid build flavor: $flavor"
             exit 1
@@ -729,7 +737,7 @@ package:macos-buildonly:
   allow_failure: true # Job is optional
   variables:
     PUBLISH: 'false'
-    FLAVORS: consumer-sandbox,consumer-live,work-sandbox,work-live
+    FLAVORS: consumer-sandbox,consumer-live,work-sandbox,work-live,work-onprem
 
 # Build and publish macOS packages
 package:macos-publish:
@@ -739,7 +747,7 @@ package:macos-publish:
     - if: $CI_COMMIT_TAG =~ /^v[0-9a-z\.-]*$/
   variables:
     PUBLISH: 'true'
-    FLAVORS: consumer-live,work-sandbox,work-live
+    FLAVORS: consumer-live,work-sandbox,work-live,work-onprem
     FTP_HOST: $FTP_RELEASE_HOST
     FTP_PROTO: $FTP_RELEASE_PROTO
     FTP_PATH: /
@@ -771,16 +779,16 @@ package:macos-publish:
     - npm ci --cache .npm
 
     # Build EXE binary
-    - npm run package binarySigned consumer-live,work-sandbox,work-live
+    - npm run package binarySigned consumer-live,work-sandbox,work-live,work-onprem
 
     # Build MSIX package
-    - npm run package msixSigned consumer-live,work-sandbox,work-live
+    - npm run package msixSigned consumer-live,work-sandbox,work-live,work-onprem
 
     # Upload
     - dir build\out\
     - |
       if ($env:PUBLISH -eq "true") {
-        foreach ($flavor in "consumer-live","work-sandbox","work-live") {
+        foreach ($flavor in "consumer-live","work-sandbox","work-live","work-onprem") {
           switch ($flavor) {
             "consumer-live" {
               $name = "threema"
@@ -790,6 +798,9 @@ package:macos-publish:
             }
             "work-live" {
               $name = "threema-work"
+            }
+            "work-onprem" {
+              $name = "threema-onprem"
             }
           }
           $sourceFileExe = "build/out/${name}-desktop-bin-win32-${env:ARCH}.zip"
