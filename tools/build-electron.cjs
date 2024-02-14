@@ -41,26 +41,32 @@ for (const entry of ENTRIES) {
     console.info(
         `Building target=${TARGET} variant=${variant} entry=${entry} environment=${environment}`,
     );
-    childProcess.execFileSync(
-        'node',
-        [
-            'node_modules/vite/bin/vite.js',
-            'build',
-            '-m',
-            'production',
-            '-c',
-            'config/vite.config.ts',
-        ],
-        {
-            cwd: rootDir,
-            env: {
-                VITE_MAKE: `${TARGET},${entry},${variant},${environment}`,
-                GIT_REVISION: gitRevision,
-                PATH: process.env.PATH,
-                SENTRY_DSN: process.env.SENTRY_DSN,
-                MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
+    try {
+        childProcess.execFileSync(
+            'node',
+            [
+                'node_modules/vite/bin/vite.js',
+                'build',
+                '-m',
+                'production',
+                '-c',
+                'config/vite.config.ts',
+            ],
+            {
+                cwd: rootDir,
+                env: {
+                    VITE_MAKE: `${TARGET},${entry},${variant},${environment}`,
+                    GIT_REVISION: gitRevision,
+                    PATH: process.env.PATH,
+                    SENTRY_DSN: process.env.SENTRY_DSN,
+                    MINIDUMP_ENDPOINT: process.env.MINIDUMP_ENDPOINT,
+                },
+                stdio: 'pipe',
+                encoding: 'utf-8',
             },
-            stdio: [0, 1, 2],
-        },
-    );
+        );
+    } catch (error) {
+        console.error(`\nERROR: Failed to build application:\n${error.stderr}`);
+        process.exit(1);
+    }
 }
