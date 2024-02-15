@@ -5,20 +5,17 @@ import type {Logger} from '~/common/logging';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import {AsyncLock} from '~/common/utils/lock';
-import {eternalPromise} from '~/common/utils/promise';
 import type {IQueryableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 
 /**
- * Transform profile picture bytes into a blob or a promise of a blob.
+ * Transform profile picture to a blob (with media type "image/jpeg").
  */
-export function transformProfilePicture(
-    picture: ReadonlyUint8Array | undefined,
-): Blob | Promise<Blob> {
-    if (picture === undefined) {
-        return eternalPromise();
+export function transformProfilePicture(bytes: ReadonlyUint8Array | undefined): Blob | undefined {
+    if (bytes === undefined) {
+        return undefined;
     }
-    return new Blob([picture], {type: 'image/jpeg'});
+    return new Blob([bytes], {type: 'image/jpeg'});
 }
 
 export type ProfilePictureBlobStore = IQueryableStore<Blob | undefined>;

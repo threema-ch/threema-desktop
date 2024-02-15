@@ -15,11 +15,12 @@
     ProfilePictureColor,
     ProfilePictureShape,
   } from '~/app/ui/svelte-components/threema/ProfilePicture';
+  import {eternalPromise} from '~/common/utils/promise';
 
   /**
-   * The address or URL of an image resource. May also be a promise.
+   * The image resource.
    */
-  export let img: string | Blob | Promise<string | Blob>;
+  export let img: Blob | undefined;
   /**
    * Text alternative to the profile picture if displayed as an image.
    */
@@ -41,18 +42,22 @@
    */
   export let shape: ProfilePictureShape = 'square';
   /**
-   * Use predefined font sizes
+   * Use predefined font sizes.
    */
   export let fontSize: 'small' | 'large' = 'large';
 </script>
 
-<template>
-  <div data-color={color} data-shape={shape}>
+<div data-color={color} data-shape={shape}>
+  {#if img === undefined}
+    <Image src={eternalPromise()} {alt} {title} on:load on:error {...$$restProps}>
+      <span class="initials" data-size={fontSize}>{initials}</span>
+    </Image>
+  {:else}
     <Image src={img} {alt} {title} on:load on:error {...$$restProps}>
       <span class="initials" data-size={fontSize}>{initials}</span>
     </Image>
-  </div>
-</template>
+  {/if}
+</div>
 
 <style lang="scss">
   @use 'component' as *;

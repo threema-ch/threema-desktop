@@ -343,6 +343,7 @@
     "error--file-internal-error": "Data could not be loaded due to an internal error.",
     "error--file-not-loaded": "Data could not be loaded.",
     "error--file-permanent-download-error": "Data could not be downloaded, the download expired.",
+    "error--file-preview-unsupported-error": "This file cannot be previewed.",
     "error--file-storage-read-error": "Could not read data from file storage.",
     "error--file-storage-write-error": "Downloaded data could not be stored in file storage. Do you have enough free disk space?",
     "error--file-temporary-download-error": "Download failed. Please check your Internet connection and try again.",

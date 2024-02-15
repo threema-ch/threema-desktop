@@ -25,6 +25,7 @@
   import {nodeIsOrContainsTarget} from '~/app/ui/utils/node';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
   import {unreachable} from '~/common/utils/assert';
+  import {isSupportedImageType} from '~/common/utils/image';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.message-media-viewer-modal');
 
@@ -99,11 +100,23 @@
 
       switch (result.status) {
         case 'ok':
-          mediaState = {
-            status: 'loaded',
-            type: currentFile.type,
-            url: URL.createObjectURL(new Blob([result.data.bytes], {type: result.data.mediaType})),
-          };
+          if (currentFile.type === 'image' && !isSupportedImageType(result.data.mediaType)) {
+            mediaState = {
+              status: 'failed',
+              localizedReason: $i18n.t(
+                'messaging.error--file-preview-unsupported-error',
+                'This file cannot be previewed.',
+              ),
+            };
+          } else {
+            mediaState = {
+              status: 'loaded',
+              type: currentFile.type,
+              url: URL.createObjectURL(
+                new Blob([result.data.bytes], {type: result.data.mediaType}),
+              ),
+            };
+          }
           break;
 
         case 'error':

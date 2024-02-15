@@ -385,3 +385,16 @@ export interface Dimensions {
 export const KiB = 1024;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const MiB = 1024 * KiB;
+
+/**
+ * Represents a union of the `string` type with additional string literals while retaining all type
+ * information (i.e., preventing it from collapsing the union into `string` and erasing the string
+ * literals).
+ *
+ * @example
+ * ```ts
+ * type Example1 = string | "foo" | "bar" // string
+ * type Example2 = StringOrLiteral<"foo" | "bar"> // string | "foo" | "bar"
+ * ```
+ */
+export type StringOrLiteral<T extends string> = (string & NonNullable<unknown>) | T;

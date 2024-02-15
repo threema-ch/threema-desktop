@@ -343,6 +343,7 @@
     "error--file-internal-error": "Daten konnten aufgrund eines internen Fehlers nicht geladen werden.",
     "error--file-not-loaded": "Daten konnten nicht geladen werden.",
     "error--file-permanent-download-error": "Daten konnten nicht heruntergeladen werden. Der Download ist nicht mehr verfügbar.",
+    "error--file-preview-unsupported-error": "Keine Vorschau dieser Datei möglich.",
     "error--file-storage-read-error": "Daten konnten nicht aus dem Dateisystem geladen werden.",
     "error--file-storage-write-error": "Daten konnten nicht aus dem Dateisystem geladen werden. Ist genügend Speicherplatz frei?",
     "error--file-temporary-download-error": "Download ist fehlgeschlagen. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",

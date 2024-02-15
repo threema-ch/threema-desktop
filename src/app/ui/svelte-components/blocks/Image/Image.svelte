@@ -16,53 +16,93 @@
   never resolves (for example with `Promise.race([])`).
 -->
 <script lang="ts">
-  import {onDestroy} from 'svelte';
+  import {onDestroy, tick} from 'svelte';
 
-  import {UrlSource} from '~/app/ui/svelte-components/utils/url';
+  import {globals} from '~/app/globals';
+  import type {StringOrLiteral} from '~/common/types';
   import {ensureError} from '~/common/utils/assert';
+  import {isSupportedImageType} from '~/common/utils/image';
+  import {AsyncLock} from '~/common/utils/lock';
+
+  const log = globals.unwrap().uiLogging.logger('ui.component.image');
 
   /**
-   * The address or URL of an image resource. May also be a promise.
+   * The image resource to render. May also be a promise. Note: Will only be rendered if the media
+   * type is valid and whitelisted.
    */
-  export let src: string | Blob | Promise<string | Blob>;
+  export let src: Blob | Promise<Blob>;
   /**
    * Sets or retrieves a text alternative to the image.
    */
   export let alt: string;
-  /**
-   * Determines whether the image has been loaded successfully.
-   */
-  export let complete = false;
 
-  // The image source transformed into a URL source.
-  const urlSource = new UrlSource(onDestroy);
+  let url: StringOrLiteral<'loading' | 'failed'> = 'loading';
+  const urlUpdateLock = new AsyncLock();
+
+  function revokeUrl(urlToRevoke: string): void {
+    if (urlToRevoke !== 'loading' && urlToRevoke !== 'failed') {
+      URL.revokeObjectURL(urlToRevoke);
+    }
+  }
+
+  async function updateUrl(currentSrc: typeof src): Promise<void> {
+    await urlUpdateLock.with(async () => {
+      const blob =
+        currentSrc instanceof Promise
+          ? await currentSrc.catch((error) => {
+              log.error(
+                `Could not update image url due to an error while loading the blob: ${error}`,
+              );
+
+              return undefined;
+            })
+          : currentSrc;
+      const previousUrl = url;
+
+      if (blob === undefined) {
+        url = 'failed';
+      } else if (!isSupportedImageType(blob.type)) {
+        url = 'failed';
+
+        log.error('Image media type is not allowed');
+      } else {
+        url = URL.createObjectURL(blob);
+      }
+
+      revokeUrl(previousUrl);
+      await tick();
+    });
+  }
+
+  $: void updateUrl(src);
+
+  onDestroy(() => {
+    revokeUrl(url);
+  });
 </script>
 
 <template>
-  {#await urlSource.load(src)}
+  {#if url === 'loading'}
     <slot />
-  {:then url}
+  {:else if url === 'failed'}
+    <!-- Fall back the error slot, then to the default slot. -->
+    <slot name="error">
+      <slot />
+    </slot>
+  {:else}
     <img
       src={url}
       {alt}
       on:click
       on:load
       on:error
-      on:load={() => (complete = true)}
       on:error={(error) => {
         // Force falling back to the error/default slot.
         src = Promise.reject(ensureError(error));
-        complete = true;
       }}
       {...$$restProps}
-      class:complete
     />
-  {:catch}
-    <!-- Fall back the error slot, then to the default slot. -->
-    <slot name="error">
-      <slot />
-    </slot>
-  {/await}
+  {/if}
 </template>
 
 <style lang="scss">
