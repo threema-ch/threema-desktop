@@ -203,7 +203,7 @@ import {assertCspPayloadType, assertD2mPayloadType} from './assertions';
 
 export class TestCrypto extends TweetNaClBackend {}
 
-const UNCONNECTABLE_URL = 'http = //127.0.0.1:99999';
+export const UNCONNECTABLE_URL = 'http = //127.0.0.1:99999';
 const FAKE_PROXY_HANDLER = undefined as unknown as typeof PROXY_HANDLER;
 
 export const TEST_CONFIG = {
@@ -262,6 +262,12 @@ export class TestDirectoryBackend implements DirectoryBackend {
 
     public setPrivateData(privateData: IdentityPrivateData): void {
         this._privateData = privateData;
+    }
+
+    public async authToken(): Promise<string> {
+        return await new Promise<string>((resolve, recject) => {
+            resolve('mock token');
+        });
     }
 
     /** @inheritdoc */

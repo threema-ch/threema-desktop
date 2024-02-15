@@ -32,7 +32,7 @@ import {assert, assertError} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import {intoUnsignedLong} from '~/common/utils/number';
 import chaiByteEqual from '~/test/common/plugins/byte-equal';
-import {makeTestFileSystemKeyStorage} from '~/test/mocha/common/backend-mocks';
+import {UNCONNECTABLE_URL, makeTestFileSystemKeyStorage} from '~/test/mocha/common/backend-mocks';
 import {fakeRandomBytes} from '~/test/mocha/common/utils';
 
 const {expect} = chai.use(chaiByteEqual);
@@ -343,6 +343,13 @@ export function run(): void {
                                     cspDeviceId: intoUnsignedLong(2448n),
                                 },
                                 workCredentials: undefined,
+                                onPremConfig: {
+                                    oppfUrl: UNCONNECTABLE_URL,
+                                    oppfCachedConfig: '',
+                                    lastUpdated: intoUnsignedLong(
+                                        BigInt(new Date().getUTCMilliseconds()),
+                                    ),
+                                },
                             }).finish() as PlainData,
                         )
                         .encryptWithRandomNonceAhead(undefined),
@@ -485,6 +492,11 @@ export function run(): void {
                 workCredentials: {
                     username: 'peter',
                     password: 'passwörtli',
+                },
+                onPremConfig: {
+                    oppfUrl: UNCONNECTABLE_URL,
+                    oppfCachedConfig: '',
+                    lastUpdated: intoUnsignedLong(BigInt(new Date().getUTCMilliseconds())),
                 },
             }).finish() as PlainData;
             const encryptedKeyStorageBytes = crypto
