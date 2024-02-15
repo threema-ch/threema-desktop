@@ -131,6 +131,8 @@ export class Layer1Encoder implements TransformerCodec<OutboundL2Message, Uint8A
         controller: TransformerCodecController<Uint8Array>,
     ): void {
         // Encode from D2M payload
+        //
+        // Note: We copy the resulting bytes since the buffer will be reused.
         const frame = structbuf.d2m.payload.Container.encode(
             {
                 type: message.type,
@@ -138,7 +140,7 @@ export class Layer1Encoder implements TransformerCodec<OutboundL2Message, Uint8A
                 payload: message.payload as ByteLengthEncoder,
             } as structbuf.d2m.payload.ContainerEncodable,
             this._buffer,
-        );
+        ).slice();
 
         // Enqueue frame
         this._capture?.(frame, {

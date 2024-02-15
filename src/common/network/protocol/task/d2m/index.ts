@@ -10,8 +10,6 @@ export function getTaskForIncomingL5D2mMessage(
     services: ServicesForTasks,
     message: InboundD2mTaskMessage,
 ): RunnableTask<void> {
-    // TODO(WEBDM-308): message.payload needs to be copied currently, as the buffer might be reused
-    //                  in the network stack. This should be refactored.
     switch (message.type) {
         case D2mPayloadType.DEVICES_INFO:
             return new TechDebtTask(
@@ -19,7 +17,7 @@ export function getTaskForIncomingL5D2mMessage(
                 `Handle inbound D2M ${D2mPayloadTypeUtils.NAME_OF[message.type]}`,
             );
         case D2mPayloadType.REFLECTED:
-            return new ReflectedTask(services, message.payload.clone());
+            return new ReflectedTask(services, message.payload);
         default:
             return unreachable(message);
     }

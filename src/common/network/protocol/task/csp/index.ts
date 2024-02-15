@@ -10,15 +10,13 @@ export function getTaskForIncomingCspMessage(
     services: ServicesForTasks,
     message: InboundCspTaskMessage['payload'],
 ): RunnableTask<void> {
-    // TODO(WEBDM-308): message.payload needs to be copied currently, as the buffer might be reused
-    //                  in the network stack. This should be refactored.
     switch (message.type) {
         case CspPayloadType.INCOMING_MESSAGE:
-            return new IncomingMessageTask(services, message.payload.clone());
+            return new IncomingMessageTask(services, message.payload);
         case CspPayloadType.ALERT:
-            return new IncomingAlertPayloadTask(services, message.payload.clone());
+            return new IncomingAlertPayloadTask(services, message.payload);
         case CspPayloadType.CLOSE_ERROR:
-            return new IncomingCloseErrorPayloadTask(services, message.payload.clone());
+            return new IncomingCloseErrorPayloadTask(services, message.payload);
         default:
             return unreachable(message);
     }

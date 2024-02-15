@@ -391,7 +391,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
      *
      * @param frame The frame to handle
      * @returns An {@link InboundL3CspMessage} for further processing, or `undefined` if no further
-     *   processing is required.
+     *   processing is required. All data referenced inside the resulting message will be cloned.
      */
     private _handleCspPayloadFrame(
         source: InboundL2CspMessage,
@@ -414,6 +414,8 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
         );
 
         // Decode payload according to its type
+        //
+        // Note: We clone the resulting payload since the buffer will be reused.
         let decodedPayload;
         try {
             decodedPayload = this._decodeCspPayload(payload.clone());
@@ -702,7 +704,6 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                             `Expected inbound 'ServerInfo' D2M message, got: ${message.payload.constructor.name}`,
                         );
                     }
-                    // TODO(DESK-98): IMPORTANT - this must be copied as the underlying buffer will be reused!
                     d2m.serverInfo.resolve(
                         protobuf.validate.d2m.ServerInfo.SCHEMA.parse(message.payload),
                     );

@@ -8,7 +8,6 @@ import type {Logger} from '~/common/logging';
 import * as structbuf from '~/common/network/structbuf';
 import * as struct from '~/common/network/structbuf/bridge';
 import type {u53} from '~/common/types';
-import {ByteBuffer} from '~/common/utils/byte-buffer';
 import type {
     CodecEnqueuer,
     CodecEnqueuerHandle,
@@ -78,7 +77,6 @@ export interface Layer4Controller {
 
 export class Layer4Decoder implements TransformerCodec<InboundL3Message, InboundL4Message> {
     private readonly _log: Logger;
-    private readonly _buffer: ByteBuffer;
 
     public constructor(
         services: ServicesForBackend,
@@ -87,18 +85,12 @@ export class Layer4Decoder implements TransformerCodec<InboundL3Message, Inbound
         private readonly _capture?: RawCaptureHandler,
     ) {
         this._log = services.logging.logger('network.protocol.l4.decoder');
-        this._buffer = new ByteBuffer(
-            new Uint8Array(services.config.MEDIATOR_FRAME_MAX_BYTE_LENGTH),
-        );
     }
 
     public transform(
         message: InboundL3Message,
         controller: TransformerCodecController<InboundL4Message>,
     ): void {
-        // Reset the buffer with each incoming message
-        this._buffer.reset();
-
         // Handle CSP or D2M message
         if (message.type === D2mPayloadType.PROXY) {
             this._handleCspMessage(message, controller);
@@ -111,19 +103,17 @@ export class Layer4Decoder implements TransformerCodec<InboundL3Message, Inbound
         message: InboundL3CspMessage,
         controller: TransformerCodecController<InboundL4Message>,
     ): void {
-        const buffer = this._buffer;
         const {payload} = message;
         switch (payload.type) {
             case CspPayloadType.ECHO_REQUEST: {
                 // Echo the enclosed data
                 this._capture?.(message);
-                const data = buffer.copy(payload.payload.data);
                 this._encoder.enqueue({
                     type: D2mPayloadType.PROXY,
                     payload: {
                         type: CspPayloadType.ECHO_RESPONSE,
                         payload: struct.encoder(structbuf.csp.payload.EchoResponse, {
-                            data,
+                            data: payload.payload.data.slice(),
                         }),
                     },
                 });
