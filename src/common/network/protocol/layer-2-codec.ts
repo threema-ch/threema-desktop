@@ -7,12 +7,11 @@
  *  - Decoding a D2M message container into a D2M or CSP message by switching on its type (and, for
  *    CSP message, switching on the authentication state).
  */
-import type {ServicesForBackend} from '~/common/backend';
 import {ProtocolError} from '~/common/error';
 import * as protobuf from '~/common/network/protobuf';
 import * as structbuf from '~/common/network/structbuf';
 import {ensureError, unreachable} from '~/common/utils/assert';
-import type {TransformerCodec, TransformerCodecController} from '~/common/utils/codec';
+import type {SyncTransformerCodec} from '~/common/utils/codec';
 import type {IQueryableStore} from '~/common/utils/store';
 
 import type {RawCaptureHandler} from './capture';
@@ -36,28 +35,18 @@ export interface Layer2Controller {
     readonly csp: IQueryableStore<CspAuthState>;
 }
 
-export class Layer2Decoder implements TransformerCodec<InboundL1Message, InboundL2Message> {
-    private readonly _controller: Layer2Controller;
-    private readonly _capture?: RawCaptureHandler;
-
+export class Layer2Decoder implements SyncTransformerCodec<InboundL1Message, InboundL2Message> {
     public constructor(
-        services: ServicesForBackend,
-        controller: Layer2Controller,
-        capture?: RawCaptureHandler,
-    ) {
-        this._controller = controller;
-        this._capture = capture;
-    }
+        private readonly _controller: Layer2Controller,
+        private readonly _capture?: RawCaptureHandler,
+    ) {}
 
-    public transform(
-        frame: InboundL1Message,
-        controller: TransformerCodecController<InboundL2Message>,
-    ): void {
+    public transform(frame: InboundL1Message, forward: (message: InboundL2Message) => void): void {
         try {
             if (frame.type === D2mPayloadType.PROXY) {
-                this._handleCspFrame(frame, controller);
+                this._handleCspFrame(frame, forward);
             } else {
-                this._handleD2mFrame(frame, controller);
+                this._handleD2mFrame(frame, forward);
             }
         } catch (error) {
             this._capture?.(frame, {
@@ -69,11 +58,11 @@ export class Layer2Decoder implements TransformerCodec<InboundL1Message, Inbound
 
     private _handleCspFrame(
         frame: InboundL1CspMessage,
-        controller: TransformerCodecController<InboundL2CspMessage>,
+        forward: (message: InboundL2Message) => void,
     ): void {
         const message = this._decodeCspMessage(frame);
         this._capture?.(message);
-        controller.enqueue(message);
+        forward(message);
     }
 
     private _decodeCspMessage(frame: InboundL1CspMessage): InboundL2CspMessage {
@@ -97,11 +86,11 @@ export class Layer2Decoder implements TransformerCodec<InboundL1Message, Inbound
 
     private _handleD2mFrame(
         frame: InboundL1D2mMessage,
-        controller: TransformerCodecController<InboundL2D2mMessage>,
+        forward: (message: InboundL2Message) => void,
     ): void {
         const message = this._decodeD2mMessage(frame);
         this._capture?.(message);
-        controller.enqueue(message);
+        forward(message);
     }
 
     private _decodeD2mMessage(frame: InboundL1D2mMessage): InboundL2D2mMessage {

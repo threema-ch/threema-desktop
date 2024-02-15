@@ -34,19 +34,25 @@ import {
     Layer5Encoder,
 } from '~/common/network/protocol/layer-5-codec';
 import {CspAuthStateUtils, D2mAuthStateUtils} from '~/common/network/protocol/state';
-import {CodecEnqueuerHandle} from '~/common/utils/codec';
+import {unwrap} from '~/common/utils/assert';
+import type {
+    TransformerCodecController,
+    AsyncTransformerCodec,
+    SyncTransformerCodec,
+} from '~/common/utils/codec';
+import {Delayed} from '~/common/utils/delayed';
 import type {TimerCanceller} from '~/common/utils/timer';
 
 /**
  * See `layer-1-codec.ts` for docs.
  */
 class Layer1Codec {
-    public readonly decoder: TransformStream<ArrayBuffer, InboundL1Message>;
-    public readonly encoder: TransformStream<OutboundL2Message, Uint8Array>;
+    public readonly decoder: Layer1Decoder;
+    public readonly encoder: Layer1Encoder;
 
     public constructor(services: ServicesForBackend, capture?: RawCaptureHandlerPair) {
-        this.decoder = new TransformStream(new Layer1Decoder(services, capture?.inbound));
-        this.encoder = new TransformStream(new Layer1Encoder(services, capture?.outbound));
+        this.decoder = new Layer1Decoder(services, capture?.inbound);
+        this.encoder = new Layer1Encoder(services, capture?.outbound);
     }
 }
 
@@ -54,16 +60,14 @@ class Layer1Codec {
  * See `layer-2-codec.ts` for docs.
  */
 export class Layer2Codec {
-    public readonly decoder: TransformStream<InboundL1Message, InboundL2Message>;
+    public readonly decoder: Layer2Decoder;
 
     public constructor(
         services: ServicesForBackend,
         controller: Layer2Controller,
         capture?: RawCaptureHandlerPair,
     ) {
-        this.decoder = new TransformStream(
-            new Layer2Decoder(services, controller, capture?.inbound),
-        );
+        this.decoder = new Layer2Decoder(controller, capture?.inbound);
     }
 }
 
@@ -71,8 +75,8 @@ export class Layer2Codec {
  * See `layer-3-codec.ts` for docs.
  */
 class Layer3Codec {
-    public readonly decoder: TransformStream<InboundL2Message, InboundL3Message>;
-    public readonly encoder: TransformStream<OutboundL3Message, OutboundL2Message>;
+    public readonly decoder: Layer3Decoder;
+    public readonly encoder: Layer3Encoder;
 
     public constructor(
         services: ServicesForBackend,
@@ -82,13 +86,12 @@ class Layer3Codec {
         const log = services.logging.logger('network.pipeline.l3');
         log.debug('Initial CSP auth state:', CspAuthStateUtils.NAME_OF[controller.csp.state.get()]);
         log.debug('Initial D2M auth state:', D2mAuthStateUtils.NAME_OF[controller.d2m.state.get()]);
-        const handle = new CodecEnqueuerHandle<OutboundL2Message>();
-        this.decoder = new TransformStream(
-            new Layer3Decoder(services, controller, handle, capture?.inbound),
+        const delayed = Delayed.simple<{readonly forward: (message: OutboundL2Message) => void}>(
+            'L3 encoder handle not yet ready',
+            'L3 encoder handle already set',
         );
-        this.encoder = new TransformStream(
-            new Layer3Encoder(services, controller, handle, capture?.outbound),
-        );
+        this.decoder = new Layer3Decoder(services, controller, delayed, capture?.inbound);
+        this.encoder = new Layer3Encoder(services, controller, delayed, capture?.outbound);
     }
 }
 
@@ -96,21 +99,26 @@ class Layer3Codec {
  * See `layer-4-codec.ts` for docs.
  */
 class Layer4Codec {
-    public readonly decoder: TransformStream<InboundL3Message, InboundL4Message>;
-    public readonly encoder: TransformStream<OutboundL4Message, OutboundL3Message>;
+    public readonly decoder: Layer4Decoder;
+    public readonly encoder: Layer4Encoder;
 
     public constructor(
         services: ServicesForBackend,
         controller: Layer4Controller,
         capture?: RawCaptureHandlerPair,
     ) {
-        const handle = new CodecEnqueuerHandle<OutboundL3Message>();
-        const ongoingEchoRequests: TimerCanceller[] = [];
-        this.decoder = new TransformStream(
-            new Layer4Decoder(services, handle, ongoingEchoRequests, capture?.inbound),
+        const delayed = Delayed.simple<{readonly forward: (message: OutboundL3Message) => void}>(
+            'L4 encoder handle not yet ready',
+            'L4 encoder handle already set',
         );
-        this.encoder = new TransformStream(
-            new Layer4Encoder(services, controller, handle, ongoingEchoRequests, capture?.outbound),
+        const ongoingEchoRequests: TimerCanceller[] = [];
+        this.decoder = new Layer4Decoder(services, delayed, ongoingEchoRequests, capture?.inbound);
+        this.encoder = new Layer4Encoder(
+            services,
+            controller,
+            delayed,
+            ongoingEchoRequests,
+            capture?.outbound,
         );
     }
 }
@@ -127,12 +135,128 @@ class Layer5Codec {
         controller: Layer5Controller,
         capture?: RawCaptureHandlerPair,
     ) {
-        this.decoder = new WritableStream(
-            new Layer5Decoder(services, controller, capture?.inbound),
-        );
-        this.encoder = new ReadableStream(
-            new Layer5Encoder(services, controller, capture?.outbound),
-        );
+        this.decoder = new WritableStream(new Layer5Decoder(controller, capture?.inbound));
+        this.encoder = new ReadableStream(new Layer5Encoder(controller, capture?.outbound));
+    }
+}
+
+/**
+ * A Transform stream adapter that chains the synchronous decoder transform streams L1 through L4
+ * together and exposes it as a single asynchronous transform stream.
+ */
+class Layer1Through4DecoderTransformStreamAdapter
+    implements AsyncTransformerCodec<ArrayBuffer, InboundL4Message>
+{
+    private readonly _layer1: {
+        codec: SyncTransformerCodec<ArrayBuffer, InboundL1Message>;
+        forward: (message: InboundL1Message) => void;
+    };
+    private readonly _layer2: {
+        codec: SyncTransformerCodec<InboundL1Message, InboundL2Message>;
+        forward: (message: InboundL2Message) => void;
+    };
+    private readonly _layer3: {
+        codec: SyncTransformerCodec<InboundL2Message, InboundL3Message>;
+        forward: (message: InboundL3Message) => void;
+    };
+    private readonly _layer4: {
+        codec: SyncTransformerCodec<InboundL3Message, InboundL4Message>;
+        forward: (message: InboundL4Message) => void;
+    };
+    private _controller: TransformerCodecController<InboundL4Message> | undefined = undefined;
+
+    public constructor(
+        layer1: SyncTransformerCodec<ArrayBuffer, InboundL1Message>,
+        layer2: SyncTransformerCodec<InboundL1Message, InboundL2Message>,
+        layer3: SyncTransformerCodec<InboundL2Message, InboundL3Message>,
+        layer4: SyncTransformerCodec<InboundL3Message, InboundL4Message>,
+    ) {
+        this._layer1 = {
+            codec: layer1,
+            forward: (message) => layer2.transform(message, this._layer2.forward),
+        };
+        this._layer2 = {
+            codec: layer2,
+            forward: (message) => layer3.transform(message, this._layer3.forward),
+        };
+        this._layer3 = {
+            codec: layer3,
+            forward: (message) => layer4.transform(message, this._layer4.forward),
+        };
+        this._layer4 = {
+            codec: layer4,
+            forward: (message) => unwrap(this._controller).enqueue(message),
+        };
+    }
+
+    public start(controller: TransformerCodecController<InboundL4Message>): void {
+        this._controller = controller;
+        this._layer1.codec.start?.(this._layer1.forward);
+        this._layer2.codec.start?.(this._layer2.forward);
+        this._layer3.codec.start?.(this._layer3.forward);
+        this._layer4.codec.start?.(this._layer4.forward);
+    }
+
+    public transform(
+        buffer: ArrayBuffer,
+        controller: TransformerCodecController<InboundL4Message>,
+    ): void {
+        this._layer1.codec.transform(buffer, this._layer1.forward);
+    }
+}
+
+/**
+ * A Transform stream adapter that chains the synchronous encoder transform streams L4 through L1
+ * together and exposes it as a single asynchronous transform stream.
+ */
+class Layer4Through1EncoderTransformStreamAdapter
+    implements AsyncTransformerCodec<OutboundL4Message, Uint8Array>
+{
+    private readonly _layer4: {
+        codec: SyncTransformerCodec<OutboundL4Message, OutboundL3Message>;
+        forward: (message: OutboundL3Message) => void;
+    };
+    private readonly _layer3: {
+        codec: SyncTransformerCodec<OutboundL3Message, OutboundL2Message>;
+        forward: (message: OutboundL2Message) => void;
+    };
+    private readonly _layer1: {
+        codec: SyncTransformerCodec<OutboundL2Message, Uint8Array>;
+        forward: (message: Uint8Array) => void;
+    };
+    private _controller: TransformerCodecController<Uint8Array> | undefined = undefined;
+
+    public constructor(
+        layer4: SyncTransformerCodec<OutboundL4Message, OutboundL3Message>,
+        layer3: SyncTransformerCodec<OutboundL3Message, OutboundL2Message>,
+        layer1: SyncTransformerCodec<OutboundL2Message, Uint8Array>,
+    ) {
+        this._layer4 = {
+            codec: layer4,
+            forward: (message) => layer3.transform(message, this._layer3.forward),
+        };
+        this._layer3 = {
+            codec: layer3,
+            forward: (message) => layer1.transform(message, this._layer1.forward),
+        };
+        this._layer1 = {
+            codec: layer1,
+            forward: (frame) => unwrap(this._controller).enqueue(frame),
+        };
+    }
+
+    public start(controller: TransformerCodecController<Uint8Array>): void {
+        this._controller = controller;
+        this._layer4.codec.start?.(this._layer4.forward);
+        this._layer3.codec.start?.(this._layer3.forward);
+        this._layer1.codec.start?.(this._layer1.forward);
+    }
+
+    public transform(
+        message: OutboundL4Message,
+        controller: TransformerCodecController<Uint8Array>,
+    ): void {
+        this._layer4.codec.transform(message, this._layer4.forward);
     }
 }
 
@@ -156,17 +280,29 @@ export function applyMediatorStreamPipeline(
 
     // Inbound pipeline
     const readable = stream.readable
-        .pipeThrough(layer1.decoder)
-        .pipeThrough(layer2.decoder)
-        .pipeThrough(layer3.decoder)
-        .pipeThrough(layer4.decoder)
+        .pipeThrough(
+            new TransformStream(
+                new Layer1Through4DecoderTransformStreamAdapter(
+                    layer1.decoder,
+                    layer2.decoder,
+                    layer3.decoder,
+                    layer4.decoder,
+                ),
+            ),
+        )
         .pipeTo(layer5.decoder);
 
     // Outbound pipeline
     const writable = layer5.encoder
-        .pipeThrough(layer4.encoder)
-        .pipeThrough(layer3.encoder)
-        .pipeThrough(layer1.encoder)
+        .pipeThrough(
+            new TransformStream(
+                new Layer4Through1EncoderTransformStreamAdapter(
+                    layer4.encoder,
+                    layer3.encoder,
+                    layer1.encoder,
+                ),
+            ),
+        )
         .pipeTo(stream.writable);
 
     return {

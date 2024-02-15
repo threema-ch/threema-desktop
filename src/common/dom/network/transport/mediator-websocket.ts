@@ -6,7 +6,7 @@ import * as protobuf from '~/common/network/protobuf';
 import type {ServerGroup} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {bytesToHex} from '~/common/utils/byte';
-import type {TransformerCodec, TransformerCodecController} from '~/common/utils/codec';
+import type {AsyncTransformerCodec, TransformerCodecController} from '~/common/utils/codec';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
 import {createWebSocketStream, type WebSocketEventWrapperStreamOptions} from './websocket';
@@ -21,7 +21,7 @@ interface MediatorWebSocketTransportContext {
  * Ensures that inbound messages are binary.
  */
 class WebSocketEnsureBinaryValidator
-    implements TransformerCodec<ArrayBuffer | string, ArrayBuffer>
+    implements AsyncTransformerCodec<ArrayBuffer | string, ArrayBuffer>
 {
     public transform(
         message: ArrayBuffer | string,

@@ -14,27 +14,23 @@ import * as structbuf from '~/common/network/structbuf';
 import type {ByteLengthEncoder, u53} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
 import {byteToHex} from '~/common/utils/byte';
-import type {TransformerCodec, TransformerCodecController} from '~/common/utils/codec';
+import type {SyncTransformerCodec} from '~/common/utils/codec';
 
 import type {RawCaptureHandler} from './capture';
 
 import {D2mPayloadType, type InboundL1Message, type OutboundL2Message, type RawL1Data} from '.';
 
-export class Layer1Decoder implements TransformerCodec<ArrayBuffer, InboundL1Message> {
-    private readonly _services: ServicesForBackend;
+export class Layer1Decoder implements SyncTransformerCodec<ArrayBuffer, InboundL1Message> {
     private readonly _log: Logger;
-    private readonly _capture?: RawCaptureHandler;
 
-    public constructor(services: ServicesForBackend, capture?: RawCaptureHandler) {
-        this._services = services;
-        this._log = services.logging.logger('network.protocol.l1.decoder');
-        this._capture = capture;
+    public constructor(
+        private readonly _services: ServicesForBackend,
+        private readonly _capture?: RawCaptureHandler,
+    ) {
+        this._log = _services.logging.logger('network.protocol.l1.decoder');
     }
 
-    public transform(
-        buffer: ArrayBuffer,
-        controller: TransformerCodecController<InboundL1Message>,
-    ): void {
+    public transform(buffer: ArrayBuffer, forward: (message: InboundL1Message) => void): void {
         const array = new Uint8Array(buffer);
         let frame;
         try {
@@ -54,7 +50,7 @@ export class Layer1Decoder implements TransformerCodec<ArrayBuffer, InboundL1Mes
 
         // Enqueue frame
         this._capture?.(frame);
-        controller.enqueue(frame);
+        forward(frame);
     }
 
     /**
@@ -116,7 +112,7 @@ export class Layer1Decoder implements TransformerCodec<ArrayBuffer, InboundL1Mes
     }
 }
 
-export class Layer1Encoder implements TransformerCodec<OutboundL2Message, Uint8Array> {
+export class Layer1Encoder implements SyncTransformerCodec<OutboundL2Message, Uint8Array> {
     private static readonly _RESERVED = new Uint8Array(3);
     private readonly _buffer: Uint8Array;
     private readonly _capture?: RawCaptureHandler;
@@ -126,10 +122,7 @@ export class Layer1Encoder implements TransformerCodec<OutboundL2Message, Uint8A
         this._capture = capture;
     }
 
-    public transform(
-        message: OutboundL2Message,
-        controller: TransformerCodecController<Uint8Array>,
-    ): void {
+    public transform(message: OutboundL2Message, forward: (frame: Uint8Array) => void): void {
         // Encode from D2M payload
         //
         // Note: We copy the resulting bytes since the buffer will be reused.
@@ -146,6 +139,6 @@ export class Layer1Encoder implements TransformerCodec<OutboundL2Message, Uint8A
         this._capture?.(frame, {
             info: D2mPayloadTypeUtils.NAME_OF[message.type],
         });
-        controller.enqueue(frame);
+        forward(frame);
     }
 }

@@ -41,13 +41,7 @@ import type {ReadonlyUint8Array, u32, u53, WeakOpaque} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {byteEncodeSequence, byteEquals, bytePadPkcs7, byteToHex} from '~/common/utils/byte';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
-import {
-    type CodecEnqueuer,
-    type CodecEnqueuerHandle,
-    type TransformerCodec,
-    type TransformerCodecController,
-    UTF8,
-} from '~/common/utils/codec';
+import {UTF8, type SyncTransformerCodec} from '~/common/utils/codec';
 import type {Delayed} from '~/common/utils/delayed';
 import {intoUnsignedLong} from '~/common/utils/number';
 import type {ResolvablePromise} from '~/common/utils/resolvable-promise';
@@ -247,26 +241,22 @@ type InternalInboundL3CspMessage = CspMessage<
     CspPayload<CspPayloadType.QUEUE_SEND_COMPLETE, structbuf.csp.payload.QueueSendComplete>
 >;
 
-export class Layer3Decoder implements TransformerCodec<InboundL2Message, InboundL3Message> {
+export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, InboundL3Message> {
     private readonly _services: ServicesForBackend;
     private readonly _log: Logger;
-    private readonly _controller: Layer3Controller;
-    private readonly _encoder: CodecEnqueuer<OutboundL2Message>;
-    private readonly _capture?: RawCaptureHandler;
     private readonly _buffer: ByteBuffer;
     private readonly _reserved = new Uint8Array(16);
 
     public constructor(
         services: ServicesForBackend,
-        controller: Layer3Controller,
-        encoder: CodecEnqueuer<OutboundL2Message>,
-        capture?: RawCaptureHandler,
+        private readonly _controller: Layer3Controller,
+        private readonly _encoder: Delayed<{
+            readonly forward: (message: OutboundL2Message) => void;
+        }>,
+        private readonly _capture?: RawCaptureHandler,
     ) {
         this._services = services;
         this._log = services.logging.logger('network.protocol.l3.decoder');
-        this._controller = controller;
-        this._encoder = encoder;
-        this._capture = capture;
         this._buffer = new ByteBuffer(
             new Uint8Array(services.config.MEDIATOR_FRAME_MAX_BYTE_LENGTH),
         );
@@ -274,7 +264,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
     public transform(
         message: InboundL2Message,
-        controller: TransformerCodecController<InboundL3Message>,
+        forward: (message: InboundL3Message) => void,
     ): void {
         // Reset the buffer with each incoming message
         this._buffer.reset();
@@ -282,9 +272,9 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
         // Handle CSP or D2M message
         try {
             if (message.type === D2mPayloadType.PROXY) {
-                this._handleCspMessage(message, controller);
+                this._handleCspMessage(message, forward);
             } else {
-                this._handleD2mMessage(message, controller);
+                this._handleD2mMessage(message, forward);
             }
         } catch (error) {
             this._capture?.(message, {
@@ -296,7 +286,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
     private _handleCspMessage(
         message: InboundL2CspMessage,
-        controller: TransformerCodecController<InboundL3Message>,
+        forward: (message: InboundL3Message) => void,
     ): void {
         const {csp} = this._controller;
         const state = csp.state.get();
@@ -311,8 +301,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                 if (payloadMessage === undefined) {
                     return;
                 }
-                // Important: The underlying buffer points into `shared`!
-                controller.enqueue(payloadMessage);
+                forward(payloadMessage);
                 break;
             }
 
@@ -347,7 +336,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
                 // Encode, encrypt and enqueue `login`
                 const loginMessage = this._createCspLogin(tsk);
-                this._encoder.enqueue(loginMessage);
+                this._encoder.unwrap().forward(loginMessage);
 
                 // Update state
                 csp.state.set(CspAuthState.LOGIN_ACK);
@@ -689,7 +678,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
 
     private _handleD2mMessage(
         message: InboundL2D2mMessage,
-        controller: TransformerCodecController<InboundL3Message>,
+        forward: (message: InboundL3Message) => void,
     ): void {
         const {d2m, connection} = this._controller;
         const {model} = this._services;
@@ -734,7 +723,7 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                         break;
                     default:
                         // Forward
-                        controller.enqueue(message);
+                        forward(message);
                         break;
                 }
 
@@ -768,14 +757,14 @@ export class Layer3Decoder implements TransformerCodec<InboundL2Message, Inbound
                     serverHello.version,
                 );
                 d2m.protocolVersion.resolve(selectedProtocolVersion);
-                this._log.info(`Selected d2m protocol version ${selectedProtocolVersion}`);
+                this._log.info(`Selected D2M protocol version ${selectedProtocolVersion}`);
 
                 // Encode and enqueue `ClientHello`
                 const clientHelloMessage = this._createD2mClientHello(
                     serverHello,
                     selectedProtocolVersion,
                 );
-                this._encoder.enqueue(clientHelloMessage);
+                this._encoder.unwrap().forward(clientHelloMessage);
 
                 // Update state
                 d2m.state.set(D2mAuthState.COMPLETE);
@@ -879,35 +868,31 @@ type InternalOutboundL3CspMessage = CspMessage<
     >
 >;
 
-export class Layer3Encoder implements TransformerCodec<OutboundL3Message, OutboundL2Message> {
+export class Layer3Encoder implements SyncTransformerCodec<OutboundL3Message, OutboundL2Message> {
     private readonly _log: Logger;
-    private readonly _controller: Layer3Controller;
-    private readonly _handle: CodecEnqueuerHandle<OutboundL2Message>;
-    private readonly _capture?: RawCaptureHandler;
     private readonly _buffer: ByteBuffer;
 
     public constructor(
         services: ServicesForBackend,
-        controller: Layer3Controller,
-        handle: CodecEnqueuerHandle<OutboundL2Message>,
-        capture?: RawCaptureHandler,
+        private readonly _controller: Layer3Controller,
+        private readonly _encoder: Delayed<{
+            readonly forward: (message: OutboundL2Message) => void;
+        }>,
+        private readonly _capture?: RawCaptureHandler,
     ) {
         this._log = services.logging.logger('network.protocol.l3.encoder');
-        this._controller = controller;
-        this._handle = handle;
-        this._capture = capture;
         this._buffer = new ByteBuffer(
             new Uint8Array(services.config.MEDIATOR_FRAME_MAX_BYTE_LENGTH),
         );
     }
 
-    public start(controller: TransformerCodecController<OutboundL2Message>): void {
+    public start(forward: (message: OutboundL2Message) => void): void {
         const {csp, d2m} = this._controller;
 
-        // Set handle for enqueuing messages from the decoder
-        this._handle.enqueue = controller.enqueue.bind(controller);
+        // Set encoder for forwarding messages from the decoder
+        this._encoder.set({forward});
 
-        // Expect that we need to send the CSP `client-hello` now
+        // Expect that we need to send the CSP `client-hello` when starting up
         if (csp.state.get() !== CspAuthState.CLIENT_HELLO) {
             throw new ProtocolError(
                 'csp',
@@ -920,7 +905,7 @@ export class Layer3Encoder implements TransformerCodec<OutboundL3Message, Outbou
         // Encode and enqueue `client-hello`
         const clientHelloMessage = this._createCspClientHello();
         this._capture?.(clientHelloMessage, {info: 'ClientHello'});
-        controller.enqueue(clientHelloMessage);
+        forward(clientHelloMessage);
 
         // Update state
         csp.state.set(CspAuthState.SERVER_HELLO);
@@ -950,7 +935,7 @@ export class Layer3Encoder implements TransformerCodec<OutboundL3Message, Outbou
                             ),
                         },
                     },
-                    controller,
+                    forward,
                 );
                 this._log.debug('Unblocking CSP message queue');
             });
@@ -959,7 +944,7 @@ export class Layer3Encoder implements TransformerCodec<OutboundL3Message, Outbou
 
     public transform(
         message: OutboundL3Message,
-        controller: TransformerCodecController<OutboundL2Message>,
+        forward: (message: OutboundL2Message) => void,
     ): void {
         try {
             // Reject upper layer messages until authenticated
@@ -970,9 +955,9 @@ export class Layer3Encoder implements TransformerCodec<OutboundL3Message, Outbou
 
             // Handle CSP or D2M message
             if (message.type === D2mPayloadType.PROXY) {
-                this._handleCspMessage(message, controller);
+                this._handleCspMessage(message, forward);
             } else {
-                this._handleD2mMessage(message, controller);
+                this._handleD2mMessage(message, forward);
             }
         } catch (error) {
             this._capture?.(message, {
@@ -1021,12 +1006,12 @@ export class Layer3Encoder implements TransformerCodec<OutboundL3Message, Outbou
 
     private _handleCspMessage(
         message: OutboundL3CspMessage | InternalOutboundL3CspMessage,
-        controller: TransformerCodecController<OutboundL2Message>,
+        forward: (message: OutboundL2Message) => void,
     ): void {
         // Encode payload into a payload frame
         const frame = this._createCspPayloadFrame(message.payload);
         this._capture?.(frame, {info: 'Payload'});
-        controller.enqueue(frame);
+        forward(frame);
     }
 
     private _createCspPayloadFrame({
@@ -1059,9 +1044,9 @@ export class Layer3Encoder implements TransformerCodec<OutboundL3Message, Outbou
 
     private _handleD2mMessage(
         message: OutboundL3D2mMessage,
-        controller: TransformerCodecController<OutboundL2Message>,
+        forward: (message: OutboundL2Message) => void,
     ): void {
         // Passthrough
-        controller.enqueue(message);
+        forward(message);
     }
 }

@@ -1,7 +1,6 @@
 /**
  * Layer 5: End-to-end layer.
  */
-import type {ServicesForBackend} from '~/common/backend';
 import {ConnectionClosed} from '~/common/error';
 import {ensureError} from '~/common/utils/assert';
 import type {
@@ -52,11 +51,7 @@ export class Layer5Decoder implements AsyncCodecSink<InboundL4Message> {
     private readonly _queue: QueueProducer<DecoderQueueItem>;
     private readonly _capture?: RawCaptureHandler;
 
-    public constructor(
-        services: ServicesForBackend,
-        controller: Layer5Controller,
-        capture?: RawCaptureHandler,
-    ) {
+    public constructor(controller: Layer5Controller, capture?: RawCaptureHandler) {
         this._queue = controller.taskManager.dispatch.decoder;
         this._capture = capture;
     }
@@ -85,11 +80,7 @@ export class Layer5Encoder implements AsyncCodecSource<OutboundL4Message> {
     private readonly _queue: QueueConsumer<EncoderQueueItem>;
     private readonly _capture?: RawCaptureHandler;
 
-    public constructor(
-        services: ServicesForBackend,
-        controller: Layer5Controller,
-        capture?: RawCaptureHandler,
-    ) {
+    public constructor(controller: Layer5Controller, capture?: RawCaptureHandler) {
         this._queue = controller.taskManager.dispatch.encoder;
         this._capture = capture;
     }

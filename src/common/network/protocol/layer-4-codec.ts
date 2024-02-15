@@ -8,12 +8,7 @@ import type {Logger} from '~/common/logging';
 import * as structbuf from '~/common/network/structbuf';
 import * as struct from '~/common/network/structbuf/bridge';
 import type {u53} from '~/common/types';
-import type {
-    CodecEnqueuer,
-    CodecEnqueuerHandle,
-    TransformerCodec,
-    TransformerCodecController,
-} from '~/common/utils/codec';
+import type {SyncTransformerCodec} from '~/common/utils/codec';
 import type {Delayed} from '~/common/utils/delayed';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
 import type {TimerCanceller} from '~/common/utils/timer';
@@ -75,12 +70,14 @@ export interface Layer4Controller {
     };
 }
 
-export class Layer4Decoder implements TransformerCodec<InboundL3Message, InboundL4Message> {
+export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, InboundL4Message> {
     private readonly _log: Logger;
 
     public constructor(
         services: ServicesForBackend,
-        private readonly _encoder: CodecEnqueuer<OutboundL3Message>,
+        private readonly _encoder: Delayed<{
+            readonly forward: (message: OutboundL3Message) => void;
+        }>,
         private readonly _ongoingEchoRequests: TimerCanceller[],
         private readonly _capture?: RawCaptureHandler,
     ) {
@@ -89,26 +86,26 @@ export class Layer4Decoder implements TransformerCodec<InboundL3Message, Inbound
 
     public transform(
         message: InboundL3Message,
-        controller: TransformerCodecController<InboundL4Message>,
+        forward: (message: InboundL4Message) => void,
     ): void {
         // Handle CSP or D2M message
         if (message.type === D2mPayloadType.PROXY) {
-            this._handleCspMessage(message, controller);
+            this._handleCspMessage(message, forward);
         } else {
-            controller.enqueue(message);
+            forward(message);
         }
     }
 
     private _handleCspMessage(
         message: InboundL3CspMessage,
-        controller: TransformerCodecController<InboundL4Message>,
+        forward: (message: InboundL4Message) => void,
     ): void {
         const {payload} = message;
         switch (payload.type) {
             case CspPayloadType.ECHO_REQUEST: {
                 // Echo the enclosed data
                 this._capture?.(message);
-                this._encoder.enqueue({
+                this._encoder.unwrap().forward({
                     type: D2mPayloadType.PROXY,
                     payload: {
                         type: CspPayloadType.ECHO_RESPONSE,
@@ -143,30 +140,32 @@ export class Layer4Decoder implements TransformerCodec<InboundL3Message, Inbound
 
             default:
                 // Forward
-                controller.enqueue({type: message.type, payload});
+                forward({type: message.type, payload});
         }
     }
 }
 
-export class Layer4Encoder implements TransformerCodec<OutboundL4Message, OutboundL3Message> {
+export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, OutboundL3Message> {
     private readonly _log: Logger;
 
     public constructor(
         private readonly _services: ServicesForBackend,
         private readonly _controller: Layer4Controller,
-        private readonly _handle: CodecEnqueuerHandle<OutboundL3Message>,
+        private readonly _encoder: Delayed<{
+            readonly forward: (message: OutboundL3Message) => void;
+        }>,
         private readonly _ongoingEchoRequests: TimerCanceller[],
         private readonly _capture?: RawCaptureHandler,
     ) {
         this._log = _services.logging.logger('network.protocol.l4.encoder');
     }
 
-    public start(controller: TransformerCodecController<OutboundL3Message>): void {
+    public start(forward: (message: OutboundL3Message) => void): void {
         const {timer} = this._services;
         const {csp, connection} = this._controller;
 
-        // Set handle for enqueuing messages from the decoder
-        this._handle.enqueue = controller.enqueue.bind(controller);
+        // Set encoder for forwarding messages from the decoder
+        this._encoder.set({forward});
 
         // Wait until authenticated towards CSP
         void csp.authenticated.then(() => {
@@ -204,7 +203,7 @@ export class Layer4Encoder implements TransformerCodec<OutboundL4Message, Outbou
                         },
                     };
                     this._capture?.(message, {info: 'EchoRequest'});
-                    controller.enqueue(message);
+                    forward(message);
                     this._ongoingEchoRequests.push(
                         timer.timeout(() => {
                             this._log.info(
@@ -235,15 +234,15 @@ export class Layer4Encoder implements TransformerCodec<OutboundL4Message, Outbou
                 },
             };
             this._capture?.(message, {info: 'SetConnectionIdleTimeout'});
-            controller.enqueue(message);
+            forward(message);
         });
     }
 
     public transform(
         message: OutboundL4Message,
-        controller: TransformerCodecController<OutboundL3Message>,
+        forward: (message: OutboundL3Message) => void,
     ): void {
         // Passthrough
-        controller.enqueue(message);
+        forward(message);
     }
 }

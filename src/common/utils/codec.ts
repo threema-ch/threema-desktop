@@ -17,13 +17,12 @@ export interface CodecEnqueuer<O> {
  */
 export interface TransformerCodecController<O> {
     readonly enqueue: (chunk: O) => void;
-    readonly error: (reason: Error) => void;
 }
 
 /**
  * Controller for a sink codec.
  *
- * Note: This must be compatible to {@link TransformStreamDefaultController}.
+ * Note: This must be compatible to {@link WritableStreamDefaultController}.
  * Spec: https://streams.spec.whatwg.org/#ts-default-controller-class
  */
 export interface SinkCodecController {
@@ -33,7 +32,7 @@ export interface SinkCodecController {
 /**
  * Controller for a source codec.
  *
- * Note: This must be compatible to {@link TransformStreamDefaultController}.
+ * Note: This must be compatible to {@link ReadableStreamDefaultController}.
  * Spec: https://streams.spec.whatwg.org/#ts-default-controller-class
  */
 export interface SourceCodecController<I> {
@@ -43,14 +42,29 @@ export interface SourceCodecController<I> {
 }
 
 /**
- * A synchronous transformation codec.
+ * A transformation codec.
  *
  * Note: This must be compatible to {@link Transformer}.
  * Spec: https://streams.spec.whatwg.org/#transformer-api
  */
-export interface TransformerCodec<I, O> {
-    readonly start?: (controller: TransformerCodecController<O>) => void;
-    readonly transform: (chunk: I, controller: TransformerCodecController<O>) => void;
+export interface AsyncTransformerCodec<I, O> {
+    readonly start?: (controller: TransformerCodecController<O>) => void | Promise<void>;
+    readonly transform: (
+        chunk: I,
+        controller: TransformerCodecController<O>,
+    ) => void | Promise<void>;
+}
+
+/**
+ * A synchronous transformation codec. Chained transformation codecs guarantee that a single
+ * transformation chain completes before the next is initiated.
+ *
+ * Note: This cannot be chained with normal {@link Transformer}s without an adapter that bundles the
+ * synchronous transformation codec chain into a single asynchronous transformation codec.
+ */
+export interface SyncTransformerCodec<I, O> {
+    readonly start?: (forward: (chunk: O) => void) => void;
+    readonly transform: (chunk: I, forward: (chunk: O) => void) => void;
 }
 
 /**
@@ -60,7 +74,7 @@ export interface TransformerCodec<I, O> {
  * Spec: https://streams.spec.whatwg.org/#underlying-sink-api
  */
 export interface AsyncCodecSink<O> {
-    readonly start?: (controller: SinkCodecController) => void;
+    readonly start?: (controller: SinkCodecController) => void | Promise<void>;
     readonly write: (chunk: O, controller: SinkCodecController) => Promise<void>;
     readonly close: () => void;
     readonly abort: (reason: Error) => void;
@@ -73,8 +87,8 @@ export interface AsyncCodecSink<O> {
  * Spec: https://streams.spec.whatwg.org/#underlying-source-api
  */
 export interface AsyncCodecSource<I> {
-    start?: (controller: SourceCodecController<I>) => void;
-    pull: (controller: SourceCodecController<I>) => Promise<void>;
+    start?: (controller: SourceCodecController<I>) => void | Promise<void>;
+    pull: (controller: SourceCodecController<I>) => PromiseLike<void>;
     cancel: (reason: Error) => void;
 }
 
@@ -174,18 +188,6 @@ export interface Utf8Codec {
      * Note: This does not throw in case the provided array provides insufficient space!
      */
     readonly encodePartiallyInto: (source: string, array: Uint8Array) => Utf8EncodeResult;
-}
-
-/**
- * Creates a delayed handle to the `enqueue` function of a transformation codec.
- *
- * Note: The `enqueue` function should be replaced before it's being called. If this cannot be
- *       ensured, use a {@link ResolvablePromise} instead.
- */
-export class CodecEnqueuerHandle<T> {
-    public enqueue: (chunk: T) => void = () => {
-        throw new Error('Codec enqueuer handle not ready!');
-    };
 }
 
 // The globals `TextEncoder` and `TextDecoder` exist in both DOM and Node, so
