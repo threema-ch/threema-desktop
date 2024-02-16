@@ -86,8 +86,8 @@
         width: 100%;
         height: 100%;
         border-radius: rem(8px);
-        border: rem(2px) solid $consumer-green-600;
-        background-color: rgba($consumer-green-600, 10%);
+        border: rem(2px) solid var(--cc-drop-zone-provider-border-color);
+        background-color: var(--cc-drop-zone-provider-background-color);
       }
     }
   }

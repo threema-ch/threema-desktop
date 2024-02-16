@@ -220,6 +220,10 @@ $brandings: (
     --cc-contact-details-badge-work-text-color: -g($cc, contact-details-badge-work-text),
     --cc-contact-details-badge-work-background-color: -g($cc, contact-details-badge-work-background),
 
+    // DropZoneProvider
+    --cc-drop-zone-provider-border-color: -g($b, primary-color-600),
+    --cc-drop-zone-provider-background-color: rgba(-g($b, primary-color-600), 10%),
+
     // Receiver
     --cc-contact-status-tag-background-color: -g($cc, contact-status-tag-background),
     --cc-contact-status-tag-text-color: -g($cc, contact-status-tag-text),

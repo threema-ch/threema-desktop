@@ -160,6 +160,10 @@ $config: config-merge(components.$config, (
       --cc-contact-details-badge-work-text-color,
       --cc-contact-details-badge-work-background-color,
 
+      // DropZoneProvider
+      --cc-drop-zone-provider-border-color,
+      --cc-drop-zone-provider-background-color,
+
       // Receiver
       --cc-contact-status-tag-background-color,
       --cc-contact-status-tag-text-color,
