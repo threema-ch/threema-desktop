@@ -71,7 +71,7 @@ export class MediatorWebSocketTransport implements MediatorTransport {
             this._ws.closed.then(({code, reason}) => ({
                 code: code ?? CloseCode.INTERNAL_ERROR,
                 reason,
-                clientInitiated: false,
+                origin: 'remote',
             })),
         );
 

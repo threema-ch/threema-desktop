@@ -95,6 +95,7 @@ import type {
 } from '~/common/model/types/settings';
 import type {User} from '~/common/model/types/user';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
+import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
 import {
     CspPayloadType,
@@ -1019,7 +1020,11 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
     // eslint-disable-next-line @typescript-eslint/member-ordering
     public abort = {
         aborted: false,
-        subscribe: (subscriber: AbortSubscriber<{readonly cause: string}>) => () => undefined,
+        promise: new ResolvablePromise<CloseInfo>(),
+        subscribe: (subscriber: AbortSubscriber<CloseInfo>) => () => undefined,
+        attach: () => {
+            throw new Error('Not implemented');
+        },
     };
 
     public async step<T>(executor: () => Promise<T>): Promise<T> {

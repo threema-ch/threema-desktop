@@ -70,7 +70,12 @@ import {
     type RawCaptureHandlers,
     type RawPacket,
 } from '~/common/network/protocol/capture';
-import {type ConnectionHandle, ProtocolController} from '~/common/network/protocol/controller';
+import type {ConnectionManagerHandle} from '~/common/network/protocol/connection';
+import {
+    type ConnectionHandle,
+    ProtocolController,
+    type ClosingEvent,
+} from '~/common/network/protocol/controller';
 import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/directory';
 import {
     ConnectionState,
@@ -92,7 +97,7 @@ import {
 import type {ThreemaWorkCredentials} from '~/common/node/key-storage/key-storage-file';
 import {type NotificationCreator, NotificationService} from '~/common/notification';
 import type {SystemDialogService} from '~/common/system-dialog';
-import type {ReadonlyUint8Array, u53} from '~/common/types';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {
     assert,
     assertError,
@@ -118,7 +123,7 @@ import {Identity} from '~/common/utils/identity';
 import {u64ToHexLe} from '~/common/utils/number';
 import {taggedRace} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {AbortRaiser} from '~/common/utils/signal';
+import {AbortRaiser, type AbortListener} from '~/common/utils/signal';
 import {
     type LocalStore,
     MonotonicEnumStore,
@@ -1098,8 +1103,8 @@ export class Backend implements ProxyMarked {
         } else {
             // Purge data and report error
             purgeSensitiveData();
-            let errorInfo = `Close code ${initialConnectionResult.closeCode}`;
-            const closeCodeName = CloseCodeUtils.nameOf(initialConnectionResult.closeCode);
+            let errorInfo = `Close code ${initialConnectionResult.info.code}`;
+            const closeCodeName = CloseCodeUtils.nameOf(initialConnectionResult.info.code);
             if (closeCodeName !== undefined) {
                 errorInfo += ` (${closeCodeName})`;
             }
@@ -1185,10 +1190,20 @@ export class Backend implements ProxyMarked {
     }
 }
 
+interface ConnectionResultConnected {
+    readonly connected: true;
+}
+interface ConnectionResultDisconnected {
+    readonly connected: false;
+    readonly wasConnected: boolean;
+    readonly info: CloseInfo;
+}
+
 /**
- * The result of the initial server connection.
+ * The (simplified) result of a connection attempt where the result has been dumbed down to either
+ * _fully connected_ (i.e. {@link ConnectionState.CONNECTED}) or disconnected.
  */
-export type InitialConnectionResult = {connected: true} | {connected: false; closeCode: u53};
+export type ConnectionResult = ConnectionResultConnected | ConnectionResultDisconnected;
 
 /**
  * Connection logger style (white on yellow).
@@ -1208,14 +1223,13 @@ const connectionLoggerStyle = createLoggerStyle('#EE9B00', 'white');
  *
  * Note that the connection will only be established once the `readyToConnect` promise is resolved.
  */
-class ConnectionManager {
+class ConnectionManager implements ConnectionManagerHandle {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     public readonly state: MonotonicEnumStore<ConnectionState>;
     public readonly leaderState: MonotonicEnumStore<D2mLeaderState>;
-    private readonly _initialConnectionResult = new ResolvablePromise<InitialConnectionResult>();
     private readonly _log: Logger;
     private _autoConnect: ResolvablePromise<void> = ResolvablePromise.resolve();
-    private _connection?: Connection;
+    private _connection: Connection | undefined = undefined;
     private _started = false;
 
     public constructor(
@@ -1239,81 +1253,72 @@ class ConnectionManager {
                 tag: 'state',
             },
         );
-
-        // After first successful connection, update initial connection result
-        const unsubscribeFromState = this.state.subscribe((state) => {
-            if (state === ConnectionState.CONNECTED) {
-                if (!this._initialConnectionResult.done) {
-                    this._initialConnectionResult.resolve({connected: true});
-                }
-                unsubscribeFromState();
-            }
-        });
-    }
-
-    public get initialConnectionResult(): Promise<InitialConnectionResult> {
-        return this._initialConnectionResult;
     }
 
     /**
-     * Start the connection manager
+     * Start the connection manager and hand out the initial connection result.
      *
      * This will connect to the server and automatically reconnect on connection loss (unless
      * auto-connect is disabled).
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    public start(): Promise<InitialConnectionResult> {
+    public async start(): Promise<ConnectionResult> {
         if (this._started) {
             throw new Error('Started an already-started connection manager');
         }
         this._started = true;
-        this._run().catch((error) =>
+        const runner = this._run();
+
+        // Await the initial connection to be connected successfully or closed (before being fully
+        // connected).
+        const result = (await runner.next()).value;
+
+        // Continue running connections
+        async function runForever(): Promise<never> {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for await (const _ of runner) {
+                // Fooooreeever
+            }
+            assertUnreachable('Connection runner should never return');
+        }
+        runForever().catch((error) =>
             assertUnreachable(`Connection manager failed to run: ${error}`),
         );
-        return this.initialConnectionResult;
+
+        return result;
     }
 
-    /**
-     * Disable auto-connect. The current connection will be closed (if any).
-     */
-    public disableAutoConnect(closeCode?: u53): void {
-        this._log.debug('Turning off auto-connect');
-        this._connection?.disconnect();
-        this._autoConnect = new ResolvablePromise();
-
-        // Update initial connection result (if promise is not already resolved)
-        if (closeCode !== undefined && !this._initialConnectionResult.done) {
-            this._initialConnectionResult.resolve({connected: false, closeCode});
-        }
+    /** @inheritdoc */
+    public disconnect(info: CloseInfo = {code: CloseCode.NORMAL, origin: 'local'}): void {
+        this._connection?.disconnect(info);
     }
 
-    /**
-     * Toggle auto-connect. When auto-connect is turned off, the current connection will be closed.
-     */
-    public toggleAutoConnect(): void {
+    /** @inheritdoc */
+    public disconnectAndDisableAutoConnect(info?: CloseInfo): void {
+        this.disconnect(info);
         if (this._autoConnect.done) {
-            this.disableAutoConnect();
-        } else {
-            this._log.debug('Turning on auto-connect');
-            this._autoConnect.resolve();
+            this._log.debug('Turning off auto-connect');
+            this._autoConnect = new ResolvablePromise();
         }
     }
 
-    /**
-     * Turn connection off and on again. If there was no connection in the first place, try turning it on.
-     */
-    public reconnect(): void {
-        if (this._autoConnect.done) {
-            this.disableAutoConnect();
-        }
-
+    /** @inheritdoc */
+    public enableAutoConnect(): void {
         if (!this._autoConnect.done) {
             this._log.debug('Turning on auto-connect');
             this._autoConnect.resolve();
         }
     }
 
-    private async _run(): Promise<never> {
+    /** @inheritdoc */
+    public toggleAutoConnect(): void {
+        if (this._autoConnect.done) {
+            this.disconnectAndDisableAutoConnect();
+        } else {
+            this.enableAutoConnect();
+        }
+    }
+
+    private async *_run(): AsyncGenerator<ConnectionResult, never> {
         const {model, config, systemDialog} = this._services;
         const reconnectionDelayMs = config.MEDIATOR_RECONNECTION_DELAY_S * 1000;
         let skipConnectionDelay = false;
@@ -1334,47 +1339,66 @@ class ConnectionManager {
             if (!self.navigator.onLine) {
                 this._log.debug('Currently offline. Connection will probably fail.');
             }
+
+            // Connect, yield connected result (if any), otherwise wait until closed
             const startMs = Date.now();
-            const {lastConnectionState, closeInfo} = await this._connectAndWaitUntilClosed();
+            let result: ConnectionResult | undefined;
+            for await (result of this._connectAndWaitUntilClosed()) {
+                yield result;
+            }
+            // The last result must be the disconnect event
+            assert(result !== undefined && !result.connected);
             const elapsedMs = Date.now() - startMs;
 
-            if (CloseCodeUtils.containsNumber(closeInfo.code)) {
+            if (CloseCodeUtils.containsNumber(result.info.code)) {
                 // Exhaustively handle known close codes
-                switch (closeInfo.code) {
+                switch (result.info.code) {
                     case CloseCode.UNSUPPORTED_PROTOCOL_VERSION:
-                        if (closeInfo.clientInitiated === true) {
-                            const handle = await systemDialog.open({
-                                type: 'connection-error',
-                                context: {
-                                    type: 'mediator-update-required',
-                                    userCanReconnect: true,
-                                },
-                            });
-                            this._log.info(
-                                'Waiting for user interaction before re-enabling auto-connect',
-                            );
-                            const action = await handle.closed;
-                            // eslint-disable-next-line max-depth
-                            switch (action) {
-                                case 'confirmed': // Reconnect
-                                    skipConnectionDelay = true;
-                                    break;
-                                case 'cancelled':
-                                    this.disableAutoConnect(closeInfo.code);
-                                    break;
-                                default:
-                                    unreachable(action);
+                        switch (result.info.origin) {
+                            case 'local': {
+                                const handle = await systemDialog.open({
+                                    type: 'connection-error',
+                                    context: {
+                                        type: 'mediator-update-required',
+                                        userCanReconnect: true,
+                                    },
+                                });
+                                this._log.info(
+                                    'Waiting for user interaction before re-enabling auto-connect',
+                                );
+                                const action = await handle.closed;
+                                // eslint-disable-next-line max-depth
+                                switch (action) {
+                                    case 'confirmed': // Reconnect
+                                        skipConnectionDelay = true;
+                                        break;
+                                    case 'cancelled':
+                                        this.disconnectAndDisableAutoConnect(result.info);
+                                        break;
+                                    default:
+                                        unreachable(action);
+                                }
+                                break;
                             }
-                        } else if (closeInfo.clientInitiated === false) {
-                            void systemDialog.open({
-                                type: 'connection-error',
-                                context: {
-                                    type: 'client-update-required',
-                                    userCanReconnect: false,
-                                },
-                            });
 
-                            this.disableAutoConnect(closeInfo.code);
+                            case 'remote':
+                                void systemDialog.open({
+                                    type: 'connection-error',
+                                    context: {
+                                        type: 'client-update-required',
+                                        userCanReconnect: false,
+                                    },
+                                });
+
+                                this.disconnectAndDisableAutoConnect(result.info);
+                                break;
+
+                            case 'unknown':
+                                // ¯\_(ツ)_/¯ retry, I guess?
+                                break;
+
+                            default:
+                                unreachable(result.info.origin);
                         }
                         break;
                     case CloseCode.DEVICE_DROPPED:
@@ -1398,13 +1422,15 @@ class ConnectionManager {
                         } else {
                             this._log.error(
                                 `Connection not established: ${CloseCodeUtils.nameOf(
-                                    closeInfo.code,
+                                    result.info.code,
                                 )}`,
                             );
                             // If we get this close code and have never connected before,
                             // this means we are registered on the Mediator without knowing it.
+                            // eslint-disable-next-line max-depth
                             if (
-                                closeInfo.code === CloseCode.EXPECTED_DEVICE_SLOT_STATE_MISMATCH &&
+                                result.info.code ===
+                                    CloseCode.EXPECTED_DEVICE_SLOT_STATE_MISMATCH &&
                                 model.globalProperties
                                     .get(GlobalPropertyKey.LAST_MEDIATOR_CONNECTION)
                                     ?.get().view.value.date === undefined
@@ -1428,15 +1454,15 @@ class ConnectionManager {
                             }
                         }
 
-                        this.disableAutoConnect(closeInfo.code);
+                        this.disconnectAndDisableAutoConnect(result.info);
                         break;
                     case CloseCode.DEVICE_LIMIT_REACHED:
                     case CloseCode.DEVICE_ID_REUSED:
                     case CloseCode.REFLECTION_QUEUE_LENGTH_LIMIT_REACHED:
                         // TODO(DESK-487): Request user interaction to continue
-                        this.disableAutoConnect(closeInfo.code);
+                        this.disconnectAndDisableAutoConnect(result.info);
                         throw new Error(
-                            `TODO(DESK-487): Connection closed, request user interaction to continue (code=${closeInfo.code}, reason=${closeInfo.reason})`,
+                            `TODO(DESK-487): Connection closed, request user interaction to continue (code=${result.info.code}, reason=${result.info.reason})`,
                         );
                     case CloseCode.NORMAL:
                     case CloseCode.SERVER_SHUTDOWN:
@@ -1453,34 +1479,37 @@ class ConnectionManager {
                         // Recoverable close case: Let client continue with standard reconnect logic.
                         this._log.info(
                             `Connection closed with code ${
-                                CloseCodeUtils.nameOf(closeInfo.code) ?? '<unknown>'
-                            } (code=${closeInfo.code}, reason=${closeInfo.reason})`,
+                                CloseCodeUtils.nameOf(result.info.code) ?? '<unknown>'
+                            } (code=${result.info.code}, reason=${result.info.reason})`,
                         );
                         break;
                     default:
-                        unreachable(closeInfo.code);
+                        unreachable(result.info.code);
                 }
-            } else if (closeInfo.code >= 4100 && closeInfo.code < 4200) {
-                this.disableAutoConnect(closeInfo.code);
+            } else if (result.info.code >= 4100 && result.info.code < 4200) {
+                this.disconnectAndDisableAutoConnect(result.info);
                 // TODO(DESK-487): Request user interaction to continue?
                 throw new Error(
-                    `Connection closed with unrecoverable unknown close code (code=${closeInfo.code}, reason=${closeInfo.reason})`,
+                    `Connection closed with unrecoverable unknown close code (code=${result.info.code}, reason=${result.info.reason})`,
                 );
             } else {
                 this._log.warn(
-                    `Connection closed with recoverable unknown code (code=${closeInfo.code}, reason=${closeInfo.reason})`,
+                    `Connection closed with recoverable unknown code (code=${result.info.code}, reason=${result.info.reason})`,
                 );
             }
 
-            if (lastConnectionState !== ConnectionState.CONNECTED && !skipConnectionDelay) {
+            if (skipConnectionDelay) {
+                continue;
+            }
+
+            if (!result.wasConnected) {
                 // When we weren't connected, we wait **exactly** 5s before making another attempt,
                 // regardless on how long the connection took.
                 this._log.debug(
                     'Last connection did not fulfill both handshakes. Waiting 5s before making another connection attempt',
                 );
                 await TIMER.sleep(reconnectionDelayMs);
-                skipConnectionDelay = false;
-            } else if (!skipConnectionDelay) {
+            } else {
                 // When we were connected, we ensure that the total wait time does not exceed 5s
                 // between connection attempts.
 
@@ -1500,10 +1529,7 @@ class ConnectionManager {
         }
     }
 
-    private async _connectAndWaitUntilClosed(): Promise<{
-        readonly lastConnectionState: ConnectionState;
-        readonly closeInfo: CloseInfo;
-    }> {
+    private async *_connectAndWaitUntilClosed(): AsyncGenerator<ConnectionResult, void> {
         // Attempt to connect
         this._log.info('Connecting');
         const taskManager = this._services.taskManager.replace(
@@ -1512,9 +1538,11 @@ class ConnectionManager {
         assert(taskManager instanceof ConnectedTaskManager);
         assert(this.state.get() === ConnectionState.CONNECTING);
         assert(this.leaderState.get() === D2mLeaderState.NONLEADER);
+        let connection: Connection;
         try {
-            this._connection = await Connection.create(
+            connection = await Connection.create(
                 this._services,
+                this,
                 taskManager,
                 this._getCaptureHandlers,
             );
@@ -1522,32 +1550,67 @@ class ConnectionManager {
             this._log.warn('Could not create connection', error);
             this._services.taskManager.replace(this.state.set(ConnectionState.DISCONNECTED));
             this.leaderState.reset(D2mLeaderState.NONLEADER);
-            return {
-                lastConnectionState: this.state.get(),
-                closeInfo: {
+            yield {
+                connected: false,
+                wasConnected: false,
+                info: {
                     code: CloseCode.WEBSOCKET_UNABLE_TO_ESTABLISH,
-                    clientInitiated: undefined,
+                    origin: 'unknown',
                 },
             };
+            return;
         }
+        this._connection = connection;
+
+        // Create promises
+        const connectedPromise = new ResolvablePromise<ConnectionResultConnected>();
+        const disconnectedPromise = connection.closing.promise
+            .then(async ({info, done}) => {
+                await done;
+                return info;
+            })
+            .then(
+                (info): ConnectionResultDisconnected => ({
+                    connected: false,
+                    wasConnected: connectedPromise.done,
+                    info,
+                }),
+            );
 
         // Subscribe to connection states
-        const unsubscribeState = this._connection.state.subscribe((state) => this.state.set(state));
-        const unsubscribeLeaderState = this._connection.leaderState.subscribe((state) =>
+        const unsubscribeState = connection.state.subscribe((state) => {
+            this.state.set(state);
+            if (state === ConnectionState.CONNECTED) {
+                connectedPromise.resolve({connected: true});
+            }
+        });
+        const unsubscribeLeaderState = connection.leaderState.subscribe((state) =>
             this.leaderState.set(state),
         );
 
-        // Wait until closed
-        this._log.info('Connected, waiting until closed');
-        let state: {readonly lastConnectionState: ConnectionState; readonly closeInfo: CloseInfo};
+        // Wait until fully connected or closed
+        this._log.info('Connected to server, waiting until fully connected or closed');
         try {
-            const closeInfo = await this._connection.closed;
-            state = {lastConnectionState: this.state.get(), closeInfo};
+            const result = await Promise.race([connectedPromise, disconnectedPromise]);
+            if (result.connected) {
+                yield result;
+            }
         } catch (error) {
-            this._log.error('Connection closed promise failed', error);
-            state = {
-                lastConnectionState: this.state.get(),
-                closeInfo: {code: CloseCode.INTERNAL_ERROR, clientInitiated: undefined},
+            this._log.error('Connection result promise failed', error);
+            // We'll just continue here in this case
+        }
+
+        // Continue waiting until closed
+        this._log.info('Waiting until closed');
+        let result: ConnectionResultDisconnected;
+        try {
+            result = await disconnectedPromise;
+        } catch (error) {
+            this._log.error('Connection disconnected promise failed', error);
+            result = {
+                connected: false,
+                info: {code: CloseCode.INTERNAL_ERROR, origin: 'unknown'},
+                wasConnected: connectedPromise.done,
             };
         }
         unsubscribeState();
@@ -1555,7 +1618,7 @@ class ConnectionManager {
         this._services.taskManager.replace(this.state.set(ConnectionState.DISCONNECTED));
         this.leaderState.reset(D2mLeaderState.NONLEADER);
         this._connection = undefined;
-        return state;
+        yield result;
     }
 }
 
@@ -1590,6 +1653,26 @@ function makeD2mPlatformDetails(browserInfo: BrowserInfo, systemInfo: SystemInfo
  */
 class Connection {
     public constructor(
+        /**
+         * Raises immediately when the connection has been closed or should be closed.
+         *
+         * Note: Only for internal use! The closing sequence may still be ongoing! Use
+         * {@link _closing} instead to await the closing sequence.
+         */
+        private readonly _closed: AbortRaiser<{
+            readonly type: 'normal' | 'error';
+            readonly info: CloseInfo;
+        }>,
+
+        /**
+         * Raises immediately when the connection is in the closing sequence. The inner promise
+         * resolves when the reader has been drained.
+         */
+        private readonly _closing: AbortRaiser<{
+            readonly info: CloseInfo;
+            readonly done: ResolvablePromise<void>;
+        }>,
+
         private readonly _mediator: MediatorWebSocketTransport,
         public readonly state: StrictMonotonicEnumStore<ConnectionState>,
         public readonly leaderState: StrictMonotonicEnumStore<D2mLeaderState>,
@@ -1597,6 +1680,7 @@ class Connection {
 
     public static async create(
         services: ServicesForBackend,
+        manager: ConnectionManagerHandle,
         taskManager: ConnectedTaskManager,
         getCaptureHandlers: () => RawCaptureHandlers | undefined,
     ): Promise<Connection> {
@@ -1626,8 +1710,26 @@ class Connection {
             ).asReadonly(),
         ) as TemporaryClientKey;
 
+        // Create closing/closed event raisers
+        const closing = {
+            done: new ResolvablePromise<void>(),
+            raiser: new AbortRaiser<{
+                readonly info: CloseInfo;
+                readonly done: ResolvablePromise<void>;
+            }>(),
+        } as const;
+        const closed = new AbortRaiser<{
+            readonly type: 'normal' | 'error';
+            readonly info: CloseInfo;
+        }>();
+
         // Create protocol controller
-        const abort = new AbortRaiser<{readonly cause: string}>();
+        let abort: AbortListener<CloseInfo>;
+        {
+            const abort_ = new AbortRaiser<CloseInfo>();
+            closed.subscribe(({info}) => abort_.raise(info));
+            abort = abort_;
+        }
         const delayedConnection = Delayed.simple<ConnectionHandle>(
             'Tried to access connection handle before connected',
             'Connection handle has already been set',
@@ -1639,8 +1741,7 @@ class Connection {
         const controller = new ProtocolController(
             services,
             taskManager,
-            delayedConnection,
-            abort.listener,
+            {manager, current: delayedConnection, closing: closing.raiser},
             // CSP
             {
                 ck: device.csp.ck,
@@ -1708,7 +1809,14 @@ class Connection {
             .then(() => leaderState.set(D2mLeaderState.LEADER))
             .catch((error) => {
                 log.warn('Leader state promise errored', error);
-                abort.raise({cause: 'Leader state promise errored'});
+                closed.raise({
+                    type: 'error',
+                    info: {
+                        code: CloseCode.INTERNAL_ERROR,
+                        origin: 'unknown',
+                        reason: 'Leader state promise errored',
+                    },
+                });
             });
 
         // Connect to mediator server and set up pipelines
@@ -1746,14 +1854,44 @@ class Connection {
                     getCaptureHandlers(),
                 ),
         );
+
+        // The closing sequence always starts when the abort sequence fires. The inner done promise
+        // will normally resolve when all pending Mediator frames have been processed, so that all
+        // CSP alert/errors have been handled. It may also resolve immediately in case of an error.
+        closed.subscribe(({type, info}) => {
+            closing.raiser.raise({info, done: closing.done});
+
+            // Short-circuit the closing sequence when we've encountered an error that lead to the
+            // closing of the transport.
+            if (type === 'error') {
+                log.warn('Short-circuiting closing sequence');
+                closing.done.resolve();
+            } else {
+                log.info('Initiating closing sequence');
+                void closing.done.finally(() => log.info('Closing sequence completed'));
+            }
+        });
+
+        // Note: Only the readable pipeline is allowed to raise the abort event since we need to
+        // check for CSP errors alerts before closing.
         mediator.closed
             .then((info) => {
                 log.info('Mediator transport closed cleanly:', info);
-                abort.raise({cause: 'Mediator transport closed cleanly'});
+                closed.raise({
+                    type: 'normal',
+                    info,
+                });
             })
             .catch((error) => {
                 log.warn('Mediator transport closed with error:', error);
-                abort.raise({cause: 'Mediator transport closed with error'});
+                closed.raise({
+                    type: 'error',
+                    info: {
+                        code: CloseCode.INTERNAL_ERROR,
+                        origin: 'unknown',
+                        reason: 'Mediator transport closed with error',
+                    },
+                });
             })
             .finally(() => {
                 for (const unsubscribe of unsubscribers) {
@@ -1761,34 +1899,77 @@ class Connection {
                 }
                 connectionState.set(ConnectionState.DISCONNECTED);
             });
+
         log.debug('Waiting for mediator transport to be connected');
         const pipe = await mediator.pipe;
         log.debug('Mediator transport pipe attached');
         pipe.readable
             .then(() => {
-                log.warn('Mediator transport readable pipe detached');
-                abort.raise({cause: 'Mediator transport readable pipe detached'});
+                // If we're not currently in the closing sequence, this is considered an error
+                if (!closing.raiser.aborted) {
+                    log.warn('Mediator transport readable pipe detached');
+                    closed.raise({
+                        type: 'error',
+                        info: {
+                            code: CloseCode.INTERNAL_ERROR,
+                            origin: 'unknown',
+                            reason: 'Mediator transport readable pipe detached',
+                        },
+                    });
+                }
             })
             .catch((error) => {
                 log.warn('Mediator transport readable side errored:', error);
-                abort.raise({cause: 'Mediator transport readable side errored'});
+                closed.raise({
+                    type: 'error',
+                    info: {
+                        code: CloseCode.INTERNAL_ERROR,
+                        origin: 'unknown',
+                        reason: 'Mediator transport readable side errored',
+                    },
+                });
+            })
+            .finally(() => {
+                // We have processed the readable queue, so we can resolve any closing sequence now
+                closing.done.resolve();
             });
         pipe.writable
             .then(() => {
                 log.warn('Mediator transport writable side detached');
-                abort.raise({cause: 'Mediator transport writable side detached'});
+                closed.raise({
+                    type: 'error',
+                    info: {
+                        code: CloseCode.INTERNAL_ERROR,
+                        origin: 'unknown',
+                        reason: 'Mediator transport writable side detached',
+                    },
+                });
             })
             .catch((error) => {
                 log.warn('Mediator transport writable side errored:', error);
-                abort.raise({cause: 'Mediator transport writable side errored'});
+                closed.raise({
+                    type: 'error',
+                    info: {
+                        code: CloseCode.INTERNAL_ERROR,
+                        origin: 'unknown',
+                        reason: 'Mediator transport writable side errored',
+                    },
+                });
             });
         connectionState.set(ConnectionState.HANDSHAKE);
 
         // Run the task manager
         controller.taskManager
-            .run(services, controller, abort.listener)
+            .run(services, controller, abort)
             .then((v) => {
-                abort.raise({cause: 'Task manager stopped'});
+                closed.raise({
+                    type: 'error',
+                    info: {
+                        code: CloseCode.INTERNAL_ERROR,
+                        origin: 'unknown',
+                        reason: 'Task manager stopped',
+                    },
+                });
                 unreachable(v, new Error('Task manager stopped'));
             })
             .catch((error) => {
@@ -1799,25 +1980,28 @@ class Connection {
                 }
             });
 
-        const connection = new Connection(mediator, connectionState, leaderState);
+        const connection = new Connection(
+            closed,
+            closing.raiser,
+            mediator,
+            connectionState,
+            leaderState,
+        );
         delayedConnection.set(connection);
         return connection;
     }
 
-    /**
-     * 'closed' promise of the underlying connection.
-     */
-    public get closed(): Promise<CloseInfo> {
-        return this._mediator.closed;
+    public get closing(): ClosingEvent {
+        return this._closing;
     }
 
     /**
      * Immediately disconnects from the WebSocket. Starts the closing flow.
      *
-     * Note: This immediately resolves the 'closed' promise with the requested close info, even if
-     * the closing flow is still ongoing.
+     * Note: The closing flow will continue so that draining is possible prior to the `abort` being
+     * raised.
      */
-    public disconnect(info: CloseInfo = {code: CloseCode.NORMAL, clientInitiated: true}): void {
+    public disconnect(info: CloseInfo): void {
         this._mediator.close(info);
     }
 }

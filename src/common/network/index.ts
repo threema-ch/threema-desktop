@@ -9,17 +9,17 @@ export interface CloseInfo {
      *
      * Note: Usually expected to contain one of the {@link CloseCode}s.
      */
-    code: u16;
+    readonly code: u16;
 
     /**
      * Optional connection reason string. Only used for documentation reasons.
      */
-    reason?: string;
+    readonly reason?: string;
 
     /**
-     * A boolean if the connection closing was explicitly initiated by the client or the server
-     * (e.g. when closing the connection due to a protocol version mismatch). May be undefined if it
-     * is unclear who initiated the closing (e.g. network failure).
+     * Whether closing the connection was initiated locally or remotely (e.g. when closing the
+     * connection due to a protocol version mismatch). May be unknown if it is unclear who initiated
+     * the closing (e.g. network failure).
      */
-    clientInitiated: boolean | undefined;
+    readonly origin: 'local' | 'remote' | 'unknown';
 }

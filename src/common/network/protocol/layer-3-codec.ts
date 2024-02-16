@@ -48,7 +48,7 @@ import type {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {MonotonicEnumStore} from '~/common/utils/store';
 
 import type {RawCaptureHandler} from './capture';
-import type {ConnectionHandle} from './controller';
+import type {ConnectionController} from './controller';
 import {CspAuthState, CspAuthStateUtils, D2mAuthState, D2mAuthStateUtils} from './state';
 
 import {
@@ -107,7 +107,7 @@ const D2M_PROTOCOL_VERSION = {
  * Device to Mediator handshake.
  */
 export interface Layer3Controller {
-    readonly connection: Delayed<ConnectionHandle>;
+    readonly connection: Pick<ConnectionController, 'current'>;
 
     /**
      * Chat Server Protocol releated properties.
@@ -743,9 +743,9 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
 
                 // Select protocol version
                 if (serverHello.version < D2M_PROTOCOL_VERSION.MIN) {
-                    connection.unwrap().disconnect({
+                    connection.current.unwrap().disconnect({
                         code: CloseCode.UNSUPPORTED_PROTOCOL_VERSION,
-                        clientInitiated: true,
+                        origin: 'local',
                     });
                     throw new ProtocolError(
                         'd2m',

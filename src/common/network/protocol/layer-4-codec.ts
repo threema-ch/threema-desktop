@@ -16,7 +16,7 @@ import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 import {CloseCode} from '..';
 
 import type {RawCaptureHandler} from './capture';
-import type {ConnectionHandle} from './controller';
+import type {ConnectionController} from './controller';
 
 import {
     CspPayloadType,
@@ -32,7 +32,7 @@ import {
  * Properties needed to keep the connection towards the Chat Server alive.
  */
 export interface Layer4Controller {
-    readonly connection: Delayed<ConnectionHandle>;
+    readonly connection: Pick<ConnectionController, 'current'>;
 
     /**
      * Chat Server Protocol releated properties.
@@ -168,21 +168,16 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
 
         // Wait until authenticated towards CSP
         void csp.authenticated.then(() => {
-            // Cancel all ongoing echo requests when the connection has been closed
-            connection
-                .unwrap()
-                .closed.finally(() => {
-                    for (;;) {
-                        const canceller = this._ongoingEchoRequests.shift();
-                        if (canceller === undefined) {
-                            break;
-                        }
-                        canceller();
+            // Cancel all ongoing echo requests when the connection is closing/closed
+            connection.current.unwrap().closing.subscribe(() => {
+                for (;;) {
+                    const canceller = this._ongoingEchoRequests.shift();
+                    if (canceller === undefined) {
+                        break;
                     }
-                })
-                .catch(() => {
-                    /* Ignore */
-                });
+                    canceller();
+                }
+            });
 
             // Send an echo request in the requested interval with a timestamp to
             // measure RTT.
@@ -208,9 +203,9 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
                             this._log.info(
                                 'Considering connection lost due to echo request exceeding client timeout',
                             );
-                            connection.unwrap().disconnect({
+                            connection.current.unwrap().disconnect({
                                 code: CloseCode.CLIENT_TIMEOUT,
-                                clientInitiated: true,
+                                origin: 'local',
                             });
                         }, csp.clientIdleTimeoutS * 1000),
                     );

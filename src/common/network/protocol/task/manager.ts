@@ -8,9 +8,11 @@ import {
     MessageFilterInstruction,
     type TransactionScope,
     TransactionScopeUtils,
+    CloseCodeUtils,
 } from '~/common/enum';
 import {ConnectionClosed, ProtocolError} from '~/common/error';
 import type {Logger} from '~/common/logging';
+import type {CloseInfo} from '~/common/network';
 import * as protobuf from '~/common/network/protobuf';
 import {
     CspPayloadType,
@@ -180,7 +182,7 @@ class TaskCodec implements InternalActiveTaskCodecHandle, PassiveTaskCodecHandle
     public constructor(
         private readonly _services: ServicesForTasks,
         public readonly controller: TaskController,
-        public readonly abort: AbortListener<{readonly cause: string}>,
+        public readonly abort: AbortListener<CloseInfo>,
         private readonly _manager: TaskManagerHandle,
         private readonly _name: string,
         private readonly _decoder: DecoderQueues,
@@ -759,11 +761,14 @@ export class ConnectedTaskManager {
     public async run(
         services: ServicesForBackend,
         controller: TaskController,
-        abort: AbortListener<{readonly cause: string}>,
+        abort: AbortListener<CloseInfo>,
     ): Promise<never> {
         this._log.debug('Running task manager');
-        const unsubscribe = abort.subscribe(({cause}) => {
-            const aborted = new ConnectionClosed('abort', cause);
+        const unsubscribe = abort.subscribe((info) => {
+            const aborted = new ConnectionClosed(
+                'abort',
+                info.reason ?? CloseCodeUtils.nameOf(info.code) ?? '???',
+            );
             this._decoder.queue.error(aborted);
             this._decoder.backlog.error(aborted);
             this._encoder.queue.error(aborted);
@@ -920,7 +925,7 @@ export class ConnectedTaskManager {
         task: RunnableTask<unknown>,
         services: ServicesForTasks,
         controller: TaskController,
-        abort: AbortListener<{readonly cause: string}>,
+        abort: AbortListener<CloseInfo>,
     ): Promise<unknown> {
         // Move the backlog to the task's decoder
         const decoder = {...this._decoder};

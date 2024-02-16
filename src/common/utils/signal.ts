@@ -29,7 +29,11 @@ export type AbortSubscriber<TEvent = undefined> = (event: TEvent) => void;
  */
 export interface AbortListener<TEvent = undefined> {
     readonly aborted: boolean;
+    readonly promise: QueryablePromise<TEvent>;
     readonly subscribe: (subscriber: AbortSubscriber<TEvent>) => EventUnsubscriber;
+    readonly attach: <TDomSignal extends DomAbortSignal>(
+        controller: DomAbortController<TDomSignal>,
+    ) => TDomSignal;
 }
 
 /**

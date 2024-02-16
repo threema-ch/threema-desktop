@@ -2,6 +2,7 @@
  * Layer 5: End-to-end layer.
  */
 import {ConnectionClosed} from '~/common/error';
+import type {ConnectionController} from '~/common/network/protocol/controller';
 import {ensureError} from '~/common/utils/assert';
 import type {
     AsyncCodecSink,
@@ -21,38 +22,23 @@ import type {InboundL4Message, OutboundL4Message} from '.';
  * Properties needed to handle end-to-end encrypted messages.
  */
 export interface Layer5Controller {
+    readonly connection: Pick<ConnectionController, 'closing'>;
+
     /**
      * Protocol task manager.
      */
     readonly taskManager: ConnectedTaskManager;
-
-    /**
-     * Chat Server Protocol releated properties.
-     */
-    readonly csp: {
-        /**
-         * Resolves once the authentication process has been completed.
-         */
-        readonly authenticated: Promise<void>;
-    };
-
-    /**
-     * Device to Mediator protocol related properties.
-     */
-    readonly d2m: {
-        /**
-         * Resolves once the authentication process has been completed.
-         */
-        readonly authenticated: Promise<void>;
-    };
 }
 
 export class Layer5Decoder implements AsyncCodecSink<InboundL4Message> {
     private readonly _queue: QueueProducer<DecoderQueueItem>;
     private readonly _capture?: RawCaptureHandler;
 
-    public constructor(controller: Layer5Controller, capture?: RawCaptureHandler) {
-        this._queue = controller.taskManager.dispatch.decoder;
+    public constructor(
+        private readonly _controller: Layer5Controller,
+        capture?: RawCaptureHandler,
+    ) {
+        this._queue = _controller.taskManager.dispatch.decoder;
         this._capture = capture;
     }
 
@@ -61,7 +47,15 @@ export class Layer5Decoder implements AsyncCodecSink<InboundL4Message> {
         try {
             await this._queue.put(message);
         } catch (error) {
-            controller.error(ensureError(error));
+            // Delay bubbling an error through the reader until the reader queue has been drained,
+            // so that any CSP alert/errors will be handled correctly.
+            if (this._controller.connection.closing.aborted) {
+                this._controller.connection.closing.subscribe(({done}) => {
+                    void done.finally(() => controller.error(ensureError(error)));
+                });
+            } else {
+                controller.error(ensureError(error));
+            }
         }
     }
 

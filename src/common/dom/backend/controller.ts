@@ -18,6 +18,7 @@ import type {Logger} from '~/common/logging';
 import type {ThumbnailGenerator} from '~/common/media';
 import type {ProfilePictureView, Repositories} from '~/common/model';
 import type {DisplayPacket} from '~/common/network/protocol/capture';
+import type {ConnectionManagerHandle} from '~/common/network/protocol/connection';
 import type {DirectoryBackend} from '~/common/network/protocol/directory';
 import type {ConnectionState} from '~/common/network/protocol/state';
 import type {IdentityString} from '~/common/network/types';
@@ -72,6 +73,7 @@ export class BackendController {
     public readonly leaderState: EssentialStartupData['leaderState'];
     public readonly user: UserData;
     public readonly debug: Remote<DebugBackend>;
+    public readonly connectionManager: Remote<ConnectionManagerHandle>;
     public readonly deviceIds: DeviceIds;
     public readonly directory: Remote<DirectoryBackend>;
     public readonly model: Remote<Repositories>;
@@ -94,6 +96,7 @@ export class BackendController {
         this.user = data.user;
         this.debug = _remote.debug;
         this.deviceIds = deviceIds;
+        this.connectionManager = _remote.connectionManager;
         this.directory = _remote.directory;
         this.model = _remote.model;
         this.keyStorage = _remote.keyStorage;
@@ -369,21 +372,6 @@ export class BackendController {
                 this.capturing = undefined;
             },
         };
-    }
-
-    /**
-     * Toggle auto-connect. When auto-connect is turned off, the current connection will be closed.
-     */
-    public async toggleAutoConnect(): Promise<void> {
-        await this._remote.connectionManager.toggleAutoConnect();
-    }
-
-    /**
-     * Turn connection off and on again. This method will always try to establish a connection in the end,
-     * no matter the previous state of the connection.
-     */
-    public async reconnect(): Promise<void> {
-        await this._remote.connectionManager.reconnect();
     }
 
     /**

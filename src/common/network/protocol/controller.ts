@@ -3,6 +3,7 @@ import type {DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import {ProtocolError} from '~/common/error';
 import type {CloseInfo} from '~/common/network';
 import type * as protobuf from '~/common/network/protobuf';
+import type {ConnectionManagerHandle} from '~/common/network/protocol/connection';
 import type {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {
     ClientCookie,
@@ -18,7 +19,7 @@ import type {
 import type {ClientKey, TemporaryClientKey} from '~/common/network/types/keys';
 import type {u32, u53} from '~/common/types';
 import {Delayed} from '~/common/utils/delayed';
-import {ResolvablePromise} from '~/common/utils/resolvable-promise';
+import {ResolvablePromise, type QueryablePromise} from '~/common/utils/resolvable-promise';
 import {SequenceNumberU64} from '~/common/utils/sequence-number';
 import type {AbortListener} from '~/common/utils/signal';
 import {MonotonicEnumStore} from '~/common/utils/store';
@@ -29,9 +30,30 @@ import type {Layer4Controller} from './layer-4-codec';
 import type {Layer5Controller} from './layer-5-codec';
 import {CspAuthState, D2mAuthState} from './state';
 
+export type ClosingEvent = AbortListener<{
+    readonly info: CloseInfo;
+    readonly done: QueryablePromise<void>;
+}>;
+
 export interface ConnectionHandle {
-    readonly closed: Promise<CloseInfo>;
-    readonly disconnect: (closeInfo: CloseInfo) => void;
+    readonly closing: ClosingEvent;
+    readonly disconnect: (info: CloseInfo) => void;
+}
+
+export interface ConnectionController {
+    /**
+     * Handle to the connection manager.
+     */
+    readonly manager: ConnectionManagerHandle;
+    /**
+     * Connection to the server (available once established).
+     */
+    readonly current: Delayed<ConnectionHandle>;
+    /**
+     * Raises immediately when the connection is in the closing sequence. The inner promise
+     * resolves when the reader has been drained.
+     */
+    readonly closing: ClosingEvent;
 }
 
 interface CspControllerSource {
@@ -166,8 +188,7 @@ export class ProtocolController {
     public constructor(
         services: Pick<ServicesForBackend, 'crypto'>,
         public readonly taskManager: ConnectedTaskManager,
-        public readonly connection: Delayed<ConnectionHandle>,
-        public readonly signal: AbortListener<{readonly cause: string}>,
+        public readonly connection: ConnectionController,
         csp: CspControllerSource,
         d2m: D2mControllerSource,
         d2d: D2dControllerSource,

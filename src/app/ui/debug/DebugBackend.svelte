@@ -31,7 +31,7 @@
       <Button
         flavor="filled"
         on:click={() => {
-          void backend.toggleAutoConnect();
+          void backend.connectionManager.toggleAutoConnect();
         }}
       >
         <span class="icon-and-text" title="Toggle auto-connection">

@@ -35,7 +35,7 @@
     if (isDeviceName(newDeviceName)) {
       updateSetting(newDeviceName, 'deviceName');
     }
-    void backend.reconnect();
+    void backend.connectionManager.disconnect();
     isEditDeviceNameModalVisible = false;
   }
 

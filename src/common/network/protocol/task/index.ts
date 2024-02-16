@@ -9,6 +9,7 @@ import {
     TransferTag,
 } from '~/common/enum';
 import {BaseError, type BaseErrorOptions} from '~/common/error';
+import type {CloseInfo} from '~/common/network';
 import type * as protobuf from '~/common/network/protobuf';
 import {
     type CspE2eType,
@@ -104,7 +105,7 @@ export type TaskCodecReadInstruction<T = undefined> =
     | MessageFilterInstruction.REJECT;
 
 interface TaskCodecHandle {
-    readonly abort: AbortListener<{readonly cause: string}>;
+    readonly abort: AbortListener<CloseInfo>;
     readonly controller: TaskController;
 
     readonly step: <T>(executor: () => Promise<T>) => Promise<T>;
