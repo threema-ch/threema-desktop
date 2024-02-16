@@ -237,9 +237,9 @@ async function main(): Promise<() => void> {
         }
     });
 
-    // Apply theme branding from build variant
-    applyThemeBranding(import.meta.env.BUILD_VARIANT, elements.container);
-    applyThemeBranding(import.meta.env.BUILD_VARIANT, elements.systemDialogs);
+    // Apply theme branding from build flavor
+    applyThemeBranding(import.meta.env.BUILD_FLAVOR, elements.container);
+    applyThemeBranding(import.meta.env.BUILD_FLAVOR, elements.systemDialogs);
 
     // Initialise WASM packages
     log.debug('Initializing WASM packages');

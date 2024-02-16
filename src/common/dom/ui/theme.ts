@@ -1,4 +1,5 @@
 import type {u53} from '~/common/types';
+import {unreachable} from '~/common/utils/assert';
 
 /**
  * Available themes. The 'system' theme uses the light or dark theme following the current theme of
@@ -30,9 +31,26 @@ export function applyTheme(theme: Theme, container: HTMLElement): void {
  * Apply a theme branding (from build variant) to the app container.
  */
 export function applyThemeBranding(
-    branding: ImportMetaEnv['BUILD_VARIANT'],
+    buildFlavor: ImportMetaEnv['BUILD_FLAVOR'],
     container: HTMLElement,
 ): void {
-    // Note: Keep this in sync with CSS selectors in `_theme.scss`
-    container.setAttribute('data-branding', branding);
+    // Note: Keep this in sync with CSS selectors in `_theme.scss`.
+    switch (buildFlavor) {
+        case 'consumer-live':
+        case 'consumer-sandbox':
+            container.setAttribute('data-branding', 'consumer');
+            break;
+
+        case 'work-sandbox':
+        case 'work-live':
+            container.setAttribute('data-branding', 'work');
+            break;
+
+        case 'work-onprem':
+            container.setAttribute('data-branding', 'onprem');
+            break;
+
+        default:
+            unreachable(buildFlavor);
+    }
 }

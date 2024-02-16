@@ -8,12 +8,14 @@
 
 @use './branding/consumer' as *;
 @use './branding/work' as *;
+@use './branding/onprem' as *;
 @use './theme/light' as *;
 @use './theme/dark' as *;
 
 $brandings: (
   consumer: $consumer,
   work: $work,
+  onprem: $onprem,
 );
 
 @function -g($map, $key, $keys...) {

@@ -43,6 +43,18 @@ $work-blue-700: #0c74dd;
 $work-blue-800: #0e63cb;
 $work-blue-900: #0d44ac;
 
+// OnPrem
+$onprem-red-50: #fde6e8;
+$onprem-red-100: #fbccd0;
+$onprem-red-200: #e89a98;
+$onprem-red-300: #dc7371;
+$onprem-red-400: #e4554e;
+$onprem-red-500: #e84735;
+$onprem-red-600: #d93e34;
+$onprem-red-700: #c8342e;
+$onprem-red-800: #bb2e27;
+$onprem-red-900: #ab251d;
+
 // Grey
 $grey-50: #fafafa;
 $grey-100: #f5f5f5;
@@ -395,6 +407,15 @@ $brandings: (
     primary-background: $work-blue-700,
     primary-background--hover: color.scale($work-blue-700, $lightness: -6%),
     primary-background--active: color.scale($work-blue-700, $lightness: -10%),
+    primary-outline--focus: #ffffff,
+    primary-text-e1: $primary-text-e1,
+    primary-text-e2: $primary-text-e2,
+    primary-text-e3: $primary-text-e3,
+  ),
+  onprem: (
+    primary-background: $onprem-red-800,
+    primary-background--hover: color.scale($onprem-red-800, $lightness: -6%),
+    primary-background--active: color.scale($onprem-red-800, $lightness: -10%),
     primary-outline--focus: #ffffff,
     primary-text-e1: $primary-text-e1,
     primary-text-e2: $primary-text-e2,

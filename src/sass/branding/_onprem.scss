@@ -1,0 +1,20 @@
+@use 'sass:color';
+@use 'sass:map';
+
+@use '../svelte-components/css-var' as *;
+@use '../svelte-components/utils' as *;
+@use '../svelte-components/theme';
+@use '../svelte-components/conversion' as *;
+
+$onprem: (
+  primary-color-50: theme.$onprem-red-50,
+  primary-color-100: theme.$onprem-red-100,
+  primary-color-200: theme.$onprem-red-200,
+  primary-color-300: theme.$onprem-red-300,
+  primary-color-400: theme.$onprem-red-400,
+  primary-color-500: theme.$onprem-red-500,
+  primary-color-600: theme.$onprem-red-600,
+  primary-color-700: theme.$onprem-red-700,
+  primary-color-800: theme.$onprem-red-800,
+  primary-color-900: theme.$onprem-red-900,
+);
