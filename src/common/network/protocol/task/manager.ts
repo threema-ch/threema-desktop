@@ -904,8 +904,6 @@ export class ConnectedTaskManager {
     ): RunnableTask<void> | undefined {
         switch (message.type) {
             case CspPayloadType.INCOMING_MESSAGE:
-            case CspPayloadType.ALERT:
-            case CspPayloadType.CLOSE_ERROR:
                 return getTaskForIncomingL5CspMessage(services, message);
             case CspPayloadType.OUTGOING_MESSAGE_ACK:
                 this._log.warn(

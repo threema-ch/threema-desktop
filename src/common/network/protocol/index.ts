@@ -183,8 +183,6 @@ export type InboundL4Message = InboundL4CspMessage | InboundL4D2mMessage;
 export type InboundL4CspMessage = CspMessage<
     | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.MessageWithMetadataBox>
     | CspPayload<CspPayloadType.OUTGOING_MESSAGE_ACK, structbuf.csp.payload.MessageAck>
-    | CspPayload<CspPayloadType.CLOSE_ERROR, structbuf.csp.payload.CloseError>
-    | CspPayload<CspPayloadType.ALERT, structbuf.csp.payload.Alert>
 >;
 export type InboundL4D2mMessage =
     | D2mMessage<D2mPayloadType.DEVICES_INFO, protobuf.d2m.DevicesInfo>
@@ -244,9 +242,7 @@ export type OutboundL4D2mTransactionMessage =
 // Task Messages (messages that are no protocol control messages)
 export type InboundTaskMessage = InboundCspTaskMessage | InboundD2mTaskMessage;
 export type InboundCspTaskMessage = CspMessage<
-    | CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.MessageWithMetadataBox>
-    | CspPayload<CspPayloadType.ALERT, structbuf.csp.payload.Alert>
-    | CspPayload<CspPayloadType.CLOSE_ERROR, structbuf.csp.payload.CloseError>
+    CspPayload<CspPayloadType.INCOMING_MESSAGE, structbuf.csp.payload.MessageWithMetadataBox>
 >;
 export type InboundD2mTaskMessage =
     | D2mMessage<D2mPayloadType.DEVICES_INFO, protobuf.d2m.DevicesInfo>

@@ -48,6 +48,7 @@ type ConnectionErrorContext =
           readonly clientExpectedState: 'new';
       };
 // TODO(DESK-487): Add other user interactions
+// TODO(DESK-1337): Above properties are confusing / dead code
 
 /**
  * Message from the server. Sent with CSP alert and close-error messages.
@@ -91,6 +92,7 @@ export type SystemDialog =
     | UnrecoverableStateDialog
     | InvalidWorkCredentialsDialog;
 
+// TODO(DESK-1337): Result should reflect possible available actions
 export type DialogAction = 'confirmed' | 'cancelled';
 
 export type SystemDialogHandle = {

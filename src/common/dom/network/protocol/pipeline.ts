@@ -112,7 +112,13 @@ class Layer4Codec {
             'L4 encoder handle already set',
         );
         const ongoingEchoRequests: TimerCanceller[] = [];
-        this.decoder = new Layer4Decoder(services, delayed, ongoingEchoRequests, capture?.inbound);
+        this.decoder = new Layer4Decoder(
+            services,
+            controller,
+            delayed,
+            ongoingEchoRequests,
+            capture?.inbound,
+        );
         this.encoder = new Layer4Encoder(
             services,
             controller,
