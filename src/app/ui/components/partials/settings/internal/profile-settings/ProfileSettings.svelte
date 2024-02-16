@@ -119,7 +119,13 @@
           />
         </KeyValueList.Item>
 
-        {#if import.meta.env.BUILD_VARIANT === 'work'}
+        {#if import.meta.env.BUILD_FLAVOR === 'work-onprem'}
+          <KeyValueList.Item
+            key={$i18n.t('settings.label--threema-onprem-username', 'Threema OnPrem Username')}
+          >
+            <Text text={$profileViewModelStore.workUsername ?? '-'} selectable={true} />
+          </KeyValueList.Item>
+        {:else if import.meta.env.BUILD_VARIANT === 'work'}
           <KeyValueList.Item
             key={$i18n.t('settings.label--threema-work-username', 'Threema Work Username')}
           >

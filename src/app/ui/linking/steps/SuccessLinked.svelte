@@ -28,25 +28,15 @@
         {$i18n.t('dialog--linking-success.label--title', 'Device Linked Successfully')}
       </h1>
       <p class="description">
-        {#if import.meta.env.BUILD_VARIANT === 'work'}
-          <SubstitutableText
-            text={$i18n.t(
-              'dialog--linking-success.markup--description-work',
-              'You can now use Threema Work on this computer <1/>(even when your iOS device happens to be turned off).',
-            )}
-          >
-            <br slot="1" />
-          </SubstitutableText>
-        {:else if import.meta.env.BUILD_VARIANT === 'consumer'}
-          <SubstitutableText
-            text={$i18n.t(
-              'dialog--linking-success.markup--description-consumer',
-              'You can now use Threema on this computer <1/>(even when your iOS device happens to be turned off).',
-            )}
-          >
-            <br slot="1" />
-          </SubstitutableText>
-        {/if}
+        <SubstitutableText
+          text={$i18n.t(
+            'dialog--linking-success.markup--description',
+            '{threema} can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet).',
+            {threema: import.meta.env.MOBILE_APP_NAME},
+          )}
+        >
+          <br slot="1" />
+        </SubstitutableText>
       </p>
       <div class="button">
         <Button

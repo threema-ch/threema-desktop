@@ -920,21 +920,32 @@ export class Backend implements ProxyMarked {
                 }
                 break;
             case 'work': {
+                const productName =
+                    import.meta.env.BUILD_FLAVOR === 'work-onprem'
+                        ? 'Threema Work (OnPrem)'
+                        : 'Threema Work';
+
                 if (joinResult.workCredentials === undefined) {
                     return await throwLinkingError(
-                        `This is a Threema Work app, but essential data did not include Threema Work credentials. Ensure that you're using the latest mobile app version.`,
+                        `This is a ${productName} app, but essential data did not include ${productName} credentials. Ensure that you're using the latest mobile app version.`,
                         {kind: 'generic-error'},
                     );
                 }
                 if (joinResult.workCredentials.username === '') {
-                    return await throwLinkingError('Threema Work credentials username is empty.', {
-                        kind: 'invalid-work-credentials',
-                    });
+                    return await throwLinkingError(
+                        `${productName} credentials username is empty.`,
+                        {
+                            kind: 'invalid-work-credentials',
+                        },
+                    );
                 }
                 if (joinResult.workCredentials.password === '') {
-                    return await throwLinkingError('Threema Work credentials password is empty.', {
-                        kind: 'invalid-work-credentials',
-                    });
+                    return await throwLinkingError(
+                        `${productName} credentials password is empty.`,
+                        {
+                            kind: 'invalid-work-credentials',
+                        },
+                    );
                 }
 
                 let licenseCheckResult;
@@ -946,15 +957,15 @@ export class Backend implements ProxyMarked {
                     );
                 } catch (error) {
                     return await throwLinkingError(
-                        `Threema Work credentials could not be validated: ${error}`,
+                        `${productName} credentials could not be validated: ${error}`,
                         {kind: 'generic-error'},
                     );
                 }
                 if (licenseCheckResult.valid) {
-                    log.info('Threema Work credentials are valid');
+                    log.info(`${productName} credentials are valid`);
                 } else {
                     return await throwLinkingError(
-                        `Threema Work credentials are invalid or revoked: ${licenseCheckResult.message}`,
+                        `${productName} credentials are invalid or revoked: ${licenseCheckResult.message}`,
                         {kind: 'invalid-work-credentials'},
                     );
                 }

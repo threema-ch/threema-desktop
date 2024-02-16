@@ -231,8 +231,7 @@
   "dialog--linking-success": {
     "action--confirm": "Threema jetzt verwenden",
     "label--title": "Gerät erfolgreich verknüpft",
-    "markup--description-consumer": "Threema lässt sich nun auf diesem Computer verwenden <1/>(auch wenn das iOS-Gerät ausgeschaltet oder nicht mit dem Internet verbunden ist).",
-    "markup--description-work": "Threema Work lässt sich nun auf diesem Computer verwenden <1/>(auch wenn das iOS-Gerät ausgeschaltet oder nicht mit dem Internet verbunden ist)."
+    "markup--description": "{threema} lässt sich nun auf diesem Computer verwenden <1/>(auch wenn das iOS-Gerät ausgeschaltet oder nicht mit dem Internet verbunden ist)."
   },
   "dialog--linking-sync": {
     "action--need-help": "Brauchen Sie Hilfe?",
@@ -404,6 +403,7 @@
     "label--profile": "Profil",
     "label--read-receipts": "Lesebestätigungen",
     "label--security": "Sicherheit",
+    "label--threema-onprem-username": "Threema OnPrem-Benutzername",
     "label--threema-work-username": "Threema Work-Benutzername",
     "label--title": "Einstellungen",
     "label--typing-indicator": "Melden, wenn ich tippe"

@@ -231,8 +231,7 @@
   "dialog--linking-success": {
     "action--confirm": "Start Using Threema",
     "label--title": "Device Linked Successfully",
-    "markup--description-consumer": "Threema can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet).",
-    "markup--description-work": "Threema Work can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet)."
+    "markup--description": "{threema} can now be used on this computer <1/>(even when your iOS device is turned off or isn’t connected to the Internet)."
   },
   "dialog--linking-sync": {
     "action--need-help": "Need help?",
@@ -404,6 +403,7 @@
     "label--profile": "Profile",
     "label--read-receipts": "Read Receipts",
     "label--security": "Security",
+    "label--threema-onprem-username": "Threema OnPrem Username",
     "label--threema-work-username": "Threema Work Username",
     "label--title": "Settings",
     "label--typing-indicator": "Typing Indicator"
