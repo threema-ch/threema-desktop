@@ -2,7 +2,7 @@ import {expect} from 'chai';
 
 import type {u53} from '~/common/types';
 import {AsyncWeakValueMap} from '~/common/utils/map';
-import {GlobalTimer} from '~/common/utils/timer';
+import {TIMER} from '~/common/utils/timer';
 
 /**
  * Test map utils.
@@ -15,7 +15,6 @@ export function run(): void {
                     callId: u53;
                 }
                 const map = new AsyncWeakValueMap<string, Value>();
-                const timer = new GlobalTimer();
 
                 // Without a lock, there's potential for async races in getOrCreate:
                 //
@@ -29,13 +28,13 @@ export function run(): void {
                 let call1Missed = false;
                 const call1 = map.getOrCreate(key, async () => {
                     call1Missed = true;
-                    await timer.sleep(1);
+                    await TIMER.sleep(1);
                     return {callId: 1};
                 });
                 let call2Missed = false;
                 const call2 = map.getOrCreate(key, async () => {
                     call2Missed = true;
-                    await timer.sleep(20);
+                    await TIMER.sleep(20);
                     return {callId: 2};
                 });
 

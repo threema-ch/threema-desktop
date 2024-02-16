@@ -14,7 +14,6 @@ import type {SystemInfo} from '~/common/electron-ipc';
 import type {LoggerFactory} from '~/common/logging';
 import type {SettingsService} from '~/common/model/types/settings';
 import type {SystemDialogService} from '~/common/system-dialog';
-import type {GlobalTimer} from '~/common/utils/timer';
 
 /**
  * Container for available services on the app and on the root panels.
@@ -25,7 +24,6 @@ export interface AppServices {
     readonly logging: LoggerFactory;
     readonly blobCache: BlobCacheService;
     readonly profilePicture: ProfilePictureService;
-    readonly timer: GlobalTimer;
     readonly storage: LocalStorageController;
     readonly backend: BackendController;
     readonly router: Router;

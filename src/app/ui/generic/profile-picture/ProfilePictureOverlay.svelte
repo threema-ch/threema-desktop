@@ -3,7 +3,7 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import ThreemaIcon from '~/app/ui/svelte-components/blocks/Icon/ThreemaIcon.svelte';
   import type {u53} from '~/common/types';
-  import {debounce} from '~/common/utils/timer';
+  import {TIMER} from '~/common/utils/timer';
   import type {ReceiverBadgeType} from '~/common/viewmodel/types';
 
   /**
@@ -13,7 +13,7 @@
 
   let debouncedUnreadCount: u53 | undefined = unread;
 
-  const updateDebouncedUnreadCount = debounce((newCount: u53 | undefined) => {
+  const updateDebouncedUnreadCount = TIMER.debounce((newCount: u53 | undefined) => {
     debouncedUnreadCount = newCount;
   }, 300);
 

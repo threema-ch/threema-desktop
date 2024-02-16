@@ -39,7 +39,7 @@ import {unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
-import {debounce, GlobalTimer} from '~/common/utils/timer';
+import {TIMER} from '~/common/utils/timer';
 
 // Extend global APIs
 //
@@ -97,7 +97,7 @@ function attachApp(services: AppServices, elements: Elements): App {
 
     // Hide splash screen and remove it entirely after 1s
     elements.splash.classList.add('hidden');
-    void services.timer.sleep(1000).then(() => elements.splash.remove());
+    void TIMER.sleep(1000).then(() => elements.splash.remove());
 
     // Create app
     elements.container.innerHTML = '';
@@ -115,17 +115,17 @@ function attachApp(services: AppServices, elements: Elements): App {
  * Check for updates. If an update is available, show a dialog to the user.
  */
 async function updateCheck(
-    services: Pick<AppServices, 'config' | 'logging' | 'timer' | 'systemDialog'>,
+    services: Pick<AppServices, 'config' | 'logging' | 'systemDialog'>,
     systemInfo: SystemInfo,
 ): Promise<void> {
-    const {config, logging, timer} = services;
+    const {config, logging} = services;
     const log = logging.logger('update-check');
     log.info('Checking for updates...');
 
     // Check for updates. If update is found, notify user after a short delay.
     const updateInfo = await checkForUpdate(config, log, systemInfo);
     if (updateInfo !== undefined) {
-        await timer.sleep(3000);
+        await TIMER.sleep(3000);
         log.info(`Update available: ${updateInfo.version}`);
         void services.systemDialog.open({
             type: 'app-update',
@@ -332,7 +332,6 @@ async function main(): Promise<() => void> {
 
     // Instantiate early services
     const config = CONFIG;
-    const timer = new GlobalTimer();
     const thumbnailGenerator = new FrontendThumbnailGenerator();
     const notification = new FrontendNotificationCreator();
     const systemDialog = new FrontendSystemDialogService();
@@ -340,7 +339,7 @@ async function main(): Promise<() => void> {
 
     // Check for updates in the background, if this is an Electron release build
     if (!import.meta.env.DEBUG) {
-        void updateCheck({config, logging, timer, systemDialog}, systemInfo);
+        void updateCheck({config, logging, systemDialog}, systemInfo);
     }
 
     // Instantiate backend
@@ -356,7 +355,6 @@ async function main(): Promise<() => void> {
             crypto: {randomBytes},
             endpoint,
             logging,
-            timer,
         },
         endpoint.wrap(worker, logging.logger('com.backend-creator')),
         showLinkingWizard,
@@ -395,7 +393,6 @@ async function main(): Promise<() => void> {
         logging,
         blobCache: new BlobCacheService(backend, logging.logger('blob-cache')),
         profilePicture: new ProfilePictureService(backend, logging.logger('profile-picture')),
-        timer,
         storage: localStorageController,
         systemDialog,
         systemInfo,
@@ -428,7 +425,7 @@ async function main(): Promise<() => void> {
     }
     const totalUnreadMessageCountUnsubscriber = (
         await backend.model.conversations.totalUnreadMessageCount
-    ).subscribe(debounce(updateUnreadMessageAppBadge, 300));
+    ).subscribe(TIMER.debounce(updateUnreadMessageAppBadge, 300));
 
     // Attach app when the identity is ready and DOM is loaded
     log.debug('Waiting for identity');

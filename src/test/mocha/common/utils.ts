@@ -2,7 +2,7 @@ import {AssertionError, expect} from 'chai';
 
 import type {u53} from '~/common/types';
 import {byteView} from '~/common/utils/byte';
-import {GlobalTimer} from '~/common/utils/timer';
+import {TIMER} from '~/common/utils/timer';
 
 /**
  * Generate fake (non-)random values.
@@ -74,13 +74,12 @@ export async function waitForCondition(
     intervalMs = 5,
     waitTime = 100,
 ): Promise<boolean> {
-    const timer = new GlobalTimer();
     if (condition()) {
         return true;
     }
     const attempts = Math.ceil(waitTime / intervalMs);
     for (let i = 0; i < attempts; i++) {
-        await timer.sleep(intervalMs);
+        await TIMER.sleep(intervalMs);
         if (condition()) {
             return true;
         }

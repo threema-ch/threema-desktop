@@ -8,7 +8,7 @@
   import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import QrCode from '~/app/ui/svelte-components/generic/QrCode/QrCode.svelte';
-  import {GlobalTimer} from '~/common/utils/timer';
+  import {TIMER} from '~/common/utils/timer';
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking.scan`);
 
@@ -18,10 +18,9 @@
   // for connecting to the rendezvous server. Note that the timer is started here, but
   // not yet awaited until after the connection has been established.
   let minimalConnectTimerElapsed = false;
-  new GlobalTimer()
-    .sleep(1000)
+  TIMER.sleep(1000)
     .then(() => (minimalConnectTimerElapsed = true))
-    .catch((error) => log.error('Sleep timer failed'));
+    .catch(() => log.error('Sleep timer failed'));
 
   /**
    * Copy linking code to clipboard. Note: this is only supposed to be used in development.

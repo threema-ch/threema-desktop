@@ -11,7 +11,7 @@ import type {u53} from '~/common/types';
 import type {SyncTransformerCodec} from '~/common/utils/codec';
 import type {Delayed} from '~/common/utils/delayed';
 import {dateToUnixTimestampMs} from '~/common/utils/number';
-import type {TimerCanceller} from '~/common/utils/timer';
+import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 
 import {CloseCode} from '..';
 
@@ -161,7 +161,6 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
     }
 
     public start(forward: (message: OutboundL3Message) => void): void {
-        const {timer} = this._services;
         const {csp, connection} = this._controller;
 
         // Set encoder for forwarding messages from the decoder
@@ -188,7 +187,7 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
             // Send an echo request in the requested interval with a timestamp to
             // measure RTT.
             this._log.debug('Starting echo timer');
-            timer.repeat((canceller) => {
+            TIMER.repeat((canceller) => {
                 const now = dateToUnixTimestampMs(new Date());
                 try {
                     const message: OutboundL3Message = {
@@ -205,7 +204,7 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
                     this._capture?.(message, {info: 'EchoRequest'});
                     forward(message);
                     this._ongoingEchoRequests.push(
-                        timer.timeout(() => {
+                        TIMER.timeout(() => {
                             this._log.info(
                                 'Considering connection lost due to echo request exceeding client timeout',
                             );

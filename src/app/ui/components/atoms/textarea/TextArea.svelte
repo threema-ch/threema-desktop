@@ -30,7 +30,7 @@
   import {isNotUndefined, unreachable, unwrap} from '~/common/utils/assert';
   import {WritableStore} from '~/common/utils/store';
   import {getUtf8ByteLength} from '~/common/utils/string';
-  import {debounce} from '~/common/utils/timer';
+  import {TIMER} from '~/common/utils/timer';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.textarea');
 
@@ -190,7 +190,7 @@
   /**
    * Debounced handling of content changes in the compose area.
    */
-  const handleMutation = debounce(
+  const handleMutation = TIMER.debounce(
     () => dispatch('textbytelengthdidchange', getTextByteLength()),
     DEBOUNCE_TIMEOUT_TO_RECOUNT_TEXT_BYTES_MILLIS,
   );

@@ -173,7 +173,6 @@ import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {AbortSubscriber} from '~/common/utils/signal';
 import type {LocalStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
-import {GlobalTimer} from '~/common/utils/timer';
 import type {IViewModelRepository} from '~/common/viewmodel';
 import {
     type ContactListItemSetEntry,
@@ -700,7 +699,6 @@ export function makeTestServices(identity: IdentityString): TestServices {
             cache: () => endpointCache,
         } as unknown as EndpointService,
         taskManager,
-        timer: new GlobalTimer(),
     };
     const model = new TestModelRepositories(identity, partialServices);
     const viewModel = new TestViewModel({...partialServices, model});

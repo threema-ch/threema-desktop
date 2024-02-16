@@ -1,7 +1,7 @@
 import type {Logger} from '~/common/logging';
 import {isSameMinute} from '~/common/utils/date';
 import {ReadableStore} from '~/common/utils/store';
-import {GlobalTimer} from '~/common/utils/timer';
+import {TIMER} from '~/common/utils/timer';
 
 interface SystemTimeStoreValue {
     /**
@@ -22,7 +22,7 @@ export class SystemTimeStore extends ReadableStore<SystemTimeStoreValue> {
         this._log.debug('SystemTimeStore created with initial state:', this.get());
 
         const intervalMs = 1000; // 1 second
-        new GlobalTimer().repeat(this._updateState, intervalMs);
+        TIMER.repeat(this._updateState, intervalMs);
         this._log.debug(`System time observer started with interval: ${intervalMs}ms`);
     }
 

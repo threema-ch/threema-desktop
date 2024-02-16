@@ -16,7 +16,6 @@ import type {TaskManager} from './network/protocol/task/manager';
 import type {NotificationService} from './notification';
 import type {SystemDialogService} from './system-dialog';
 import type {EndpointService, Remote} from './utils/endpoint';
-import type {Timer} from './utils/timer';
 import type {IViewModelRepository} from './viewmodel';
 
 /**
@@ -41,7 +40,6 @@ export interface ServicesForBackend {
     readonly systemDialog: Remote<SystemDialogService>;
     readonly systemInfo: SystemInfo;
     readonly taskManager: TaskManager;
-    readonly timer: Timer;
 }
 
 /**
@@ -54,5 +52,5 @@ export type ServicesThatRequireIdentity = 'device' | 'blob' | 'model' | 'nonces'
  */
 export type ServicesForBackendController = Pick<
     ServicesForBackend,
-    'config' | 'endpoint' | 'logging' | 'timer'
+    'config' | 'endpoint' | 'logging'
 > & {crypto: Pick<CryptoBackend, 'randomBytes'>};

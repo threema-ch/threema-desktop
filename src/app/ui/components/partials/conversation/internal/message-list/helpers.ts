@@ -1,6 +1,6 @@
 import type {Logger} from '~/common/logging';
 import type {MessageId} from '~/common/network/types';
-import {debounce} from '~/common/utils/timer';
+import {TIMER} from '~/common/utils/timer';
 
 /**
  * This object tracks the messages currently visible in the viewport and debounces notifications
@@ -11,7 +11,7 @@ export class Viewport {
 
     private readonly _messages = new Set<MessageId>();
 
-    private readonly _notifyController = debounce(
+    private readonly _notifyController = TIMER.debounce(
         () => {
             this._setCurrentViewportMessagesHandler(new Set(this._messages)).catch((error) =>
                 this._log.error(`Failed to set current viewport messages: ${error}`),

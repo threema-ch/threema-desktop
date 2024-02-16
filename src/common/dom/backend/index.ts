@@ -126,7 +126,7 @@ import {
     type StrictMonotonicEnumStore,
     WritableStore,
 } from '~/common/utils/store';
-import {GlobalTimer} from '~/common/utils/timer';
+import {TIMER} from '~/common/utils/timer';
 import {type IViewModelRepository, ViewModelRepository} from '~/common/viewmodel';
 import {ViewModelCache} from '~/common/viewmodel/cache';
 
@@ -385,7 +385,6 @@ function initBackendServicesWithoutIdentity(
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
     const compressor = factories.compressor();
     const directory = new FetchDirectoryBackend({config, logging});
-    const timer = new GlobalTimer();
     const notification = createNotificationService(endpoint, notificationEndpoint, logging);
     const media = createMediaService(endpoint, thumbnailGeneratorEndpoint, logging);
     const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
@@ -409,7 +408,6 @@ function initBackendServicesWithoutIdentity(
         systemDialog,
         systemInfo,
         taskManager,
-        timer,
     };
 }
 
@@ -438,7 +436,6 @@ function initBackendServices(
         notification,
         taskManager,
         systemDialog,
-        timer,
     } = simpleServices;
 
     const workData = workCredentials === undefined ? undefined : {workCredentials};
@@ -466,7 +463,6 @@ function initBackendServices(
         notification,
         taskManager,
         systemDialog,
-        timer,
     });
     const viewModel = new ViewModelRepository(
         {model, config, crypto, endpoint, file, logging, device},
@@ -1176,7 +1172,7 @@ export class Backend implements ProxyMarked {
         if (import.meta.env.BUILD_VARIANT === 'work') {
             const workData = this._services.device.workData;
             if (workData !== undefined) {
-                setTimeout(() => {
+                TIMER.timeout(() => {
                     this._backgroundJobScheduler.scheduleRecurringJob(
                         (log) => workLicenseCheckJob(workData, this._services, log),
                         'work-license-check',
@@ -1482,7 +1478,7 @@ class ConnectionManager {
                 this._log.debug(
                     'Last connection did not fulfill both handshakes. Waiting 5s before making another connection attempt',
                 );
-                await this._services.timer.sleep(reconnectionDelayMs);
+                await TIMER.sleep(reconnectionDelayMs);
                 skipConnectionDelay = false;
             } else if (!skipConnectionDelay) {
                 // When we were connected, we ensure that the total wait time does not exceed 5s
@@ -1499,7 +1495,7 @@ class ConnectionManager {
                         1,
                     )}s before making another connection attempt`,
                 );
-                await this._services.timer.sleep(waitMs);
+                await TIMER.sleep(waitMs);
             }
         }
     }

@@ -19,7 +19,7 @@
   import type {u53} from '~/common/types';
   import {ensureError} from '~/common/utils/assert';
   import {AsyncLock} from '~/common/utils/lock';
-  import {debounce} from '~/common/utils/timer';
+  import {TIMER} from '~/common/utils/timer';
 
   // Generic parameters are not yet recognized by the linter.
   // See https://github.com/sveltejs/eslint-plugin-svelte/issues/521
@@ -177,7 +177,7 @@
     });
   }
 
-  const handleScrollDebounced = debounce(
+  const handleScrollDebounced = TIMER.debounce(
     () => {
       if (containerElement !== null) {
         const scrollDistanceFromBottom =

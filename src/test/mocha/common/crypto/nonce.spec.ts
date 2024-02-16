@@ -17,7 +17,6 @@ import type {Logger} from '~/common/logging';
 import {assert} from '~/common/utils/assert';
 import {byteEquals, bytesToHex} from '~/common/utils/byte';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
-import {GlobalTimer} from '~/common/utils/timer';
 import {makeTestServices, makeTestUser} from '~/test/mocha/common/backend-mocks';
 
 function getRandomUid({crypto}: Pick<ServicesForNonceService, 'crypto'>): DbNonceUid {
@@ -236,8 +235,9 @@ export function run(): void {
             }
             registerNonce();
 
-            // Break the current event loop execution to free the nonce for gc
-            await new GlobalTimer().sleep(0);
+            // Break the current event loop execution to free the nonce for GC
+            await Promise.resolve();
+
             // Force Garbage Collection
             global.gc();
 
