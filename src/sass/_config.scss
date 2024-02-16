@@ -164,6 +164,19 @@ $config: config-merge(components.$config, (
       --cc-contact-status-tag-background-color,
       --cc-contact-status-tag-text-color,
 
+      // Switch
+      --cc-switch-thumb-color,
+      --cc-switch-thumb-color--disabled,
+      --cc-switch-thumb-color-off,
+      --cc-switch-thumb-color-off--disabled,
+      --cc-switch-track-color,
+      --cc-switch-track-color--disabled,
+      --cc-switch-track-color-off,
+      --cc-switch-track-color-off--disabled,
+      --cc-switch-thumb-glow-color,
+      --cc-switch-thumb-glow-color--active,
+      --cc-switch-thumb-glow-border-color,
+
       // Search input
       --cc-search-input-background-color,
       --cc-search-input-background-color--hover,

@@ -232,6 +232,19 @@ $brandings: (
     --cc-search-input-placeholder-text-color: -g($t, text-e2),
     --cc-search-input-icon-color: -g($t, text-e2),
 
+    // Switch
+    --cc-switch-thumb-color: -g($b, primary-color-600),
+    --cc-switch-thumb-color--disabled: color.mix(-g($b, primary-color-600), theme.$light-background, 26%),
+    --cc-switch-thumb-color-off: color.mix(#000000, theme.$light-background, 54%),
+    --cc-switch-thumb-color-off--disabled: color.mix(#000000, theme.$light-background, 26%),
+    --cc-switch-track-color: -g($b, primary-color-300),
+    --cc-switch-track-color--disabled: rgba(-g($b, primary-color-600), 16%),
+    --cc-switch-track-color-off: rgba(#000000, 26%),
+    --cc-switch-track-color-off--disabled: color.mix(#000000, theme.$light-background, 12%),
+    --cc-switch-thumb-glow-color: rgba(#000000, 4%),
+    --cc-switch-thumb-glow-color--active: rgba(#000000, 8%),
+    --cc-switch-thumb-glow-border-color: #000000,
+
     // Menu items
     --cc-menu-item-icon-text-background-color--hover: -g($cc, menu-item-icon-text-background-color--hover),
     --cc-menu-item-icon-text-background-color--active: -g($cc, menu-item-icon-text-background-color--active),

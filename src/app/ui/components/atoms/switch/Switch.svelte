@@ -39,7 +39,7 @@
 
     .thumb {
       left: 0;
-      background-color: var(--c-switch-thumb-color-off);
+      background-color: var(--cc-switch-thumb-color-off);
       position: relative;
 
       &::before {
@@ -56,13 +56,13 @@
 
       &:hover {
         &::before {
-          background-color: var(--c-switch-thumb-glow-color);
+          background-color: var(--cc-switch-thumb-glow-color);
         }
       }
 
       &:active {
         &::before {
-          background-color: var(--c-switch-thumb-glow-color--active);
+          background-color: var(--cc-switch-thumb-glow-color--active);
         }
       }
     }
@@ -70,32 +70,32 @@
     &:focus-within {
       .thumb {
         &::before {
-          border: solid em(0.22px) var(--c-switch-thumb-glow-border-color);
+          border: solid em(0.22px) var(--cc-switch-thumb-glow-border-color);
         }
       }
     }
 
     .track {
-      color: var(--c-switch-track-color-off);
+      color: var(--cc-switch-track-color-off);
     }
 
     &.checked {
       .thumb {
         left: em(11px);
-        background-color: var(--c-switch-thumb-color);
+        background-color: var(--cc-switch-thumb-color);
       }
 
       .track {
-        color: var(--c-switch-track-color);
+        color: var(--cc-switch-track-color);
       }
 
       &.disabled {
         .thumb {
-          background-color: var(--c-switch-thumb-color--disabled);
+          background-color: var(--cc-switch-thumb-color--disabled);
         }
 
         .track {
-          color: var(--c-switch-track-color--disabled);
+          color: var(--cc-switch-track-color--disabled);
         }
       }
     }
@@ -104,11 +104,11 @@
       pointer-events: none;
 
       .thumb {
-        background-color: var(--c-switch-thumb-color-off--disabled);
+        background-color: var(--cc-switch-thumb-color-off--disabled);
       }
 
       .track {
-        color: var(--c-switch-track-color-off--disabled);
+        color: var(--cc-switch-track-color-off--disabled);
       }
     }
   }
@@ -119,7 +119,7 @@
     width: em(18px);
     height: em(18px);
     border-radius: 50%;
-    background-color: var(--c-switch-thumb-color-off);
+    background-color: var(--cc-switch-thumb-color-off);
     transition: left 0.15s ease;
     cursor: pointer;
   }
@@ -130,7 +130,7 @@
     height: em(12px);
     top: calc(50% - #{em(6px)});
     border-radius: em(14px);
-    color: var(--c-switch-track-color-off);
+    color: var(--cc-switch-track-color-off);
     background-color: currentColor;
   }
 

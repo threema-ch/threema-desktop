@@ -135,19 +135,6 @@ $themes: (
         // Slider
         slider-track-color: rgba(#000000, 8%),
 
-        // Switch
-        switch-thumb-color: $consumer-green-600,
-        switch-thumb-color--disabled: color.mix($consumer-green-600, $light-background, 26%),
-        switch-thumb-color-off: color.mix(#000000, $light-background, 54%),
-        switch-thumb-color-off--disabled: color.mix(#000000, $light-background, 26%),
-        switch-track-color: $consumer-green-300,
-        switch-track-color--disabled: rgba($consumer-green-600, 16%),
-        switch-track-color-off: rgba(#000000, 26%),
-        switch-track-color-off--disabled: color.mix(#000000, $light-background, 12%),
-        switch-thumb-glow-color: rgba(#000000, 4%),
-        switch-thumb-glow-color--active: rgba(#000000, 8%),
-        switch-thumb-glow-border-color: #000000,
-
         // Input type text
         input-text-border-radius: em(8px),
         input-text-background-color: rgba(#000000, 2%),
@@ -288,19 +275,6 @@ $themes: (
 
         // Slider
         slider-track-color: rgba(#000000, 38%),
-
-        // Switch
-        switch-thumb-color: $consumer-green-600,
-        switch-thumb-color--disabled: color.mix($consumer-green-600, $dark-background, 38%),
-        switch-thumb-color-off: color.mix(#ffffff, $dark-background, 54%),
-        switch-thumb-color-off--disabled: color.mix(#ffffff, $dark-background, 26%),
-        switch-track-color: $consumer-green-300,
-        switch-track-color--disabled: rgba($consumer-green-600, 20%),
-        switch-track-color-off: rgba(#ffffff, 26%),
-        switch-track-color-off--disabled: rgba(#ffffff, 12%),
-        switch-thumb-glow-color: rgba(#000000, 12%),
-        switch-thumb-glow-color--active: rgba(#000000, 38%),
-        switch-thumb-glow-border-color: #ffffff,
 
         // Input type text
         input-text-border-radius: em(8px),
@@ -588,19 +562,6 @@ $brandings: (
       --c-slider-track-progress-color: -g($b, primary-background),
       --c-slider-thumb-size: em(14px),
       --c-slider-thumb-color: purple,
-
-      // Switch
-      --c-switch-thumb-color: -g($c, switch-thumb-color),
-      --c-switch-thumb-color--disabled: -g($c, switch-thumb-color--disabled),
-      --c-switch-thumb-color-off: -g($c, switch-thumb-color-off),
-      --c-switch-thumb-color-off--disabled: -g($c, switch-thumb-color-off--disabled),
-      --c-switch-track-color: -g($c, switch-track-color),
-      --c-switch-track-color--disabled: -g($c, switch-track-color--disabled),
-      --c-switch-track-color-off: -g($c, switch-track-color-off),
-      --c-switch-track-color-off--disabled: -g($c, switch-track-color-off--disabled),
-      --c-switch-thumb-glow-color: -g($c, switch-thumb-glow-color),
-      --c-switch-thumb-glow-color--active: -g($c, switch-thumb-glow-color--active),
-      --c-switch-thumb-glow-border-color: -g($c, switch-thumb-glow-border-color),
 
       // Input type text
       --c-input-text-border-radius: -g($c, input-text-border-radius),
