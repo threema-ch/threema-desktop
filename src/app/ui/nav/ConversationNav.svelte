@@ -25,7 +25,7 @@
     router,
   } = services;
 
-  // TODO(DESK-800): This type is incorrect, it's actually ` | undefined`. To prevent this, the
+  // TODO(DESK-1261): This type is incorrect, it's actually ` | undefined`. To prevent this, the
   // remote store must be passed into this component once loaded, not before.
   let profile: Remote<ProfileViewModelStore>;
   viewModel
