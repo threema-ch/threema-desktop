@@ -1,6 +1,7 @@
 import type {AnyToastAction, ToastAction} from '~/app/ui/svelte-components/generic/Snackbar';
 import type {IconSet} from '~/common/types';
 import {WritableStore} from '~/common/utils/store';
+import {TIMER} from '~/common/utils/timer';
 
 const SIMPLE_TOAST_TTL_MILLISECONDS = 5000 as const;
 const ACTION_TOAST_TTL_MILLISECONDS = 10000 as const;
@@ -105,7 +106,7 @@ function addSimple(message: string, icon?: ToastIcon): void {
 function addToast(toast: Toast): void {
     snackbarStore.set([toast, ...snackbarStore.get()]);
     if (toast.ttl !== 'persistent') {
-        setTimeout(() => {
+        TIMER.timeout(() => {
             removeToast(toast);
         }, toast.ttl);
     }

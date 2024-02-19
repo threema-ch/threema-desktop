@@ -1,4 +1,5 @@
 import type {ServicesForBackend, ServicesThatRequireIdentity} from '~/common/backend';
+import {BackgroundJobScheduler} from '~/common/background-job-scheduler';
 import type {Compressor} from '~/common/compressor';
 import {SecureSharedBoxFactory} from '~/common/crypto/box';
 import {NonceService} from '~/common/crypto/nonce';
@@ -11,7 +12,6 @@ import {
     wrapRawDatabaseKey,
 } from '~/common/db';
 import {DeviceBackend, type DeviceIds, type IdentityData} from '~/common/device';
-import {BackgroundJobScheduler} from '~/common/dom/backend/background-job-scheduler';
 import {workLicenseCheckJob} from '~/common/dom/backend/background-jobs';
 import {DeviceJoinProtocol, type DeviceJoinResult} from '~/common/dom/backend/join';
 import {randomBytes} from '~/common/dom/crypto/random';
@@ -86,7 +86,6 @@ import {u64ToHexLe} from '~/common/utils/number';
 import {taggedRace} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {type LocalStore, type StoreDeactivator, WritableStore} from '~/common/utils/store';
-import {TIMER} from '~/common/utils/timer';
 import {type IViewModelRepository, ViewModelRepository} from '~/common/viewmodel';
 import {ViewModelCache} from '~/common/viewmodel/cache';
 
@@ -1132,14 +1131,14 @@ export class Backend implements ProxyMarked {
         if (import.meta.env.BUILD_VARIANT === 'work') {
             const workData = this._services.device.workData;
             if (workData !== undefined) {
-                TIMER.timeout(() => {
-                    this._backgroundJobScheduler.scheduleRecurringJob(
-                        (log) => workLicenseCheckJob(workData, this._services, log),
-                        'work-license-check',
-                        12 * 3600,
-                        true,
-                    );
-                }, 1000);
+                this._backgroundJobScheduler.scheduleRecurringJob(
+                    (log) => workLicenseCheckJob(workData, this._services, log),
+                    {
+                        tag: 'work-license-check',
+                        intervalS: 12 * 3600,
+                        initialTimeoutS: 1,
+                    },
+                );
             }
         }
     }

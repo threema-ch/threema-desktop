@@ -1,4 +1,5 @@
 import type {u53} from '~/common/types';
+import {TIMER} from '~/common/utils/timer';
 
 /**
  * Returns whether the {@link DOMRect} of `element` is entirely contained within the {@link DOMRect}
@@ -64,6 +65,7 @@ export async function waitForPresenceOfElement({
     timeoutMs?: u53;
     /* eslint-enable @typescript-eslint/ban-types */
 }): Promise<Element> {
+    // TODO(DESK-1338): Timer usage can be simplified a lot here.
     return await new Promise((resolve, reject) => {
         if (container === null || container === undefined) {
             reject(new Error('waitForPresenceOfElement: Container was undefined'));
@@ -72,18 +74,16 @@ export async function waitForPresenceOfElement({
 
         // eslint-disable-next-line @typescript-eslint/ban-types
         let element: Element | null = container.querySelector(selector);
-        let timeoutId: u53 | undefined = undefined;
-
         if (element !== null) {
             resolve(element);
             return;
         }
 
-        const observer = new MutationObserver((mutations) => {
+        const observer = new MutationObserver(() => {
             element = container.querySelector(selector);
 
             if (element !== null) {
-                clearTimeout(timeoutId);
+                cancel();
                 observer.disconnect();
                 resolve(element);
             }
@@ -94,7 +94,7 @@ export async function waitForPresenceOfElement({
             subtree,
         });
 
-        timeoutId = window.setTimeout(() => {
+        const cancel = TIMER.timeout(() => {
             observer.disconnect();
             reject(
                 new Error(

@@ -23,6 +23,7 @@
   import type {SetValue} from '~/common/utils/set';
   import type {IQueryableStoreValue} from '~/common/utils/store';
   import {derive} from '~/common/utils/store/derived-store';
+  import {TIMER} from '~/common/utils/timer';
   import type {
     ConversationPreviewItem,
     ConversationPreviewSetStore,
@@ -264,11 +265,11 @@
       nodesByReceiverLookup[`${receiverLookup.type}:${receiverLookup.uid}`];
     if (conversationPreviewNode !== undefined) {
       // TODO(DESK-1261): Once the ConversationPreview uses the viewModel and nothing is loaded
-      // asynchronously the setTimeout below can be removed. In fact, probably the whole
+      // asynchronously the timeout below can be removed. In fact, probably the whole
       // rememberNodeForReceiver mechanism can be avoided and scrollConversationPreviewIntoView can
-      // be directly `use:`ed in the `div.conversation-preview`, similarly to how it is done
-      // in {@link ContactList} and {@link GroupList}.
-      setTimeout(() => scrollToCenterOfView(conversationPreviewNode), 100);
+      // be directly `use:`ed in the `div.conversation-preview`, similarly to how it is done in
+      // {@link ContactList} and {@link GroupList}.
+      TIMER.timeout(() => scrollToCenterOfView(conversationPreviewNode), 100);
     }
   }
 </script>

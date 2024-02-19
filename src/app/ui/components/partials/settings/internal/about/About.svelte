@@ -13,9 +13,9 @@
   import {toast} from '~/app/ui/snackbar';
   import {extractErrorMessage} from '~/common/error';
   import type {LogInfo} from '~/common/node/file-storage/log-info';
-  import type {u53} from '~/common/types';
   import {ensureError} from '~/common/utils/assert';
   import {byteSizeToHumanReadable} from '~/common/utils/number';
+  import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.settings-about');
 
@@ -25,7 +25,7 @@
 
   let isDebugModeEnabled = false;
   let versionClickedCount = 0;
-  let versionClickedTimeoutHandler: u53;
+  let versionClickedTimeoutCanceller: TimerCanceller | undefined;
 
   const {
     storage: {debugPanelState},
@@ -89,11 +89,8 @@
     if (!isDebugModeEnabled) {
       versionClickedCount++;
 
-      clearTimeout(versionClickedTimeoutHandler);
-
-      versionClickedTimeoutHandler = window.setTimeout(() => {
-        versionClickedCount = 0;
-      }, 2000);
+      versionClickedTimeoutCanceller?.();
+      versionClickedTimeoutCanceller = TIMER.timeout(() => (versionClickedCount = 0), 2000);
 
       if (versionClickedCount >= 5) {
         toast.addSimple('You are now a developer.', {

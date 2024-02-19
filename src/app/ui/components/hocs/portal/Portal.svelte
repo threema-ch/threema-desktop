@@ -1,5 +1,5 @@
 <!--
-  @component 
+  @component
   Renders the given content as a child of `target`. Note: If `target` is not defined,
   the portal will not be rendered at all.
 -->
@@ -8,6 +8,7 @@
 
   import type {PortalProps} from '~/app/ui/components/hocs/portal/props';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {TIMER} from '~/common/utils/timer';
 
   type $$Props = PortalProps;
 
@@ -32,11 +33,12 @@
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const _ref = ref;
 
-    setTimeout(() => {
+    // TODO(DESK-1339): Is this delay really needed? If yes, maybe replace with tick.then()?
+    TIMER.timeout(() => {
       if (_ref?.parentNode) {
         _ref.parentNode.removeChild(_ref);
       }
-    });
+    }, 0);
   });
 </script>
 

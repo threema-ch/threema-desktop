@@ -1,5 +1,6 @@
 import {isFullyVisibleVertical} from '~/app/ui/utils/element';
 import type {u53} from '~/common/types';
+import {TIMER} from '~/common/utils/timer';
 
 /**
  * Scroll an {@link Element} into the visible area of `container`, if it is not already fully
@@ -60,9 +61,8 @@ async function scrollIntoViewAsync({
     timeoutMs?: u53;
     /* eslint-enable @typescript-eslint/ban-types */
 }): Promise<void> {
+    // TODO(DESK-1338): Timer usage can be simplified a lot here.
     return await new Promise((resolve, reject) => {
-        let timeoutId: u53 | undefined = undefined;
-
         if (container === null || container === undefined) {
             reject(new Error('scrollIntoViewAsync: Scroll container was undefined'));
             return;
@@ -73,7 +73,7 @@ async function scrollIntoViewAsync({
         }
 
         function handleScrollEnd(): void {
-            clearTimeout(timeoutId);
+            cancel();
             container?.removeEventListener('scrollend', handleScrollEnd);
 
             resolve();
@@ -86,9 +86,9 @@ async function scrollIntoViewAsync({
         // https://bugs.chromium.org/p/chromium/issues/detail?id=1121151
         // https://bugs.chromium.org/p/chromium/issues/detail?id=1043933
         // https://bugs.chromium.org/p/chromium/issues/detail?id=833617
-        window.requestAnimationFrame(() => element.scrollIntoView(options));
+        self.requestAnimationFrame(() => element.scrollIntoView(options));
 
-        timeoutId = window.setTimeout(() => {
+        const cancel = TIMER.timeout(() => {
             container.removeEventListener('scrollend', handleScrollEnd);
             reject(
                 new Error('scrollIntoViewAsync: Maximum wait time for scrollend event exceeded'),

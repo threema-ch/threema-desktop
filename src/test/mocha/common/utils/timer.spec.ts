@@ -1,6 +1,8 @@
 import {expect} from 'chai';
 
+import type {u53} from '~/common/types';
 import {ValueObject} from '~/common/utils/object';
+import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {TIMER} from '~/common/utils/timer';
 import {expectCondition} from '~/test/mocha/common/utils';
 
@@ -9,6 +11,21 @@ import {expectCondition} from '~/test/mocha/common/utils';
  */
 export function run(): void {
     describe('utils::timer', function () {
+        describe('microtask', function () {
+            it('schedules correctly', async function () {
+                const result: u53[] = [];
+                const done = new ResolvablePromise<void>();
+                result.push(1);
+                TIMER.microtask(() => {
+                    result.push(3);
+                    done.resolve();
+                });
+                result.push(2);
+                await done;
+                expect(result).to.deep.equal([1, 2, 3]);
+            });
+        });
+
         describe('debounce', function () {
             it('actually debounces function calls', async function () {
                 const callCounter = new ValueObject(0);

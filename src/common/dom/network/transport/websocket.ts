@@ -12,6 +12,7 @@ import {CloseCode} from '~/common/network';
 import type {u16, u32, u53} from '~/common/types';
 import {ProxyHandlerWrapper} from '~/common/utils/proxy';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
+import {TIMER} from '~/common/utils/timer';
 
 // Add `WebSocketStream` to global since it's not in lib.dom.ts yet.
 declare global {
@@ -133,13 +134,13 @@ class WebSocketEventWrapperSink implements UnderlyingSink<BufferSource | string>
         // Apply backpressure (if needed)
         if (this._ws.bufferedAmount >= this._options.highWaterMark) {
             return new Promise((resolve) => {
-                const interval = self.setInterval(() => {
+                TIMER.repeat((cancel) => {
                     if (
                         this._ws.readyState === WebSocket.CLOSED ||
                         this._ws.bufferedAmount <= this._options.lowWaterMark
                     ) {
+                        cancel();
                         resolve();
-                        self.clearInterval(interval);
                     }
                 }, this._options.pollIntervalMs);
             });

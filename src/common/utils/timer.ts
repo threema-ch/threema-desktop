@@ -1,13 +1,13 @@
 import type {u53, WeakOpaque} from '~/common/types';
 
-// The globals setTimeout` and `setInterval` exist in both DOM and Node, so
-// we'll just assume they're always available.
+// The following globals exist in both DOM and Node, so we'll just assume they're always available.
 type TimeoutId = WeakOpaque<u53, {readonly TimeoutId: unique symbol}>;
 type IntervalId = WeakOpaque<u53, {readonly TimeoutId: unique symbol}>;
 declare const setTimeout: (callback: () => void, delayMs: u53) => TimeoutId;
 declare const clearTimeout: (id: TimeoutId) => void;
 declare const setInterval: (callback: () => void, intervalMs: u53) => IntervalId;
 declare const clearInterval: (id: IntervalId) => void;
+declare const queueMicrotask: (callback: () => void) => void;
 
 /**
  * Cancels the timer.
@@ -24,6 +24,15 @@ export type TimerCallback = (canceller: TimerCanceller) => void;
  * that fire repetitively in an interval.
  */
 class GlobalTimer {
+    /**
+     * Queue the given callback as a microtask.
+     *
+     * @param callback The callback to be called in the given delay.
+     */
+    public microtask(callback: () => void): void {
+        queueMicrotask(callback);
+    }
+
     /**
      * Sleep asynchronously for the given timeout.
      *

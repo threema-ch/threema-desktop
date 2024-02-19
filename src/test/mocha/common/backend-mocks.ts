@@ -362,7 +362,7 @@ export class StringLogger implements Logger {
     }
 }
 
-class TestLoggerFactory implements LoggerFactory {
+export class TestLoggerFactory implements LoggerFactory {
     private readonly _logger = new StringLogger();
 
     public constructor(private readonly _rootTag: string) {}
