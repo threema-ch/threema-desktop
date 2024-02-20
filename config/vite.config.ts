@@ -150,23 +150,33 @@ function makeBuildConfig(environment: BuildEnvironment): BuildConfig {
     }
 }
 
-function determineUrls(env: ConfigEnv): ImportMeta['env']['URLS'] {
+function determineUrls(buildFlavor: BuildFlavor): ImportMeta['env']['URLS'] {
     let downloadAndInfoShort;
     let downloadAndInfoForOtherVariantShort;
     let overviewFull;
-    switch (env.variant) {
-        case 'consumer':
+    switch (buildFlavor) {
+        case 'consumer-live':
+        case 'consumer-sandbox':
             downloadAndInfoShort = 'three.ma/md';
             downloadAndInfoForOtherVariantShort = 'three.ma/mdw';
             overviewFull = 'https://threema.ch/faq/md_overview';
             break;
-        case 'work':
+
+        case 'work-live':
+        case 'work-sandbox':
             downloadAndInfoShort = 'three.ma/mdw';
             downloadAndInfoForOtherVariantShort = 'three.ma/md';
             overviewFull = 'https://threema.ch/work/support/mdw_overview';
             break;
+
+        case 'work-onprem':
+            downloadAndInfoShort = 'https://threema.ch/de/onprem/download';
+            downloadAndInfoForOtherVariantShort = 'three.ma/md';
+            overviewFull = 'https://threema.ch/de/work/support#onprem';
+            break;
+
         default:
-            unreachable(env.variant);
+            unreachable(buildFlavor);
     }
     return {
         downloadAndInfo: {short: downloadAndInfoShort, full: `https://${downloadAndInfoShort}`},
@@ -200,7 +210,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
         BUILD_FLAVOR: buildFlavor,
         APP_NAME: determineAppName(buildFlavor),
         MOBILE_APP_NAME: determineMobileAppName(buildFlavor),
-        URLS: determineUrls(env),
+        URLS: determineUrls(buildFlavor),
 
         // Defaults
         /**
