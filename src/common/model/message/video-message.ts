@@ -14,7 +14,6 @@ import {
     downloadBlob,
     getFileMessageDataState,
     NO_SENDER,
-    regenerateThumbnail,
     uploadBlobs,
 } from '~/common/model/message/common';
 import type {ServicesForModel} from '~/common/model/types/common';
@@ -136,15 +135,21 @@ export class InboundVideoMessageModelController
             this._log,
         );
 
-        void regenerateThumbnail(
-            blob.bytes,
-            this._uid,
-            this._conversation,
-            this.meta,
-            this._type,
-            this._services,
-            this._log,
-        );
+        // TODO(DESK-1306): Enable regeneration only when generation of thumbnails from video files
+        // is implemented.
+        //
+        // TODO(DESK-1342): Make sure the thumbnail is only regenerated once, not on every call of
+        // `blob()`.
+        //
+        // void regenerateThumbnail(
+        //     blob.bytes,
+        //     this._uid,
+        //     this._conversation,
+        //     this.meta,
+        //     this._type,
+        //     this._services,
+        //     this._log,
+        // );
 
         return blob;
     }

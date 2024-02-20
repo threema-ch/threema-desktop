@@ -32,11 +32,12 @@ import {
     BlobBackendError,
     type BlobScope,
     encryptAndUploadBlobWithEncryptionKey,
+    type BlobId,
 } from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
 import type {RawBlobKey} from '~/common/network/types/keys';
 import type {Mutable, ReadonlyUint8Array} from '~/common/types';
-import {ensureError, unreachable} from '~/common/utils/assert';
+import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import type {AsyncLock} from '~/common/utils/lock';
@@ -216,20 +217,40 @@ export async function downloadBlob(
     // Because the download logic is async and consists of multiple steps, we need a lock to
     // avoid races where the same blob is downloaded multiple times.
     return await lock.with(async () => {
-        // If blob is already downloaded (i.e. a fileId is set), return it
-        const [existingFileData, existingMediaType]: [
-            existingFileData: FileData | undefined,
-            existingMediaType: string,
-        ] = lifetimeGuard.run((handle) => {
-            switch (type) {
-                case 'main':
-                    return [handle.view().fileData, handle.view().mediaType];
-                case 'thumbnail':
-                    return [handle.view().thumbnailFileData, handle.view().mediaType];
-                default:
-                    return unreachable(type);
-            }
-        });
+        // If blob is already downloaded (i.e. a fileId is set), return it. Note: Either both the
+        // file data and media type are defined simultaneously, or both will return as `undefined`.
+        const [existingFileData, existingMediaType]:
+            | [existingFileData: FileData, existingMediaType: string]
+            | [existingFileData: undefined, existingMediaType: undefined] = lifetimeGuard.run(
+            (handle) => {
+                switch (type) {
+                    case 'main': {
+                        const fileData = handle.view().fileData;
+                        if (fileData !== undefined) {
+                            return [fileData, handle.view().mediaType];
+                        }
+                        break;
+                    }
+                    case 'thumbnail': {
+                        const thumbnailFileData = handle.view().thumbnailFileData;
+                        const thumbnailMediaType = handle.view().thumbnailMediaType;
+                        if (thumbnailFileData !== undefined) {
+                            assert(
+                                thumbnailMediaType !== undefined,
+                                'Thumbnail media type should always be defined if medium has thumbnail bytes',
+                            );
+
+                            return [thumbnailFileData, thumbnailMediaType];
+                        }
+                        break;
+                    }
+                    default:
+                        return unreachable(type);
+                }
+
+                return [undefined, undefined];
+            },
+        );
         if (existingFileData !== undefined) {
             try {
                 return {
@@ -275,20 +296,36 @@ export async function downloadBlob(
         }
 
         // Get matching blob ID, mediaType, and nonce
-        const [blobId, mediaType, nonce] = lifetimeGuard.run((handle) => {
-            switch (type) {
-                case 'main':
-                    return [handle.view().blobId, handle.view().mediaType, BLOB_FILE_NONCE];
-                case 'thumbnail':
-                    return [
-                        handle.view().thumbnailBlobId,
-                        handle.view().mediaType,
-                        BLOB_THUMBNAIL_NONCE,
-                    ];
-                default:
-                    return unreachable(type);
-            }
-        });
+        const [blobId, mediaType, nonce]:
+            | [blobId: BlobId, mediaType: string, nonce: Nonce]
+            | [blobId: undefined, mediaType: undefined, nonce: undefined] = lifetimeGuard.run(
+            (handle) => {
+                switch (type) {
+                    case 'main': {
+                        const mainBlobId = handle.view().blobId;
+                        const mainMediaType = handle.view().mediaType;
+
+                        if (mainBlobId !== undefined) {
+                            return [mainBlobId, mainMediaType, BLOB_FILE_NONCE];
+                        }
+                        break;
+                    }
+                    case 'thumbnail': {
+                        const thumbnailBlobId = handle.view().thumbnailBlobId;
+                        const thumbnailMediaType = handle.view().thumbnailMediaType;
+
+                        if (thumbnailBlobId !== undefined && thumbnailMediaType !== undefined) {
+                            return [thumbnailBlobId, thumbnailMediaType, BLOB_THUMBNAIL_NONCE];
+                        }
+                        break;
+                    }
+                    default:
+                        return unreachable(type);
+                }
+
+                return [undefined, undefined, undefined];
+            },
+        );
 
         // If there is no blob ID and no file data, there's nothing to be downloaded
         if (blobId === undefined) {
@@ -598,8 +635,8 @@ export async function regenerateThumbnail(
         return;
     }
 
-    // Whenever we download an image blob, we try to regenerate the thumbnail in the background
-    const newThumbnail = await media.generateThumbnail(bytes, MessageType.IMAGE, mediaType);
+    // Generate thumbnail from the provided bytes.
+    const newThumbnail = await media.generateThumbnail(bytes, messageType, mediaType);
     if (newThumbnail !== undefined) {
         await overwriteThumbnail(
             bytes,
@@ -610,7 +647,8 @@ export async function regenerateThumbnail(
             lifetimeGuard,
             log,
         );
-        // Make the new thumbnail visible to the frontend
+
+        // Make the new thumbnail visible to the frontend.
         await media.overwriteThumbnailCache(messageId, receiverLookup);
     }
 }

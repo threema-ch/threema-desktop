@@ -3,7 +3,7 @@ import type {Logger} from '~/common/logging';
 import type {AnyFileBasedMessageModel} from '~/common/model/types/message';
 import type {MessageId} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
-import {unreachable} from '~/common/utils/assert';
+import {ensureError, unreachable} from '~/common/utils/assert';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {isSupportedImageType} from '~/common/utils/image';
@@ -33,32 +33,34 @@ export class MediaService {
         messageType: AnyFileBasedMessageModel['type'],
         mediaType: string,
     ): Promise<FileBytesAndMediaType | undefined> {
-        let thumbnailData: FileBytesAndMediaType;
-        switch (messageType) {
-            case 'video':
-                thumbnailData = await this._thumbnailGenerator.generateVideoThumbnail(
-                    bytes,
-                    mediaType,
-                );
-                break;
-            case 'image':
-                if (isSupportedImageType(mediaType)) {
-                    thumbnailData = await this._thumbnailGenerator.generateImageThumbnail(
-                        bytes,
-                        mediaType,
-                    );
-                    break;
-                }
-                this._log.warn('Cannot generate thumbnail because image type is not supported');
-                return undefined;
-            case 'audio':
-            case 'file':
-                this._log.warn('Cannot generate thumbnail because file type has no thumbnail');
-                return undefined;
-            default:
-                unreachable(messageType);
+        try {
+            switch (messageType) {
+                case 'video':
+                    return await this._thumbnailGenerator.generateVideoThumbnail(bytes, mediaType);
+
+                case 'image':
+                    if (isSupportedImageType(mediaType)) {
+                        return await this._thumbnailGenerator.generateImageThumbnail(
+                            bytes,
+                            mediaType,
+                        );
+                    }
+                    this._log.warn('Cannot generate thumbnail because image type is not supported');
+                    return undefined;
+
+                case 'audio':
+                case 'file':
+                    this._log.warn('Cannot generate thumbnail because file type has no thumbnail');
+                    return undefined;
+
+                default:
+                    unreachable(messageType);
+            }
+        } catch (error) {
+            this._log.error(`Thumbnail generation failed: ${ensureError(error)}`);
         }
-        return thumbnailData;
+
+        return undefined;
     }
 
     public async overwriteThumbnailCache(
