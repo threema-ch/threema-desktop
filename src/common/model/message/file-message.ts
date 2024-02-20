@@ -14,7 +14,6 @@ import {
     downloadBlob,
     getFileMessageDataState,
     NO_SENDER,
-    overwriteThumbnail,
     uploadBlobs,
 } from '~/common/model/message/common';
 import type {ServicesForModel} from '~/common/model/types/common';
@@ -34,7 +33,6 @@ import type {
     OutboundFileMessageController,
 } from '~/common/model/types/message/file';
 import {LocalModelStore} from '~/common/model/utils/model-store';
-import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
@@ -146,19 +144,6 @@ export class InboundFileMessageModelController
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
-            this.meta,
-            this._log,
-        );
-    }
-
-    /** @inheritdoc */
-    public async overwriteThumbnail(data: ReadonlyUint8Array): Promise<void> {
-        return await overwriteThumbnail(
-            data,
-            this._type,
-            this._uid,
-            this._conversation,
-            this._services,
             this.meta,
             this._log,
         );
