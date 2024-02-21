@@ -35,9 +35,10 @@ import type {
     IdentityBytes,
     ServerCookie,
     ServerSequenceNumber,
+    DeviceCookie,
 } from '~/common/network/types';
 import type {ClientKey, TemporaryClientKey, TemporaryServerKey} from '~/common/network/types/keys';
-import type {ReadonlyUint8Array, u32, u53, WeakOpaque} from '~/common/types';
+import type {ReadonlyUint8Array, u32, u53, WeakOpaque, ByteEncoder} from '~/common/types';
 import {
     assert,
     assertUnreachable,
@@ -149,6 +150,11 @@ export interface Layer3Controller {
          * The client's device ID towards the chat server.
          */
         readonly deviceId: CspDeviceId;
+
+        /**
+         * The client's device cookie
+         */
+        readonly deviceCookie: DeviceCookie | undefined;
 
         /**
          * Server Sequence Number, starting with `0`.
@@ -520,46 +526,56 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
     private _createCspExtensions(csn: ClientSequenceNumberValue): EncryptedData {
         const {csp} = this._controller;
         const buffer = this._buffer;
-
         // Encode and encrypt a contiguous byte array of `extension`s
+
+        // Encode `client-info` extension
+        const byteEncoders: ByteEncoder[] = [
+            structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
+                type: CspExtensionType.CLIENT_INFO,
+                payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.ClientInfo, {
+                    clientInfo: {
+                        encode: (cia): Uint8Array => UTF8.encodeFullyInto(csp.info, cia).encoded,
+                    },
+                }),
+            }).encode,
+            // Encode `csp-device-id` extension
+            structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
+                type: CspExtensionType.CSP_DEVICE_ID,
+                payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.CspDeviceId, {
+                    cspDeviceId: csp.deviceId,
+                }),
+            }).encode,
+
+            // Encode `message-payload-version` extension to request
+            // `message-with-metadata-box` for incoming/outgoing messages.
+            structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
+                type: CspExtensionType.MESSAGE_PAYLOAD_VERSION,
+                payload: structbuf.bridge.byteEncoder(
+                    structbuf.csp.handshake.MessagePayloadVersion,
+                    {
+                        version: CspMessagePayloadVersion.MESSAGE_WITH_METADATA_BOX,
+                    },
+                ),
+            }).encode,
+        ];
+
+        if (csp.deviceCookie !== undefined) {
+            byteEncoders.push(
+                // Encode `device-cookie` extension
+                structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
+                    type: CspExtensionType.DEVICE_COOKIE,
+                    payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.DeviceCookie, {
+                        deviceCookie: csp.deviceCookie as ReadonlyUint8Array as Uint8Array,
+                    }),
+                }).encode,
+            );
+        }
+
         return csp.box
             .unwrap()
             .encryptor(buffer, (array) =>
                 // Encode extensions packed after one another
-                byteEncodeSequence(
-                    array,
-
-                    // Encode `client-info` extension
-                    structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: CspExtensionType.CLIENT_INFO,
-                        payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.ClientInfo, {
-                            clientInfo: {
-                                encode: (cia): Uint8Array =>
-                                    UTF8.encodeFullyInto(csp.info, cia).encoded,
-                            },
-                        }),
-                    }).encode,
-
-                    // Encode `csp-device-id` extension
-                    structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: CspExtensionType.CSP_DEVICE_ID,
-                        payload: structbuf.bridge.byteEncoder(structbuf.csp.handshake.CspDeviceId, {
-                            cspDeviceId: csp.deviceId,
-                        }),
-                    }).encode,
-
-                    // Encode `message-payload-version` extension to request
-                    // `message-with-metadata-box` for incoming/outgoing messages.
-                    structbuf.bridge.byteEncoder(structbuf.csp.handshake.Extension, {
-                        type: CspExtensionType.MESSAGE_PAYLOAD_VERSION,
-                        payload: structbuf.bridge.byteEncoder(
-                            structbuf.csp.handshake.MessagePayloadVersion,
-                            {
-                                version: CspMessagePayloadVersion.MESSAGE_WITH_METADATA_BOX,
-                            },
-                        ),
-                    }).encode,
-                ),
+                byteEncodeSequence(array, ...byteEncoders),
             )
             .encryptWithCspNonce(csp.cck, csn);
     }

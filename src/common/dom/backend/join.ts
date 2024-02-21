@@ -25,6 +25,7 @@ import {
     type IdentityString,
     isNickname,
     type ServerGroup,
+    type DeviceCookie,
 } from '~/common/network/types';
 import type {RawClientKey, RawDeviceGroupKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array} from '~/common/types';
@@ -46,6 +47,7 @@ export interface DeviceJoinResult {
     readonly rawCk: RawClientKey;
     readonly serverGroup: ServerGroup;
     readonly deviceIds: DeviceIds;
+    readonly cspDeviceCookie: DeviceCookie;
     readonly dgk: RawDeviceGroupKey;
     readonly cspHashedNonces: Set<NonceHash>;
     readonly d2dHashedNonces: Set<NonceHash>;
@@ -499,6 +501,8 @@ export class DeviceJoinProtocol {
             cspDeviceId: ensureCspDeviceId(randomU64(this._services.crypto)),
         };
 
+        const cspDeviceCookie = essentialData.identityData.cspDeviceCookie;
+
         // Cache essential data
         this._essentialData.set(essentialData);
 
@@ -508,6 +512,7 @@ export class DeviceJoinProtocol {
             serverGroup,
             deviceIds,
             dgk,
+            cspDeviceCookie,
             cspHashedNonces,
             d2dHashedNonces,
             workCredentials,

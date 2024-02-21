@@ -100,6 +100,11 @@ export interface DecryptedKeyStorage {
     databaseKey: Uint8Array;
     /** Device IDs */
     deviceIds: DeviceIds | undefined;
+    /**
+     * The device cookie (16 bytes)
+     * TODO(DESK-1344)
+     */
+    deviceCookie?: Uint8Array | undefined;
     /** Threema Work Credentials (if any) */
     workCredentials: ThreemaWorkCredentials | undefined;
     /** Threema OnPrem Config (if any) */
@@ -476,6 +481,7 @@ function createBaseDecryptedKeyStorage(): DecryptedKeyStorage {
         dgk: new Uint8Array(0),
         databaseKey: new Uint8Array(0),
         deviceIds: undefined,
+        deviceCookie: undefined,
         workCredentials: undefined,
         onPremConfig: undefined,
     };
@@ -497,6 +503,9 @@ export const DecryptedKeyStorage = {
         }
         if (message.deviceIds !== undefined) {
             DeviceIds.encode(message.deviceIds, writer.uint32(34).fork()).ldelim();
+        }
+        if (message.deviceCookie !== undefined) {
+            writer.uint32(66).bytes(message.deviceCookie);
         }
         if (message.workCredentials !== undefined) {
             ThreemaWorkCredentials.encode(
@@ -551,6 +560,13 @@ export const DecryptedKeyStorage = {
                     }
 
                     message.deviceIds = DeviceIds.decode(reader, reader.uint32());
+                    continue;
+                case 8:
+                    if (tag !== 66) {
+                        break;
+                    }
+
+                    message.deviceCookie = reader.bytes();
                     continue;
                 case 6:
                     if (tag !== 50) {

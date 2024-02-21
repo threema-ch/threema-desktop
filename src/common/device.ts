@@ -1,7 +1,13 @@
 import type {ServicesForBackend} from '~/common/backend';
 import {deriveDeviceGroupKeys, type DeviceGroupBoxes} from '~/common/crypto/device-group-keys';
 import type {DatabaseBackend} from '~/common/db';
-import type {CspDeviceId, D2mDeviceId, IdentityString, ServerGroup} from '~/common/network/types';
+import type {
+    CspDeviceId,
+    D2mDeviceId,
+    DeviceCookie,
+    IdentityString,
+    ServerGroup,
+} from '~/common/network/types';
 import type {ClientKey, RawDeviceGroupKey} from '~/common/network/types/keys';
 import {Identity} from '~/common/utils/identity';
 
@@ -15,6 +21,7 @@ export type ServicesForDevice = Pick<ServicesForBackend, 'crypto' | 'logging' | 
 export interface CspData {
     readonly ck: ClientKey;
     readonly deviceId: CspDeviceId;
+    readonly deviceCookie: DeviceCookie | undefined;
 }
 
 export type D2mData = {
@@ -80,6 +87,7 @@ export class DeviceBackend implements Device {
         services: ServicesForDevice,
         identityData: IdentityData,
         deviceIds: DeviceIds,
+        deviceCookie: DeviceCookie | undefined,
         dgk: RawDeviceGroupKey,
         public readonly workData?: ThreemaWorkData,
     ) {
@@ -94,6 +102,7 @@ export class DeviceBackend implements Device {
         this.csp = {
             ck: identityData.ck,
             deviceId: deviceIds.cspDeviceId,
+            deviceCookie,
         };
         this.d2m = {
             deviceId: deviceIds.d2mDeviceId,

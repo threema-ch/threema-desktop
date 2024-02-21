@@ -169,6 +169,7 @@ class Connection {
                 identity: device.identity.bytes,
                 info: cspClientInfo,
                 deviceId: device.csp.deviceId,
+                deviceCookie: device.csp.deviceCookie,
                 // TODO(DESK-775): Get from config
                 echoRequestIntervalS: 10,
                 // TODO(DESK-775): Get from config

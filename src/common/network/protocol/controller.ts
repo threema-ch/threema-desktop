@@ -8,6 +8,7 @@ import type {ConnectedTaskManager} from '~/common/network/protocol/task/manager'
 import type {
     ClientCookie,
     ClientSequenceNumber,
+    DeviceCookie,
     CspDeviceId,
     CspPayloadBox,
     D2mChallengeBox,
@@ -60,6 +61,7 @@ interface CspControllerSource {
     readonly ck: ClientKey;
     readonly tck: TemporaryClientKey;
     readonly identity: IdentityBytes;
+    readonly deviceCookie: DeviceCookie | undefined;
     readonly info: string;
     readonly deviceId: CspDeviceId;
     readonly echoRequestIntervalS: u53;
@@ -83,6 +85,7 @@ class CspController {
     public readonly cck: ClientCookie;
     public readonly info: string;
     public readonly deviceId: CspDeviceId;
+    public readonly deviceCookie: DeviceCookie | undefined;
     public readonly echoRequestIntervalS: u53;
     public readonly serverIdleTimeoutS: u53;
     public readonly clientIdleTimeoutS: u53;
@@ -103,6 +106,7 @@ class CspController {
         this.cck = cck;
         this.info = source.info;
         this.deviceId = source.deviceId;
+        this.deviceCookie = source.deviceCookie;
         this.echoRequestIntervalS = source.echoRequestIntervalS;
         this.serverIdleTimeoutS = source.serverIdleTimeoutS;
         this.clientIdleTimeoutS = source.clientIdleTimeoutS;

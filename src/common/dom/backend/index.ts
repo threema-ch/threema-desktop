@@ -71,6 +71,7 @@ import {type DirectoryBackend, DirectoryError} from '~/common/network/protocol/d
 import {DropDeviceTask} from '~/common/network/protocol/task/d2m/drop-device';
 import {TaskManager} from '~/common/network/protocol/task/manager';
 import {StubWorkBackend, type WorkBackend} from '~/common/network/protocol/work';
+import {ensureDeviceCookie, type DeviceCookie} from '~/common/network/types';
 import {
     type ClientKey,
     randomRendezvousAuthenticationKey,
@@ -426,6 +427,7 @@ function initBackendServices(
     db: DatabaseBackend,
     identityData: IdentityData,
     deviceIds: DeviceIds,
+    deviceCookie: DeviceCookie | undefined,
     dgk: RawDeviceGroupKey,
     nonces: NonceService,
     workCredentials: ThreemaWorkCredentials | undefined,
@@ -449,6 +451,7 @@ function initBackendServices(
         {crypto, db, logging, nonces},
         identityData,
         deviceIds,
+        deviceCookie,
         dgk,
         workData,
     );
@@ -491,6 +494,7 @@ async function writeKeyStorage(
     password: string,
     identityData: IdentityData,
     deviceIds: DeviceIds,
+    deviceCookie: DeviceCookie | undefined,
     ck: RawClientKey,
     dgk: RawDeviceGroupKey,
     databaseKey: RawDatabaseKey,
@@ -505,6 +509,7 @@ async function writeKeyStorage(
                 ck,
                 serverGroup: identityData.serverGroup,
             },
+            deviceCookie,
             dgk,
             databaseKey,
             deviceIds: {...deviceIds},
@@ -534,6 +539,7 @@ export interface BackendHandle extends ProxyMarked {
     readonly connectionManager: ConnectionManager;
     readonly debug: DebugBackend;
     readonly deviceIds: DeviceIds;
+    readonly deviceCookie: DeviceCookie | undefined;
     readonly directory: Pick<DirectoryBackend, 'identity'>;
     readonly keyStorage: Pick<KeyStorage, 'changePassword' | 'changeWorkCredentials'>;
     readonly model: Repositories;
@@ -571,6 +577,7 @@ export class Backend {
                 cspDeviceId: _services.device.csp.deviceId,
                 d2mDeviceId: _services.device.d2m.deviceId,
             },
+            deviceCookie: _services.device.csp.deviceCookie,
             directory: _services.directory,
             model: _services.model,
             keyStorage: _services.keyStorage,
@@ -578,7 +585,6 @@ export class Backend {
             viewModel: _services.viewModel,
             work: _services.work,
         };
-
         // Log IDs
         {
             const dgid = bytesToHex(_services.device.d2m.dgpk.public);
@@ -811,6 +817,9 @@ export class Backend {
             db,
             identityData,
             deviceIds,
+            keyStorageContents.deviceCookie !== undefined
+                ? ensureDeviceCookie(keyStorageContents.deviceCookie)
+                : undefined,
             dgk,
             nonces,
             keyStorageContents.workCredentials,
@@ -1197,6 +1206,7 @@ export class Backend {
             db,
             identityData,
             deviceIds,
+            joinResult.cspDeviceCookie,
             dgk,
             nonces,
             joinResult.workCredentials,
@@ -1264,6 +1274,7 @@ export class Backend {
                 userPassword,
                 identityData,
                 deviceIds,
+                joinResult.cspDeviceCookie,
                 rawCkForKeyStorage,
                 dgkForKeyStorage,
                 databaseKeyForKeyStorage,

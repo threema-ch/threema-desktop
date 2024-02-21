@@ -1,7 +1,7 @@
 import type {Cookie, CryptoBox, NonceUnguardedScope} from '~/common/crypto';
 import {type NonceScope, ReceiverType} from '~/common/enum';
 import type {AnyReceiver} from '~/common/model';
-import {isU64, type u32, type u64, type WeakOpaque} from '~/common/types';
+import {isU64, type ReadonlyUint8Array, type u32, type u64, type WeakOpaque} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {SequenceNumberU32, SequenceNumberU64} from '~/common/utils/sequence-number';
 
@@ -151,6 +151,30 @@ export function ensureDeviceName(deviceName: string): DeviceName {
  * The client's Threema ID as ASCII bytes.
  */
 export type IdentityBytes = WeakOpaque<Uint8Array, {readonly IdentityBytes: unique symbol}>;
+
+const DEVICE_COOKIE_LENGTH = 16;
+
+/** Device cookie of 16 bytes. */
+export type DeviceCookie = WeakOpaque<ReadonlyUint8Array, {readonly DeviceCookie: unique symbol}>;
+
+/**
+ * Type guard for {@link DeviveCookie}.
+ */
+export function isDeviceCookie(cookieBytes: unknown): cookieBytes is DeviceCookie {
+    return cookieBytes instanceof Uint8Array && cookieBytes.byteLength === DEVICE_COOKIE_LENGTH;
+}
+
+/**
+ * Ensure input is a valid {@link DeviceCookie}.
+ */
+export function ensureDeviceCookie(cookie: ReadonlyUint8Array): DeviceCookie {
+    if (!isDeviceCookie(cookie)) {
+        throw new Error(
+            `Expected device cookie to be ${DEVICE_COOKIE_LENGTH} bytes but has ${cookie.byteLength} bytes`,
+        );
+    }
+    return cookie;
+}
 
 /**
  * The client's device ID towards the chat server.

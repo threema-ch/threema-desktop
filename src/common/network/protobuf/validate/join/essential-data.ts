@@ -9,7 +9,7 @@ import * as Group from '~/common/network/protobuf/validate/sync/group';
 import * as Settings from '~/common/network/protobuf/validate/sync/settings';
 import * as UserProfile from '~/common/network/protobuf/validate/sync/user-profile';
 import {profilePictureShareWithFromSchema} from '~/common/network/protobuf/validate/sync/user-profile';
-import {ensureIdentityString, ensureServerGroup} from '~/common/network/types';
+import {ensureDeviceCookie, ensureIdentityString, ensureServerGroup} from '~/common/network/types';
 import {wrapRawClientKey, wrapRawDeviceGroupKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {bytesToHex} from '~/common/utils/byte';
@@ -22,7 +22,7 @@ const SCHEMA_IDENTITY_DATA = validator(
         .object({
             identity: validate(v.string(), ensureIdentityString),
             ck: instanceOf(Uint8Array).map(wrapRawClientKey),
-            cspDeviceCookie: nullOptional(instanceOf<ReadonlyUint8Array>(Uint8Array)), // TODO(DESK-999)
+            cspDeviceCookie: instanceOf<ReadonlyUint8Array>(Uint8Array).map(ensureDeviceCookie),
             cspServerGroup: validate(v.string(), ensureServerGroup),
         })
         .rest(v.unknown()),
@@ -78,7 +78,7 @@ const SCHEMA_AUGMENTED_DISTRIBUTION_LIST = validator(
 );
 
 /**
- * Validates {@link sync.UserProfile} in the context of essential data.
+ * Validates  {@link sync.UserProfile} in the context of essential data.
  *
  * Note that we do not re-use {@link sync.UserProfile} because we do stricter validation:
  *

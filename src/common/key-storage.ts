@@ -9,6 +9,7 @@ import {BaseError, type BaseErrorOptions} from '~/common/error';
 import {
     ensureCspDeviceId,
     ensureD2mDeviceId,
+    ensureDeviceCookie,
     ensureIdentityString,
     ensureServerGroup,
 } from '~/common/network/types';
@@ -260,6 +261,8 @@ export const KEY_STORAGE_CONTENTS_SCHEMA = v
                 cspDeviceId: unsignedLongAsU64().map(ensureCspDeviceId),
             })
             .rest(v.unknown()),
+        // TODO(DESK-1344) Make this mandatory
+        deviceCookie: instanceOf(Uint8Array).map(ensureDeviceCookie).optional(),
         workCredentials: v
             .object({username: v.string(), password: v.string()})
             .rest(v.unknown())

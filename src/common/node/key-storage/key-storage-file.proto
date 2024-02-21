@@ -108,6 +108,10 @@ message DecryptedKeyStorage {
     // Device IDs
     DeviceIds device_ids = 4;
 
+    // The device cookie (16 bytes)
+    // TODO(DESK-1344)
+    optional bytes device_cookie = 8;
+
     // Threema Work Credentials (if any)
     ThreemaWorkCredentials work_credentials = 6;
 

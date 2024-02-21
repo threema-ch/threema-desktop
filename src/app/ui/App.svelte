@@ -5,6 +5,7 @@
   import AsideContactDetails from '~/app/ui/aside/ContactDetails.svelte';
   import AsideGroupDetails from '~/app/ui/aside/GroupDetails.svelte';
   import MainConversation from '~/app/ui/components/partials/conversation/ConversationView.svelte';
+  import MissingDeviceCookie from '~/app/ui/components/partials/device-cookie-warning/MissingDeviceCookie.svelte';
   import Settings from '~/app/ui/components/partials/settings/Settings.svelte';
   import NavSettingsList from '~/app/ui/components/partials/settings-nav/SettingsNav.svelte';
   import MainWelcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
@@ -41,6 +42,23 @@
     {},
   ) as Promise<Remote<LocalModelStore<IGlobalPropertyModel<'applicationState'>>>>;
 
+  interface NoneModalState {
+    readonly type: 'none';
+  }
+
+  interface MissingDeviceCookieModalState {
+    type: 'missing-device-cookie';
+    props: {
+      services: AppServices;
+    };
+  }
+  type ModalState = NoneModalState | MissingDeviceCookieModalState;
+
+  let modalState: ModalState =
+    services.backend.deviceCookie === undefined
+      ? {type: 'missing-device-cookie', props: {services}}
+      : {type: 'none'};
+
   // Create display mode observer
   const displayModeObserver = new DisplayModeObserver(display);
 
@@ -53,6 +71,13 @@
     displayModeObserver.update();
     return manageLayout({display, router}, layout);
   });
+
+  function handleCloseModal(): void {
+    // Reset modal state.
+    modalState = {
+      type: 'none',
+    };
+  }
 
   function toggleDebugPanel(): void {
     $debugPanelState = $debugPanelState === 'show' ? 'hide' : 'show';
@@ -219,6 +244,12 @@
       <footer>
         <DebugPanel {services} />
       </footer>
+    {/if}
+
+    {#if modalState.type === 'none'}
+      <!--No modal open-->
+    {:else if modalState.type === 'missing-device-cookie'}
+      <MissingDeviceCookie {...modalState.props} on:close={handleCloseModal}></MissingDeviceCookie>
     {/if}
   </div>
 </template>

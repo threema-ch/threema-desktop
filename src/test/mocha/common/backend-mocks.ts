@@ -138,6 +138,7 @@ import {
     ensureNickname,
     ensureServerGroup,
     FEATURE_MASK_FLAG,
+    type DeviceCookie,
     type FeatureMask,
     type GroupId,
     type IdentityString,
@@ -676,6 +677,7 @@ export function makeTestServices(identity: IdentityString): TestServices {
                 wrapRawClientKey(Uint8Array.from(rawClientKeyBytes)),
             ) as ClientKey,
             deviceId: ensureCspDeviceId(randomU64(crypto)),
+            deviceCookie: new Uint8Array(16) as ReadonlyUint8Array as DeviceCookie,
         },
         d2m: {
             deviceId: ensureD2mDeviceId(randomU64(crypto)),

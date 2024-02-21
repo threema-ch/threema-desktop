@@ -80,7 +80,7 @@ import {
 } from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
 import {fileModeInternalObjectIfPosix} from '~/common/node/fs';
-import {KiB, MiB, type u53} from '~/common/types';
+import {KiB, MiB, type ReadonlyUint8Array, type u53} from '~/common/types';
 import {assert} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {intoUnsignedLong} from '~/common/utils/number';
@@ -544,6 +544,11 @@ export class FileSystemKeyStorage implements KeyStorage {
                         d2mDeviceId: intoUnsignedLong(decryptedKeyStorage.deviceIds.d2mDeviceId),
                         cspDeviceId: intoUnsignedLong(decryptedKeyStorage.deviceIds.cspDeviceId),
                     },
+                    // TODO(DESK-1344) Make this mandatory.
+                    deviceCookie:
+                        decryptedKeyStorage.deviceCookie !== undefined
+                            ? (decryptedKeyStorage.deviceCookie as ReadonlyUint8Array as Uint8Array)
+                            : undefined,
                     workCredentials: decryptedKeyStorage.workCredentials,
                     onPremConfig:
                         import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
