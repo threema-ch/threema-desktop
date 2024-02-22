@@ -86,13 +86,13 @@ export function determineAppName(flavor: BuildFlavor): string {
         case 'consumer-live':
             break;
         case 'consumer-sandbox':
-            name += ' Sandbox';
+            name += ' Green';
             break;
         case 'work-live':
             name += ' Work';
             break;
         case 'work-sandbox':
-            name += ' Red';
+            name += ' Blue';
             break;
         case 'work-onprem':
             name += ' OnPrem';
@@ -113,13 +113,13 @@ export function determineMobileAppName(flavor: BuildFlavor): string {
         case 'consumer-live':
             break;
         case 'consumer-sandbox':
-            name += ' Red';
+            name += ' Green';
             break;
         case 'work-live':
             name += ' Work';
             break;
         case 'work-sandbox':
-            name += ' Work Red';
+            name += ' Blue';
             break;
         case 'work-onprem':
             name += ' OnPrem';
