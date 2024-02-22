@@ -620,7 +620,7 @@ async function buildDmg(
             break;
         case 'work-sandbox':
             dmgName = 'ThreemaRed';
-            installerBackgroundFilename = 'red.png';
+            installerBackgroundFilename = 'work.png';
             iconFilename = 'work-sandbox.icns';
             break;
         case 'work-live':
@@ -630,8 +630,8 @@ async function buildDmg(
             break;
         case 'work-onprem':
             dmgName = 'ThreemaOnPrem';
-            installerBackgroundFilename = 'work.png'; // TODO(DESK-1296): OnPrem background
-            iconFilename = 'work-live.icns'; // TODO(DESK-1296): OnPrem icon
+            installerBackgroundFilename = 'onprem.png';
+            iconFilename = 'work-onprem.icns';
             break;
         default:
             unreachable(flavor);
