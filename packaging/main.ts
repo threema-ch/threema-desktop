@@ -147,11 +147,11 @@ function determineAppRdn(flavor: BuildFlavor): string {
         case 'consumer-live':
             return 'ch.threema.threema-desktop';
         case 'consumer-sandbox':
-            return 'ch.threema.threema-sandbox-desktop';
+            return 'ch.threema.threema-green-desktop';
         case 'work-live':
             return 'ch.threema.threema-work-desktop';
         case 'work-sandbox':
-            return 'ch.threema.threema-red-desktop';
+            return 'ch.threema.threema-blue-desktop';
         case 'work-onprem':
             return 'ch.threema.threema-onprem-desktop';
         default:
@@ -167,11 +167,11 @@ function determineAppIdentifier(flavor: BuildFlavor): string {
         case 'consumer-live':
             return 'threema-desktop';
         case 'consumer-sandbox':
-            return 'threema-sandbox-desktop';
+            return 'threema-green-desktop';
         case 'work-live':
             return 'threema-work-desktop';
         case 'work-sandbox':
-            return 'threema-red-desktop';
+            return 'threema-blue-desktop';
         case 'work-onprem':
             return 'threema-onprem-desktop';
         default:
@@ -609,7 +609,7 @@ async function buildDmg(
     let iconFilename;
     switch (flavor) {
         case 'consumer-sandbox':
-            dmgName = 'ThreemaSandbox';
+            dmgName = 'ThreemaGreen';
             installerBackgroundFilename = 'consumer.png';
             iconFilename = 'consumer-sandbox.icns';
             break;
@@ -619,7 +619,7 @@ async function buildDmg(
             iconFilename = 'consumer-live.icns';
             break;
         case 'work-sandbox':
-            dmgName = 'ThreemaRed';
+            dmgName = 'ThreemaBlue';
             installerBackgroundFilename = 'work.png';
             iconFilename = 'work-sandbox.icns';
             break;
@@ -834,13 +834,13 @@ function buildMsix(dirs: Directories, flavor: BuildFlavor, sign: boolean): void 
             identityName = 'Threema.Desktop.Consumer';
             break;
         case 'consumer-sandbox':
-            identityName = 'Threema.Desktop.Sandbox';
+            identityName = 'Threema.Desktop.Green';
             break;
         case 'work-live':
             identityName = 'Threema.Desktop.Work';
             break;
         case 'work-sandbox':
-            identityName = 'Threema.Desktop.Red';
+            identityName = 'Threema.Desktop.Blue';
             break;
         case 'work-onprem':
             identityName = 'Threema.Desktop.OnPrem';

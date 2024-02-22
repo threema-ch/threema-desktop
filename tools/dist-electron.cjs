@@ -164,13 +164,13 @@ async function packageApp(variant, environment) {
                     appBundleId = 'ch.threema.threema-desktop';
                     break;
                 case 'consumer-sandbox':
-                    appBundleId = 'ch.threema.threema-sandbox-desktop';
+                    appBundleId = 'ch.threema.threema-green-desktop';
                     break;
                 case 'work-live':
                     appBundleId = 'ch.threema.threema-work-desktop';
                     break;
                 case 'work-sandbox':
-                    appBundleId = 'ch.threema.threema-red-desktop';
+                    appBundleId = 'ch.threema.threema-blue-desktop';
                     break;
                 case 'work-onprem':
                     appBundleId = 'ch.threema.threema-onprem-desktop';

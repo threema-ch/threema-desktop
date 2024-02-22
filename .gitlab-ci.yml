@@ -443,8 +443,8 @@ package:source:
             TITLE="Threema Beta"
             ;;
           work-sandbox)
-            APPID="ch.threema.threema-red-desktop"
-            TITLE="Threema Red Beta"
+            APPID="ch.threema.threema-blue-desktop"
+            TITLE="Threema Blue Beta"
             ;;
           work-live)
             APPID="ch.threema.threema-work-desktop"
@@ -637,16 +637,16 @@ package:linux-binary-buildonly:
         # Determine filename
         case "$flavor" in
           consumer-sandbox)
-            FILENAME="threema-sandbox-desktop"
-            DMG="ThreemaSandbox.dmg"
+            FILENAME="threema-green-desktop"
+            DMG="ThreemaGreen.dmg"
             ;;
           consumer-live)
             FILENAME="threema-desktop"
             DMG="Threema.dmg"
             ;;
           work-sandbox)
-            FILENAME="threema-red-desktop"
-            DMG="ThreemaRed.dmg"
+            FILENAME="threema-blue-desktop"
+            DMG="ThreemaBlue.dmg"
             ;;
           work-live)
             FILENAME="threema-work-desktop"
@@ -794,7 +794,7 @@ package:macos-publish:
               $name = "threema"
             }
             "work-sandbox" {
-              $name = "threema-red"
+              $name = "threema-blue"
             }
             "work-live" {
               $name = "threema-work"

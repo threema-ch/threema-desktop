@@ -18,7 +18,7 @@ function generate {
 generate 'ch.threema.threema-desktop' 'consumer-live' 'Threema Beta'
 
 # Work sandbox
-generate 'ch.threema.threema-red-desktop' 'work-sandbox' 'Threema Blue Beta'
+generate 'ch.threema.threema-blue-desktop' 'work-sandbox' 'Threema Blue Beta'
 
 # Work live
 generate 'ch.threema.threema-work-desktop' 'work-live' 'Threema Work Beta'
