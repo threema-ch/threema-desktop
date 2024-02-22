@@ -114,7 +114,7 @@
           slot="footer"
           cancelText={$i18n.t('dialog--edit-group.action--cancel', 'Cancel')}
           confirmText={$i18n.t('dialog--edit-group.action--confirm', 'OK')}
-          buttonsState={inputNameError !== undefined ? 'confirmDisabled' : 'default'}
+          confirmDisabled={inputNameError !== undefined}
           let:modal
           {modal}
         />

@@ -3,22 +3,26 @@
   import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
   import type {Modal} from '~/app/ui/svelte-components/blocks/ModalDialog';
   import {unreachable} from '~/app/ui/svelte-components/utils/assert';
+  import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
 
   interface ConfirmOnlyProps {
-    cancelText?: undefined;
-    focusOnMount?: 'confirm' | undefined;
+    readonly cancelText?: undefined;
+    readonly focusOnMount?: 'confirm' | undefined;
+    readonly confirmDisabled?: boolean;
   }
 
   interface CancelAndConfirmProps {
-    cancelText: string;
-    focusOnMount?: 'cancel' | 'confirm' | undefined;
+    readonly cancelText: string;
+    readonly focusOnMount?: 'cancel' | 'confirm' | undefined;
+    readonly cancelDisabled?: boolean;
+    readonly confirmDisabled?: boolean;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type $$Props = (ConfirmOnlyProps | CancelAndConfirmProps) & {
-    modal: Modal;
-    confirmText: string;
-    buttonsState?: 'default' | 'confirmDisabled' | 'loading';
+    readonly modal: Modal;
+    readonly confirmText: string;
+    readonly buttonsState?: 'default' | 'loading';
   };
 
   export let modal: Modal;
@@ -33,6 +37,9 @@
    * If no text is defined, no cancel button will be shown.
    */
   export let cancelText: string | undefined = undefined;
+
+  export let cancelDisabled: SvelteNullableBinding<boolean> = false;
+  export let confirmDisabled: SvelteNullableBinding<boolean> = false;
 
   /**
    * The states of the buttons.
@@ -81,7 +88,7 @@
           cancelButton = event.detail.element;
         }}
         flavor="naked"
-        disabled={buttonsState === 'loading'}
+        disabled={buttonsState === 'loading' || cancelDisabled === true}
         on:click={modal.cancel}>{cancelText}</Button
       >
     {/if}
@@ -90,7 +97,7 @@
         confirmButton = event.detail.element;
       }}
       flavor="filled"
-      disabled={buttonsState === 'confirmDisabled' || buttonsState === 'loading'}
+      disabled={buttonsState === 'loading' || confirmDisabled === true}
       on:click={modal.confirm}
     >
       <div class="confirm-button-content" data-button-state={buttonsState}>

@@ -82,6 +82,13 @@ export interface InvalidWorkCredentialsDialog extends SystemDialogBase {
 }
 
 /**
+ * Dialog which is shown when the device cookies sent by the clients do not match
+ */
+export interface DeviceCookieMismatchDialog extends SystemDialogBase {
+    readonly type: 'device-cookie-mismatch';
+}
+
+/**
  * All possible system dialogs.
  * Note: All Properties must be structurally clonable.
  */
@@ -90,7 +97,8 @@ export type SystemDialog =
     | ConnectionErrorDialog
     | ServerAlertDialog
     | UnrecoverableStateDialog
-    | InvalidWorkCredentialsDialog;
+    | InvalidWorkCredentialsDialog
+    | DeviceCookieMismatchDialog;
 
 // TODO(DESK-1337): Result should reflect possible available actions
 export type DialogAction = 'confirmed' | 'cancelled';

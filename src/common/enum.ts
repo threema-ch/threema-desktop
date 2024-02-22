@@ -522,6 +522,11 @@ export namespace CspPayloadType {
     export type CLOSE_ERROR = typeof CLOSE_ERROR;
     export const ALERT = 225;
     export type ALERT = typeof ALERT;
+    export const DEVICE_COOKIE_CHANGED_INDICATION = 210;
+    export type DEVICE_COOKIE_CHANGED_INDICATION = typeof DEVICE_COOKIE_CHANGED_INDICATION;
+    export const CLEAR_DEVICE_COOKIE_CHANGED_INDICATION = 211;
+    export type CLEAR_DEVICE_COOKIE_CHANGED_INDICATION =
+        typeof CLEAR_DEVICE_COOKIE_CHANGED_INDICATION;
 }
 /**
  * Chat server protocol payload type.
@@ -543,6 +548,9 @@ export namespace CspPayloadTypeUtils {
         [CspPayloadType.LAST_EPHEMERAL_KEY_HASH]: 'LAST_EPHEMERAL_KEY_HASH',
         [CspPayloadType.CLOSE_ERROR]: 'CLOSE_ERROR',
         [CspPayloadType.ALERT]: 'ALERT',
+        [CspPayloadType.DEVICE_COOKIE_CHANGED_INDICATION]: 'DEVICE_COOKIE_CHANGED_INDICATION',
+        [CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION]:
+            'CLEAR_DEVICE_COOKIE_CHANGED_INDICATION',
     } as const;
     export function nameOf<T extends u53>(value: T): string | undefined {
         return (NAME_OF as Record<u53, string | undefined>)[value];

@@ -235,6 +235,8 @@ export enum CspPayloadType {
     LAST_EPHEMERAL_KEY_HASH = 0xd1,
     CLOSE_ERROR = 0xe0,
     ALERT = 0xe1,
+    DEVICE_COOKIE_CHANGED_INDICATION = 0xd2,
+    CLEAR_DEVICE_COOKIE_CHANGED_INDICATION = 0xd3,
 }
 
 /**

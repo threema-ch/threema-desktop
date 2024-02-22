@@ -11,6 +11,7 @@ import type {ServicesForBackend} from '~/common/backend';
 import type {Logger} from '~/common/logging';
 import * as structbuf from '~/common/network/structbuf';
 import * as struct from '~/common/network/structbuf/bridge';
+import type {DeviceCookie} from '~/common/network/types';
 import type {SystemDialogHandle} from '~/common/system-dialog';
 import type {u53} from '~/common/types';
 import {UTF8, type SyncTransformerCodec} from '~/common/utils/codec';
@@ -48,6 +49,16 @@ export interface Layer4Controller {
          * Echo request interval in seconds.
          */
         readonly echoRequestIntervalS: u53;
+
+        /**
+         * Device Cookie.
+         *
+         * If a device cookie change indicator is sent from the server, the user is notified
+         * that somebody else might have logged in from another device to this Identity.
+         * At some point in time, the device cookie will be made mandatory (coming with essential data), enforcing a relink.
+         * TODO(DESK-1344)
+         */
+        readonly deviceCookie: DeviceCookie | undefined;
 
         /**
          * Server idle timeout interval in seconds.
@@ -194,6 +205,37 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                 return;
             }
 
+            case CspPayloadType.DEVICE_COOKIE_CHANGED_INDICATION: {
+                // TODO(DESK-1344) Remove this conditional as soon as we make the device cookie mandatory.
+                // For now, we only handle this message only when the device cookie has already been installed once.
+                if (this._controller.csp.deviceCookie !== undefined) {
+                    this._showDeviceCookieMismatchDialog()
+                        .then(() => {
+                            this._encoder.unwrap().forward({
+                                type: D2mPayloadType.PROXY,
+                                payload: {
+                                    type: CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION,
+                                    payload: struct.encoder(
+                                        structbuf.csp.payload.ClearDeviceCookieChangeIndication,
+                                        {},
+                                    ),
+                                },
+                            });
+                        })
+                        .catch((error) => {
+                            this._log.error(
+                                `Failed to show device cookie mismatch system dialog: ${error}`,
+                            );
+                        });
+                } else {
+                    this._log.warn(
+                        'Received DEVICE_COOKIE_CHANGED_INDICATION, but no device cookie is available',
+                    );
+                }
+
+                break;
+            }
+
             default:
                 // Forward
                 forward({type: message.type, payload});
@@ -207,6 +249,15 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
         return await this._services.systemDialog.open({
             type: 'server-alert',
             context: {text, title: 'Message from Server'},
+        });
+    }
+
+    /**
+     * Show device cookie mismatch dialog
+     */
+    private async _showDeviceCookieMismatchDialog(): Promise<RemoteProxy<SystemDialogHandle>> {
+        return await this._services.systemDialog.open({
+            type: 'device-cookie-mismatch',
         });
     }
 }

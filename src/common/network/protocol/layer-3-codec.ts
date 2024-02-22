@@ -677,6 +677,12 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
                     type: maybePayloadType,
                     payload: structbuf.csp.payload.Alert.decode(data),
                 };
+            case CspPayloadType.DEVICE_COOKIE_CHANGED_INDICATION:
+                return {
+                    type: maybePayloadType,
+                    payload: structbuf.csp.payload.DeviceCookieChangeIndication.decode(data),
+                };
+            case CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION:
             case CspPayloadType.OUTGOING_MESSAGE:
             case CspPayloadType.UNBLOCK_INCOMING_MESSAGES:
             case CspPayloadType.INCOMING_MESSAGE_ACK:

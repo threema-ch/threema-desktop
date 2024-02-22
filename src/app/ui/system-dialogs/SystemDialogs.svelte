@@ -4,6 +4,7 @@
   import type {AppServices} from '~/app/types';
   import AppUpdate from '~/app/ui/system-dialogs/AppUpdate.svelte';
   import ConnectionError from '~/app/ui/system-dialogs/ConnectionError.svelte';
+  import DeviceCookieMismatch from '~/app/ui/system-dialogs/DeviceCookieMismatch.svelte';
   import InvalidWorkCredentials from '~/app/ui/system-dialogs/InvalidWorkCredentials.svelte';
   import ServerAlert from '~/app/ui/system-dialogs/ServerAlert.svelte';
   import UnrecoverableState from '~/app/ui/system-dialogs/UnrecoverableState.svelte';
@@ -33,6 +34,7 @@
     'server-alert': ServerAlert,
     'unrecoverable-state': UnrecoverableState,
     'invalid-work-credentials': InvalidWorkCredentials,
+    'device-cookie-mismatch': DeviceCookieMismatch,
   };
 
   function closeDialog(action: DialogAction): void {

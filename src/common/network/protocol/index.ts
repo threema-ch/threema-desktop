@@ -121,6 +121,10 @@ export type InboundL3CspMessage = CspMessage<
     | CspPayload<CspPayloadType.OUTGOING_MESSAGE_ACK, structbuf.csp.payload.MessageAck>
     | CspPayload<CspPayloadType.CLOSE_ERROR, structbuf.csp.payload.CloseError>
     | CspPayload<CspPayloadType.ALERT, structbuf.csp.payload.Alert>
+    | CspPayload<
+          CspPayloadType.DEVICE_COOKIE_CHANGED_INDICATION,
+          structbuf.csp.payload.DeviceCookieChangeIndication
+      >
 >;
 export type InboundL3D2mMessage =
     | D2mMessage<D2mPayloadType.DEVICES_INFO, protobuf.d2m.DevicesInfo>
@@ -153,6 +157,10 @@ export type OutboundL3CspMessage = CspMessage<
     | CspPayload<
           CspPayloadType.SET_CONNECTION_IDLE_TIMEOUT,
           LayerEncoder<structbuf.csp.payload.SetConnectionIdleTimeoutEncodable>
+      >
+    | CspPayload<
+          CspPayloadType.CLEAR_DEVICE_COOKIE_CHANGED_INDICATION,
+          LayerEncoder<structbuf.csp.payload.ClearDeviceCookieChangeIndicationEncodable>
       >
 >;
 export type OutboundL3D2mMessage =
