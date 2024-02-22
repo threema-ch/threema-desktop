@@ -26,22 +26,25 @@ fi
 echo "Starting build"
 
 declare -a variants=("consumer" "work")
-declare -a environments=("live" "sandbox")
+declare -a environments=("live" "sandbox" "onprem")
 declare -a sizes=(64 128 180 192 256 512)
 
 for variant in "${variants[@]}"; do
   for environment in "${environments[@]}"; do
-    echo "Building \"$variant-$environment\""
-    
-    OUTPUT_PATH="$ASSETS_PATH/$variant-$environment"
-    mkdir -p "$OUTPUT_PATH";
+    # Generate assets for every combination, except "consumer-onprem" (which doesn't exist).
+    if ! [[ "$variant" == "consumer" && "$environment" == "onprem" ]]; then
+      echo "Building \"$variant-$environment\""
+      
+      OUTPUT_PATH="$ASSETS_PATH/$variant-$environment"
+      mkdir -p "$OUTPUT_PATH";
 
-    # Build various sizes and write them to the temporary asset directory.
-    for size in "${sizes[@]}"; do
-      file="$OUTPUT_PATH/icon-${size}.png"
-      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x"$size" -strip "$file"
-      optipng -o7 "$file"
-    done
+      # Build various sizes and write them to the temporary asset directory.
+      for size in "${sizes[@]}"; do
+        file="$OUTPUT_PATH/icon-${size}.png"
+        convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x"$size" -strip "$file"
+        optipng -o7 "$file"
+      done
+    fi
   done
 done
 

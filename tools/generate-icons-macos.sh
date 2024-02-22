@@ -33,33 +33,36 @@ fi
 echo "Starting build"
 
 declare -a variants=("consumer" "work")
-declare -a environments=("live" "sandbox")
+declare -a environments=("live" "sandbox" "onprem")
 declare -a sizes=(16 32 64 128 256 512)
 
 for variant in "${variants[@]}"; do
   for environment in "${environments[@]}"; do
-    echo "Building \"$variant-$environment.iconset\""
+    # Generate assets for every combination, except "consumer-onprem" (which doesn't exist).
+    if ! [[ "$variant" == "consumer" && "$environment" == "onprem" ]]; then
+      echo "Building \"$variant-$environment.iconset\""
 
-    TEMP_ICONSET_PATH="$MACOS_ASSETS_PATH/$variant-$environment.iconset"
-    mkdir -p "$TEMP_ICONSET_PATH";
+      TEMP_ICONSET_PATH="$MACOS_ASSETS_PATH/$variant-$environment.iconset"
+      mkdir -p "$TEMP_ICONSET_PATH";
 
-    # Build various sizes and write them to the temporary `iconset` directory.
-    for size in "${sizes[@]}"; do
-      highres="$((size * 2))"
+      # Build various sizes and write them to the temporary `iconset` directory.
+      for size in "${sizes[@]}"; do
+        highres="$((size * 2))"
 
-      file="$TEMP_ICONSET_PATH/icon_${size}x${size}.png"
-      file_highres="$TEMP_ICONSET_PATH/icon_${size}x${size}@2x.png"
+        file="$TEMP_ICONSET_PATH/icon_${size}x${size}.png"
+        file_highres="$TEMP_ICONSET_PATH/icon_${size}x${size}@2x.png"
 
-      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024-macos.png" -resize x"$size" -strip "$file"
-      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024-macos.png" -resize x"$highres" -strip "$file_highres"
+        convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024-macos.png" -resize x"$size" -strip "$file"
+        convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024-macos.png" -resize x"$highres" -strip "$file_highres"
 
-      optipng -o7 "$file"
-      optipng -o7 "$file_highres"
-    done
+        optipng -o7 "$file"
+        optipng -o7 "$file_highres"
+      done
 
-    iconutil -c icns -o "$MACOS_ASSETS_PATH/$variant-$environment.icns" "$TEMP_ICONSET_PATH"
+      iconutil -c icns -o "$MACOS_ASSETS_PATH/$variant-$environment.icns" "$TEMP_ICONSET_PATH"
 
-    # Remove temporary `iconset` directory.
-    rm -r "$TEMP_ICONSET_PATH";
+      # Remove temporary `iconset` directory.
+      rm -r "$TEMP_ICONSET_PATH";
+    fi
   done
 done

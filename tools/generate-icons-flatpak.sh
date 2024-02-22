@@ -26,18 +26,22 @@ fi
 echo "Starting build"
 
 declare -a variants=("consumer" "work")
-declare -a environments=("live" "sandbox")
+declare -a environments=("live" "sandbox" "onprem")
 
 for variant in "${variants[@]}"; do
   for environment in "${environments[@]}"; do
-    echo "Building \"$variant-$environment\""
+    # Generate assets for every combination, except "consumer-onprem" (which doesn't exist).
+    if ! [[ "$variant" == "consumer" && "$environment" == "onprem" ]]; then
+      echo "Building \"$variant-$environment\""
 
-    # Generate correct size and save it to the target directory.
-    file="$FLATPAK_ASSETS_PATH/$variant-$environment.png"
-    convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x512 -strip "$file"
-    optipng -o7 "$file"
+      # Generate correct size and save it to the target directory.
+      file="$FLATPAK_ASSETS_PATH/$variant-$environment.png"
 
-    # Copy `svg` asset to the target directory.
-    cp "$BASE_ASSETS_PATH/icon-$variant-$environment.svg" "$FLATPAK_ASSETS_PATH/$variant-$environment.svg"
+      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x512 -strip "$file"
+      optipng -o7 "$file"
+
+      # Copy `svg` asset to the target directory.
+      cp "$BASE_ASSETS_PATH/icon-$variant-$environment.svg" "$FLATPAK_ASSETS_PATH/$variant-$environment.svg"
+    fi
   done
 done

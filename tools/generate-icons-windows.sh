@@ -74,48 +74,51 @@ ASSETS_PATH="src/public/res/icons/msix"
 echo "Starting MSIX icon set build"
 
 declare -a variants=("consumer" "work")
-declare -a environments=("live" "sandbox")
+declare -a environments=("live" "sandbox" "onprem")
 
 for variant in "${variants[@]}"; do
   for environment in "${environments[@]}"; do
-    echo "Building \"$variant-$environment\""
+    # Generate assets for every combination, except "consumer-onprem" (which doesn't exist).
+    if ! [[ "$variant" == "consumer" && "$environment" == "onprem" ]]; then
+      echo "Building \"$variant-$environment\""
 
-    OUTPUT_PATH="$ASSETS_PATH/$variant-$environment"
-    mkdir -p "$OUTPUT_PATH";
+      OUTPUT_PATH="$ASSETS_PATH/$variant-$environment"
+      mkdir -p "$OUTPUT_PATH";
 
-    # 1. Generate `Square44x44Logo.png` variants.
+      # 1. Generate `Square44x44Logo.png` variants.
 
-    # Generate base file.
-    file="$OUTPUT_PATH/Square44x44Logo.png"
-    convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x44 -strip "$file"
-    optipng -o7 "$file"
-
-    declare -a themes=("altform-unplated" "altform-lightunplated")
-    declare -a sizes=(16 20 24 30 32 36 40 44 48 60 64 72 80 96 256)
-
-    # Build alternative sizes and write them to the target asset directory.
-    for size in "${sizes[@]}"; do
-      file="$OUTPUT_PATH/Square44x44Logo.targetsize-${size}.png"
-      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x"$size" -strip "$file"
+      # Generate base file.
+      file="$OUTPUT_PATH/Square44x44Logo.png"
+      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x44 -strip "$file"
       optipng -o7 "$file"
 
-      for theme in "${themes[@]}"; do
-        file="$OUTPUT_PATH/Square44x44Logo.targetsize-${size}_${theme}.png"
+      declare -a themes=("altform-unplated" "altform-lightunplated")
+      declare -a sizes=(16 20 24 30 32 36 40 44 48 60 64 72 80 96 256)
+
+      # Build alternative sizes and write them to the target asset directory.
+      for size in "${sizes[@]}"; do
+        file="$OUTPUT_PATH/Square44x44Logo.targetsize-${size}.png"
         convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x"$size" -strip "$file"
         optipng -o7 "$file"
+
+        for theme in "${themes[@]}"; do
+          file="$OUTPUT_PATH/Square44x44Logo.targetsize-${size}_${theme}.png"
+          convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x"$size" -strip "$file"
+          optipng -o7 "$file"
+        done
       done
-    done
 
-    # 2. Generate `Square150x150Logo.png` variant.
+      # 2. Generate `Square150x150Logo.png` variant.
 
-    file="$OUTPUT_PATH/Square150x150Logo.png"
-    convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x150 -strip "$file"
-    optipng -o7 "$file"
+      file="$OUTPUT_PATH/Square150x150Logo.png"
+      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024.png" -resize x150 -strip "$file"
+      optipng -o7 "$file"
 
-    # 3. Generate store logo.
+      # 3. Generate store logo.
 
-    file="$OUTPUT_PATH/StoreLogo.png"
-    convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024-square.png" -resize x150 -strip "$file"
-    optipng -o7 "$file"
+      file="$OUTPUT_PATH/StoreLogo.png"
+      convert "$BASE_ASSETS_PATH/icon-$variant-$environment-1024-square.png" -resize x150 -strip "$file"
+      optipng -o7 "$file"
+    fi
   done
 done
