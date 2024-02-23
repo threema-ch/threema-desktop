@@ -15,7 +15,7 @@ import type {D2mLeaderState} from '~/common/enum';
 import {extractErrorMessage} from '~/common/error';
 import type {KeyStorage} from '~/common/key-storage';
 import type {Logger} from '~/common/logging';
-import type {ThumbnailGenerator} from '~/common/media';
+import type {IFrontendMediaService} from '~/common/media';
 import type {ProfilePictureView, Repositories} from '~/common/model';
 import type {DisplayPacket} from '~/common/network/protocol/capture';
 import type {ConnectionManagerHandle} from '~/common/network/protocol/connection';
@@ -107,7 +107,7 @@ export class BackendController {
         init: {
             readonly notification: NotificationCreator;
             readonly systemDialog: SystemDialogService;
-            readonly thumbnailGenerator: ThumbnailGenerator;
+            readonly frontendMediaService: IFrontendMediaService;
         },
         systemInfo: SystemInfo,
         services: ServicesForBackendController,
@@ -125,14 +125,13 @@ export class BackendController {
          * Helper function to assemble a {@link BackendInit} object.
          */
         function assembleBackendInit(): BackendInitAfterTransfer {
-            // Thumbnail Generator
-            const {local: localThumbnailGeneratorEndpoint, remote: thumbnailGeneratorEndpoint} =
-                endpoint.createEndpointPair<ThumbnailGenerator>();
-
+            // Frontend media service
+            const {local: localFrontendMediaServiceEndpoint, remote: frontendMediaServiceEndpoint} =
+                endpoint.createEndpointPair<IFrontendMediaService>();
             endpoint.exposeProxy(
-                init.thumbnailGenerator,
-                localThumbnailGeneratorEndpoint,
-                logging.logger('com.thumbnail-generator'),
+                init.frontendMediaService,
+                localFrontendMediaServiceEndpoint,
+                logging.logger('com.frontend-media-service'),
             );
 
             // Notifications
@@ -155,15 +154,15 @@ export class BackendController {
 
             // Transfer
             const result = {
-                thumbnailGeneratorEndpoint,
+                frontendMediaServiceEndpoint,
                 notificationEndpoint,
                 systemDialogEndpoint,
                 systemInfo,
             };
             return endpoint.transfer(result, [
+                result.frontendMediaServiceEndpoint,
                 result.notificationEndpoint,
                 result.systemDialogEndpoint,
-                result.thumbnailGeneratorEndpoint,
             ]);
         }
 

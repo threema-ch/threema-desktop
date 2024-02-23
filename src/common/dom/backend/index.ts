@@ -43,7 +43,7 @@ import {
     type ServicesForKeyStorageFactory,
 } from '~/common/key-storage';
 import type {Logger, LoggerFactory} from '~/common/logging';
-import {MediaService, type ThumbnailGenerator} from '~/common/media';
+import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {Repositories} from '~/common/model';
 import {ModelRepositories} from '~/common/model/repositories';
 import {
@@ -132,20 +132,22 @@ export class BackendCreationError extends BaseError {
  * Data required to be supplied to a backend worker for initialisation.
  */
 export interface BackendInit {
+    readonly frontendMediaServiceEndpoint: EndpointFor<IFrontendMediaService>;
     readonly notificationEndpoint: EndpointFor<NotificationCreator>;
     readonly systemDialogEndpoint: EndpointFor<SystemDialogService>;
     readonly systemInfo: SystemInfo;
-    readonly thumbnailGeneratorEndpoint: EndpointFor<ThumbnailGenerator>;
 }
 
 /**
  * Data required to be supplied to a backend worker for initialisation.
  */
 export interface BackendInitAfterTransfer {
+    readonly frontendMediaServiceEndpoint: TransferredFromRemote<
+        EndpointFor<IFrontendMediaService>
+    >;
     readonly notificationEndpoint: TransferredToRemote<EndpointFor<NotificationCreator>>;
     readonly systemDialogEndpoint: TransferredToRemote<EndpointFor<SystemDialogService>>;
     readonly systemInfo: SystemInfo;
-    readonly thumbnailGeneratorEndpoint: TransferredFromRemote<EndpointFor<ThumbnailGenerator>>;
 }
 
 /**
@@ -316,16 +318,23 @@ function createNotificationService(
     );
 }
 
+/**
+ * Create an instance of the {@link BackendMediaService} by wrapping an endpoint for the
+ * {@link IFrontendMediaService}.
+ */
 function createMediaService(
     endpoint: EndpointService,
-    thumbnailCreator: EndpointFor<ThumbnailGenerator>,
+    frontendMediaService: EndpointFor<IFrontendMediaService>,
     logging: LoggerFactory,
-): MediaService {
-    const thumbnailGeneratorEndpoint = endpoint.wrap<ThumbnailGenerator>(
-        thumbnailCreator,
-        logging.logger('com.thumbnail-generator'),
+): BackendMediaService {
+    const frontendMediaServiceEndpoint = endpoint.wrap<IFrontendMediaService>(
+        frontendMediaService,
+        logging.logger('com.frontend-media-service'),
     );
-    return new MediaService(logging.logger('bw.backend.media'), thumbnailGeneratorEndpoint);
+    return new BackendMediaService(
+        logging.logger('bw.backend.media'),
+        frontendMediaServiceEndpoint,
+    );
 }
 
 /**
@@ -334,20 +343,21 @@ function createMediaService(
 function initBackendServicesWithoutIdentity(
     factories: FactoriesForBackend,
     {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
-    notificationEndpoint: EndpointFor<NotificationCreator>,
-    systemDialogEndpoint: EndpointFor<SystemDialogService>,
-    systemInfo: SystemInfo,
-    thumbnailGeneratorEndpoint: EndpointFor<ThumbnailGenerator>,
+    backendInit: BackendInit,
 ): Omit<ServicesForBackend, ServicesThatRequireIdentity> {
     const crypto = new TweetNaClBackend(randomBytes);
 
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
     const compressor = factories.compressor();
     const directory = new FetchDirectoryBackend({config, logging});
-    const notification = createNotificationService(endpoint, notificationEndpoint, logging);
-    const media = createMediaService(endpoint, thumbnailGeneratorEndpoint, logging);
+    const notification = createNotificationService(
+        endpoint,
+        backendInit.notificationEndpoint,
+        logging,
+    );
+    const media = createMediaService(endpoint, backendInit.frontendMediaServiceEndpoint, logging);
     const systemDialog: Remote<SystemDialogService> = endpoint.wrap(
-        systemDialogEndpoint,
+        backendInit.systemDialogEndpoint,
         logging.logger('com.system-dialog'),
     );
     const taskManager = new TaskManager({logging});
@@ -365,7 +375,7 @@ function initBackendServicesWithoutIdentity(
         media,
         notification,
         systemDialog,
-        systemInfo,
+        systemInfo: backendInit.systemInfo,
         taskManager,
     };
 }
@@ -541,7 +551,7 @@ export class Backend implements ProxyMarked {
      * Create an instance of the backend worker for an existing identity. The identity information
      * is loaded from the key storage.
      *
-     * @param init {BackendInit} Data required to be supplied to a backend worker for
+     * @param backendInit {BackendInit} Data required to be supplied to a backend worker for
      *   initialization.
      * @param factories {FactoriesForBackend} The factories needed in the backend.
      * @param services The services needed in the backend.
@@ -550,12 +560,7 @@ export class Backend implements ProxyMarked {
      *   backend worker.
      */
     public static async createFromKeyStorage(
-        {
-            notificationEndpoint,
-            systemDialogEndpoint,
-            systemInfo,
-            thumbnailGeneratorEndpoint,
-        }: BackendInit,
+        backendInit: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         keyStoragePassword: string,
@@ -567,10 +572,7 @@ export class Backend implements ProxyMarked {
         const services = initBackendServicesWithoutIdentity(
             factories,
             {config, endpoint, logging},
-            notificationEndpoint,
-            systemDialogEndpoint,
-            systemInfo,
-            thumbnailGeneratorEndpoint,
+            backendInit,
         );
 
         // Try to read the credentials from the key storage.
@@ -699,7 +701,7 @@ export class Backend implements ProxyMarked {
      * Create an instance of the backend worker for a new identity. This will start the device
      * linking flow.
      *
-     * @param init {BackendInit} Data required to be supplied to a backend worker for
+     * @param backendInit {BackendInit} Data required to be supplied to a backend worker for
      *   initialization.
      * @param factories {FactoriesForBackend} The factories needed in the backend.
      * @param services The services needed in the backend.
@@ -708,12 +710,7 @@ export class Backend implements ProxyMarked {
      *   backend worker.
      */
     public static async createFromDeviceJoin(
-        {
-            notificationEndpoint,
-            systemDialogEndpoint,
-            systemInfo,
-            thumbnailGeneratorEndpoint,
-        }: BackendInit,
+        backendInit: BackendInit,
         factories: FactoriesForBackend,
         {config, endpoint, logging}: Pick<ServicesForBackend, 'config' | 'endpoint' | 'logging'>,
         deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
@@ -725,10 +722,7 @@ export class Backend implements ProxyMarked {
         const services = initBackendServicesWithoutIdentity(
             factories,
             {config, endpoint, logging},
-            notificationEndpoint,
-            systemDialogEndpoint,
-            systemInfo,
-            thumbnailGeneratorEndpoint,
+            backendInit,
         );
 
         // Get access to linking setup information
@@ -947,7 +941,7 @@ export class Backend implements ProxyMarked {
                 try {
                     licenseCheckResult = await workLicenseCheck(
                         joinResult.workCredentials,
-                        systemInfo,
+                        backendInit.systemInfo,
                         log,
                     );
                 } catch (error) {

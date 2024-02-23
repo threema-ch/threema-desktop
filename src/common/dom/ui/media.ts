@@ -1,22 +1,29 @@
 import type {DbReceiverLookup} from '~/common/db';
 import type {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import {downsizeImage} from '~/common/dom/utils/image';
-import type {ThumbnailGenerator} from '~/common/media';
+import type {IFrontendMediaService} from '~/common/media';
 import type {MessageId} from '~/common/network/types';
 import type {ReadonlyUint8Array} from '~/common/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 
+// TODO(DESK-1342): Better document these variables
 export const MAX_IMAGE_MESSAGE_SIZE = 384;
 // This is double the set max height and max width
 export const LOCAL_THUMBNAIL_MAX_SIZE = MAX_IMAGE_MESSAGE_SIZE * 2;
 // Can be tuned in case files get too large
 export const THUMBNAIL_QUALITY = 0.92;
-export class FrontendThumbnailGenerator implements ThumbnailGenerator {
+
+export class FrontendMediaService implements IFrontendMediaService {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
     private _blobCacheService: BlobCacheService | undefined = undefined;
 
-    // We do not expose this to the remote proxy so we do not add it to the interface
+    /**
+     * Pass in a reference to the {@link BlobCacheService}.
+     *
+     * Note: This is necessary because the blob cache service does not yet exist when creating the
+     * frontend media service.
+     */
     public setBlobCacheService(blobCacheService: BlobCacheService): void {
         if (this._blobCacheService === undefined) {
             this._blobCacheService = blobCacheService;
@@ -56,7 +63,7 @@ export class FrontendThumbnailGenerator implements ThumbnailGenerator {
 
     /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async refreshCacheForMessage(
+    public async refreshThumbnailCacheForMessage(
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,
     ): Promise<void> {

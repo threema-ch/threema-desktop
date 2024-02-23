@@ -8,7 +8,13 @@ import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {isSupportedImageType} from '~/common/utils/image';
 
-export interface ThumbnailGenerator extends ProxyMarked {
+/**
+ * This service provides media-related functionality that runs in the frontend.
+ *
+ * Among other things, it supports generating image and video thumbnails using DOM methods that are
+ * not available in the backend worker.
+ */
+export interface IFrontendMediaService extends ProxyMarked {
     /**
      * Generate an image thumbnail from the specified image bytes.
      */
@@ -28,18 +34,22 @@ export interface ThumbnailGenerator extends ProxyMarked {
     ) => Promise<FileBytesAndMediaType>;
 
     /**
-     * Refresh the thumbnail cache for the specified message by re-loading the thumbnail.
+     * Refresh the thumbnail cache for the specified message.
      */
-    readonly refreshCacheForMessage: (
+    readonly refreshThumbnailCacheForMessage: (
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,
     ) => void;
 }
 
-export class MediaService {
+/**
+ * The backend media service wraps and exposes the functionality of the
+ * {@link IFrontendMediaService} in the backend.
+ */
+export class BackendMediaService {
     public constructor(
         private readonly _log: Logger,
-        private readonly _thumbnailGenerator: RemoteProxy<ThumbnailGenerator>,
+        private readonly _frontendMediaService: RemoteProxy<IFrontendMediaService>,
     ) {}
 
     public async generateThumbnail(
@@ -50,11 +60,14 @@ export class MediaService {
         try {
             switch (messageType) {
                 case 'video':
-                    return await this._thumbnailGenerator.generateVideoThumbnail(bytes, mediaType);
+                    return await this._frontendMediaService.generateVideoThumbnail(
+                        bytes,
+                        mediaType,
+                    );
 
                 case 'image':
                     if (isSupportedImageType(mediaType)) {
-                        return await this._thumbnailGenerator.generateImageThumbnail(
+                        return await this._frontendMediaService.generateImageThumbnail(
                             bytes,
                             mediaType,
                         );
@@ -80,12 +93,12 @@ export class MediaService {
     /**
      * Refresh the thumbnail cache for the specified message by re-loading the thumbnail.
      */
-    public async refreshThumbnailCache(
+    public async refreshThumbnailCacheForMessage(
         messageId: MessageId,
         dbReceiverLookup: DbReceiverLookup,
     ): Promise<void> {
-        await this._thumbnailGenerator
-            .refreshCacheForMessage(messageId, dbReceiverLookup)
+        await this._frontendMediaService
+            .refreshThumbnailCacheForMessage(messageId, dbReceiverLookup)
             .catch((error) => this._log.error('Failed to regenerate thumbnail', error));
     }
 }

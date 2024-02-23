@@ -661,6 +661,6 @@ export async function regenerateThumbnail(
         );
 
         // Make the new thumbnail visible to the frontend.
-        await media.refreshThumbnailCache(messageId, receiverLookup);
+        await media.refreshThumbnailCacheForMessage(messageId, receiverLookup);
     }
 }

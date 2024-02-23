@@ -53,7 +53,7 @@ import {
 import {ConnectionClosed} from '~/common/error';
 import {InMemoryFileStorage} from '~/common/file-storage';
 import {type Logger, type LoggerFactory, NOOP_LOGGER, TagLogger} from '~/common/logging';
-import {MediaService, type ThumbnailGenerator} from '~/common/media';
+import {BackendMediaService, type IFrontendMediaService} from '~/common/media';
 import type {
     Contact,
     ContactInit,
@@ -561,7 +561,7 @@ export class TestNotificationService extends NotificationService {
     }
 }
 
-export class TestMediaService extends MediaService {
+export class TestMediaService extends BackendMediaService {
     public constructor(log: Logger) {
         // eslint-disable-next-line @typescript-eslint/require-await
         async function generateImageThumbnail(
@@ -579,15 +579,15 @@ export class TestMediaService extends MediaService {
         ): Promise<FileBytesAndMediaType> {
             return {bytes: new Uint8Array(), mediaType: _mediaType};
         }
-        function refreshCacheForMessage(
+        function refreshThumbnailCacheForMessage(
             _messageId: MessageId,
             _receiverLookup: DbReceiverLookup,
         ): void {}
         super(log, {
             generateImageThumbnail,
             generateVideoThumbnail,
-            refreshCacheForMessage,
-        } as RemoteProxy<ThumbnailGenerator>);
+            refreshThumbnailCacheForMessage,
+        } as RemoteProxy<IFrontendMediaService>);
     }
 }
 

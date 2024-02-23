@@ -1,5 +1,5 @@
 import type {SystemInfo} from '~/common/electron-ipc';
-import type {MediaService} from '~/common/media';
+import type {BackendMediaService} from '~/common/media';
 
 import type {Compressor} from './compressor';
 import type {Config} from './config';
@@ -32,7 +32,7 @@ export interface ServicesForBackend {
     readonly file: FileStorage;
     readonly keyStorage: KeyStorage;
     readonly logging: LoggerFactory;
-    readonly media: MediaService;
+    readonly media: BackendMediaService;
     readonly model: Repositories;
     readonly nonces: INonceService;
     readonly notification: NotificationService;

@@ -21,7 +21,7 @@ import {randomBytes} from '~/common/dom/crypto/random';
 import {DOM_CONSOLE_LOGGER} from '~/common/dom/logging';
 import {BlobCacheService} from '~/common/dom/ui/blob-cache';
 import {LocalStorageController} from '~/common/dom/ui/local-storage';
-import {FrontendThumbnailGenerator} from '~/common/dom/ui/media';
+import {FrontendMediaService} from '~/common/dom/ui/media';
 import {FrontendNotificationCreator} from '~/common/dom/ui/notification';
 import {ProfilePictureService} from '~/common/dom/ui/profile-picture';
 import {appVisibility, getAppVisibility} from '~/common/dom/ui/state';
@@ -332,7 +332,7 @@ async function main(): Promise<() => void> {
 
     // Instantiate early services
     const config = CONFIG;
-    const thumbnailGenerator = new FrontendThumbnailGenerator();
+    const frontendMediaService = new FrontendMediaService();
     const notification = new FrontendNotificationCreator();
     const systemDialog = new FrontendSystemDialogService();
     const endpoint = createEndpointService({config, logging});
@@ -345,7 +345,7 @@ async function main(): Promise<() => void> {
     // Instantiate backend
     const [backend, isNewIdentity] = await BackendController.create(
         {
-            thumbnailGenerator,
+            frontendMediaService,
             notification,
             systemDialog,
         },
@@ -403,7 +403,7 @@ async function main(): Promise<() => void> {
     systemDialogsAppServices.set(services);
 
     // We pass the blob cache to the thumbnail creator so that it can directly write into the cache
-    thumbnailGenerator.setBlobCacheService(services.blobCache);
+    frontendMediaService.setBlobCacheService(services.blobCache);
 
     // If this is an existing identity, resolve `identityReady` promise
     if (!isNewIdentity) {
