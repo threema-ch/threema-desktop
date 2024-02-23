@@ -26,7 +26,10 @@ function cacheKeyForMessageThumbnail(
  * dropped, then it will be automatically removed from the cache when garbage collection kicks in.
  */
 export class BlobCacheService {
-    private readonly _cache = new WeakValueMap<CacheKey, BlobStore>();
+    private readonly _cache = new WeakValueMap<
+        CacheKey,
+        WritableStore<IQueryableStoreValue<BlobStore>>
+    >();
 
     public constructor(
         private readonly _backend: BackendController,
@@ -64,9 +67,17 @@ export class BlobCacheService {
      * Refresh the cache from the database and update the associated store.
      */
     public refreshCacheForMessage(messageId: MessageId, receiverLookup: DbReceiverLookup): void {
+        // Look up current store
         const key = cacheKeyForMessageThumbnail(messageId, receiverLookup);
-        // TODO(DESK-1342): This is wrong, we may not replace the store, we must update it!
-        const store = new WritableStore<IQueryableStoreValue<BlobStore>>('loading');
+        const store = this._cache.get(key);
+
+        // If store isn't present in cache, then nothing needs to be refreshed (since there are no
+        // subscribers anyways).
+        if (store === undefined) {
+            return;
+        }
+
+        // Refresh store by re-loading thumbnail bytes.
         this._getMessageThumbnailBytes(messageId, receiverLookup)
             .then((result) => {
                 store.set(
@@ -74,9 +85,10 @@ export class BlobCacheService {
                         ? undefined
                         : new Blob([result.bytes], {type: result.mediaType}),
                 );
-                this._cache.set(key, store);
             })
-            .catch((error) => this._log.warn(`Failed to fetch message thumbnail bytes: ${error}`));
+            .catch((error) =>
+                this._log.warn(`Failed to refresh message thumbnail bytes: ${error}`),
+            );
     }
 
     /**
