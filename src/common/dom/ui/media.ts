@@ -23,26 +23,28 @@ export class FrontendThumbnailGenerator implements ThumbnailGenerator {
         }
     }
 
+    /** @inheritdoc */
     public async generateImageThumbnail(
         bytes: ReadonlyUint8Array,
         mediaType: string,
     ): Promise<FileBytesAndMediaType> {
-        const downSizedImage = await downsizeImage(
+        const downsizedImage = await downsizeImage(
             new Blob([bytes], {type: mediaType}),
             mediaType,
             LOCAL_THUMBNAIL_MAX_SIZE,
             THUMBNAIL_QUALITY,
         );
-        if (downSizedImage === undefined) {
+        if (downsizedImage === undefined) {
             throw new Error('Failed to downsize image');
         }
-        const arrayBuffer = await downSizedImage.resized.arrayBuffer();
+        const arrayBuffer = await downsizedImage.resized.arrayBuffer();
         return {
             bytes: new Uint8Array(arrayBuffer),
             mediaType,
         };
     }
 
+    /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
     public async generateVideoThumbnail(
         bytes: ReadonlyUint8Array,
@@ -52,8 +54,9 @@ export class FrontendThumbnailGenerator implements ThumbnailGenerator {
         throw new Error('Generation of video thumbnail not yet implemented');
     }
 
+    /** @inheritdoc */
     // eslint-disable-next-line @typescript-eslint/require-await
-    public async setCacheForMessage(
+    public async refreshCacheForMessage(
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,
     ): Promise<void> {
@@ -62,6 +65,6 @@ export class FrontendThumbnailGenerator implements ThumbnailGenerator {
                 'Cannot set message thumbnail because the blob cache service is not initialized.',
             );
         }
-        this._blobCacheService.setMessageThumbnail(messageId, receiverLookup);
+        this._blobCacheService.refreshCacheForMessage(messageId, receiverLookup);
     }
 }

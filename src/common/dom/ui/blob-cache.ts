@@ -33,6 +33,14 @@ export class BlobCacheService {
         private readonly _log: Logger,
     ) {}
 
+    /**
+     * Return the {@link BlobStore} associated with the specified {@link messageId} within the
+     * conversation with {@link receiverLookup}.
+     *
+     * The store will be returned immediately with the value 'loading'. It will be updated
+     * asynchronously with the thumbnail bytes. If the message cannot be found or if there is no
+     * thumbnail, then the store will be updated with `undefined`.
+     */
     public getMessageThumbnail(messageId: MessageId, receiverLookup: DbReceiverLookup): BlobStore {
         const key = cacheKeyForMessageThumbnail(messageId, receiverLookup);
         return this._cache.getOrCreate(key, () => {
@@ -52,8 +60,12 @@ export class BlobCacheService {
         });
     }
 
-    public setMessageThumbnail(messageId: MessageId, receiverLookup: DbReceiverLookup): void {
+    /**
+     * Refresh the cache from the database and update the associated store.
+     */
+    public refreshCacheForMessage(messageId: MessageId, receiverLookup: DbReceiverLookup): void {
         const key = cacheKeyForMessageThumbnail(messageId, receiverLookup);
+        // TODO(DESK-1342): This is wrong, we may not replace the store, we must update it!
         const store = new WritableStore<IQueryableStoreValue<BlobStore>>('loading');
         this._getMessageThumbnailBytes(messageId, receiverLookup)
             .then((result) => {
@@ -67,6 +79,18 @@ export class BlobCacheService {
             .catch((error) => this._log.warn(`Failed to fetch message thumbnail bytes: ${error}`));
     }
 
+    /**
+     * Return the thumbnail bytes for the specified {@link messageId} within the conversation with
+     * {@link receiverLookup}.
+     *
+     * Return `undefined` in the following cases:
+     *
+     * - The converseation was not found
+     * - The message was not found
+     * - The message does not have a thumbnail
+     *
+     * Otherwise, return the thumbnail bytes along with the media type.
+     */
     private async _getMessageThumbnailBytes(
         messageId: MessageId,
         receiverLookup: DbReceiverLookup,

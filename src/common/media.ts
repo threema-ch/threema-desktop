@@ -9,17 +9,31 @@ import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {isSupportedImageType} from '~/common/utils/image';
 
 export interface ThumbnailGenerator extends ProxyMarked {
+    /**
+     * Generate an image thumbnail from the specified image bytes.
+     */
     readonly generateImageThumbnail: (
         bytes: ReadonlyUint8Array,
         mediaType: string,
         log?: Logger,
     ) => Promise<FileBytesAndMediaType>;
+
+    /**
+     * Generate an image thumbnail from the specified video bytes.
+     */
     readonly generateVideoThumbnail: (
         bytes: ReadonlyUint8Array,
         mediaType: string,
         log?: Logger,
     ) => Promise<FileBytesAndMediaType>;
-    readonly setCacheForMessage: (messageId: MessageId, receiverLookup: DbReceiverLookup) => void;
+
+    /**
+     * Refresh the thumbnail cache for the specified message by re-loading the thumbnail.
+     */
+    readonly refreshCacheForMessage: (
+        messageId: MessageId,
+        receiverLookup: DbReceiverLookup,
+    ) => void;
 }
 
 export class MediaService {
@@ -63,13 +77,15 @@ export class MediaService {
         return undefined;
     }
 
-    public async overwriteThumbnailCache(
+    /**
+     * Refresh the thumbnail cache for the specified message by re-loading the thumbnail.
+     */
+    public async refreshThumbnailCache(
         messageId: MessageId,
         dbReceiverLookup: DbReceiverLookup,
     ): Promise<void> {
-        // Add the thumbnail to the cache so that the change can be seen in the frontend.
         await this._thumbnailGenerator
-            .setCacheForMessage(messageId, dbReceiverLookup)
+            .refreshCacheForMessage(messageId, dbReceiverLookup)
             .catch((error) => this._log.error('Failed to regenerate thumbnail', error));
     }
 }

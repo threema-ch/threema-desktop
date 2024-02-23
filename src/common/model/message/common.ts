@@ -610,22 +610,34 @@ export async function overwriteThumbnail(
     });
 }
 
+/**
+ * Re-generate the thumbnail for a message, store it in the database and update the thumbnail cache.
+ *
+ * @param imageBytes The full-size image bytes used to re-generate the thumbnail.
+ * @param dbMessageUid The database UID of the message.
+ * @param conversationController Handle to the conversation controller.
+ * @param lifetimeGuard Message model lifetime guard.
+ * @param messageType The message type.
+ * @param services Model services.
+ * @param log The logger instance.
+ */
 export async function regenerateThumbnail(
-    bytes: ReadonlyUint8Array,
+    imageBytes: ReadonlyUint8Array,
     dbMessageUid: DbMessageUid,
-    conversation: ConversationControllerHandle,
+    conversationController: ConversationControllerHandle,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     messageType: MessageType,
     services: ServicesForModel,
     log: Logger,
 ): Promise<void> {
     const {media} = services;
+
     const {messageId, mediaType} = lifetimeGuard.run((handle) => ({
         mediaType: handle.view().mediaType,
         messageId: handle.view().id,
     }));
 
-    const receiverStore = conversation.getReceiver();
+    const receiverStore = conversationController.getReceiver();
     const receiverLookup: DbReceiverLookup = {
         type: receiverStore.type,
         uid: receiverStore.ctx,
@@ -636,19 +648,19 @@ export async function regenerateThumbnail(
     }
 
     // Generate thumbnail from the provided bytes.
-    const newThumbnail = await media.generateThumbnail(bytes, messageType, mediaType);
+    const newThumbnail = await media.generateThumbnail(imageBytes, messageType, mediaType);
     if (newThumbnail !== undefined) {
         await overwriteThumbnail(
-            bytes,
+            imageBytes,
             messageType,
             dbMessageUid,
-            conversation,
+            conversationController,
             services,
             lifetimeGuard,
             log,
         );
 
         // Make the new thumbnail visible to the frontend.
-        await media.overwriteThumbnailCache(messageId, receiverLookup);
+        await media.refreshThumbnailCache(messageId, receiverLookup);
     }
 }

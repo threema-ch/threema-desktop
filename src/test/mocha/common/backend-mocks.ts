@@ -579,14 +579,14 @@ export class TestMediaService extends MediaService {
         ): Promise<FileBytesAndMediaType> {
             return {bytes: new Uint8Array(), mediaType: _mediaType};
         }
-        function setCacheForMessage(
+        function refreshCacheForMessage(
             _messageId: MessageId,
             _receiverLookup: DbReceiverLookup,
         ): void {}
         super(log, {
             generateImageThumbnail,
             generateVideoThumbnail,
-            setCacheForMessage,
+            refreshCacheForMessage,
         } as RemoteProxy<ThumbnailGenerator>);
     }
 }
