@@ -29,7 +29,6 @@ import {
     reflectAndSendGroupProfilePictureToUser,
     sendGroupSetupToUser,
     reflectContactSync,
-    reflectAndSendGroupSetupToUser,
 } from '~/test/mocha/common/network/protocol/task/task-test-helpers';
 
 /**
@@ -98,7 +97,7 @@ export function run(): void {
 
                 // Run task
                 await runTask(services, groupId, me, senderContact, [
-                    ...sendGroupSetupToUser(services, sender, []),
+                    ...sendGroupSetupToUser(services, sender, [], {reflect: false}),
                 ]);
             });
         });
@@ -135,7 +134,7 @@ export function run(): void {
                     expectations.push(...reflectContactSync(sender, 'create'));
                 }
                 // Then an empty group setup must be reflected and sent
-                expectations.push(...sendGroupSetupToUser(services, sender, []));
+                expectations.push(...sendGroupSetupToUser(services, sender, [], {reflect: false}));
 
                 // Run task
                 await runTask(services, groupId, me, senderContactOrInit, expectations);
@@ -186,10 +185,12 @@ export function run(): void {
                 // Run task
                 await runTask(services, groupId, me, senderContact, [
                     // The current group setup must be reflected and sent
-                    ...reflectAndSendGroupSetupToUser(services, sender, [
-                        sender.identity.string,
-                        member.identity.string,
-                    ]),
+                    ...sendGroupSetupToUser(
+                        services,
+                        sender,
+                        [sender.identity.string, member.identity.string],
+                        {reflect: true},
+                    ),
 
                     // The group name must be reflected and sent
                     ...reflectAndSendGroupNameToUser(services, sender, groupName),
