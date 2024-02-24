@@ -20,7 +20,7 @@ const LOCAL_THUMBNAIL_MAX_SIZE = MAX_CONVERSATION_THUMBNAIL_SIZE * 2;
 /**
  * The JPEG quality level of high-quality local thumbnails.
  */
-const LOCAL_THUMBNAIL_QUALITY = 0.92;
+const LOCAL_THUMBNAIL_QUALITY = 0.88;
 
 export class FrontendMediaService implements IFrontendMediaService {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
