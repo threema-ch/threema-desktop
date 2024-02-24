@@ -11,7 +11,7 @@ import {
     OutboundBaseMessageModelController,
 } from '~/common/model/message';
 import {
-    downloadBlob,
+    loadOrDownloadBlob,
     getFileMessageDataState,
     NO_SENDER,
     uploadBlobs,
@@ -122,7 +122,7 @@ export class InboundAudioMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        return await downloadBlob(
+        return await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.INBOUND,
@@ -137,7 +137,7 @@ export class InboundAudioMessageModelController
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await downloadBlob(
+        return await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
@@ -163,7 +163,7 @@ export class OutboundAudioMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        return await downloadBlob(
+        return await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.OUTBOUND,
@@ -178,7 +178,7 @@ export class OutboundAudioMessageModelController
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await downloadBlob(
+        return await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,

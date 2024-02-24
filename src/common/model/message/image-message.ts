@@ -11,7 +11,7 @@ import {
     OutboundBaseMessageModelController,
 } from '~/common/model/message';
 import {
-    downloadBlob,
+    loadOrDownloadBlob,
     getFileMessageDataState,
     NO_SENDER,
     regenerateThumbnail,
@@ -125,7 +125,7 @@ export class InboundImageMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        const blob = await downloadBlob(
+        const blob = await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.INBOUND,
@@ -151,7 +151,7 @@ export class InboundImageMessageModelController
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await downloadBlob(
+        return await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
@@ -177,7 +177,7 @@ export class OutboundImageMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        const blob = await downloadBlob(
+        const blob = await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.OUTBOUND,
@@ -203,7 +203,7 @@ export class OutboundImageMessageModelController
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await downloadBlob(
+        return await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,

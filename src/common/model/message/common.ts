@@ -133,7 +133,7 @@ export function updateFileBasedMessage(
     deleteFilesInBackground(file, log, deletedFileIds);
 }
 
-export async function downloadBlob(
+export async function loadOrDownloadBlob(
     type: 'main',
     messageType: MessageType,
     messageDirection: MessageDirection,
@@ -144,7 +144,7 @@ export async function downloadBlob(
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
 ): Promise<FileBytesAndMediaType>;
-export async function downloadBlob(
+export async function loadOrDownloadBlob(
     type: 'thumbnail',
     messageType: MessageType,
     messageDirection: MessageDirection,
@@ -156,14 +156,14 @@ export async function downloadBlob(
     log: Logger,
 ): Promise<FileBytesAndMediaType | undefined>;
 /**
- * Download blob of the specified type.
+ * Load blob of the specified type.
  *
  * If the blob has not yet been downloaded, the download will be started and the database will be
  * updated. Once that is done, the promise will resolve with the blob data.
  *
  * On error, the promise will reject with a {@link BlobFetchError}.
  */
-export async function downloadBlob(
+export async function loadOrDownloadBlob(
     type: BlobType,
     messageType: MessageType,
     messageDirection: MessageDirection,
