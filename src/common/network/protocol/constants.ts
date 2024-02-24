@@ -42,6 +42,6 @@ export const BLOB_THUMBNAIL_NONCE = ensureNonce(
  */
 export const CSP_THUMBNAIL_MAX_SIZE = 512;
 /**
- * Quality for non png formats
+ * JPEG quality level for media message thumbnails.
  */
 export const CSP_THUMBAIL_QUALITY = 0.8;

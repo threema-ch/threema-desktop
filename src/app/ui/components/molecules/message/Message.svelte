@@ -16,7 +16,7 @@
   import Sender from '~/app/ui/components/molecules/message/internal/sender/Sender.svelte';
   import type {MessageProps} from '~/app/ui/components/molecules/message/props';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import {MAX_IMAGE_MESSAGE_SIZE} from '~/common/dom/ui/media';
+  import {MAX_CONVERSATION_THUMBNAIL_SIZE} from '~/common/dom/ui/media';
   import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import {durationToString} from '~/common/utils/date';
@@ -195,8 +195,8 @@
                   size: 16384,
                 },
                 max: {
-                  width: MAX_IMAGE_MESSAGE_SIZE,
-                  height: MAX_IMAGE_MESSAGE_SIZE,
+                  width: MAX_CONVERSATION_THUMBNAIL_SIZE,
+                  height: MAX_CONVERSATION_THUMBNAIL_SIZE,
                   size: 65536,
                 },
               }}

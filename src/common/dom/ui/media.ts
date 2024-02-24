@@ -7,12 +7,20 @@ import type {ReadonlyUint8Array} from '~/common/types';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 
-// TODO(DESK-1342): Better document these variables
-export const MAX_IMAGE_MESSAGE_SIZE = 384;
-// This is double the set max height and max width
-export const LOCAL_THUMBNAIL_MAX_SIZE = MAX_IMAGE_MESSAGE_SIZE * 2;
-// Can be tuned in case files get too large
-export const THUMBNAIL_QUALITY = 0.92;
+/**
+ * The max width or height (in px) of a thumbnail in the conversation view.
+ */
+export const MAX_CONVERSATION_THUMBNAIL_SIZE = 384;
+
+/**
+ * The max width or height (in px) of high-quality local thumbnails. Use double the
+ * {@link MAX_CONVERSATION_THUMBNAIL_SIZE} to account for high-DPI displays.
+ */
+const LOCAL_THUMBNAIL_MAX_SIZE = MAX_CONVERSATION_THUMBNAIL_SIZE * 2;
+/**
+ * The JPEG quality level of high-quality local thumbnails.
+ */
+const LOCAL_THUMBNAIL_QUALITY = 0.92;
 
 export class FrontendMediaService implements IFrontendMediaService {
     public readonly [TRANSFER_HANDLER] = PROXY_HANDLER;
@@ -39,7 +47,7 @@ export class FrontendMediaService implements IFrontendMediaService {
             new Blob([bytes], {type: mediaType}),
             mediaType,
             LOCAL_THUMBNAIL_MAX_SIZE,
-            THUMBNAIL_QUALITY,
+            LOCAL_THUMBNAIL_QUALITY,
         );
         if (downsizedImage === undefined) {
             throw new Error('Failed to downsize image');
