@@ -468,27 +468,25 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
     protected readonly _log: Logger;
 
     public constructor(
-        protected readonly _services: ServicesForModel,
-        protected readonly _uid: UidOf<DbMessageCommon<MessageType>>,
+        public readonly uid: UidOf<DbMessageCommon<MessageType>>,
         protected readonly _type: MessageType,
         protected readonly _conversation: ConversationControllerHandle,
+        protected readonly _services: ServicesForModel,
     ) {
-        this._log = _services.logging.logger(`model.message.${_uid}`);
+        this._log = _services.logging.logger(`model.message.${uid}`);
     }
 
     /**
      * Get the store of the {@link Conversation}, which this message is part of.
      */
-    public getConversationModelStore(): LocalModelStore<Conversation> {
+    public conversation(): LocalModelStore<Conversation> {
         const conversationModelStore = this._services.model.conversations.getForReceiver(
             this._conversation.receiverLookup,
         );
-
         assert(
             conversationModelStore !== undefined,
             'Conversation is expected to exist, as it was looked up using its own handle',
         );
-
         return conversationModelStore;
     }
 
@@ -497,7 +495,7 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
      */
     public remove(): void {
         this.meta.deactivate(() =>
-            remove(this._services, this._log, this._conversation.uid, this._uid),
+            remove(this._services, this._log, this._conversation.uid, this.uid),
         );
     }
 
@@ -513,14 +511,7 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
         // Update the message
         message.update(() => {
             const change = {readAt};
-            update(
-                this._services,
-                this._log,
-                this._conversation.uid,
-                this._uid,
-                this._type,
-                change,
-            );
+            update(this._services, this._log, this._conversation.uid, this.uid, this._type, change);
             return change as Partial<TView>;
         });
 
@@ -549,7 +540,7 @@ abstract class CommonBaseMessageModelController<TView extends CommonBaseMessageV
             const change = {
                 reactions: filtered,
             };
-            createOrUpdateReaction(this._services, this._uid, messageReaction);
+            createOrUpdateReaction(this._services, this.uid, messageReaction);
             return change as Partial<TView>;
         });
     }
@@ -591,7 +582,7 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
         conversation: ConversationControllerHandle,
         protected readonly _sender: LocalModelStore<Contact>,
     ) {
-        super(services, uid, type, conversation);
+        super(uid, type, conversation, services);
     }
 
     /** @inheritdoc */
@@ -726,7 +717,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
         type: MessageType,
         conversation: ConversationControllerHandle,
     ) {
-        super(services, uid, type, conversation);
+        super(uid, type, conversation, services);
     }
 
     /** @inheritdoc */
@@ -744,7 +735,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                 updateOutboundMessageSentAt(
                     this._services,
                     this._conversation.uid,
-                    this._uid,
+                    this.uid,
                     this._type,
                     sentAt,
                 );
@@ -769,7 +760,7 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                     this._services,
                     this._log,
                     this._conversation.uid,
-                    this._uid,
+                    this.uid,
                     this._type,
                     change,
                 );

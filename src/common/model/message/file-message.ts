@@ -15,6 +15,7 @@ import {
     getFileMessageDataState,
     NO_SENDER,
     uploadBlobs,
+    type UploadedBlobBytes,
 } from '~/common/model/message/common';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
@@ -125,7 +126,7 @@ export class InboundFileMessageModelController
             'main',
             this._type,
             MessageDirection.INBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._blobLock,
@@ -141,7 +142,7 @@ export class InboundFileMessageModelController
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
@@ -168,7 +169,7 @@ export class OutboundFileMessageModelController
             'main',
             this._type,
             MessageDirection.OUTBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._blobLock,
@@ -184,7 +185,7 @@ export class OutboundFileMessageModelController
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
@@ -195,8 +196,14 @@ export class OutboundFileMessageModelController
     }
 
     /** @inheritdoc */
-    public async uploadBlobs(): Promise<void> {
-        await uploadBlobs(this._type, this._uid, this._conversation.uid, this._services, this.meta);
+    public async uploadBlobs(): Promise<UploadedBlobBytes> {
+        return await uploadBlobs(
+            this._type,
+            this.uid,
+            this._conversation.uid,
+            this._services,
+            this.meta,
+        );
     }
 }
 

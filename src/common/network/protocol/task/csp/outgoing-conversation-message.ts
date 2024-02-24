@@ -8,6 +8,7 @@ import {
 } from '~/common/enum';
 import type {Logger} from '~/common/logging';
 import type {AnyOutboundMessageModelStore, AnyReceiver} from '~/common/model';
+import type {UploadedBlobBytes} from '~/common/model/message/common';
 import type {CspE2eType, LayerEncoder} from '~/common/network/protocol';
 import {CspMessageFlags} from '~/common/network/protocol/flags';
 import {
@@ -31,7 +32,7 @@ import type {
     TextEncodable,
 } from '~/common/network/structbuf/csp/e2e';
 import type {MessageId} from '~/common/network/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {UTF8} from '~/common/utils/codec';
 import {u64ToHexLe} from '~/common/utils/number';
 
@@ -115,18 +116,31 @@ export class OutgoingConversationMessageTask<TReceiver extends AnyReceiver>
         );
 
         // Upload file message data
+        let uploadedBlobBytes: UploadedBlobBytes | undefined;
         switch (messageType) {
             case 'file':
             case 'image':
             case 'video':
             case 'audio':
-                await this._messageModelStore.get().controller.uploadBlobs();
+                uploadedBlobBytes = await this._messageModelStore.get().controller.uploadBlobs();
                 break;
             case 'text':
                 // Nothing to upload
                 break;
             default:
                 unreachable(messageType);
+        }
+
+        // Now that blobs are uploaded for the recipient (using low resolution/quality to optimize
+        // network traffic and server load), we can re-generate the image thumbnail in a slightly
+        // higher resolution, as an optimization for the local user.
+        if (messageType === 'image' && uploadedBlobBytes?.main !== undefined) {
+            this._messageModelStore
+                .get()
+                .controller.regenerateThumbnail(uploadedBlobBytes.main)
+                .catch((error) =>
+                    this._log.warn(`Failed to regenerate thumbnail: ${ensureError(error)}`),
+                );
         }
 
         // Initialize outgoing CSP message task

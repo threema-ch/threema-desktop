@@ -16,6 +16,7 @@ import {
     NO_SENDER,
     regenerateThumbnail,
     uploadBlobs,
+    type UploadedBlobBytes,
 } from '~/common/model/message/common';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
@@ -34,6 +35,7 @@ import type {
     OutboundImageMessageController,
 } from '~/common/model/types/message/image';
 import {LocalModelStore} from '~/common/model/utils/model-store';
+import type {ReadonlyUint8Array} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
@@ -129,7 +131,7 @@ export class InboundImageMessageModelController
             'main',
             this._type,
             MessageDirection.INBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._blobLock,
@@ -143,15 +145,7 @@ export class InboundImageMessageModelController
             //
             // Note: We re-generate thumbnails for two reasons: To get better image quality, and to
             // ensure that the thumbnail really matches the actual image data.
-            void regenerateThumbnail(
-                blob.data.bytes,
-                this._uid,
-                this._conversation,
-                this.meta,
-                this._type,
-                this._services,
-                this._log,
-            );
+            void regenerateThumbnail('image', this, blob.data.bytes, this._services, this._log);
         }
 
         return blob.data;
@@ -163,7 +157,7 @@ export class InboundImageMessageModelController
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
@@ -190,7 +184,7 @@ export class OutboundImageMessageModelController
             'main',
             this._type,
             MessageDirection.OUTBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._blobLock,
@@ -206,7 +200,7 @@ export class OutboundImageMessageModelController
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
@@ -217,28 +211,19 @@ export class OutboundImageMessageModelController
     }
 
     /** @inheritdoc */
-    public async uploadBlobs(): Promise<void> {
-        const uploadedBlobBytes = await uploadBlobs(
+    public async uploadBlobs(): Promise<UploadedBlobBytes> {
+        return await uploadBlobs(
             this._type,
-            this._uid,
+            this.uid,
             this._conversation.uid,
             this._services,
             this.meta,
         );
+    }
 
-        if (uploadedBlobBytes.main !== undefined && uploadedBlobBytes.thumbnail !== undefined) {
-            // If both main and thumbnail blobs were uploaded, we can re-generate the thumbnail in a
-            // slightly higher resolution, as an optimization for the local user.
-            await regenerateThumbnail(
-                uploadedBlobBytes.main,
-                this._uid,
-                this._conversation,
-                this.meta,
-                this._type,
-                this._services,
-                this._log,
-            );
-        }
+    /** @inheritdoc */
+    public async regenerateThumbnail(imageBytes: ReadonlyUint8Array): Promise<void> {
+        await regenerateThumbnail('image', this, imageBytes, this._services, this._log);
     }
 }
 

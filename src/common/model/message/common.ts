@@ -1,16 +1,11 @@
 import {type Nonce, NONCE_UNGUARDED_SCOPE} from '~/common/crypto';
 import {CREATE_BUFFER_TOKEN} from '~/common/crypto/box';
-import type {
-    DbBaseFileMessageFragment,
-    DbConversationUid,
-    DbMessageUid,
-    DbReceiverLookup,
-} from '~/common/db';
+import type {DbBaseFileMessageFragment, DbConversationUid, DbMessageUid} from '~/common/db';
 import {
     BlobDownloadState,
     MessageDirection,
     MessageDirectionUtils,
-    MessageType,
+    type MessageType,
     ReceiverType,
 } from '~/common/enum';
 import {BlobFetchError} from '~/common/error';
@@ -28,6 +23,11 @@ import type {
     OutboundBaseFileMessageView,
     UpdateFileBasedMessage,
 } from '~/common/model/types/message';
+import type {
+    InboundImageMessageController,
+    OutboundImageMessageController,
+} from '~/common/model/types/message/image';
+import type {InboundVideoMessageController} from '~/common/model/types/message/video';
 import {
     BlobBackendError,
     type BlobScope,
@@ -36,12 +36,12 @@ import {
 } from '~/common/network/protocol/blob';
 import {BLOB_FILE_NONCE, BLOB_THUMBNAIL_NONCE} from '~/common/network/protocol/constants';
 import type {RawBlobKey} from '~/common/network/types/keys';
-import type {Mutable, ReadonlyUint8Array} from '~/common/types';
+import type {Mutable, ReadonlyUint8Array, StrictExtract} from '~/common/types';
 import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import type {AsyncLock} from '~/common/utils/lock';
-import {hasProperty, hasPropertyStrict, pick} from '~/common/utils/object';
+import {hasProperty} from '~/common/utils/object';
 
 export const NO_SENDER = Symbol('no-sender');
 
@@ -118,7 +118,7 @@ function determineBlobDoneScope(
  * Update the download state of a file-based message.
  */
 export function updateFileBasedMessage(
-    services: ServicesForModel,
+    services: Pick<ServicesForModel, 'db' | 'file'>,
     log: Logger,
     messageType: MessageType,
     conversationUid: DbConversationUid,
@@ -510,7 +510,7 @@ async function uploadFileAsBlob(
     }
 }
 
-type UploadedBlobBytes = {readonly [k in BlobType]: ReadonlyUint8Array | undefined};
+export type UploadedBlobBytes = {readonly [k in BlobType]: ReadonlyUint8Array | undefined};
 
 /**
  * Upload all message blobs that haven't yet been uploaded, and store the resulting blob IDs in the
@@ -612,8 +612,8 @@ export async function overwriteThumbnail(
     bytes: ReadonlyUint8Array,
     messageType: MessageType,
     messageUid: DbMessageUid,
-    conversation: ConversationControllerHandle,
-    services: ServicesForModel,
+    conversationUid: DbConversationUid,
+    services: Pick<ServicesForModel, 'db' | 'file'>,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
 ): Promise<void> {
@@ -639,7 +639,7 @@ export async function overwriteThumbnail(
     const dbChange = {thumbnailFileData: storedFileData, thumbnailBlobDownloadState: undefined};
     const viewChange = {...dbChange};
     lifetimeGuard.update(() => {
-        updateFileBasedMessage(services, log, messageType, conversation.uid, messageUid, dbChange);
+        updateFileBasedMessage(services, log, messageType, conversationUid, messageUid, dbChange);
         return viewChange;
     });
 }
@@ -648,54 +648,48 @@ export async function overwriteThumbnail(
  * Re-generate the thumbnail for a message from the specified media bytes, store it in the database
  * and update the thumbnail cache.
  *
- * @param mediaBytes The full-size media (image or video) bytes used to re-generate the thumbnail.
- * @param dbMessageUid The database UID of the message.
- * @param conversationController Handle to the conversation controller.
- * @param lifetimeGuard Message model lifetime guard.
  * @param messageType The message type.
+ * @param messageModelController The controller of the message.
+ * @param mediaBytes The full-size media bytes used to re-generate the thumbnail.
  * @param services Model services.
  * @param log The logger instance.
  */
 export async function regenerateThumbnail(
+    messageType: StrictExtract<MessageType, 'image' | 'video'>,
+    messageModelController:
+        | InboundImageMessageController
+        | InboundVideoMessageController
+        | OutboundImageMessageController,
     mediaBytes: ReadonlyUint8Array,
-    dbMessageUid: DbMessageUid,
-    conversationController: ConversationControllerHandle,
-    lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
-    messageType: MessageType,
-    services: ServicesForModel,
+    services: Pick<ServicesForModel, 'db' | 'file' | 'media'>,
     log: Logger,
 ): Promise<void> {
     const {media} = services;
 
-    const {messageId, mediaType} = lifetimeGuard.run((handle) => ({
+    const {messageId, mediaType} = messageModelController.meta.run((handle) => ({
         mediaType: handle.view().mediaType,
         messageId: handle.view().id,
     }));
 
-    const receiverStore = conversationController.getReceiver();
-    const receiverLookup: DbReceiverLookup = {
-        type: receiverStore.type,
-        uid: receiverStore.ctx,
-    } as DbReceiverLookup;
-
-    if (messageType === MessageType.TEXT) {
-        return;
-    }
-
-    // Generate thumbnail from the provided bytes.
+    // Generate new thumbnail from the provided bytes
     const newThumbnail = await media.generateThumbnail(mediaBytes, messageType, mediaType);
     if (newThumbnail !== undefined) {
+        const conversationModel = messageModelController.conversation().get();
+
+        // Store updated thumbnail in filesystem and database
         await overwriteThumbnail(
             mediaBytes,
             messageType,
-            dbMessageUid,
-            conversationController,
+            messageModelController.uid,
+            conversationModel.ctx,
             services,
-            lifetimeGuard,
+            messageModelController.meta,
             log,
         );
 
-        // Make the new thumbnail visible to the frontend.
+        // Make the new thumbnail visible to the frontend
+        const receiverLookup = messageModelController.conversation().get()
+            .controller.receiverLookup;
         await media.refreshThumbnailCacheForMessage(messageId, receiverLookup);
     }
 }

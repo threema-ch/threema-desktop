@@ -1,4 +1,4 @@
-import type {DbContact, UidOf} from '~/common/db';
+import type {DbContact, DbMessageUid, UidOf} from '~/common/db';
 import type {
     BlobDownloadState,
     MessageDirection,
@@ -6,6 +6,7 @@ import type {
     MessageType,
 } from '~/common/enum';
 import type {FileEncryptionKey, FileId} from '~/common/file-storage';
+import type {UploadedBlobBytes} from '~/common/model/message/common';
 import type {
     ControllerCustomUpdateFromSource,
     ControllerUpdateFromSource,
@@ -134,11 +135,13 @@ export type OutboundBaseMessageInit<TType extends MessageType> = CommonBaseMessa
  */
 export type CommonBaseMessageController<TView extends CommonBaseMessageView> = {
     readonly meta: ModelLifetimeGuard<TView>;
+    readonly uid: DbMessageUid;
 
     /**
      * Get the store of the {@link Conversation}, which this message is part of.
      */
-    readonly getConversationModelStore: () => LocalModelStore<Conversation>;
+    readonly conversation: () => LocalModelStore<Conversation>;
+
     /**
      * Remove the message.
      */
@@ -322,5 +325,5 @@ export type OutboundBaseFileMessageController<TView extends OutboundBaseFileMess
             /**
              * Ensure that file and thumbnail data are uploaded to the blob server.
              */
-            readonly uploadBlobs: () => Promise<void>;
+            readonly uploadBlobs: () => Promise<UploadedBlobBytes>;
         };

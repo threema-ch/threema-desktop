@@ -15,6 +15,7 @@ import {
     getFileMessageDataState,
     NO_SENDER,
     uploadBlobs,
+    type UploadedBlobBytes,
 } from '~/common/model/message/common';
 import type {ServicesForModel} from '~/common/model/types/common';
 import type {Contact} from '~/common/model/types/contact';
@@ -127,7 +128,7 @@ export class InboundVideoMessageModelController
             'main',
             this._type,
             MessageDirection.INBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._blobLock,
@@ -143,15 +144,7 @@ export class InboundVideoMessageModelController
         //     //
         //     // Note: We re-generate thumbnails for two reasons: To get better image quality, and to
         //     // ensure that the thumbnail really matches the actual video data.
-        //     void regenerateThumbnail(
-        //         blob.data.bytes,
-        //         this._uid,
-        //         this._conversation,
-        //         this.meta,
-        //         this._type,
-        //         this._services,
-        //         this._log,
-        //     );
+        //     void regenerateThumbnail('video', this, blob.data.bytes, this._services, this._log);
         // }
 
         return blob.data;
@@ -163,7 +156,7 @@ export class InboundVideoMessageModelController
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
@@ -190,7 +183,7 @@ export class OutboundVideoMessageModelController
             'main',
             this._type,
             MessageDirection.OUTBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._blobLock,
@@ -206,7 +199,7 @@ export class OutboundVideoMessageModelController
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,
-            this._uid,
+            this.uid,
             this._conversation,
             this._services,
             this._thumbnailBlobLock,
@@ -217,8 +210,14 @@ export class OutboundVideoMessageModelController
     }
 
     /** @inheritdoc */
-    public async uploadBlobs(): Promise<void> {
-        await uploadBlobs(this._type, this._uid, this._conversation.uid, this._services, this.meta);
+    public async uploadBlobs(): Promise<UploadedBlobBytes> {
+        return await uploadBlobs(
+            this._type,
+            this.uid,
+            this._conversation.uid,
+            this._services,
+            this.meta,
+        );
     }
 }
 

@@ -11,7 +11,7 @@ import type {
     OutboundBaseMessageInit,
 } from '~/common/model/types/message/common';
 import type {LocalModelStore} from '~/common/model/utils/model-store';
-import type {Dimensions} from '~/common/types';
+import type {Dimensions, ReadonlyUint8Array} from '~/common/types';
 
 // View
 
@@ -45,7 +45,12 @@ export type InboundImageMessageController =
  * Controller for outbound image messages.
  */
 export type OutboundImageMessageController =
-    OutboundBaseFileMessageController<OutboundImageMessageView>;
+    OutboundBaseFileMessageController<OutboundImageMessageView> & {
+        /**
+         * Regenerate the image thumbnail.
+         */
+        readonly regenerateThumbnail: (imageBytes: ReadonlyUint8Array) => Promise<void>;
+    };
 
 // Model
 

@@ -109,7 +109,7 @@ export function getMessageSearchResults(
 
         messageResults = [...getAndSubscribe(messageSetStore)].map((messageModelStore) => {
             const messageModel = getAndSubscribe(messageModelStore);
-            const conversationModelStore = messageModel.controller.getConversationModelStore();
+            const conversationModelStore = messageModel.controller.conversation();
             const conversationModel = getAndSubscribe(conversationModelStore);
 
             return endpoint.exposeProperties({
