@@ -137,26 +137,29 @@ export class InboundVideoMessageModelController
 
         // TODO(DESK-1306): Enable regeneration only when generation of thumbnails from video files
         // is implemented.
-        //
-        // TODO(DESK-1342): Make sure the thumbnail is only regenerated once, not on every call of
-        // `blob()`.
-        //
-        // void regenerateThumbnail(
-        //     blob.bytes,
-        //     this._uid,
-        //     this._conversation,
-        //     this.meta,
-        //     this._type,
-        //     this._services,
-        //     this._log,
-        // );
+        // if (blob.source === 'network') {
+        //     // If the blob was just downloaded, re-generate a high-res thumbnail from the actual
+        //     // video bytes in the background.
+        //     //
+        //     // Note: We re-generate thumbnails for two reasons: To get better image quality, and to
+        //     // ensure that the thumbnail really matches the actual video data.
+        //     void regenerateThumbnail(
+        //         blob.data.bytes,
+        //         this._uid,
+        //         this._conversation,
+        //         this.meta,
+        //         this._type,
+        //         this._services,
+        //         this._log,
+        //     );
+        // }
 
-        return blob;
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
@@ -167,6 +170,7 @@ export class InboundVideoMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 }
 
@@ -182,7 +186,7 @@ export class OutboundVideoMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.OUTBOUND,
@@ -193,11 +197,12 @@ export class OutboundVideoMessageModelController
             this.meta,
             this._log,
         );
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,
@@ -208,6 +213,7 @@ export class OutboundVideoMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 
     /** @inheritdoc */

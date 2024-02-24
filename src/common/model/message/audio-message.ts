@@ -122,7 +122,7 @@ export class InboundAudioMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.INBOUND,
@@ -133,11 +133,12 @@ export class InboundAudioMessageModelController
             this.meta,
             this._log,
         );
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
@@ -148,6 +149,7 @@ export class InboundAudioMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 }
 
@@ -163,7 +165,7 @@ export class OutboundAudioMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.OUTBOUND,
@@ -174,11 +176,12 @@ export class OutboundAudioMessageModelController
             this.meta,
             this._log,
         );
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,
@@ -189,6 +192,7 @@ export class OutboundAudioMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 
     /** @inheritdoc */

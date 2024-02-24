@@ -121,7 +121,7 @@ export class InboundFileMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.INBOUND,
@@ -132,11 +132,12 @@ export class InboundFileMessageModelController
             this.meta,
             this._log,
         );
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
@@ -147,6 +148,7 @@ export class InboundFileMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 }
 
@@ -162,7 +164,7 @@ export class OutboundFileMessageModelController
 
     /** @inheritdoc */
     public async blob(): Promise<FileBytesAndMediaType> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'main',
             this._type,
             MessageDirection.OUTBOUND,
@@ -173,11 +175,12 @@ export class OutboundFileMessageModelController
             this.meta,
             this._log,
         );
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,
@@ -188,6 +191,7 @@ export class OutboundFileMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 
     /** @inheritdoc */

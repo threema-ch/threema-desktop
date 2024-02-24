@@ -137,21 +137,29 @@ export class InboundImageMessageModelController
             this._log,
         );
 
-        void regenerateThumbnail(
-            blob.bytes,
-            this._uid,
-            this._conversation,
-            this.meta,
-            this._type,
-            this._services,
-            this._log,
-        );
-        return blob;
+        if (blob.source === 'network') {
+            // If the blob was just downloaded, re-generate a high-res thumbnail from the actual
+            // image bytes in the background.
+            //
+            // Note: We re-generate thumbnails for two reasons: To get better image quality, and to
+            // ensure that the thumbnail really matches the actual image data.
+            void regenerateThumbnail(
+                blob.data.bytes,
+                this._uid,
+                this._conversation,
+                this.meta,
+                this._type,
+                this._services,
+                this._log,
+            );
+        }
+
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.INBOUND,
@@ -162,6 +170,7 @@ export class InboundImageMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 }
 
@@ -188,22 +197,12 @@ export class OutboundImageMessageModelController
             this.meta,
             this._log,
         );
-
-        void regenerateThumbnail(
-            blob.bytes,
-            this._uid,
-            this._conversation,
-            this.meta,
-            this._type,
-            this._services,
-            this._log,
-        );
-        return blob;
+        return blob.data;
     }
 
     /** @inheritdoc */
     public async thumbnailBlob(): Promise<FileBytesAndMediaType | undefined> {
-        return await loadOrDownloadBlob(
+        const blob = await loadOrDownloadBlob(
             'thumbnail',
             this._type,
             MessageDirection.OUTBOUND,
@@ -214,39 +213,32 @@ export class OutboundImageMessageModelController
             this.meta,
             this._log,
         );
+        return blob?.data;
     }
 
     /** @inheritdoc */
     public async uploadBlobs(): Promise<void> {
-        const fileHandle = await uploadBlobs(
+        const uploadedBlobBytes = await uploadBlobs(
             this._type,
             this._uid,
             this._conversation.uid,
             this._services,
             this.meta,
         );
-        if (fileHandle === undefined) {
-            return;
-        }
 
-        // We load the file here again for simplicity reasons
-        // This can be further optimized by passing the bytes should performance problems occur
-        void this._services.file
-            .load(fileHandle)
-            .then(async (bytes) => {
-                await regenerateThumbnail(
-                    bytes,
-                    this._uid,
-                    this._conversation,
-                    this.meta,
-                    this._type,
-                    this._services,
-                    this._log,
-                );
-            })
-            .catch((error) => {
-                this._log.error(`Failed to access thumbnail: ${error}`);
-            });
+        if (uploadedBlobBytes.main !== undefined && uploadedBlobBytes.thumbnail !== undefined) {
+            // If both main and thumbnail blobs were uploaded, we can re-generate the thumbnail in a
+            // slightly higher resolution, as an optimization for the local user.
+            await regenerateThumbnail(
+                uploadedBlobBytes.main,
+                this._uid,
+                this._conversation,
+                this.meta,
+                this._type,
+                this._services,
+                this._log,
+            );
+        }
     }
 }
 

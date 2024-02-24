@@ -41,6 +41,7 @@ import {assert, ensureError, unreachable} from '~/common/utils/assert';
 import {bytesToHex} from '~/common/utils/byte';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import type {AsyncLock} from '~/common/utils/lock';
+import {hasProperty, hasPropertyStrict, pick} from '~/common/utils/object';
 
 export const NO_SENDER = Symbol('no-sender');
 
@@ -133,6 +134,20 @@ export function updateFileBasedMessage(
     deleteFilesInBackground(file, log, deletedFileIds);
 }
 
+export interface BlobLoadResult {
+    /**
+     * Blob bytes along with the media type.
+     */
+    readonly data: FileBytesAndMediaType;
+    /**
+     * Blob source:
+     *
+     * - filesystem: Loaded from the encrypted file system.
+     * - network: Downloaded from the blob server.
+     */
+    readonly source: 'filesystem' | 'network';
+}
+
 export async function loadOrDownloadBlob(
     type: 'main',
     messageType: MessageType,
@@ -143,7 +158,7 @@ export async function loadOrDownloadBlob(
     lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
-): Promise<FileBytesAndMediaType>;
+): Promise<BlobLoadResult>;
 export async function loadOrDownloadBlob(
     type: 'thumbnail',
     messageType: MessageType,
@@ -154,7 +169,7 @@ export async function loadOrDownloadBlob(
     lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
-): Promise<FileBytesAndMediaType | undefined>;
+): Promise<BlobLoadResult | undefined>;
 /**
  * Load blob of the specified type.
  *
@@ -173,7 +188,7 @@ export async function loadOrDownloadBlob(
     lock: AsyncLock,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
     log: Logger,
-): Promise<FileBytesAndMediaType | undefined> {
+): Promise<BlobLoadResult | undefined> {
     const {blob, crypto, file} = services;
 
     /**
@@ -216,9 +231,11 @@ export async function loadOrDownloadBlob(
 
     // Because the download logic is async and consists of multiple steps, we need a lock to
     // avoid races where the same blob is downloaded multiple times.
-    return await lock.with(async () => {
-        // If blob is already downloaded (i.e. a fileId is set), return it. Note: Either both the
-        // file data and media type are defined simultaneously, or both will return as `undefined`.
+    return await lock.with(async (): Promise<BlobLoadResult | undefined> => {
+        // Load blob data from file system.
+        //
+        // Note: Either both the file data and media type are defined simultaneously, or both will
+        // return as `undefined`.
         const [existingFileData, existingMediaType]:
             | [existingFileData: FileData, existingMediaType: string]
             | [existingFileData: undefined, existingMediaType: undefined] = lifetimeGuard.run(
@@ -251,11 +268,16 @@ export async function loadOrDownloadBlob(
                 return [undefined, undefined];
             },
         );
+
+        // If blob is already downloaded (i.e. a fileId is set), return it directly.
         if (existingFileData !== undefined) {
             try {
                 return {
-                    bytes: await file.load(existingFileData),
-                    mediaType: existingMediaType,
+                    data: {
+                        bytes: await file.load(existingFileData),
+                        mediaType: existingMediaType,
+                    },
+                    source: 'filesystem',
                 };
             } catch (error) {
                 const message = `Could not fetch bytes from file system: ${error}`;
@@ -280,7 +302,6 @@ export async function loadOrDownloadBlob(
                     return unreachable(type);
             }
         });
-
         if (downloadState === BlobDownloadState.PERMANENT_FAILURE) {
             switch (type) {
                 case 'main':
@@ -458,14 +479,17 @@ export async function loadOrDownloadBlob(
 
         // Return data
         return {
-            bytes: decryptedBytes,
-            mediaType,
+            data: {
+                bytes: decryptedBytes,
+                mediaType,
+            },
+            source: 'network',
         };
     });
 }
 
 /**
- * Upload the {@link FileData} of the specified {@link BlobType} and return blob IDs.
+ * Upload the {@link FileData} of the specified {@link BlobType} and return blob bytes and ID.
  */
 async function uploadFileAsBlob(
     type: BlobType,
@@ -473,21 +497,26 @@ async function uploadFileAsBlob(
     nonce: Nonce,
     key: RawBlobKey,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'file'>,
-): Promise<Pick<OutboundBaseFileMessageView, 'blobId' | 'thumbnailBlobId'>> {
+): Promise<{bytes: ReadonlyUint8Array} & ({blobId: BlobId} | {thumbnailBlobId: BlobId})> {
     const bytes = await services.file.load(data);
     const {id} = await encryptAndUploadBlobWithEncryptionKey(services, bytes, nonce, key, 'public');
     switch (type) {
         case 'main':
-            return {blobId: id};
+            return {bytes, blobId: id};
         case 'thumbnail':
-            return {thumbnailBlobId: id};
+            return {bytes, thumbnailBlobId: id};
         default:
             return unreachable(type);
     }
 }
 
+type UploadedBlobBytes = {readonly [k in BlobType]: ReadonlyUint8Array | undefined};
+
 /**
- * Returns the storage information of the full-size uploaded blob for further processing
+ * Upload all message blobs that haven't yet been uploaded, and store the resulting blob IDs in the
+ * message model.
+ *
+ * The uploaded file and thumbnail bytes are returned for further processing.
  */
 export async function uploadBlobs(
     messageType: MessageType,
@@ -495,7 +524,7 @@ export async function uploadBlobs(
     conversationUid: DbConversationUid,
     services: Pick<ServicesForModel, 'blob' | 'crypto' | 'db' | 'file'>,
     lifetimeGuard: AnyFileBasedOutboundMessageModelLifetimeGuard,
-): Promise<FileData | undefined> {
+): Promise<UploadedBlobBytes> {
     type FileDataToUpload = Pick<
         CommonBaseFileMessageView,
         'fileData' | 'thumbnailFileData' | 'encryptionKey'
@@ -520,7 +549,7 @@ export async function uploadBlobs(
         fileDataToUpload.thumbnailFileData === undefined
     ) {
         // Nothing to upload
-        return undefined;
+        return {main: undefined, thumbnail: undefined};
     }
 
     // Upload all blobs concurrently
@@ -549,17 +578,23 @@ export async function uploadBlobs(
         );
     }
     const blobIdPromiseResults = await Promise.all(promises);
-    let blobIds: Pick<OutboundBaseFileMessageView, 'blobId' | 'thumbnailBlobId'> = {};
-    for (const blobIdPromiseResult of blobIdPromiseResults) {
-        blobIds = {...blobIds, ...blobIdPromiseResult};
+
+    // Process promise results and determine database change
+    const change: Mutable<Pick<OutboundBaseFileMessageView, 'blobId' | 'thumbnailBlobId'>> = {};
+    const uploadedBlobBytes: Mutable<UploadedBlobBytes> = {main: undefined, thumbnail: undefined};
+    for (const promiseResult of blobIdPromiseResults) {
+        if (hasProperty(promiseResult, 'blobId')) {
+            change.blobId = promiseResult.blobId;
+            uploadedBlobBytes.main = promiseResult.bytes;
+        }
+        if (hasProperty(promiseResult, 'thumbnailBlobId')) {
+            change.thumbnailBlobId = promiseResult.thumbnailBlobId;
+            uploadedBlobBytes.thumbnail = promiseResult.bytes;
+        }
     }
 
     // Update database and view
     lifetimeGuard.update(() => {
-        const change: Mutable<Partial<OutboundBaseFileMessageView>> = {
-            ...blobIds,
-        };
-
         // Note: updateMessage cannot return a list of deleted files in this case because we
         // only update the blob ids. Thus we can ignore the return value.
         services.db.updateMessage(conversationUid, {
@@ -567,11 +602,10 @@ export async function uploadBlobs(
             uid: messageUid,
             type: messageType,
         });
-
         return {...change, state: 'synced'};
     });
 
-    return fileDataToUpload.fileData;
+    return uploadedBlobBytes;
 }
 
 export async function overwriteThumbnail(
@@ -611,9 +645,10 @@ export async function overwriteThumbnail(
 }
 
 /**
- * Re-generate the thumbnail for a message, store it in the database and update the thumbnail cache.
+ * Re-generate the thumbnail for a message from the specified media bytes, store it in the database
+ * and update the thumbnail cache.
  *
- * @param imageBytes The full-size image bytes used to re-generate the thumbnail.
+ * @param mediaBytes The full-size media (image or video) bytes used to re-generate the thumbnail.
  * @param dbMessageUid The database UID of the message.
  * @param conversationController Handle to the conversation controller.
  * @param lifetimeGuard Message model lifetime guard.
@@ -622,7 +657,7 @@ export async function overwriteThumbnail(
  * @param log The logger instance.
  */
 export async function regenerateThumbnail(
-    imageBytes: ReadonlyUint8Array,
+    mediaBytes: ReadonlyUint8Array,
     dbMessageUid: DbMessageUid,
     conversationController: ConversationControllerHandle,
     lifetimeGuard: AnyFileBasedMessageModelLifetimeGuard,
@@ -648,10 +683,10 @@ export async function regenerateThumbnail(
     }
 
     // Generate thumbnail from the provided bytes.
-    const newThumbnail = await media.generateThumbnail(imageBytes, messageType, mediaType);
+    const newThumbnail = await media.generateThumbnail(mediaBytes, messageType, mediaType);
     if (newThumbnail !== undefined) {
         await overwriteThumbnail(
-            imageBytes,
+            mediaBytes,
             messageType,
             dbMessageUid,
             conversationController,
