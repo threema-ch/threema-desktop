@@ -1,8 +1,8 @@
 import type {DbReceiverLookup} from '~/common/db';
+import type {MessageType} from '~/common/enum';
 import type {Logger} from '~/common/logging';
-import type {AnyFileBasedMessageModel} from '~/common/model/types/message';
 import type {MessageId} from '~/common/network/types';
-import type {ReadonlyUint8Array} from '~/common/types';
+import type {ReadonlyUint8Array, StrictExtract} from '~/common/types';
 import {ensureError, unreachable} from '~/common/utils/assert';
 import type {ProxyMarked, RemoteProxy} from '~/common/utils/endpoint';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
@@ -54,17 +54,11 @@ export class BackendMediaService {
 
     public async generateThumbnail(
         bytes: ReadonlyUint8Array,
-        messageType: AnyFileBasedMessageModel['type'],
+        messageType: StrictExtract<MessageType, 'image' | 'video'>,
         mediaType: string,
     ): Promise<FileBytesAndMediaType | undefined> {
         try {
             switch (messageType) {
-                case 'video':
-                    return await this._frontendMediaService.generateVideoThumbnail(
-                        bytes,
-                        mediaType,
-                    );
-
                 case 'image':
                     if (isSupportedImageType(mediaType)) {
                         return await this._frontendMediaService.generateImageThumbnail(
@@ -75,10 +69,12 @@ export class BackendMediaService {
                     this._log.warn('Cannot generate thumbnail because image type is not supported');
                     return undefined;
 
-                case 'audio':
-                case 'file':
-                    this._log.warn('Cannot generate thumbnail because file type has no thumbnail');
-                    return undefined;
+                case 'video':
+                    // TODO(DESK-1306): Do we need an `isSupportedVideoType` function?
+                    return await this._frontendMediaService.generateVideoThumbnail(
+                        bytes,
+                        mediaType,
+                    );
 
                 default:
                     unreachable(messageType);
