@@ -1,0 +1,12 @@
+{
+  "extends": "../../src/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["node"],
+    "resolveJsonModule": true,
+
+    "outDir": "./build/emoji"
+  },
+
+  "include": ["./**/*.ts"]
+}

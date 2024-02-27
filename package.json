@@ -58,7 +58,9 @@
     "assets:generate:icons:windows": "tools/generate-icons-windows.sh",
     "assets:generate:icons:flatpak": "tools/generate-icons-flatpak.sh",
     "assets:generate:icons:web": "tools/generate-icons-web.sh",
-    "assets:generate:icons": "npm run assets:generate:icons:macos && npm run assets:generate:icons:windows && npm run assets:generate:icons:flatpak && npm run assets:generate:icons:web"
+    "assets:generate:icons": "npm run assets:generate:icons:macos && npm run assets:generate:icons:windows && npm run assets:generate:icons:flatpak && npm run assets:generate:icons:web",
+    "emoji:generate": "npm run package --prefix ./tools/emoji && npm run emoji:generate:prettify",
+    "emoji:generate:prettify": "prettier --write src/app/ui/svelte-components/generic/EmojiPicker/{emoji,groups}.html"
   },
   "engines": {
     "node": "18.18.2",
@@ -140,6 +142,7 @@
     "electron": "28.2.0",
     "electron-installer-dmg": "~4.0.0",
     "electron-packager": "~17.1.1",
+    "emojibase-data": "15.0.0",
     "es-module-lexer": "~1.1.0",
     "eslint": "~8.56.0",
     "eslint-config-prettier": "~9.1.0",

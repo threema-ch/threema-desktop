@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "type": "module",
+  "main": "./build/emoji/main.js",
+  "sideEffects": false,
+  "scripts": {
+    "package": "tsc -p ./tsconfig.json && node ."
+  }
+}

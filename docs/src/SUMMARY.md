@@ -26,3 +26,4 @@
   - [Building on Windows](./building-windows.md)
   - [Generating Screenshots](./screenshots.md)
   - [Styles & Theming](./styles.md)
+  - [Emojis](./emojis.md)
