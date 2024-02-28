@@ -38,7 +38,7 @@ import {
  * Properties needed to keep the connection towards the Chat Server alive.
  */
 export interface Layer4Controller {
-    readonly connection: Pick<ConnectionController, 'manager' | 'current'>;
+    readonly connection: Pick<ConnectionController, 'manager' | 'current' | 'closing'>;
 
     /**
      * Chat Server Protocol releated properties.
@@ -248,40 +248,43 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
             // Send an echo request in the requested interval with a timestamp to
             // measure RTT.
             this._log.debug('Starting echo timer');
-            TIMER.repeat((canceller) => {
-                const now = dateToUnixTimestampMs(new Date());
-                try {
-                    const message: OutboundL3Message = {
-                        type: D2mPayloadType.PROXY,
-                        payload: {
-                            type: CspPayloadType.ECHO_REQUEST,
-                            payload: struct.encoder(structbuf.csp.payload.EchoRequest, {
-                                data: struct.encoder(structbuf.extra.monitoring.RttMeasurement, {
-                                    timestamp: now,
+            this._controller.connection.closing.subscribe(
+                TIMER.repeat((canceller) => {
+                    const now = dateToUnixTimestampMs(new Date());
+                    try {
+                        const message: OutboundL3Message = {
+                            type: D2mPayloadType.PROXY,
+                            payload: {
+                                type: CspPayloadType.ECHO_REQUEST,
+                                payload: struct.encoder(structbuf.csp.payload.EchoRequest, {
+                                    data: struct.encoder(
+                                        structbuf.extra.monitoring.RttMeasurement,
+                                        {
+                                            timestamp: now,
+                                        },
+                                    ),
                                 }),
-                            }),
-                        },
-                    };
-                    this._capture?.(message, {info: 'EchoRequest'});
-                    forward(message);
-                    this._ongoingEchoRequests.push(
-                        TIMER.timeout(() => {
-                            this._log.info(
-                                'Considering connection lost due to echo request exceeding client timeout',
-                            );
-                            connection.current.unwrap().disconnect({
-                                code: CloseCode.CLIENT_TIMEOUT,
-                                origin: 'local',
-                            });
-                        }, csp.clientIdleTimeoutS * 1000),
-                    );
-                } catch {
-                    // Readable side has likely been closed and this pipeline
-                    // abandoned, so stopping the timer.
-                    this._log.debug('Cancelling echo timer');
-                    canceller();
-                }
-            }, csp.echoRequestIntervalS * 1000);
+                            },
+                        };
+                        this._capture?.(message, {info: 'EchoRequest'});
+                        forward(message);
+                        this._ongoingEchoRequests.push(
+                            TIMER.timeout(() => {
+                                this._log.info(
+                                    'Considering connection lost due to echo request exceeding client timeout',
+                                );
+                                connection.current.unwrap().disconnect({
+                                    code: CloseCode.CLIENT_TIMEOUT,
+                                    origin: 'local',
+                                });
+                            }, csp.clientIdleTimeoutS * 1000),
+                        );
+                    } catch (error) {
+                        this._log.error('Cancelling echo timer due to an error', error);
+                        canceller();
+                    }
+                }, csp.echoRequestIntervalS * 1000),
+            );
 
             // Set connection idle timeout
             const message: OutboundL3Message = {
