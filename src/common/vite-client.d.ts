@@ -360,6 +360,7 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
 
     // Verbose debug logging
     readonly VERBOSE_LOGGING: {
+        readonly ENDPOINT: boolean;
         readonly DB: boolean;
         readonly STORES: boolean;
     };

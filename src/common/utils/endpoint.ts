@@ -685,7 +685,7 @@ export class EndpointService {
     private readonly _transferCache = new WeakMap<any, readonly DomTransferable[]>();
 
     public constructor(
-        services: Pick<ServicesForBackend, 'config' | 'logging'>,
+        services: Pick<ServicesForBackend, 'logging'>,
         public readonly createEndpointPair: EndpointPairCreator,
         private readonly _cache: ObjectCache<CustomTransferable, object>,
     ) {
@@ -696,7 +696,7 @@ export class EndpointService {
         assert(!EndpointService._SHARED.started, 'Expect endpoint service to be created once');
         EndpointService._SHARED.started = true;
 
-        if (services.config.LOGGING.ENDPOINT_COMMUNICATION) {
+        if (import.meta.env.VERBOSE_LOGGING.ENDPOINT) {
             this._debug = getEndpointDebugContext();
         }
     }

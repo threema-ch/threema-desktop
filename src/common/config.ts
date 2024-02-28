@@ -75,16 +75,6 @@ export interface Config {
      * User agent used for network requests.
      */
     readonly USER_AGENT: string;
-
-    /**
-     * Logging settings.
-     */
-    readonly LOGGING: {
-        /**
-         * Turn endpoint communication logging on/off.
-         */
-        readonly ENDPOINT_COMMUNICATION: boolean;
-    };
 }
 
 /**
@@ -115,7 +105,4 @@ export const CONFIG: Config = {
     USER_AGENT: `Threema Desktop/${import.meta.env.BUILD_VERSION} (${
         import.meta.env.BUILD_VARIANT
     }, ${import.meta.env.BUILD_TARGET})`,
-    LOGGING: {
-        ENDPOINT_COMMUNICATION: false,
-    },
 };

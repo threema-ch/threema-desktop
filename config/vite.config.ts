@@ -269,6 +269,7 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
 
         // Verbose debug logging
         VERBOSE_LOGGING: {
+            ENDPOINT: false,
             DB: false,
             STORES: false,
         },

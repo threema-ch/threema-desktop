@@ -222,9 +222,6 @@ export const TEST_CONFIG = {
     FILE_STORAGE_PATH: ['/tmp/desktop-mocha-tests'],
     DATABASE_PATH: ':memory:',
     USER_AGENT: 'Threema Desktop Mocha Tests',
-    LOGGING: {
-        ENDPOINT_COMMUNICATION: true,
-    },
 } as const satisfies Config;
 
 export class TestTweetNaClBackend extends TweetNaClBackend {
