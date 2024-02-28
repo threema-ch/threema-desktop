@@ -61,13 +61,17 @@ export class GlobalHotkeyManager extends ReadableStore<GlobalHotkeyState> {
         const state = new Map(this.get());
         const existingHandlers = state.get(key);
 
-        this._log.debug(`Hotkey registration requested:`, hotkey);
+        if (import.meta.env.VERBOSE_LOGGING.HOTKEY) {
+            this._log.debug(`Hotkey registration requested:`, hotkey);
+        }
 
         state.set(key, (existingHandlers ?? []).concat(handler));
 
         if (this._update(state)) {
             this._dispatch(state);
-            this._log.debug(`Hotkey registered successfully in state:`, state);
+            if (import.meta.env.VERBOSE_LOGGING.HOTKEY) {
+                this._log.debug(`Hotkey registered successfully in state:`, state);
+            }
         } else {
             this._log.error(`Failed to register hotkey`);
         }
@@ -99,7 +103,9 @@ export class GlobalHotkeyManager extends ReadableStore<GlobalHotkeyState> {
         }
 
         const hotkey = keyToHotkey(key);
-        this._log.debug(`Hotkey deregistration requested:`, hotkey);
+        if (import.meta.env.VERBOSE_LOGGING.HOTKEY) {
+            this._log.debug(`Hotkey deregistration requested:`, hotkey);
+        }
 
         if (updatedHandlers.length > 0) {
             state.set(key, updatedHandlers);
@@ -109,7 +115,9 @@ export class GlobalHotkeyManager extends ReadableStore<GlobalHotkeyState> {
 
         if (this._update(state)) {
             this._dispatch(state);
-            this._log.debug(`Hotkey unregistered successfully from state:`, state);
+            if (import.meta.env.VERBOSE_LOGGING.HOTKEY) {
+                this._log.debug(`Hotkey unregistered successfully from state:`, state);
+            }
         } else {
             this._log.error(`Hotkey couldn't be unregistered`);
         }
@@ -121,7 +129,9 @@ export class GlobalHotkeyManager extends ReadableStore<GlobalHotkeyState> {
     public suspend(): void {
         if (!this._isSuspended) {
             this._isSuspended = true;
-            this._log.debug('GlobalHotkeyManager suspended');
+            if (import.meta.env.VERBOSE_LOGGING.HOTKEY) {
+                this._log.debug('GlobalHotkeyManager suspended');
+            }
         }
     }
 
@@ -131,7 +141,9 @@ export class GlobalHotkeyManager extends ReadableStore<GlobalHotkeyState> {
     public resume(): void {
         if (this._isSuspended) {
             this._isSuspended = false;
-            this._log.debug('GlobalHotkeyManager resumed');
+            if (import.meta.env.VERBOSE_LOGGING.HOTKEY) {
+                this._log.debug('GlobalHotkeyManager resumed');
+            }
         }
     }
 
@@ -179,7 +191,9 @@ export class GlobalHotkeyManager extends ReadableStore<GlobalHotkeyState> {
         // Call the last handler that was added for this hotkey
         handlers.at(-1)?.();
 
-        this._log.debug(`Known hotkey pressed:`, hotkey);
+        if (import.meta.env.VERBOSE_LOGGING.HOTKEY) {
+            this._log.debug(`Known hotkey pressed:`, hotkey);
+        }
     }
 }
 

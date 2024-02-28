@@ -106,7 +106,6 @@ export class NotificationService {
         },
     ): Promise<void> {
         // TODO(DESK-255): Handle notifications by settings (ignore notification if disabled in settings)
-        this._log.debug('notifyNewMessage');
 
         // Fetch models
         const messageModel = message.get();

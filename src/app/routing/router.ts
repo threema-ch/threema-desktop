@@ -34,7 +34,9 @@ export function getFragmentForRoute(
     route: AnyRouteInstance['main'],
     log?: Logger,
 ): string | undefined {
-    log?.debug('getFragmentForRoute route', route);
+    if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
+        log?.debug('getFragmentForRoute route', route);
+    }
 
     // Look up route path
     const path = ROUTE_DEFINITIONS.main[route.id].path;
@@ -391,14 +393,18 @@ export class Router extends WritableStore<RouterState> {
      * URL fragment as well.
      */
     private _setState(state: RouterState): void {
-        this._log.debug('Set state:', state);
+        if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
+            this._log.debug('Set state:', state);
+        }
         this.set(state);
 
         // Determine fragment
         let url: string | undefined = undefined;
         const fragment = getFragmentForRoute(state.main, this._log);
         if (fragment !== undefined) {
-            this._log.debug(`Set fragment: ${fragment}`);
+            if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
+                this._log.debug(`Set fragment: ${fragment}`);
+            }
             url = `#${fragment}`;
         }
 
@@ -412,7 +418,9 @@ export class Router extends WritableStore<RouterState> {
     private _onpopstate(event: PopStateEvent): void {
         // A "popstate" event was triggered. This means that the user navigated through the
         // navigation history, or that the URL was updated by hand.
-        this._log.debug('onpopstate', event);
+        if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
+            this._log.debug('onpopstate', event);
+        }
 
         // Determine new state.
         let newState: RouterState;
@@ -440,7 +448,9 @@ export class Router extends WritableStore<RouterState> {
             }
         }
 
-        this._log.debug('Restore state', newState);
+        if (import.meta.env.VERBOSE_LOGGING.ROUTER) {
+            this._log.debug('Restore state', newState);
+        }
         this.set(newState);
     }
 }

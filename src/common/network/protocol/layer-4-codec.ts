@@ -139,9 +139,11 @@ export class Layer4Decoder implements SyncTransformerCodec<InboundL3Message, Inb
                 } else {
                     canceller();
                 }
-                this._log.debug(
-                    `CSP RTT: ${elapsedMs}ms (${this._ongoingEchoRequests.length} ongoing echo requests)`,
-                );
+                if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
+                    this._log.debug(
+                        `CSP RTT: ${elapsedMs}ms (${this._ongoingEchoRequests.length} ongoing echo requests)`,
+                    );
+                }
                 break;
             }
 

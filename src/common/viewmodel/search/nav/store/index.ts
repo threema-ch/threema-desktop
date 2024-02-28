@@ -23,8 +23,6 @@ export function getSearchViewModelStore(
     return derive(
         searchViewModelController.searchParams,
         (currentSearchParams, getAndSubscribe) => {
-            log.debug('Current Search term: ', currentSearchParams?.term);
-
             return endpoint.exposeProperties(
                 currentSearchParams === undefined
                     ? {...getDefaultSearchViewModel()}

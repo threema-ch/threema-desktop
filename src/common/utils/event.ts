@@ -62,7 +62,7 @@ export class EventController<TEvent> {
         options?: EventSubscriberOptions,
     ): EventUnsubscriber {
         // Subscribe
-        if (this._log !== undefined) {
+        if (import.meta.env.VERBOSE_LOGGING.EVENTS && this._log !== undefined) {
             const subscribers = this._subscribers.size;
             this._log.debug(`Subscribed (${subscribers} -> ${subscribers + 1})`);
         }
@@ -78,7 +78,7 @@ export class EventController<TEvent> {
      * @param event The event to be dispatched.
      */
     public raise(event: TEvent): void {
-        if (this._log !== undefined) {
+        if (import.meta.env.VERBOSE_LOGGING.EVENTS && this._log !== undefined) {
             this._log.debug(`Dispatching event to ${this._subscribers.size} subscribers`);
         }
         for (const [subscriber, options] of this._subscribers) {
@@ -95,7 +95,7 @@ export class EventController<TEvent> {
 
     private _unsubscribe(subscriber: EventSubscriber<TEvent>): void {
         if (this._subscribers.delete(subscriber)) {
-            if (this._log !== undefined) {
+            if (import.meta.env.VERBOSE_LOGGING.EVENTS && this._log !== undefined) {
                 const subscribers = this._subscribers.size;
                 this._log.debug(`Unsubscribed (${subscribers + 1} -> ${subscribers})`);
             }

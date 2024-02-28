@@ -272,6 +272,10 @@ function makeConfig(pkg: PackageJson, env: ConfigEnv): Omit<ImportMeta['env'], '
             ENDPOINT: false,
             DB: false,
             STORES: false,
+            EVENTS: false,
+            NETWORK: false,
+            ROUTER: false,
+            HOTKEY: false,
         },
 
         // Build config

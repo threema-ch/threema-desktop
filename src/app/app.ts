@@ -107,7 +107,7 @@ function attachApp(services: AppServices, elements: Elements): App {
             services,
         },
     });
-    log.info('App started', app);
+    log.info('App started');
     return app;
 }
 

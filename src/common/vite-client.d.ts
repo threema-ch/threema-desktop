@@ -363,6 +363,10 @@ interface ImportMetaEnv extends ViteDefaultImportMetaEnv, BuildConfig {
         readonly ENDPOINT: boolean;
         readonly DB: boolean;
         readonly STORES: boolean;
+        readonly EVENTS: boolean;
+        readonly NETWORK: boolean;
+        readonly ROUTER: boolean;
+        readonly HOTKEY: boolean;
     };
 }
 

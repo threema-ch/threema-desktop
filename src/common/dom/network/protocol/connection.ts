@@ -34,7 +34,7 @@ import {
 } from '~/common/network/protocol/state';
 import {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {TemporaryClientKey} from '~/common/network/types/keys';
-import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, assertUnreachable, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 import {byteToHex} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -368,6 +368,14 @@ class Connection {
                 });
             })
             .catch((error) => {
+                if (error instanceof ConnectionClosed) {
+                    if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
+                        log.debug(
+                            `Mediator transport writable side stopped due to connection being closed (type=${error.type})`,
+                        );
+                    }
+                    return;
+                }
                 log.warn('Mediator transport writable side errored:', error);
                 closed.raise({
                     type: 'error',
@@ -396,7 +404,11 @@ class Connection {
             })
             .catch((error) => {
                 if (error instanceof ConnectionClosed) {
-                    log.info('Task manager stopped due to connection being closed', error);
+                    if (import.meta.env.VERBOSE_LOGGING.NETWORK) {
+                        log.debug(
+                            `Task manager stopped due to connection being closed (type=${error.type})`,
+                        );
+                    }
                 } else {
                     log.error('Task manager errored:', error);
                 }

@@ -83,9 +83,15 @@ class WebSocketEventWrapperSource implements UnderlyingSource<ArrayBuffer | stri
         };
         this._ws.addEventListener('close', (event) => {
             if (event.code === CloseCode.ABNORMAL_CLOSURE) {
-                controller.error(new Error('WebSocket connection closed without a close frame'));
+                // TODO(MED-73): Interprete 1006 to 1000 until the Mediator server no longer
+                // violates the WS closing handshake. Remove the below code when fixed.
+                try {
+                    controller.close();
+                } catch {}
+
+                // TODO(MED-73): Re-enable this code when fixed
+                //controller.error(new Error('WebSocket connection closed without a close frame'));
             } else {
-                // TODO(DESK-767): Propagate close code and reason
                 try {
                     controller.close();
                 } catch {
@@ -203,7 +209,15 @@ export class WebSocketEventWrapperStream implements WebSocketStream {
         this._ws.onopen = (): void => {
             this._ws.onclose = (event): void => {
                 if (event.code === CloseCode.ABNORMAL_CLOSURE) {
-                    closed.reject(new Error('WebSocket connection closed without a close frame'));
+                    // TODO(MED-73): Translate 1006 to 1000 until the Mediator server no longer violates
+                    // the WS closing handshake. Remove the below code when fixed.
+                    closed.resolve({
+                        code: 1000,
+                        reason: "Normal closure... maybe... can't tell until MED-73 is fixed",
+                    });
+
+                    // TODO(MED-73): Re-enable this code when fixed
+                    //closed.reject(new Error('WebSocket connection closed without a close frame'));
                 } else {
                     closed.resolve({
                         code: event.code,

@@ -817,7 +817,7 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
                 lastConnection.get().view.value.date === undefined ? 'NEW' : 'EXISTING'
             ];
         this._log.debug(
-            `Expected device slot state is ${
+            `Expect device slot state to be ${
                 expectedDeviceSlotState === protobuf.d2m.DeviceSlotState.NEW ? 'NEW' : 'EXISTING'
             }`,
         );

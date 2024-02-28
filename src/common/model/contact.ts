@@ -573,7 +573,7 @@ export class ContactModelRepository implements ContactRepository {
         // TODO(DESK-697): This is a quick workaround to make test/mocha/common/model/contact.spec.ts work,
         // but should be probably a private class attribute (not a trivial change as of now), or maybe be
         // moved down to DB level. This case was the origin of DESK-697.
-        this._log.info('Creating new cache...');
+        this._log.debug('Creating new cache');
         cache = new LocalModelStoreCache<DbContactUid, LocalModelStore<Contact>>();
     }
 
