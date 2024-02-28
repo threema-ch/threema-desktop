@@ -17,11 +17,14 @@ function generate {
 # Consumer live
 generate 'ch.threema.threema-desktop' 'consumer-live' 'Threema Beta'
 
-# Work sandbox
-generate 'ch.threema.threema-blue-desktop' 'work-sandbox' 'Threema Blue Beta'
+# Consumer sandbox
+generate 'ch.threema.threema-green-desktop' 'consumer-sandbox' 'Threema Green Beta'
 
 # Work live
 generate 'ch.threema.threema-work-desktop' 'work-live' 'Threema Work Beta'
+
+# Work sandbox
+generate 'ch.threema.threema-blue-desktop' 'work-sandbox' 'Threema Blue Beta'
 
 # Work onprem
 generate 'ch.threema.threema-onprem-desktop' 'work-onprem' 'Threema OnPrem Beta'
