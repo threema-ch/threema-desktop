@@ -191,8 +191,10 @@ export class WebSocketEventWrapperStream implements WebSocketStream {
 
     public constructor(url: string, options: WebSocketEventWrapperStreamOptions) {
         this.url = url;
-        const connection = (this.connection = new ResolvablePromise());
-        const closed = (this.closed = new ResolvablePromise());
+        const connection = (this.connection = new ResolvablePromise<WebSocketConnection, Error>({
+            uncaught: 'discard',
+        }));
+        const closed = (this.closed = new ResolvablePromise({uncaught: 'discard'}));
 
         // Create WebSocket (and we want ArrayBuffer's)
         this._ws = new WebSocket(url, options.protocols as string[]);

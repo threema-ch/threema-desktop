@@ -159,7 +159,7 @@ async function main(): Promise<() => void> {
     //   screen.
     // - When restoring an existing identity, this should be resolved when the backend could be
     //   initialized.
-    const identityReady = new ResolvablePromise<void>();
+    const identityReady = new ResolvablePromise<void>({uncaught: 'default'});
 
     // Set up logging
     const consoleLogger = TagLogger.styled(DOM_CONSOLE_LOGGER, 'app', APP_CONFIG.LOG_DEFAULT_STYLE);

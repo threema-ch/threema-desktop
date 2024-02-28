@@ -677,11 +677,11 @@ class DisconnectedTaskManager {
         this._log.debug(
             `Scheduling task ${task.constructor.name} while disconnected (at position ${this._tasks.length})`,
         );
-        const done = new ResolvablePromise<TTaskResult>();
+        const done = new ResolvablePromise<TTaskResult, Error>({uncaught: 'discard'});
         this._tasks.push({
             SYMBOL: TASK_SYMBOL,
             task: task as ActiveTask<TTaskResult, ActiveTaskPersistence>, // Cast specific type to more generic type
-            done: done as ResolvablePromise<unknown>,
+            done: done as ResolvablePromise<unknown, Error>,
         });
         return done;
     }
@@ -749,11 +749,11 @@ export class ConnectedTaskManager {
         this._log.debug(
             `Scheduling task ${task.constructor.name} while connected (at position ${this._tasks.length})`,
         );
-        const done = new ResolvablePromise<TTaskResult>();
+        const done = new ResolvablePromise<TTaskResult, Error>({uncaught: 'discard'});
         this._tasks.put({
             SYMBOL: TASK_SYMBOL,
             task: task as ActiveTask<TTaskResult, ActiveTaskPersistence>, // Cast specific type to more generic type
-            done: done as ResolvablePromise<unknown>,
+            done: done as ResolvablePromise<unknown, Error>,
         });
         return done;
     }
@@ -833,7 +833,7 @@ export class ConnectedTaskManager {
     ): Promise<
         [
             task: RunnableTask<unknown> | undefined,
-            done?: ResolvablePromise<unknown>,
+            done?: ResolvablePromise<unknown, Error>,
             consume?: QueueValue<TaskQueueItem<unknown>>['consume'],
         ]
     > {

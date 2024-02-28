@@ -28,8 +28,8 @@ export class Queue<V, E extends Error = Error> {
     private _promise: ResolvablePromise<[value: V, promise: ResolvablePromise<void>]>;
 
     public constructor() {
-        this._error = new ResolvablePromise();
-        this._promise = new ResolvablePromise();
+        this._error = new ResolvablePromise({uncaught: 'discard'});
+        this._promise = new ResolvablePromise({uncaught: 'default'});
     }
 
     public get aborted(): QueryablePromise<never, E> {
@@ -53,7 +53,7 @@ export class Queue<V, E extends Error = Error> {
         }
 
         // Resolve
-        this._promise.resolve([value, new ResolvablePromise()]);
+        this._promise.resolve([value, new ResolvablePromise({uncaught: 'default'})]);
     }
 
     public async get(): Promise<QueueValue<V>> {
@@ -73,7 +73,7 @@ export class Queue<V, E extends Error = Error> {
 
                 // Consume the value and replace the promise
                 consumed.resolve();
-                this._promise = new ResolvablePromise();
+                this._promise = new ResolvablePromise({uncaught: 'default'});
                 return result as T;
             },
         };
@@ -96,7 +96,7 @@ export class Queue<V, E extends Error = Error> {
 
 export class UnboundedQueue<V, E extends Error = Error> {
     private readonly _waiters: {
-        readonly error: ResolvablePromise<never>;
+        readonly error: ResolvablePromise<never, E>;
         get: ResolvablePromise<void>;
     };
     private _values: [value: V, promise: ResolvablePromise<void>][];
@@ -104,10 +104,13 @@ export class UnboundedQueue<V, E extends Error = Error> {
 
     public constructor(values?: readonly V[]) {
         this._waiters = {
-            error: new ResolvablePromise(),
-            get: new ResolvablePromise(),
+            error: new ResolvablePromise({uncaught: 'discard'}),
+            get: new ResolvablePromise({uncaught: 'default'}),
         };
-        this._values = (values ?? []).map((value) => [value, new ResolvablePromise()]);
+        this._values = (values ?? []).map((value) => [
+            value,
+            new ResolvablePromise({uncaught: 'default'}),
+        ]);
         if (this._values.length > 0) {
             this._waiters.get.resolve();
         }
@@ -152,7 +155,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
         }
 
         // Add the value to the array and let any waiter know
-        this._values.push([value, new ResolvablePromise()]);
+        this._values.push([value, new ResolvablePromise({uncaught: 'default'})]);
         this._waiters.get.resolve();
     }
 
@@ -188,7 +191,7 @@ export class UnboundedQueue<V, E extends Error = Error> {
                     // Replace the waiter, if needed
                     if (this._values.length === 0) {
                         assert(this._waiters.get.done, 'Expected queue waiter to be done');
-                        this._waiters.get = new ResolvablePromise();
+                        this._waiters.get = new ResolvablePromise({uncaught: 'default'});
                     }
                     return result as T;
                 },

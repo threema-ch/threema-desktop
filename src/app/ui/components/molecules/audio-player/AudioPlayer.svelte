@@ -40,7 +40,7 @@
   /**
    * Whether an audio track is currently loaded.
    */
-  let isLoaded = new ResolvablePromise<void>();
+  let isLoaded = new ResolvablePromise<void>({uncaught: 'default'});
 
   /**
    * Whether playback is paused.
@@ -142,7 +142,7 @@
   }
 
   async function loadAudio(fetch: typeof fetchAudio): Promise<void> {
-    isLoaded = new ResolvablePromise();
+    isLoaded = new ResolvablePromise({uncaught: 'default'});
 
     await fetch()
       .then((result) => {

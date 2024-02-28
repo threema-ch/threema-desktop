@@ -24,7 +24,9 @@ export class FrontendSystemDialogHandle implements SystemDialogHandle {
     /**
      * Resolves once the dialog was closed.
      */
-    public readonly closed: ResolvablePromise<DialogAction> = new ResolvablePromise<DialogAction>();
+    public readonly closed: ResolvablePromise<DialogAction> = new ResolvablePromise<DialogAction>({
+        uncaught: 'default',
+    });
 }
 
 export class FrontendSystemDialogService implements SystemDialogService {

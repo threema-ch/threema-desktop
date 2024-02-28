@@ -224,22 +224,22 @@ export interface Layer3Controller {
          * Server info, resolved once `ServerInfo` has been received (after
          * the final authentication state).
          */
-        readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type, never>;
+        readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type>;
 
         /**
          * Whether we were promoted to be the leader device.
          */
-        readonly promotedToLeader: ResolvablePromise<void, never>;
+        readonly promotedToLeader: ResolvablePromise<void>;
 
         /**
          * Resolves once the `ReflectionQueueDry` messag has been received.
          */
-        readonly reflectionQueueDry: ResolvablePromise<void, never>;
+        readonly reflectionQueueDry: ResolvablePromise<void>;
 
         /**
          * Resolves once the Protocol Version has been negotiated.
          */
-        readonly protocolVersion: ResolvablePromise<u32, never>;
+        readonly protocolVersion: ResolvablePromise<u32>;
     } & Pick<DeviceGroupBoxes, 'dgdik' | 'dgpk'>;
 }
 

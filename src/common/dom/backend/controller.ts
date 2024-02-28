@@ -253,7 +253,7 @@ export class BackendController {
             });
 
             // Show linking screen with QR code
-            const userPassword = new ResolvablePromise<string>();
+            const userPassword = new ResolvablePromise<string>({uncaught: 'default'});
             await showLinkingWizard(linkingStateStore, userPassword);
 
             // Create backend through device join

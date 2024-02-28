@@ -133,7 +133,7 @@ class Connection {
 
         // Create closing/closed event raisers
         const closing = {
-            done: new ResolvablePromise<void>(),
+            done: new ResolvablePromise<void>({uncaught: 'default'}),
             raiser: new AbortRaiser<{
                 readonly info: CloseInfo;
                 readonly done: ResolvablePromise<void>;
@@ -549,7 +549,7 @@ export class ConnectionManager implements ConnectionManagerHandle {
         this.disconnect(info);
         if (this._autoConnect.done) {
             this._log.debug('Turning off auto-connect');
-            this._autoConnect = new ResolvablePromise();
+            this._autoConnect = new ResolvablePromise({uncaught: 'default'});
         }
     }
 
@@ -823,7 +823,9 @@ export class ConnectionManager implements ConnectionManagerHandle {
         this._connection = connection;
 
         // Create promises
-        const connectedPromise = new ResolvablePromise<ConnectionResultConnected>();
+        const connectedPromise = new ResolvablePromise<ConnectionResultConnected>({
+            uncaught: 'default',
+        });
         const disconnectedPromise = connection.closing.promise
             .then(async ({info, done}) => {
                 await done;

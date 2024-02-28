@@ -219,7 +219,7 @@ export function run(): void {
                 'Please expose the `global.gc` interface with node option `--expose-gc`',
             );
 
-            const loggedError = new ResolvablePromise<string>();
+            const loggedError = new ResolvablePromise<string>({uncaught: 'default'});
             const logging = new (class extends FakeLoggingFactory {
                 public override error(...data: unknown[]): void {
                     loggedError.resolve(data[0] as string);
@@ -354,8 +354,8 @@ export function run(): void {
                 services = makeServices();
 
                 type NonceParams = Parameters<INonceService['checkAndRegisterNonce']>;
-                const registration = new ResolvablePromise<NonceParams>();
-                const functionInput = new ResolvablePromise<NonceParams>();
+                const registration = new ResolvablePromise<NonceParams>({uncaught: 'default'});
+                const functionInput = new ResolvablePromise<NonceParams>({uncaught: 'default'});
                 function checkAndRegisterNonce(...params: NonceParams): NonceGuard {
                     registration.resolve(params);
                     console.log('Some nonce was registered.');

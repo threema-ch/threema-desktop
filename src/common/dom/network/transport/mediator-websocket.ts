@@ -73,6 +73,7 @@ export class MediatorWebSocketTransport implements MediatorTransport {
                 reason,
                 origin: 'remote',
             })),
+            {uncaught: 'discard'},
         );
 
         // Create connection and apply pipeline

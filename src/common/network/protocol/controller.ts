@@ -117,13 +117,16 @@ class CspController {
             () => new ProtocolError('csp', 'Payload crypto box already set'),
         );
         this.state = new MonotonicEnumStore<CspAuthState>(CspAuthState.CLIENT_HELLO);
-        this.authenticated = new ResolvablePromise((resolve) => {
-            const unsubscribe = this.state.subscribe((state) => {
-                if (state === CspAuthState.COMPLETE) {
-                    unsubscribe();
-                    resolve();
-                }
-            });
+        this.authenticated = new ResolvablePromise({
+            executor: (resolve) => {
+                const unsubscribe = this.state.subscribe((state) => {
+                    if (state === CspAuthState.COMPLETE) {
+                        unsubscribe();
+                        resolve();
+                    }
+                });
+            },
+            uncaught: 'default',
         });
     }
 }
@@ -138,10 +141,10 @@ class D2mController implements Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'> {
     public readonly box: Delayed<D2mChallengeBox, ProtocolError<'d2m'>>;
     public readonly state: MonotonicEnumStore<D2mAuthState>;
     public readonly authenticated: Promise<void>;
-    public readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type, never>;
-    public readonly promotedToLeader: ResolvablePromise<void, never>;
-    public readonly reflectionQueueDry: ResolvablePromise<void, never>;
-    public readonly protocolVersion: ResolvablePromise<u32, never>;
+    public readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type>;
+    public readonly promotedToLeader: ResolvablePromise<void>;
+    public readonly reflectionQueueDry: ResolvablePromise<void>;
+    public readonly protocolVersion: ResolvablePromise<u32>;
 
     public constructor(source: D2mControllerSource) {
         this.dgpk = source.dgpk;
@@ -155,18 +158,21 @@ class D2mController implements Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'> {
             () => new ProtocolError('d2m', 'Challenge crypto box already set'),
         );
         this.state = new MonotonicEnumStore<D2mAuthState>(D2mAuthState.SERVER_HELLO);
-        this.authenticated = new ResolvablePromise((resolve) => {
-            const unsubscribe = this.state.subscribe((state) => {
-                if (state === D2mAuthState.COMPLETE) {
-                    unsubscribe();
-                    resolve();
-                }
-            });
+        this.authenticated = new ResolvablePromise({
+            executor: (resolve) => {
+                const unsubscribe = this.state.subscribe((state) => {
+                    if (state === D2mAuthState.COMPLETE) {
+                        unsubscribe();
+                        resolve();
+                    }
+                });
+            },
+            uncaught: 'default',
         });
-        this.serverInfo = new ResolvablePromise();
-        this.promotedToLeader = new ResolvablePromise();
-        this.reflectionQueueDry = new ResolvablePromise();
-        this.protocolVersion = new ResolvablePromise();
+        this.serverInfo = new ResolvablePromise({uncaught: 'default'});
+        this.promotedToLeader = new ResolvablePromise({uncaught: 'default'});
+        this.reflectionQueueDry = new ResolvablePromise({uncaught: 'default'});
+        this.protocolVersion = new ResolvablePromise({uncaught: 'default'});
     }
 }
 

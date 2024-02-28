@@ -41,8 +41,7 @@ export interface AbortListener<TEvent = undefined> {
  * subscribing to it as a {@link QueryablePromise}.
  */
 export class AbortRaiser<TEvent = undefined> {
-    // IMPORTANT: This promise is not allowed to be rejected!
-    private readonly _promise = new ResolvablePromise<TEvent>();
+    private readonly _promise = new ResolvablePromise<TEvent>({uncaught: 'default'});
     private readonly _controller: EventController<TEvent>;
     private readonly _unsubscribers = new Set<EventUnsubscriber>();
 

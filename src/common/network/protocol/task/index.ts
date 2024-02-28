@@ -284,7 +284,7 @@ export const TASK_SYMBOL = Symbol('task-symbol');
 export interface TaskQueueItem<TTaskResult> {
     readonly SYMBOL: typeof TASK_SYMBOL;
     readonly task: RunnableTask<TTaskResult>;
-    readonly done: ResolvablePromise<TTaskResult>;
+    readonly done: ResolvablePromise<TTaskResult, Error>;
 }
 
 export interface DispatchQueues {

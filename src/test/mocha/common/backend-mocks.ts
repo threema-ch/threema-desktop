@@ -590,7 +590,7 @@ export class TestMediaService extends BackendMediaService {
 
 const open = (async (dialog: SystemDialog) =>
     await Promise.resolve({
-        closed: new ResolvablePromise(),
+        closed: new ResolvablePromise({uncaught: 'default'}),
     } as const)) as unknown as Remote<(dialog: SystemDialog) => SystemDialogHandle>;
 
 const TEST_SYSTEM_DIALOG_SERVICE: Remote<SystemDialogService> = {
@@ -859,11 +859,11 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
         this._options = {promotedToLeader: true, ...(options ?? {})};
 
         // Assume we're authenticated
-        const authenticatedPromise = new ResolvablePromise<void>();
+        const authenticatedPromise = new ResolvablePromise<void>({uncaught: 'default'});
         authenticatedPromise.resolve(undefined);
 
         // Assume we were promoted to leader
-        const promotedToLeaderPromise = new ResolvablePromise<void>();
+        const promotedToLeaderPromise = new ResolvablePromise<void>({uncaught: 'default'});
         if (this._options.promotedToLeader) {
             promotedToLeaderPromise.resolve(undefined);
         }
@@ -1017,7 +1017,7 @@ export class TestHandle implements ActiveTaskCodecHandle<'volatile'> {
     // eslint-disable-next-line @typescript-eslint/member-ordering
     public abort = {
         aborted: false,
-        promise: new ResolvablePromise<CloseInfo>(),
+        promise: new ResolvablePromise<CloseInfo>({uncaught: 'default'}),
         subscribe: (subscriber: AbortSubscriber<CloseInfo>) => () => undefined,
         attach: () => {
             throw new Error('Not implemented');

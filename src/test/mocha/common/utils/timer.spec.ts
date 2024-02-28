@@ -14,7 +14,7 @@ export function run(): void {
         describe('microtask', function () {
             it('schedules correctly', async function () {
                 const result: u53[] = [];
-                const done = new ResolvablePromise<void>();
+                const done = new ResolvablePromise<void>({uncaught: 'default'});
                 result.push(1);
                 TIMER.microtask(() => {
                     result.push(3);

@@ -115,8 +115,8 @@ export function run(): void {
         it('should execute an OutgoingCspMessageTask', async function () {
             const {model, crypto} = services;
 
-            const cspTaskConstructorPromise = new ResolvablePromise<void>();
-            const runCalledPromise = new ResolvablePromise<void>();
+            const cspTaskConstructorPromise = new ResolvablePromise<void>({uncaught: 'default'});
+            const runCalledPromise = new ResolvablePromise<void>({uncaught: 'default'});
             const outgoingCspMessageTaskConstructor = class extends TestOutgoingCspMessageBaseMock<
                 TextEncodable,
                 Contact,

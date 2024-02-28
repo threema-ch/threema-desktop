@@ -12,7 +12,7 @@
   /**
    * A promise that can be awaited. It will resolve once the password been entered by the user.
    */
-  export const passwordPromise = new ResolvablePromise<string>();
+  export const passwordPromise = new ResolvablePromise<string>({uncaught: 'default'});
 
   /**
    * The previously attempted password. If provided, a 'wrong password' error message will be

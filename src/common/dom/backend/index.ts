@@ -809,7 +809,7 @@ export class Backend implements ProxyMarked {
         });
 
         // Set up promises and state handling used in the next steps
-        const userPasswordPromise = new ResolvablePromise<string>();
+        const userPasswordPromise = new ResolvablePromise<string>({uncaught: 'default'});
         const syncingPhase = new WritableStore<SyncingPhase>('receiving');
         async function updateSyncingPhase(phase: SyncingPhase): Promise<void> {
             syncingPhase.set(phase);
