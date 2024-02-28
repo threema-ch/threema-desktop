@@ -18,5 +18,4 @@ Make sure that you have `~/.cargo/bin/` on your PATH.
 
 You can build the HTML with `mdbook build`.
 
-To serve the docs on `localhost:3000` and watch for changes, use `mdbook
-serve`.
+To serve the docs on `localhost:3000` and watch for changes, use `mdbook serve`.

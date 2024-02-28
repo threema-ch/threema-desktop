@@ -30,5 +30,5 @@ For more details, see: <https://learn.microsoft.com/en-us/windows/msix/package/u
 Build the MSIX package by running
 `npm run package msix <consumer-live | consumer-sandbox | work-live | work-sandbox | work-onprem>`
 from the project root. When the build process is complete, the application can be installed by
-executing the following command (also from the project root): `Add-AppPackage -Path
-".\build\out\<name-of-msix>.msix" -AllowUnsigned`.
+executing the following command (also from the project root):
+`Add-AppPackage -Path ".\build\out\<name-of-msix>.msix" -AllowUnsigned`.

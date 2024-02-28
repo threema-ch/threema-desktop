@@ -32,7 +32,8 @@ following ways:
 
 1. It exists in the theme config (see below), or
 2. It is registered as a temporary variable (see section "Temporary Variables" below), or
-3. It is accompanied by a default value when used directly, e.g., `color: var(--foo-color, #123456);`.
+3. It is accompanied by a default value when used directly, e.g.,
+   `color: var(--foo-color, #123456);`.
 
 Theme variables are global and can be used throughout the application. If a certain variable is
 bound to some state in a single component, use temporary variables instead (see section "Temporary

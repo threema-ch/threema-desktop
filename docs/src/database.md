@@ -9,8 +9,8 @@ We use SQLite encrypted with SQLCipher through the `better-sqlcipher` library.
 **Add a `uid` field as primary key**
 
 Since SQLite already has an internal ROWID (\[[1][rowidtable]\], \[[2][createtable-rowid]\]) on all
-regular tables, we decided to always expose this field as `uid` by adding the column `uid INTEGER
-PRIMARY KEY`.
+regular tables, we decided to always expose this field as `uid` by adding the column
+`uid INTEGER PRIMARY KEY`.
 
 **Foreign keys should point to the `uid`**
 

@@ -10,7 +10,7 @@ Convert the screenshot data files:
 
     python tools/convert-screenshot-data.py ../path/to/screenshot/repository/
 
-Choose the desired language in the app settings. Then press the "Generate
-screenshot data" button in the debug panel (under "Storage").
+Choose the desired language in the app settings. Then press the "Generate screenshot data" button in
+the debug panel (under "Storage").
 
 Create screenshots of the resulting window (manually for now).

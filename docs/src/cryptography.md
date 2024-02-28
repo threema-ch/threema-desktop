@@ -21,7 +21,7 @@
 2. When unwrapping a raw key via `.unwrap()`, these bytes **must not** be used longer than necessary
    in combination with foreign APIs.
 
-3. If the key is used for NaCl public-key cryptography, it **must** be consumed by
-   a `SecureSharedBoxFactory`.
+3. If the key is used for NaCl public-key cryptography, it **must** be consumed by a
+   `SecureSharedBoxFactory`.
 
 4. When a key is no longer needed, purge it via `.purge()`.

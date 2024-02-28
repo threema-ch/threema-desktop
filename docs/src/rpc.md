@@ -45,8 +45,8 @@ delta-updates to the remote side (see [documentation on stores](./stores.md)).
 The RPC logic has a local and remote cache.
 
 - The cache makes sure that only one remote equivalent for an exposed object exists.
-- If a remote equivalent of an local object is [garbage
-  collected](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry),
+- If a remote equivalent of an local object is
+  [garbage collected](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry),
   the local cache reference is also released.
 - Note that objects are normally copied/transferred eagerly to the remote side, but if a prior
   remote equivalent in the cache is detected after transfer, the new transfer is discarded and the

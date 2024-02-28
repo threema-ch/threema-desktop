@@ -9,8 +9,7 @@ Make sure that the runtimes are installed:
     flatpak install org.electronjs.Electron2.BaseApp
     flatpak install org.freedesktop.Sdk.Extension.node18
 
-Then, run flatpak-node-generator to convert `package-lock.json` to a
-`generated-sources.json `file.
+Then, run flatpak-node-generator to convert `package-lock.json` to a `generated-sources.json `file.
 
     python3 -m flatpak_node_generator npm --electron-node-headers ../../package-lock.json
 

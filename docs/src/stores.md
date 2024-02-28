@@ -1,7 +1,7 @@
 # Stores
 
-We generally use our own implementation of Stores, which fullfil the contracts of [Svelte
-Stores](https://svelte.dev/docs/svelte-store).
+We generally use our own implementation of Stores, which fullfil the contracts of
+[Svelte Stores](https://svelte.dev/docs/svelte-store).
 
 ## General Store
 
@@ -44,8 +44,8 @@ IWritableStore <|-- WritableStore
 
 ### `DerivedStore`
 
-Derive a store's value using a derivation function, similar to the [Svelte
-`derived`](https://svelte.dev/docs/svelte-store#derived) function.
+Derive a store's value using a derivation function, similar to the
+[Svelte `derived`](https://svelte.dev/docs/svelte-store#derived) function.
 
 Note that the derivation is lazy, i.e. is only executed if the store has subscribers.
 
