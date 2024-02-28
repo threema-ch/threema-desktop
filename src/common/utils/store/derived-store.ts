@@ -1,3 +1,4 @@
+import type {Logger} from '~/common/logging';
 import {assert} from '~/common/utils/assert';
 import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {
@@ -15,6 +16,7 @@ import {
     type StoreSubscriber,
     type StoreUnsubscriber,
     WritableStore,
+    type StoreTransferDebug,
 } from '~/common/utils/store';
 
 type DisabledDeriveStoreState = LazyStoreState<typeof LAZY_STORE_DISABLED_STATE>;
@@ -161,9 +163,10 @@ export class DerivedStore<
     implements IQueryableStore<TOutDerivedValue>, LocalStore<TOutDerivedValue>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
 
-    protected _state: States<TSourceStore, TDerivedValue, TOutDerivedValue> = {
+    private readonly _log: Logger | undefined;
+    private _state: States<TSourceStore, TDerivedValue, TOutDerivedValue> = {
         symbol: LAZY_STORE_DISABLED_STATE,
     };
 
@@ -176,11 +179,15 @@ export class DerivedStore<
      * @param options Additional store options.
      */
     public constructor(
-        protected _sourceStore: TSourceStore,
-        protected readonly _derive: DeriveFunction<TSourceStore, TDerivedValue>,
-        public readonly options?: StoreOptions<TOutDerivedValue>,
+        private _sourceStore: TSourceStore,
+        private readonly _derive: DeriveFunction<TSourceStore, TDerivedValue>,
+        private readonly _options?: StoreOptions<TOutDerivedValue>,
     ) {
-        this.tag = options?.debug?.tag ?? '';
+        this._log = _options?.debug?.log;
+        this.debug = {
+            prefix: _options?.debug?.log?.prefix,
+            tag: _options?.debug?.tag,
+        };
     }
 
     /** @inheritdoc */
@@ -227,7 +234,7 @@ export class DerivedStore<
     /**
      * Derive a new derived value from the sourceValue and return the result.
      */
-    protected _deriveValue(): TDerivedValue {
+    private _deriveValue(): TDerivedValue {
         assert(
             this._state.symbol !== LAZY_STORE_DISABLED_STATE,
             'Cannot derive a value on a disabled store.',
@@ -254,7 +261,7 @@ export class DerivedStore<
     /**
      * Add a new subscription to {@link this._state.unwrappedStoreSubscriptions}.
      */
-    protected _addUnwrappedStore<TUnwrappedStoreValue>(
+    private _addUnwrappedStore<TUnwrappedStoreValue>(
         store: IQueryableStore<TUnwrappedStoreValue>,
     ): TUnwrappedStoreValue {
         assert(
@@ -293,7 +300,7 @@ export class DerivedStore<
      * Remove and unsubscribe from stores in {@link this._state.unwrappedStoreSubscriptions} which
      * are not in {@param newUnwrappedStores}.
      */
-    protected _removeOldUnwrappedStores(newUnwrappedStores: Set<IQueryableStore<unknown>>): void {
+    private _removeOldUnwrappedStores(newUnwrappedStores: Set<IQueryableStore<unknown>>): void {
         assert(
             this._state.symbol !== LAZY_STORE_DISABLED_STATE,
             'Cannot update unwrapped stores on a disabled store.',
@@ -312,7 +319,7 @@ export class DerivedStore<
      * subscription also calls {@link _deriveValue} if the store is in
      * {@link LAZY_STORE_ENABLED_STATE}.
      */
-    protected _subscribeToSourceStore(): void {
+    private _subscribeToSourceStore(): void {
         assert(
             this._state.symbol !== LAZY_STORE_DISABLED_STATE,
             'Cannot subscribe to source stores in disabled state',
@@ -337,11 +344,13 @@ export class DerivedStore<
      *
      * Changes the class state.
      */
-    protected _enable(): void {
+    private _enable(): void {
         if (this._state.symbol !== LAZY_STORE_DISABLED_STATE) {
             return;
         }
-        this.options?.debug?.log?.debug('Enable Store');
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Enable Store');
+        }
         this._state = {
             symbol: LAZY_STORE_INITIALIZING_STATE,
             unwrappedStoreSubscriptions: new Map(),
@@ -364,13 +373,13 @@ export class DerivedStore<
         const derivedValue = this._deriveValue();
         const derivedValueStore = new WritableStore<TDerivedValue, TOutDerivedValue>(derivedValue, {
             activator: () => {
-                const deactivator = this.options?.activator?.();
+                const deactivator = this._options?.activator?.();
                 return () => {
                     this._disable();
                     deactivator?.();
                 };
             },
-            debug: this.options?.debug,
+            debug: this._options?.debug,
         });
 
         this._state = {
@@ -389,13 +398,15 @@ export class DerivedStore<
      *
      * Changes the class state
      */
-    protected _disable(): void {
+    private _disable(): void {
         assert(this._state.symbol === LAZY_STORE_ENABLED_STATE, 'Enabled store cannot be disabled');
         assert(
             this._state.derivedValueStore.subscribersCount === 0,
             'Store with subscribers cannot be disabled',
         );
-        this.options?.debug?.log?.debug('Disable Store');
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Disable Store');
+        }
 
         // Unsubscribe and delete from each subscribed store
         for (const [store, unsubscriber] of this._state.unwrappedStoreSubscriptions) {

@@ -188,7 +188,7 @@ export interface RouterEnvironment {
  */
 export class Router extends WritableStore<RouterState> {
     public constructor(
-        private readonly _log: Logger,
+        protected override readonly _log: Logger,
         private readonly _environment: RouterEnvironment,
     ) {
         const fragment = _environment.getUrlFragment();

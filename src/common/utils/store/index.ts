@@ -111,14 +111,29 @@ export interface StoreDebug<TValue> {
  */
 export interface StoreOptions<TValue> {
     /**
-     * An optional store activator/deactivator
-     */
-    activator?: StoreActivator;
-
-    /**
      * Optional store debug interface.
      */
-    debug?: StoreDebug<TValue>;
+    readonly debug?: StoreDebug<TValue>;
+
+    /**
+     * An optional store activator/deactivator
+     */
+    readonly activator?: StoreActivator;
+}
+
+/**
+ * Debug properties that should be re-associated when transferred.
+ */
+export interface StoreTransferDebug {
+    /**
+     * A tag that will be used by the endpoint logger.
+     */
+    readonly tag: string | undefined;
+
+    /**
+     * Logger prefix that will be assigned to the store logger.
+     */
+    readonly prefix: LogPrefix | undefined;
 }
 
 /**
@@ -139,14 +154,9 @@ export interface LocalStore<
 > extends IQueryableStore<TValue>,
         CustomTransferable<TTransferHandler> {
     /**
-     * A tag that will be assigned to the associated debug logger.
+     * Debug properties that should be re-associated when transferred.
      */
-    readonly tag: string;
-
-    /**
-     * Store options.
-     */
-    readonly options?: StoreOptions<TValue>;
+    readonly debug: StoreTransferDebug;
 }
 
 // Determines that the store did not emit a value yet.
@@ -202,9 +212,11 @@ export type LazyStoreStates =
 export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue = TInValue>
     implements IQueryableStore<TOutValue>
 {
+    protected readonly _log: Logger | undefined;
     protected readonly _representation: (value: TInValue) => string;
     protected readonly _subscribers = new Set<StoreSubscriber<TOutValue>>();
-    private _deactivator?: StoreDeactivator;
+    protected readonly _activator: StoreActivator | undefined;
+    protected _deactivator: StoreDeactivator | undefined;
 
     /**
      * Create a readable store.
@@ -214,9 +226,11 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
      */
     public constructor(
         protected _value: TInValue,
-        public readonly options?: StoreOptions<TInValue | TOutValue>,
+        options?: StoreOptions<TInValue | TOutValue>,
     ) {
+        this._log = options?.debug?.log;
         this._representation = options?.debug?.representation ?? defaultRepresentation;
+        this._activator = options?.activator;
     }
 
     /**
@@ -241,17 +255,17 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
      */
     public subscribe(subscriber: StoreSubscriber<TOutValue>): StoreUnsubscriber {
         // Activate the store when the first subscription is being made
-        if (this.options?.activator !== undefined && this._subscribers.size === 0) {
+        if (this._activator !== undefined && this._subscribers.size === 0) {
             if (import.meta.env.VERBOSE_LOGGING.STORES) {
-                this.options.debug?.log?.debug('Activating');
+                this._log?.debug('Activating');
             }
-            this._deactivator = this.options.activator();
+            this._deactivator = this._activator();
         }
 
         // Subscribe
-        if (import.meta.env.VERBOSE_LOGGING.STORES && this.options?.debug?.log !== undefined) {
+        if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
             const subscribers = this._subscribers.size;
-            this.options.debug.log.debug(`Subscribed (${subscribers} -> ${subscribers + 1})`);
+            this._log.debug(`Subscribed (${subscribers} -> ${subscribers + 1})`);
         }
         this._subscribers.add(subscriber);
 
@@ -261,23 +275,18 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
         // Return unsubscribe function
         return (): void => {
             if (this._subscribers.delete(subscriber)) {
-                if (
-                    import.meta.env.VERBOSE_LOGGING.STORES &&
-                    this.options?.debug?.log !== undefined
-                ) {
+                if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
                     const subscribers = this._subscribers.size;
-                    this.options.debug.log.debug(
-                        `Unsubscribed (${subscribers + 1} -> ${subscribers})`,
-                    );
+                    this._log.debug(`Unsubscribed (${subscribers + 1} -> ${subscribers})`);
                 }
             } else {
-                this.options?.debug?.log?.warn('Unsubscriber called twice!', subscriber);
+                this._log?.warn('Unsubscriber called twice!', subscriber);
             }
 
             // Deactivate the store when the last unsubscription is being made
             if (this._deactivator !== undefined && this._subscribers.size === 0) {
                 if (import.meta.env.VERBOSE_LOGGING.STORES) {
-                    this.options?.debug?.log?.debug('Deactivating');
+                    this._log?.debug('Deactivating');
                 }
                 this._deactivator();
                 this._deactivator = undefined;
@@ -293,8 +302,8 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
      */
     protected _update(value: TInValue): boolean {
         if (this._value !== value) {
-            if (this.options?.debug?.log !== undefined) {
-                this.options.debug.log.debug(
+            if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
+                this._log.debug(
                     `${this._representation(this._value)} -> ${this._representation(value)}`,
                 );
             }
@@ -310,10 +319,8 @@ export class ReadableStore<in out TInValue extends TOutValue, in out TOutValue =
      * @param value The value to be dispatched.
      */
     protected _dispatch(value: TOutValue): void {
-        if (this.options?.debug?.log !== undefined && import.meta.env.VERBOSE_LOGGING.STORES) {
-            this.options.debug.log.debug(
-                `Dispatching value to ${this._subscribers.size} subscribers`,
-            );
+        if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
+            this._log.debug(`Dispatching value to ${this._subscribers.size} subscribers`);
         }
         for (const subscriber of this._subscribers) {
             subscriber(value);
@@ -331,7 +338,7 @@ export class WritableStore<TInValue extends TOutValue, TOutValue = TInValue>
     implements IWritableStore<TInValue>, IQueryableStore<TOutValue>, LocalStore<TOutValue>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
 
     /**
      * Create a writable store.
@@ -341,7 +348,10 @@ export class WritableStore<TInValue extends TOutValue, TOutValue = TInValue>
      */
     public constructor(initial: TInValue, options?: StoreOptions<TOutValue>) {
         super(initial, options);
-        this.tag = options?.debug?.tag ?? '';
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
     }
 
     /**
@@ -392,7 +402,7 @@ export class MonotonicEnumStore<TValue extends u53>
     implements IWritableStore<TValue>, LocalStore<TValue>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
 
     /**
      * Create a monotonically increasing enum store.
@@ -402,7 +412,10 @@ export class MonotonicEnumStore<TValue extends u53>
      */
     public constructor(initial: TValue, options?: StoreOptions<TValue>) {
         super(initial, options);
-        this.tag = options?.debug?.tag ?? '';
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
     }
 
     /**
@@ -441,8 +454,8 @@ export class MonotonicEnumStore<TValue extends u53>
         // Special case: Reset
         if (token === RESET_TOKEN) {
             if (this._value !== value) {
-                if (this.options?.debug?.log !== undefined) {
-                    this.options.debug.log.debug(
+                if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
+                    this._log.debug(
                         `${this._representation(this._value)} -> ` +
                             `${this._representation(value)} (reset)`,
                     );
@@ -455,8 +468,8 @@ export class MonotonicEnumStore<TValue extends u53>
 
         // Normal case: Monotonically increasing
         if (value > this._value) {
-            if (this.options?.debug?.log !== undefined) {
-                this.options.debug.log.debug(
+            if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
+                this._log.debug(
                     `${this._representation(this._value)} -> ${this._representation(value)}`,
                 );
             }
@@ -470,7 +483,7 @@ export class MonotonicEnumStore<TValue extends u53>
         const error =
             `Attempted to decrease enum ` +
             `${this._representation(this._value)} to ${this._representation(value)}`;
-        this.options?.debug?.log?.error(error);
+        this._log?.error(error);
         throw new Error(error);
     }
 }
@@ -507,9 +520,10 @@ export class DeprecatedDerivedStore<
     implements IQueryableStore<TTransformed>, LocalStore<TTransformed>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
+    private readonly _log: Logger | undefined;
     private _state?: {
-        subscribers: Set<StoreSubscriber<TTransformed>>;
+        readonly subscribers: Set<StoreSubscriber<TTransformed>>;
         unsubscribe: StoreUnsubscriber;
         value: TTransformed;
     };
@@ -526,9 +540,13 @@ export class DeprecatedDerivedStore<
         private readonly _transform: (
             values: Readonly<ReadableStoresValues<TStores>>,
         ) => TTransformed,
-        public readonly options?: StoreOptions<TTransformed>,
+        options?: StoreOptions<TTransformed>,
     ) {
-        this.tag = options?.debug?.tag ?? '';
+        this._log = options?.debug?.log;
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
     }
 
     /**
@@ -573,10 +591,8 @@ export class DeprecatedDerivedStore<
         const subscribers = this._state?.subscribers ?? new Set();
 
         // Subscribe
-        if (this.options?.debug?.log !== undefined) {
-            this.options.debug.log.debug(
-                `Subscribed (${subscribers.size} -> ${subscribers.size + 1})`,
-            );
+        if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
+            this._log.debug(`Subscribed (${subscribers.size} -> ${subscribers.size + 1})`);
         }
         subscribers.add(subscriber);
 
@@ -591,15 +607,13 @@ export class DeprecatedDerivedStore<
         // Return unsubscribe function
         return () => {
             if (this._state?.subscribers.delete(subscriber) ?? false) {
-                if (this.options?.debug?.log !== undefined) {
+                if (import.meta.env.VERBOSE_LOGGING.STORES && this._log !== undefined) {
                     assert(this._state !== undefined, 'this._state should not be undefined');
                     const subscriptions = this._state.subscribers.size;
-                    this.options.debug.log.debug(
-                        `Unsubscribed (${subscriptions + 1} -> ${subscriptions})`,
-                    );
+                    this._log.debug(`Unsubscribed (${subscriptions + 1} -> ${subscriptions})`);
                 }
             } else {
-                this.options?.debug?.log?.warn('Unsubscriber called twice!', subscriber);
+                this._log?.warn('Unsubscriber called twice!', subscriber);
             }
 
             // Tear down the state when the last unsubscription is being made
@@ -616,7 +630,9 @@ export class DeprecatedDerivedStore<
         if (this._state === undefined) {
             return;
         }
-        this.options?.debug?.log?.debug('Unsubscribing from underlying stores');
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Unsubscribing from underlying stores');
+        }
         this._state.unsubscribe();
         this._state = undefined;
     }
@@ -630,7 +646,9 @@ export class DeprecatedDerivedStore<
         this._removeState();
 
         // Create a new state and subscribe on the underlying stores
-        this.options?.debug?.log?.debug('Subscribing on underlying stores');
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Subscribing on underlying stores');
+        }
         this._state = {
             subscribers,
             unsubscribe: () => new Error('Placeholder unsubscriber was called'),
@@ -686,10 +704,8 @@ export class DeprecatedDerivedStore<
             this._state !== undefined,
             'Expected to have an active state when dispatching from a derived store',
         );
-        if (this.options?.debug?.log !== undefined && import.meta.env.VERBOSE_LOGGING.STORES) {
-            this.options.debug.log.debug(
-                `Dispatching value to ${this._state.subscribers.size} subscribers`,
-            );
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug(`Dispatching value to ${this._state.subscribers.size} subscribers`);
         }
         for (const subscriber of this._state.subscribers) {
             subscriber(value);
@@ -705,14 +721,14 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
     RemoteStore<unknown>,
     [
         id: ObjectId<LocalStore<unknown, never>>,
-        tag: string,
+        tag: string | undefined,
         prefix: LogPrefix | undefined,
         endpoint: EndpointFor<unknown, CreatedEndpoint>,
         value: WireValue,
     ],
     [
         id: ObjectId<RemoteStore<unknown>>,
-        tag: string,
+        tag: string | undefined,
         prefix: LogPrefix | undefined,
         endpoint: EndpointFor<unknown, CreatedEndpoint>,
         value: WireValue,
@@ -734,7 +750,7 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         const {local, remote} = service.createEndpointPair();
         const [serialized, transfers] = RemoteStore.expose(service, store, local);
         return [
-            [id, store.tag, store.options?.debug?.log?.prefix, remote, serialized],
+            [id, store.debug.tag, store.debug.prefix, remote, serialized],
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             [remote, ...transfers],
         ];
@@ -746,7 +762,7 @@ export const STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
             const count = service.cache().counter?.get(id);
             releaser = service.debug(
                 endpoint,
-                service.logging.logger(`com.store.${id}#${count}.${tag}`),
+                service.logging.logger(`com.store.${id}#${count}.${tag ?? '???'}`),
             );
         }
 

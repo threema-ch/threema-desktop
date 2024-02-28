@@ -7,7 +7,7 @@ interface SystemTimeStoreValue {
     /**
      * The current system time. Updates every _full_ minute.
      */
-    current: Date;
+    readonly current: Date;
 }
 
 /**
@@ -16,7 +16,7 @@ interface SystemTimeStoreValue {
  * Note: The store updates every _full_ minute (i.e. if the seconds are zero).
  */
 export class SystemTimeStore extends ReadableStore<SystemTimeStoreValue> {
-    public constructor(private readonly _log: Logger) {
+    public constructor(protected override readonly _log: Logger) {
         const initialState: SystemTimeStoreValue = {current: new Date()};
         super(initialState);
         this._log.debug('SystemTimeStore created with initial state:', this.get());

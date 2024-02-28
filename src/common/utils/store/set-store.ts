@@ -1,5 +1,5 @@
 import {DeltaUpdateType, TransferTag} from '~/common/enum';
-import type {LogPrefix} from '~/common/logging';
+import type {LogPrefix, Logger} from '~/common/logging';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,
@@ -27,6 +27,7 @@ import {
     ReadableStore,
     type StoreOptions,
     type StoreUnsubscriber,
+    type StoreTransferDebug,
 } from '~/common/utils/store';
 
 /**
@@ -61,7 +62,7 @@ export class LocalSetStore<TValue extends CustomTransferable>
     implements IDerivableSetStore<TValue>
 {
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
     private readonly _delta: EventController<DeltaUpdate<TValue>>;
 
     public constructor(values?: ReadonlySet<TValue>, options?: StoreOptions<ReadonlySet<TValue>>) {
@@ -71,7 +72,10 @@ export class LocalSetStore<TValue extends CustomTransferable>
                 representation: options?.debug?.representation ?? defaultSetStoreRepresentation,
             },
         });
-        this.tag = options?.debug?.tag ?? '';
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
         this._delta = new EventController<DeltaUpdate<TValue>>(options?.debug?.log);
     }
 
@@ -83,6 +87,9 @@ export class LocalSetStore<TValue extends CustomTransferable>
         if (this._value.has(value)) {
             return;
         }
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Adding value to set');
+        }
         this._dispatch(this._value.add(value));
         this._delta.raise([DeltaUpdateType.ADDED, [value]]);
     }
@@ -91,12 +98,18 @@ export class LocalSetStore<TValue extends CustomTransferable>
         if (!this._value.delete(value)) {
             return;
         }
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Removed value from set');
+        }
         this._dispatch(this._value);
         this._delta.raise([DeltaUpdateType.DELETED, [value]]);
     }
 
     public clear(): void {
         this._value.clear();
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Cleared all values from set');
+        }
         this._dispatch(this._value);
         this._delta.raise([DeltaUpdateType.CLEARED]);
     }
@@ -119,7 +132,7 @@ export class LocalSetBasedSetStore<TValue extends CustomTransferable>
     );
 
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
     private readonly _delta: EventController<DeltaUpdate<TValue>>;
 
     public constructor(
@@ -127,7 +140,10 @@ export class LocalSetBasedSetStore<TValue extends CustomTransferable>
         options?: StoreOptions<ReadonlySet<TValue>>,
     ) {
         super(source.get(), options);
-        this.tag = options?.debug?.tag ?? '';
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
         this._delta = new EventController<DeltaUpdate<TValue>>(options?.debug?.log);
         const unsubscriber = source.subscribe((newSet) => this._updateFromSet(newSet));
         LocalSetBasedSetStore._REGISTRY.register(this, unsubscriber);
@@ -194,17 +210,20 @@ export class LocalDerivedSetStore<
     );
 
     public readonly [TRANSFER_HANDLER] = SET_STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
     private readonly _delta: EventController<DeltaUpdate<TDerived>>;
 
     public constructor(
         source: IDerivableSetStore<TValue>,
         derive: (value: TValue) => TDerived,
-        public override readonly options?: StoreOptions<ReadonlySet<TDerived>>,
+        options?: StoreOptions<ReadonlySet<TDerived>>,
     ) {
         const map = new Map([...source.get()].map((value) => [value, derive(value)]));
         super(new Set(map.values()));
-        this.tag = options?.debug?.tag ?? '';
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
         this._delta = new EventController<DeltaUpdate<TDerived>>(options?.debug?.log);
 
         // Subscribe to delta updates
@@ -347,7 +366,7 @@ export class RemoteSetStore<TValue extends object>
 
         // Forward set updates to all underlying subscribers
         const self = new WeakRef(this);
-        function listener({data}: MessageEvent): void {
+        const listener = ({data}: MessageEvent): void => {
             // Unregister listener when the reference disappears
             const self_ = self.deref();
             if (self_ === undefined) {
@@ -363,11 +382,9 @@ export class RemoteSetStore<TValue extends object>
             let deltaUpdate: DeltaUpdate<TValue>;
             switch (delta.type) {
                 case DeltaUpdateType.ADDED: {
-                    options.debug?.log?.debug(
-                        `Received delta update of type ADDED (ids=${delta.objects
-                            .map((obj) => obj.id)
-                            .join(',')})`,
-                    );
+                    if (import.meta.env.VERBOSE_LOGGING.STORES) {
+                        this._log?.debug('Adding value to set');
+                    }
                     const values = [];
                     for (const object of delta.objects) {
                         const value = mapper.getOrCreate(
@@ -389,11 +406,9 @@ export class RemoteSetStore<TValue extends object>
                     break;
                 }
                 case DeltaUpdateType.DELETED: {
-                    options.debug?.log?.debug(
-                        `Received delta update of type DELETED (ids=${delta.objects
-                            .map((obj) => obj.id)
-                            .join(',')})`,
-                    );
+                    if (import.meta.env.VERBOSE_LOGGING.STORES) {
+                        this._log?.debug('Removed value from set');
+                    }
                     const values = [];
                     for (const object of delta.objects) {
                         const value = mapper.get(object.id);
@@ -411,7 +426,9 @@ export class RemoteSetStore<TValue extends object>
                     break;
                 }
                 case DeltaUpdateType.CLEARED:
-                    options.debug?.log?.debug('Received delta update of type CLEARED');
+                    if (import.meta.env.VERBOSE_LOGGING.STORES) {
+                        this._log?.debug('Cleared all values from set');
+                    }
                     self_._value.clear();
                     deltaUpdate = [delta.type];
                     break;
@@ -424,7 +441,7 @@ export class RemoteSetStore<TValue extends object>
             self_._value = new Set(self_._value);
             self_._dispatch(self_._value);
             self_._delta.raise(deltaUpdate);
-        }
+        };
         set.endpoint.addEventListener('message', listener);
         set.endpoint.start?.();
     }
@@ -519,7 +536,6 @@ export class RemoteSetStore<TValue extends object>
                     const objects = [];
                     for (const value of values) {
                         const id = mapper.getOrAssignId(value);
-                        store.options?.debug?.log?.debug(`Add value to set (id=${id})`);
                         const [serialized, valueTransfers] = service.serialize(value);
                         objects.push({id, serialized});
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -532,7 +548,6 @@ export class RemoteSetStore<TValue extends object>
                     const objects = [];
                     for (const value of values) {
                         const id = mapper.getId(value);
-                        store.options?.debug?.log?.debug(`Delete value from set (id=${id})`);
                         assert(
                             id !== undefined,
                             'Expected id of a delta delete to be available in the cache',
@@ -543,7 +558,6 @@ export class RemoteSetStore<TValue extends object>
                     break;
                 }
                 case DeltaUpdateType.CLEARED: {
-                    store.options?.debug?.log?.debug(`Clear set`);
                     delta = {type};
                     break;
                 }
@@ -578,14 +592,14 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
     RemoteSetStore<CustomTransferable>,
     readonly [
         id: ObjectId<LocalSetStore<CustomTransferable>>,
-        tag: string,
+        tag: string | undefined,
         prefix: LogPrefix | undefined,
         endpoint: EndpointFor<'set', CreatedEndpoint>,
         values: readonly SerializedSetStoreWireValue<CustomTransferable>[],
     ],
     readonly [
         id: ObjectId<RemoteSetStore<CustomTransferable>>,
-        tag: string,
+        tag: string | undefined,
         prefix: LogPrefix | undefined,
         endpoint: EndpointFor<'set', CreatedEndpoint>,
         values: readonly SerializedSetStoreWireValue<CustomTransferable>[],
@@ -603,7 +617,7 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         });
 
         return [
-            [id, store.tag, store.options?.debug?.log?.prefix, endpoint.remote, values],
+            [id, store.debug.tag, store.debug.prefix, endpoint.remote, values],
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             [endpoint.remote, ...transfers],
         ];
@@ -616,7 +630,7 @@ const SET_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
             debug = {
                 releaser: service.debug(
                     endpoint,
-                    service.logging.logger(`com.store.${id}#${count}.set.${tag}`),
+                    service.logging.logger(`com.store.${id}#${count}.set.${tag ?? '???'}`),
                 ),
             };
         }

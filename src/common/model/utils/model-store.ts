@@ -31,6 +31,7 @@ import {
     NO_STORE_VALUE,
     ReadableStore,
     type StoreOptions,
+    type StoreTransferDebug,
 } from '~/common/utils/store';
 
 /**
@@ -73,11 +74,7 @@ export class LocalModelStore<
     implements CustomTransferable<typeof MODEL_STORE_TRANSFER_HANDLER>
 {
     public readonly [TRANSFER_HANDLER] = MODEL_STORE_TRANSFER_HANDLER;
-
-    /**
-     * A tag that will be assigned to the associated debug logger.
-     */
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
 
     /**
      * Create an updatedable model store.
@@ -108,7 +105,10 @@ export class LocalModelStore<
                 representation: options?.debug?.representation ?? defaultModelRepresentation,
             },
         });
-        this.tag = options?.debug?.tag ?? '';
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
 
         // Activate the controller
         controller.meta.activate({
@@ -326,7 +326,7 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         id: ObjectId<LocalModelStore<never>>,
         ctx: unknown,
         type: unknown,
-        tag: string,
+        tag: string | undefined,
         prefix: LogPrefix | undefined,
         viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
         viewValue: unknown,
@@ -336,7 +336,7 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         id: ObjectId<RemoteModelStore<never>>,
         ctx: unknown,
         type: unknown,
-        tag: string,
+        tag: string | undefined,
         prefix: LogPrefix | undefined,
         viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
         viewValue: unknown,
@@ -354,7 +354,7 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
             id: ObjectId<LocalModelStore<never>>,
             ctx: unknown,
             type: unknown,
-            tag: string,
+            tag: string | undefined,
             prefix: LogPrefix | undefined,
             viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
             viewValue: unknown,
@@ -383,7 +383,7 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
         if (import.meta.env.DEBUG) {
             const count = service.cache().counter?.get(id);
             controller.log = service.logging.logger(
-                `com.store.${id}#${count}.model.${store.tag}.controller`,
+                `com.store.${id}#${count}.model.${store.debug.tag ?? '???'}.controller`,
             );
         }
         let ctx: unknown;
@@ -404,8 +404,8 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
                 id,
                 ctx,
                 type,
-                store.tag,
-                store.options?.debug?.log?.prefix,
+                store.debug.tag,
+                store.debug.prefix,
                 view.endpoints.remote,
                 view.value,
                 controller.endpoints.remote,
@@ -419,7 +419,7 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
             id: ObjectId<RemoteModelStore<never>>,
             ctx: unknown,
             type: unknown,
-            tag: string,
+            tag: string | undefined,
             prefix: LogPrefix | undefined,
             viewEndpoint: EndpointFor<'view', CreatedEndpoint>,
             viewValue: unknown,
@@ -443,11 +443,13 @@ const MODEL_STORE_TRANSFER_HANDLER: RegisteredTransferHandler<
                 model: {
                     releaser: service.debug(
                         viewEndpoint,
-                        service.logging.logger(`com.store.${id}#${count}.model.${tag}`),
+                        service.logging.logger(`com.store.${id}#${count}.model.${tag ?? '???'}`),
                     ),
                 },
                 controller: {
-                    log: service.logging.logger(`com.store.${id}#${count}.model.${tag}.controller`),
+                    log: service.logging.logger(
+                        `com.store.${id}#${count}.model.${tag ?? '???'}.controller`,
+                    ),
                 },
             };
         }

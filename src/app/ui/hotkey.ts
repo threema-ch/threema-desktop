@@ -33,7 +33,7 @@ export class GlobalHotkeyManager extends ReadableStore<GlobalHotkeyState> {
     private _isSuspended = false;
 
     public constructor(
-        private readonly _log: Logger,
+        protected override readonly _log: Logger,
         private readonly _systemInfo: SystemInfo,
         private readonly _environment: GlobalHotkeyManagerEnvironment,
     ) {

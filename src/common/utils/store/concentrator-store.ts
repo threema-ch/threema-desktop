@@ -1,3 +1,4 @@
+import type {Logger} from '~/common/logging';
 import type {Mutable} from '~/common/types';
 import {assert, unreachable} from '~/common/utils/assert';
 import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -16,6 +17,8 @@ import {
     type StoreSubscriber,
     type StoreUnsubscriber,
     WritableStore,
+    type StoreTransferDebug,
+    type StoreActivator,
 } from '~/common/utils/store';
 
 export type QueryableStores = readonly IQueryableStore<unknown>[];
@@ -129,8 +132,10 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
     implements IQueryableStore<StoreValues<TSourceStores>>, LocalStore<StoreValues<TSourceStores>>
 {
     public readonly [TRANSFER_HANDLER] = STORE_TRANSFER_HANDLER;
-    public readonly tag: string;
+    public readonly debug: StoreTransferDebug;
 
+    private readonly _log: Logger | undefined;
+    private readonly _activator: StoreActivator | undefined;
     /**
      * This class implements a state machine:
      *
@@ -139,7 +144,7 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
      * {@link LAZY_STORE_ENABLED_STATE} ->
      * {@link LAZY_STORE_DISABLED_STATE}
      */
-    protected _state: States<TSourceStores> = {
+    private _state: States<TSourceStores> = {
         symbol: LAZY_STORE_DISABLED_STATE,
     };
     private _deactivator: StoreDeactivator | undefined;
@@ -152,9 +157,13 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
      */
     public constructor(
         private readonly _sourceStores: TSourceStores,
-        public readonly options?: StoreOptions<StoreValues<TSourceStores>>,
+        options?: StoreOptions<StoreValues<TSourceStores>>,
     ) {
-        this.tag = options?.debug?.tag ?? '';
+        this._log = options?.debug?.log;
+        this.debug = {
+            prefix: options?.debug?.log?.prefix,
+            tag: options?.debug?.tag,
+        };
     }
 
     /** @inheritdoc */
@@ -185,7 +194,7 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
     /**
      * Subscribe to all source stores and update this store's values with {@link this._updateSourceStoreValue}
      */
-    protected _subscribeToSourceStores(): void {
+    private _subscribeToSourceStores(): void {
         assert(
             this._state.symbol === LAZY_STORE_INITIALIZING_STATE,
             'Cannot subscribe to source stores outside of initial concentrating state',
@@ -209,7 +218,7 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
      *
      * Changes the class state.
      */
-    protected _enable(): void {
+    private _enable(): void {
         if (this._state.symbol !== LAZY_STORE_DISABLED_STATE) {
             // Keep the current state
             return;
@@ -230,7 +239,9 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
             initialSourceStoreValues,
         };
 
-        this.options?.debug?.log?.debug('Subscribing to source stores');
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Subscribing to source stores');
+        }
         this._subscribeToSourceStores();
 
         assertNoMissingValues(
@@ -244,7 +255,7 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
         );
 
         const valueStore = new WritableStore(initialSourceStoreValues, {
-            debug: {tag: this.tag},
+            debug: {tag: this.debug.tag},
             activator: () => () => {
                 // Deactivator, triggered when the valueStore has no subscribers anymore.
                 this._disable();
@@ -260,7 +271,7 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
             >,
         };
 
-        this._deactivator = this.options?.activator?.();
+        this._deactivator = this._activator?.();
     }
 
     /**
@@ -269,7 +280,7 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
      * If in {@link LAZY_STORE_INITIALIZING_STATE}, update the initial concentration value, if in
      * {@link LAZY_STORE_ENABLED_STATE}, update the {valueStore} directly.
      */
-    protected _updateSourceStoreValue<TStoreIndex extends keyof TSourceStores>(
+    private _updateSourceStoreValue<TStoreIndex extends keyof TSourceStores>(
         sourceStorePosition: TStoreIndex,
         updatedStoreValue: StoreValueType<TSourceStores, TStoreIndex>,
     ): void {
@@ -301,7 +312,7 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
      *
      * Changes the class state
      */
-    protected _disable(): void {
+    private _disable(): void {
         assert(
             this._state.symbol === LAZY_STORE_ENABLED_STATE,
             'Only an enabled store cannot be disabled',
@@ -311,7 +322,9 @@ export class ConcentratorStore<TSourceStores extends QueryableStores>
             'Store with subscribers cannot be disabled',
         );
 
-        this.options?.debug?.log?.debug('Unsubscribing from source stores');
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Unsubscribing from source stores');
+        }
         for (const unsubscriber of this._state.sourceStoreUnsubscribers) {
             unsubscriber();
         }
