@@ -15,13 +15,17 @@
         </p>
     </description>
     <screenshots>
-        <screenshot type="default">
+        <screenshot type="default" environment="gnome:light">
             <image type="source" width="1600" height="900">
                 https://releases.threema.ch/flatpak/threema-desktop/screenshot-1.png
             </image>
         </screenshot>
     </screenshots>
+    <!-- Note: Deprecated since AppStream 1.0, remove after 2025 -->
     <developer_name>Threema GmbH</developer_name>
+    <developer id="ch.threema">
+        <name translate="no">Threema GmbH</name>
+    </developer>
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
