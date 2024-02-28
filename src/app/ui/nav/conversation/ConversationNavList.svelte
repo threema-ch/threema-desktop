@@ -18,7 +18,7 @@
   import type {Conversation, RemoteModelFor} from '~/common/model';
   import {conversationCompareFn} from '~/common/model/utils/conversation';
   import type {u53} from '~/common/types';
-  import {unreachable, unwrap} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import type {SetValue} from '~/common/utils/set';
   import type {IQueryableStoreValue} from '~/common/utils/store';
@@ -59,9 +59,11 @@
   let currentPreview: SetValue<IQueryableStoreValue<typeof conversationPreviews>> | undefined;
   $: currentPreviewViewModelStore = currentPreview?.viewModel;
   let currentPreviewConversationModel: RemoteModelFor<Conversation> | undefined;
-  $: void updateCurrentPreviewConversationModel($currentPreviewViewModelStore);
+  $: updateCurrentPreviewConversationModel($currentPreviewViewModelStore).catch(assertUnreachable);
   let currentPreviewTotalMessageCount: u53 = 0;
-  $: void updateCurrentPreviewTotalMessageCount(currentPreviewConversationModel);
+  $: updateCurrentPreviewTotalMessageCount(currentPreviewConversationModel).catch(
+    assertUnreachable,
+  );
 
   let modalState: ModalState = {type: 'none'};
 

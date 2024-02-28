@@ -12,7 +12,7 @@
     DistributionListView,
     GroupView,
   } from '~/common/model';
-  import {unreachable, unwrap} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 
   export let services: AppServices;
 
@@ -103,36 +103,38 @@
    */
   function dumpData(): void {
     /* eslint-disable no-console */
-    void loadData().then((data) => {
-      console.log(`%cContacts (${data.contacts.length})`, 'font-weight: bold');
-      for (const contact of data.contacts) {
-        console.log(`Contact ${contact.identity}`, contact);
-      }
-
-      console.log(`%cGroups (${data.groups.length})`, 'font-weight: bold');
-      for (const group of data.groups) {
-        console.log(`Group ${group.displayName}`, group);
-      }
-
-      console.log(`%cConversations (${data.conversations.length})`, 'font-weight: bold');
-      for (const [conversation, receiver, messages] of data.conversations) {
-        switch (receiver.type) {
-          case 'contact':
-            console.log(`Conversation with ${receiver.view.identity}`, conversation);
-            break;
-          case 'group':
-            console.log(`Conversation with ${receiver.view.displayName}`, conversation);
-            break;
-          case 'distributionList':
-            // TODO(DESK-236)
-            break;
-          default:
-            unreachable(receiver);
+    loadData()
+      .then((data) => {
+        console.log(`%cContacts (${data.contacts.length})`, 'font-weight: bold');
+        for (const contact of data.contacts) {
+          console.log(`Contact ${contact.identity}`, contact);
         }
-        console.log('  Receiver:', receiver);
-        console.log('  Messages:', messages);
-      }
-    });
+
+        console.log(`%cGroups (${data.groups.length})`, 'font-weight: bold');
+        for (const group of data.groups) {
+          console.log(`Group ${group.displayName}`, group);
+        }
+
+        console.log(`%cConversations (${data.conversations.length})`, 'font-weight: bold');
+        for (const [conversation, receiver, messages] of data.conversations) {
+          switch (receiver.type) {
+            case 'contact':
+              console.log(`Conversation with ${receiver.view.identity}`, conversation);
+              break;
+            case 'group':
+              console.log(`Conversation with ${receiver.view.displayName}`, conversation);
+              break;
+            case 'distributionList':
+              // TODO(DESK-236)
+              break;
+            default:
+              unreachable(receiver);
+          }
+          console.log('  Receiver:', receiver);
+          console.log('  Messages:', messages);
+        }
+      })
+      .catch(assertUnreachable);
     /* eslint-enable no-console */
   }
 
@@ -186,7 +188,7 @@
     <Button
       flavor="filled"
       on:click={() => {
-        void requestNotificationPermissionAndNotify();
+        requestNotificationPermissionAndNotify().catch(assertUnreachable);
       }}
     >
       <span class="icon-and-text"
@@ -222,7 +224,7 @@
     <Button
       flavor="filled"
       on:click={() => {
-        void backend.debug.generateFakeContactConversation();
+        backend.debug.generateFakeContactConversation().catch(assertUnreachable);
       }}
     >
       <span class="icon-and-text"
@@ -234,7 +236,7 @@
     <Button
       flavor="filled"
       on:click={() => {
-        void backend.debug.generateFakeGroupConversation();
+        backend.debug.generateFakeGroupConversation().catch(assertUnreachable);
       }}
     >
       <span class="icon-and-text"
@@ -255,7 +257,7 @@
     <Button
       flavor="filled"
       on:click={() => {
-        void backend.debug.generateScreenshotData($i18n.locale);
+        backend.debug.generateScreenshotData($i18n.locale).catch(assertUnreachable);
       }}
     >
       <span class="icon-and-text"

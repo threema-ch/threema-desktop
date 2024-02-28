@@ -6,6 +6,7 @@ import ICU from 'i18next-icu';
 import type {I18nType} from '~/app/ui/i18n-types';
 import type {LoggerFactory, LogRecordFn} from '~/common/logging';
 import type {StrictPartial, u53} from '~/common/types';
+import {assertUnreachable} from '~/common/utils/assert';
 import {keys} from '~/common/utils/object';
 import {type IQueryableStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
@@ -201,7 +202,7 @@ export async function initialize(config: LocaleConfig): Promise<void> {
             if (i18n.language === locale) {
                 return;
             }
-            void i18n.changeLanguage(locale);
+            i18n.changeLanguage(locale).catch(assertUnreachable);
         }
     });
 }

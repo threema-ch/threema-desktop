@@ -2,6 +2,7 @@
   import type * as qr from 'qrcode';
 
   import {drawToCanvas} from '~/app/ui/svelte-components/generic/QrCode';
+  import {assertUnreachable} from '~/common/utils/assert';
 
   /**
    * Data to be encoded.
@@ -17,7 +18,7 @@
   let canvas: HTMLCanvasElement | null = null;
 
   $: if (canvas !== null) {
-    void drawToCanvas(canvas, data, options);
+    drawToCanvas(canvas, data, options).catch(assertUnreachable);
   }
 </script>
 

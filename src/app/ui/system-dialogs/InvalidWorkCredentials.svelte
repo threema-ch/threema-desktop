@@ -18,6 +18,7 @@
   import {workLicenseCheck} from '~/common/dom/network/protocol/work-license-check';
   import type {Logger} from '~/common/logging';
   import type {InvalidWorkCredentialsDialog} from '~/common/system-dialog';
+  import {assertUnreachable} from '~/common/utils/assert';
   import type {Delayed} from '~/common/utils/delayed';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
@@ -81,7 +82,9 @@
       .then((result) => {
         checkingCredentials = false;
         credentialsValidity = result.valid ? true : result.message;
-        void tick().then(() => keyStoragePasswordInput?.focusAndSelect());
+        tick()
+          .then(() => keyStoragePasswordInput?.focusAndSelect())
+          .catch(assertUnreachable);
       })
       .catch((error) => {
         log.error(`Work license check failed: ${error}`);

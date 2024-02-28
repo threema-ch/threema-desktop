@@ -233,72 +233,77 @@ export class Layer4Encoder implements SyncTransformerCodec<OutboundL4Message, Ou
         this._encoder.set({forward});
 
         // Wait until authenticated towards CSP
-        void csp.authenticated.then(() => {
-            // Cancel all ongoing echo requests when the connection is closing/closed
-            connection.current.unwrap().closing.subscribe(() => {
-                for (;;) {
-                    const canceller = this._ongoingEchoRequests.shift();
-                    if (canceller === undefined) {
-                        break;
-                    }
-                    canceller();
-                }
-            });
-
-            // Send an echo request in the requested interval with a timestamp to
-            // measure RTT.
-            this._log.debug('Starting echo timer');
-            this._controller.connection.closing.subscribe(
-                TIMER.repeat((canceller) => {
-                    const now = dateToUnixTimestampMs(new Date());
-                    try {
-                        const message: OutboundL3Message = {
-                            type: D2mPayloadType.PROXY,
-                            payload: {
-                                type: CspPayloadType.ECHO_REQUEST,
-                                payload: struct.encoder(structbuf.csp.payload.EchoRequest, {
-                                    data: struct.encoder(
-                                        structbuf.extra.monitoring.RttMeasurement,
-                                        {
-                                            timestamp: now,
-                                        },
-                                    ),
-                                }),
-                            },
-                        };
-                        this._capture?.(message, {info: 'EchoRequest'});
-                        forward(message);
-                        this._ongoingEchoRequests.push(
-                            TIMER.timeout(() => {
-                                this._log.info(
-                                    'Considering connection lost due to echo request exceeding client timeout',
-                                );
-                                connection.current.unwrap().disconnect({
-                                    code: CloseCode.CLIENT_TIMEOUT,
-                                    origin: 'local',
-                                });
-                            }, csp.clientIdleTimeoutS * 1000),
-                        );
-                    } catch (error) {
-                        this._log.error('Cancelling echo timer due to an error', error);
+        csp.authenticated
+            .then(() => {
+                // Cancel all ongoing echo requests when the connection is closing/closed
+                connection.current.unwrap().closing.subscribe(() => {
+                    for (;;) {
+                        const canceller = this._ongoingEchoRequests.shift();
+                        if (canceller === undefined) {
+                            break;
+                        }
                         canceller();
                     }
-                }, csp.echoRequestIntervalS * 1000),
-            );
+                });
 
-            // Set connection idle timeout
-            const message: OutboundL3Message = {
-                type: D2mPayloadType.PROXY,
-                payload: {
-                    type: CspPayloadType.SET_CONNECTION_IDLE_TIMEOUT,
-                    payload: struct.encoder(structbuf.csp.payload.SetConnectionIdleTimeout, {
-                        timeout: csp.serverIdleTimeoutS,
-                    }),
-                },
-            };
-            this._capture?.(message, {info: 'SetConnectionIdleTimeout'});
-            forward(message);
-        });
+                // Send an echo request in the requested interval with a timestamp to
+                // measure RTT.
+                this._log.debug('Starting echo timer');
+                this._controller.connection.closing.subscribe(
+                    TIMER.repeat((canceller) => {
+                        const now = dateToUnixTimestampMs(new Date());
+                        try {
+                            const message: OutboundL3Message = {
+                                type: D2mPayloadType.PROXY,
+                                payload: {
+                                    type: CspPayloadType.ECHO_REQUEST,
+                                    payload: struct.encoder(structbuf.csp.payload.EchoRequest, {
+                                        data: struct.encoder(
+                                            structbuf.extra.monitoring.RttMeasurement,
+                                            {
+                                                timestamp: now,
+                                            },
+                                        ),
+                                    }),
+                                },
+                            };
+                            this._capture?.(message, {info: 'EchoRequest'});
+                            forward(message);
+                            this._ongoingEchoRequests.push(
+                                TIMER.timeout(() => {
+                                    this._log.info(
+                                        'Considering connection lost due to echo request exceeding client timeout',
+                                    );
+                                    connection.current.unwrap().disconnect({
+                                        code: CloseCode.CLIENT_TIMEOUT,
+                                        origin: 'local',
+                                    });
+                                }, csp.clientIdleTimeoutS * 1000),
+                            );
+                        } catch (error) {
+                            this._log.error('Cancelling echo timer due to an error', error);
+                            canceller();
+                        }
+                    }, csp.echoRequestIntervalS * 1000),
+                );
+
+                // Set connection idle timeout
+                const message: OutboundL3Message = {
+                    type: D2mPayloadType.PROXY,
+                    payload: {
+                        type: CspPayloadType.SET_CONNECTION_IDLE_TIMEOUT,
+                        payload: struct.encoder(structbuf.csp.payload.SetConnectionIdleTimeout, {
+                            timeout: csp.serverIdleTimeoutS,
+                        }),
+                    },
+                };
+                this._capture?.(message, {info: 'SetConnectionIdleTimeout'});
+                forward(message);
+            })
+            .catch(() => {
+                // We could explicitly disconnect here but the connection will probably have
+                // failed at this point anyways.
+            });
     }
 
     public transform(

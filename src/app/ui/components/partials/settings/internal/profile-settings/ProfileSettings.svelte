@@ -41,7 +41,7 @@
   let modalState: 'none' | 'profile-picture' | 'public-key' = 'none';
   let profilePictureShareWithItems: ContextMenuItem[];
 
-  void viewModel
+  viewModel
     .profile()
     .then((loadedProfile) => {
       profileViewModelStore = loadedProfile;

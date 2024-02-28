@@ -91,7 +91,7 @@ class CspController {
     public readonly sck: Delayed<ServerCookie, ProtocolError<'csp'>>;
     public readonly box: Delayed<CspPayloadBox, ProtocolError<'csp'>>;
     public readonly state: MonotonicEnumStore<CspAuthState>;
-    public readonly authenticated: ResolvablePromise<void>;
+    public readonly authenticated: Promise<void>;
 
     public constructor(services: Pick<ServicesForBackend, 'crypto'>, source: CspControllerSource) {
         // Generate a cryptographically random client cookie
@@ -137,11 +137,11 @@ class D2mController implements Pick<DeviceGroupBoxes, 'dgpk' | 'dgdik'> {
     public readonly platformDetails: string;
     public readonly box: Delayed<D2mChallengeBox, ProtocolError<'d2m'>>;
     public readonly state: MonotonicEnumStore<D2mAuthState>;
-    public readonly authenticated: ResolvablePromise<void>;
-    public readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type>;
-    public readonly promotedToLeader: ResolvablePromise<void>;
-    public readonly reflectionQueueDry: ResolvablePromise<void>;
-    public readonly protocolVersion: ResolvablePromise<u32>;
+    public readonly authenticated: Promise<void>;
+    public readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type, never>;
+    public readonly promotedToLeader: ResolvablePromise<void, never>;
+    public readonly reflectionQueueDry: ResolvablePromise<void, never>;
+    public readonly protocolVersion: ResolvablePromise<u32, never>;
 
     public constructor(source: D2mControllerSource) {
         this.dgpk = source.dgpk;

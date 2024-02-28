@@ -8,7 +8,7 @@ import type {PreRenderedAsset, TransformResult} from 'rollup';
 import * as rollup from 'rollup';
 import type {Plugin, ResolvedConfig} from 'vite';
 
-import {assert, unwrap} from '../../src/common/utils/assert';
+import {assert, unwrap} from '../../tools/assert';
 
 export interface WorkerPlugin extends Plugin {
     readonly synchronizeAsset: (asset: PreRenderedAsset) => string;

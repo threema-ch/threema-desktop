@@ -20,7 +20,7 @@
 
   import {globals} from '~/app/globals';
   import type {StringOrLiteral} from '~/common/types';
-  import {ensureError} from '~/common/utils/assert';
+  import {assertUnreachable, ensureError} from '~/common/utils/assert';
   import {isSupportedImageType} from '~/common/utils/image';
   import {AsyncLock} from '~/common/utils/lock';
 
@@ -74,7 +74,7 @@
     });
   }
 
-  $: void updateUrl(src);
+  $: updateUrl(src).catch(assertUnreachable);
 
   onDestroy(() => {
     revokeUrl(url);

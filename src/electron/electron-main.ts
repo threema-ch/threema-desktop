@@ -30,7 +30,7 @@ import type {LogFileInfo, LogInfo} from '~/common/node/file-storage/log-info';
 import {directoryModeInternalObjectIfPosix} from '~/common/node/fs';
 import {FileLogger} from '~/common/node/logging';
 import type {ReadonlyUint8Array, u53} from '~/common/types';
-import {ensureError, unreachable, unwrap} from '~/common/utils/assert';
+import {assertUnreachable, ensureError, unreachable, unwrap} from '~/common/utils/assert';
 
 import {createTlsCertificateVerifier} from './tls-cert-verifier';
 
@@ -549,7 +549,11 @@ function main(
             });
 
             if (selection === 0) {
-                void electron.shell.openExternal(import.meta.env.URLS.resetProfile.full);
+                electron.shell
+                    .openExternal(import.meta.env.URLS.resetProfile.full)
+                    .catch((openExternalError) => {
+                        log.error('Unable to open external URL', openExternalError);
+                    });
             }
         }
     }
@@ -995,7 +999,9 @@ function main(
             const allowedProtocols = ['http:', 'https:', 'ftp:', 'ftps:', 'mailto:', 'jitsi-meet:'];
             if (allowedProtocols.includes(protocol)) {
                 log.info(`Opening URL in external browser: ${handler.url}`);
-                void electron.shell.openExternal(handler.url);
+                electron.shell.openExternal(handler.url).catch((error) => {
+                    log.error('Unable to open external URL', error);
+                });
             } else {
                 log.warn(`Deny opening URL with disallowed protocol: ${handler.url}`);
             }
@@ -1080,7 +1086,7 @@ function main(
 }
 
 // Initialise and run main app
-void (async () => {
+(async () => {
     const signal = {start: false};
 
     // Quit application when all windows are closed
@@ -1122,4 +1128,4 @@ void (async () => {
             stacktrace,
         });
     }
-})();
+})().catch(assertUnreachable);

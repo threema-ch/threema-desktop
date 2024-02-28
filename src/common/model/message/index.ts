@@ -662,7 +662,9 @@ export abstract class InboundBaseMessageModelController<TView extends InboundBas
                     reactedAt,
                     [view.id],
                 );
-                void this._services.taskManager.schedule(task);
+                this._services.taskManager.schedule(task).catch(() => {
+                    // Ignore (task should persist)
+                });
             }
         });
     }
@@ -836,7 +838,9 @@ export abstract class OutboundBaseMessageModelController<TView extends OutboundB
                     reactedAt,
                     [view.id],
                 );
-                void this._services.taskManager.schedule(task);
+                this._services.taskManager.schedule(task).catch(() => {
+                    // Ignore (task should persist)
+                });
             }
         });
     }

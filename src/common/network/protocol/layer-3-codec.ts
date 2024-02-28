@@ -38,7 +38,13 @@ import type {
 } from '~/common/network/types';
 import type {ClientKey, TemporaryClientKey, TemporaryServerKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array, u32, u53, WeakOpaque} from '~/common/types';
-import {assert, ensureError, unreachable} from '~/common/utils/assert';
+import {
+    assert,
+    assertUnreachable,
+    ensureError,
+    exhausted,
+    unreachable,
+} from '~/common/utils/assert';
 import {byteEncodeSequence, byteEquals, bytePadPkcs7, byteToHex} from '~/common/utils/byte';
 import {ByteBuffer} from '~/common/utils/byte-buffer';
 import {UTF8, type SyncTransformerCodec} from '~/common/utils/codec';
@@ -218,22 +224,22 @@ export interface Layer3Controller {
          * Server info, resolved once `ServerInfo` has been received (after
          * the final authentication state).
          */
-        readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type>;
+        readonly serverInfo: ResolvablePromise<protobuf.validate.d2m.ServerInfo.Type, never>;
 
         /**
          * Whether we were promoted to be the leader device.
          */
-        readonly promotedToLeader: ResolvablePromise<void>;
+        readonly promotedToLeader: ResolvablePromise<void, never>;
 
         /**
          * Resolves once the `ReflectionQueueDry` messag has been received.
          */
-        readonly reflectionQueueDry: ResolvablePromise<void>;
+        readonly reflectionQueueDry: ResolvablePromise<void, never>;
 
         /**
          * Resolves once the Protocol Version has been negotiated.
          */
-        readonly protocolVersion: ResolvablePromise<u32>;
+        readonly protocolVersion: ResolvablePromise<u32, never>;
     } & Pick<DeviceGroupBoxes, 'dgdik' | 'dgpk'>;
 }
 
@@ -666,13 +672,9 @@ export class Layer3Decoder implements SyncTransformerCodec<InboundL2Message, Inb
                     `Unexpected inbound CSP payload type 0x${byteToHex(type)}`,
                 );
             default:
-                return unreachable(
-                    maybePayloadType,
-                    new ProtocolError(
-                        'csp',
-                        `Unknown inbound CSP payload type 0x${byteToHex(type)}`,
-                    ),
-                );
+                exhausted(maybePayloadType);
+                this._log.warn(`Discarding unknown inbound CSP payload type 0x${byteToHex(type)}`);
+                return undefined;
         }
     }
 
@@ -911,35 +913,41 @@ export class Layer3Encoder implements SyncTransformerCodec<OutboundL3Message, Ou
         csp.state.set(CspAuthState.SERVER_HELLO);
 
         // Wait until authenticated **and** role promoted to leader to unblock the CSP message queue
-        void Promise.all([csp.authenticated, d2m.promotedToLeader]).then(() => {
-            // Ensure that ReflectionQueueDry message was received
-            //
-            // Note: The assertion should never trigger if incoming messages are processed sequentially.
-            //       It might indicate either a bug in the message processing, or in the mediator
-            //       server.
-            assert(
-                d2m.reflectionQueueDry.done,
-                'RolePromotedToLeader was received before ReflectionQueueDry',
-            );
-
-            // Unblock incoming messages from the chat server
-            void csp.authenticated.then(() => {
-                this._handleCspMessage(
-                    {
-                        type: D2mPayloadType.PROXY,
-                        payload: {
-                            type: CspPayloadType.UNBLOCK_INCOMING_MESSAGES,
-                            payload: structbuf.bridge.encoder(
-                                structbuf.csp.payload.UnblockIncomingMessages,
-                                {},
-                            ),
-                        },
-                    },
-                    forward,
+        Promise.all([csp.authenticated, d2m.promotedToLeader])
+            .then(() => {
+                // Ensure that ReflectionQueueDry message was received
+                //
+                // Note: The assertion should never trigger if incoming messages are processed sequentially.
+                //       It might indicate either a bug in the message processing, or in the mediator
+                //       server.
+                assert(
+                    d2m.reflectionQueueDry.done,
+                    'RolePromotedToLeader was received before ReflectionQueueDry',
                 );
+
+                // Unblock incoming messages from the chat server
                 this._log.debug('Unblocking CSP message queue');
-            });
-        });
+                try {
+                    this._handleCspMessage(
+                        {
+                            type: D2mPayloadType.PROXY,
+                            payload: {
+                                type: CspPayloadType.UNBLOCK_INCOMING_MESSAGES,
+                                payload: structbuf.bridge.encoder(
+                                    structbuf.csp.payload.UnblockIncomingMessages,
+                                    {},
+                                ),
+                            },
+                        },
+                        forward,
+                    );
+                } catch (error) {
+                    this._log.error('Unable to unblock CSP message queue', error);
+                    // We could explicitly disconnect here but the connection will probably have
+                    // failed at this point anyways.
+                }
+            })
+            .catch(assertUnreachable);
     }
 
     public transform(

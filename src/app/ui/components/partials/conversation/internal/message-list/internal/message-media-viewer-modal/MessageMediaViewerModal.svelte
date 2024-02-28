@@ -24,7 +24,7 @@
   import {syncAndGetPayload} from '~/app/ui/utils/file-sync/helpers';
   import {nodeIsOrContainsTarget} from '~/app/ui/utils/node';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import {unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import {isSupportedImageType} from '~/common/utils/image';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.message-media-viewer-modal');
@@ -47,11 +47,13 @@
   let isPopoverOpen = false;
 
   function handleClickCopyImage(): void {
-    void handleCopyImage(file, log, $i18n.t, toast.addSimpleSuccess, toast.addSimpleFailure);
+    handleCopyImage(file, log, $i18n.t, toast.addSimpleSuccess, toast.addSimpleFailure).catch(
+      assertUnreachable,
+    );
   }
 
   function handleClickSave(): void {
-    void handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure);
+    handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure).catch(assertUnreachable);
   }
 
   function handleWillClosePopover(): void {
@@ -95,41 +97,43 @@
   function updateMediaState(currentFile: typeof file, t: I18nType['t']): void {
     // `syncAndGetPayload` doesn't need to be caught, as it will never reject and simply return a
     // `SyncFailure` result instead.
-    void syncAndGetPayload(currentFile.fetchFileBytes, t).then((result) => {
-      revokeLoadedMediaUrl();
+    syncAndGetPayload(currentFile.fetchFileBytes, t)
+      .then((result) => {
+        revokeLoadedMediaUrl();
 
-      switch (result.status) {
-        case 'ok':
-          if (currentFile.type === 'image' && !isSupportedImageType(result.data.mediaType)) {
+        switch (result.status) {
+          case 'ok':
+            if (currentFile.type === 'image' && !isSupportedImageType(result.data.mediaType)) {
+              mediaState = {
+                status: 'failed',
+                localizedReason: $i18n.t(
+                  'messaging.error--file-preview-unsupported-error',
+                  'This file cannot be previewed.',
+                ),
+              };
+            } else {
+              mediaState = {
+                status: 'loaded',
+                type: currentFile.type,
+                url: URL.createObjectURL(
+                  new Blob([result.data.bytes], {type: result.data.mediaType}),
+                ),
+              };
+            }
+            break;
+
+          case 'error':
             mediaState = {
               status: 'failed',
-              localizedReason: $i18n.t(
-                'messaging.error--file-preview-unsupported-error',
-                'This file cannot be previewed.',
-              ),
+              localizedReason: result.message,
             };
-          } else {
-            mediaState = {
-              status: 'loaded',
-              type: currentFile.type,
-              url: URL.createObjectURL(
-                new Blob([result.data.bytes], {type: result.data.mediaType}),
-              ),
-            };
-          }
-          break;
+            break;
 
-        case 'error':
-          mediaState = {
-            status: 'failed',
-            localizedReason: result.message,
-          };
-          break;
-
-        default:
-          unreachable(result);
-      }
-    });
+          default:
+            unreachable(result);
+        }
+      })
+      .catch(assertUnreachable);
   }
 
   function updatePopoverState(coordinates: VirtualRect | undefined, isOpen: boolean): void {

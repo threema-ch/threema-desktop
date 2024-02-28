@@ -11,7 +11,7 @@
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import {KeyStorageError} from '~/common/key-storage';
-  import {assertError, unreachable} from '~/common/utils/assert';
+  import {assertError, assertUnreachable, unreachable} from '~/common/utils/assert';
 
   export let services: AppServices;
 
@@ -122,7 +122,9 @@
   };
 
   $: if (!isCurrentPasswordCorrect) {
-    void tick().then(() => currentPasswordInput.focusAndSelect());
+    tick()
+      .then(() => currentPasswordInput.focusAndSelect())
+      .catch(assertUnreachable);
   }
 
   let hasAnyError = false;

@@ -2,6 +2,7 @@ import type {ServicesForBackend} from '~/common/backend';
 import type {ThreemaWorkData} from '~/common/device';
 import {workLicenseCheck} from '~/common/dom/network/protocol/work-license-check';
 import type {Logger} from '~/common/logging';
+import {assertUnreachable} from '~/common/utils/assert';
 
 export function workLicenseCheckJob(
     workData: ThreemaWorkData,
@@ -17,12 +18,14 @@ export function workLicenseCheckJob(
                 log.debug('Threema Work license is valid');
             } else {
                 log.error(`Threema Work credentials are invalid or expired: ${result.message}`);
-                void systemDialog.openOnce({
-                    type: 'invalid-work-credentials',
-                    context: {
-                        workCredentials: workData.workCredentials,
-                    },
-                });
+                systemDialog
+                    .openOnce({
+                        type: 'invalid-work-credentials',
+                        context: {
+                            workCredentials: workData.workCredentials,
+                        },
+                    })
+                    .catch(assertUnreachable);
             }
         })
         .catch((error) => {

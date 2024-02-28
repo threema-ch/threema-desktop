@@ -36,7 +36,7 @@ import type {
 } from '~/common/model/types/message/image';
 import {LocalModelStore} from '~/common/model/utils/model-store';
 import type {ReadonlyUint8Array} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import type {FileBytesAndMediaType} from '~/common/utils/file';
 import {AsyncLock} from '~/common/utils/lock';
 
@@ -145,7 +145,9 @@ export class InboundImageMessageModelController
             //
             // Note: We re-generate thumbnails for two reasons: To get better image quality, and to
             // ensure that the thumbnail really matches the actual image data.
-            void regenerateThumbnail('image', this, blob.data.bytes, this._services, this._log);
+            regenerateThumbnail('image', this, blob.data.bytes, this._services, this._log).catch(
+                assertUnreachable,
+            );
         }
 
         return blob.data;

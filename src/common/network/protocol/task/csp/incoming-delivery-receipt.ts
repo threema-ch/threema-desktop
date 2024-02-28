@@ -35,7 +35,9 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         message: AnyOutboundMessageModel,
         deliveredAt: Date,
     ): void {
-        void message.controller.delivered.fromRemote(handle, deliveredAt);
+        message.controller.delivered.fromRemote(handle, deliveredAt).catch(() => {
+            // Ignore
+        });
     }
 
     protected _markAsRead(
@@ -44,7 +46,9 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         readAt: Date,
     ): void {
         if (message.ctx === MessageDirection.OUTBOUND) {
-            void message.controller.read.fromRemote(handle, readAt);
+            message.controller.read.fromRemote(handle, readAt).catch(() => {
+                // Ignore
+            });
         } else {
             this._log.warn(
                 `Received inbound delivery receipt of type READ for inbound message (ID ${message.ctx})`,
@@ -58,11 +62,10 @@ export class IncomingDeliveryReceiptTask extends DeliveryReceiptTaskBase<
         reaction: MessageReaction,
         reactedAt: Date,
     ): void {
-        void message.controller.reaction.fromRemote(
-            handle,
-            reaction,
-            reactedAt,
-            this._senderIdentity,
-        );
+        message.controller.reaction
+            .fromRemote(handle, reaction, reactedAt, this._senderIdentity)
+            .catch(() => {
+                // Ignore
+            });
     }
 }

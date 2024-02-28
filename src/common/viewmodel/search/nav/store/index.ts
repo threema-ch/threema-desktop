@@ -17,34 +17,30 @@ export function getSearchViewModelStore(
     services: Pick<ServicesForViewModel, 'endpoint' | 'logging' | 'model'>,
     searchViewModelController: ISearchViewModelController,
 ): SearchViewModelStore {
-    const {endpoint, logging} = services;
-    const log = logging.logger(`search.nav.store`);
+    const {endpoint} = services;
 
-    return derive(
-        searchViewModelController.searchParams,
-        (currentSearchParams, getAndSubscribe) => {
-            return endpoint.exposeProperties(
-                currentSearchParams === undefined
-                    ? {...getDefaultSearchViewModel()}
-                    : {
-                          conversationSearchResults: getConversationSearchResults(
-                              services,
-                              currentSearchParams,
-                              getAndSubscribe,
-                          ),
-                          messageSearchResults: getMessageSearchResults(
-                              services,
-                              currentSearchParams,
-                              getAndSubscribe,
-                          ),
-                          receiverSearchResults: getReceiverSearchResults(
-                              services,
-                              currentSearchParams,
-                              getAndSubscribe,
-                          ),
-                      },
-            );
-        },
+    return derive(searchViewModelController.searchParams, (currentSearchParams, getAndSubscribe) =>
+        endpoint.exposeProperties(
+            currentSearchParams === undefined
+                ? {...getDefaultSearchViewModel()}
+                : {
+                      conversationSearchResults: getConversationSearchResults(
+                          services,
+                          currentSearchParams,
+                          getAndSubscribe,
+                      ),
+                      messageSearchResults: getMessageSearchResults(
+                          services,
+                          currentSearchParams,
+                          getAndSubscribe,
+                      ),
+                      receiverSearchResults: getReceiverSearchResults(
+                          services,
+                          currentSearchParams,
+                          getAndSubscribe,
+                      ),
+                  },
+        ),
     );
 }
 

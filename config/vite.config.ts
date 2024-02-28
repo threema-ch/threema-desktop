@@ -10,7 +10,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 // Imports cannot be absolute in this file.
 import {KiB, MiB, type u53} from '../src/common/types';
-import {unreachable} from '../src/common/utils/assert';
+import {unreachable} from '../tools/assert';
 
 import {
     BUILD_ENTRIES,

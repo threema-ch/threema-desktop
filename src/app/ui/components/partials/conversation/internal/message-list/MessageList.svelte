@@ -31,7 +31,7 @@
   import {MessageDirection} from '~/common/enum';
   import type {MessageId} from '~/common/network/types';
   import type {u53} from '~/common/types';
-  import {unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.message-list');
 
@@ -151,10 +151,10 @@
   }
 
   function handleClickScrollToBottom(): void {
-    void scrollToLast({
+    scrollToLast({
       behavior: 'smooth',
       block: 'end',
-    });
+    }).catch(assertUnreachable);
   }
 
   function handleClickForwardOption(message: MessagePropsFromBackend): void {
@@ -231,11 +231,11 @@
         return;
 
       default:
-        void scrollToMessage(message.quote.id, {
+        scrollToMessage(message.quote.id, {
           behavior: 'smooth',
           block: 'start',
           highlightOnScrollEnd: true,
-        });
+        }).catch(assertUnreachable);
     }
   }
 

@@ -34,7 +34,7 @@ import {
 } from '~/common/network/protocol/state';
 import {ConnectedTaskManager} from '~/common/network/protocol/task/manager';
 import type {TemporaryClientKey} from '~/common/network/types/keys';
-import {assert, assertUnreachable, ensureError, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 import {byteToHex} from '~/common/utils/byte';
 import {Delayed} from '~/common/utils/delayed';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -292,7 +292,9 @@ class Connection {
                 closing.done.resolve();
             } else {
                 log.info('Initiating closing sequence');
-                void closing.done.finally(() => log.info('Closing sequence completed'));
+                closing.done
+                    .then(() => log.info('Closing sequence completed'))
+                    .catch(assertUnreachable);
             }
         });
 
@@ -632,13 +634,15 @@ export class ConnectionManager implements ConnectionManagerHandle {
                             }
 
                             case 'remote':
-                                void systemDialog.open({
-                                    type: 'connection-error',
-                                    context: {
-                                        type: 'client-update-required',
-                                        userCanReconnect: false,
-                                    },
-                                });
+                                systemDialog
+                                    .open({
+                                        type: 'connection-error',
+                                        context: {
+                                            type: 'client-update-required',
+                                            userCanReconnect: false,
+                                        },
+                                    })
+                                    .catch(assertUnreachable);
 
                                 this.disconnectAndDisableAutoConnect(result.info);
                                 break;
@@ -666,9 +670,11 @@ export class ConnectionManager implements ConnectionManagerHandle {
                                 'Connection not established: Device is dropped due to unrecoverable application state',
                             );
 
-                            void systemDialog.open({
-                                type: 'unrecoverable-state',
-                            });
+                            systemDialog
+                                .open({
+                                    type: 'unrecoverable-state',
+                                })
+                                .catch(assertUnreachable);
                         } else {
                             this._log.error(
                                 `Connection not established: ${CloseCodeUtils.nameOf(
@@ -685,22 +691,26 @@ export class ConnectionManager implements ConnectionManagerHandle {
                                     .get(GlobalPropertyKey.LAST_MEDIATOR_CONNECTION)
                                     ?.get().view.value.date === undefined
                             ) {
-                                void systemDialog.open({
-                                    type: 'connection-error',
-                                    context: {
-                                        type: 'device-slot-state-mismatch',
-                                        userCanReconnect: false,
-                                        clientExpectedState: 'new',
-                                    },
-                                });
+                                systemDialog
+                                    .open({
+                                        type: 'connection-error',
+                                        context: {
+                                            type: 'device-slot-state-mismatch',
+                                            userCanReconnect: false,
+                                            clientExpectedState: 'new',
+                                        },
+                                    })
+                                    .catch(assertUnreachable);
                             } else {
-                                void systemDialog.open({
-                                    type: 'connection-error',
-                                    context: {
-                                        type: 'client-was-dropped',
-                                        userCanReconnect: false,
-                                    },
-                                });
+                                systemDialog
+                                    .open({
+                                        type: 'connection-error',
+                                        context: {
+                                            type: 'client-was-dropped',
+                                            userCanReconnect: false,
+                                        },
+                                    })
+                                    .catch(assertUnreachable);
                             }
                         }
 

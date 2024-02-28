@@ -767,7 +767,9 @@ export class ConnectedTaskManager {
         const unsubscribe = abort.subscribe((info) => {
             const aborted = new ConnectionClosed(
                 'abort',
-                info.reason ?? CloseCodeUtils.nameOf(info.code) ?? '???',
+                `Connection aborted (origin=${info.origin}, code=${
+                    CloseCodeUtils.nameOf(info.code) ?? info.code
+                }, reason=${info.reason ?? '???'})`,
             );
             this._decoder.queue.error(aborted);
             this._decoder.backlog.error(aborted);

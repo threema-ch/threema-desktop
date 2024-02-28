@@ -7,7 +7,7 @@
   import type {ClearConversationModalProps} from '~/app/ui/components/partials/modals/clear-conversation-modal/props';
   import {i18n} from '~/app/ui/i18n';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
-  import {unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import {truncate} from '~/common/utils/string';
 
   type $$Props = ClearConversationModalProps;
@@ -18,7 +18,7 @@
   let modalComponent: SvelteNullableBinding<Modal> = null;
 
   function handleClickConfirm(): void {
-    void conversation.clear();
+    conversation.clear().catch(assertUnreachable);
     modalComponent?.close();
   }
 

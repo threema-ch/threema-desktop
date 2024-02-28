@@ -283,7 +283,7 @@ export class ReflectedOutgoingMessageTask
                         (autoDownload.limitInMb === 0 ||
                             messageStore.get().view.fileSize / 1e6 < autoDownload.limitInMb)
                     ) {
-                        void messageStore
+                        messageStore
                             .get()
                             .controller.blob()
                             .catch((error) => {

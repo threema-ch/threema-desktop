@@ -14,6 +14,7 @@
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import type {Contact, ProfilePicture} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
+  import {assertUnreachable} from '~/common/utils/assert';
 
   export let services: AppServices;
 
@@ -95,7 +96,7 @@
           class="body"
           slot="body"
           on:submit|preventDefault={() => {
-            void saveContactDetails();
+            saveContactDetails().catch(assertUnreachable);
           }}
         >
           <HiddenSubmit />

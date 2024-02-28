@@ -15,6 +15,7 @@
   import {AcquaintanceLevel, ActivityState} from '~/common/enum';
   import type {ValidIdentityData} from '~/common/network/protocol/directory';
   import {isIdentityString} from '~/common/network/types';
+  import {assertUnreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.contact-add-nav');
 
@@ -112,7 +113,7 @@
   <form
     id="nav-wrapper"
     on:submit|preventDefault={() => {
-      void handleNextClicked();
+      handleNextClicked().catch(assertUnreachable);
     }}
   >
     <HiddenSubmit />

@@ -3,6 +3,7 @@
 
   import type {InputProps} from '~/app/ui/components/atoms/input/props';
   import type {SvelteNullableBinding} from '~/app/ui/utils/svelte';
+  import {assertUnreachable} from '~/common/utils/assert';
 
   type $$Props = InputProps;
 
@@ -24,7 +25,9 @@
   function focus(): void {
     if (disabled === false) {
       showInput = true;
-      void tick().then(() => input?.focus());
+      tick()
+        .then(() => input?.focus())
+        .catch(assertUnreachable);
     }
   }
 </script>

@@ -22,7 +22,7 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import LinearProgress from '~/app/ui/svelte-components/blocks/LinearProgress/LinearProgress.svelte';
   import type {f64} from '~/common/types';
-  import {assert, ensureError} from '~/common/utils/assert';
+  import {assert, assertUnreachable, ensureError} from '~/common/utils/assert';
   import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 
   type $$Props = AudioPlayerProps;
@@ -67,9 +67,9 @@
    */
   function handleClickButton(): void {
     if (isLoaded.state.type === 'resolved') {
-      void togglePlayback();
+      togglePlayback().catch(assertUnreachable);
     } else {
-      void loadAndPlayAudio();
+      loadAndPlayAudio().catch(assertUnreachable);
     }
   }
 

@@ -1,3 +1,5 @@
+import {assertUnreachable} from '~/common/utils/assert';
+
 import {run} from '.';
 
-void run();
+run().catch(assertUnreachable);

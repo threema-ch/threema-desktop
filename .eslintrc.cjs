@@ -178,6 +178,7 @@ function getTypeScriptConfigMixin(extension, override) {
         '@typescript-eslint/explicit-member-accessibility': 'error',
         '@typescript-eslint/naming-convention': namingConvention,
         '@typescript-eslint/no-confusing-void-expression': 'off',
+        '@typescript-eslint/no-floating-promises': ['error', {ignoreVoid: false}],
         '@typescript-eslint/no-unnecessary-qualifier': 'error',
         '@typescript-eslint/no-unsafe-member-access': 'off', // Handled by svelte-check
         '@typescript-eslint/no-useless-empty-export': 'error',

@@ -23,6 +23,7 @@
   import type {ContactInit, RemoteModelStoreFor} from '~/common/model';
   import type {ContactModelStore} from '~/common/model/contact';
   import type {ValidIdentityData} from '~/common/network/protocol/directory';
+  import {assertUnreachable} from '~/common/utils/assert';
   import {idColorIndex} from '~/common/utils/id-color';
 
   export let services: AppServices;
@@ -112,7 +113,7 @@
   <form
     id="nav-wrapper"
     on:submit|preventDefault={() => {
-      void handleAddContact();
+      handleAddContact().catch(assertUnreachable);
     }}
   >
     <HiddenSubmit />

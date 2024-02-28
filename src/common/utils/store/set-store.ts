@@ -1,5 +1,5 @@
 import {DeltaUpdateType, TransferTag} from '~/common/enum';
-import type {LogPrefix, Logger} from '~/common/logging';
+import type {LogPrefix} from '~/common/logging';
 import {assert, assertUnreachable, unreachable} from '~/common/utils/assert';
 import {
     type CreatedEndpoint,

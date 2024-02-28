@@ -42,7 +42,7 @@ import {ReflectGroupSyncTransactionTask} from '~/common/network/protocol/task/d2
 import {ReflectIncomingMessageUpdateTask} from '~/common/network/protocol/task/d2d/reflect-message-update';
 import type {ConversationId, MessageId} from '~/common/network/types';
 import type {i53, Mutable, u53} from '~/common/types';
-import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {AsyncLock} from '~/common/utils/lock';
 import {
@@ -218,9 +218,13 @@ export class ConversationModelController implements ConversationController {
 
             // Trigger task if this message was created locally
             const {taskManager} = this._services;
-            void taskManager.schedule(
-                new OutgoingConversationMessageTask(this._services, receiver, messageStore),
-            );
+            taskManager
+                .schedule(
+                    new OutgoingConversationMessageTask(this._services, receiver, messageStore),
+                )
+                .catch(() => {
+                    // Ignore (task should persist)
+                });
 
             // Return the added message
             return messageStore;
@@ -250,10 +254,12 @@ export class ConversationModelController implements ConversationController {
                 // TODO(DESK-255): This must be delayed to prevent notifications for messages that have
                 // already been acknowledged or which are going to be acknowledged by another device within
                 // a small time period.
-                void this._services.notification.notifyNewMessage(store, {
-                    receiver,
-                    view: handle.view(),
-                });
+                this._services.notification
+                    .notifyNewMessage(store, {
+                        receiver,
+                        view: handle.view(),
+                    })
+                    .catch(assertUnreachable);
             });
 
             // Return the added message
@@ -625,15 +631,19 @@ export class ConversationModelController implements ConversationController {
         const contactReceiver = this.receiver();
         assert(contactReceiver.type === ReceiverType.CONTACT);
 
-        void this._services.taskManager.schedule(
-            new OutgoingDeliveryReceiptTask(
-                this._services,
-                contactReceiver.get(),
-                CspE2eDeliveryReceiptStatus.READ,
-                readAt,
-                readMessageIds,
-            ),
-        );
+        this._services.taskManager
+            .schedule(
+                new OutgoingDeliveryReceiptTask(
+                    this._services,
+                    contactReceiver.get(),
+                    CspE2eDeliveryReceiptStatus.READ,
+                    readAt,
+                    readMessageIds,
+                ),
+            )
+            .catch(() => {
+                // Ignore (task should persist)
+            });
     }
 
     private _reflectMarkMessagesAsRead(readMessageIds: MessageId[], readAt: Date): void {
@@ -644,9 +654,17 @@ export class ConversationModelController implements ConversationController {
             conversation,
         }));
 
-        void this._services.taskManager.schedule(
-            new ReflectIncomingMessageUpdateTask(this._services, messageUniqueIdsToUpdate, readAt),
-        );
+        this._services.taskManager
+            .schedule(
+                new ReflectIncomingMessageUpdateTask(
+                    this._services,
+                    messageUniqueIdsToUpdate,
+                    readAt,
+                ),
+            )
+            .catch(() => {
+                // Ignore (task should persist)
+            });
     }
 
     private async _ensureDirectAcquaintanceLevelForDirectMessages(

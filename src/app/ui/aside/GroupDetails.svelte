@@ -23,6 +23,7 @@
   import type {Contact, Group} from '~/common/model';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
   import {ensureIdentityString} from '~/common/network/types';
+  import {assertUnreachable} from '~/common/utils/assert';
   import type {IQueryableStore} from '~/common/utils/store';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.group-details');
@@ -59,12 +60,12 @@
     ({profilePicture, members} = stores);
   }
 
-  $: void fetchGroup($router);
+  $: fetchGroup($router).catch(assertUnreachable);
 
   let members: IQueryableStore<ReadonlySet<RemoteModelStore<Contact>>>;
 
   $: if (group !== undefined) {
-    void setGroupAndProfilePictureStore(group);
+    setGroupAndProfilePictureStore(group).catch(assertUnreachable);
   }
 
   function closeAside(): void {

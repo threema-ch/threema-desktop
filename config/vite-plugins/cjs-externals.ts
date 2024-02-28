@@ -21,7 +21,7 @@ import type {TransformResult} from 'rollup';
 import type {Plugin} from 'vite';
 
 import type {u53} from '../../src/common/types';
-import {assert, unwrap} from '../../src/common/utils/assert';
+import {assert, unwrap} from '../../tools/assert';
 
 const log = debug('vite-plugin-cjs-externals');
 

@@ -38,7 +38,7 @@
   import {ConversationCategory} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
   import type {MessageId} from '~/common/network/types';
-  import {ensureError, unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
   import {ReadableStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
@@ -85,7 +85,7 @@
   let modalState: ModalState = {type: 'none'};
 
   function handleClickDeleteMessage(event: CustomEvent<MessagePropsFromBackend>): void {
-    void viewModelController?.deleteMessage(event.detail.id).catch((error) => {
+    viewModelController?.deleteMessage(event.detail.id).catch((error) => {
       log.error(`Could not delete message with id ${event.detail.id}`, error);
       toast.addSimpleFailure(
         $i18n.t('messaging.error--delete-message', 'Could not delete message'),
@@ -143,7 +143,7 @@
     event: CustomEvent<FileResult> | CustomEvent<FileLoadResult> | CustomEvent<File[]>,
   ): void {
     if (!isReceiverDisabled) {
-      void openMediaComposeModal(event.detail);
+      openMediaComposeModal(event.detail).catch(assertUnreachable);
     }
   }
 
@@ -242,7 +242,7 @@
   function handleClickSend(event: CustomEvent<string | SendMessageEventDetail>): void {
     switch (typeof event.detail) {
       case 'object':
-        void viewModelController?.sendMessage(event.detail);
+        viewModelController?.sendMessage(event.detail).catch(assertUnreachable);
         break;
 
       case 'string': {
@@ -253,11 +253,13 @@
           return;
         }
 
-        void viewModelController?.sendMessage({
-          type: 'text',
-          text,
-          quotedMessageId: quote?.id,
-        });
+        viewModelController
+          ?.sendMessage({
+            type: 'text',
+            text,
+            quotedMessageId: quote?.id,
+          })
+          .catch(assertUnreachable);
         break;
       }
 
@@ -280,10 +282,12 @@
     conversationListEvent.post({action: 'scroll-to-top'});
 
     // Scroll chat view all the way to the bottom to display the sent message.
-    void messageListComponent?.scrollToLast({
-      behavior: 'instant',
-      block: 'end',
-    });
+    messageListComponent
+      ?.scrollToLast({
+        behavior: 'instant',
+        block: 'end',
+      })
+      .catch(assertUnreachable);
   }
 
   function handleCloseModal(): void {
@@ -366,10 +370,10 @@
   }
 
   $: reactive(handleChangeRouterState, [$router]);
-  $: void reactive(handleChangeConversation, [
+  $: reactive(handleChangeConversation, [
     routeParams?.receiverLookup,
     routeParams?.initialMessage,
-  ]);
+  ]).catch(assertUnreachable);
 
   /**
    * Whether the current receiver is able to be contacted.

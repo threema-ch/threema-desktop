@@ -680,12 +680,14 @@ export class Backend implements ProxyMarked {
                 'This is a work app, but no work data was found. Profile should be relinked.',
             );
             // TODO(DESK-1227): Force relinking of profile and prevent connection from starting
-            // void backendServices.systemDialog.open({type: 'missing-work-credentials'});
+            // backendServices.systemDialog.open({type: 'missing-work-credentials'}).catch(assertUnreachable);;
             // startConnection = false;
         }
 
         // Start connection
-        void backend.connectionManager.start();
+        backend.connectionManager.start().catch(() => {
+            // This fires when the first connection exits with an error. We can totally ignore it.
+        });
 
         // Schedule background jobs
         backend._scheduleBackgroundJobs();

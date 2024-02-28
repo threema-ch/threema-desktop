@@ -30,7 +30,7 @@
   import type {ContactController, ProfilePicture} from '~/common/model';
   import type {RemoteModelController} from '~/common/model/types/common';
   import type {RemoteModelStore} from '~/common/model/utils/model-store';
-  import {unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import type {LocalStore} from '~/common/utils/store';
   import type {ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
@@ -52,6 +52,7 @@
   let contactViewModel: Remote<LocalStore<ContactListItemViewModel>> | undefined;
   let contactController: RemoteModelController<ContactController> | undefined;
   let profilePicture: RemoteModelStore<ProfilePicture> | undefined;
+
   /**
    * Fetch contact viewmodel and profile picture store.
    */
@@ -70,7 +71,7 @@
     profilePicture = contactInfo.viewModelStore.get().profilePicture;
   }
 
-  $: void fetchContact($router);
+  $: fetchContact($router).catch(assertUnreachable);
 
   function closeAside(): void {
     router.closeAside();

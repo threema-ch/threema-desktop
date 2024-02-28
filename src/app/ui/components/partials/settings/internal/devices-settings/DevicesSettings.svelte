@@ -8,6 +8,7 @@
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import type {DevicesSettingsView} from '~/common/model/types/settings';
   import {isDeviceName} from '~/common/network/types';
+  import {assertUnreachable} from '~/common/utils/assert';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.settings-devices');
 
@@ -35,7 +36,7 @@
     if (isDeviceName(newDeviceName)) {
       updateSetting(newDeviceName, 'deviceName');
     }
-    void backend.connectionManager.disconnect();
+    backend.connectionManager.disconnect().catch(assertUnreachable);
     isEditDeviceNameModalVisible = false;
   }
 

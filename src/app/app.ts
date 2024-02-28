@@ -35,7 +35,7 @@ import {extractErrorTraceback} from '~/common/error';
 import {RemoteFileLogger, TagLogger, TeeLogger} from '~/common/logging';
 import type {SettingsService} from '~/common/model/types/settings';
 import type {u53} from '~/common/types';
-import {unwrap} from '~/common/utils/assert';
+import {assertUnreachable, unwrap} from '~/common/utils/assert';
 import {Delayed} from '~/common/utils/delayed';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import type {ReadableStore} from '~/common/utils/store';
@@ -97,7 +97,9 @@ function attachApp(services: AppServices, elements: Elements): App {
 
     // Hide splash screen and remove it entirely after 1s
     elements.splash.classList.add('hidden');
-    void TIMER.sleep(1000).then(() => elements.splash.remove());
+    TIMER.sleep(1000)
+        .then(() => elements.splash.remove())
+        .catch(assertUnreachable);
 
     // Create app
     elements.container.innerHTML = '';
@@ -127,7 +129,7 @@ async function updateCheck(
     if (updateInfo !== undefined) {
         await TIMER.sleep(3000);
         log.info(`Update available: ${updateInfo.version}`);
-        void services.systemDialog.open({
+        services.systemDialog.open({
             type: 'app-update',
             context: {
                 currentVersion: import.meta.env.BUILD_VERSION,
@@ -339,7 +341,7 @@ async function main(): Promise<() => void> {
 
     // Check for updates in the background, if this is an Electron release build
     if (!import.meta.env.DEBUG) {
-        void updateCheck({config, logging, systemDialog}, systemInfo);
+        updateCheck({config, logging, systemDialog}, systemInfo).catch(assertUnreachable);
     }
 
     // Instantiate backend
@@ -442,5 +444,4 @@ async function main(): Promise<() => void> {
     };
 }
 
-// Note: Only exported, so that references are kept alive until the app is closed.
-export const destroy = main();
+main().catch(assertUnreachable);

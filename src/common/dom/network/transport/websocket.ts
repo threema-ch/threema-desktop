@@ -87,10 +87,12 @@ class WebSocketEventWrapperSource implements UnderlyingSource<ArrayBuffer | stri
                 // violates the WS closing handshake. Remove the below code when fixed.
                 try {
                     controller.close();
-                } catch {}
+                } catch {
+                    // Ignore
+                }
 
                 // TODO(MED-73): Re-enable this code when fixed
-                //controller.error(new Error('WebSocket connection closed without a close frame'));
+                // controller.error(new Error('WebSocket connection closed without a close frame'));
             } else {
                 try {
                     controller.close();
@@ -217,7 +219,7 @@ export class WebSocketEventWrapperStream implements WebSocketStream {
                     });
 
                     // TODO(MED-73): Re-enable this code when fixed
-                    //closed.reject(new Error('WebSocket connection closed without a close frame'));
+                    // closed.reject(new Error('WebSocket connection closed without a close frame'));
                 } else {
                     closed.resolve({
                         code: event.code,

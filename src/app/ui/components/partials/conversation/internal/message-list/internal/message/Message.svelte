@@ -27,7 +27,7 @@
   import {formatDateLocalized} from '~/app/ui/utils/timestamp';
   import {ReceiverType} from '~/common/enum';
   import {extractErrorMessage} from '~/common/error';
-  import {ensureError, unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
 
   const {uiLogging, systemTime} = globals.unwrap();
@@ -132,15 +132,17 @@
   }
 
   function handleClickCopyImageOption(): void {
-    void handleCopyImage(file, log, $i18n.t, toast.addSimpleSuccess, toast.addSimpleFailure);
+    handleCopyImage(file, log, $i18n.t, toast.addSimpleSuccess, toast.addSimpleFailure).catch(
+      assertUnreachable,
+    );
   }
 
   function handleClickSaveAsFileOption(): void {
-    void handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure);
+    handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure).catch(assertUnreachable);
   }
 
   function handleClickAcknowledgeOption(): void {
-    void actions.acknowledge().catch((error) => {
+    actions.acknowledge().catch((error) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(
@@ -150,7 +152,7 @@
   }
 
   function handleClickDeclineOption(): void {
-    void actions.decline().catch((error) => {
+    actions.decline().catch((error) => {
       log.error(`Could not react to message: ${extractErrorMessage(ensureError(error), 'short')}`);
 
       toast.addSimpleFailure(
@@ -202,7 +204,7 @@
   }
 
   function handleClickFileInfo(): void {
-    void handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure);
+    handleSaveAsFile(file, log, $i18n.t, toast.addSimpleFailure).catch(assertUnreachable);
   }
 
   function updateProfilePictureStore(

@@ -15,6 +15,7 @@
   } from '~/app/ui/components/partials/search-result-list/transformers';
   import {i18n} from '~/app/ui/i18n';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
+  import {assertUnreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {type IQueryableStore, ReadableStore} from '~/common/utils/store';
   import type {SearchViewModelBundle} from '~/common/viewmodel/search/nav';
@@ -64,7 +65,7 @@
    * Refresh search results.
    */
   export function refresh(): void {
-    void viewModelController?.refresh();
+    viewModelController?.refresh().catch(assertUnreachable);
   }
 
   function handleClickSearchMoreConversationsButton(): void {
@@ -161,7 +162,7 @@
     $receiverPreviewListProps?.items.length === 0;
 
   $: handleChangeSearchTerm(searchTerm);
-  $: void handleChangeSearchParams(searchParams);
+  $: handleChangeSearchParams(searchParams).catch(assertUnreachable);
 </script>
 
 <div class="container">

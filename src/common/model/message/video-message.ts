@@ -144,7 +144,7 @@ export class InboundVideoMessageModelController
         //     //
         //     // Note: We re-generate thumbnails for two reasons: To get better image quality, and to
         //     // ensure that the thumbnail really matches the actual video data.
-        //     void regenerateThumbnail('video', this, blob.data.bytes, this._services, this._log);
+        //     regenerateThumbnail('video', this, blob.data.bytes, this._services, this._log).catch(assertUnreachable);
         // }
 
         return blob.data;

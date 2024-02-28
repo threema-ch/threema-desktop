@@ -10,7 +10,7 @@
   import type {LazyImageProps} from '~/app/ui/components/atoms/lazy-image/props';
   import type {LazyImageContent} from '~/app/ui/components/atoms/lazy-image/types';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
-  import {unreachable} from '~/common/utils/assert';
+  import {assertUnreachable, unreachable} from '~/common/utils/assert';
   import {isSupportedImageType} from '~/common/utils/image';
 
   const log = globals.unwrap().uiLogging.logger('ui.component.lazy-image');
@@ -85,7 +85,7 @@
   });
   $: preferredAspectRatio = `${preferredDisplay.values.width} / ${preferredDisplay.values.height}`;
 
-  $: void updateContent($byteStore);
+  $: updateContent($byteStore).catch(assertUnreachable);
 
   onDestroy(() => {
     revokeCurrentImageUrl(image);

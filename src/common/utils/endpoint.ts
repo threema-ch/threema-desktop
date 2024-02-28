@@ -16,7 +16,7 @@ import {TransferTag} from '~/common/enum';
 import type {Logger, LoggerFactory} from '~/common/logging';
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
 import type {BareFromTag, i53, Primitive, u53, WeakOpaque} from '~/common/types';
-import {assert, unreachable, unwrap} from '~/common/utils/assert';
+import {assert, assertUnreachable, unreachable, unwrap} from '~/common/utils/assert';
 import {WeakValueMap} from '~/common/utils/map';
 import {SequenceNumberU53} from '~/common/utils/sequence-number';
 import {AbortRaiser} from '~/common/utils/signal';
@@ -913,7 +913,7 @@ export class EndpointService {
                     return (): void => {
                         service._unregisterProxy(proxy);
                         isReleasingOrReleased = true;
-                        void service._releaseEndpoint(ep, releaser);
+                        service._releaseEndpoint(ep, releaser).catch(assertUnreachable);
                     };
                 }
                 if (prop === TRANSFERRED_MARKER) {
@@ -1038,7 +1038,7 @@ export class EndpointService {
             } catch (error) {
                 returnValue = {error, [TRANSFER_HANDLER]: THROW_HANDLER};
             }
-            void Promise.resolve(returnValue)
+            Promise.resolve(returnValue)
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 .catch((error) => ({error, [TRANSFER_HANDLER]: THROW_HANDLER}))
                 .then((returnValue_) => {
@@ -1050,7 +1050,8 @@ export class EndpointService {
                         releaser?.raise(undefined);
                         maybeCloseEndpoint(ep);
                     }
-                });
+                })
+                .catch(assertUnreachable);
         }
         ep.addEventListener('message', listener);
         ep.start?.();

@@ -17,7 +17,7 @@
     type SvelteNullableBinding,
   } from '~/app/ui/utils/svelte';
   import type {u53} from '~/common/types';
-  import {ensureError} from '~/common/utils/assert';
+  import {assertUnreachable, ensureError} from '~/common/utils/assert';
   import {AsyncLock} from '~/common/utils/lock';
   import {TIMER} from '~/common/utils/timer';
 
@@ -204,7 +204,7 @@
     threshold: anchorIntersectionThreshold,
   };
 
-  $: void reactive(handleChangeVisibleItem, [visibleItemId]);
+  $: reactive(handleChangeVisibleItem, [visibleItemId]).catch(assertUnreachable);
 
   onMount(() => {
     containerElement?.addEventListener('scroll', handleScrollDebounced);
@@ -230,10 +230,12 @@
       }}
       on:intersectionenter={(event) => {
         if (isAnchored) {
-          void anchorLock.with(async () => {
-            isItemAnchorEnabled = false;
-            return await Promise.resolve();
-          });
+          anchorLock
+            .with(async () => {
+              isItemAnchorEnabled = false;
+              return await Promise.resolve();
+            })
+            .catch(assertUnreachable);
         }
         dispatchBuffered('itementered', item);
       }}

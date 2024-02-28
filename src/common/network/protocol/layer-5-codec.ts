@@ -3,7 +3,7 @@
  */
 import {ConnectionClosed} from '~/common/error';
 import type {ConnectionController} from '~/common/network/protocol/controller';
-import {ensureError} from '~/common/utils/assert';
+import {assertUnreachable, ensureError} from '~/common/utils/assert';
 import type {
     AsyncCodecSink,
     AsyncCodecSource,
@@ -51,7 +51,9 @@ export class Layer5Decoder implements AsyncCodecSink<InboundL4Message> {
             // so that any CSP alert/errors will be handled correctly.
             if (this._controller.connection.closing.aborted) {
                 this._controller.connection.closing.subscribe(({done}) => {
-                    void done.finally(() => controller.error(ensureError(error)));
+                    done.finally(() => controller.error(ensureError(error))).catch(
+                        assertUnreachable,
+                    );
                 });
             } else {
                 controller.error(ensureError(error));

@@ -1,3 +1,5 @@
+import {CONSOLE_LOGGER} from '~/common/logging';
+
 /**
  * Assert a condition.
  *
@@ -8,7 +10,9 @@
  */
 export function assert(condition: boolean, message?: string): asserts condition {
     if (!condition) {
-        throw new Error(`Assertion failed, message: ${message}`);
+        const error = new Error(`Assertion failed, message: ${message}`);
+        CONSOLE_LOGGER.trace(error);
+        throw error;
     }
 }
 
@@ -52,8 +56,10 @@ export function assertError<TError extends abstract new (...args: any) => any>(
  *
  * @throws {Error} Always.
  */
-export function assertUnreachable(message: string): never {
-    throw new Error(`Asserted unreachable code section: ${message}`);
+export function assertUnreachable(message: unknown): never {
+    const error = new Error(`Asserted unreachable code section: ${message}`);
+    CONSOLE_LOGGER.trace(error);
+    throw error;
 }
 
 /**
@@ -65,7 +71,9 @@ export function assertUnreachable(message: string): never {
  * @throws {Error} Always.
  */
 export function unreachable(value: never, error?: Error): never {
-    throw error ?? new Error('Unreachable code section!');
+    error ??= new Error('Unreachable code section!');
+    CONSOLE_LOGGER.trace(error);
+    throw error;
 }
 
 /**

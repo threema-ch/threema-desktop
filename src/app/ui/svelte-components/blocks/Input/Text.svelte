@@ -2,6 +2,7 @@
   import {tick} from 'svelte';
 
   import type {u53} from '~/common/types';
+  import {assertUnreachable} from '~/common/utils/assert';
 
   /**
    * The user input.
@@ -45,7 +46,9 @@
   export function focus(): void {
     if (!disabled) {
       showInput = true;
-      void tick().then(() => input?.focus());
+      tick()
+        .then(() => input?.focus())
+        .catch(assertUnreachable);
     }
   }
 </script>
