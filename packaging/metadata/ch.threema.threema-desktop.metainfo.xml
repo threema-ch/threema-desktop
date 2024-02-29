@@ -25,6 +25,35 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
+        <release version="2.0~publicbeta28" date="2024-03-04">
+            <description>
+                <p>New Features:</p>
+                <ul>
+                    <li>Global search</li>
+                    <li>Emoji 15.0 support</li>
+                </ul>
+                <p>Improvements:</p>
+                <ul>
+                    <li>
+                        Display the user names of those who agreed/disagreed to a group message when
+                        hovering over the icon with the mouse
+                    </li>
+                </ul>
+                <p>Fixes:</p>
+                <ul>
+                    <li>
+                        Fixed a bug that could cause all members of a group to be removed from it on
+                        iOS when Threema 2.0 for desktop was connected
+                    </li>
+                    <li>Fixed the display of message drafts in single-column layout</li>
+                    <li>
+                        Fixed the display of file extensions of certain file types (e.g., .m4v
+                        and .xml)
+                    </li>
+                </ul>
+                <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
         <release version="2.0~publicbeta27" date="2024-02-05">
             <description>
                 <p>New Features:</p>
