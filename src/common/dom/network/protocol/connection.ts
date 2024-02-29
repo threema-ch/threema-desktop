@@ -285,10 +285,12 @@ class Connection {
         closed.subscribe(({type, info}) => {
             closing.raiser.raise({info, done: closing.done});
 
-            // Short-circuit the closing sequence when we've encountered an error that lead to the
-            // closing of the transport.
-            if (type === 'error') {
-                log.warn('Short-circuiting closing sequence');
+            // Short-circuit the closing sequence if...
+            //
+            // - the disconnect was initiated locally.
+            // - we've encountered an error that lead to the closing of the transport.
+            if (info.origin === 'local' || type === 'error') {
+                log.debug('Short-circuiting closing sequence');
                 closing.done.resolve();
             } else {
                 log.info('Initiating closing sequence');
@@ -434,8 +436,9 @@ class Connection {
     /**
      * Immediately disconnects from the WebSocket. Starts the closing flow.
      *
-     * Note: The closing flow will continue so that draining is possible prior to the `abort` being
-     * raised.
+     * Note: The closing flow will be skipped in case `info.origin` is 'local'. Otherwise, the
+     * closing flow will be initiated and ensures that draining is possible prior to the `abort`
+     * being raised.
      */
     public disconnect(info: CloseInfo): void {
         this._mediator.close(info);
