@@ -23,7 +23,6 @@
     ModalState,
     RemoteConversationViewModelStoreValue,
   } from '~/app/ui/components/partials/conversation/types';
-  import Welcome from '~/app/ui/components/partials/welcome/Welcome.svelte';
   import {i18n} from '~/app/ui/i18n';
   import MediaMessage from '~/app/ui/modal/MediaMessage.svelte';
   import {type MediaFile, generateThumbnail} from '~/app/ui/modal/media-message';
@@ -41,7 +40,7 @@
   import {assertUnreachable, ensureError, unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
   import {getSanitizedFileNameDetails} from '~/common/utils/file';
-  import {ReadableStore, type IQueryableStore, WritableStore} from '~/common/utils/store';
+  import {WritableStore, ReadableStore, type IQueryableStore} from '~/common/utils/store';
   import type {ConversationViewModelBundle} from '~/common/viewmodel/conversation/main';
   import type {SendMessageEventDetail} from '~/common/viewmodel/conversation/main/controller/types';
   import type {ConversationMessageViewModelBundle} from '~/common/viewmodel/conversation/main/message';
@@ -149,7 +148,6 @@
 
   function handleChangeRouterState(): void {
     const routerState = router.get();
-
     if (routerState.main.id === 'conversation') {
       routeParams = routerState.main.params;
     } else {
@@ -161,7 +159,7 @@
   async function handleChangeConversation(): Promise<void> {
     const receiver = routeParams?.receiverLookup;
     if (receiver === undefined) {
-      $viewModelStore = undefined;
+      viewModelStore = new ReadableStore(undefined);
       viewModelController = undefined;
       return;
     }
@@ -529,8 +527,6 @@
       {/if}
     </div>
   </DropZoneProvider>
-{:else}
-  <Welcome />
 {/if}
 
 {#if modalState.type === 'none'}
