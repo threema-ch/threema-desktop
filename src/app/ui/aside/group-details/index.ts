@@ -8,7 +8,8 @@ import type {Contact, Group, ProfilePicture, RemoteModelFor} from '~/common/mode
 import type {RemoteModelStore} from '~/common/model/utils/model-store';
 import type {IdentityString} from '~/common/network/types';
 import type {Remote} from '~/common/utils/endpoint';
-import {DeprecatedDerivedStore, type IQueryableStore} from '~/common/utils/store';
+import type {IQueryableStore} from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
 import type {RemoteSetStore} from '~/common/utils/store/set-store';
 import type {GroupListItemViewModel} from '~/common/viewmodel/group-list-item';
 import type {GroupData} from '~/common/viewmodel/types';
@@ -73,16 +74,14 @@ function getMembersForGroup(
     group: RemoteModelStore<Group>,
     contacts: RemoteSetStore<RemoteModelStore<Contact>>,
 ): IQueryableStore<ReadonlySet<RemoteModelStore<Contact>>> {
-    return new DeprecatedDerivedStore(
-        [group, contacts] as const,
-        ([[, groupModel], [, contactsSet]]) => {
-            const memberIdentities = groupModel.view.members;
-            const memberEntries = [...contactsSet.values()].filter((remoteContactModelStore) =>
+    return derive([group, contacts], ([groupModel, contactsSet]) => {
+        const memberIdentities = groupModel.currentValue.view.members;
+        const memberEntries = [...contactsSet.currentValue.values()].filter(
+            (remoteContactModelStore) =>
                 memberIdentities.includes(remoteContactModelStore.get().view.identity),
-            );
-            return new Set(memberEntries);
-        },
-    );
+        );
+        return new Set(memberEntries);
+    });
 }
 
 export async function getProfilePictureAndMemberStores(

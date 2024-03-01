@@ -34,12 +34,12 @@ import {
 import {eternalPromise} from '~/common/utils/promise';
 import {ResolvablePromise} from '~/common/utils/resolvable-promise';
 import {
-    DeprecatedDerivedStore,
     type IQueryableStore,
     type ReadableStore,
     type RemoteStore,
     WritableStore,
 } from '~/common/utils/store';
+import {derive} from '~/common/utils/store/derived-store';
 
 export interface UserData {
     readonly identity: IdentityString;
@@ -379,7 +379,7 @@ export class BackendController {
         // TODO(DESK-688): We should not use a plain array for the store as the comparison on each
         // pushed packet will likely lead to significant CPU cost.
         const packets: DisplayPacket[] = [];
-        const store = new DeprecatedDerivedStore([await this._remote.capture()], ([[, packet]]) => {
+        const store = derive([await this._remote.capture()], ([{currentValue: packet}]) => {
             if (packet === undefined) {
                 return packets;
             }

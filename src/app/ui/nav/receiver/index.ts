@@ -22,12 +22,7 @@ import {type IdentityString, isNickname, type Nickname} from '~/common/network/t
 import type {StrictOmit} from '~/common/types';
 import {unreachable} from '~/common/utils/assert';
 import type {Remote} from '~/common/utils/endpoint';
-import {
-    DeprecatedDerivedStore,
-    type IQueryableStore,
-    type LocalStore,
-    WritableStore,
-} from '~/common/utils/store';
+import {type IQueryableStore, type LocalStore, WritableStore} from '~/common/utils/store';
 import {derive} from '~/common/utils/store/derived-store';
 import {localeSort} from '~/common/utils/string';
 import type {ContactListItemViewModel} from '~/common/viewmodel/contact-list-item';
@@ -116,18 +111,20 @@ export function filterContacts(
     filter: string,
     workVerificationLevel?: WorkVerificationLevel,
 ): IQueryableStore<readonly RemoteModelStore<Contact>[]> {
-    return new DeprecatedDerivedStore([...set.values()], (item) =>
-        [...item]
+    return derive([...set.values()], (remoteModelStoreStates) =>
+        remoteModelStoreStates
             .filter(
-                ([, {view}]) =>
+                ({currentValue: {view}}) =>
                     (workVerificationLevel === undefined ||
                         view.workVerificationLevel === workVerificationLevel) &&
                     view.acquaintanceLevel !== AcquaintanceLevel.GROUP &&
                     deprecatedMatchesSearchFilter(filter, view),
             )
             // Sort by display name
-            .sort(([, {view: a}], [, {view: b}]) => localeSort(a.displayName, b.displayName))
-            .map(([store]) => store),
+            .sort(({currentValue: {view: a}}, {currentValue: {view: b}}) =>
+                localeSort(a.displayName, b.displayName),
+            )
+            .map(({store}) => store),
     );
 }
 
