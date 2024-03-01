@@ -61,14 +61,14 @@ export class ProfilePictureService {
             this._log.debug(`Cache miss for ${ReceiverTypeUtils.nameOf(type)} with UID ${uid}`);
 
             // Fetch the profile picture store for this receiver
-            let profilePictureStore;
+            let profilePictureModelStore;
             switch (type) {
                 case ReceiverType.CONTACT: {
                     const contactStore = await this._backend.model.contacts.getByUid(uid);
                     if (contactStore === undefined) {
                         return undefined;
                     }
-                    profilePictureStore = await contactStore.get().controller.profilePicture;
+                    profilePictureModelStore = await contactStore.get().controller.profilePicture;
                     break;
                 }
                 case ReceiverType.GROUP: {
@@ -76,7 +76,7 @@ export class ProfilePictureService {
                     if (groupStore === undefined) {
                         return undefined;
                     }
-                    profilePictureStore = await groupStore.get().controller.profilePicture;
+                    profilePictureModelStore = await groupStore.get().controller.profilePicture;
                     break;
                 }
                 case ReceiverType.DISTRIBUTION_LIST:
@@ -87,15 +87,20 @@ export class ProfilePictureService {
             }
 
             // Return a derived store which wraps the bytes in a `Blob`
-            const blobStore = derive(profilePictureStore, (profilePicture, getAndSubscribe) => {
-                this._log.debug(
-                    `Re-deriving profile picture store for ${ReceiverTypeUtils.nameOf(
-                        type,
-                    )} with UID ${uid}`,
-                );
-                const bytes = profilePicture.view.picture;
-                return bytes === undefined ? undefined : new Blob([bytes], {type: 'image/jpeg'});
-            });
+            const blobStore = derive(
+                [profilePictureModelStore],
+                ([{currentValue: profilePictureModel}]) => {
+                    this._log.debug(
+                        `Re-deriving profile picture store for ${ReceiverTypeUtils.nameOf(
+                            type,
+                        )} with UID ${uid}`,
+                    );
+                    const bytes = profilePictureModel.view.picture;
+                    return bytes === undefined
+                        ? undefined
+                        : new Blob([bytes], {type: 'image/jpeg'});
+                },
+            );
             this._cache.set(cacheKeyFor(receiverLookup), blobStore);
             return blobStore;
         });

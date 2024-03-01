@@ -56,15 +56,19 @@ export class UserModel implements User {
         this.mediaSettings = new MediaSettingsModelStore(services);
 
         this.displayName = derive(
-            this.profileSettings,
-            ({view: {nickname}}) => nickname ?? this.identity,
+            [this.profileSettings],
+            ([{currentValue: profileSettingsModel}]) =>
+                profileSettingsModel.view.nickname ?? this.identity,
         );
 
         // TODO(DESK-624): Get profile picture from DB
         const colorIndex = idColorIndex({type: ReceiverType.CONTACT, identity: this.identity});
-        this.profilePicture = derive(this.profileSettings, (profileSettings, getAndSubscribe) => ({
-            color: idColorIndexToString(colorIndex),
-            picture: profileSettings.view.profilePicture,
-        }));
+        this.profilePicture = derive(
+            [this.profileSettings],
+            ([{currentValue: profileSettingsModel}]) => ({
+                color: idColorIndexToString(colorIndex),
+                picture: profileSettingsModel.view.profilePicture,
+            }),
+        );
     }
 }

@@ -34,8 +34,8 @@ export function getMessageSetStore(
     // Based on the currently visible messages in the viewport, derive a set of message stores
     // including context above and below the current viewport.
     const activeMessageStores = derive(
-        conversationViewModelController.currentViewportMessages,
-        (viewPortMessageIds, getAndSubscribe) => {
+        [conversationViewModelController.currentViewportMessages],
+        ([{currentValue: viewPortMessageIds}], getAndSubscribe) => {
             const defaultWindowSize = 75;
 
             // Note: When messages are deleted from the chat view, they are not removed from

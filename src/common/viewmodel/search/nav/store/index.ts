@@ -19,28 +19,30 @@ export function getSearchViewModelStore(
 ): SearchViewModelStore {
     const {endpoint} = services;
 
-    return derive(searchViewModelController.searchParams, (currentSearchParams, getAndSubscribe) =>
-        endpoint.exposeProperties(
-            currentSearchParams === undefined
-                ? {...getDefaultSearchViewModel()}
-                : {
-                      conversationSearchResults: getConversationSearchResults(
-                          services,
-                          currentSearchParams,
-                          getAndSubscribe,
-                      ),
-                      messageSearchResults: getMessageSearchResults(
-                          services,
-                          currentSearchParams,
-                          getAndSubscribe,
-                      ),
-                      receiverSearchResults: getReceiverSearchResults(
-                          services,
-                          currentSearchParams,
-                          getAndSubscribe,
-                      ),
-                  },
-        ),
+    return derive(
+        [searchViewModelController.searchParams],
+        ([{currentValue: searchParams}], getAndSubscribe) =>
+            endpoint.exposeProperties(
+                searchParams === undefined
+                    ? {...getDefaultSearchViewModel()}
+                    : {
+                          conversationSearchResults: getConversationSearchResults(
+                              services,
+                              searchParams,
+                              getAndSubscribe,
+                          ),
+                          messageSearchResults: getMessageSearchResults(
+                              services,
+                              searchParams,
+                              getAndSubscribe,
+                          ),
+                          receiverSearchResults: getReceiverSearchResults(
+                              services,
+                              searchParams,
+                              getAndSubscribe,
+                          ),
+                      },
+            ),
     );
 }
 

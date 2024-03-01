@@ -906,13 +906,16 @@ export class ConversationModelRepository implements ConversationRepository {
         cache = createCache();
         message.recreateCaches();
 
-        this.totalUnreadMessageCount = derive(this.getAll(), (conversations, getAndSubscribe) => {
-            let totalCount = 0;
-            for (const conversation of conversations) {
-                totalCount += getAndSubscribe(conversation).view.unreadMessageCount;
-            }
-            return totalCount;
-        });
+        this.totalUnreadMessageCount = derive(
+            [this.getAll()],
+            ([{currentValue: conversationModelStoreSet}], getAndSubscribe) => {
+                let totalCount = 0;
+                for (const conversationModelStore of conversationModelStoreSet) {
+                    totalCount += getAndSubscribe(conversationModelStore).view.unreadMessageCount;
+                }
+                return totalCount;
+            },
+        );
     }
 
     /** @inheritdoc */

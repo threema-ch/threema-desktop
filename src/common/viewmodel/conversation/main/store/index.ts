@@ -50,19 +50,21 @@ export function getConversationViewModelStore(
         conversationModelStore,
     );
 
-    return derive(conversationModelStore, (conversationModel, getAndSubscribe) =>
-        endpoint.exposeProperties({
-            category: conversationModel.view.category,
-            firstUnreadMessageId: conversationModel.controller.getFirstUnreadMessageId(),
-            id: conversationModel.ctx,
-            isArchived: conversationModel.view.visibility === ConversationVisibility.ARCHIVED,
-            isPinned: conversationModel.view.visibility === ConversationVisibility.PINNED,
-            isPrivate: conversationModel.view.category === ConversationCategory.PROTECTED,
-            lastMessage: getLastMessage(conversationModel, getAndSubscribe),
-            messageSetStore,
-            receiver: getReceiverData(services, conversationModel, getAndSubscribe),
-            totalMessagesCount: conversationModel.controller.getMessageCount(),
-            unreadMessagesCount: conversationModel.view.unreadMessageCount,
-        }),
+    return derive(
+        [conversationModelStore],
+        ([{currentValue: conversationModel}], getAndSubscribe) =>
+            endpoint.exposeProperties({
+                category: conversationModel.view.category,
+                firstUnreadMessageId: conversationModel.controller.getFirstUnreadMessageId(),
+                id: conversationModel.ctx,
+                isArchived: conversationModel.view.visibility === ConversationVisibility.ARCHIVED,
+                isPinned: conversationModel.view.visibility === ConversationVisibility.PINNED,
+                isPrivate: conversationModel.view.category === ConversationCategory.PROTECTED,
+                lastMessage: getLastMessage(conversationModel, getAndSubscribe),
+                messageSetStore,
+                receiver: getReceiverData(services, conversationModel, getAndSubscribe),
+                totalMessagesCount: conversationModel.controller.getMessageCount(),
+                unreadMessagesCount: conversationModel.view.unreadMessageCount,
+            }),
     );
 }

@@ -234,8 +234,8 @@
 
   // Filter and sort all conversation preview models
   const conversationPreviewListStore = derive(
-    conversationPreviews,
-    (conversationsSet, getAndSubscribe) => {
+    [conversationPreviews],
+    ([{currentValue: conversationsSet}], getAndSubscribe) => {
       const sortedConversations = [...conversationsSet]
         .filter((conversationPreviewModel) => {
           const {lastUpdate} = getAndSubscribe(conversationPreviewModel.viewModel);

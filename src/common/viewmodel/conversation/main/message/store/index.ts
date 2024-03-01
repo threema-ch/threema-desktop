@@ -30,7 +30,7 @@ export function getConversationMessageViewModelStore(
     const {endpoint} = services;
 
     // eslint-disable-next-line arrow-body-style
-    return derive(messageModelStore, (messageModel, getAndSubscribe) => {
+    return derive([messageModelStore], ([{currentValue: messageModel}], getAndSubscribe) => {
         const conversationMessageViewModel: ConversationMessageViewModel =
             getConversationMessageViewModel(
                 log,

@@ -421,15 +421,16 @@ class UserRepository implements User {
         this.mediaSettings = new MediaSettingsModelStore(services);
 
         this.displayName = derive(
-            this.profileSettings,
-            ({view: {nickname}}) => nickname ?? this.identity,
+            [this.profileSettings],
+            ([{currentValue: profileSettingsModel}]) =>
+                profileSettingsModel.view.nickname ?? this.identity,
         );
         this.profilePicture = derive(
-            this.profileSettings,
-            (profileSettings) =>
+            [this.profileSettings],
+            ([{currentValue: profileSettingsModel}]) =>
                 ({
                     color: 'teal',
-                    profilePicture: profileSettings.view.profilePicture,
+                    profilePicture: profileSettingsModel.view.profilePicture,
                 }) as const,
         );
     }

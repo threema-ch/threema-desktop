@@ -86,63 +86,65 @@ export type ConversationPreviewItem = {
 function getViewModel(
     {endpoint, model}: ServicesForViewModel,
     viewModelRepository: IViewModelRepository,
-    conversationStore: LocalModelStore<Conversation>,
+    conversationModelStore: LocalModelStore<Conversation>,
     translations: ConversationPreviewTranslationsStore,
 ): ConversationPreviewViewModel {
-    return derive(conversationStore, (conversation, getAndSubscribe) => {
-        const receiver = conversation.controller.receiver();
-        const lastMessageStore = getAndSubscribe(conversation.controller.lastMessageStore());
-
-        let lastMessage = undefined;
-        let lastMessagePreview = undefined;
-        if (lastMessageStore !== undefined) {
-            lastMessage = viewModelRepository.conversationMessage(
-                conversationStore,
-                lastMessageStore,
+    return derive(
+        [conversationModelStore],
+        ([{currentValue: conversationModel, store}], getAndSubscribe) => {
+            const receiver = conversationModel.controller.receiver();
+            const lastMessageStore = getAndSubscribe(
+                conversationModel.controller.lastMessageStore(),
             );
-            lastMessagePreview = getLastMessagePreviewText(
-                getAndSubscribe(lastMessage.viewModelStore),
-                getAndSubscribe(translations),
-            );
-        }
-        const commonProperties = {
-            ...conversation.view,
-            lastMessage,
-            lastMessagePreview,
-        };
 
-        let item;
-        switch (receiver.type) {
-            case ReceiverType.CONTACT: {
-                const contact = getAndSubscribe(receiver);
-                item = {
-                    ...commonProperties,
-                    receiver: deriveContactListItem(
-                        model.user.privacySettings,
-                        contact,
-                        getAndSubscribe,
-                    ),
-                    receiverLookup: {type: receiver.type, uid: receiver.ctx},
-                };
-                break;
+            let lastMessage = undefined;
+            let lastMessagePreview = undefined;
+            if (lastMessageStore !== undefined) {
+                lastMessage = viewModelRepository.conversationMessage(store, lastMessageStore);
+                lastMessagePreview = getLastMessagePreviewText(
+                    getAndSubscribe(lastMessage.viewModelStore),
+                    getAndSubscribe(translations),
+                );
             }
-            case ReceiverType.GROUP: {
-                const group = getAndSubscribe(receiver);
-                item = {
-                    ...commonProperties,
-                    receiver: deriveGroupListItem(group),
-                    receiverLookup: {type: receiver.type, uid: receiver.ctx},
-                };
-                break;
-            }
-            case ReceiverType.DISTRIBUTION_LIST:
-                throw new Error('TODO(DESK-236): not yet implemented..');
-            default:
-                return unreachable(receiver);
-        }
+            const commonProperties = {
+                ...conversationModel.view,
+                lastMessage,
+                lastMessagePreview,
+            };
 
-        return endpoint.exposeProperties(item);
-    });
+            let item;
+            switch (receiver.type) {
+                case ReceiverType.CONTACT: {
+                    const contact = getAndSubscribe(receiver);
+                    item = {
+                        ...commonProperties,
+                        receiver: deriveContactListItem(
+                            model.user.privacySettings,
+                            contact,
+                            getAndSubscribe,
+                        ),
+                        receiverLookup: {type: receiver.type, uid: receiver.ctx},
+                    };
+                    break;
+                }
+                case ReceiverType.GROUP: {
+                    const group = getAndSubscribe(receiver);
+                    item = {
+                        ...commonProperties,
+                        receiver: deriveGroupListItem(group),
+                        receiverLookup: {type: receiver.type, uid: receiver.ctx},
+                    };
+                    break;
+                }
+                case ReceiverType.DISTRIBUTION_LIST:
+                    throw new Error('TODO(DESK-236): not yet implemented..');
+                default:
+                    return unreachable(receiver);
+            }
+
+            return endpoint.exposeProperties(item);
+        },
+    );
 }
 
 interface ContactListItem {

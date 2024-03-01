@@ -16,14 +16,15 @@ import {DerivedStore, type DeriveFunction} from '~/common/utils/store/derived-st
 type SourceStore = WritableStore<u32>;
 
 function createSimpleDerivedStore(): readonly [
-    derivedStore: DerivedStore<SourceStore, Readonly<{answer: string}>>,
-    sourceStore: SourceStore,
+    derivedStore: DerivedStore<[SourceStore], Readonly<{answer: string}>>,
+    sourceStores: SourceStore,
 ] {
     const sourceStore = new WritableStore(41);
 
-    const derivedStore = new DerivedStore(sourceStore, (source) => ({
+    const derivedStore = new DerivedStore([sourceStore], ([{currentValue: source}]) => ({
         answer: `is ${source + 1}`,
     }));
+
     return [derivedStore, sourceStore];
 }
 
@@ -32,9 +33,9 @@ type LayeredStore = WritableStore<{
 }>;
 
 function createLayeredDerivedStore<TDerived>(
-    deriveFunction: DeriveFunction<LayeredStore, TDerived>,
+    deriveFunction: DeriveFunction<[LayeredStore], TDerived>,
 ): readonly [
-    derivedStore: DerivedStore<LayeredStore, TDerived>,
+    derivedStore: DerivedStore<[LayeredStore], TDerived>,
     sourceStore: LayeredStore,
     innerStore: SourceStore,
 ] {
@@ -43,7 +44,7 @@ function createLayeredDerivedStore<TDerived>(
         innerStore,
     } as const);
 
-    const derivedStore = new DerivedStore(sourceStore, deriveFunction);
+    const derivedStore = new DerivedStore([sourceStore], deriveFunction);
 
     return [derivedStore, sourceStore, innerStore];
 }
@@ -165,10 +166,10 @@ export function run(): void {
                     }
                 })();
 
-                const derivedStore = new DerivedStore(faultySourceStore, () => undefined);
+                const derivedStore = new DerivedStore([faultySourceStore], () => undefined);
 
                 expect(() => derivedStore.get()).to.throw(
-                    'Assertion failed, message: Source store value must be set after subscription. This is probably a bug in a source store!',
+                    'Assertion failed, message: DerivedStore: Expected store value to be set after subscription. First callback after a subscription must run immediately!',
                 );
             });
             it('should unsubscribe from sourceStore when disabling', function (done) {
@@ -179,7 +180,7 @@ export function run(): void {
                     },
                 });
 
-                const store = new DerivedStore(sourceStore, () => undefined);
+                const store = new DerivedStore([sourceStore], () => undefined);
 
                 // @ts-expect-error: Private property
                 expect(store._state.symbol).to.equal(LAZY_STORE_DISABLED_STATE);
@@ -202,7 +203,7 @@ export function run(): void {
                     }
                 })();
 
-                const store = new DerivedStore(faultySourceStore, () => undefined);
+                const store = new DerivedStore([faultySourceStore], () => undefined);
                 const derivedStoreUnsubscriber = store.subscribe(() => {
                     // No-op
                 });
@@ -217,104 +218,26 @@ export function run(): void {
                     typeAssert(sourceStoreSubscriber !== undefined);
                     sourceStoreSubscriber('World!');
                 }).to.throw(
-                    'Assertion failed, message: A source store subscription may not call a disabled derived store.',
+                    'Assertion failed, message: DerivedStore: A source store subscription must only call back to an enabled derived store',
                 );
-            });
-        });
-
-        describe('replaceSourceStore', function () {
-            it('should replace the sourceStore with the new sourceStore', function () {
-                const [derivedStore] = createSimpleDerivedStore();
-                const newSourceStore = new WritableStore(42);
-                derivedStore.replaceSourceStore(newSourceStore);
-                // @ts-expect-error: Private property
-                expect(derivedStore._sourceStore).to.equal(newSourceStore);
-            });
-            it('should keep the previous derivedValueStore', function () {
-                const [derivedStore] = createSimpleDerivedStore();
-                const derivedStoreUnsubscriber = derivedStore.subscribe(() => {
-                    // No-op
-                });
-                // @ts-expect-error: Private property
-                expect(derivedStore._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
-                // @ts-expect-error: Private property
-                typeAssert(derivedStore._state.symbol === LAZY_STORE_ENABLED_STATE);
-
-                // @ts-expect-error: Private property
-                const previousDerivedStore = derivedStore._state.derivedValueStore;
-                const newSourceStore = new WritableStore(42);
-                derivedStore.replaceSourceStore(newSourceStore);
-                // @ts-expect-error: Private property
-                expect(derivedStore._state.derivedValueStore).to.equal(previousDerivedStore);
-                derivedStoreUnsubscriber();
-            });
-            it('should replace the sourceStoreUnsubscriber', function () {
-                const [derivedStore] = createSimpleDerivedStore();
-                const derivedStoreUnsubscriber = derivedStore.subscribe(() => {
-                    // No-op
-                });
-                // @ts-expect-error: Private property
-                expect(derivedStore._state.symbol).to.equal(LAZY_STORE_ENABLED_STATE);
-                // @ts-expect-error: Private property
-                typeAssert(derivedStore._state.symbol === LAZY_STORE_ENABLED_STATE);
-                // @ts-expect-error: Private property
-                const oldUnsubscriber = derivedStore._state.unsubscriber;
-                const newSourceStore = new WritableStore(42);
-                derivedStore.replaceSourceStore(newSourceStore);
-                // @ts-expect-error: Private property
-                expect(derivedStore._state.unsubscriber).to.not.equal(oldUnsubscriber);
-                derivedStoreUnsubscriber();
-            });
-            it('should unsubscribe from the old sourceStore', function (done) {
-                const oldSourceStore = new (class implements IQueryableStore<string> {
-                    public subscribe(subscriber: StoreSubscriber<string>): StoreUnsubscriber {
-                        subscriber('ok');
-                        return () => {
-                            done();
-                        };
-                    }
-                    public get(): string {
-                        return '';
-                    }
-                })();
-                const derivedStore = new DerivedStore(oldSourceStore, () => undefined);
-                const derivedStoreUnsubscriber = derivedStore.subscribe(() => {
-                    // No-op
-                });
-                const newSourceStore = new WritableStore('aha');
-                derivedStore.replaceSourceStore(newSourceStore);
-                derivedStoreUnsubscriber();
-            });
-            it('derive updates from the new sourceStore and update subscribers', function (done) {
-                const [derivedStore] = createSimpleDerivedStore();
-                const derivedStoreUnsubscriber = derivedStore.subscribe((value) => {
-                    const expectedSecondValue = {
-                        answer: `is 43`,
-                    };
-                    if (value.answer !== EXPECTED.answer) {
-                        expect(value).to.deep.equal(expectedSecondValue);
-                        done();
-                    }
-                });
-                const newSourceStore = new WritableStore(42);
-                derivedStore.replaceSourceStore(newSourceStore);
-                derivedStoreUnsubscriber();
             });
         });
 
         describe('unwrapAndSubscribe', () => {
             it('should return the unwrapped store value', (done) => {
-                const [derivedStore] = createLayeredDerivedStore((source, unwrapAndSubscribe) => {
-                    const value = unwrapAndSubscribe(source.innerStore);
-                    expect(value).to.equal(42);
-                    done();
-                });
+                const [derivedStore] = createLayeredDerivedStore(
+                    ([{currentValue: source}], unwrapAndSubscribe) => {
+                        const value = unwrapAndSubscribe(source.innerStore);
+                        expect(value).to.equal(42);
+                        done();
+                    },
+                );
                 derivedStore.get();
             });
-            it('should remove formerly subscribed unwraped stores', () => {
+            it('should remove formerly subscribed unwrapped stores', () => {
                 let unwrapActive = true;
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    (source, unwrapAndSubscribe) => {
+                    ([{currentValue: source}], unwrapAndSubscribe) => {
                         if (unwrapActive) {
                             unwrapAndSubscribe(source.innerStore);
                         }
@@ -328,9 +251,12 @@ export function run(): void {
 
                 // @ts-expect-error: Private property
                 typeAssert(derivedStore._state.symbol === LAZY_STORE_ENABLED_STATE);
-                // @ts-expect-error: Private property
-                expect(derivedStore._state.unwrappedStoreSubscriptions.get(innerStore)).is
-                    .undefined;
+                expect(
+                    // @ts-expect-error: Private property
+                    derivedStore._state.unwrappedStoreSubscriptions.find(
+                        (subscription) => subscription.ref === innerStore,
+                    ),
+                ).is.undefined;
             });
             it('should call unsubscribe of formerly subscribed stores', function (done) {
                 let unwrapActive = true;
@@ -346,7 +272,7 @@ export function run(): void {
                     }
                 })();
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    (source, unwrapAndSubscribe) => {
+                    ([{currentValue: source}], unwrapAndSubscribe) => {
                         if (unwrapActive) {
                             unwrapAndSubscribe(otherSourceStore);
                         }
@@ -373,7 +299,7 @@ export function run(): void {
                     }
                 })();
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    (source, unwrapAndSubscribe) => {
+                    ([{currentValue: source}], unwrapAndSubscribe) => {
                         unwrapAndSubscribe(source.innerStore);
                         if (newUnwrap) {
                             unwrapAndSubscribe(otherSourceStore);
@@ -388,7 +314,8 @@ export function run(): void {
             });
             it('should trigger a new derivation on an update of any unwrapped store', () => {
                 const [derivedStore, , innerStore] = createLayeredDerivedStore(
-                    (source, unwrapAndSubscribe) => unwrapAndSubscribe(source.innerStore) + 1,
+                    ([{currentValue: source}], unwrapAndSubscribe) =>
+                        unwrapAndSubscribe(source.innerStore) + 1,
                 );
                 const unsubscriber = derivedStore.subscribe(() => {
                     // No-op

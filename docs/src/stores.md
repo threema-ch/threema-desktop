@@ -54,7 +54,7 @@ Note that the derivation is lazy, i.e. is only executed if the store has subscri
 ```ts
 const messagesStore = new Store<Message[]>();
 
-const unreadMessagesStore = derive(messagesStore, (messages) => {
+const unreadMessagesStore = derive([messagesStore], ([{currentValue: messages}]) => {
   return messages.filter((message) => message.isUnread);
 });
 ```
@@ -65,10 +65,13 @@ It is possible to get the value and subscribe to additional stores which trigger
 const messagesStore = new Store<Message[]>();
 const searchWordStore = new Store<string>();
 
-const matchingMessagesStore = derive(messagesStore, (messages, getAndSubscribe) => {
-  const searchWord = getAndSubscribe(searchWordStore);
-  return messages.filter((message) => message.text.includes(searchWord));
-});
+const matchingMessagesStore = derive(
+  [messagesStore],
+  ([{currentValue: messages}], getAndSubscribe) => {
+    const searchWord = getAndSubscribe(searchWordStore);
+    return messages.filter((message) => message.text.includes(searchWord));
+  },
+);
 ```
 
 ### `SetStore`, `DerivedSetStore` and `SetBasedSetStore`

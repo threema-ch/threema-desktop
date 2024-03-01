@@ -22,16 +22,19 @@ export interface ProfileViewModel extends PropertiesMarked {
 export function getProfileViewModelStore(services: ServicesForViewModel): ProfileViewModelStore {
     const {endpoint, device, model} = services;
 
-    return derive(model.user.profileSettings, ({view: {nickname}}, getAndSubscribe) => {
-        const displayName = nickname ?? device.identity.string;
-        return endpoint.exposeProperties({
-            profilePicture: getAndSubscribe(model.user.profilePicture),
-            nickname,
-            initials: getUserInitials(displayName),
-            identity: device.identity.string,
-            displayName,
-            publicKey: device.csp.ck.public,
-            workUsername: device.workData?.workCredentials.username,
-        });
-    });
+    return derive(
+        [model.user.profileSettings],
+        ([{currentValue: profileSettingsModel}], getAndSubscribe) => {
+            const displayName = profileSettingsModel.view.nickname ?? device.identity.string;
+            return endpoint.exposeProperties({
+                profilePicture: getAndSubscribe(model.user.profilePicture),
+                nickname: profileSettingsModel.view.nickname,
+                initials: getUserInitials(displayName),
+                identity: device.identity.string,
+                displayName,
+                publicKey: device.csp.ck.public,
+                workUsername: device.workData?.workCredentials.username,
+            });
+        },
+    );
 }

@@ -32,8 +32,8 @@ export function conversationSearchResultSetStoreToConversationPreviewListPropsSt
     limit?: u53,
 ): IQueryableStore<Omit<ConversationPreviewListProps, 'services'>> {
     return derive(
-        conversationSearchResultSetStore,
-        (conversationSearchResultSet, getAndSubscribe) => ({
+        [conversationSearchResultSetStore],
+        ([{currentValue: conversationSearchResultSet}], getAndSubscribe) => ({
             items: [...conversationSearchResultSet]
                 .slice(0, limit)
                 .sort(conversationCompareFn)
@@ -81,43 +81,46 @@ export function messageSearchResultSetStoreToMessagePreviewListPropsStore(
      */
     limit?: u53,
 ): IQueryableStore<Omit<MessagePreviewListProps, 'services'>> {
-    return derive(messageSearchResultSetStore, (messageSearchResultSet, getAndSubscribe) => ({
-        items: chunkBy(
-            [...messageSearchResultSet].slice(0, limit),
-            (result) => result.conversation.receiver.lookup.uid,
-        ).map((groupedResults) => ({
-            // As the results were only chunked, it is certain that each chunk has at least one
-            // element.
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            conversation: groupedResults[0]!.conversation,
-            messages: groupedResults
-                .map((result) => {
-                    const messageViewModel = getAndSubscribe(result.message.viewModelStore);
+    return derive(
+        [messageSearchResultSetStore],
+        ([{currentValue: messageSearchResultSet}], getAndSubscribe) => ({
+            items: chunkBy(
+                [...messageSearchResultSet].slice(0, limit),
+                (result) => result.conversation.receiver.lookup.uid,
+            ).map((groupedResults) => ({
+                // As the results were only chunked, it is certain that each chunk has at least one
+                // element.
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                conversation: groupedResults[0]!.conversation,
+                messages: groupedResults
+                    .map((result) => {
+                        const messageViewModel = getAndSubscribe(result.message.viewModelStore);
 
-                    const quoteProps =
-                        messageViewModel.quote !== undefined &&
-                        messageViewModel.quote !== 'not-found'
-                            ? getMessageProps(
-                                  messageViewModel.quote.viewModelController,
-                                  getAndSubscribe(messageViewModel.quote.viewModelStore),
-                                  i18n,
-                              )
-                            : messageViewModel.quote;
+                        const quoteProps =
+                            messageViewModel.quote !== undefined &&
+                            messageViewModel.quote !== 'not-found'
+                                ? getMessageProps(
+                                      messageViewModel.quote.viewModelController,
+                                      getAndSubscribe(messageViewModel.quote.viewModelStore),
+                                      i18n,
+                                  )
+                                : messageViewModel.quote;
 
-                    return {
-                        ...getMessageProps(
-                            result.message.viewModelController,
-                            messageViewModel,
-                            i18n,
-                        ),
-                        ordinal: messageViewModel.ordinal,
-                        quote: quoteProps,
-                    };
-                })
-                // Sort by newest messages first.
-                .sort((a, b) => b.ordinal - a.ordinal),
-        })),
-    }));
+                        return {
+                            ...getMessageProps(
+                                result.message.viewModelController,
+                                messageViewModel,
+                                i18n,
+                            ),
+                            ordinal: messageViewModel.ordinal,
+                            quote: quoteProps,
+                        };
+                    })
+                    // Sort by newest messages first.
+                    .sort((a, b) => b.ordinal - a.ordinal),
+            })),
+        }),
+    );
 }
 
 /**
@@ -132,7 +135,7 @@ export function receiverSearchResultSetStoreToReceiverPreviewListPropsStore(
      */
     limit?: u53,
 ): IQueryableStore<Omit<ReceiverPreviewListProps, 'services'>> {
-    return derive(receiverSearchResultSetStore, (receiverSearchResultSet) => ({
+    return derive([receiverSearchResultSetStore], ([{currentValue: receiverSearchResultSet}]) => ({
         items: [...receiverSearchResultSet]
             .slice(0, limit)
             .sort((a, b) => a.receiver.name.localeCompare(b.receiver.name))

@@ -16,7 +16,7 @@ export function messageSetStoreToMessagePropsStore(
     messageSetStore: Remote<ConversationMessageSetStore>,
     i18n: I18nType,
 ): IQueryableStore<MessagePropsFromBackend[]> {
-    return derive(messageSetStore, (messageSet, getAndSubscribe) =>
+    return derive([messageSetStore], ([{currentValue: messageSet}], getAndSubscribe) =>
         [...messageSet]
             .map((value) => {
                 const viewModel = getAndSubscribe(value.viewModelStore);

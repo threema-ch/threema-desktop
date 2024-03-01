@@ -50,8 +50,9 @@
    */
   const receiver = conversationPreview.receiver;
   $: isReceiverBlockedStore = derive(
-    conversationPreview.viewModel,
-    (viewModel) => viewModel.receiver.type === 'contact' && viewModel.receiver.isBlocked,
+    [conversationPreview.viewModel],
+    ([{currentValue: viewModel}]) =>
+      viewModel.receiver.type === 'contact' && viewModel.receiver.isBlocked,
   );
 
   /**

@@ -70,34 +70,34 @@ export function getMemberNames(members: IdentityString[], contacts: ContactRepos
 }
 
 /**
- * Get the derived view model store for the specified {@link groupStore}.
+ * Get the derived view model store for the specified {@link groupModelStore}.
  */
 function getViewModelStore(
     services: ServicesForViewModel,
-    groupStore: LocalModelStore<Group>,
+    groupModelStore: LocalModelStore<Group>,
 ): GroupListItemViewModelStore {
     const {endpoint, model} = services;
 
-    return derive(groupStore, (group) => {
-        const memberNames = getMemberNames(group.view.members, model.contacts);
+    return derive([groupModelStore], ([{currentValue: groupModel}]) => {
+        const memberNames = getMemberNames(groupModel.view.members, model.contacts);
 
         return endpoint.exposeProperties({
-            uid: group.ctx,
-            profilePicture: group.controller.profilePicture,
-            name: group.view.name,
+            uid: groupModel.ctx,
+            profilePicture: groupModel.controller.profilePicture,
+            name: groupModel.view.name,
             displayName: getDisplayName(
                 {
-                    name: group.view.name,
-                    creatorIdentity: group.view.creatorIdentity,
+                    name: groupModel.view.name,
+                    creatorIdentity: groupModel.view.creatorIdentity,
                 },
-                group.view.members,
+                groupModel.view.members,
                 services,
             ),
-            initials: getGroupInitials(group.view),
-            userState: group.view.userState,
-            members: group.view.members,
+            initials: getGroupInitials(groupModel.view),
+            userState: groupModel.view.userState,
+            members: groupModel.view.members,
             memberNames,
-            totalMembersCount: group.view.members.length + 1,
+            totalMembersCount: groupModel.view.members.length + 1,
         });
     });
 }

@@ -30,7 +30,7 @@
   let currentGroup: SetValue<IQueryableStoreValue<typeof groups>> | undefined;
 
   // Filter and sort all contacts
-  const sortedFilteredGroups = derive(groups, (groupSet, getAndSubscribe) =>
+  const sortedFilteredGroups = derive([groups], ([{currentValue: groupSet}], getAndSubscribe) =>
     [...groupSet]
       // Filter: Only include direct groups matching the search filter
       .filter((group) => {

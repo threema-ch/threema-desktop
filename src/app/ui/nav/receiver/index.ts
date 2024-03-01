@@ -220,8 +220,11 @@ export async function transformContact(
         displayName: contact.view.displayName,
         initials: contact.view.initials,
         isBlocked: derive(
-            await backend.model.user.privacySettings,
-            async (ps) => await ps.controller.isIdentityExplicitlyBlocked(contact.view.identity),
+            [await backend.model.user.privacySettings],
+            async ([{currentValue: privacySettingsModel}]) =>
+                await privacySettingsModel.controller.isIdentityExplicitlyBlocked(
+                    contact.view.identity,
+                ),
         ),
         notifications: transformNotificationPolicyFromContact(contact.view),
         verificationLevel,

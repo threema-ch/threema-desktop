@@ -66,45 +66,48 @@
   let displayName: string;
 
   // Filter and sort all contacts
-  const sortedFilteredContacts = derive(contacts, (contactSet, getAndSubscribe) => {
-    const appearanceSettings = getAndSubscribe(appearance);
-    return (
-      [...contactSet]
-        // Filter: Only include direct contacts matching the search filter
-        .filter((contact) => {
-          const contactModel = getAndSubscribe(contact.contactModelStore);
-          const viewModel = getAndSubscribe(contact.viewModelStore);
-          const filterText = getAndSubscribe(contactListFilter);
+  const sortedFilteredContacts = derive(
+    [contacts],
+    ([{currentValue: contactSet}], getAndSubscribe) => {
+      const appearanceSettings = getAndSubscribe(appearance);
+      return (
+        [...contactSet]
+          // Filter: Only include direct contacts matching the search filter
+          .filter((contact) => {
+            const contactModel = getAndSubscribe(contact.contactModelStore);
+            const viewModel = getAndSubscribe(contact.viewModelStore);
+            const filterText = getAndSubscribe(contactListFilter);
 
-          // Potentially filter by work verification level
-          const correctWorkVerificationLevel =
-            workVerificationLevel === undefined ||
-            contactModel.view.workVerificationLevel === workVerificationLevel;
+            // Potentially filter by work verification level
+            const correctWorkVerificationLevel =
+              workVerificationLevel === undefined ||
+              contactModel.view.workVerificationLevel === workVerificationLevel;
 
-          // Potentially hide inactive contacts
-          //
-          // Note: This could be done in the viewmodel as well (viewModel.showInContactList), which
-          //       would make it sync. Maybe refactor if you touch this section of the code? :)
-          const correctActivityState =
-            appearanceSettings.view.inactiveContactsPolicy !== InactiveContactsPolicy.HIDE ||
-            contactModel.view.activityState === ActivityState.ACTIVE;
+            // Potentially hide inactive contacts
+            //
+            // Note: This could be done in the viewmodel as well (viewModel.showInContactList), which
+            //       would make it sync. Maybe refactor if you touch this section of the code? :)
+            const correctActivityState =
+              appearanceSettings.view.inactiveContactsPolicy !== InactiveContactsPolicy.HIDE ||
+              contactModel.view.activityState === ActivityState.ACTIVE;
 
-          return (
-            viewModel.showInContactList &&
-            correctWorkVerificationLevel &&
-            correctActivityState &&
-            matchesContactSearchFilter(filterText, viewModel)
-          );
-        })
-        // Sort: By display name
-        .sort((a, b) =>
-          localeSort(
-            getAndSubscribe(a.viewModelStore).displayName,
-            getAndSubscribe(b.viewModelStore).displayName,
-          ),
-        )
-    );
-  });
+            return (
+              viewModel.showInContactList &&
+              correctWorkVerificationLevel &&
+              correctActivityState &&
+              matchesContactSearchFilter(filterText, viewModel)
+            );
+          })
+          // Sort: By display name
+          .sort((a, b) =>
+            localeSort(
+              getAndSubscribe(a.viewModelStore).displayName,
+              getAndSubscribe(b.viewModelStore).displayName,
+            ),
+          )
+      );
+    },
+  );
 
   onDestroy((): void => {
     contextMenuPopover?.close();

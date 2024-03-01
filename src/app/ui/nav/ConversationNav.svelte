@@ -56,8 +56,12 @@
 
   // TODO(DESK-1082): This translation should be entirely in the backend and not passed in.
   const translationsForBackend: LocalStore<ConversationPreviewTranslations> = derive(
-    i18n,
-    ({t}) => ({
+    [i18n],
+    ([
+      {
+        currentValue: {t},
+      },
+    ]) => ({
       'messaging.label--default-file-message-preview': t(
         'messaging.label--default-file-message-preview',
         'File',

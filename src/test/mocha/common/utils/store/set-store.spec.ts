@@ -87,7 +87,7 @@ export function run(): void {
 
             // Derived store (which doesn't actually change anything about the values)
             const derivedStore = new LocalSetBasedSetStore(
-                derive(sourceStore, (sourceSet) => new Set([...sourceSet])),
+                derive([sourceStore], ([{currentValue: sourceSet}]) => new Set([...sourceSet])),
             );
 
             // Subscribe to events

@@ -70,15 +70,16 @@ export function getContactListItemStore(
     uid: DbContactUid,
 ): LocalStore<ContactListItemSetEntry> | undefined {
     const {endpoint, model} = services;
-    const contactStore = model.contacts.getByUid(uid);
-    if (contactStore === undefined) {
+    const contactModelStore = model.contacts.getByUid(uid);
+    if (contactModelStore === undefined) {
         return undefined;
     }
-    return derive(contactStore, (contact) =>
+
+    return derive([contactModelStore], ([{currentValue: contactModel, store}]) =>
         endpoint.exposeProperties({
-            contactUid: contact.ctx,
-            contactModelStore: contactStore,
-            viewModelStore: getViewModelStore(services, contactStore),
+            contactUid: contactModel.ctx,
+            contactModelStore: store,
+            viewModelStore: getViewModelStore(services, store),
         }),
     );
 }
@@ -118,38 +119,39 @@ export interface ContactListItemViewModel extends PropertiesMarked {
 }
 
 /**
- * Get the derived view model store for the specified {@link contactStore}.
+ * Get the derived view model store for the specified {@link contactModelStore}.
  */
 function getViewModelStore(
     services: ServicesForViewModel,
-    contactStore: LocalModelStore<Contact>,
+    contactModelStore: LocalModelStore<Contact>,
 ): ContactListItemViewModelStore {
     const {endpoint, model} = services;
-    return derive(contactStore, (contact, getAndSubscribe) =>
+
+    return derive([contactModelStore], ([{currentValue: contactModel}], getAndSubscribe) =>
         endpoint.exposeProperties({
-            uid: contact.ctx,
-            identity: contact.view.identity,
-            publicKey: contact.view.publicKey,
-            nickname: contact.view.nickname,
-            firstName: contact.view.firstName,
-            lastName: contact.view.lastName,
-            fullName: getFullName(contact.view),
-            displayName: getDisplayName(contact.view),
-            initials: contact.view.initials,
-            profilePicture: contact.controller.profilePicture,
-            badge: getContactBadge(contact.view),
+            uid: contactModel.ctx,
+            identity: contactModel.view.identity,
+            publicKey: contactModel.view.publicKey,
+            nickname: contactModel.view.nickname,
+            firstName: contactModel.view.firstName,
+            lastName: contactModel.view.lastName,
+            fullName: getFullName(contactModel.view),
+            displayName: getDisplayName(contactModel.view),
+            initials: contactModel.view.initials,
+            profilePicture: contactModel.controller.profilePicture,
+            badge: getContactBadge(contactModel.view),
             // TODO(DESK-381): Determine whether contact is a new contact
             isNew: Math.random() < 0.5,
-            ...transformContactVerificationLevel(contact.view),
-            showInContactList: contact.view.acquaintanceLevel !== AcquaintanceLevel.GROUP,
-            activityState: contact.view.activityState,
+            ...transformContactVerificationLevel(contactModel.view),
+            showInContactList: contactModel.view.acquaintanceLevel !== AcquaintanceLevel.GROUP,
+            activityState: contactModel.view.activityState,
             isBlocked: getAndSubscribe(
                 model.user.privacySettings,
-            ).controller.isIdentityExplicitlyBlocked(contact.view.identity),
-            readReceiptPolicyOverride: contact.view.readReceiptPolicyOverride,
-            typingIndicatorPolicyOverride: contact.view.typingIndicatorPolicyOverride,
-            notificationTriggerPolicyOverride: contact.view.notificationTriggerPolicyOverride,
-            notificationSoundPolicyOverride: contact.view.notificationSoundPolicyOverride,
+            ).controller.isIdentityExplicitlyBlocked(contactModel.view.identity),
+            readReceiptPolicyOverride: contactModel.view.readReceiptPolicyOverride,
+            typingIndicatorPolicyOverride: contactModel.view.typingIndicatorPolicyOverride,
+            notificationTriggerPolicyOverride: contactModel.view.notificationTriggerPolicyOverride,
+            notificationSoundPolicyOverride: contactModel.view.notificationSoundPolicyOverride,
         }),
     );
 }
