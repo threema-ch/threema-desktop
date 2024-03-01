@@ -23,8 +23,10 @@
   import type {IGlobalPropertyModel} from '~/common/model/types/settings';
   import type {LocalModelStore} from '~/common/model/utils/model-store';
   import {ConnectionState} from '~/common/network/protocol/state';
+  import type {u53} from '~/common/types';
   import {unreachable} from '~/common/utils/assert';
   import type {Remote} from '~/common/utils/endpoint';
+  import {TIMER, type TimerCanceller} from '~/common/utils/timer';
 
   export let services: AppServices;
 
@@ -42,6 +44,10 @@
   // Create display mode observer
   const displayModeObserver = new DisplayModeObserver(display);
 
+  // Delayed connection state
+  let delayedConnectionState: ConnectionState | undefined = undefined;
+  let updateDelayedConnectionStateTimerCanceller: TimerCanceller | undefined = undefined;
+
   // Set initial display mode and manage the layout
   onMount(() => {
     displayModeObserver.update();
@@ -57,6 +63,31 @@
     if (import.meta.env.DEBUG && event.ctrlKey && event.key === 'd') {
       toggleDebugPanel();
       event.preventDefault();
+    }
+  }
+
+  /**
+   * Updates the `delayedConnectionState` with the given {@link ConnectionState} value, but only
+   * after a certain delay has passed. This is used so that a short loss of connection won't cause
+   * the network alert banner to be shown immediately.
+   *
+   * Note: If the connection state switches back to connected, it will be updated immediately.
+   */
+  function updateDelayedConnectionState(
+    currentConnectionState: ConnectionState,
+    delayMs: u53,
+  ): void {
+    updateDelayedConnectionStateTimerCanceller?.();
+
+    if (currentConnectionState === ConnectionState.CONNECTED) {
+      // If the `connectionState` has switched to connected, update the `delayedConnectionState`
+      // immediately.
+      delayedConnectionState = currentConnectionState;
+    } else {
+      // Else, start a timer to update it after 3 seconds.
+      updateDelayedConnectionStateTimerCanceller = TIMER.timeout(() => {
+        delayedConnectionState = currentConnectionState;
+      }, delayMs);
     }
   }
 
@@ -142,15 +173,17 @@
         unreachable(modalId, new Error('Unhandled modal router state'));
     }
   }
+
+  $: updateDelayedConnectionState($connectionState as ConnectionState, 3000);
 </script>
 
 <svelte:body on:keydown|self={maybeToggleDebugPanelByKey} />
 
 <template>
-  <div class="wrapper" data-connection-state={$connectionState}>
+  <div class="wrapper" data-connection-state={delayedConnectionState}>
     <!-- App -->
 
-    {#if $connectionState !== ConnectionState.CONNECTED}
+    {#if delayedConnectionState !== ConnectionState.CONNECTED}
       {#await applicationState then resolvedApplicationState}
         <NetworkAlert applicationState={resolvedApplicationState} />
       {/await}
