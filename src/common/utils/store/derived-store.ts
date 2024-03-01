@@ -1,4 +1,5 @@
 import type {Logger} from '~/common/logging';
+import type {ItemOf} from '~/common/utils/array';
 import {assert} from '~/common/utils/assert';
 import {TRANSFER_HANDLER} from '~/common/utils/endpoint';
 import {
@@ -8,7 +9,6 @@ import {
     LAZY_STORE_ENABLED_STATE,
     LAZY_STORE_INITIALIZING_STATE,
     type LazyStoreState,
-    type LazyStoreStates,
     type LocalStore,
     NO_STORE_VALUE,
     STORE_TRANSFER_HANDLER,
@@ -16,106 +16,41 @@ import {
     type StoreSubscriber,
     type StoreUnsubscriber,
     WritableStore,
+    type StoreDeactivator,
     type StoreTransferDebug,
 } from '~/common/utils/store';
 
-type DisabledDeriveStoreState = LazyStoreState<typeof LAZY_STORE_DISABLED_STATE>;
-
-export interface InitializingDerivedStoreState<TSourceStore extends IQueryableStore<unknown>>
-    extends LazyStoreState<typeof LAZY_STORE_INITIALIZING_STATE> {
-    /**
-     * Map containing the stores unwrapped in the derivation function and their unsubscribers.
-     */
-    readonly unwrappedStoreSubscriptions: Map<IQueryableStore<unknown>, StoreUnsubscriber>;
-
-    /**
-     * Unsubscriber of the current {@link TSourceStore}
-     */
-    unsubscriber: StoreUnsubscriber | undefined;
-
-    /**
-     * Current source store value. Might be {@link NO_STORE_VALUE} during the initialization.
-     */
-    sourceStoreValue: IQueryableStoreValue<TSourceStore> | typeof NO_STORE_VALUE;
-
-    /**
-     * Whether the store is currently deriving a value
-     */
-    deriving: boolean;
-}
-export interface EnabledDerivedStoreState<
-    TSourceStore extends IQueryableStore<unknown>,
-    TInDerivedValue extends TOutDerivedValue,
-    TOutDerivedValue,
-> extends LazyStoreState<typeof LAZY_STORE_ENABLED_STATE> {
-    /**
-     * Derived value store with the subscribers.
-     */
-    readonly derivedValueStore: WritableStore<TInDerivedValue, TOutDerivedValue>;
-
-    /**
-     * Map containing the stores unwrapped in the derivation function and their unsubscribers.
-     */
-    readonly unwrappedStoreSubscriptions: Map<IQueryableStore<unknown>, StoreUnsubscriber>;
-
-    /**
-     * Unsubscriber of the current {@link TSourceStore}
-     */
-    unsubscriber: StoreUnsubscriber;
-
-    /**
-     * Current source store value.
-     */
-    sourceStoreValue: IQueryableStoreValue<TSourceStore>;
-
-    /**
-     * Whether the store is currently deriving a value
-     */
-    deriving: boolean;
-}
-
-export type States<
-    TSourceStore extends IQueryableStore<unknown>,
-    TInDerivedValue extends TOutDerivedValue,
-    TOutDerivedValue,
-> = (
-    | DisabledDeriveStoreState
-    | InitializingDerivedStoreState<TSourceStore>
-    | EnabledDerivedStoreState<TSourceStore, TInDerivedValue, TOutDerivedValue>
-) &
-    LazyStoreStates;
-
-function assertStateEnabled<
-    TSourceStore extends IQueryableStore<unknown>,
-    TInDerivedValue extends TOutDerivedValue,
-    TOutDerivedValue,
->(
-    state: States<TSourceStore, TInDerivedValue, TOutDerivedValue>,
-): asserts state is EnabledDerivedStoreState<TSourceStore, TInDerivedValue, TOutDerivedValue> {
-    assert(state.symbol === LAZY_STORE_ENABLED_STATE, `Expected store state to be enabled`);
-}
 /**
- * Unwrap/get the value of a store and implicitly subscribe to updates.
+ * Get the current value of a store and implicitly subscribe to updates.
  */
 export type GetAndSubscribeFunction = <TStore extends IQueryableStore<unknown>>(
     store: TStore,
 ) => IQueryableStoreValue<TStore>;
 
 /**
- * Function to return a derived value from the source store's value.
+ * Callback function of a derived store. Receives the current source store values, as well as a
+ * {@link GetAndSubscribeFunction} that can be used to derive from additional stores in the
+ * derivation function's body itself.
  */
-export type DeriveFunction<TSourceStore extends IQueryableStore<unknown>, TDerivedValue> = (
+export type DeriveFunction<
+    TSourceStores extends readonly IQueryableStore<unknown>[],
+    TDerivedValue,
+> = (
     /**
-     * The value of the source store which can be derived from.
+     * The current values of the source stores to pass to the derive function. Contains an object
+     * for each source store (in the same order) that holds the store's `currentValue`, as well as
+     * the store itself.
      */
-    sourceValue: IQueryableStoreValue<TSourceStore>,
+    currentSourceStoreValues: {
+        readonly [K in keyof TSourceStores]: {
+            readonly currentValue: IQueryableStoreValue<TSourceStores[K]>;
+            readonly store: TSourceStores[K];
+        };
+    },
 
     /**
-     * Function to get the value of additional stores. The function subscribes the DerivedStore to
-     * updates from the additional store, and redoes the derivation on updates.
-     *
-     * Note that the most recent value of the store is fetched during the derivation (i.e. value
-     * updates of these additional stores might be skipped for a newer one.)
+     * Function to get the value of additional stores while deriving. Implicitly subscribes the
+     * {@link DerivedStore} to updates from the additional store, and rederives on updates.
      */
     getAndSubscribe: GetAndSubscribeFunction,
 ) => TDerivedValue;
@@ -123,42 +58,46 @@ export type DeriveFunction<TSourceStore extends IQueryableStore<unknown>, TDeriv
 /**
  * Constructor for the {@link DerivedStore} to allow a more natural wrapping.
  *
- * @param sourceStore The source store to derive values from.
+ * @example
+ * ```ts
+ * const example: string = derive([store1, store2], ([storeState1, storeState2]) => {
+ *  const { currentValue: currentValue1, store: _store1 } = storeState1;
+ *  const { currentValue: currentValue2, store: _store2 } = storeState2;
+ *
+ *  return `1: ${currentValue1}, 2: ${currentValue2}`;
+ * });
+ * ```
+ * @param sourceStores Array of source stores to derive values from.
  * @param deriveFunction Transform function for aggregating values from the source store. See
  *   {@link DeriveFunction} for a description of the parameters.
- * @returns a {@link DerivedStore} of the {@link sourceStore}.
+ * @returns a {@link DerivedStore} of the {@link sourceStores}.
  */
 export function derive<
-    TSourceStore extends IQueryableStore<unknown>,
-    TInDerivedStore extends TOutDerivedValue,
-    TOutDerivedValue = TInDerivedStore,
+    const TSourceStores extends IQueryableStore<unknown>[],
+    TInDerivedValue extends TOutDerivedValue,
+    TOutDerivedValue = TInDerivedValue,
 >(
-    sourceStore: TSourceStore,
-    deriveFunction: DeriveFunction<TSourceStore, TInDerivedStore>,
+    sourceStores: TSourceStores,
+    deriveFunction: DeriveFunction<TSourceStores, TInDerivedValue>,
     options?: StoreOptions<TOutDerivedValue>,
-): DerivedStore<TSourceStore, TInDerivedStore, TOutDerivedValue> {
-    return new DerivedStore(sourceStore, deriveFunction, options);
+): DerivedStore<TSourceStores, TInDerivedValue, TOutDerivedValue> {
+    return new DerivedStore(sourceStores, deriveFunction, options);
 }
 
 /**
- * Derive a store's value using a derivation function.
- * ```
- * Store⟨value1⟩  ==[derive(value1): value1']==>  DerivedStore⟨value1'⟩
- * ```
+ * Derives a new value from an array of source stores using a derive function. Whenever one of the
+ * source stores or `getAndSubscribe`d stores updates, the given derive function is rerun.
  *
- * It is possible to get the value and subscribe to additional stores which trigger a rederivation:
- * ```
- * store2 = Store⟨value2⟩
- * deriveFunction = derive(value1, getAndSubscribe): value1' + getAndSubscribe(store2)
- * Store⟨value1⟩  ==[deriveFunction]==>  DerivedStore⟨value1' + value2⟩
- * ```
+ * The derive function receives an array of objects containing the `currentValue` of each source
+ * store, as well as the `store` itself. Additionally, it provides a `getAndSubscribe` function that
+ * can be used to get and subscribe to additional stores in the derive function's body.
  *
  *  The {@param TOutDerivedValue} provides type variance for the output type inference.
  */
 export class DerivedStore<
-        TSourceStore extends IQueryableStore<unknown>,
-        TDerivedValue extends TOutDerivedValue,
-        TOutDerivedValue = TDerivedValue,
+        const TSourceStores extends IQueryableStore<unknown>[],
+        TInDerivedValue extends TOutDerivedValue,
+        TOutDerivedValue = TInDerivedValue,
     >
     implements IQueryableStore<TOutDerivedValue>, LocalStore<TOutDerivedValue>
 {
@@ -166,21 +105,22 @@ export class DerivedStore<
     public readonly debug: StoreTransferDebug;
 
     private readonly _log: Logger | undefined;
-    private _state: States<TSourceStore, TDerivedValue, TOutDerivedValue> = {
+    private _state: States<ItemOf<TSourceStores>[], TInDerivedValue, TOutDerivedValue> = {
         symbol: LAZY_STORE_DISABLED_STATE,
     };
+    private _deactivator: StoreDeactivator | undefined;
 
     /**
      * Create a derived store.
      *
-     * @param _sourceStore The source store to derive values from.
-     * @param _derive Transform function for aggregating values from the source store. See
+     * @param _sourceStores The source stores to derive values from.
+     * @param _derive Transform function for aggregating values from the source stores. See
      *   {@link DeriveFunction} for a description of the parameters.
      * @param options Additional store options.
      */
     public constructor(
-        private _sourceStore: TSourceStore,
-        private readonly _derive: DeriveFunction<TSourceStore, TDerivedValue>,
+        private readonly _sourceStores: TSourceStores,
+        private readonly _derive: DeriveFunction<TSourceStores, TInDerivedValue>,
         private readonly _options?: StoreOptions<TOutDerivedValue>,
     ) {
         this._log = _options?.debug?.log;
@@ -193,9 +133,24 @@ export class DerivedStore<
     /** @inheritdoc */
     public subscribe(subscriber: StoreSubscriber<TOutDerivedValue>): StoreUnsubscriber {
         this._enable();
-        assertStateEnabled(this._state);
+        assert(
+            this._state.symbol === LAZY_STORE_ENABLED_STATE,
+            `Expected store state to be enabled`,
+        );
 
-        return this._state.derivedValueStore.subscribe(subscriber);
+        const unsubscriber = this._state.derivedValueStore.subscribe(subscriber);
+
+        return () => {
+            unsubscriber();
+
+            // If the last subscriber has unsubscribed, deactivate this store.
+            if (
+                this._state.symbol === LAZY_STORE_ENABLED_STATE &&
+                this._state.derivedValueStore.subscribersCount === 0
+            ) {
+                this._disable();
+            }
+        };
     }
 
     /** @inheritdoc */
@@ -203,7 +158,10 @@ export class DerivedStore<
         const disabledAtEntrance = this._state.symbol === LAZY_STORE_DISABLED_STATE;
 
         this._enable();
-        assertStateEnabled(this._state);
+        assert(
+            this._state.symbol === LAZY_STORE_ENABLED_STATE,
+            `Expected store state to be enabled`,
+        );
 
         const value = this._state.derivedValueStore.get();
 
@@ -215,206 +173,408 @@ export class DerivedStore<
     }
 
     /**
-     * Replace the {@link _sourceStore} of the derived store.
-     *
-     * This implicitly triggers an immediate update to the subscribers.
-     *
-     * @param sourceStore the new source stores
-     */
-    public replaceSourceStore(sourceStore: TSourceStore): void {
-        this._sourceStore = sourceStore;
-        if (this._state.symbol === LAZY_STORE_DISABLED_STATE) {
-            return;
-        }
-
-        this._state.unsubscriber?.(); // The unsubscriber is replaced in _subscribeToSourceStore
-        this._subscribeToSourceStore();
-    }
-
-    /**
-     * Derive a new derived value from the sourceValue and return the result.
-     */
-    private _deriveValue(): TDerivedValue {
-        assert(
-            this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-            'Cannot derive a value on a disabled store.',
-        );
-        assert(this._state.sourceStoreValue !== NO_STORE_VALUE);
-        this._state.deriving = true;
-
-        /**
-         * New source stores that are unwrapped during the derivation and need to be subscribed to.
-         */
-        const newUnwrappedStores = new Set<IQueryableStore<unknown>>();
-
-        const derivedValue = this._derive(this._state.sourceStoreValue, ((store) => {
-            newUnwrappedStores.add(store);
-            return this._addUnwrappedStore(store);
-        }) as GetAndSubscribeFunction);
-
-        this._removeOldUnwrappedStores(newUnwrappedStores);
-
-        this._state.deriving = false;
-        return derivedValue;
-    }
-
-    /**
-     * Add a new subscription to {@link this._state.unwrappedStoreSubscriptions}.
-     */
-    private _addUnwrappedStore<TUnwrappedStoreValue>(
-        store: IQueryableStore<TUnwrappedStoreValue>,
-    ): TUnwrappedStoreValue {
-        assert(
-            this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-            'Cannot update unwrapped stores on a disabled store.',
-        );
-        assert(this._state.deriving, 'A unwrapped store can only be added while deriving');
-
-        if (this._state.unwrappedStoreSubscriptions.has(store)) {
-            return store.get();
-        }
-
-        let firstSubscriptionValue: TUnwrappedStoreValue | typeof NO_STORE_VALUE = NO_STORE_VALUE;
-        const unsubscriber = store.subscribe((value) => {
-            assert(
-                this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-                'A unwrappedSourceStore subscription may not call a disabled derived store.',
-            );
-
-            if (this._state.deriving) {
-                firstSubscriptionValue = value;
-            } else if (this._state.symbol === LAZY_STORE_ENABLED_STATE) {
-                this._state.derivedValueStore.set(this._deriveValue());
-            }
-        });
-        this._state.unwrappedStoreSubscriptions.set(store, unsubscriber);
-        assert(
-            firstSubscriptionValue !== NO_STORE_VALUE,
-            'A unwrapped store value must be set after subscription. This is probably a bug in a unwrapped source store!',
-        );
-
-        return firstSubscriptionValue;
-    }
-
-    /**
-     * Remove and unsubscribe from stores in {@link this._state.unwrappedStoreSubscriptions} which
-     * are not in {@param newUnwrappedStores}.
-     */
-    private _removeOldUnwrappedStores(newUnwrappedStores: Set<IQueryableStore<unknown>>): void {
-        assert(
-            this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-            'Cannot update unwrapped stores on a disabled store.',
-        );
-
-        for (const [store, unsubscriber] of this._state.unwrappedStoreSubscriptions.entries()) {
-            if (!newUnwrappedStores.has(store)) {
-                unsubscriber();
-                this._state.unwrappedStoreSubscriptions.delete(store);
-            }
-        }
-    }
-
-    /**
-     * Subscribe to the source store and update the {@link _state.sourceStoreValue}. The
-     * subscription also calls {@link _deriveValue} if the store is in
-     * {@link LAZY_STORE_ENABLED_STATE}.
-     */
-    private _subscribeToSourceStore(): void {
-        assert(
-            this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-            'Cannot subscribe to source stores in disabled state',
-        );
-
-        this._state.unsubscriber = this._sourceStore.subscribe((sourceValue) => {
-            assert(
-                this._state.symbol !== LAZY_STORE_DISABLED_STATE,
-                'A source store subscription may not call a disabled derived store.',
-            );
-            this._state.sourceStoreValue = sourceValue as IQueryableStoreValue<TSourceStore>;
-
-            if (this._state.symbol === LAZY_STORE_ENABLED_STATE) {
-                this._state.derivedValueStore.set(this._deriveValue());
-            }
-        });
-    }
-
-    /**
      * Enable this store (if it is not enabled yet) and subscribe to the source store. Calls are
      * idempotent.
-     *
-     * Changes the class state.
      */
     private _enable(): void {
+        // If the store is not currently disabled (i.e., it's already enabled or still
+        // initializing), there is nothing to do.
         if (this._state.symbol !== LAZY_STORE_DISABLED_STATE) {
             return;
         }
+
         if (import.meta.env.VERBOSE_LOGGING.STORES) {
-            this._log?.debug('Enable Store');
+            this._log?.debug('Enable DerivedStore');
         }
+
+        // Initialize source store state.
         this._state = {
+            isDeriving: false,
             symbol: LAZY_STORE_INITIALIZING_STATE,
-            unwrappedStoreSubscriptions: new Map(),
-            sourceStoreValue: NO_STORE_VALUE,
-            unsubscriber: undefined,
-            deriving: false,
+            sourceStoreSubscriptions: [],
+            // As no derivation has happened yet, we don't have any unwrapped stores at this point.
+            unwrappedStoreSubscriptions: [],
         };
 
-        // Subscribe to source store and get the first derived value
-        this._subscribeToSourceStore();
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Subscribing to source stores');
+        }
+
+        // Subscribe to each of the source stores and get the first derived values.
+        for (const [storeIndex, sourceStore] of this._sourceStores.entries()) {
+            // Subscribe to the store and get the initial state. Note: The callback will only run if
+            // the `sourceStore`'s value changes after initialization, not on the initial
+            // subscription.
+            const initialState = subscribeAndGetInitialState(
+                sourceStore,
+                // Callback runs whenever this `sourceStore` updates.
+                (value) => {
+                    assert(
+                        this._state.symbol === LAZY_STORE_ENABLED_STATE,
+                        'DerivedStore: A source store subscription must only call back to an enabled derived store',
+                    );
+
+                    const currentState = this._state.sourceStoreSubscriptions.at(storeIndex);
+                    assert(
+                        currentState !== undefined,
+                        `DerivedStore: Expected source store at index ${storeIndex}, but it was undefined`,
+                    );
+
+                    // Override source store state at the specified index with a copy that includes the
+                    // new value.
+                    this._state.sourceStoreSubscriptions[storeIndex] = {
+                        ...currentState,
+                        currentValue: value as IQueryableStoreValue<
+                            TSourceStores[typeof storeIndex]
+                        >,
+                    };
+
+                    // Rederive and update `derivedValueStore` with the result.
+                    this._state.derivedValueStore.set(this._deriveValue());
+                },
+            );
+
+            this._state.sourceStoreSubscriptions[storeIndex] = initialState;
+        }
+
         assert(
-            this._state.sourceStoreValue !== NO_STORE_VALUE,
-            'Source store value must be set after subscription. This is probably a bug in a source store!',
+            this._state.sourceStoreSubscriptions.length === this._sourceStores.length,
+            'DerivedStore: Expected all source stores to be subscribed after initialization phase',
         );
         assert(
-            this._state.unsubscriber !== undefined,
-            'The unsubscriber must be set after the subscription',
+            this._state.sourceStoreSubscriptions.every(
+                ({currentValue, unsubscriber}) =>
+                    // Check if we have a `currentValue` and `unsubscriber` for every source store
+                    // at runtime, even if it is guaranteed by the type system.
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    currentValue !== NO_STORE_VALUE && unsubscriber !== undefined,
+            ),
+            'DerivedStore: Expected all source stores to have a value and an unsubscriber after the initialization phase',
         );
 
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Deriving first value');
+        }
+
+        // Start the first derivation.
         const derivedValue = this._deriveValue();
-        const derivedValueStore = new WritableStore<TDerivedValue, TOutDerivedValue>(derivedValue, {
-            activator: () => {
-                const deactivator = this._options?.activator?.();
-                return () => {
-                    this._disable();
-                    deactivator?.();
-                };
+
+        // Initialize the `derivedValueStore` and register the `deactivator` callback.
+        const derivedValueStore = new WritableStore<TInDerivedValue, TOutDerivedValue>(
+            derivedValue,
+            {
+                activator: () => {
+                    const deactivator = this._options?.activator?.();
+                    return () => {
+                        this._disable();
+                        deactivator?.();
+                    };
+                },
+                debug: this._options?.debug,
             },
-            debug: this._options?.debug,
-        });
+        );
+
+        if (import.meta.env.VERBOSE_LOGGING.STORES) {
+            this._log?.debug('Initialization finished, setting state to enabled');
+        }
 
         this._state = {
             symbol: LAZY_STORE_ENABLED_STATE,
             derivedValueStore,
-            unsubscriber: this._state.unsubscriber,
-            sourceStoreValue: this._state.sourceStoreValue,
+            isDeriving: false,
+            sourceStoreSubscriptions: this._state.sourceStoreSubscriptions,
             unwrappedStoreSubscriptions: this._state.unwrappedStoreSubscriptions,
-            deriving: false,
         };
+
+        this._deactivator = this._options?.activator?.();
     }
 
     /**
-     * Disable the store and unsubscribe from the source store. Must only be called on an enabled
-     * store.
+     * Derive a new value from the source- and unwrapped stores' current values and return the
+     * result.
+     */
+    private _deriveValue(): TInDerivedValue {
+        assert(
+            this._state.symbol !== LAZY_STORE_DISABLED_STATE,
+            'DerivedStore: Cannot derive a values if store is disabled',
+        );
+        assert(
+            this._state.sourceStoreSubscriptions.every(
+                ({currentValue}) => currentValue !== NO_STORE_VALUE,
+            ),
+            'DerivedStore: Expected all source stores to have a value',
+        );
+        assert(
+            this._sourceStores.length === this._state.sourceStoreSubscriptions.length,
+            'DerivedStore: Mismatch of source stores and subscribed source stores',
+        );
+        this._state.isDeriving = true;
+
+        // Set to collect new source stores that are unwrapped during the derivation and need to be
+        // subscribed to.
+        const newUnwrappedStores = new Set<IQueryableStore<unknown>>();
+
+        // Execute the derive callback with the current source store values.
+        const derivedValue = this._derive(
+            this._state.sourceStoreSubscriptions.map(({currentValue, ref}) => ({
+                currentValue,
+                store: ref,
+                // Cast is necessary here as the type system can't guarantee that the order of the
+                // source store array and the input array for the derive function have the same order
+                // and length.
+            })) as {
+                readonly [K in keyof TSourceStores]: {
+                    readonly currentValue: IQueryableStoreValue<TSourceStores[K]>;
+                    readonly store: TSourceStores[K];
+                };
+            },
+            // The `getAndSubscribe` function, which can be used to subscribe to add additional
+            // stores during derivation.
+            ((store) => {
+                newUnwrappedStores.add(store);
+
+                // Subscribe to the store (if it isn't already present) and get its current value.
+                return this._getAndSubscribeUnwrappedStore(store);
+            }) as GetAndSubscribeFunction,
+        );
+
+        // Filter unwrapped stores that are not used anymore and unsubscribe from them.
+        this._state.unwrappedStoreSubscriptions = this._state.unwrappedStoreSubscriptions.filter(
+            (subscription) => {
+                if (newUnwrappedStores.has(subscription.ref)) {
+                    return true;
+                }
+
+                subscription.unsubscriber();
+                return false;
+            },
+        );
+
+        this._state.isDeriving = false;
+        return derivedValue;
+    }
+
+    /**
+     * Add a new subscription to {@link this._state.unwrappedStoreSubscriptions}. Note: Updating
+     * unwrapped stores is only possible while deriving.
      *
-     * Changes the class state
+     * @returns The current value of the unwrapped store.
+     */
+    private _getAndSubscribeUnwrappedStore<TUnwrappedStoreValue>(
+        store: IQueryableStore<TUnwrappedStoreValue>,
+    ): TUnwrappedStoreValue {
+        assert(
+            this._state.symbol !== LAZY_STORE_DISABLED_STATE,
+            'DerivedStore: Cannot update unwrapped stores on a disabled store',
+        );
+        assert(
+            this._state.isDeriving,
+            'DerivedStore: An unwrapped store can only be added while deriving',
+        );
+
+        // If the store is already subscribed, simply return it's current value.
+        if (this._state.unwrappedStoreSubscriptions.find(({ref}) => ref === store) !== undefined) {
+            return store.get();
+        }
+
+        // Subscribe to the store and get its initial state. Note: The callback will only run if the
+        // `sourceStore`'s value changes after initialization, not on the initial subscription.
+        const initialState = subscribeAndGetInitialState(store, () => {
+            assert(
+                this._state.symbol === LAZY_STORE_ENABLED_STATE,
+                'DerivedStore: An unwrapped store subscription must only call back to an enabled derived store',
+            );
+
+            // Rederive and update `derivedValueStore`.
+            this._state.derivedValueStore.set(this._deriveValue());
+        });
+
+        // Add the new subscription to the state.
+        this._state.unwrappedStoreSubscriptions = [
+            ...this._state.unwrappedStoreSubscriptions,
+            initialState,
+        ];
+
+        // Return the current value of the store.
+        return initialState.currentValue;
+    }
+
+    /**
+     * Disable the store and unsubscribe from the source store. Note: Must only be called on an
+     * enabled store.
      */
     private _disable(): void {
-        assert(this._state.symbol === LAZY_STORE_ENABLED_STATE, 'Enabled store cannot be disabled');
+        assert(
+            this._state.symbol === LAZY_STORE_ENABLED_STATE,
+            'Store must be in enabled state to be disabled',
+        );
         assert(
             this._state.derivedValueStore.subscribersCount === 0,
-            'Store with subscribers cannot be disabled',
+            'Store cannot be disabled if it still has subscribers',
         );
+
         if (import.meta.env.VERBOSE_LOGGING.STORES) {
-            this._log?.debug('Disable Store');
+            this._log?.debug('Disabling store');
         }
 
-        // Unsubscribe and delete from each subscribed store
-        for (const [store, unsubscriber] of this._state.unwrappedStoreSubscriptions) {
-            unsubscriber();
-            this._state.unwrappedStoreSubscriptions.delete(store);
+        // Unsubscribe and delete from each subscribed store.
+        for (const subscription of this._state.sourceStoreSubscriptions.values()) {
+            subscription.unsubscriber();
         }
+        for (const subscription of this._state.unwrappedStoreSubscriptions.values()) {
+            subscription.unsubscriber();
+        }
+        // Clear subscription states.
+        this._state.sourceStoreSubscriptions.length = 0;
+        this._state.unwrappedStoreSubscriptions = [];
 
-        this._state.unsubscriber();
+        // Note: The valueStore has no subscribers anymore at this point, so we just drop it quietly
+        // here.
         this._state = {symbol: LAZY_STORE_DISABLED_STATE};
+        this._deactivator?.();
     }
+}
+
+/**
+ * Subscribes to a store and gathers the initial {@link StoreSubscriptionState}.
+ *
+ * Note: Unlike `store.subscribe(callback)`, the `onChange` callback doesn't run directly after the
+ * store has been initially subscribed to, but only when the value has changed a second time (or
+ * more). If you need the initial value, read it from this function's return value.
+ *
+ * @param store The store to subscribe to.
+ * @param onChange Callback that runs whenever the store's value changes.
+ * @returns Details about the subscription state in the form of a `StoreSubscriptionState` object.
+ */
+function subscribeAndGetInitialState<TUnwrappedStoreValue>(
+    store: IQueryableStore<TUnwrappedStoreValue>,
+    onChange?: (value: TUnwrappedStoreValue) => void,
+): StoreSubscriptionState<typeof store> {
+    let firstSubscriptionValue: TUnwrappedStoreValue | typeof NO_STORE_VALUE = NO_STORE_VALUE;
+    const unsubscriber = store.subscribe((value) => {
+        assert(
+            value !== NO_STORE_VALUE,
+            'DerivedStore: Expected value to be defined in subscription callback',
+        );
+
+        if (firstSubscriptionValue === NO_STORE_VALUE) {
+            // Callback runs for the first time.
+            firstSubscriptionValue = value;
+        } else {
+            // Runs on subsequent callback invocations.
+            onChange?.(value);
+        }
+    });
+
+    assert(
+        firstSubscriptionValue !== NO_STORE_VALUE,
+        'DerivedStore: Expected store value to be set after subscription. First callback after a subscription must run immediately!',
+    );
+
+    return {
+        currentValue: firstSubscriptionValue,
+        ref: store,
+        unsubscriber,
+    };
+}
+
+/**
+ * Alias for a readonly array of unknown stores that satisfy the {@link IQueryableStore} interface.
+ */
+type QueryableStores = readonly IQueryableStore<unknown>[];
+
+/**
+ * State of a single store subscription.
+ */
+interface StoreSubscriptionState<TStore extends IQueryableStore<unknown>> {
+    /**
+     * Latest value emitted by the referenced store.
+     */
+    readonly currentValue: TStore extends IQueryableStore<infer TStoreValue> ? TStoreValue : never;
+
+    /**
+     * Reference to the subscribed store itself.
+     */
+    readonly ref: IQueryableStore<unknown>;
+
+    /**
+     * Reference to the remembered unsubscriber to stop and release the subscription.
+     */
+    readonly unsubscriber: StoreUnsubscriber;
+}
+
+/**
+ * An array of {@link StoreSubscriptionState}s.
+ */
+type StoreSubscriptionStates<TArray extends readonly IQueryableStore<unknown>[]> = {
+    [K in keyof TArray]: StoreSubscriptionState<TArray[K]>;
+};
+
+/**
+ * The states a {@link DerivedStore} can be in.
+ */
+type States<
+    TSourceStores extends QueryableStores,
+    TInDerivedValue extends TOutDerivedValue,
+    TOutDerivedValue,
+> =
+    | DisabledDerivedStoreState
+    | InitializingDerivedStoreState<TSourceStores>
+    | EnabledDerivedStoreState<TSourceStores, TInDerivedValue, TOutDerivedValue>;
+
+/**
+ * Shape of {@link DerivedStore}'s state if it's disabled.
+ */
+type DisabledDerivedStoreState = LazyStoreState<typeof LAZY_STORE_DISABLED_STATE>;
+
+/**
+ * Shape of {@link DerivedStore}'s state while it's initializing.
+ */
+interface InitializingDerivedStoreState<TSourceStores extends QueryableStores>
+    extends LazyStoreState<typeof LAZY_STORE_INITIALIZING_STATE> {
+    /**
+     * See {@link EnabledDerivedStoreState}.
+     */
+    readonly sourceStoreSubscriptions: StoreSubscriptionStates<TSourceStores>;
+    /**
+     * See {@link EnabledDerivedStoreState}.
+     */
+    unwrappedStoreSubscriptions: StoreSubscriptionStates<QueryableStores>;
+    /**
+     * See {@link EnabledDerivedStoreState}.
+     */
+    isDeriving: boolean;
+}
+
+/**
+ * Shape of {@link DerivedStore}'s state if it's enabled.
+ */
+interface EnabledDerivedStoreState<
+    TSourceStores extends QueryableStores,
+    TInDerivedValue extends TOutDerivedValue,
+    TOutDerivedValue,
+> extends LazyStoreState<typeof LAZY_STORE_ENABLED_STATE> {
+    /**
+     * The store which holds the most recent derived value, i.e., the value of this
+     * {@link DerivedStore}. Subscribers of this {@link DerivedStore} will be subscribed to this
+     * store behind the scenes.
+     */
+    readonly derivedValueStore: WritableStore<TInDerivedValue, TOutDerivedValue>;
+    /**
+     * States of the source stores this {@link DerivedStore} is deriving from. Contains a
+     * {@link StoreSubscriptionState} object for each source store that holds the store's
+     * `currentValue`, as well as the store itself.
+     */
+    readonly sourceStoreSubscriptions: StoreSubscriptionStates<TSourceStores>;
+    /**
+     * States of the stores that this {@link DerivedStore} is deriving from (in addition to its
+     * source stores), i.e., stores added using the {@link GetAndSubscribeFunction} during
+     * derivation. Contains a {@link StoreSubscriptionState} object for each store that holds the
+     * store's `currentValue`, as well as the store itself.
+     */
+    unwrappedStoreSubscriptions: StoreSubscriptionStates<QueryableStores>;
+    /**
+     * Flag to indicate whether a derivation is currently in progress.
+     */
+    isDeriving: boolean;
 }
