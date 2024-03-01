@@ -7,7 +7,7 @@ import type {
     StoreUnsubscriber,
     WritableStore,
 } from '~/common/utils/store';
-import {concentrate} from '~/common/utils/store/concentrator-store';
+import {derive} from '~/common/utils/store/derived-store';
 
 /**
  * Display modes and associated minimum pixel values of width.
@@ -93,7 +93,14 @@ export function manageLayout(
     },
     layout: WritableStore<LayoutMode>,
 ): StoreUnsubscriber {
-    return concentrate([source.display, source.router]).subscribe(([displayMode, routerState]) => {
+    // Combine `displayMode` and `routerState` into a single store.
+    const displayModeAndRouterStateStore = derive(
+        [source.display, source.router],
+        ([{currentValue: displayMode}, {currentValue: routerState}]) =>
+            [displayMode, routerState] as const,
+    );
+
+    return displayModeAndRouterStateStore.subscribe(([displayMode, routerState]) => {
         switch (displayMode) {
             case 'small':
                 layout.update((mode) => {
