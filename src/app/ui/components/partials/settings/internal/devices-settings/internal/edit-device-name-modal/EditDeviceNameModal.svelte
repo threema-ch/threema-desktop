@@ -52,9 +52,9 @@
     on:submit={handleClickConfirm}
   >
     <div class="description">
-      <Input bind:value {maxlength}></Input>
-    </div></Modal
-  >
+      <Input bind:value autofocus id="device-name" {maxlength} />
+    </div>
+  </Modal>
 </template>
 
 <style lang="scss">
