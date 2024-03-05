@@ -194,6 +194,9 @@ async function packageApp(variant, environment) {
                 // DOC: https://electron.github.io/electron-packager/v16.0.0/interfaces/electronpackager.options.html#appcategorytype
                 appCategoryType: 'public.app-category.social-networking',
                 darwinDarkModeSupport: true,
+                extendInfo: {
+                    LSFileQuarantineEnabled: true,
+                }
             };
             break;
         }
