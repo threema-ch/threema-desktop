@@ -420,13 +420,11 @@ function initBackendServicesWithoutConfig(
 
 /**
  * Initialize the backend services that don't require an active identity for being intialized.
- *
- * The Threema Work credentials are needed for Basic Authorization for the directory server in OnPrem
  */
 function initBackendServicesWithoutIdentityWithConfig(
     factories: FactoriesForBackend,
     {config, crypto, logging}: Pick<ServicesForBackend, 'crypto' | 'config' | 'logging'>,
-    workCredentials?: ThreemaWorkCredentials,
+    workCredentials: ThreemaWorkCredentials | undefined,
 ): Pick<ServicesForBackend, 'directory' | 'file'> {
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
     const directory = new FetchDirectoryBackend({config, logging}, workCredentials);
@@ -701,20 +699,21 @@ export class Backend implements ProxyMarked {
             }
         }
 
+        // In OnPrem builds, the config needs to be initialized based on the OPPF (On-Prem Provisioning File).
+        // In other builds, the config is static.
         let config: Config;
-        let workCredentials: ThreemaWorkCredentials | undefined = undefined;
         if (
             import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&
             keyStorageContents.onPremConfig !== undefined
         ) {
             try {
+                const workCredentials = unwrap(
+                    keyStorageContents.workCredentials,
+                    'Missing work credentials in OnPrem build',
+                );
+
+                // Download and verify OPPF from OnPrem server
                 let parsedOppfResponse: oppf.Type;
-                // If Username and Password are not there for some reason, something must have been wrong at another place.
-                // All work users need to have their credentials stored after the first log in.
-                workCredentials = {
-                    password: unwrap(keyStorageContents.workCredentials?.password),
-                    username: unwrap(keyStorageContents.workCredentials?.username),
-                };
                 const responseObject = await this._fetchAndVerifyOppfFile(earlyServices, {
                     password: workCredentials.password,
                     username: workCredentials.username,
@@ -755,7 +754,7 @@ export class Backend implements ProxyMarked {
                 ...earlyServices,
                 config,
             },
-            workCredentials,
+            keyStorageContents.workCredentials,
         );
 
         //
@@ -893,9 +892,9 @@ export class Backend implements ProxyMarked {
             throw new BackendCreationError('handled-linking-error', message, {from: error});
         }
         let config: Config;
-        let oppfConfig: OppfFetchConfig | undefined = undefined;
-        let rawResponse: string | undefined = undefined;
-        let workCredentials: ThreemaWorkCredentials | undefined = undefined;
+        let oppfConfig: OppfFetchConfig | undefined;
+        let rawResponse: string | undefined;
+        let workCredentials: ThreemaWorkCredentials | undefined;
         // Handle on prem dialog if necesary
         if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
             try {
@@ -1233,7 +1232,7 @@ export class Backend implements ProxyMarked {
             joinResult.rawCk.purge();
         }
 
-        let onPremConfig: KeyStorageOppfConfig | undefined = undefined;
+        let onPremConfig: KeyStorageOppfConfig | undefined;
 
         if (
             import.meta.env.BUILD_ENVIRONMENT === 'onprem' &&

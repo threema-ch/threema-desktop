@@ -18,7 +18,7 @@ import {
 import type {IdentityString} from '~/common/network/types';
 import type {ClientKey} from '~/common/network/types/keys';
 import type {ReadonlyUint8Array} from '~/common/types';
-import {assert, unreachable} from '~/common/utils/assert';
+import {assert, unreachable, unwrap} from '~/common/utils/assert';
 import {base64ToU8a, u8aToBase64} from '~/common/utils/base64';
 import {UTF8} from '~/common/utils/codec';
 import {PROXY_HANDLER, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -86,18 +86,25 @@ export class FetchDirectoryBackend implements DirectoryBackend {
         workCredentials?: ThreemaWorkCredentials,
     ) {
         this._base = services.config.DIRECTORY_SERVER_URL;
+        const headers: Record<string, string> = {
+            'accept': 'application/json',
+            'user-agent': services.config.USER_AGENT,
+        };
+
+        // OnPrem directory requires authentication using Threema Work credentials
+        if (import.meta.env.BUILD_ENVIRONMENT === 'onprem') {
+            const credentials = unwrap(
+                workCredentials,
+                'Work credentials not passed to FetchDirectoryBackend in OnPrem build',
+            );
+            headers.authorization = `Basic ${u8aToBase64(UTF8.encode(`${credentials.username}:${credentials.password}`))}`;
+        }
+
         this._requestInit = {
             cache: 'no-store',
             credentials: 'omit',
             referrerPolicy: 'no-referrer',
-            headers:
-                workCredentials !== undefined
-                    ? {
-                          'accept': 'application/json',
-                          'user-agent': services.config.USER_AGENT,
-                          'authorization': `Basic ${u8aToBase64(UTF8.encode(`${workCredentials.username}:${workCredentials.password}`))}`,
-                      }
-                    : {'accept': 'application/json', 'user-agent': services.config.USER_AGENT},
+            headers,
         };
     }
 
