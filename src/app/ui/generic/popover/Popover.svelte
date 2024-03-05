@@ -12,7 +12,7 @@
   import {createEventDispatcher} from 'svelte';
   import {fade} from 'svelte/transition';
 
-  import {clickoutside} from '~/app/ui/generic/popover/actions';
+  import {clickoutside} from '~/app/ui/actions/clickoutside';
   import {getPopoverOffset, popoverStore} from '~/app/ui/generic/popover/helpers';
   import type {PopoverProps} from '~/app/ui/generic/popover/props';
   import type {Offset} from '~/app/ui/generic/popover/types';
