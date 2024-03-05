@@ -415,28 +415,26 @@ function getReferenceTimestamp(): Date {
 }
 
 /**
- * Generate data for screenshots from JSON file.
+ * Import data for screenshots from JSON file.
  */
-export async function generateScreenshotData(
+export async function importScreenshotData(
     services: Pick<ServicesForBackend, 'crypto' | 'device' | 'file' | 'model'>,
     log: Logger,
     locale: I18nLocales,
 ): Promise<void> {
-    log.info('generateScreenshotData: Starting');
+    log.info('importScreenshotData: Starting');
     const {device, model} = services;
 
-    // Import JSON data (but only in debug and/or sandbox builds)
+    // Import JSON data if present
     let data: ScreenshotDataJson = {
         contacts: [],
         groups: [],
     };
-    if (import.meta.env.DEBUG || import.meta.env.BUILD_ENVIRONMENT === 'sandbox') {
-        const jsonFiles = import.meta.glob('./screenshot-data-*.json', {eager: true});
-        const filename = `./screenshot-data-${import.meta.env.BUILD_VARIANT}.json`;
-        if (hasProperty(jsonFiles, filename)) {
-            const json = jsonFiles[filename];
-            data = SCREENSHOT_DATA_JSON_SCHEMA.parse(json);
-        }
+    const jsonFiles = import.meta.glob('./screenshot-data-*.json', {eager: true});
+    const filename = `./screenshot-data-${import.meta.env.BUILD_VARIANT}.json`;
+    if (hasProperty(jsonFiles, filename)) {
+        const json = jsonFiles[filename];
+        data = SCREENSHOT_DATA_JSON_SCHEMA.parse(json);
     }
 
     // Set own profile
@@ -566,7 +564,7 @@ export async function generateScreenshotData(
         }
     }
 
-    log.info('generateScreenshotData: Done');
+    log.info('importScreenshotData: Done');
 }
 
 /**

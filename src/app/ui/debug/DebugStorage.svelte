@@ -257,12 +257,12 @@
     <Button
       flavor="filled"
       on:click={() => {
-        backend.debug.generateScreenshotData($i18n.locale).catch(assertUnreachable);
+        backend.debug.importScreenshotData($i18n.locale).catch(assertUnreachable);
       }}
     >
       <span class="icon-and-text"
         ><MdIcon theme="Filled">auto_fix_normal</MdIcon>
-        Generate screenshot data</span
+        Import screenshot data</span
       >
     </Button>
   </section>

@@ -4,7 +4,7 @@ import type {BackendHandle} from '~/common/dom/backend';
 import {
     generateFakeContactConversation,
     generateFakeGroupConversation,
-    generateScreenshotData,
+    importScreenshotData,
 } from '~/common/dom/debug/fake';
 import type {Logger} from '~/common/logging';
 import {PROXY_HANDLER, type ProxyMarked, TRANSFER_HANDLER} from '~/common/utils/endpoint';
@@ -41,9 +41,9 @@ export class DebugBackend implements ProxyMarked {
     }
 
     /**
-     * Generate fake conversations and messages for making screenshots.
+     * Import fake conversations and messages for making screenshots.
      */
-    public async generateScreenshotData(locale: I18nLocales): Promise<void> {
-        await generateScreenshotData(this._services, this._log, locale);
+    public async importScreenshotData(locale: I18nLocales): Promise<void> {
+        await importScreenshotData(this._services, this._log, locale);
     }
 }
