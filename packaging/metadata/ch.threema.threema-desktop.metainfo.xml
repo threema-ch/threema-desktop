@@ -25,7 +25,7 @@
     <releases>
         <!-- Note: First entry is used as the current version. For full spec, see
         https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#tag-releases -->
-        <release version="2.0~publicbeta28" date="2024-03-04">
+        <release version="2.0~publicbeta29" date="2024-03-06">
             <description>
                 <p>New Features:</p>
                 <ul>
@@ -52,6 +52,11 @@
                     </li>
                 </ul>
                 <p>...and a few other minor changes and improvements.</p>
+            </description>
+        </release>
+        <release version="2.0~publicbeta28" date="2024-03-04">
+            <description>
+                <p>Internal release only, not published</p>
             </description>
         </release>
         <release version="2.0~publicbeta27" date="2024-02-05">
