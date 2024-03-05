@@ -3,16 +3,22 @@
   Renders the main settings view.
 -->
 <script lang="ts">
-  import type {SvelteComponentDev} from 'svelte/internal';
+  import type {SvelteComponent} from 'svelte';
 
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';
   import Text from '~/app/ui/components/atoms/text/Text.svelte';
   import About from '~/app/ui/components/partials/settings/internal/about/About.svelte';
+  import type {AboutProps} from '~/app/ui/components/partials/settings/internal/about/props';
   import AppearanceSettings from '~/app/ui/components/partials/settings/internal/appearance-settings/AppearanceSettings.svelte';
+  import type {AppearanceSettingsProps} from '~/app/ui/components/partials/settings/internal/appearance-settings/props';
   import DevicesSettings from '~/app/ui/components/partials/settings/internal/devices-settings/DevicesSettings.svelte';
+  import type {DevicesSettingsProps} from '~/app/ui/components/partials/settings/internal/devices-settings/props';
   import MediaSettings from '~/app/ui/components/partials/settings/internal/media-settings/MediaSettings.svelte';
+  import type {MediaSettingsProps} from '~/app/ui/components/partials/settings/internal/media-settings/props';
   import ProfileSettings from '~/app/ui/components/partials/settings/internal/profile-settings/ProfileSettings.svelte';
+  import type {ProfileSettingsProps} from '~/app/ui/components/partials/settings/internal/profile-settings/props';
   import SecuritySettings from '~/app/ui/components/partials/settings/internal/security-settings/SecuritySettings.svelte';
+  import type {SecuritySettingsProps} from '~/app/ui/components/partials/settings/internal/security-settings/props';
   import type {SettingsProps} from '~/app/ui/components/partials/settings/props';
   import {i18n} from '~/app/ui/i18n';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
@@ -25,7 +31,14 @@
 
   interface SettingsPage {
     readonly title: string;
-    readonly component: typeof SvelteComponentDev;
+    readonly component: typeof SvelteComponent<
+      | AboutProps
+      | AppearanceSettingsProps
+      | DevicesSettingsProps
+      | MediaSettingsProps
+      | ProfileSettingsProps
+      | SecuritySettingsProps
+    >;
   }
 
   export let services: $$Props['services'];

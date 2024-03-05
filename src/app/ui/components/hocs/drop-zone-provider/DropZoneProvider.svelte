@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte/internal';
+  import {createEventDispatcher} from 'svelte';
 
   import {safedrag} from '~/app/ui/actions/drag';
   import type {DropZoneProviderProps} from '~/app/ui/components/hocs/drop-zone-provider/props';

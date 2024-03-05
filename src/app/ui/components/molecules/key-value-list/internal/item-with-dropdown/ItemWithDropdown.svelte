@@ -3,7 +3,7 @@
   Renders an item of a `KeyValueList` that contains a dropdown with options to choose from.
 -->
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte/internal';
+  import {createEventDispatcher} from 'svelte';
 
   import ContextMenuProvider from '~/app/ui/components/hocs/context-menu-provider/ContextMenuProvider.svelte';
   import type {ItemWithDropdownProps} from '~/app/ui/components/molecules/key-value-list/internal/item-with-dropdown/props';

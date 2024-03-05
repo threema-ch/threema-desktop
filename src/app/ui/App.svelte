@@ -61,10 +61,22 @@
   }
 
   // Routing
-  let navPanelComponent: typeof SvelteComponent;
-  let mainPanelComponent: typeof SvelteComponent;
-  let asidePanelComponent: typeof SvelteComponent | undefined;
-  let modalComponent: typeof SvelteComponent | undefined;
+  let navPanelComponent: typeof SvelteComponent<{
+    services: AppServices;
+  }>;
+  let mainPanelComponent: typeof SvelteComponent<{
+    services: AppServices;
+  }>;
+  let asidePanelComponent:
+    | typeof SvelteComponent<{
+        services: AppServices;
+      }>
+    | undefined;
+  let modalComponent:
+    | typeof SvelteComponent<{
+        services: AppServices;
+      }>
+    | undefined;
   $: {
     switch ($router.nav.id) {
       case 'conversationList':

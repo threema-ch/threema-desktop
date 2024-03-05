@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type {Logger} from 'libthreema';
   import type {AppServices} from '~/app/types';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
@@ -8,6 +7,7 @@
   import Title from '~/app/ui/svelte-components/blocks/ModalDialog/Header/Title.svelte';
   import ModalDialog from '~/app/ui/svelte-components/blocks/ModalDialog/ModalDialog.svelte';
   import type {Config} from '~/common/config';
+  import type {Logger} from '~/common/logging';
   import type {ConnectionErrorDialog} from '~/common/system-dialog';
   import {unreachable} from '~/common/utils/assert';
   import type {Delayed} from '~/common/utils/delayed';

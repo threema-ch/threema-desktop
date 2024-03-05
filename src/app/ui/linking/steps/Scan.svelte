@@ -2,7 +2,7 @@
   import {globals} from '~/app/globals';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import type {LinkingWizardStateScan} from '~/app/ui/linking';
+  import type {LinkingWizardScanProps} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
   import IconButton from '~/app/ui/svelte-components/blocks/Button/IconButton.svelte';
   import CircularProgress from '~/app/ui/svelte-components/blocks/CircularProgress/CircularProgress.svelte';
@@ -12,7 +12,9 @@
 
   const log = globals.unwrap().uiLogging.logger(`ui.component.linking.scan`);
 
-  export let linkingWizardState: LinkingWizardStateScan;
+  type $$Props = LinkingWizardScanProps;
+
+  export let joinUri: $$Props['joinUri'] = undefined;
 
   // In order to avoid a quickly-flashing loading icon, define a minimal waiting time
   // for connecting to the rendezvous server. Note that the timer is started here, but
@@ -26,9 +28,9 @@
    * Copy linking code to clipboard. Note: this is only supposed to be used in development.
    */
   function copyLinkingUri(): void {
-    if (linkingWizardState.joinUri !== undefined) {
+    if (joinUri !== undefined) {
       navigator.clipboard
-        .writeText(linkingWizardState.joinUri)
+        .writeText(joinUri)
         .then(() => log.info('Linking code copied to clipboard'))
         .catch((error) => {
           log.error('Could not copy linking code to clipboard', error);
@@ -99,7 +101,7 @@
             />
           </p>
           <div class="linking">
-            {#if linkingWizardState.joinUri === undefined || !minimalConnectTimerElapsed}
+            {#if joinUri === undefined || !minimalConnectTimerElapsed}
               <div class="qr-code">
                 <div class="progress">
                   <CircularProgress variant="indeterminate" />
@@ -110,7 +112,7 @@
               <!-- TODO(DESK-1067): Get rid of forced border and invert QR code -->
               <div class="qr-code">
                 <QrCode
-                  data={linkingWizardState.joinUri}
+                  data={joinUri}
                   options={{
                     width: 240,
                   }}

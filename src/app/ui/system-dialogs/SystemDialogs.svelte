@@ -24,7 +24,13 @@
    * Mapping from dialog type to corresponding svelte component.
    */
   const dialogComponents: {
-    readonly [Property in SystemDialog['type']]: typeof SvelteComponent;
+    readonly [Property in SystemDialog['type']]: typeof SvelteComponent<{
+      appServices: Delayed<AppServices>;
+      config: Config;
+      context: unknown;
+      log: Logger;
+      visible: boolean;
+    }>;
   } = {
     'app-update': AppUpdate,
     'connection-error': ConnectionError,

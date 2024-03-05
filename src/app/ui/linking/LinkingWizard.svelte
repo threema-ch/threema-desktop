@@ -1,9 +1,16 @@
 <script lang="ts">
   import {onMount} from 'svelte';
-  import type {SvelteComponentDev} from 'svelte/internal';
 
   import {globals} from '~/app/globals';
-  import type {LinkingParams, LinkingWizardState} from '~/app/ui/linking';
+  import type {
+    LinkingParams,
+    LinkingWizardConfirmEmojiProps,
+    LinkingWizardErrorProps,
+    LinkingWizardScanProps,
+    LinkingWizardSetPasswordProps,
+    LinkingWizardSuccessProps,
+    LinkingWizardSyncingProps,
+  } from '~/app/ui/linking';
   import ConfirmEmoji from '~/app/ui/linking/steps/ConfirmEmoji.svelte';
   import Error from '~/app/ui/linking/steps/Error.svelte';
   import Scan from '~/app/ui/linking/steps/Scan.svelte';
@@ -21,27 +28,43 @@
   export let params: LinkingParams;
 
   /**
-   * The current connection state.
+   * A mapping of linking wizard components to their respective component prop types.
    */
-  let linkingWizardState: LinkingWizardState = {
-    currentStep: 'scan',
-    joinUri: undefined,
-  };
+  type LinkingWizardState =
+    | {
+        component: 'scan';
+        props: LinkingWizardScanProps;
+      }
+    | {
+        component: 'confirmEmoji';
+        props: LinkingWizardConfirmEmojiProps;
+      }
+    | {
+        component: 'setPassword';
+        props: LinkingWizardSetPasswordProps;
+      }
+    | {
+        component: 'sync';
+        props: LinkingWizardSyncingProps;
+      }
+    | {
+        component: 'successLinked';
+        props: LinkingWizardSuccessProps;
+      }
+    | {
+        component: 'error';
+        props: LinkingWizardErrorProps;
+      };
 
   /**
-   * Mapping of state steps to the corresponding component.
+   * The state of the current step.
    */
-  const PROCESS_STEPS: {[Key in LinkingWizardState['currentStep']]: typeof SvelteComponentDev} = {
-    'scan': Scan,
-    'confirm-emoji': ConfirmEmoji,
-    'set-password': SetPassword,
-    'syncing': Sync,
-    'success-linked': SuccessLinked,
-    'error': Error,
+  let linkingWizardState: LinkingWizardState = {
+    component: 'scan',
+    props: {
+      joinUri: undefined,
+    },
   };
-
-  let wizardStepComponent: typeof SvelteComponentDev;
-  $: wizardStepComponent = PROCESS_STEPS[linkingWizardState.currentStep];
 
   // Handle backend linking state changes
   onMount(() =>
@@ -53,33 +76,51 @@
           break;
         case 'waiting-for-handshake':
           linkingWizardState = {
-            currentStep: 'scan',
-            joinUri: state.joinUri,
+            component: 'scan',
+            props: {
+              joinUri: state.joinUri,
+            },
           };
           break;
         case 'nominated':
           linkingWizardState = {
-            currentStep: 'confirm-emoji',
-            rph: state.rph,
+            component: 'confirmEmoji',
+            props: {
+              rph: state.rph,
+            },
           };
           break;
         case 'waiting-for-password':
-          linkingWizardState = {currentStep: 'set-password', userPassword: params.userPassword};
+          linkingWizardState = {
+            component: 'setPassword',
+            props: {
+              userPassword: params.userPassword,
+            },
+          };
           break;
         case 'syncing':
-          linkingWizardState = {currentStep: 'syncing', phase: state.phase};
+          linkingWizardState = {
+            component: 'sync',
+            props: {
+              phase: state.phase,
+            },
+          };
           break;
         case 'registered':
           linkingWizardState = {
-            currentStep: 'success-linked',
-            identityReady: params.identityReady,
+            component: 'successLinked',
+            props: {
+              identityReady: params.identityReady,
+            },
           };
           break;
         case 'error':
           linkingWizardState = {
-            currentStep: 'error',
-            errorType: state.type,
-            errorMessage: state.message,
+            component: 'error',
+            props: {
+              errorType: state.type,
+              errorMessage: state.message,
+            },
           };
           break;
         default:
@@ -90,7 +131,21 @@
 </script>
 
 <template>
-  <svelte:component this={wizardStepComponent} {linkingWizardState} />
+  {#if linkingWizardState.component === 'scan'}
+    <Scan {...linkingWizardState.props} />
+  {:else if linkingWizardState.component === 'confirmEmoji'}
+    <ConfirmEmoji {...linkingWizardState.props} />
+  {:else if linkingWizardState.component === 'setPassword'}
+    <SetPassword {...linkingWizardState.props} />
+  {:else if linkingWizardState.component === 'sync'}
+    <Sync {...linkingWizardState.props} />
+  {:else if linkingWizardState.component === 'successLinked'}
+    <SuccessLinked {...linkingWizardState.props} />
+  {:else if linkingWizardState.component === 'error'}
+    <Error {...linkingWizardState.props} />
+  {:else}
+    {unreachable(linkingWizardState)}
+  {/if}
 </template>
 
 <style lang="scss">

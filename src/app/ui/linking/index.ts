@@ -20,44 +20,27 @@ export interface LinkingParams {
     readonly identityReady: ResolvablePromise<void>;
 }
 
-export interface LinkingWizardStateScan {
-    readonly currentStep: 'scan';
+export interface LinkingWizardScanProps {
     readonly joinUri?: string;
 }
 
-export interface LinkingWizardStateConfirmEmoji {
-    readonly currentStep: 'confirm-emoji';
+export interface LinkingWizardConfirmEmojiProps {
     readonly rph: ReadonlyUint8Array;
 }
 
-export interface LinkingWizardStateSetPassword {
-    readonly currentStep: 'set-password';
+export interface LinkingWizardSetPasswordProps {
     readonly userPassword: ResolvablePromise<string>;
 }
 
-export interface LinkingWizardStateSyncing {
-    readonly currentStep: 'syncing';
+export interface LinkingWizardSyncingProps {
     readonly phase: SyncingPhase;
 }
 
-export interface LinkingWizardStateSuccess {
-    readonly currentStep: 'success-linked';
+export interface LinkingWizardSuccessProps {
     readonly identityReady: ResolvablePromise<void>;
 }
 
-export interface LinkingWizardStateError {
-    readonly currentStep: 'error';
+export interface LinkingWizardErrorProps {
     readonly errorType: LinkingStateErrorType;
     readonly errorMessage: string;
 }
-
-/**
- * Linking wizard UI state and associated data.
- */
-export type LinkingWizardState =
-    | LinkingWizardStateScan
-    | LinkingWizardStateConfirmEmoji
-    | LinkingWizardStateSetPassword
-    | LinkingWizardStateSyncing
-    | LinkingWizardStateSuccess
-    | LinkingWizardStateError;

@@ -1,11 +1,13 @@
 <script lang="ts">
   import {i18n} from '~/app/ui/i18n';
-  import type {LinkingWizardStateConfirmEmoji} from '~/app/ui/linking';
+  import type {LinkingWizardConfirmEmojiProps} from '~/app/ui/linking';
   import LinkingEmojiLoader from '~/app/ui/linking/LinkingEmojiLoader.svelte';
   import Step from '~/app/ui/linking/Step.svelte';
   import {unwrap} from '~/common/utils/assert';
 
-  export let linkingWizardState: LinkingWizardStateConfirmEmoji;
+  type $$Props = LinkingWizardConfirmEmojiProps;
+
+  export let rph: $$Props['rph'];
 </script>
 
 <template>
@@ -21,9 +23,9 @@
 
     <div class="body">
       <div class="emojis">
-        <span class="emoji"><LinkingEmojiLoader byte={unwrap(linkingWizardState.rph[0])} /></span>
-        <span class="emoji"><LinkingEmojiLoader byte={unwrap(linkingWizardState.rph[1])} /></span>
-        <span class="emoji"><LinkingEmojiLoader byte={unwrap(linkingWizardState.rph[2])} /></span>
+        <span class="emoji"><LinkingEmojiLoader byte={unwrap(rph[0])} /></span>
+        <span class="emoji"><LinkingEmojiLoader byte={unwrap(rph[1])} /></span>
+        <span class="emoji"><LinkingEmojiLoader byte={unwrap(rph[2])} /></span>
       </div>
     </div>
 

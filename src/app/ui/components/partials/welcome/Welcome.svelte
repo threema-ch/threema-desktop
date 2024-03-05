@@ -4,7 +4,7 @@
   import {display} from '~/common/dom/ui/state';
   import {unusedProp} from '~/common/utils/svelte-helpers';
 
-  export let services: AppServices | undefined = undefined;
+  export let services: AppServices;
   unusedProp(services);
 </script>
 

@@ -4,11 +4,13 @@
   import PartyPopper from '~/app/res/icon/emoji-party-popper.svg?raw';
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import type {LinkingWizardStateSuccess} from '~/app/ui/linking';
+  import type {LinkingWizardSuccessProps} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
 
-  export let linkingWizardState: LinkingWizardStateSuccess;
+  type $$Props = LinkingWizardSuccessProps;
+
+  export let identityReady: $$Props['identityReady'];
 
   let buttonComponent: Button | null = null;
 
@@ -39,10 +41,7 @@
         </SubstitutableText>
       </p>
       <div class="button">
-        <Button
-          bind:this={buttonComponent}
-          flavor="filled"
-          on:click={() => linkingWizardState.identityReady.resolve()}
+        <Button bind:this={buttonComponent} flavor="filled" on:click={() => identityReady.resolve()}
           >{$i18n.t('dialog--linking-success.action--confirm', 'Start using Threema')}</Button
         >
       </div>

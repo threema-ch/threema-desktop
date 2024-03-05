@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte/internal';
+  import {onDestroy} from 'svelte';
 
   import {globals} from '~/app/globals';
   import {ROUTE_DEFINITIONS} from '~/app/routing/routes';

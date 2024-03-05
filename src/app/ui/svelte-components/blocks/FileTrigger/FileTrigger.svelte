@@ -2,7 +2,7 @@
   @component Open a file upload dialog and trigger a custom fileDrop event.
 -->
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte/internal';
+  import {createEventDispatcher} from 'svelte';
 
   import {unwrap} from '~/app/ui/svelte-components/utils/assert';
   import {type FileResult, validateFileList} from '~/app/ui/svelte-components/utils/filelist';

@@ -42,7 +42,7 @@
       return;
     }
 
-    dispatch('clickitem');
+    dispatch('clickitem', item);
     item.handler();
   }
 </script>

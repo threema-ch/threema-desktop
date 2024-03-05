@@ -1,5 +1,10 @@
 <script lang="ts">
-  // Void
+  import type {AppServices} from '~/app/types';
+  import {unusedProp} from '~/common/utils/svelte-helpers';
+
+  export let services: AppServices;
+
+  unusedProp(services);
 </script>
 
 <template>

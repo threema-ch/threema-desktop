@@ -9,15 +9,18 @@
 <script lang="ts">
   import SubstitutableText from '~/app/ui/SubstitutableText.svelte';
   import {i18n} from '~/app/ui/i18n';
-  import type {LinkingWizardStateError} from '~/app/ui/linking';
+  import type {LinkingWizardErrorProps} from '~/app/ui/linking';
   import Step from '~/app/ui/linking/Step.svelte';
   import Button from '~/app/ui/svelte-components/blocks/Button/Button.svelte';
   import MdIcon from '~/app/ui/svelte-components/blocks/Icon/MdIcon.svelte';
   import {unreachable} from '~/common/utils/assert';
 
-  export let linkingWizardState: LinkingWizardStateError;
+  type $$Props = LinkingWizardErrorProps;
 
-  function translatedTextFor(state: LinkingWizardStateError, t: typeof $i18n.t): ErrorText {
+  export let errorMessage: $$Props['errorMessage'];
+  export let errorType: $$Props['errorType'];
+
+  function translatedTextFor(state: LinkingWizardErrorProps, t: typeof $i18n.t): ErrorText {
     let title = t('dialog--linking-error.label--title-generic', 'Linking Unsuccessful');
     let message = t(
       'dialog--linking-error.prose--message-generic',
@@ -147,11 +150,17 @@
     return {
       title,
       message,
-      details: linkingWizardState.errorMessage,
+      details: errorMessage,
     };
   }
 
-  $: errorText = translatedTextFor(linkingWizardState, $i18n.t);
+  $: errorText = translatedTextFor(
+    {
+      errorMessage,
+      errorType,
+    },
+    $i18n.t,
+  );
 </script>
 
 <template>
@@ -192,7 +201,7 @@
             >
           </label>
           <p class="drawer-content">
-            {linkingWizardState.errorMessage}
+            {errorMessage}
           </p>
         </div>
       {/if}
