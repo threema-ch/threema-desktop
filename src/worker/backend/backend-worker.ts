@@ -1,4 +1,3 @@
-import {STATIC_CONFIG, type StaticConfig} from '~/common/config';
 import {
     Backend,
     type BackendCreator,
@@ -22,7 +21,7 @@ declare const self: DedicatedWorkerGlobalScope;
  * This is the common entrypoint for the backend worker, invoked by the app
  * via the specific 'electron' loader entrypoint.
  */
-export function main(staticConfig: StaticConfig, factories: FactoriesForBackend): void {
+export function main(factories: FactoriesForBackend): void {
     const logging = factories.logging('bw', BACKEND_WORKER_CONFIG.LOG_DEFAULT_STYLE);
     const log = logging.logger('main');
 
@@ -31,7 +30,7 @@ export function main(staticConfig: StaticConfig, factories: FactoriesForBackend)
 
     // The worker exposes backend creation functions that run in the context of the worker, but
     // which can be called from the main thread (through the backend controller).
-    const endpoint = createEndpointService({logging}, STATIC_CONFIG);
+    const endpoint = createEndpointService({logging});
     const services = {
         logging,
         endpoint,
@@ -63,7 +62,6 @@ export function main(staticConfig: StaticConfig, factories: FactoriesForBackend)
                 init,
                 factories,
                 services,
-                staticConfig,
                 deviceLinkingSetup,
                 pinForwarder,
             );

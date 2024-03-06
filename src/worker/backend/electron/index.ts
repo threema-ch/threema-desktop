@@ -84,7 +84,7 @@ export async function run(): Promise<void> {
     );
 
     // Start backend worker for Electron
-    main(STATIC_CONFIG, {
+    main({
         logging: loggerFactory,
         keyStorage: (services: ServicesForKeyStorageFactory, log: Logger) => {
             const keyStoragePath = path.join(appPath, ...STATIC_CONFIG.KEY_STORAGE_PATH);

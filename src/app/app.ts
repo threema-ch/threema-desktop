@@ -14,7 +14,6 @@ import type {LinkingParams, OppfConfig} from '~/app/ui/linking';
 import LinkingWizard from '~/app/ui/linking/LinkingWizard.svelte';
 import {attachSystemDialogs} from '~/app/ui/system-dialogs';
 import {SystemTimeStore} from '~/app/ui/time';
-import {STATIC_CONFIG, type StaticConfig} from '~/common/config';
 import type {LinkingState} from '~/common/dom/backend';
 import {BackendController} from '~/common/dom/backend/controller';
 import {randomBytes} from '~/common/dom/crypto/random';
@@ -118,7 +117,6 @@ function attachApp(services: AppServices, elements: Elements): App {
  */
 async function updateCheck(
     services: Pick<AppServices, 'logging' | 'systemDialog'>,
-    staticConfig: StaticConfig,
     systemInfo: SystemInfo,
 ): Promise<void> {
     const {logging} = services;
@@ -126,7 +124,7 @@ async function updateCheck(
     log.info('Checking for updates...');
 
     // Check for updates. If update is found, notify user after a short delay.
-    const updateInfo = await checkForUpdate(staticConfig, log, systemInfo);
+    const updateInfo = await checkForUpdate(log, systemInfo);
     if (updateInfo !== undefined) {
         await TIMER.sleep(3000);
         log.info(`Update available: ${updateInfo.version}`);
@@ -340,12 +338,12 @@ async function main(): Promise<() => void> {
     const frontendMediaService = new FrontendMediaService();
     const notification = new FrontendNotificationCreator();
     const systemDialog = new FrontendSystemDialogService();
-    const endpoint = createEndpointService({logging}, STATIC_CONFIG);
+    const endpoint = createEndpointService({logging});
 
     // Check for updates in the background, if this is an Electron release build.
     // Note: For now, we don't support custom update links provisioned by .oppf files.
-    if (!import.meta.env.DEBUG) {
-        updateCheck({logging, systemDialog}, STATIC_CONFIG, systemInfo).catch(assertUnreachable);
+    if (!import.meta.env.DEBUG && import.meta.env.BUILD_ENVIRONMENT !== 'onprem') {
+        updateCheck({logging, systemDialog}, systemInfo).catch(assertUnreachable);
     }
     // Function to send new public key pins to the electron process
     function forwardPins(newPins: DomainCertificatePin[] | undefined): void {

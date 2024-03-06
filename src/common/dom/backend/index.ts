@@ -6,7 +6,6 @@ import {BackgroundJobScheduler} from '~/common/background-job-scheduler';
 import type {Compressor} from '~/common/compressor';
 import {
     type Config,
-    type StaticConfig,
     createConfigFromOppf,
     createDefaultConfig,
     STATIC_CONFIG,
@@ -850,7 +849,6 @@ export class Backend implements ProxyMarked {
         backendInit: BackendInit,
         factories: FactoriesForBackend,
         {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
-        staticConfig: StaticConfig,
         deviceLinkingSetup: EndpointFor<DeviceLinkingSetup>,
         pinForwarder: EndpointFor<PinForwarder>,
     ): Promise<TransferredToRemote<EndpointFor<BackendHandle>>> {

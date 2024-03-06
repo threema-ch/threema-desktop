@@ -4,7 +4,7 @@
 
 import * as v from '@badrap/valita';
 
-import type {StaticConfig} from '~/common/config';
+import {STATIC_CONFIG} from '~/common/config';
 import type {SystemInfo} from '~/common/electron-ipc';
 import type {Logger} from '~/common/logging';
 
@@ -32,7 +32,6 @@ export type UpdateInfo = Pick<
  * If checking for an update fails, an error is logged and `undefined` is returned.
  */
 export async function checkForUpdate(
-    staticConfig: StaticConfig,
     log: Logger,
     systemInfo: SystemInfo,
 ): Promise<UpdateInfo | undefined> {
@@ -42,13 +41,13 @@ export async function checkForUpdate(
         return undefined;
     }
     const updateJson = `latest-version-${import.meta.env.BUILD_VARIANT}-${systemInfo.os}.json`;
-    const downloadCheckUrl = `${staticConfig.UPDATE_SERVER_URL}${updateJson}`;
+    const downloadCheckUrl = `${STATIC_CONFIG.UPDATE_SERVER_URL}${updateJson}`;
 
     // Download JSON
     let response: Response;
     try {
         const headers = new Headers({
-            'user-agent': staticConfig.USER_AGENT,
+            'user-agent': STATIC_CONFIG.USER_AGENT,
             'accept': 'application/json',
         });
         response = await fetch(downloadCheckUrl, {

@@ -12,7 +12,6 @@
  */
 
 import type {ServicesForBackend} from '~/common/backend';
-import type {StaticConfig} from '~/common/config';
 import {TransferTag} from '~/common/enum';
 import type {Logger, LoggerFactory} from '~/common/logging';
 import type {LocalModelStore, RemoteModelStore} from '~/common/model/utils/model-store';
@@ -697,7 +696,7 @@ export class EndpointService {
         assert(!EndpointService._SHARED.started, 'Expect endpoint service to be created once');
         EndpointService._SHARED.started = true;
 
-        if (import.meta.env.VERBOSE_LOGGING.ENDPOINT === true) {
+        if (import.meta.env.VERBOSE_LOGGING.ENDPOINT) {
             this._debug = getEndpointDebugContext();
         }
     }
