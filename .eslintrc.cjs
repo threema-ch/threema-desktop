@@ -332,6 +332,7 @@ module.exports = {
         'no-bitwise': 'error',
         'no-caller': 'error',
         'no-console': 'error',
+        'no-duplicate-imports': 'error',
         'no-else-return': 'error',
         'no-empty-static-block': 'error',
         'no-eval': 'error',
@@ -651,7 +652,10 @@ module.exports = {
         'import/newline-after-import': 'error',
         'import/no-absolute-path': 'error',
         'import/no-default-export': 'error',
-        'import/no-duplicates': ['error', {'prefer-inline': true}],
+        // We remove this rule for now and use the standard ES-Lint rule: https://eslint.org/docs/latest/rules/no-duplicate-imports
+        // The reason is that svelte imports all modules from one file, which this rules disallows.
+        // See https://github.com/import-js/eslint-plugin-import/issues/1479 for the corresponding issue.
+        // 'import/no-duplicates': ['error', {'prefer-inline': true}],
         'import/no-empty-named-blocks': 'error',
         // TODO: Currently broken for e.g. 'sinon' and 'chai' which affects tests, see:
         // https://github.com/import-js/eslint-plugin-import/issues/2168
