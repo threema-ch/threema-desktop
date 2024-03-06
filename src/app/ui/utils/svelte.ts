@@ -24,12 +24,16 @@ export function reactive<TReturn>(fn: () => TReturn, dependencies: unknown[]): T
  * Type compatible with a Svelte event `dispatcher` function returned by Svelte's
  * `createEventDispatcher`.
  */
-type SvelteEventDispatcher<EventMap extends object> = <
-    EventKey extends Extract<keyof EventMap, string>,
+export type SvelteEventDispatcher<EventMap extends Record<string, unknown>> = <
+    Type extends keyof EventMap,
 >(
-    type: EventKey,
-    detail?: EventMap[EventKey],
-    options?: SvelteEventDispatcherOptions,
+    ...args: undefined extends EventMap[Type]
+        ? [
+              type: Type,
+              parameter?: EventMap[Type] | undefined,
+              options?: SvelteEventDispatcherOptions,
+          ]
+        : [type: Type, parameter: EventMap[Type], options?: SvelteEventDispatcherOptions]
 ) => boolean;
 
 interface SvelteEventDispatcherOptions {
@@ -62,17 +66,17 @@ type ResumeFunction = (options?: {
  *
  * @returns A 3-tuple of: dispatch function, suspend function, and resume function.
  */
-export function createBufferedEventDispatcher<EventMap extends object>(): [
+export function createBufferedEventDispatcher<EventMap extends Record<string, unknown>>(): [
     dispatcher: SvelteEventDispatcher<EventMap>,
     suspender: SuspendFunction,
     resumer: ResumeFunction,
 ] {
-    type EventKey = Extract<keyof EventMap, string>;
-
     const dispatch = createEventDispatcher<EventMap>();
+
+    type EventKey = keyof EventMap;
     let bufferedEvents: [
         type: EventKey,
-        detail: EventMap[EventKey] | undefined,
+        parameter: EventMap[EventKey],
         options: SvelteEventDispatcherOptions | undefined,
     ][] = [];
 
@@ -80,13 +84,17 @@ export function createBufferedEventDispatcher<EventMap extends object>(): [
 
     return [
         // Dispatch function
-        (type, detail, options) => {
+        (...args) => {
+            const type: EventKey = args[0];
+            const parameter: EventMap[EventKey] = args[1] as EventMap[EventKey];
+            const options: SvelteEventDispatcherOptions | undefined = args[2];
+
             if (isSuspended) {
-                bufferedEvents.push([type, detail, options]);
+                bufferedEvents.push([type, parameter, options]);
                 return true;
             }
 
-            return dispatch(type, detail, options);
+            return dispatch(type, parameter, options);
         },
         // Suspend function
         () => {
