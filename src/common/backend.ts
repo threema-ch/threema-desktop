@@ -43,13 +43,26 @@ export interface ServicesForBackend {
 }
 
 /**
- * List of services that require an initialized identity before they can be instantiated.
+ * Services that don't require an initialized identity before they can be instantiated.
  */
-export type ServicesThatRequireIdentity = 'device' | 'blob' | 'model' | 'nonces' | 'viewModel';
+export type EarlyServices = Omit<
+    ServicesForBackend,
+    'device' | 'blob' | 'model' | 'nonces' | 'viewModel'
+>;
 
+/**
+ * Early backend services that require neither an active identity nor a dynamic config for being
+ * initialized.
+ */
+export type EarlyServicesThatRequireConfig = Pick<EarlyServices, 'directory' | 'file'>;
+
+/**
+ * Early backend services that don't require an active identity, but a dynamic config for being
+ * initialized.
+ */
 export type EarlyServicesThatDontRequireConfig = Omit<
-    Omit<ServicesForBackend, ServicesThatRequireIdentity>,
-    'file' | 'directory' | 'config'
+    EarlyServices,
+    'config' | keyof EarlyServicesThatRequireConfig
 >;
 
 /**

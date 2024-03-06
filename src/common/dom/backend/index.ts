@@ -1,5 +1,7 @@
 import type {
+    EarlyServices,
     EarlyServicesThatDontRequireConfig,
+    EarlyServicesThatRequireConfig,
     ServicesForBackend,
 } from '~/common/backend';
 import {BackgroundJobScheduler} from '~/common/background-job-scheduler';
@@ -387,7 +389,11 @@ function createMediaService(
     );
 }
 
-function initBackendServicesWithoutConfig(
+/**
+ * Initialize those backend services that require neither an active identity nor a dynamic config
+ * for being initialized.
+ */
+function initEarlyBackendServicesWithoutConfig(
     factories: FactoriesForBackend,
     {endpoint, logging}: Pick<ServicesForBackend, 'endpoint' | 'logging'>,
     backendInit: BackendInit,
@@ -419,13 +425,14 @@ function initBackendServicesWithoutConfig(
 }
 
 /**
- * Initialize the backend services that don't require an active identity for being intialized.
+ * Initialize the backend services that don't require an active identity, but a dynamic config for
+ * being intialized.
  */
-function initBackendServicesWithoutIdentityWithConfig(
+function initEarlyBackendServicesWithConfig(
     factories: FactoriesForBackend,
     {config, crypto, logging}: Pick<ServicesForBackend, 'crypto' | 'config' | 'logging'>,
     workCredentials: ThreemaWorkCredentials | undefined,
-): Pick<ServicesForBackend, 'directory' | 'file'> {
+): EarlyServicesThatRequireConfig {
     const file = factories.fileStorage({config, crypto}, logging.logger('storage'));
     const directory = new FetchDirectoryBackend({config, logging}, workCredentials);
 
@@ -441,7 +448,7 @@ function initBackendServicesWithoutIdentityWithConfig(
  * Note: The {@link dgk} will be consumed and purged after initialization!
  */
 function initBackendServices(
-    simpleServices: Omit<ServicesForBackend, ServicesThatRequireIdentity>,
+    earlyServices: EarlyServices,
     db: DatabaseBackend,
     identityData: IdentityData,
     deviceIds: DeviceIds,
@@ -460,7 +467,7 @@ function initBackendServices(
         notification,
         taskManager,
         systemDialog,
-    } = simpleServices;
+    } = earlyServices;
 
     const workData = workCredentials === undefined ? undefined : {workCredentials};
 
@@ -493,7 +500,7 @@ function initBackendServices(
         new ViewModelCache(),
     );
     return {
-        ...simpleServices,
+        ...earlyServices,
         device,
         blob,
         model,
@@ -528,12 +535,7 @@ async function writeKeyStorage(
             databaseKey,
             deviceIds: {...deviceIds},
             workCredentials: workCredentials === undefined ? undefined : {...workCredentials},
-            onPremConfig:
-                onPremConfig === undefined
-                    ? undefined
-                    : {
-                          ...onPremConfig,
-                      },
+            onPremConfig: onPremConfig === undefined ? undefined : {...onPremConfig},
         });
     } catch (error) {
         throw new BackendCreationError(
@@ -634,7 +636,7 @@ export class Backend implements ProxyMarked {
         log.info('Creating backend from existing key storage');
 
         // Initialize services that are needed early
-        const earlyServices = initBackendServicesWithoutConfig(
+        const earlyServices = initEarlyBackendServicesWithoutConfig(
             factories,
             {endpoint, logging},
             backendInit,
@@ -753,7 +755,7 @@ export class Backend implements ProxyMarked {
             config = createDefaultConfig();
         }
 
-        const lateInitServices = initBackendServicesWithoutIdentityWithConfig(
+        const lateInitServices = initEarlyBackendServicesWithConfig(
             factories,
             {
                 ...earlyServices,
@@ -761,8 +763,6 @@ export class Backend implements ProxyMarked {
             },
             keyStorageContents.workCredentials,
         );
-
-        //
         const services = {
             ...lateInitServices,
             ...earlyServices,
@@ -862,7 +862,7 @@ export class Backend implements ProxyMarked {
         log.info('Creating backend through device linking flow');
 
         // Initialize services that are needed early
-        const earlyServices = initBackendServicesWithoutConfig(
+        const earlyServices = initEarlyBackendServicesWithoutConfig(
             factories,
             {endpoint, logging},
             backendInit,
@@ -935,7 +935,7 @@ export class Backend implements ProxyMarked {
 
         const services = {
             ...earlyServices,
-            ...initBackendServicesWithoutIdentityWithConfig(
+            ...initEarlyBackendServicesWithConfig(
                 factories,
                 {...earlyServices, config},
                 workCredentials,
