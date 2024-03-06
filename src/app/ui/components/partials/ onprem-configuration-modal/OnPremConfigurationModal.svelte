@@ -29,8 +29,17 @@
     const headers = new Headers();
     headers.append('Authorization', `Basic ${u8aToBase64(UTF8.encode(`${username}:${password}`))}`);
 
+    let finalUrlString = oppfUrl;
     try {
-      const res = await fetch(oppfUrl, {
+      if (!/^https?:\/\//iu.test(finalUrlString)) {
+        finalUrlString = `https://${finalUrlString}`;
+      }
+
+      let finalUrl = new URL(finalUrlString);
+      if (!finalUrl.toString().endsWith('.oppf')) {
+        finalUrl = new URL(`${finalUrl}/prov/config.oppf`);
+      }
+      const res = await fetch(finalUrl, {
         headers,
         method: 'HEAD',
       });
@@ -38,7 +47,7 @@
         oppfConfig.resolve({
           password,
           username,
-          oppfUrl,
+          oppfUrl: finalUrl.toString(),
         });
       } else if (response.status === 401) {
         submitError = $i18n.t(
